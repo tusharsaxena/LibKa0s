@@ -152,7 +152,7 @@ test("skin owner: an owned Dropdown wears its owner's skin, and two owners stay 
   local a = W.Dropdown(m.UIParent, 120, { owner = OWNER })
   local b = W.Dropdown(m.UIParent, 120, { owner = OTHER })
   assertEqual(rgba(survey(m, a).backdropColor), tok(Skin, "obsidian", "input.bg"))
-  assertEqual(rgba(survey(m, a.arrow).vertex), tok(Skin, "obsidian", "icon.tint"))
+  assertEqual(rgba(survey(m, a.arrow).vertex), tok(Skin, "obsidian", "icon.arrow"))
   assertEqual(rgba(survey(m, b).backdropColor), tok(Skin, "azeroth", "input.bg"))
   Skin:SetChoice(OWNER, "ka0s", "glass")
   assertEqual(rgba(survey(m, a).backdropColor), tok(Skin, "glass", "input.bg"), "the owner's switch repaints it")

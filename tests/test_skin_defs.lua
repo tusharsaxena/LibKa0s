@@ -21,6 +21,10 @@ local LABELS = {
 
 local function skinLib() return T.mocks.LibStub(MAJOR) end
 
+local function colorKey(c)
+  return type(c) == "table" and ("%.3f,%.3f,%.3f,%.3f"):format(c[1], c[2], c[3], c[4] or 1) or tostring(c)
+end
+
 local KIND_OK = {
   color = function(v) return type(v) == "table" and type(v[1]) == "number" and #v >= 3 end,
   colors = function(v) return type(v) == "table" and #v > 0 and type(v[1]) == "table" end,
@@ -148,6 +152,17 @@ local function over(top, under)
   local a = top[4] or 1
   return { top[1] * a + under[1] * (1 - a), top[2] * a + under[2] * (1 - a), top[3] * a + under[3] * (1 - a), 1 }
 end
+
+test("skin defs: every skin's arrows and check mark wear its own accent", function()
+  -- SkinDefs minor 12 (the owner's round-5 showroom audit): the paging, dropdown and sort arrows were
+  -- the art's yellow in every skin, and WoW Forever's check mark Ka0s gold under a tan accent.
+  for _, key in ipairs(KEYS) do
+    local t = skinLib():ResolveSkin(key)
+    assertEqual(colorKey(t["icon.arrow"]), colorKey(t["text.accent"]), key .. ": the arrows in its accent")
+  end
+  local fv = skinLib():ResolveSkin("forever")
+  assertEqual(colorKey(fv["check.mark"]), colorKey(fv["text.accent"]), "WoW Forever's check mark is its tan")
+end)
 
 test("skin defs: every skin's scroll bar draws a corridor on its window and a knob on the corridor", function()
   -- The owner's round-5 notes: "a knob and a scroll corridor" in every skin; Azeroth's was the

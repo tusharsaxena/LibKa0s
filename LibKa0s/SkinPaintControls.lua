@@ -39,7 +39,10 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- bar's own thumb art is faded and a flat knob laid in its place (`scroll.thumbFill`, retired with
 -- SkinDefs minor 10, was a second knob over the tinted art); the corridor is laid under the
 -- always-shown bar too.
-local CONTROLS_MINOR = 7
+-- Minor 8 (the owner's round-5 showroom audit): the paging arrow, a dropdown's arrow and a sort
+-- header's arrows take `icon.arrow` through P.glyph, desaturated first, so they wear the skin's color
+-- and not the art's yellow.
+local CONTROLS_MINOR = 8
 if lib.__controlsMinor and lib.__controlsMinor >= CONTROLS_MINOR
   and lib.__controlsShellMinor == lib.MINOR then return end
 lib.__controlsMinor      = CONTROLS_MINOR
@@ -292,7 +295,7 @@ prim.Dropdown = function(owner, dd, opts)
   P.fadeAll(rec, P.stockRegions(dd, opts))
   P.box(rec, dd, T, INPUT, opts)
   local arrow = P.field(dd, "arrow", "Texture") or P.field(dd, "Arrow", "Texture")
-  if arrow then P.tint(rec, arrow, T, "icon.tint", "SetVertexColor") end
+  if arrow then P.glyph(rec, arrow, T, "icon.arrow") end
   local fs = P.field(dd, "text", "FontString") or P.field(dd, "Text", "FontString")
   if fs then
     P.tint(rec, fs, T, "input.text")
@@ -550,7 +553,7 @@ prim.PageButton = function(owner, btn, dir)
   t:SetSize(12, 12)
   t:SetTexture(ARROW_ART)
   t:SetRotation(PAGE_ROTATION[dir] or 0)
-  P.tint(rec, t, T, "btn.icon", "SetVertexColor")
+  P.glyph(rec, t, T, "icon.arrow")
   t:Show()
 end
 
@@ -589,7 +592,7 @@ prim.SortHeaderBar = function(owner, bar, opts)
     if P.isFS(fs) then P.label(owner, rec, fs, T, "list.header.text") end
   end
   for _, t in ipairs(type(opts.arrows) == "table" and opts.arrows or {}) do
-    if P.isTexture(t) then P.tint(rec, t, T, "icon.tint", "SetVertexColor") end
+    if P.isTexture(t) then P.glyph(rec, t, T, "icon.arrow") end
   end
 end
 

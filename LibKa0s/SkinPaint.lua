@@ -96,7 +96,9 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- four corners): Shell draws the window's edge and its inner rule on an edge holder EDGE_LEVEL frame
 -- levels above the window (P.edgeHolder), over every child band; the backdrop's own edge is clear
 -- and Core's inner rule is cleared, its color given back on unpaint. P.edges takes a holder.
-local PAINT_MINOR = 9
+-- Minor 10 (the owner's round-5 showroom audit: the arrows were yellow in every skin): P.glyph
+-- desaturates in-client arrow art before it tints it, and unpaint gives the desaturation back.
+local PAINT_MINOR = 10
 if lib.__paintMinor and lib.__paintMinor >= PAINT_MINOR
   and lib.__paintShellMinor == lib.MINOR then return end
 lib.__paintMinor      = PAINT_MINOR
@@ -396,6 +398,26 @@ function P.tint(rec, obj, T, name, method)
     obj[method](obj, unpack(priors[obj]))
     priors[obj] = nil
   end
+end
+
+--- Color in-client glyph art `tex` (an arrow drawn in its own yellow) with token `name`: desaturated
+--- first (minor 10), so the token's hue is what shows; a vertex color alone only multiplies the
+--- art's own. The prior desaturation is recorded and given back on unpaint, as the tint is.
+function P.glyph(rec, tex, T, name)
+  if type(tex) ~= "table" or type(tex.SetDesaturated) ~= "function" then
+    return P.tint(rec, tex, T, name, "SetVertexColor")
+  end
+  local priors = saved(rec, "SetDesaturated")
+  if T[name] then
+    if priors[tex] == nil then
+      priors[tex] = { type(tex.IsDesaturated) == "function" and tex:IsDesaturated() or false }
+    end
+    tex:SetDesaturated(true)
+  elseif priors[tex] then
+    tex:SetDesaturated(unpack(priors[tex]))
+    priors[tex] = nil
+  end
+  P.tint(rec, tex, T, name, "SetVertexColor")
 end
 
 --- Hook `script` on `frame` once per record: `fn(frame, rec)` runs after the frame's own handler,
@@ -732,6 +754,7 @@ function P.unpaint(rec, frame)
   restoreColors(rec, "SetTextColor")
   restoreColors(rec, "SetVertexColor")
   restoreColors(rec, "SetBackdropBorderColor")
+  restoreColors(rec, "SetDesaturated")
   if P.hasBackdrop(frame) then restoreBackdrop(rec, frame) end
   P.hideEdges(rec, frame)
   for key, r in pairs(rec.regions) do

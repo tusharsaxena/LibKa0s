@@ -217,12 +217,16 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   assertEqual(#objects, before, "an anonymous object recorded by an older copy is never handed back")
 end)
 
-test("skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call", function()
+test("skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call, but its arrow", function()
+  -- The arrow is SkinPaintControls minor 8's: the in-client art is yellow and a vertex color only
+  -- multiplies it, so every skin drew it yellow (the owner's round-5 showroom audit). It is
+  -- desaturated and colored `icon.arrow`, Ka0s Default's gold; Widgets' owner-less dropdown keeps
+  -- its gray tint.
   local m, Skin = F.env()
   local W = withWidgets(m)
   local S = F.owner(Skin, OWNER)
   local function paintLines(tr, dd)
-    local keep = { [tr.ids[dd]] = true, [tr.ids[dd.arrow]] = true }
+    local keep = { [tr.ids[dd]] = true }
     local out = {}
     for _, line in ipairs(tr.lines) do
       local id, method = line:match("^#(%d+):([%w]+)%(")
@@ -239,11 +243,13 @@ test("skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for cal
   dd.arrow = dd:CreateTexture(nil, "OVERLAY")
   tr2.watch(dd); tr2.watch(dd.text); tr2.watch(dd.arrow)
   tr2.start(); S.Dropdown(dd); tr2.stop(); tr2.restore()
-  local want = paintLines(tr1, real)
-  assertTrue(want:find("SetVertexColor(0.700,0.700,0.720)", 1, true) ~= nil, "the arrow's gray")
-  assertEqual(paintLines(tr2, dd), want)
+  assertEqual(paintLines(tr2, dd), paintLines(tr1, real), "the box, call for call")
+  assertTrue(survey(m, dd.arrow).desaturated == true, "the arrow art desaturated")
+  assertEqual(F.rgba(survey(m, dd.arrow).vertex), F.tok(Skin, "ka0s", "icon.arrow"), "in Ka0s Default's gold")
   Skin:SetChoice(OWNER, "ka0s", "glass")
-  assertEqual(F.rgba(survey(m, dd.arrow).vertex), F.tok(Skin, "glass", "icon.tint"), "repainted")
+  assertEqual(F.rgba(survey(m, dd.arrow).vertex), F.tok(Skin, "glass", "icon.arrow"), "repainted in Glass's accent")
+  Skin.__P.unpaint(Skin.painted[dd], dd)
+  assertTrue(not survey(m, dd.arrow).desaturated, "given back, the art's own color")
 end)
 
 -- ── checkboxes ───────────────────────────────────────────────────────────────────────────────
@@ -492,6 +498,8 @@ test("skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and Apply
   local arrow = F.region(Skin, pb, "arrow")
   assertEqual(survey(m, arrow).texture, "Interface\\ChatFrame\\ChatFrameExpandArrow", "in-client art")
   assertEqual(arrow:GetRotation(), math.pi)
+  assertTrue(survey(m, arrow).desaturated == true, "desaturated, so the skin's color shows (minor 8)")
+  assertEqual(F.rgba(survey(m, arrow).vertex), F.tok(Skin, "contrast", "icon.arrow"), "High Contrast's yellow")
   local icon = m.CreateFrame("Button", nil, m.UIParent)
   icon.icon = icon:CreateTexture()
   S.SquareIcon(icon, { crop = true })
@@ -509,7 +517,8 @@ test("skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and Apply
   local h1, a1 = bar:CreateFontString(), bar:CreateTexture()
   S.SortHeaderBar(bar, { texts = { h1 }, arrows = { a1 } })
   assertEqual(F.rgba(survey(m, h1).textColor), F.tok(Skin, "framed", "list.header.text"))
-  assertEqual(F.rgba(survey(m, a1).vertex), F.tok(Skin, "framed", "icon.tint"))
+  assertEqual(F.rgba(survey(m, a1).vertex), F.tok(Skin, "framed", "icon.arrow"))
+  assertTrue(survey(m, a1).desaturated == true, "the sort arrow desaturated")
   assertEqual(F.rgba(survey(m, F.region(Skin, bar, "fill")).color), "0,0,0.200,1", "the header fill")
   local fill = m.CreateFrame("Frame"):CreateTexture()
   S.ApplyBarFill(fill)

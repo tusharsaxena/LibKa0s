@@ -477,7 +477,7 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
-### test_skin_defs.lua (25)
+### test_skin_defs.lua (26)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -485,6 +485,7 @@ Total.
 - skin defs: geometry tokens equal Ka0s Default in all nine skins
 - skin defs: every skin's GameTooltip lines read on the client's dark tooltip
 - skin defs: every skin's text reads on its own window
+- skin defs: every skin's arrows and check mark wear its own accent
 - skin defs: every skin's scroll bar draws a corridor on its window and a knob on the corridor
 - skin defs: every skin's set drawer label differs from its unset one
 - skin defs: every skin's bind-state and danger colors read on its own window
@@ -550,7 +551,7 @@ Total.
 - skin controls: EditBox on Ka0s Default paints the search box's backdrop, call for call
 - skin controls: EditBox fades a template's pieces and colors its text and hint in a skin
 - skin controls: leaving a skin font puts an EditBox's face back by path, never its anonymous font object
-- skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call
+- skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call, but its arrow
 - skin controls: Checkbox draws a box and a mark that follows the check
 - skin controls: WoW Default's checkbox is the client's art; Ka0s Default draws a square box
 - skin controls: a disabled Button's label reads text.disabled, and comes back when enabled
@@ -3442,7 +3443,7 @@ Total.
 | test_glow.lua | 15 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
-| test_skin_defs.lua | 25 |
+| test_skin_defs.lua | 26 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
@@ -3555,4 +3556,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3029** |
+| **Total** | **3030** |

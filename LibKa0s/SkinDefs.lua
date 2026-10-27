@@ -73,7 +73,11 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- Obsidian Inter, Azeroth Vollkorn, Glass Nunito, High Contrast Atkinson Hyperlegible, Ember Bitter,
 -- WoW Midnight Philosopher and WoW Forever Fira Sans (Media minor 8 ships them); Ka0s Default and WoW
 -- Default draw the client's Friz Quadrata, the one face two skins share. Sizes retuned per face.
-local DEFS_MINOR = 11
+-- Minor 12 (the owner's round-5 showroom audit): `icon.arrow`, the in-client arrow art's color (the
+-- paging, dropdown and sort arrows), Ka0s Default's gold and every other skin's accent (FOLLOW); the
+-- art is yellow and a tint only multiplies it, so every skin drew yellow arrows. WoW Forever's check
+-- mark is its tan accent, no longer Ka0s gold.
+local DEFS_MINOR = 12
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -128,7 +132,8 @@ local GROUPS = {
     .. "list.hover:color list.sel:color? list.selOutline:color? card.bg:color card.border:color "
     .. "panel.bg:color panel.border:color section.rule:color icon.tint:color icon.hot:color "
     .. "handle.bg:color handle.edge:color handle.rest:color list.dropLine:color list.ghostBg:color "
-    .. "list.box:color list.boxDim:color list.boxEdge:color list.boxEdgeDim:color icon.dim:color" },
+    .. "list.box:color list.boxDim:color list.boxEdge:color list.boxEdgeDim:color icon.dim:color "
+    .. "icon.arrow:color" },
   { "Overlays", "popup.bg:color popup.border:color? popup.borderSize:number? "
     .. "popup.borderStyle:string? popup.radius:number tooltip.bg:color? tooltip.border:color? "
     .. "strip.test:color strip.sim:color cover.dim:color cover.text:color" },
@@ -268,7 +273,7 @@ local KA0S = {
   ["card.bg"] = { 0.1, 0.1, 0.12, 0.85 }, ["card.border"] = CTL_LINE,
   ["panel.bg"] = { 0.08, 0.08, 0.10, 0.6 }, ["panel.border"] = { 0.24, 0.24, 0.27, 0.7 },
   ["section.rule"] = { 1, 0.82, 0, 0.35 },
-  ["icon.tint"] = GRAY, ["icon.hot"] = WHITE, ["handle.bg"] = { 0, 0, 0, 0.75 },
+  ["icon.tint"] = GRAY, ["icon.hot"] = WHITE, ["icon.arrow"] = GOLD, ["handle.bg"] = { 0, 0, 0, 0.75 },
   -- Widgets: WidgetsDragHandle's gold edge; WidgetsReorder's handle at rest, its insertion line, its
   -- carried copy and lib.ROW_BOX's fills and edges.
   ["handle.edge"] = { 1, 0.82, 0, 0.6 }, ["handle.rest"] = { 0.7, 0.7, 0.7, 1 },
@@ -459,6 +464,7 @@ local FOLLOW = {
   { "log.ts", "sem.info" }, { "log.tag", "text.headingAlt" },
   { "sem.stepReady", "text.body" }, { "sem.stepBusy", "text.accent" },
   { "sem.stepLocked", "text.disabled" }, { "sem.stepCancel", "sem.off" }, { "sem.stepCancelHot", "sem.bad" },
+  { "icon.arrow", "text.accent" },
 }
 
 local function blend(a, b)
@@ -881,7 +887,7 @@ register("forever", "WoW Forever", "Warm charcoal, black title bars with centere
     tabBg = CLEAR, tabText = hex("#A39E97"), tabBorder = edge(1, "flat", CLEAR), tabRadius = 0,
     tabOnBg = rgba(0, 0, 0, 0.4), tabOnText = hex("#FFFFFF"), tabOnLine = FV_TAN,
     scTrack = hex("#0a0806"), scThumb = FV_TAN, scRadius = 0,
-    chkBg = hex("#0a0908"), chkBorder = edge(1, "flat", hex("#8a7a52")), chkMark = hex("#FFD100"),
+    chkBg = hex("#0a0908"), chkBorder = edge(1, "flat", hex("#8a7a52")), chkMark = FV_TAN,
     chkRadius = 0,
     slTrack = hex("#3a3632"), slTrackBorder = edge(0, "flat", CLEAR), slFill = FV_TAN,
     slThumb = FV_TAN,
