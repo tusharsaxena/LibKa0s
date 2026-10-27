@@ -63,7 +63,12 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- Contrast, Ember, WoW Default and WoW Midnight): `scroll.thumbFill`, a flat fill laid over the
 -- thumb (SkinPaintControls minor 6), which those five set in their accent; a tint can only darken
 -- the client's thumb art, so no tint could brighten it. Ka0s Default and the rest set none.
-local DEFS_MINOR = 9
+-- Minor 10 (the owner's round-5 notes, 2026-10-28): every skin draws a scroll corridor and one knob.
+-- `scroll.thumbFill` and `scroll.thumbTexture` are retired (never released): the knob is a flat
+-- `scroll.thumb` over the faded thumb art (SkinPaintControls minor 7), and every skin's
+-- `scroll.track` is a corridor that reads against its window, `thumbOn` / `thumbOff` the knob's
+-- two states on the settings panel's bar.
+local DEFS_MINOR = 10
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -101,7 +106,7 @@ local GROUPS = {
     .. "check.markTexture:string? slider.track:color? "
     .. "slider.trackBorder:color? slider.fill:color? slider.thumb:color? scroll.track:color "
     .. "scroll.thumb:color scroll.thumbOn:color scroll.thumbOff:color scroll.width:number "
-    .. "scroll.gutter:number scroll.radius:number scroll.thumbTexture:string? scroll.thumbFill:color?" },
+    .. "scroll.gutter:number scroll.radius:number" },
   { "Tabs and navigation", "tab.bg:color tab.bgTop:color? tab.bgBottom:color? tab.glow:color "
     .. "tab.text:color tab.border:color? tab.borderSize:number? tab.borderStyle:string? "
     .. "tab.onBg:color? tab.onText:color tab.onLine:color tab.rule:color tab.radius:number "
@@ -229,7 +234,7 @@ local KA0S = {
   ["check.borderStyle"] = "flat",
   ["check.mark"] = GOLD, ["check.radius"] = 0,
   -- Scroll: DebugLog's console bar (BAR_W 8) and OptionsScroll's thumb tints and GUTTER.
-  ["scroll.track"] = { 0.24, 0.24, 0.27, 0.3 }, ["scroll.thumb"] = { 0.5, 0.5, 0.55, 0.85 },
+  ["scroll.track"] = { 0.24, 0.24, 0.27, 0.4 }, ["scroll.thumb"] = { 0.5, 0.5, 0.55, 0.85 },
   ["scroll.thumbOn"] = WHITE, ["scroll.thumbOff"] = { 0.5, 0.5, 0.5, 0.6 },
   ["scroll.width"] = 8, ["scroll.gutter"] = 20, ["scroll.radius"] = 0,
   -- Tabs: OptionsTabs' backing gradient, glow and hairline; LootHistory Browser's labels.
@@ -323,7 +328,6 @@ local KA0S = {
   -- The slider: the thin bar every skin draws (SkinPaintControls minor 3), in Ka0s Default's colors.
   ["slider.track"] = CTL_LINE, ["slider.trackBorder"] = false, ["slider.fill"] = GOLD,
   ["slider.thumb"] = { 0.9, 0.9, 0.9, 1 },
-  ["scroll.thumbTexture"] = false, ["scroll.thumbFill"] = false,
   ["tab.border"] = CTL_LINE, ["tab.borderSize"] = 1, ["tab.borderStyle"] = "flat",
   ["tab.onBg"] = { 0.18, 0.18, 0.18, 0.9 }, ["tab.texture"] = false, ["tab.onTexture"] = false,
   ["nav.borderSize"] = 1, ["nav.borderStyle"] = "flat", ["nav.selBar"] = false,
@@ -523,7 +527,7 @@ register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool 
     rowSel = rgba(77, 184, 255, 0.14),
     tabBg = CLEAR, tabText = hex("#9B9BA4"), tabBorder = edge(1, "flat", CLEAR), tabRadius = 0,
     tabOnBg = CLEAR, tabOnText = hex("#F2F2F4"), tabOnLine = hex("#4DB8FF"),
-    scTrack = CLEAR, scThumb = hex("#3a3a42"), scRadius = 0,
+    scTrack = hex("#1c1c20"), scThumb = rgba(77, 184, 255, 0.9), scRadius = 0,
     chkBg = hex("#040405"), chkBorder = edge(1, "flat", hex("#34343b")), chkMark = hex("#4DB8FF"),
     chkRadius = 0,
     slTrack = hex("#202024"), slTrackBorder = edge(0, "flat", CLEAR), slFill = hex("#4DB8FF"),
@@ -542,8 +546,8 @@ register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool 
     ["drawer.textSet"] = hex("#4DB8FF"),
     ["card.bg"] = hex("#101012"), ["card.border"] = hex("#202024"),
     ["panel.bg"] = hex("#070708"), ["panel.border"] = hex("#1c1c20"),
-    ["scroll.thumbOn"] = hex("#5a5a64"), ["tab.glow"] = rgba(255, 255, 255, 0.06),
-    ["scroll.thumbFill"] = rgba(77, 184, 255, 0.9),
+    ["scroll.thumbOn"] = rgba(77, 184, 255, 0.9), ["scroll.thumbOff"] = hex("#3a3a42"),
+    ["tab.glow"] = rgba(255, 255, 255, 0.06),
   })
 
 -- ── Azeroth ── mockup `azeroth`, reworked dark (SkinDefs minor 8, the owner's ruling of 2026-10-26:
@@ -568,7 +572,7 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
     rowSel = rgba(163, 36, 26, 0.35),
     tabBg = hex("#3a2614"), tabText = hex("#CDB78A"), tabBorder = edge(1, "flat", hex("#24160a")),
     tabRadius = 0, tabOnBg = hex("#7a1a10"), tabOnText = hex("#FFD866"), tabOnLine = CLEAR,
-    scTrack = rgba(0, 0, 0, 0.3), scThumb = hex("#8a6a36"), scRadius = 0,
+    scTrack = rgba(0, 0, 0, 0.35), scThumb = hex("#8a6a36"), scRadius = 0,
     chkBg = hex("#1c130b"), chkBorder = edge(1, "flat", hex("#8a6a36")), chkMark = AZ_GOLD,
     chkRadius = 0,
     slTrack = hex("#5a3d1d"), slTrackBorder = edge(0, "flat", CLEAR), slFill = hex("#c0392b"),
@@ -588,7 +592,7 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
     ["drawer.summarySet"] = AZ_GOLD, ["drawer.textSet"] = AZ_GOLD,
     ["card.bg"] = hex("#3a2614"), ["card.border"] = AZ_EDGE,
     ["panel.bg"] = rgba(0, 0, 0, 0.2), ["panel.border"] = AZ_EDGE,
-    ["scroll.thumbOn"] = AZ_GOLD, ["tab.glow"] = rgba(255, 255, 255, 0.10),
+    ["scroll.thumbOn"] = hex("#8a6a36"), ["tab.glow"] = rgba(255, 255, 255, 0.10),
   })
 
 -- ── Glass ── mockup `glass`. Manrope in the mockup; Barlow stands for it. No blur in WoW: the
@@ -616,7 +620,7 @@ register("glass", "Glass", "Translucent frosted panels with rounded corners and 
     rowSel = rgba(182, 156, 255, 0.24),
     tabBg = CLEAR, tabText = hex("#C9CFDB"), tabBorder = edge(1, "flat", CLEAR), tabRadius = 0,
     tabOnBg = rgba(182, 156, 255, 0.10), tabOnText = hex("#FFFFFF"), tabOnLine = hex("#B69CFF"),
-    scTrack = CLEAR, scThumb = rgba(255, 255, 255, 0.35), scRadius = 0,
+    scTrack = rgba(255, 255, 255, 0.08), scThumb = rgba(255, 255, 255, 0.5), scRadius = 0,
     chkBg = rgba(0, 0, 0, 0.3), chkBorder = edge(1, "flat", rgba(255, 255, 255, 0.3)),
     chkMark = hex("#B69CFF"), chkRadius = 0,
     slTrack = rgba(255, 255, 255, 0.15), slTrackBorder = edge(0, "flat", CLEAR),
@@ -639,7 +643,8 @@ register("glass", "Glass", "Translucent frosted panels with rounded corners and 
     ["drawer.summarySet"] = hex("#D4C4FF"), ["drawer.textSet"] = hex("#B69CFF"),
     ["card.bg"] = rgba(255, 255, 255, 0.06), ["card.border"] = rgba(255, 255, 255, 0.14),
     ["panel.bg"] = rgba(255, 255, 255, 0.04), ["panel.border"] = rgba(255, 255, 255, 0.12),
-    ["scroll.thumbOn"] = rgba(255, 255, 255, 0.6), ["icon.hot"] = hex("#FFFFFF"),
+    ["scroll.thumbOn"] = rgba(255, 255, 255, 0.6), ["scroll.thumbOff"] = rgba(255, 255, 255, 0.25),
+    ["icon.hot"] = hex("#FFFFFF"),
   })
 
 -- ── High Contrast ── mockup `contrast`: black, white 2px edges, yellow focus, Atkinson
@@ -662,7 +667,7 @@ register("contrast", "High Contrast", "Black and white with yellow focus, crisp 
     rowSelOutline = HC_YELLOW,
     tabBg = hex("#000000"), tabText = HC_WHITE, tabBorder = edge(1, "flat", HC_WHITE),
     tabRadius = 0, tabOnBg = hex("#000000"), tabOnText = HC_YELLOW, tabOnLine = HC_YELLOW,
-    scTrack = hex("#000000"), scThumb = HC_WHITE, scRadius = 0,
+    scTrack = hex("#262626"), scThumb = HC_WHITE, scRadius = 0,
     chkBg = hex("#000000"), chkBorder = edge(1, "flat", HC_WHITE), chkMark = HC_YELLOW,
     chkRadius = 0,
     slTrack = hex("#FFFFFF"), slTrackBorder = edge(0, "flat", CLEAR), slFill = HC_YELLOW,
@@ -683,7 +688,7 @@ register("contrast", "High Contrast", "Black and white with yellow focus, crisp 
     ["card.bg"] = hex("#000000"), ["card.border"] = HC_WHITE,
     ["panel.bg"] = hex("#000000"), ["panel.border"] = HC_WHITE, ["section.rule"] = HC_YELLOW,
     ["list.hover"] = rgba(255, 230, 0, 0.2), ["menu.hover"] = rgba(255, 230, 0, 0.25),
-    ["scroll.thumbOn"] = HC_YELLOW, ["scroll.thumbOff"] = HC_WHITE, ["scroll.thumbFill"] = HC_YELLOW,
+    ["scroll.thumbOn"] = HC_WHITE, ["scroll.thumbOff"] = hex("#808080"),
     ["tab.glow"] = rgba(255, 255, 255, 0.25),
     -- No faint or translucent bind state: the gray and off-white ones in the palette, opaque.
     ["sem.boundNone"] = hex("#B0B0B0"), ["sem.boundBoE"] = HC_WHITE,
@@ -713,7 +718,7 @@ register("ember", "Ember", "Charred browns lit by an orange accent, Cinzel title
     rowSel = rgba(255, 122, 51, 0.18),
     tabBg = hex("#2a140c"), tabText = hex("#C7A993"), tabBorder = edge(1, "flat", hex("#5a2a16")),
     tabRadius = 0, tabOnBg = hex("#4a2012"), tabOnText = hex("#FFB45A"), tabOnLine = hex("#FF7A33"),
-    scTrack = rgba(0, 0, 0, 0.4), scThumb = hex("#8a3c1c"), scRadius = 0,
+    scTrack = hex("#2e1810"), scThumb = rgba(255, 122, 51, 0.9), scRadius = 0,
     chkBg = hex("#140a07"), chkBorder = edge(1, "flat", hex("#8a3c1c")), chkMark = hex("#FF7A33"),
     chkRadius = 0,
     slTrack = hex("#4a2416"), slTrackBorder = edge(0, "flat", CLEAR),
@@ -733,8 +738,8 @@ register("ember", "Ember", "Charred browns lit by an orange accent, Cinzel title
     ["drawer.summarySet"] = hex("#FFCF9A"),
     ["card.bg"] = rgba(42, 20, 12, 0.85), ["card.border"] = hex("#5a2a16"),
     ["panel.bg"] = rgba(0, 0, 0, 0.3), ["panel.border"] = hex("#5a2a16"),
-    ["icon.hot"] = hex("#FFB45A"), ["scroll.thumbOn"] = hex("#C7A993"),
-    ["scroll.thumbFill"] = rgba(255, 122, 51, 0.9),
+    ["icon.hot"] = hex("#FFB45A"), ["scroll.thumbOn"] = rgba(255, 122, 51, 0.9),
+    ["scroll.thumbOff"] = hex("#8a3c1c"),
   })
 
 -- ── WoW Default ── mockup `wowdefault`: the vanilla client. Its CSS ridge and outset edges are
@@ -766,7 +771,7 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
     rowSel = rgba(255, 209, 0, 0.18),
     tabBg = hex("#262626"), tabText = hex("#C9B048"), tabBorder = edge(2, "bevelOut", hex("#7a7a7a")),
     tabRadius = 0, tabOnBg = hex("#4a4a4a"), tabOnText = hex("#FFFFFF"), tabOnLine = CLEAR,
-    scTrack = hex("#000000"), scThumb = hex("#9A7B2A"), scRadius = 0,
+    scTrack = hex("#000000"), scThumb = rgba(255, 209, 0, 0.9), scRadius = 0,
     chkBg = hex("#111111"), chkBorder = edge(0, "flat", false), chkMark = hex("#FFD100"),
     chkRadius = 0,
     slTrack = hex("#3a3a3a"), slTrackBorder = edge(0, "flat", CLEAR), slFill = hex("#C9A24A"),
@@ -785,8 +790,7 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
     ["win.bgTexture"] = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
     ["tab.texture"] = "Interface\\OptionsFrame\\UI-OptionsFrame-ActiveTab",
     ["tab.onTexture"] = "Interface\\OptionsFrame\\UI-OptionsFrame-ActiveTab",
-    ["scroll.thumbTexture"] = "Interface\\Buttons\\UI-ScrollBar-Knob",
-    ["scroll.thumbFill"] = rgba(255, 209, 0, 0.9),
+    ["scroll.thumbOn"] = rgba(255, 209, 0, 0.9), ["scroll.thumbOff"] = hex("#9A7B2A"),
     ["check.texture"] = "Interface\\Buttons\\UI-CheckBox-Up",
     ["check.markTexture"] = "Interface\\Buttons\\UI-CheckBox-Check",
     ["btn.hover"] = hex("#FFFFFF"), ["btnPrimary.hover"] = hex("#FFD100"),
@@ -819,7 +823,7 @@ register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, c
     rowSel = rgba(180, 140, 255, 0.2),
     tabBg = hex("#1a1730"), tabText = hex("#B4AFC8"), tabBorder = edge(1, "flat", hex("#5a4a26")),
     tabRadius = 0, tabOnBg = hex("#2c2550"), tabOnText = hex("#F6D27A"), tabOnLine = hex("#B48CFF"),
-    scTrack = rgba(0, 0, 0, 0.4), scThumb = MN_GOLD, scRadius = 0,
+    scTrack = hex("#22224a"), scThumb = rgba(246, 210, 122, 0.9), scRadius = 0,
     chkBg = hex("#08091a"), chkBorder = edge(1, "flat", MN_GOLD), chkMark = hex("#F6D27A"),
     chkRadius = 0,
     slTrack = hex("#2c2550"), slTrackBorder = edge(0, "flat", CLEAR),
@@ -841,7 +845,7 @@ register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, c
     ["card.bg"] = rgba(26, 23, 48, 0.85), ["card.border"] = hex("#4a3d1e"),
     ["panel.bg"] = rgba(0, 0, 0, 0.3), ["panel.border"] = hex("#4a3d1e"),
     ["icon.hot"] = hex("#F6D27A"), ["scroll.thumbOn"] = hex("#F6D27A"),
-    ["scroll.thumbFill"] = rgba(246, 210, 122, 0.9),
+    ["scroll.thumbOff"] = MN_GOLD,
   })
 
 -- ── WoW Forever ── mockup `forever`, the EllesmereUI-on-WoW-Forever look (OWNER_SCOPE R4): warm
@@ -866,7 +870,7 @@ register("forever", "WoW Forever", "Warm charcoal, black title bars with centere
     rowSel = rgba(201, 160, 122, 0.16),
     tabBg = CLEAR, tabText = hex("#A39E97"), tabBorder = edge(1, "flat", CLEAR), tabRadius = 0,
     tabOnBg = rgba(0, 0, 0, 0.4), tabOnText = hex("#FFFFFF"), tabOnLine = FV_TAN,
-    scTrack = CLEAR, scThumb = hex("#D9D4CC"), scRadius = 0,
+    scTrack = hex("#0a0806"), scThumb = FV_TAN, scRadius = 0,
     chkBg = hex("#0a0908"), chkBorder = edge(1, "flat", hex("#8a7a52")), chkMark = hex("#FFD100"),
     chkRadius = 0,
     slTrack = hex("#3a3632"), slTrackBorder = edge(0, "flat", CLEAR), slFill = FV_TAN,
@@ -886,5 +890,5 @@ register("forever", "WoW Forever", "Warm charcoal, black title bars with centere
     ["drawer.summarySet"] = hex("#E0C3A6"),
     ["card.bg"] = hex("#1c1a17"), ["card.border"] = hex("#2e2a26"),
     ["panel.bg"] = rgba(0, 0, 0, 0.3), ["panel.border"] = hex("#2e2a26"),
-    ["scroll.thumbOn"] = hex("#FFFFFF"),
+    ["scroll.thumbOn"] = FV_TAN, ["scroll.thumbOff"] = hex("#6e5a46"),
   })

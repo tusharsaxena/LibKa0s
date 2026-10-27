@@ -477,7 +477,7 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
-### test_skin_defs.lua (24)
+### test_skin_defs.lua (25)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -485,6 +485,7 @@ Total.
 - skin defs: geometry tokens equal Ka0s Default in all nine skins
 - skin defs: every skin's GameTooltip lines read on the client's dark tooltip
 - skin defs: every skin's text reads on its own window
+- skin defs: every skin's scroll bar draws a corridor on its window and a knob on the corridor
 - skin defs: every skin's set drawer label differs from its unset one
 - skin defs: every skin's bind-state and danger colors read on its own window
 - skin defs: the bind-state tokens inherit Ka0s Default unless a skin overrides for legibility
@@ -539,7 +540,7 @@ Total.
 - skin paint: the getters answer the owner's skin
 - skin paint: a skin's size scales each string from its own, one font object per size
 
-### test_skin_paint_controls.lua (30)
+### test_skin_paint_controls.lua (28)
 
 - skin controls: Button on Ka0s Default is LootHistory's flat button's paint
 - skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
@@ -553,10 +554,8 @@ Total.
 - skin controls: Checkbox draws a box and a mark that follows the check
 - skin controls: WoW Default's checkbox is the client's art; Ka0s Default draws a square box
 - skin controls: a disabled Button's label reads text.disabled, and comes back when enabled
-- skin controls: ScrollBar's thumb states and the console's own bar match today's tints
-- skin controls: a skin's thumb fill lies over the bar's own thumb and follows it
-- skin controls: exactly the five skins the owner named set a thumb fill
-- skin controls: a bar's own thumb is tinted and its track drawn under every skin
+- skin controls: ScrollBar's knob takes the bar's on / off state, and the console's own bar is filled
+- skin controls: one flat knob over the bar's faded thumb art, following the thumb, in every skin
 - skin controls: Slider is painted under every skin, Ka0s Default's thin bar included
 - skin controls: Tab paints its state, SetTabSelection moves it, and a repaint keeps it
 - skin controls: WoW Default's tabs are the client's tab art; a stock tab is faded under every skin
@@ -3443,9 +3442,9 @@ Total.
 | test_glow.lua | 15 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
-| test_skin_defs.lua | 24 |
+| test_skin_defs.lua | 25 |
 | test_skin_paint.lua | 32 |
-| test_skin_paint_controls.lua | 30 |
+| test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 22 |
 | test_widgets.lua | 58 |
@@ -3556,4 +3555,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3030** |
+| **Total** | **3029** |

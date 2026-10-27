@@ -143,6 +143,29 @@ end)
 -- OptionsDrawer draws a drawer's label in drawer.textSet when its value is set and in drawer.text
 -- when it is not: the label color is the set/unset cue, so the two must be told apart at a glance.
 -- "Apart" is one channel at least 0.2 away (Azeroth's #2A1C0C / #3A2412 differed by 0.06).
+-- A color over another, by its alpha (the client's blend), opaque.
+local function over(top, under)
+  local a = top[4] or 1
+  return { top[1] * a + under[1] * (1 - a), top[2] * a + under[2] * (1 - a), top[3] * a + under[3] * (1 - a), 1 }
+end
+
+test("skin defs: every skin's scroll bar draws a corridor on its window and a knob on the corridor", function()
+  -- The owner's round-5 notes: "a knob and a scroll corridor" in every skin; Azeroth's was the
+  -- example (corridor 1.12). red under: a clear or window-colored `scroll.track` (Obsidian, Glass,
+  -- WoW Forever and High Contrast drew none), or a knob that sinks into it.
+  for _, key in ipairs(KEYS) do
+    local t = skinLib():ResolveSkin(key)
+    local win = over(t["win.bg"], { 0, 0, 0, 1 })
+    local corridor = over(t["scroll.track"], win)
+    local c = contrast(corridor, win)
+    assertTrue(c >= 1.12, ("%s: corridor %.2f on its window, want >= 1.12"):format(key, c))
+    for _, name in ipairs({ "scroll.thumb", "scroll.thumbOn" }) do
+      local k = contrast(over(t[name], corridor), corridor)
+      assertTrue(k >= 3, ("%s: %s %.2f on its corridor, want >= 3"):format(key, name, k))
+    end
+  end
+end)
+
 test("skin defs: every skin's set drawer label differs from its unset one", function()
   local Skin = skinLib()
   for _, key in ipairs(KEYS) do
@@ -306,13 +329,12 @@ test("skin defs: WoW Default wears the Blizzard art docs/api/Skin names", functi
   assertEqual(t["input.borderSize"], 1, "inputs: 1px")
   assertEqual(t["nav.borderSize"], 1, "the nav rail: 1px")
   assertEqual(t["tab.onTexture"], "Interface\\OptionsFrame\\UI-OptionsFrame-ActiveTab", "active tab")
-  assertEqual(t["scroll.thumbTexture"], "Interface\\Buttons\\UI-ScrollBar-Knob", "scroll knob")
   assertEqual(t["check.texture"], "Interface\\Buttons\\UI-CheckBox-Up", "checkbox box")
   assertEqual(t["check.markTexture"], "Interface\\Buttons\\UI-CheckBox-Check", "checkbox tick")
 end)
 
-local ART_TOKENS = { "win.bgTexture", "tab.texture", "tab.onTexture", "scroll.thumbTexture",
-  "check.texture", "check.markTexture" }
+local ART_TOKENS = { "win.bgTexture", "tab.texture", "tab.onTexture", "check.texture",
+  "check.markTexture" }
 
 test("skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art", function()
   local t = skinLib():ResolveSkin("midnight")

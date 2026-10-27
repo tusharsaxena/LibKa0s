@@ -317,27 +317,33 @@ end)
 
 -- ── scroll bars and sliders ──────────────────────────────────────────────────────────────────
 
-test("skin controls: ScrollBar's thumb states and the console's own bar match today's tints", function()
-  -- OptionsScroll.lua THUMB_ON / THUMB_OFF; DebugLog.lua the console's track and thumb
+test("skin controls: ScrollBar's knob takes the bar's on / off state, and the console's own bar is filled", function()
+  -- OptionsScroll.lua THUMB_ON / THUMB_OFF; DebugLog.lua the console's track and thumb. red under: a
+  -- state that tints the client's art (SkinPaintControls minor 6) instead of the flat knob.
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
-  local tr = F.tracer(m)
   local sb = m.CreateFrame("Slider", nil, m.UIParent)
   local thumb = sb:CreateTexture()
   rawset(sb, "GetThumbTexture", function() return thumb end)
-  tr.watch(sb); tr.watch(thumb)
-  tr.start(); S.ScrollBar(sb, { state = "on" }); S.ScrollBar(sb, { state = "off" }); tr.stop()
-  assertEqual(F.only(tr, PAINT), "#2:SetVertexColor(1,1,1,1)\n#2:SetVertexColor(0.500,0.500,0.500,0.600)")
+  S.ScrollBar(sb, { state = "on" })
+  local knob = F.region(Skin, sb, "knob")
+  assertEqual(F.rgba(survey(m, knob).color), F.tok(Skin, "ka0s", "scroll.thumbOn"), "on")
+  S.ScrollBar(sb, { state = "off" })
+  assertEqual(F.rgba(survey(m, knob).color), F.tok(Skin, "ka0s", "scroll.thumbOff"), "off")
+  assertEqual(F.rgba(survey(m, F.region(Skin, sb, "track")).color), F.tok(Skin, "ka0s", "scroll.track"),
+    "the always-shown bar has its corridor too")
+  local tr = F.tracer(m)
   local bar = m.CreateFrame("Frame")
   local track, own = bar:CreateTexture(), bar:CreateTexture()
   tr.watch(bar); tr.watch(track); tr.watch(own)
   tr.start(); S.ScrollBar(bar, { track = track, thumb = own }); tr.stop(); tr.restore()
-  assertEqual(F.only(tr, PAINT), "#4:SetColorTexture(0.240,0.240,0.270,0.300)\n#5:SetColorTexture(0.500,0.500,0.550,0.850)")
+  assertEqual(F.only(tr, PAINT), "#2:SetColorTexture(0.240,0.240,0.270,0.400)\n#3:SetColorTexture(0.500,0.500,0.550,0.850)")
 end)
 
-test("skin controls: a skin's thumb fill lies over the bar's own thumb and follows it", function()
-  -- SkinDefs minor 9, SkinPaintControls minor 6 (the owner's note: the thumb barely visible in five
-  -- skins). red under: a ScrollBar that only tints the thumb art, or a fill that outlives a hidden thumb.
+test("skin controls: one flat knob over the bar's faded thumb art, following the thumb, in every skin", function()
+  -- SkinPaintControls minor 7 (the owner's round-5 notes: High Contrast drew two knobs). red under: a
+  -- ScrollBar that tints the thumb art, leaves it shown under the knob, or a knob that outlives a
+  -- hidden thumb.
   local m, Skin = F.env()
   -- The client's hooksecurefunc: the fixture's is a recorder that never calls through.
   m.hooksecurefunc = function(t, name, fn)
@@ -350,48 +356,29 @@ test("skin controls: a skin's thumb fill lies over the bar's own thumb and follo
   thumb:SetSize(16, 24)
   rawset(sb, "GetThumbTexture", function() return thumb end)
   S.ScrollBar(sb)
-  local fill = F.region(Skin, sb, "thumbFill")
-  assertTrue(fill ~= nil, "a fill is laid")
-  assertEqual(F.rgba(survey(m, fill).color), F.tok(Skin, "contrast", "scroll.thumbFill"), "in the skin's fill color")
-  assertEqual(survey(m, fill).layer, "OVERLAY", "over the thumb art")
-  local _, rel = fill:GetPoint(1)
+  local knob = F.region(Skin, sb, "knob")
+  assertTrue(knob ~= nil, "a knob is laid")
+  assertEqual(thumb:GetAlpha(), 0, "the client's knob art is faded: one knob, not two")
+  assertEqual(survey(m, thumb).vertex, nil, "and never tinted")
+  assertEqual(F.rgba(survey(m, knob).color), F.tok(Skin, "contrast", "scroll.thumb"), "in the skin's knob color")
+  assertEqual(survey(m, knob).layer, "OVERLAY", "over the bar")
+  local _, rel = knob:GetPoint(1)
   assertTrue(rel == thumb, "anchored to the thumb, so it moves with it")
-  assertTrue(survey(m, fill).shown, "shown with the thumb")
+  assertTrue(survey(m, knob).shown, "shown with the thumb")
   thumb:Hide()
-  assertTrue(not survey(m, fill).shown, "hidden with the thumb")
+  assertTrue(not survey(m, knob).shown, "hidden with the thumb")
   thumb:Show()
-  assertTrue(survey(m, fill).shown, "and back with it")
-  S.ScrollBar(sb, { state = "off" })
-  assertEqual(survey(m, fill).color[4], F.tok(Skin, "contrast", "scroll.thumbFill"):match("([%d.]+)$") * 0.5,
-    "half alpha on a bar that is off")
-  Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertTrue(not survey(m, fill).shown, "Ka0s Default sets none, so none is drawn")
-end)
-
-test("skin controls: exactly the five skins the owner named set a thumb fill", function()
-  local _, Skin = F.env()
-  local want = { obsidian = true, contrast = true, ember = true, wow = true, midnight = true }
+  assertTrue(survey(m, knob).shown, "and back with it")
   for _, def in ipairs(Skin:Skins()) do
-    local has = Skin:ResolveSkin(def.key)["scroll.thumbFill"] ~= nil
-    assertEqual(has, want[def.key] == true, def.key .. "'s thumb fill")
+    Skin:SetChoice(OWNER, "ka0s", def.key)
+    assertEqual(F.rgba(survey(m, knob).color), F.tok(Skin, def.key, "scroll.thumb"), def.key .. "'s knob")
+    assertEqual(F.rgba(survey(m, F.region(Skin, sb, "track")).color), F.tok(Skin, def.key, "scroll.track"),
+      def.key .. "'s corridor")
+    assertEqual(thumb:GetAlpha(), 0, def.key .. ": the art stays faded")
   end
-end)
-
-test("skin controls: a bar's own thumb is tinted and its track drawn under every skin", function()
-  local m, Skin = F.env()
-  local S = F.owner(Skin, OWNER)
-  local sb = m.CreateFrame("Slider", nil, m.UIParent)
-  local thumb = sb:CreateTexture()
-  rawset(sb, "GetThumbTexture", function() return thumb end)
-  S.ScrollBar(sb)
-  assertEqual(F.rgba(survey(m, thumb).vertex), F.tok(Skin, "ka0s", "scroll.thumb"), "Ka0s Default tints it (minor 6)")
-  Skin:SetChoice(OWNER, "ka0s", "ember")
-  assertEqual(F.rgba(survey(m, thumb).vertex), F.tok(Skin, "ember", "scroll.thumb"))
-  assertEqual(F.rgba(survey(m, F.region(Skin, sb, "track")).color), F.tok(Skin, "ember", "scroll.track"))
-  Skin:SetChoice(OWNER, "ka0s", "wow")
-  assertEqual(survey(m, thumb).texture, Skin:ResolveSkin("wow")["scroll.thumbTexture"], "WoW Default's knob")
-  Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertEqual(F.rgba(survey(m, F.region(Skin, sb, "track")).color), F.tok(Skin, "ka0s", "scroll.track"), "its own track")
+  Skin.__P.unpaint(Skin.painted[sb], sb)
+  assertEqual(thumb:GetAlpha(), 1, "given back, the art returns")
+  assertTrue(not survey(m, knob).shown, "and the knob goes")
 end)
 
 test("skin controls: Slider is painted under every skin, Ka0s Default's thin bar included", function()

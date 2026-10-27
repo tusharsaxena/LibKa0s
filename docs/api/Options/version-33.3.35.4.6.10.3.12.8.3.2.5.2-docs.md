@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 33.3.35.4.6.10.3.12.7.3.2.5.2
+# `LibKa0s-Options-1.0` — version 33.3.35.4.6.10.3.12.8.3.2.5.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
