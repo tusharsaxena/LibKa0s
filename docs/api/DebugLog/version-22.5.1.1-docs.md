@@ -905,6 +905,10 @@ tested, unused field otherwise reads as one to every reader who finds it.
 The API is **additive-only**: a member or descriptor field may be added in a later minor, never
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
+Version 22.5.1.1 changes one thing a host can observe: a report's `LibKa0s running:` line also lists
+the Toast file when that major runs in the client. A host suite that pins `DebugLogDiagnostics 4`
+re-pins it at 5.
+
 Version 22.4.1.1 adds a file and changes nothing a host without a registered skin owner can observe:
 the console is built by `DebugLogWindow.lua` with the same paint calls. A registered owner's console
 wears and follows its skin. Re-vendor the whole folder, so the new file arrives with the shell.

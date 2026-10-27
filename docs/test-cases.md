@@ -407,7 +407,7 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
-### test_toast.lua (44)
+### test_toast.lua (48)
 
 - toast: the major loads at minor 1 and reports its one file
 - toast: without Core the major is absent (no NewLibrary)
@@ -427,7 +427,9 @@ Total.
 - toast: it closes after the host's duration and the next one shows with its own countdown
 - toast: a duration that is missing or not a positive number is DURATION
 - toast: hovering pauses the countdown and leaving resumes it with the time it had left
-- toast: leaving onto the toast itself (a child control) keeps it paused
+- toast: leaving onto the toast itself (a child control) keeps it paused until the pointer goes
+- toast: the countdown resumes off the close mark even after its scripts were set again
+- toast: closing a toast while a leave watch runs cancels the watch
 - toast: a resumed countdown never has less than a second
 - toast: a sticky toast has no countdown and pausing it does nothing
 - toast: the close mark closes it and the next one shows
@@ -444,6 +446,8 @@ Total.
 - toast: a drag saves the point times the scale, so the anchor survives a scale change
 - toast: ResetPosition hands the host nil and goes back to the default
 - toast: Hold puts the toast on screen back at the head and shows nothing until Release
+- toast: a held toast gets its full duration again when it returns
+- toast: Preview shows past a Hold without releasing it
 - toast: Clear is the stand-down: nothing on screen, nothing waiting, no countdown, no hold
 - toast: Clear before anything was shown builds nothing
 - toast: Preview shows now, sticky, and the toast it covered waits at the head
@@ -3488,7 +3492,7 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
-| test_toast.lua | 44 |
+| test_toast.lua | 48 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
 | test_skin_defs.lua | 24 |
@@ -3604,4 +3608,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3074** |
+| **Total** | **3078** |

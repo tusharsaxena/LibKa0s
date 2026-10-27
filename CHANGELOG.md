@@ -24,6 +24,12 @@ its v1.78.0 minor, and **test kit revision 43**, until an entry below moves one.
 majors across fifty-two files**: one major and one file added (`Toast.lua`), and no `NEEDS_*` floor
 rises.
 
+**Pending standard change, before the tag.** The Ka0s WoW Addon Standard has to move with this
+release, upstream in WowAddonStandards: library-stack-§7's module table gains a `Toast` row and is
+recounted to **nineteen majors across fifty-two files**, and frame-layering-§6 (library-owned tiers)
+gains the row `LibKa0s-Toast-1.0` toast | `HIGH` | inherited | toplevel / clamped. It lands upstream
+before v1.79.0 is tagged, held until this branch merges (the owner's standards-push rule).
+
 ### Toast minor 1: the alert-toast shell
 
 The new major `LibKa0s-Toast-1.0`, documented in

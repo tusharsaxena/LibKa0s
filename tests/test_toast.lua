@@ -277,15 +277,59 @@ test("toast: hovering pauses the countdown and leaving resumes it with the time 
   assertEqual(lastTimer(m).delay, 5, "8 seconds less the 3 it was on screen before the hover")
 end)
 
-test("toast: leaving onto the toast itself (a child control) keeps it paused", function()
+test("toast: leaving onto the toast itself (a child control) keeps it paused until the pointer goes", function()
+  local t, m = newToast({ duration = 8 })
+  m.__now = 0
+  t:Show("a")
+  local f = t:Frame()
+  m.__now = 2
+  f:__fire("OnEnter")
+  f.__over = true
+  f:__fire("OnLeave")
+  assertTrue(t:Stats().paused)
+  assertEqual(live(m), 1, "only the leave watch runs, no countdown")
+  m.__fireTimers()
+  assertTrue(t:Stats().paused, "still over the toast: still paused")
+  f.__over = false
+  m.__fireTimers()
+  assertFalse(t:Stats().paused, "the pointer went: the countdown resumes")
+  assertEqual(lastTimer(m).delay, 6)
+end)
+
+test("toast: the countdown resumes off the close mark even after its scripts were set again", function()
+  local t, m = newToast({ duration = 8 })
+  m.__now = 0
+  t:Show("a")
+  local f = t:Frame()
+  local close = f.close
+  -- What Core minor 13 does to a skin owner's close mark on every skin switch: SetScript, which
+  -- drops the toast's hooks.
+  close:SetScript("OnEnter", function() end)
+  close:SetScript("OnLeave", function() end)
+  m.__now = 3
+  f:__fire("OnEnter")
+  f.__over = true
+  f:__fire("OnLeave")         -- frame -> close mark
+  close:__fire("OnEnter")
+  f.__over = false
+  close:__fire("OnLeave")     -- close mark -> straight off the toast; no hook fires
+  m.__fireTimers()
+  assertFalse(t:Stats().paused)
+  assertEqual(lastTimer(m).delay, 5, "the countdown resumes with the time it had left")
+  m.__fireTimers()
+  assertNil(t:Current(), "and the toast closes")
+end)
+
+test("toast: closing a toast while a leave watch runs cancels the watch", function()
   local t, m = newToast()
   t:Show("a")
   local f = t:Frame()
   f:__fire("OnEnter")
   f.__over = true
   f:__fire("OnLeave")
+  assertEqual(live(m), 1)
+  t:Dismiss()
   assertEqual(live(m), 0)
-  assertTrue(t:Stats().paused)
 end)
 
 test("toast: a resumed countdown never has less than a second", function()
@@ -510,6 +554,32 @@ test("toast: Hold puts the toast on screen back at the head and shows nothing un
   assertEqual(t:Current(), "a", "the held toast shows first")
   t:Dismiss()
   assertEqual(t:Current(), "b")
+end)
+
+test("toast: a held toast gets its full duration again when it returns", function()
+  local t, m = newToast({ duration = 6 })
+  m.__now = 0
+  t:Show("a")
+  m.__now = 4
+  t:Hold()
+  m.__now = 50
+  t:Release()
+  assertEqual(t:Current(), "a")
+  assertEqual(lastTimer(m).delay, 6, "not the 2 it had left")
+end)
+
+test("toast: Preview shows past a Hold without releasing it", function()
+  local t, _, _, Toast = newToast()
+  t:Hold()
+  t:Show("x")
+  t:Preview("s")
+  assertEqual(t:Current(), "s", "the preview shows while held")
+  assertTrue(t:Stats().held, "the hold stands")
+  t:Remove(Toast.PREVIEW)
+  assertNil(t:Current(), "what waits behind the hold still waits")
+  assertTrue(t:Stats().held)
+  t:Release()
+  assertEqual(t:Current(), "x")
 end)
 
 test("toast: Clear is the stand-down: nothing on screen, nothing waiting, no countdown, no hold", function()

@@ -70,6 +70,7 @@ lib.PREVIEW = "LibKa0s-Toast-preview"    -- the key Preview queues under
 local TAG = "TOAST"
 local MIN_RESUME = 1    -- a resumed countdown never has less than this left
 local CLOSE_INSET = 4   -- the close mark's offset from the top-right corner
+local WATCH_POLL = 0.2  -- seconds between checks that the pointer left the toast (watchLeave)
 
 -- ── small readers ────────────────────────────────────────────────────────────────────────────
 
@@ -120,17 +121,41 @@ local function startTimer(S, seconds)
   S.timer = handle
 end
 
+local function cancelWatch(S)
+  if S.watch and S.watch.Cancel then S.watch:Cancel() end
+  S.watch = nil
+end
+
 local function pause(S)
+  cancelWatch(S)   -- the control the pointer entered now owns the resume
   if not (S.current and S.dueAt) then return end
   S.remaining = math.max(S.dueAt - GetTime(), 0)
   cancelTimer(S)
 end
 
 local function resume(S)
+  cancelWatch(S)
   if not (S.current and S.remaining) then return end
   local left = S.remaining
   S.remaining = nil
   startTimer(S, math.max(left, MIN_RESUME))
+end
+
+--- The pointer left onto something still over the toast (a child control). The countdown must not
+--- rely on that child's OnLeave hook to resume it: a library-painted child's scripts can be SetScript
+--- again under it (Core minor 13's close mark for a skin owner, on every skin switch), which drops
+--- the hook. So poll until the pointer is off the toast, then resume.
+local function watchLeave(S)
+  cancelWatch(S)
+  if not (S.current and S.remaining) then return end
+  local handle
+  handle = C_Timer.NewTimer(WATCH_POLL, function()
+    if S.watch ~= handle then return end
+    S.watch = nil
+    local f = S.frame
+    if f and f.IsMouseOver and f:IsMouseOver() == true then watchLeave(S) else resume(S) end
+  end)
+  S.watch = handle
 end
 
 -- ── placement ────────────────────────────────────────────────────────────────────────────────
@@ -174,12 +199,13 @@ end
 
 --- Hover pauses the countdown, leaving resumes it, and a right-click closes: on the frame and on
 --- every control the host attaches, so a pointer moving from the frame onto a button keeps it held.
+--- Leaving onto something still over the toast watches for the pointer to go (watchLeave).
 local function hookPointer(S, widget, set)
   local wire = set and widget.SetScript or widget.HookScript
   wire(widget, "OnEnter", function() pause(S) end)
   wire(widget, "OnLeave", function()
     local f = S.frame
-    if not (f and f.IsMouseOver and f:IsMouseOver() == true) then resume(S) end
+    if f and f.IsMouseOver and f:IsMouseOver() == true then watchLeave(S) else resume(S) end
   end)
   wire(widget, "OnMouseUp", function(_, button)
     if button == "RightButton" then dismiss(S) end
@@ -272,6 +298,7 @@ end
 --- Take the toast on screen down, without showing the next. Answers the entry it held.
 local function takeDown(S)
   cancelTimer(S)
+  cancelWatch(S)
   local entry = S.current
   if S.moving then S.frame:StopMovingOrSizing() end
   S.current, S.remaining, S.moving = nil, nil, false
@@ -383,15 +410,14 @@ end
 
 --- Show `payload` now, sticky, so it can be seen and placed (the host's test mode): a toast on
 --- screen goes back to the head of the queue, and a previous preview is replaced. It closes like any
---- toast, or through Remove(Toast.PREVIEW).
+--- toast, or through Remove(Toast.PREVIEW). It shows past a Hold without releasing it: the preview
+--- is presented directly rather than pumped, so what waits behind a hold still waits for Release.
 function METHODS:Preview(payload)
   local S = state(self)
   removeKey(S, lib.PREVIEW)
   local entry = takeDown(S)
   if entry and entry.key ~= lib.PREVIEW then enqueue(S, entry, true) end
-  enqueue(S, { payload = payload, key = lib.PREVIEW, sticky = true }, true)
-  S.held = false
-  pump(S)
+  if not present(S, { payload = payload, key = lib.PREVIEW, sticky = true }) then pump(S) end
 end
 
 --- The payload on screen and its key, or nil.
