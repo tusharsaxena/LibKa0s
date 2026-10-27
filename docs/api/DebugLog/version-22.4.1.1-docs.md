@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **4** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **1** |
 | Shipped in | v1.78.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 21.3.1](./version-21.3.1-docs.md) (shipped in v1.77.0) — the same surface in three files; its report's identity header did not name Skin, and its console wore Core's skin whatever its `addonName` (version 21.4.1, which named Skin, never shipped) |
-| Superseded by | — |
+| Superseded by | [version 22.5.1.1](./version-22.5.1.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 22, DebugLogDiagnostics = 4, DebugLogGates = 1, DebugLogWindow = 1 }` |
 
@@ -947,3 +947,9 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
+
+## Moving to version 22.5.1.1
+
+**Take it; nothing moves.** Version 22.5.1.1 is this surface; a report's identity header also lists
+`LibKa0s-Toast-1.0`'s file (`Toast`) when that major runs in the client. A host suite that pins
+`DebugLogDiagnostics 4` re-pins it at 5. See [version 22.5.1.1](./version-22.5.1.1-docs.md).

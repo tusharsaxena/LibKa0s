@@ -8,6 +8,7 @@
 	<Script file="Pool.lua"/>
 	<Script file="Item.lua"/>
 	<Script file="Glow.lua"/>
+	<Script file="Toast.lua"/>
 	<Script file="Media.lua"/>
 	<Script file="MediaIcons.lua"/>
 	<Script file="Skin.lua"/>

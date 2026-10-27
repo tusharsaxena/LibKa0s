@@ -61,7 +61,7 @@ test("diag: the caps are pinned as literals, and the file registers under the ma
   -- Literals on purpose: these are the numbers the standard and every consumer's docs cite.
   assertEqual(debuglog.DIAG_MAX_LINES, 1200)
   assertEqual(debuglog.DIAG_MAX_PER_LIST, 40)
-  assertEqual(debuglog.MODULES.DebugLogDiagnostics, 4)
+  assertEqual(debuglog.MODULES.DebugLogDiagnostics, 5)
   assertEqual(debuglog.__diagShellMinor, debuglog.MINOR, "paired on the live shell")
   assertEqual(debuglog.STRINGS.DIAG_WRITTEN,
     "Diagnostic report written to the debug console: %d lines. Use Copy to share it.")
@@ -95,7 +95,7 @@ test("diag: the identity header names the host, the client, the flags and the ru
     assertTrue(has(t, "debug logging: off"), "the flag, printed")
     assertTrue(has(t, "combat: InCombatLockdown=false UnitAffectingCombat=false"), "both reads")
     assertTrue(has(t, "LibKa0s running: "), "the running minors")
-    assertTrue(has(t, "DebugLogDiagnostics 4"), "this file among them")
+    assertTrue(has(t, "DebugLogDiagnostics 5"), "this file among them")
     assertTrue(has(t, "DebugLog " .. debuglog.MINOR), "and its shell")
   end)
 

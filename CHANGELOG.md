@@ -10,6 +10,58 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.79.0 — unreleased
+
+Opened 2026-10-28, on `feat/2026-10-28-toast-1.0` (a worktree off `master`, beside the skin work
+still in flight on another branch): the alert-toast shell approved in
+[LibKa0s#60](https://github.com/tusharsaxena/LibKa0s/issues/60), for Ka0s DPS Race's new-best toast
+(DpsRace#5) and Drop Watcher's upgrade toast. Not tagged; the release order against v1.78.0's
+open work is settled at finalize.
+
+Versions in this release: **Toast minor 1** (the new major `LibKa0s-Toast-1.0`, key **1**) and
+**DebugLogDiagnostics minor 5** (`LibKa0s-DebugLog-1.0` key **22.5.1.1**); every other file still at
+its v1.78.0 minor, and **test kit revision 43**, until an entry below moves one. Now **nineteen
+majors across fifty-two files**: one major and one file added (`Toast.lua`), and no `NEEDS_*` floor
+rises.
+
+### Toast minor 1: the alert-toast shell
+
+The new major `LibKa0s-Toast-1.0`, documented in
+[docs/api/Toast/version-1-docs.md](docs/api/Toast/version-1-docs.md), promoted from Drop Watcher's
+`modules/Toast.lua` (LibKa0s#60). `Toast:New(d)` answers a toast instance:
+
+- **One at a time.** `Show(payload, opts)` queues; the next payload shows when the current one goes,
+  and past `d.maxQueue` (default `MAX_QUEUE`, 5) the oldest waiting one is dropped. `opts.key` names a
+  payload for `Remove(key)`; `opts.sticky` gives it no countdown.
+- **Lifetime.** It closes after `d.duration` (default `DURATION`, 8 seconds); the countdown pauses
+  while the pointer is over the toast or a control attached with `Attach(widget)`, and resumes with
+  the time it had left (never under a second). The close mark (Core's `MakeCloseButton`) and a
+  right-click anywhere close it.
+- **Placement.** Draggable with the left button only while `d.draggable` answers true (the host's
+  test mode); the point goes to `d.setPosition` in UIParent's units and comes back through
+  `d.getPosition`, so `d.scale` grows or shrinks the toast about the saved anchor. `Refresh` re-reads
+  both; `ResetPosition` hands the host nil.
+- **Chrome.** frame-layering's T5 alert tier (`HIGH`, toplevel, mouse-enabled, clamped), Core's
+  `ApplySkin` with the host's `d.owner` (the owner's skin where Core minor 13 and the Skin major can
+  give it, Core's `SKIN` otherwise), and an optional alert sound (`d.sound`, `d.soundKit`).
+- **The content is the host's.** `d.build(frame, payload)` is the one presentation argument; it
+  answers the frame's size, or `false` to skip the payload, and a raise costs only its payload.
+- **No behavior flags.** `Clear()` is the stand-down; `Hold()` and `Release()` let a host keep alerts
+  off screen (Drop Watcher's combat hold) without a combat flag in the library; `Preview(payload)` is
+  test mode's sticky placement toast, ended with `Remove(Toast.PREVIEW)`.
+
+It needs Core minor 1 and calls only `ApplySkin` and `MakeCloseButton`, each presence-checked, so a
+consumer can vendor `Toast.lua` alone beside the v1.77.0 payload (Ka0s DPS Race does, until its next
+full re-vendor). New suite: `tests/test_toast.lua`. Consumers: none adopted yet; Drop Watcher and
+Ka0s DPS Race are the intended two ([docs/api/CONSUMERS.md](docs/api/CONSUMERS.md)).
+
+### DebugLogDiagnostics minor 5: the identity header names Toast
+
+`LibKa0s-DebugLog-1.0` key 22.5.1.1, documented in
+[docs/api/DebugLog/version-22.5.1.1-docs.md](docs/api/DebugLog/version-22.5.1.1-docs.md). The
+report's `LibKa0s running:` line lists `Toast` after `Glow`, in `tests/majors.lua` order; a client
+without the major prints the same header as before. No member change.
+
 ## v1.78.0 — 2026-10-25
 
 Opened 2026-10-25. Skinning, leg 1: the LibKa0s skin engine, its paint primitives and the skin

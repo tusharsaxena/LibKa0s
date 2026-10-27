@@ -66,6 +66,7 @@ the file you need:
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
+| `LibKa0s-Toast-1.0` | `<Toast>` | `LibStub("LibKa0s-Toast-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Skin-1.0` | `<Skin>.<SkinDefs>.<SkinPaint>.<SkinPaintExtras>.<SkinPaintControls>.<SkinEUI>.<SkinAce>` (six numbers through 3.3.2.1.1.1, never shipped) | `LibStub("LibKa0s-Skin-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>.<WidgetsCopyWindow>` (five numbers through 15.1.5.3.3) | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
@@ -172,6 +173,12 @@ answers both "what does this version have?" and "when did I get it?".
 |---|---|---|---|
 | [1](./Glow/version-1-docs.md) | `Glow.lua` 1 | v1.75.0 | **Current** |
 
+### `LibKa0s-Toast-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Toast/version-1-docs.md) | **`Toast.lua` 1** (new: the alert-toast shell, LibKa0s#60) | v1.79.0 (unreleased) | **Current** |
+
 ### `LibKa0s-Media-1.0`
 
 | Version | Files | Shipped in | Status |
@@ -221,7 +228,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.4.1.1](./DebugLog/version-22.4.1.1-docs.md) | **`DebugLog.lua` 22** · **`DebugLogDiagnostics.lua` 4** (the identity header names Skin) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 1** (new: the console window peeled out of `DebugLog.lua`; it follows the console's skin owner) | v1.78.0 | **Current** |
+| [22.5.1.1](./DebugLog/version-22.5.1.1-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 5** (the identity header names Toast) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 1 | v1.79.0 (unreleased) | **Current** |
+| [22.4.1.1](./DebugLog/version-22.4.1.1-docs.md) | **`DebugLog.lua` 22** · **`DebugLogDiagnostics.lua` 4** (the identity header names Skin) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 1** (new: the console window peeled out of `DebugLog.lua`; it follows the console's skin owner) | v1.78.0 | Superseded |
 | [21.3.1](./DebugLog/version-21.3.1-docs.md) | **`DebugLog.lua` 21** (the console is toplevel and re-raises a shown StaticPopup) · `DebugLogDiagnostics.lua` 3 · `DebugLogGates.lua` 1 | v1.77.0 | Superseded |
 | [20.3.1](./DebugLog/version-20.3.1-docs.md) | `DebugLog.lua` 20 (comment-only: undeclared `close`, `copy`, `clear` draw blank) · `DebugLogDiagnostics.lua` 3 (the identity header names Glow and Sim) · `DebugLogGates.lua` 1 | v1.75.0 – v1.76.0 | Superseded |
 | [19.2.1](./DebugLog/version-19.2.1-docs.md) | `DebugLog.lua` 19 · `DebugLogDiagnostics.lua` 2 · `DebugLogGates.lua` 1 | v1.66.0 – v1.74.0 | Superseded |

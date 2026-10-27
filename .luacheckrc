@@ -68,6 +68,9 @@ read_globals = {
   -- and guarded. The tab defines its two dialogs in StaticPopupDialogs, keyed LIBKA0S_SKIN_*, when
   -- it shows them, so that one table's fields are writable; the table itself is never replaced.
   "C_UI", "ReloadUI", "StaticPopup_Show",
+  -- LibKa0s-Toast-1.0: the clock its countdown pauses and resumes on, and the alert sound, played
+  -- only when the host asks (PlaySound and SOUNDKIT read at call time and guarded).
+  "GetTime", "PlaySound", "SOUNDKIT",
   StaticPopupDialogs = { other_fields = true, read_only = false },
 }
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes
