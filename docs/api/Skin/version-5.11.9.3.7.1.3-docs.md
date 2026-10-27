@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 5.10.9.3.7.1.3
+# `LibKa0s-Skin-1.0` — version 5.11.9.3.7.1.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -717,8 +717,10 @@ answers nil.
   `font.titleSize`, and Ka0s Default's (12 and 14) are the reference: a string keeps its own stock
   size times the skin's size over the reference, so a 10pt caption under a skin at 12.5 is about
   10.4pt and every layout measured against the stock fonts holds. The skins sit within a point and a
-  half of the reference (`tests/test_skin_defs.lua`), each tuned to its face's measure: Barlow 12.5,
-  Cinzel titles 12.5 (a wide face), Atkinson 12 for Azeroth's body and 13.5 and 15 for High Contrast (which still reads larger).
+  half of the reference (`tests/test_skin_defs.lua`), each tuned to its face's measure (SkinDefs
+  minor 11): Inter, Bitter and Fira Sans 12, Nunito and Philosopher 12.5, Vollkorn 13 (a small
+  x-height), titles 14 (Bitter's 13.5, a wide face), and High Contrast 13.5 and 15 (which still
+  reads larger).
 - **Colors.** A text or vertex color whose alpha is 1 is passed as three components, as every call
   site writes them; fills and backdrop colors as four. A color from a nilable token, or any color on
   a stock target, records the prior color first and puts it back when the token resolves to nil.
@@ -888,12 +890,15 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
   nothing moves.
 - **Geometry.** The mockup's scrollbar widths (`scW`) are not translated: `title.height`,
   `scroll.width`, `scroll.gutter` and `win.inset` are Ka0s Default's in all nine skins.
-- **Fonts.** A mockup family is the shipped face that stands for it: Inter (Obsidian) and Manrope
-  (Glass) are Barlow, the face WoW Forever names; Ember and WoW Midnight draw Cinzel titles over Ka0s
-  Default's Friz Quadrata body, Azeroth Cinzel titles over an Atkinson Hyperlegible body, and WoW
-  Forever Atkinson Hyperlegible throughout (SkinDefs minor 8: Barlow read blurry); High Contrast is
-  Atkinson Hyperlegible, a step larger than the rest (*Sizes are relative*, above); Ka0s Default and
-  WoW Default set Friz Quadrata, the client's own face, by name.
+- **Fonts.** Every skin draws one family of its own, for body and titles alike (SkinDefs minor 11,
+  the owner's round-5 notes: titles that did not match the body, and faces three skins shared):
+  Obsidian Inter (its mockup's own face), Glass Nunito (rounded, as its corners are; the mockup's
+  Manrope), Azeroth Vollkorn (a dark old-style book face for the parchment), Ember Bitter (a sturdy
+  slab), WoW Midnight Philosopher, WoW Forever Fira Sans (crisp at small sizes) and High Contrast
+  Atkinson Hyperlegible, a step larger than the rest (*Sizes are relative*, above). Ka0s Default and
+  WoW Default set Friz Quadrata, the client's own face, by name: the one face two skins share,
+  because both are the client's look. Until minor 11 Obsidian and Glass drew Barlow, and Azeroth,
+  Ember and WoW Midnight titled in Cinzel, an all-capitals face no body text can share.
 - **GameTooltip lines.** `gtip.*` are drawn on Blizzard's dark GameTooltip whatever the skin, so
   each skin's `gtip.title`, `gtip.body` and `gtip.muted` read at 4.5:1 or better on
   `(.05, .05, .08)`; Azeroth's are its parchment and gold.
@@ -908,13 +913,13 @@ Default and Midnight, and WoW Forever's window texture).
 | Skin | Choice |
 |---|---|
 | **WoW Default** | The window is `BACKDROP_DIALOG_32_32`'s edge, LSM `Blizzard Dialog` (`Interface\DialogFrame\UI-DialogBox-Border`), `win.borderStyle = "nine:Blizzard Dialog"` at `win.borderSize = 32`, over `win.bgTexture = Interface\DialogFrame\UI-DialogBox-Background-Dark` tiled on a `#1E1C19` fill. Popups and menus wear the same edge at 16. Buttons are the red gradient `#B3200F` to `#640C05` under a 1px `#1A0805` rim with gold `#FFD100` text, white on hover, the client's own button; the primary a brighter red `#D42A16` to `#7E1007` under a 1px gold `#E0B040` edge with white text, gold on hover (both had a 2px `bevelOut` gold edge until SkinDefs minor 7). Tabs are `tab.texture` and `tab.onTexture` = `Interface\OptionsFrame\UI-OptionsFrame-ActiveTab`, one height in both states, the selected one told by its white label. The scroll knob is a flat gold `scroll.thumb` over a black corridor (the `UI-ScrollBar-Knob` art until SkinDefs minor 10); the checkbox is `check.texture = Interface\Buttons\UI-CheckBox-Up` with `check.markTexture = ...UI-CheckBox-Check`. Inputs, dropdowns and the nav rail have a 1px `bevelIn` gray edge, the primary button's size (2px until SkinDefs minor 7); the checkbox art is its own box, with no edge. The client's own fonts. |
-| **WoW Midnight** | Flat `WHITE8x8` everywhere, **no Blizzard art**: a 2px `#B08A3E` window and popup edge over a `#3D2F12` inner rule, the window gradient `#171A2E` to `#0F1020`, the title bar gradient `#2A2347` to `#17142B` with a centered `#F6D27A` Cinzel title, violet `#B48CFF` accent, night-violet gradient buttons (`#3A2F6B` to `#1D1838`) under a 1px `#B08A3E` gold edge with gold `#F6D27A` text, and a brighter violet primary (`#7A5AD6` to `#3F2C86`, `#F6D27A` edge, white text) since SkinDefs minor 7. |
-| **WoW Forever** | Warm brown charcoal `#2E251C` to `#18120D` (a step browner since SkinDefs minor 8) (the mockup's radial fill as a vertical gradient, **no window texture**), black `#050505` title bars with centered white titles, a tan `#C9A07A` accent, gold `#F2B33D` headings, thin 1px edges on every control, a `#9C7A58` primary with white text under its tan edge, Atkinson Hyperlegible (Barlow until SkinDefs minor 8, which read blurry; OWNER_SCOPE R4). |
+| **WoW Midnight** | Flat `WHITE8x8` everywhere, **no Blizzard art**: a 2px `#B08A3E` window and popup edge over a `#3D2F12` inner rule, the window gradient `#171A2E` to `#0F1020`, the title bar gradient `#2A2347` to `#17142B` with a centered `#F6D27A` Philosopher title, violet `#B48CFF` accent, night-violet gradient buttons (`#3A2F6B` to `#1D1838`) under a 1px `#B08A3E` gold edge with gold `#F6D27A` text, and a brighter violet primary (`#7A5AD6` to `#3F2C86`, `#F6D27A` edge, white text) since SkinDefs minor 7. |
+| **WoW Forever** | Warm brown charcoal `#2E251C` to `#18120D` (a step browner since SkinDefs minor 8) (the mockup's radial fill as a vertical gradient, **no window texture**), black `#050505` title bars with centered white titles, a tan `#C9A07A` accent, gold `#F2B33D` headings, thin 1px edges on every control, a `#9C7A58` primary with white text under its tan edge, Fira Sans (SkinDefs minor 11; Barlow until minor 8, which read blurry, then Atkinson Hyperlegible; OWNER_SCOPE R4). |
 | **Glass** | A `#121622` window at .88 on `nine:Ka0s Glass` at radius 8 (above), popups the same; flat 1px frosted control edges and boxless tabs underlined in the lilac `#B69CFF` accent; translucent white washes, `bar.gloss = true`. |
 | **High Contrast** | Black, a white 2px window edge and white 1px edges on every control (2px yellow on popups and menus; controls were 2px and popups 3px until SkinDefs minor 7), yellow `#FFE600` titles, accent, selection outline and focus; the primary button and the selected tab yellow on black (since SkinDefs minor 7; black on yellow before); Atkinson Hyperlegible 13.5 / 15. |
-| **Obsidian** | True-black flat panels (a `#0A0A0B` window and a `#050506` title bar since SkinDefs minor 7, darker than Ka0s Default's navy), hairline `#202024` edges, no inner rule, a cool blue `#4DB8FF` accent, a deeper `#2A86D1` primary button with white text, Barlow. |
-| **Azeroth** | Dark tooled leather `#2B1D12` (SkinDefs minor 8; light parchment until then, which did not read in Loot History) under a 3px leather `#6B4A22` edge and a `#8A6A36` inner rule, a `#1A110A` title bar with a gold Cinzel title, parchment `#E9DDBC` text in Atkinson Hyperlegible, gold `#E2B659` headings and accent, leather buttons with cream text, and the red wax seal for the primary button and the selected tab. As a dark skin it inherits Ka0s Default's semantic, quality, tooltip and chart colors. |
-| **Ember** | Charred brown, a `#6A2E17` edge over an amber inner rule, orange `#FF7A33` accent, gradient title bar and buttons, the primary's text white, Cinzel titles. |
+| **Obsidian** | True-black flat panels (a `#0A0A0B` window and a `#050506` title bar since SkinDefs minor 7, darker than Ka0s Default's navy), hairline `#202024` edges, no inner rule, a cool blue `#4DB8FF` accent, a deeper `#2A86D1` primary button with white text, Inter. |
+| **Azeroth** | Dark tooled leather `#2B1D12` (SkinDefs minor 8; light parchment until then, which did not read in Loot History) under a 3px leather `#6B4A22` edge and a `#8A6A36` inner rule, a `#1A110A` title bar with a gold title, parchment `#E9DDBC` text, Vollkorn throughout, gold `#E2B659` headings and accent, leather buttons with cream text, and the red wax seal for the primary button and the selected tab. As a dark skin it inherits Ka0s Default's semantic, quality, tooltip and chart colors. |
+| **Ember** | Charred brown, a `#6A2E17` edge over an amber inner rule, orange `#FF7A33` accent, gradient title bar and buttons, the primary's text white, Bitter. |
 
 An **art token** (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 `check.texture`, `check.markTexture`) draws that art at its own colors; the color token beside it
@@ -933,10 +938,10 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `font.body` | `Ka0s Barlow` | `Ka0s Atkinson` | `Ka0s Barlow` | `Ka0s Atkinson` | · | · | · | `Ka0s Atkinson` |
-| `font.title` | `Ka0s Barlow SemiBold` | `Ka0s Cinzel` | `Ka0s Barlow SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Cinzel` | · | `Ka0s Cinzel` | `Ka0s Atkinson Bold` |
-| `font.bodySize` | `12.5` | `12` | `12.5` | `13.5` | `12` | `12` | `12` | `12` |
-| `font.titleSize` | `14` | `12.5` | `14` | `15` | `12.5` | `14` | `12.5` | `14` |
+| `font.body` | `Ka0s Inter` | `Ka0s Vollkorn` | `Ka0s Nunito` | `Ka0s Atkinson` | `Ka0s Bitter` | · | `Ka0s Philosopher` | `Ka0s Fira Sans` |
+| `font.title` | `Ka0s Inter SemiBold` | `Ka0s Vollkorn Bold` | `Ka0s Nunito SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Bitter Bold` | · | `Ka0s Philosopher Bold` | `Ka0s Fira Sans SemiBold` |
+| `font.bodySize` | `12` | `13` | `12.5` | `13.5` | `12` | `12` | `12.5` | `12` |
+| `font.titleSize` | `14` | `14` | `14` | `15` | `13.5` | `14` | `14` | `14` |
 
 #### Window
 

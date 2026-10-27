@@ -438,11 +438,11 @@ Total.
 - media: an LSM without the locale bits gets a plain Register
 - media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
-- media: FONTS carries the five skin faces beside JetBrains Mono
-- media: each face names its own locales, and only JetBrains Mono reaches ruRU
+- media: FONTS carries the fourteen skin faces beside JetBrains Mono
+- media: each face names its own locales, and only a face with Cyrillic reaches ruRU
 - media: every OFL face ships with its license text beside it
-- media: RegisterLSM('X') registers 'Ka0s Barlow' under X's own libs folder, western only
-- media: a ruRU client keeps JetBrains Mono and is refused the western-only faces
+- media: RegisterLSM('X') registers 'Ka0s Inter' under X's own libs folder, each face with its mask
+- media: a ruRU client keeps every Cyrillic face and is refused the western-only ones
 - media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
 - media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
 - media: RegisterLSM registers the Glass border and background, and counts them
@@ -498,7 +498,7 @@ Total.
 - skin defs: only WoW Default names Blizzard art
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
 - skin defs: every font and border a skin names is shipped or an LSM default
-- skin defs: the font assignments follow the spec
+- skin defs: every skin draws one family of its own, for body and titles alike
 - skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's
 - skin defs: a hovered row is told apart from a selected one
 - skin defs: WoW Default's checkbox art is its only box

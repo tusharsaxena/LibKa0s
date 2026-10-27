@@ -68,7 +68,12 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- `scroll.thumb` over the faded thumb art (SkinPaintControls minor 7), and every skin's
 -- `scroll.track` is a corridor that reads against its window, `thumbOn` / `thumbOff` the knob's
 -- two states on the settings panel's bar.
-local DEFS_MINOR = 10
+-- Minor 11 (the owner's round-5 notes: titles that do not match the body, faces reused across skins,
+-- Obsidian's not modern enough): every skin draws one family of its own for body and titles alike,
+-- Obsidian Inter, Azeroth Vollkorn, Glass Nunito, High Contrast Atkinson Hyperlegible, Ember Bitter,
+-- WoW Midnight Philosopher and WoW Forever Fira Sans (Media minor 8 ships them); Ka0s Default and WoW
+-- Default draw the client's Friz Quadrata, the one face two skins share. Sizes retuned per face.
+local DEFS_MINOR = 11
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -510,10 +515,10 @@ local function register(key, label, desc, swatches, mock, extra)
     tokens = translate(mock, extra) })
 end
 
--- ── Obsidian ── mockup `obsidian`. Inter in the mockup; Barlow is the shipped face for it.
+-- ── Obsidian ── mockup `obsidian`. Inter, the mockup's own face (Barlow until minor 11).
 register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool blue accent.",
   { "#0a0a0b", "#202024", "#141416", "#4db8ff" }, {
-    font = "Ka0s Barlow", tfont = "Ka0s Barlow SemiBold", fs = 12.5, titleSize = 14,
+    font = "Ka0s Inter", tfont = "Ka0s Inter SemiBold", fs = 12, titleSize = 14,
     win = hex("#0A0A0B"), winBorder = edge(1, "flat", hex("#202024")), winInner = false, radius = 0,
     titleBg = hex("#050506"), titleColor = hex("#F2F2F4"), divider = hex("#1c1c20"),
     text = hex("#E8E8EC"), muted = hex("#9B9BA4"), accent = hex("#4DB8FF"),
@@ -552,14 +557,15 @@ register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool 
 
 -- ── Azeroth ── mockup `azeroth`, reworked dark (SkinDefs minor 8, the owner's ruling of 2026-10-26:
 -- "the light background is not going to work"). Dark tooled leather under a leather edge and a gold
--- inner rule, parchment text, gold headings and accent, Cinzel titles over an Atkinson Hyperlegible
--- body; leather buttons, and the red wax seal kept for the primary button and the selected tab. As a
--- dark skin it inherits Ka0s Default's semantic, quality, tooltip and chart colors.
+-- inner rule, parchment text, gold headings and accent, Vollkorn, a dark old-style book face, for body
+-- and titles alike (minor 11; Cinzel titles over an Atkinson body until then); leather buttons, and
+-- the red wax seal kept for the primary button and the selected tab. As a dark skin it inherits Ka0s
+-- Default's semantic, quality, tooltip and chart colors.
 local AZ_LEATHER, AZ_EDGE, AZ_GOLD = hex("#2B1D12"), hex("#6b4a22"), hex("#E2B659")
 local AZ_TEXT, AZ_WAX = hex("#E9DDBC"), grad(hex("#a3241a"), hex("#5e1009"))
-register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a red wax seal, Cinzel titles.",
+register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a red wax seal, Vollkorn type.",
   { "#2b1d12", "#6b4a22", "#e2b659", "#8e1b10" }, {
-    font = "Ka0s Atkinson", fs = 12, tfont = "Ka0s Cinzel", titleSize = 12.5,
+    font = "Ka0s Vollkorn", fs = 13, tfont = "Ka0s Vollkorn Bold", titleSize = 14,
     win = AZ_LEATHER, winBorder = edge(3, "flat", AZ_EDGE), winInner = hex("#8a6a36"), radius = 0,
     titleBg = hex("#1a110a"), titleColor = hex("#F5C542"), divider = AZ_EDGE,
     text = AZ_TEXT, muted = hex("#B8A07A"), accent = AZ_GOLD, closeColor = hex("#F5C542"),
@@ -595,15 +601,16 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
     ["scroll.thumbOn"] = hex("#8a6a36"), ["tab.glow"] = rgba(255, 255, 255, 0.10),
   })
 
--- ── Glass ── mockup `glass`. Manrope in the mockup; Barlow stands for it. No blur in WoW: the
--- window is translucent on the shipped Ka0s Glass art (radius 8), the one rounded skin. Minor 7 (the
+-- ── Glass ── mockup `glass`. Manrope in the mockup; Nunito, rounded as its corners are, stands for
+-- it (Barlow until minor 11). No blur in WoW: the window is translucent on the shipped Ka0s Glass
+-- art (radius 8), the one rounded skin. Minor 7 (the
 -- owner's 2026-10-26 notes): denser glass (.88), and only the window and its popups keep the rounded
 -- art; buttons, inputs, tabs and drawers take a flat 1px frosted edge, and the tabs Obsidian's
 -- boxless underline in lilac.
 local GLASS_EDGE = rgba(255, 255, 255, 0.18)
 register("glass", "Glass", "Translucent frosted panels with rounded corners and a lilac accent.",
   { "#121622", "#ffffff", "#b69cff", "#5aa9ff" }, {
-    font = "Ka0s Barlow", tfont = "Ka0s Barlow SemiBold", fs = 12.5, titleSize = 14,
+    font = "Ka0s Nunito", tfont = "Ka0s Nunito SemiBold", fs = 12.5, titleSize = 14,
     win = rgba(18, 22, 34, 0.88), winBorder = edge(8, "nine:Ka0s Glass", GLASS_EDGE),
     winInner = false, radius = 8,
     titleBg = rgba(255, 255, 255, 0.06), titleColor = hex("#FFFFFF"),
@@ -648,7 +655,7 @@ register("glass", "Glass", "Translucent frosted panels with rounded corners and 
   })
 
 -- ── High Contrast ── mockup `contrast`: black, white 2px edges, yellow focus, Atkinson
--- Hyperlegible 2pt above the body size the Barlow skins use. Minor 7 (the owner's 2026-10-26 notes:
+-- Hyperlegible a point and a half above Ka0s Default's body size. Minor 7 (the owner's 2026-10-26 notes:
 -- "borders are too thick"): every control edge is 1px; the window keeps its 2px edge and the popups
 -- drop from 3px to 2px.
 local HC_WHITE, HC_YELLOW = hex("#FFFFFF"), hex("#FFE600")
@@ -698,10 +705,11 @@ register("contrast", "High Contrast", "Black and white with yellow focus, crisp 
     ["icon.dim"] = hex("#B0B0B0"), ["sem.unknown"] = hex("#B0B0B0"), ["gtip.subtle"] = hex("#E0E0E0"),
   })
 
--- ── Ember ── mockup `ember`: charred brown, orange accent, Cinzel titles over the client body.
-register("ember", "Ember", "Charred browns lit by an orange accent, Cinzel titles.",
+-- ── Ember ── mockup `ember`: charred brown, orange accent, Bitter, a sturdy slab, for body and
+-- titles alike (minor 11; Cinzel titles over the client body until then).
+register("ember", "Ember", "Charred browns lit by an orange accent, Bitter type.",
   { "#1a0e0a", "#6a2e17", "#c98a3a", "#ff7a33" }, {
-    fs = 12, tfont = "Ka0s Cinzel", titleSize = 12.5,
+    font = "Ka0s Bitter", fs = 12, tfont = "Ka0s Bitter Bold", titleSize = 13.5,
     win = rgba(26, 14, 10, 0.95), winBorder = edge(1, "flat", hex("#6a2e17")),
     winInner = rgba(201, 138, 58, 0.45), radius = 0,
     titleBg = grad(hex("#3a1a0f"), hex("#24100a")), titleColor = hex("#FFB45A"),
@@ -801,13 +809,14 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
   })
 
 -- ── WoW Midnight ── mockup `midnight`: night blue and violet under gold. Flat WHITE8x8 with a 2px
--- #b08a3e window edge and the gradient tokens; no Blizzard art. Cinzel titles, centered. Minor 7 (the
+-- #b08a3e window edge and the gradient tokens; no Blizzard art. Philosopher for body and titles,
+-- the titles centered (minor 11; Cinzel titles over the client body until then). Minor 7 (the
 -- owner's 2026-10-26 notes): the buttons leave WoW Default's red for night violet under a gold edge,
 -- and the primary button is the brighter violet of the accent.
 local MN_GOLD, MN_BG = hex("#b08a3e"), grad(hex("#171a2e"), hex("#0f1020"))
-register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, centered Cinzel titles.",
+register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, centered Philosopher titles.",
   { "#171a2e", "#b08a3e", "#2a2347", "#b48cff" }, {
-    fs = 12, tfont = "Ka0s Cinzel", titleSize = 12.5,
+    font = "Ka0s Philosopher", fs = 12.5, tfont = "Ka0s Philosopher Bold", titleSize = 14,
     win = MN_BG, winBorder = edge(2, "flat", MN_GOLD), winInner = hex("#3d2f12"), radius = 0,
     titleBg = grad(hex("#2a2347"), hex("#17142b")), titleColor = hex("#F6D27A"),
     titleAlign = "CENTER", divider = hex("#4a3d1e"),
@@ -851,12 +860,13 @@ register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, c
 -- ── WoW Forever ── mockup `forever`, the EllesmereUI-on-WoW-Forever look (OWNER_SCOPE R4): warm
 -- charcoal (the mockup's radial fill as a vertical gradient, no texture), black title bars with
 -- centered white titles, a tan accent, gold headings, thin 1px edges. SkinDefs minor 8 (the owner's
--- notes): Atkinson Hyperlegible for the blurry Barlow, and the charcoal a step browner.
+-- notes): Atkinson Hyperlegible for the blurry Barlow, and the charcoal a step browner; minor 11
+-- (round 5: a face of its own, High Contrast keeps Atkinson): Fira Sans, crisp at small sizes.
 local FV_TAN, FV_EDGE = hex("#C9A07A"), hex("#3a3530")
 local FV_BG = grad(hex("#2e251c"), hex("#18120d"))
 register("forever", "WoW Forever", "Warm charcoal, black title bars with centered white titles, tan accent.",
   { "#231c15", "#3a3530", "#050505", "#c9a07a" }, {
-    font = "Ka0s Atkinson", tfont = "Ka0s Atkinson Bold", fs = 12, titleSize = 14,
+    font = "Ka0s Fira Sans", tfont = "Ka0s Fira Sans SemiBold", fs = 12, titleSize = 14,
     win = FV_BG, winBorder = edge(1, "flat", FV_EDGE), winInner = false, radius = 0,
     titleBg = hex("#050505"), titleColor = hex("#FFFFFF"), titleAlign = "CENTER",
     divider = hex("#2e2a26"), headColor = hex("#F2B33D"),

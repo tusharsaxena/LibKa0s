@@ -507,8 +507,8 @@ end)
 
 test("appearance: Ignore fonts moves the Skin major, writes the seam's third argument, and fonts go back live", function()
   -- red under: P.font without its __FontsIgnored gate (the string keeps the skin's face).
-  local m, Skin, lib = env({ lsm = { ["font:Ka0s Atkinson"] = "Fonts\\Atkinson.ttf",
-    ["font:Ka0s Atkinson Bold"] = "Fonts\\AtkinsonB.ttf" } })
+  local m, Skin, lib = env({ lsm = { ["font:Ka0s Fira Sans"] = "Fonts\\FiraSans.ttf",
+    ["font:Ka0s Fira Sans SemiBold"] = "Fonts\\FiraSansSB.ttf" } })
   local store = register(Skin, OWNER, "ka0s", "forever")
   local frame = F.window(m)
   -- The kit's template font strings report no prior face (the client's GameFontNormal does): give
@@ -516,7 +516,7 @@ test("appearance: Ignore fonts moves the Skin major, writes the seam's third arg
   frame.title:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
   Skin:For(OWNER).Shell(frame)
   local function face() return (frame.title:GetFont()) end
-  assertEqual(face(), "Fonts\\AtkinsonB.ttf", "the skin's face on the title")
+  assertEqual(face(), "Fonts\\FiraSansSB.ttf", "the skin's face on the title")
   local O, ctx = page(lib, OWNER)
   local view = O.AppearanceRows(ctx, specFor(store))
   view.ignore.fonts:__fire("OnValueChanged", true)
@@ -527,7 +527,7 @@ test("appearance: Ignore fonts moves the Skin major, writes the seam's third arg
   assertEqual(face(), "Fonts\\FRIZQT__.TTF", "the title's own face is back, no reload")
   assertEqual(F.rgba(m.__paint(frame.title).textColor), F.tok(Skin, "forever", "title.text"), "still colored")
   view.ignore.fonts:__fire("OnValueChanged", false)
-  assertEqual(face(), "Fonts\\AtkinsonB.ttf", "and the skin's face comes back")
+  assertEqual(face(), "Fonts\\FiraSansSB.ttf", "and the skin's face comes back")
   assertEqual(view.ignore.fonts.value, false)
 end)
 

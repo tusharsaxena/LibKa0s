@@ -176,7 +176,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7.1](./Media/version-7.1-docs.md) | **`Media.lua` 7** (five OFL skin faces with per-face masks; `BORDERS` / `BACKGROUNDS` and the Glass art; `RegisterLSM` never offers a key LSM already holds; 6.1 never shipped) · `MediaIcons.lua` 1 | v1.78.0 | **Current** |
+| [8.1](./Media/version-8.1-docs.md) | **`Media.lua` 8** (fourteen OFL skin faces, a family per skin, with per-face masks; `BORDERS` / `BACKGROUNDS` and the Glass art; `RegisterLSM` never offers a key LSM already holds; 6.1 never shipped) · `MediaIcons.lua` 1 | v1.78.0 | **Current** |
 | [5.1](./Media/version-5.1-docs.md) | `Media.lua` 5 · `MediaIcons.lua` 1 | v1.74.0 – v1.77.0 | Superseded |
 | [4](./Media/version-4-docs.md) | `Media.lua` 4 | v1.56.0 – v1.73.0 | Superseded |
 | [3](./Media/version-3-docs.md) | `Media.lua` 3 | v1.9.2 – v1.55.0 | Superseded |
@@ -187,7 +187,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [5.10.9.3.7.1.3](./Skin/version-5.10.9.3.7.1.3-docs.md) | **`Skin.lua` 5** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `OnReloadRequest` and the provider's hook slots; `ResetToSkin` sets a media pick's `<key>FromSkin` companion; `OwnerLabel` and `WriteChoice` for the Appearance tab's copy) · **`SkinDefs.lua` 10** (the token schema and the nine skins; the eight Widgets tokens, the ten tool-window tokens, the nine bind-state and danger tokens and the eleven tokens for the rest of LootHistory's constants) · **`SkinPaint.lua` 9**, `SkinPaintExtras.lua` 3, `SkinPaintControls.lua` 7 (the paint primitives; minor 3 puts an EditBox's face back by path, minor 7 draws a fill as its target's own region, minor 9 a window's edge over its children) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`) · **`SkinAce.lua` 3** (the AceGUI rows: `PaintAce`, `PaintAceTree`, `OnRelease`, and the proxy on an Options instance's `O.AceGUI`) | v1.78.0 | **Current** |
+| [5.11.9.3.7.1.3](./Skin/version-5.11.9.3.7.1.3-docs.md) | **`Skin.lua` 5** (the engine: owners, choice, resolve, the frame registry and live repaint, the facade, `FROM_SKIN`; `OnReloadRequest` and the provider's hook slots; `ResetToSkin` sets a media pick's `<key>FromSkin` companion; `OwnerLabel` and `WriteChoice` for the Appearance tab's copy) · **`SkinDefs.lua` 11** (the token schema and the nine skins; the eight Widgets tokens, the ten tool-window tokens, the nine bind-state and danger tokens and the eleven tokens for the rest of LootHistory's constants) · **`SkinPaint.lua` 9**, `SkinPaintExtras.lua` 3, `SkinPaintControls.lua` 7 (the paint primitives; minor 3 puts an EditBox's face back by path, minor 7 draws a fill as its target's own region, minor 9 a window's edge over its children) · **`SkinEUI.lua` 1** (the EllesmereUI provider, `GetEUIStatus`) · **`SkinAce.lua` 3** (the AceGUI rows: `PaintAce`, `PaintAceTree`, `OnRelease`, and the proxy on an Options instance's `O.AceGUI`) | v1.78.0 | **Current** |
 
 ### `LibKa0s-Widgets-1.0`
 

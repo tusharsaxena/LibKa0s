@@ -7,7 +7,7 @@
 -- on its own window; and the Blizzard-art choices recorded in docs/api/Skin stay what they say.
 
 local T = _G.LK_TEST
-local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
+local test, assertEqual, assertTrue, assertNil = T.test, T.assertEqual, T.assertTrue, T.assertNil
 
 local MAJOR = "LibKa0s-Skin-1.0"
 
@@ -375,7 +375,7 @@ test("skin defs: WoW Forever is warm charcoal, black centered titles, tan accent
     end
     local bg = t["win.bg"]
     assertTrue(bg[1] > bg[3] and luminance(bg) < 0.03, "warm charcoal window")
-    assertEqual(t["font.body"], "Ka0s Atkinson", "Atkinson Hyperlegible (minor 8: Barlow read blurry)")
+    assertEqual(t["font.body"], "Ka0s Fira Sans", "Fira Sans (minor 11: a face of its own; Barlow read blurry)")
   end)
 
 -- ── what a skin names exists ─────────────────────────────────────────────────────────────────
@@ -412,19 +412,28 @@ end)
 
 local FRIZ = "Friz Quadrata TT"
 
-test("skin defs: the font assignments follow the spec", function()
+test("skin defs: every skin draws one family of its own, for body and titles alike", function()
+  -- SkinDefs minor 11 (the owner's round-5 notes: titles that do not match the body, faces reused
+  -- across skins). red under: a skin whose titles are another family than its body (Cinzel over a
+  -- body face), or a face two skins share, but the client's Friz Quadrata, which Ka0s Default and
+  -- WoW Default both draw.
   local Skin = skinLib()
   local want = {
-    obsidian = { "Ka0s Barlow", "Ka0s Barlow SemiBold" }, glass = { "Ka0s Barlow", "Ka0s Barlow SemiBold" },
-    forever = { "Ka0s Atkinson", "Ka0s Atkinson Bold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
-    -- Ka0s Default's Friz Quadrata (minor 8) is inherited wherever a skin names no face of its own.
-    azeroth = { "Ka0s Atkinson", "Ka0s Cinzel" }, ember = { FRIZ, "Ka0s Cinzel" }, midnight = { FRIZ, "Ka0s Cinzel" },
-    wow = { FRIZ, FRIZ }, ka0s = { FRIZ, FRIZ },
+    obsidian = { "Ka0s Inter", "Ka0s Inter SemiBold" }, glass = { "Ka0s Nunito", "Ka0s Nunito SemiBold" },
+    azeroth = { "Ka0s Vollkorn", "Ka0s Vollkorn Bold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
+    ember = { "Ka0s Bitter", "Ka0s Bitter Bold" }, midnight = { "Ka0s Philosopher", "Ka0s Philosopher Bold" },
+    forever = { "Ka0s Fira Sans", "Ka0s Fira Sans SemiBold" }, wow = { FRIZ, FRIZ }, ka0s = { FRIZ, FRIZ },
   }
+  local owner = {}
   for key, pair in pairs(want) do
     local t = Skin:ResolveSkin(key)
     assertEqual(t["font.body"], pair[1], key .. " body font")
     assertEqual(t["font.title"], pair[2], key .. " title font")
+    assertEqual(pair[2]:sub(1, #pair[1]), pair[1], key .. ": its titles are its body's family")
+    if pair[1] ~= FRIZ then
+      assertNil(owner[pair[1]], pair[1] .. " is " .. tostring(owner[pair[1]]) .. "'s and " .. key .. "'s")
+      owner[pair[1]] = key
+    end
   end
   -- Every skin draws the client's shadow now: Azeroth's shadowless body was for its light parchment,
   -- and SkinDefs minor 8 made it dark. A dark label goes shadowless on its own (SkinPaint minor 5).

@@ -516,7 +516,8 @@ end)
 
 -- ── text, fonts, getters ─────────────────────────────────────────────────────────────────────
 
-local LSM = { ["font:Ka0s Barlow"] = "Fonts\\Barlow.ttf", ["font:Ka0s Barlow SemiBold"] = "Fonts\\BarlowSB.ttf",
+local LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["font:Ka0s Inter SemiBold"] = "Fonts\\InterSB.ttf",
+              ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf",
               ["statusbar:Blizzard"] = "Interface\\TargetingFrame\\UI-StatusBar" }
 
 test("skin paint: Text colors a role, and a skin's font reaches it through the owner's font object", function()
@@ -534,7 +535,7 @@ test("skin paint: Text colors a role, and a skin's font reaches it through the o
   -- by Obsidian's title size over Ka0s Default's (14 / 14).
   local _, stockSize = stock.GetFont and stock:GetFont() or nil, nil
   assertTrue(obj.name:find("^LibKa0sSkin_LootHistory_title_%d+$") ~= nil, "the owner's title font object, keyed by size")
-  assertEqual(obj.font[1], "Fonts\\BarlowSB.ttf")
+  assertEqual(obj.font[1], "Fonts\\InterSB.ttf")
   local _ = stockSize
   assertEqual(obj.shadow[1], 1, "the shadow is the font object's (the 12.0.7 rule)")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
@@ -546,7 +547,7 @@ test("skin paint: Font and White put the body font and color on a string", funct
   local S = F.owner(Skin, OWNER, "glass")
   local fs = m.CreateFrame("Frame"):CreateFontString()
   S.Font(fs, 0.1, 0.2, 0.3)
-  assertEqual(fs:GetFontObject().font[1], "Fonts\\Barlow.ttf")
+  assertEqual(fs:GetFontObject().font[1], "Fonts\\Nunito.ttf")
   assertEqual(F.rgba(survey(m, fs).textColor), "0.100,0.200,0.300,1")
   local w = m.CreateFrame("Frame"):CreateFontString()
   S.White(w)
@@ -559,7 +560,7 @@ test("skin paint: the getters answer the owner's skin", function()
   local tokens = Skin:ResolveSkin("ember")
   assertEqual(F.rgba({ S.GetAccentColor() }), F.rgba(tokens["text.accent"]))
   assertEqual(F.rgba({ S.GetPanelColor() }), F.rgba(tokens["win.bg"]))
-  assertEqual(F.owner(Skin, "Sleek", "obsidian").GetFont(), "Fonts\\Barlow.ttf", "the body face's path")
+  assertEqual(F.owner(Skin, "Sleek", "obsidian").GetFont(), "Fonts\\Inter.ttf", "the body face's path")
   local K = F.owner(Skin, "Plain")
   assertEqual(F.rgba({ K.GlowColor() }), F.tok(Skin, "ka0s", "glow.color"), "Ka0s Default's gold glow (minor 8)")
   local chart = K.ChartStyle()
