@@ -46,7 +46,9 @@
 --     through four hook slots, each nil without it: `__euiOnOwner(owner)` (RegisterOwner),
 --     `__euiRoute(owner, name)` (which primitive a call and a replay run), `__euiTokens(owner)`
 --     (what `__Tokens` answers) and `__euiOnChoice(owner)` (SetChoice onto `eui`);
---   * no OnUpdate, no events: a repaint is one pass over the owner's recorded frames.
+--   * no OnUpdate, no events: a repaint is one pass over the owner's recorded frames. The one
+--     subscription is LibSharedMedia's own callback (minor 6), made the first time an owner's
+--     override is checked, so a key a media pack registers late repaints the owners that name it.
 --
 -- Depends on LibStub and LibKa0s-Core-1.0. This file calls no Core member; the gate keeps the
 -- payload's presence a single question. The major's one Core call is SkinEUI.lua's: it resolves
@@ -69,7 +71,10 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- (LibKa0s#63): GetOverride, SetOverride, WriteChoice's fourth argument `media`, and `__Tokens`
 -- laying the overrides over the skin's table (font.body, font.title and hud.font; bar.texture).
 -- ResolveSkin stays override-free: a picker reads another skin's own tokens through it. VOCAB gains
--- BarTexture (SkinPaintExtras minor 4), the bar texture on a Texture or a StatusBar.
+-- BarTexture (SkinPaintExtras minor 4), the bar texture on a Texture or a StatusBar. An override
+-- LibSharedMedia cannot resolve leaves the skin's own token in place, and the owner repaints when a
+-- media pack registers the key later (`LibSharedMedia_Registered`); `FROM_SKIN` stored as an
+-- override means the skin's own; `__BaseTokens` answers the owner's table without its overrides.
 local MAJOR, MINOR = "LibKa0s-Skin-1.0", 6
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -231,9 +236,10 @@ local function cleanSkin(skin)
   return lib.DEFAULT
 end
 
---- An override's stored form: a non-empty string key, else nil ("the skin's own").
+--- An override's stored form: a non-empty string key, else nil ("the skin's own"). The FROM_SKIN
+--- sentinel is "the skin's own" too, as everywhere else it is stored.
 local function mediaKey(v)
-  if type(v) == "string" and v ~= "" then return v end
+  if type(v) == "string" and v ~= "" and v ~= lib.FROM_SKIN then return v end
   return nil
 end
 
@@ -338,6 +344,26 @@ local function notify(o)
     local ok, err = pcall(fn, o.source, o.skin)
     if not ok then report(err) end
   end
+end
+
+-- The override field each LibSharedMedia kind feeds.
+local OVERRIDE_FIELD = { font = "font", statusbar = "texture" }
+
+--- LibSharedMedia registered `key` of `kind` (its `LibSharedMedia_Registered` callback): repaint and
+--- notify every owner whose override names that key, unless a reload is pending, since until now its
+--- tokens fell back to the skin's own. Internal. Answers how many owners repainted.
+function lib:__MediaRegistered(kind, key)
+  local field = OVERRIDE_FIELD[kind]
+  if not field or type(key) ~= "string" then return 0 end
+  local n = 0
+  for owner, o in pairs(self.owners) do
+    if o[field] == key and not o.pendingReload then
+      self:Repaint(owner)
+      notify(o)
+      n = n + 1
+    end
+  end
+  return n
 end
 
 --- For SkinEUI.lua: fire `owner`'s OnLooksChanged listeners (EllesmereUI painted it, or its looks
@@ -480,7 +506,9 @@ local function nextOverride(v, old)
 end
 
 --- Set `owner`'s font and texture overrides (the Appearance tab's "Font and texture"); nil keeps
---- that half, false or "" clears it. Idempotent. A font override replaces `font.body`,
+--- that half, false, "" or FROM_SKIN clears it. Idempotent. An override LibSharedMedia cannot
+--- resolve is kept (GetOverride answers it) but leaves the skin's own token in place until a media
+--- pack registers the key, which repaints the owner. A font override replaces `font.body`,
 --- `font.title` and `hud.font` (`font.mono` and every size stay the skin's); a texture override
 --- replaces `bar.texture`. "Ignore fonts" wins over a font override: P.font gives every string its
 --- own face either way. Never writes the host's profile (WriteChoice's fourth argument does). A
@@ -512,11 +540,38 @@ end
 
 -- ── tokens ───────────────────────────────────────────────────────────────────────────────────
 
+-- The one LibSharedMedia subscription, kept across minors. CallbackHandler keeps one callback per
+-- (event, target), and the callback reaches `lib` at call time, so a newer minor need not redo it.
+lib.__mediaSub = lib.__mediaSub or {}
+
+local function subscribeMedia(LSM)
+  local sub = lib.__mediaSub
+  if sub.lsm == LSM or type(LSM.RegisterCallback) ~= "function" then return end
+  local ok = pcall(LSM.RegisterCallback, sub, "LibSharedMedia_Registered", function(_, kind, key)
+    lib:__MediaRegistered(kind, key)
+  end)
+  if ok then sub.lsm = LSM end
+end
+
+--- True when `key` of `kind` resolves to a file: a path, or a key LibSharedMedia has (SkinPaint's
+--- P.media rule). Subscribes to late registrations the first time it asks LibSharedMedia.
+local function resolves(kind, key)
+  if key:find("\\", 1, true) then return true end
+  local LSM = LibStub("LibSharedMedia-3.0", true)
+  if not (LSM and type(LSM.Fetch) == "function") then return false end
+  subscribeMedia(LSM)
+  return LSM:Fetch(kind, key, true) ~= nil
+end
+
 --- `base` with `owner`'s overrides over it (minor 6): `base` itself when the owner sets none, so
---- Ka0s Default reads unchanged, else a derived copy cached on (base, font, texture).
+--- Ka0s Default reads unchanged, else a derived copy cached on (base, font, texture). An override
+--- that does not resolve is left out, so the skin's own face or texture stands rather than the
+--- client's stock font or the flat bar (a media pack removed, or one that registers later).
 local function withOverrides(owner, base)
   local o = lib.owners[owner]
   local font, texture = o and o.font, o and o.texture
+  if font and not resolves("font", font) then font = nil end
+  if texture and not resolves("statusbar", texture) then texture = nil end
   if not font and not texture then return base end
   local c = lib.__overTok[owner]
   if c and c.base == base and c.font == font and c.texture == texture then return c.t end
@@ -528,19 +583,24 @@ local function withOverrides(owner, base)
   return t
 end
 
---- The owner's complete token table: its skin resolved (`ResolveSkin`), or, while EllesmereUI paints
---- the owner, the table SkinEUI.lua derives from EllesmereUI's accent, panel color and font; with
---- the owner's font and texture overrides over either (minor 6). Shared: never write to it. An
---- unregistered owner reads Ka0s Default. Internal (SkinPaint.lua's P.T and `Token` read it); a host
---- reads tokens through `Token` and `Color`.
-function lib:__Tokens(owner)
+--- The owner's token table without its overrides (minor 6): its skin resolved (`ResolveSkin`), or,
+--- while EllesmereUI paints the owner, the table SkinEUI.lua derives from EllesmereUI's accent, panel
+--- color and font. What the Skin tab's "Skin's own" entries name. Shared: never write to it.
+--- Internal.
+function lib:__BaseTokens(owner)
   local hook = self.__euiTokens
   local t = type(hook) == "function" and hook(owner) or nil
-  if not t then
-    local _, skin = self:GetChoice(owner)
-    t = self:ResolveSkin(skin)
-  end
-  return withOverrides(owner, t)
+  if t then return t end
+  local _, skin = self:GetChoice(owner)
+  return self:ResolveSkin(skin)
+end
+
+--- The owner's complete token table: `__BaseTokens`, with the owner's font and texture overrides
+--- over it (minor 6) where they resolve. Shared: never write to it. An unregistered owner reads Ka0s
+--- Default. Internal (SkinPaint.lua's P.T and `Token` read it); a host reads tokens through `Token`
+--- and `Color`.
+function lib:__Tokens(owner)
+  return withOverrides(owner, self:__BaseTokens(owner))
 end
 
 --- The owner's resolved token `name` (from `__Tokens`): a color is `{ r, g, b, a }`, shared, never

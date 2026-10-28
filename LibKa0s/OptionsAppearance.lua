@@ -46,7 +46,9 @@ if not lib then return end
 -- button, and the copy carries both (the owner's request, 2026-10-27; LibKa0s-Skin-1.0 minor 5).
 -- Minor 3 (LibKa0s#63): the tab is labeled "Skin" (its key stays "Appearance"); a "Font and texture"
 -- section between the skins and the scope, two dropdowns through Skin:SetOverride and `spec.set`'s
--- fourth argument; and the copy carries them (LibKa0s-Skin-1.0 minor 6).
+-- fourth argument; and the copy carries them (LibKa0s-Skin-1.0 minor 6). "Skin's own" names the face
+-- the owner wears without its overrides (Skin:__BaseTokens, EllesmereUI's when it paints), and a
+-- stored key LibSharedMedia lacks stays listed as "<key> (not loaded)".
 local APPEARANCE_MINOR = 3
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__appearanceMinor and lib.__appearanceMinor >= APPEARANCE_MINOR
@@ -88,6 +90,7 @@ lib.APPEARANCE_STRINGS = {
   TEXTURE        = "Texture",
   TEXTURE_TIP    = "Replace the bar texture of every bar and chart this addon draws.",
   SKIN_OWN       = "Skin's own (%s)",
+  MEDIA_MISSING  = "%s (not loaded)",
   SCOPE_HEADING  = "Scope",
   IGNORE_PANEL   = "Ignore settings panel",
   IGNORE_PANEL_TIP = "Keep this addon's settings panel in the game's own look. Its windows still " ..
@@ -392,17 +395,31 @@ function lib.__AttachAppearance(O, d)
     end
   end
 
-  --- The list one media dropdown offers: "Skin's own (<the skin's key>)" first, then LSM's keys.
+  --- The owner's tokens without its overrides: what it wears as "the skin's own" (EllesmereUI's
+  --- table while that paints it). ResolveSkin on a Skin copy without `__BaseTokens`.
+  local function baseTokens(view)
+    if type(view.Skin.__BaseTokens) == "function" then return view.Skin:__BaseTokens(view.owner) end
+    local _, skin = view.Skin:GetChoice(view.owner)
+    return view.Skin:ResolveSkin(skin)
+  end
+
+  --- The list one media dropdown offers: "Skin's own (<the face worn without overrides>)" first,
+  --- then LSM's keys, then the stored override when LSM lacks it, so the field never shows blank.
   local function mediaList(view, which)
     local spec = MEDIA[which]
-    local _, skin = view.Skin:GetChoice(view.owner)
-    local own = view.Skin:ResolveSkin(skin)[spec.token]
+    local own = baseTokens(view)[spec.token]
     local items, order = { [FROM_SKIN] = view.S.SKIN_OWN:format(tostring(own or "-")) }, { FROM_SKIN }
     for _, key in ipairs(mediaKeys(spec.kind)) do
       if items[key] == nil then
         items[key] = key
         order[#order + 1] = key
       end
+    end
+    local media = readMedia(view)
+    local stored = media and media[which]
+    if stored and items[stored] == nil then
+      items[stored] = view.S.MEDIA_MISSING:format(stored)
+      order[#order + 1] = stored
     end
     return items, order
   end

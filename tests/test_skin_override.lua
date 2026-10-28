@@ -177,6 +177,84 @@ test("skin override: WriteChoice hands media to the setter as its fourth argumen
   assertNil((Skin:GetOverride(OWNER)), "WriteChoice never moves the applied overrides")
 end)
 
+test("skin override: FROM_SKIN stored as an override means the skin's own", function()
+  -- red under: mediaKey storing "@skin" (Token answered "@skin", a face that resolves to nothing).
+  local _, Skin = F.env({ lsm = LSM })
+  register(Skin, OWNER)
+  assertFalse(Skin:SetOverride(OWNER, Skin.FROM_SKIN, Skin.FROM_SKIN), "no override, so no change")
+  assertNil((Skin:GetOverride(OWNER)))
+  assertEqual(Skin:Token(OWNER, "font.body"), "Friz Quadrata TT")
+  Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
+  assertTrue(Skin:SetOverride(OWNER, Skin.FROM_SKIN, nil), "FROM_SKIN clears a set override")
+  assertNil((Skin:GetOverride(OWNER)))
+  local store = register(Skin, OWNER)
+  Skin:WriteChoice(OWNER, "ka0s", "ka0s", nil, { font = Skin.FROM_SKIN })
+  assertEqual(store.media.font, false, "WriteChoice hands it on as the skin's own")
+end)
+
+--- An LSM fake that fetches from a table the case can grow, and fires LibSharedMedia_Registered.
+local function lateLSM(m, media)
+  local L = m.LibStub("LibSharedMedia-3.0")
+  L.subs = {}
+  L.Fetch = function(_, kind, key) return media[kind .. ":" .. tostring(key)] end
+  L.RegisterCallback = function(target, event, fn)
+    L.subs[event] = L.subs[event] or {}
+    L.subs[event][target] = fn
+  end
+  L.Register = function(_, kind, key, path)
+    media[kind .. ":" .. key] = path
+    for _, fn in pairs(L.subs.LibSharedMedia_Registered or {}) do fn("LibSharedMedia_Registered", kind, key) end
+  end
+  return L
+end
+
+test("skin override: a key LibSharedMedia lacks leaves the skin's own, until a pack registers it", function()
+  -- red under: withOverrides laying any string over the tokens (the stock font and the flat bar).
+  local media = { ["font:Friz Quadrata TT"] = "Fonts\\FRIZQT__.TTF",
+                  ["statusbar:Blizzard"] = "Interface\\TargetingFrame\\UI-StatusBar" }
+  local m, Skin = F.env({ lsm = {} })
+  local L = lateLSM(m, media)
+  register(Skin, OWNER)
+  local S = Skin:For(OWNER)
+  local fs = m.CreateFrame("Frame"):CreateFontString()
+  fs:SetFont("Fonts\\ARIALN.ttf", 12, "")
+  S.Font(fs)
+  local tex = m.CreateFrame("Frame"):CreateTexture()
+  S.BarTexture(tex, 1, 0, 0)
+  local fired = 0
+  Skin:OnLooksChanged(OWNER, function() fired = fired + 1 end)
+  assertTrue(Skin:SetOverride(OWNER, "Gone Font", "Gone Bar"), "stored")
+  local font, texture = Skin:GetOverride(OWNER)
+  assertEqual(font, "Gone Font"); assertEqual(texture, "Gone Bar", "GetOverride answers the stored keys")
+  assertEqual(Skin:Token(OWNER, "font.body"), "Friz Quadrata TT", "the skin's own face stands")
+  assertEqual(Skin:Token(OWNER, "bar.texture"), "Blizzard", "and its own texture")
+  assertEqual(fs:GetFontObject().font[1], "Fonts\\FRIZQT__.TTF", "the string wears the skin's face, not stock")
+  assertEqual(m.__paint(tex).texture, "Interface\\TargetingFrame\\UI-StatusBar", "the bar is not flat")
+  fired = 0
+  L:Register("statusbar", "Unrelated", "Interface\\X")
+  assertEqual(fired, 0, "a key no override names repaints nothing")
+  L:Register("font", "Gone Font", "Fonts\\Gone.ttf")
+  assertEqual(fired, 1, "the owner naming it repainted and notified")
+  assertEqual(Skin:Token(OWNER, "font.body"), "Gone Font")
+  assertEqual(fs:GetFontObject().font[1], "Fonts\\Gone.ttf", "the late face, live")
+  L:Register("statusbar", "Gone Bar", "Interface\\Gone")
+  assertEqual(m.__paint(tex).texture, "Interface\\Gone", "the late texture, live")
+  assertEqual(F.rgba(m.__paint(tex).vertex), "1,0,0,1", "the same tint")
+end)
+
+test("skin override: __BaseTokens is the owner's table without its overrides, EllesmereUI's when it paints",
+function()
+  local _, Skin = F.env({ lsm = LSM })
+  register(Skin, OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
+  assertTrue(Skin:__BaseTokens(OWNER) == Skin:ResolveSkin("ka0s"), "the skin's own table")
+  local eui = { ["font.body"] = "Expressway", ["bar.texture"] = "EUI Bar" }
+  Skin.__euiTokens = function(owner) if owner == OWNER then return eui end end
+  assertTrue(Skin:__BaseTokens(OWNER) == eui, "the EllesmereUI table while it answers")
+  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Inter", "the overrides still lie over it")
+  Skin.__euiTokens = nil
+end)
+
 -- ── S.BarTexture (SkinPaintExtras minor 4) ───────────────────────────────────────────────────
 
 test("skin override: BarTexture puts the owner's bar texture on a Texture, tinted", function()

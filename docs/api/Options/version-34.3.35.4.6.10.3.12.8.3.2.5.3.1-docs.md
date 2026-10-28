@@ -62,7 +62,7 @@ attach line (`lib.__AttachSkinPicker(O, d)`) and no member of its own.
   and texture as well, and `COPY_TIP` / `COPY_CONFIRM` say so.
 
 The tab adds no instance member and changes no signature; `lib.APPEARANCE_STRINGS` gains
-`MEDIA_HEADING`, `FONT`, `FONT_TIP`, `TEXTURE`, `TEXTURE_TIP` and `SKIN_OWN`.
+`MEDIA_HEADING`, `FONT`, `FONT_TIP`, `TEXTURE`, `TEXTURE_TIP`, `SKIN_OWN` and `MEDIA_MISSING`.
 
 **What a consumer owes.** Every Options degradation stub gains `SkinPicker` and `HideSkinPicker`
 (`Kit.assertSurfaceParity` compares the stub with the live instance), for instance
@@ -2381,10 +2381,13 @@ Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
 3. **Font and texture** (OptionsAppearance minor 3, `LibKa0s-Skin-1.0` minor 6, LibKa0s#63), under
    its own heading: two AceGUI `Dropdown`s side by side (`BUTTON_PAIR_REL`), *Font* and *Texture*.
    Each lists, first, the value `"@skin"` (`Skin.FROM_SKIN`) as "Skin's own (<key>)", the key being
-   the face (`font.body`) or bar texture (`bar.texture`) the owner's skin names, `ResolveSkin`'s
-   override-free answer for the skin worn now; then LibSharedMedia-3.0's `font` or `statusbar`
-   keys, sorted (`LSM:List`, read at call time). Without LibSharedMedia each lists the skin's own
-   entry alone. A pick is refused in combat; it calls `Skin:SetOverride(owner, font, texture)`
+   the face (`font.body`) or bar texture (`bar.texture`) the owner wears without its overrides
+   (`Skin:__BaseTokens`: the skin worn now, or EllesmereUI's table while that paints the owner);
+   then LibSharedMedia-3.0's `font` or `statusbar` keys, sorted (`LSM:List`, read at call time);
+   then the stored override when LibSharedMedia lacks it, as "<key> (not loaded)" (`MEDIA_MISSING`),
+   so the field never shows blank. Without LibSharedMedia each lists the skin's own entry and any
+   stored override alone. An override LibSharedMedia cannot resolve leaves the skin's own face or
+   texture on screen until a media pack registers it. A pick is refused in combat; it calls `Skin:SetOverride(owner, font, texture)`
    first (the live repaint: a font override replaces `font.body`, `font.title` and `hud.font`, a
    texture override `bar.texture`, so every string and every `S.BarTexture` bar follows), then
    `spec.set(nil, nil, nil, { font = key|false, texture = key|false })` with both halves, `false`
@@ -2455,7 +2458,8 @@ The tab's US English words, a literal table like `lib.KEYBIND_STRINGS`: `TAB_LAB
 A3, "Appearance" before), `TAB_TIP`, `SOURCE_HEADING`, `SOURCE_KA0S`, `SOURCE_KA0S_TIP`,
 `SOURCE_EUI`, `SOURCE_EUI_TIP`, `EUI_READY`, `EUI_NOT_READY`, `EUI_MISSING`, `SKIN_HEADING`,
 `SKIN_EUI_NOTE`, `MEDIA_HEADING`, `FONT`, `FONT_TIP`, `TEXTURE`, `TEXTURE_TIP`, `SKIN_OWN` (`%s` the
-skin's own key; those six since A3), `SCOPE_HEADING`,
+skin's own key), `MEDIA_MISSING` (`%s` a stored key LibSharedMedia lacks; those seven since A3),
+`SCOPE_HEADING`,
 `IGNORE_PANEL`, `IGNORE_PANEL_TIP`, `IGNORE_FONTS`, `IGNORE_FONTS_TIP`, `COPY`, `COPY_TIP`,
 `COPY_NONE`, `COPY_CONFIRM` (`%s` this addon's label, `%s` the list), `COPY_ACCEPT`, `CANCEL`,
 `RELOAD` (`%s` the addon or addons), `RELOAD_ACCEPT`, `RELOAD_LATER`, `NOTE` and `UNAVAILABLE`.

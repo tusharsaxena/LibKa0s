@@ -738,3 +738,19 @@ test("appearance: with a Skin copy before minor 6 the section is absent", functi
   assertNil(view.media.font, "no dropdowns")
   assertFalse(hasText(ctx, lib.APPEARANCE_STRINGS.MEDIA_HEADING), "no heading")
 end)
+
+test("appearance: a stored key LibSharedMedia lacks stays listed, and the skin's own names the worn face", function()
+  -- red under: mediaList without the stored key (the field showed blank) and ResolveSkin's label.
+  local _, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  Skin:SetOverride(OWNER, "Gone Font", nil)
+  Skin.__euiTokens = function(owner) if owner == OWNER then return { ["font.body"] = "Expressway" } end end
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  Skin.__euiTokens = nil
+  local font = view.media.font
+  assertEqual(font.list["@skin"], "Skin's own (Expressway)", "the face worn without overrides")
+  assertEqual(font.list["Gone Font"], "Gone Font (not loaded)", "the stored key, marked")
+  assertEqual(font.order[#font.order], "Gone Font", "after LSM's keys")
+  assertEqual(font.value, "Gone Font", "so the field shows it")
+end)

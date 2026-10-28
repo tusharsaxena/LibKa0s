@@ -97,6 +97,11 @@ owner can now replace its skin's font and its bar texture, the way most WoW addo
   `font.mono` and every size stay the skin's. A texture override replaces `bar.texture`. An owner
   with neither reads the resolved table itself, so Ka0s Default is unchanged.
 - `ResolveSkin` stays override-free, so a skin picker reads every skin's own faces.
+- An override LibSharedMedia cannot resolve (a pack removed, or one that registers late) is kept
+  but leaves the skin's own face or texture in place, never the stock font or the flat bar. The
+  engine subscribes once to `LibSharedMedia_Registered`, and a key registered later repaints the
+  owners that name it. `FROM_SKIN` stored as an override means the skin's own. The internal
+  `__BaseTokens(owner)` answers the owner's table without its overrides.
 - *Ignore fonts* wins over a font override: the strings keep their own face and the override is kept.
 - `WriteChoice(owner, source, skin, ignore, media)`: `media`, `{ font = key|false, texture =
   key|false }`, reaches the host's setter as its fourth argument; an older setter ignores it.
@@ -134,8 +139,11 @@ minor 34, below; [docs/api/Options/version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.
   `sync` re-reads `Skin:GetOverride`. Without LibSharedMedia each lists the skin's own entry alone.
 - *Copy to every Ka0s addon…* carries the overrides (`SetOverride` and `WriteChoice`'s `media`), and
   `COPY_TIP` / `COPY_CONFIRM` say "skin source, skin, scope, font and texture".
-- `lib.APPEARANCE_STRINGS` gains `MEDIA_HEADING`, `FONT`, `FONT_TIP`, `TEXTURE`, `TEXTURE_TIP` and
-  `SKIN_OWN`. No instance member is added.
+- "Skin's own" names the face the owner wears without its overrides (`Skin:__BaseTokens`, so
+  EllesmereUI's while it paints the owner), and a stored key LibSharedMedia lacks stays listed as
+  "<key> (not loaded)", so the field never shows blank.
+- `lib.APPEARANCE_STRINGS` gains `MEDIA_HEADING`, `FONT`, `FONT_TIP`, `TEXTURE`, `TEXTURE_TIP`,
+  `SKIN_OWN` and `MEDIA_MISSING`. No instance member is added.
 
 Cases in `tests/test_options_appearance.lua`.
 
