@@ -2,36 +2,42 @@
 """skin_gallery.py: crop in-game skin screenshots to their window and build showcase images.
 
 Takes one screenshot per Ka0s skin of the same addon window, crops each to the window (the game world
-around it removed), and writes the crops plus two showcases of every skin at once, on a clean
-background, each skin labeled with its name and its four preview swatches:
+around it removed), and writes the crops plus seven showcases of every skin at once. Each showcase
+sits on a dark background, and each skin is labeled with its name and its four preview swatches:
 
-  showcase/standalone.png|.jpg  every window on its own, in a grid
-  showcase/stacked.png|.jpg     the windows overlapping in two cascades, a different skin on each;
-                                the right-hand cascade sits behind the left-hand one
+  showcase/standalone   every window on its own, in a grid
+  showcase/fan          a hand of cards around a pivot below; the first skin flat in the centre, in front
+  showcase/staircase    one cascade from the top left to the bottom right; the first skin in front
+  showcase/hero         the first skin large on top, the others in a labeled grid below it
+  showcase/coverflow    the first skin flat in the centre, the others turned away in perspective
+  showcase/slices       one window cut into slanted bands, each band a different skin
+  showcase/deck         one row fanned out to the right like a spread deck, the first skin in front
 
-Both are drawn at the crops' native resolution (no window is scaled down), so they are large: scale
-them down for wherever they go.
+Each is written as a PNG and a JPEG, drawn at the crops' native resolution (no window is scaled
+down), so they are large: scale them down for wherever they go.
 
 The skins, their order, labels and swatches come from LibKa0s/SkinDefs.lua, so a new or renamed skin
 needs no change here. Run it again whenever a skin changes or is added.
 
 Usage:
-  python3 tools/skin_gallery.py --title "Ka0s Loot History" --out ../LootHistory/docs/skins/screenshots/vN \\
+  python3 tools/skin_gallery.py --title "Ka0s Loot History" --out ../LootHistory/media/screenshots/skins/vN \\
       shot1.png shot2.png ...          # one per skin, in SkinDefs order
   python3 tools/skin_gallery.py --title "..." --out DIR --dir SHOTS/   # SHOTS/<skin key>.png, any order
   python3 tools/skin_gallery.py --title "..." --out DIR --from-crops   # rebuild the showcases only
 
 Options:
-  --cols N       standalone columns (default 3)
-  --bg STYLE     light (default) or dark background
-  --no-crop      keep each screenshot as it is (already cropped)
-  --from-crops   read DIR's own NN-<key>.png crops and rebuild only the showcases
-  --skins KEYS   comma-separated subset of skin keys, in the order the screenshots are given
+  --cols N         standalone columns (default 3)
+  --bg STYLE       slate (default), plum or graphite
+  --layouts NAMES  comma-separated subset of the showcases above (default: all of them)
+  --no-crop        keep each screenshot as it is (already cropped)
+  --from-crops     read DIR's own NN-<key>.png crops and rebuild only the showcases
+  --skins KEYS     comma-separated subset of skin keys, in the order the screenshots are given
 
 Writes <out>/NN-<key>.png (the crops) and <out>/showcase/. Needs Python 3, Pillow and NumPy.
 """
 import argparse
 import glob
+import math
 import os
 import re
 import sys
@@ -49,10 +55,12 @@ TITLE_FONT = os.path.join(FONTS, "Inter-SemiBold.ttf")
 EDGE_DIFF = 40        # summed RGB step between neighbors that counts as an edge
 EDGE_SHARE = 0.55     # share of a line's span that must step at once for it to be the window's edge
 
-BACKGROUNDS = {       # top and bottom of the vertical gradient, then the heading and subheading colors
-    "light": ((246, 247, 249), (226, 228, 233), (24, 24, 30), (110, 112, 122)),
-    "dark": ((34, 35, 42), (14, 14, 18), (240, 240, 245), (150, 152, 162)),
+BACKGROUNDS = {       # the lit centre, the edge, and a pattern: dark grounds a near-black window still reads on
+    "slate": ((44, 52, 74), (12, 14, 22), None),
+    "plum": ((58, 38, 70), (14, 10, 18), None),
+    "graphite": ((48, 50, 56), (16, 17, 20), "dots"),
 }
+INK, SUBINK = (238, 240, 246), (150, 156, 176)
 
 
 def skins():
@@ -108,26 +116,38 @@ def font(path, size):
 
 
 def background(size, style):
-    """A plain vertical gradient: the clean backdrop both showcases sit on."""
-    top, bottom = BACKGROUNDS[style][:2]
+    """A dark ground, lit a little behind the windows and falling off to the edges."""
+    inner, outer, pattern = BACKGROUNDS[style]
     w, h = size
-    t = np.linspace(0, 1, h)[:, None]
-    col = (np.array(top)[None, :] * (1 - t) + np.array(bottom)[None, :] * t).astype(np.uint8)
-    return Image.fromarray(np.repeat(col[:, None, :], w, axis=1), "RGB").convert("RGBA")
+    yy, xx = np.mgrid[0:h, 0:w]
+    r = (np.sqrt(((xx - w * 0.5) / (w * 0.75)) ** 2 + ((yy - h * 0.38) / (h * 0.85)) ** 2).clip(0, 1)) ** 1.4
+    a = np.array(inner)[None, None, :] * (1 - r[..., None]) + np.array(outer)[None, None, :] * r[..., None]
+    im = Image.fromarray(a.astype(np.uint8), "RGB").convert("RGBA")
+    if pattern == "dots":
+        d = ImageDraw.Draw(im)
+        step = max(18, w // 90)
+        for y in range(step // 2, h, step):
+            for x in range(step // 2, w, step):
+                d.point((x, y), fill=(255, 255, 255, 18))
+    return im
 
 
-def shadow(canvas, box, unit):
-    """A soft drop shadow under a window's box, so overlapping windows read as layers."""
-    x0, y0, x1, y1 = box
-    blur = max(4, round(unit * 1.6))
-    off = round(unit * 0.5)
+def put(canvas, img, xy, unit):
+    """Paste a window with a soft drop shadow and a faint light rim, so it lifts off the ground."""
+    blur = max(4, round(unit))
+    alpha = img.split()[3].point(lambda v: 170 if v > 0 else 0)
     pad = blur * 3
-    mask = Image.new("L", (x1 - x0 + 2 * pad, y1 - y0 + 2 * pad), 0)
-    ImageDraw.Draw(mask).rectangle((pad, pad, pad + x1 - x0, pad + y1 - y0), fill=150)
-    mask = mask.filter(ImageFilter.GaussianBlur(blur))
-    layer = Image.new("RGBA", mask.size, (0, 0, 0, 255))
-    layer.putalpha(mask)
-    canvas.alpha_composite(layer, (x0 - pad + off, y0 - pad + off * 2))
+    m = Image.new("L", (img.width + 2 * pad, img.height + 2 * pad), 0)
+    m.paste(alpha, (pad, pad))
+    shade = Image.new("RGBA", m.size, (0, 0, 0, 255))
+    shade.putalpha(m.filter(ImageFilter.GaussianBlur(blur)))
+    x, y = int(xy[0]), int(xy[1])
+    canvas.alpha_composite(shade, (int(x - pad + blur * 0.3), int(y - pad + blur * 0.6)))
+    canvas.alpha_composite(img, (x, y))
+    rim = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    ImageDraw.Draw(rim).rectangle((0, 0, img.width - 1, img.height - 1), outline=(255, 255, 255, 34))
+    rim.putalpha(Image.fromarray(np.minimum(np.asarray(rim.split()[3]), np.asarray(img.split()[3]))))
+    canvas.alpha_composite(rim, (x, y))
 
 
 def label_size(skin, f, unit):
@@ -161,123 +181,215 @@ def draw_label(canvas, skin, xy, f, unit):
         sx += sq + 2
 
 
-def heading(canvas, title, subtitle, style, unit, x, y):
-    ink, sub = BACKGROUNDS[style][2:]
+def label(canvas, m, xy, unit, anchor="lt"):
+    """A skin's label pill at xy; anchor is horizontal (l, m, r) then vertical (t, m, b)."""
+    f = font(LABEL_FONT, round(unit * 1.15))
+    w, h = label_size(m, f, unit)
+    x, y = xy
+    x -= {"l": 0, "m": w // 2, "r": w}[anchor[0]]
+    y -= {"t": 0, "m": h // 2, "b": h}[anchor[1]]
+    draw_label(canvas, m, (int(x), int(y)), f, unit)
+
+
+def heading(canvas, title, n, unit, x, y):
     d = ImageDraw.Draw(canvas)
-    ft, fs = font(TITLE_FONT, round(unit * 3.2)), font(LABEL_FONT, round(unit * 1.5))
-    d.text((x, y), title, font=ft, fill=ink)
-    d.text((x, y + round(unit * 4.3)), subtitle, font=fs, fill=sub)
+    d.text((x, y), title, font=font(TITLE_FONT, round(unit * 3)), fill=INK)
+    d.text((x, y + round(unit * 4)), f"{n} Ka0s skins (LibKa0s-Skin-1.0)", font=font(LABEL_FONT, round(unit * 1.4)),
+           fill=SUBINK)
 
 
-def subtitle(n):
-    return f"{n} Ka0s skins (LibKa0s-Skin-1.0)"
-
-
-def standalone(tiles, meta, title, cols, style):
-    """Every window on its own, in a grid, each under its labeled name."""
+def frame(tiles):
+    """The common window size and the unit labels and spacing scale from."""
     W = max(t.width for t in tiles)
     H = max(t.height for t in tiles)
-    unit = max(H, W * 0.6) / 48                     # labels and heading scale with the window
-    gap = round(W * 0.06)
-    lab = round(unit * 3.2)
-    head = round(unit * 9)
+    return W, H, max(H, W * 0.6) / 48
+
+
+def standalone(tiles, meta, title, bg, cols=3):
+    """Every window on its own, in a grid, each under its label."""
+    W, H, unit = frame(tiles)
+    gap, lab, head = round(W * 0.06), round(unit * 3.2), round(unit * 9)
     rows = -(-len(tiles) // cols)
-    size = (cols * W + (cols + 1) * gap, head + rows * (lab + H + gap) + gap)
-    out = background(size, style)
-    heading(out, title, subtitle(len(tiles)), style, unit, gap, round(unit * 2.5))
-    f = font(LABEL_FONT, round(unit * 1.15))
+    c = background((cols * W + (cols + 1) * gap, head + rows * (lab + H + gap) + gap), bg)
+    heading(c, title, len(tiles), unit, gap, round(unit * 2.5))
     for i, (t, m) in enumerate(zip(tiles, meta)):
-        r, c = divmod(i, cols)
-        x = gap + c * (W + gap)
-        y = head + r * (lab + H + gap) + lab
-        shadow(out, (x, y, x + t.width, y + t.height), unit)
-        out.alpha_composite(t.convert("RGBA"), (x, y))
-        draw_label(out, m, (x, y - round(unit * 2.0) - round(unit * 0.6)), f, unit)
-    return out.convert("RGB")
+        r, k = divmod(i, cols)
+        x, y = gap + k * (W + gap), head + r * (lab + H + gap) + lab
+        put(c, t, (x, y), unit)
+        label(c, m, (x, y - round(unit * 0.6)), unit, "lb")
+    return c
 
 
-def overlaps(a, b):
-    return a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]
+def fan(tiles, meta, title, bg):
+    """A hand of cards around a pivot below the windows: the first skin flat in the centre and in front,
+    the rest tilting away to each side, behind it. Labels ride above each window's top edge."""
+    W, H, unit = frame(tiles)
+    n = len(tiles)
+    spread, R, head = 64, W * 1.9, unit * 9
+    ranked = sorted(range(n), key=lambda k: abs(k - (n - 1) / 2))   # slots from the centre outward
+    angle = {s: (k - (n - 1) / 2) * spread / max(1, n - 1) for s, k in zip(range(n), ranked)}
+    half = math.radians(spread / 2)
+    cw = int(2 * (R * math.sin(half) + W * 0.62) + unit * 6)
+    ch = int(head + unit * 6 + H * 1.25 + R * (1 - math.cos(half)) + H * 0.35)
+    c = background((cw, ch), bg)
+    heading(c, title, n, unit, int(unit * 3), int(unit * 2.5))
+    px, py = cw / 2, head + unit * 7 + H / 2 + R
+    tops = []
+    for s in sorted(range(n), key=lambda s: -abs(angle[s])):        # outermost first, the centre last
+        a = math.radians(angle[s])
+        rot = tiles[s].rotate(-angle[s], resample=Image.BICUBIC, expand=True)
+        cx, cy = px + R * math.sin(a), py - R * math.cos(a)
+        put(c, rot, (cx - rot.width / 2, cy - rot.height / 2), unit * 1.2)
+        d = H / 2 + unit * 1.3
+        tops.append((s, cx + d * math.sin(a), cy - d * math.cos(a)))
+    for s, x, y in tops:
+        label(c, meta[s], (x, y), unit * (1 if s == 0 else 0.85), "mm")
+    return c
 
 
-def stacked(tiles, meta, title, style):
-    """Two cascades of overlapping windows fanning in toward the middle, a different skin on each. The
-    left cascade steps down and right, the right one down and left, and the left is drawn last, so the
-    right cascade tucks in behind it. The first skin is the left cascade's front window, the second
-    the right's. Each label straddles its window's top edge, at the outer corner, and stays in view:
-    the right cascade is placed as far under the left as it can go with no label covered."""
-    W = max(t.width for t in tiles)
-    H = max(t.height for t in tiles)
-    unit = max(H, W * 0.6) / 48                     # labels and heading scale with the window
-    f = font(LABEL_FONT, round(unit * 1.15))
-    dx, dy = round(W * 0.085), round(H * 0.13)
-    inset = round(unit * 1.6)
-    left = list(range(0, len(tiles), 2))[::-1]     # back to front: the front window is the first skin
-    right = list(range(1, len(tiles), 2))[::-1]
-    order = right + left                            # draw order: the right cascade first, behind
-
-    def place(overlap, lift):
-        spots = {}
-        lfront = (len(left) - 1) * dx
-        rfront = lfront + W - overlap               # the right front window's left edge
-        for d, i in enumerate(right):
-            back = len(right) - 1 - d
-            spots[i] = (rfront + back * dx, lift + d * dy)
-        for d, i in enumerate(left):
-            spots[i] = (d * dx, d * dy)
-        return spots
-
-    def label_box(i, spot):
-        lw, lh = label_size(meta[i], f, unit)
-        x, y = spot
-        # the right cascade's label keeps clear of the close button in the window's top-right corner
-        lx = x + inset if i in left else x + tiles[i].width - round(unit * 3.6) - lw
-        return (lx, y - lh // 2, lx + lw, y - lh // 2 + lh)
-
-    def clear(spots):
-        for n, i in enumerate(order):
-            lab = label_box(i, spots[i])
-            for j in order[n + 1:]:
-                sx, sy = spots[j]
-                if overlaps(lab, (sx, sy, sx + tiles[j].width, sy + tiles[j].height)):
-                    return False
-        return True
-
-    spots = None
-    for frac in [x / 100 for x in range(40, 4, -2)]:
-        for lift in (-dy // 2, -dy // 4, 0, dy // 4, dy // 2):
-            cand = place(round(W * frac), lift)
-            if clear(cand):
-                spots = cand
-                break
-        if spots:
-            break
-    spots = spots or place(0, 0)
-    labels = {i: label_box(i, spots[i]) for i in order}
-    minx = min(min(x for x, _ in spots.values()), min(b[0] for b in labels.values()))
-    miny = min(min(y for _, y in spots.values()), min(b[1] for b in labels.values()))
-    maxx = max(x + tiles[i].width for i, (x, _) in spots.items())
-    maxy = max(y + tiles[i].height for i, (_, y) in spots.items())
-    margin = round(W * 0.05)
-    head = round(unit * 9)
-    size = (maxx - minx + 2 * margin, maxy - miny + 2 * margin + head)
-    out = background(size, style)
-    heading(out, title, subtitle(len(tiles)), style, unit, margin, round(unit * 2.5))
-    ox, oy = margin - minx, margin + head - miny
-    for i in order:
-        x, y = spots[i][0] + ox, spots[i][1] + oy
-        shadow(out, (x, y, x + tiles[i].width, y + tiles[i].height), unit * 1.4)
-        out.alpha_composite(tiles[i].convert("RGBA"), (x, y))
-        b = labels[i]
-        draw_label(out, meta[i], (b[0] + ox, b[1] + oy), f, unit)
-    return out.convert("RGB")
+def staircase(tiles, meta, title, bg):
+    """One cascade from the top left to the bottom right; the first skin lands in front."""
+    W, H, unit = frame(tiles)
+    n = len(tiles)
+    dx, dy, head = W * 0.11, H * 0.12, unit * 9
+    c = background((int(W + dx * (n - 1) + unit * 8), int(H + dy * (n - 1) + head + unit * 8)), bg)
+    heading(c, title, n, unit, int(unit * 3), int(unit * 2.5))
+    for d, s in enumerate(range(n - 1, -1, -1)):
+        x, y = unit * 4 + d * dx, head + unit * 4 + d * dy
+        put(c, tiles[s], (x, y), unit)
+        label(c, meta[s], (x + unit * 1.2, y + unit * 0.9), unit * 0.9)
+    return c
 
 
-def write_showcases(tiles, meta, title, out, cols, style):
+def hero(tiles, meta, title, bg):
+    """The first skin large on top, the others in a labeled grid below it."""
+    W, H, unit = frame(tiles)
+    n = len(tiles)
+    gap, head, cols = unit * 2.4, unit * 9, 4
+    big = tiles[0].resize((int(W * 1.35), int(H * 1.35)), Image.LANCZOS)
+    rows = math.ceil((n - 1) / cols)
+    tw = (big.width - gap * (cols - 1)) / cols
+    th = H * tw / W
+    c = background((int(big.width + unit * 8),
+                    int(head + unit * 3.2 + big.height + gap * 1.5 + rows * (th + unit * 3.2 + gap) + unit * 4)), bg)
+    heading(c, title, n, unit, int(unit * 4), int(unit * 2.5))
+    x0, y0 = unit * 4, head + unit * 3.2
+    put(c, big, (x0, y0), unit * 1.4)
+    label(c, meta[0], (x0, y0 - unit * 0.6), unit, "lb")
+    y1 = y0 + big.height + gap * 1.5 + unit * 2.6
+    for i, s in enumerate(range(1, n)):
+        r, k = divmod(i, cols)
+        t = tiles[s].resize((int(tw), int(th)), Image.LANCZOS)
+        x, y = x0 + k * (tw + gap), y1 + r * (th + unit * 3.2 + gap)
+        put(c, t, (x, y), unit * 0.8)
+        label(c, meta[s], (x, y - unit * 0.5), unit * 0.85, "lb")
+    return c
+
+
+def perspective(src, dst):
+    """The 8 PIL PERSPECTIVE coefficients mapping output corners dst back onto input corners src."""
+    rows = []
+    for (x, y), (u, v) in zip(dst, src):
+        rows.append([x, y, 1, 0, 0, 0, -u * x, -u * y])
+        rows.append([0, 0, 0, x, y, 1, -v * x, -v * y])
+    return np.linalg.solve(np.array(rows, float), np.array(src, float).reshape(8)).tolist()
+
+
+def tilt(img, far, depth):
+    """Turn a window away from the viewer, its `far` edge (left or right) shrunk by `depth`."""
+    w, h = img.size
+    nw, s = int(w * (1 - depth * 0.55)), depth * h * 0.5
+    dst = [(0, s), (nw, 0), (nw, h), (0, h - s)] if far == "left" else [(0, 0), (nw, s), (nw, h - s), (0, h)]
+    return img.transform((nw, h), Image.PERSPECTIVE, perspective([(0, 0), (w, 0), (w, h), (0, h)], dst),
+                         Image.BICUBIC)
+
+
+def coverflow(tiles, meta, title, bg):
+    """The first skin flat in the centre; the others turned away in perspective on both sides, smaller
+    as they recede, like an album shelf. Labels under each window."""
+    W, H, unit = frame(tiles)
+    n = len(tiles)
+    head, step = unit * 9, W * 0.22
+    side = max(1, (n - 1 + 1) // 2)
+    c = background((int(W + 2 * (W * 0.42 + step * (side - 1)) + unit * 8), int(H * 1.12 + head + unit * 12)), bg)
+    heading(c, title, n, unit, int(unit * 3), int(unit * 2.5))
+    cx, cy = c.width / 2, head + unit * 4 + H * 0.56
+    items = [(k + 1, s, "left") for k, s in enumerate(range(1, n, 2))] + \
+            [(k + 1, s, "right") for k, s in enumerate(range(2, n, 2))]
+    for k, s, sd in sorted(items, key=lambda t: -t[0]):              # the farthest first
+        sc = 0.86 - 0.05 * (k - 1)
+        t = tilt(tiles[s].resize((int(W * sc), int(H * sc)), Image.LANCZOS), sd, 0.30)
+        off = W * 0.5 + step * (k - 1) + t.width * 0.15
+        x = cx - off - t.width * 0.85 if sd == "left" else cx + off - t.width * 0.15
+        y = cy - t.height / 2
+        put(c, t, (x, y), unit)
+        label(c, meta[s], (x + t.width / 2, y + t.height + unit * 0.9), unit * 0.8, "mt")
+    put(c, tiles[0], (cx - W / 2, cy - H / 2), unit * 1.6)
+    label(c, meta[0], (cx, cy + H / 2 + unit * 0.9), unit, "mt")
+    return c
+
+
+def slices(tiles, meta, title, bg):
+    """One window cut into slanted bands, each band a different skin, so the same controls change skin
+    across it. Every crop is drawn at the first one's size, half again as large."""
+    W, H, unit = frame(tiles)
+    n = len(tiles)
+    head = unit * 9
+    W2, H2 = int(tiles[0].width * 1.5), int(tiles[0].height * 1.5)
+    slant, band = H2 * 0.18, W2 / n
+    out = Image.new("RGBA", (W2, H2))
+    for i, t in enumerate(tiles):
+        m = Image.new("L", (W2, H2), 0)
+        l = i * band if i else -slant
+        r = (i + 1) * band if i < n - 1 else W2 + slant
+        ImageDraw.Draw(m).polygon([(l + slant / 2, 0), (r + slant / 2, 0), (r - slant / 2, H2), (l - slant / 2, H2)],
+                                  fill=255)
+        out.paste(t.resize((W2, H2), Image.LANCZOS), (0, 0), m)
+    d = ImageDraw.Draw(out)
+    for i in range(1, n):
+        d.line([(i * band + slant / 2, 0), (i * band - slant / 2, H2)], fill=(255, 255, 255, 70),
+               width=max(2, round(unit * 0.12)))
+    c = background((int(W2 + unit * 8), int(H2 + head + unit * 11)), bg)
+    heading(c, title, n, unit, int(unit * 4), int(unit * 2.5))
+    x0, y0 = unit * 4, head + unit * 1.5
+    put(c, out, (x0, y0), unit * 1.6)
+    for i in range(n):
+        foot = min(max(i * band + band / 2 - slant / 2, band * 0.45), W2 - band * 0.45)
+        label(c, meta[i], (x0 + foot, y0 + H2 + unit * (1.2 if i % 2 == 0 else 3.6)), unit * 0.78, "mt")
+    return c
+
+
+def deck(tiles, meta, title, bg):
+    """One row fanned out to the right like a spread deck: the first skin in front at the left, each next
+    one a strip behind it, labeled over its strip."""
+    W, H, unit = frame(tiles)
+    n = len(tiles)
+    head = unit * 9
+    small = [t.resize((int(W * 0.85), int(H * 0.85)), Image.LANCZOS) for t in tiles]
+    w, h = small[0].size
+    step, lift, mid = w * 0.21, h * 0.035, (n - 1) / 2
+    c = background((int(w + step * (n - 1) + unit * 8), int(h + lift * (n - 1) / 2 + head + unit * 11)), bg)
+    heading(c, title, n, unit, int(unit * 4), int(unit * 2.5))
+    x0, y0 = unit * 4, head + unit * 5.5
+    for s in range(n - 1, -1, -1):
+        x, y = x0 + s * step, y0 + abs(s - mid) * lift * 0.5
+        put(c, small[s], (x, y), unit)
+        lx = x + w / 2 if s == 0 else x + w - step / 2
+        label(c, meta[s], (lx, y - unit * (0.5 if s % 2 == 0 else 2.6)), unit * 0.78, "mb")
+    return c
+
+
+LAYOUTS = {"standalone": standalone, "fan": fan, "staircase": staircase, "hero": hero,
+           "coverflow": coverflow, "slices": slices, "deck": deck}
+
+
+def write_showcases(tiles, meta, title, out, cols, bg, names):
     folder = os.path.join(out, "showcase")
     os.makedirs(folder, exist_ok=True)
-    for name, im in (("standalone", standalone(tiles, meta, title, cols, style)),
-                     ("stacked", stacked(tiles, meta, title, style))):
+    tiles = [t.convert("RGBA") for t in tiles]
+    for name in names:
+        fn = LAYOUTS[name]
+        im = (fn(tiles, meta, title, bg, cols) if name == "standalone" else fn(tiles, meta, title, bg)).convert("RGB")
         png, jpg = os.path.join(folder, name + ".png"), os.path.join(folder, name + ".jpg")
         im.save(png, optimize=True)
         im.save(jpg, quality=92, subsampling=0, optimize=True)
@@ -292,12 +404,17 @@ def main():
     p.add_argument("--title", required=True, help="the addon's name, for the showcase heading")
     p.add_argument("--out", required=True, help="the folder the crops and showcase/ go to")
     p.add_argument("--cols", type=int, default=3)
-    p.add_argument("--bg", choices=sorted(BACKGROUNDS), default="light")
+    p.add_argument("--bg", choices=sorted(BACKGROUNDS), default="slate")
+    p.add_argument("--layouts", help="comma-separated subset of: " + ", ".join(LAYOUTS))
     p.add_argument("--no-crop", action="store_true")
     p.add_argument("--from-crops", action="store_true")
     p.add_argument("--skins", help="comma-separated skin keys, when not every skin is shot")
     args = p.parse_args()
 
+    names = args.layouts.split(",") if args.layouts else list(LAYOUTS)
+    bad = [x for x in names if x not in LAYOUTS]
+    if bad:
+        sys.exit(f"unknown layouts: {', '.join(bad)} (known: {', '.join(LAYOUTS)})")
     known = skins()
     by_key = {s["key"]: s for s in known}
     if args.from_crops:
@@ -310,7 +427,7 @@ def main():
             meta.append(by_key[key])
         if not tiles:
             sys.exit(f"no NN-<key>.png crops in {args.out}")
-        write_showcases(tiles, meta, args.title, args.out, args.cols, args.bg)
+        write_showcases(tiles, meta, args.title, args.out, args.cols, args.bg, names)
         return
 
     if args.skins:
@@ -343,7 +460,7 @@ def main():
         print(f"{dest}  {im.width}x{im.height}")
         tiles.append(im)
         meta.append(m)
-    write_showcases(tiles, meta, args.title, args.out, args.cols, args.bg)
+    write_showcases(tiles, meta, args.title, args.out, args.cols, args.bg, names)
 
 
 if __name__ == "__main__":

@@ -46,11 +46,12 @@ mockup and the code disagree, the code wins, and the mockup is not updated to fo
 
 ## In-game screenshots
 
-Each iteration of the skins gets its own folder, `screenshots/vN/`, numbered in order: `v1`, `v2`, and
-the next set is `v3`. A set of the Skin Tester's showroom lives here, in `vN/SkinTester/`; a set of an
-addon's own window lives in that addon's repository, under the same `docs/skins/screenshots/vN/`.
+The screenshots live in `media/screenshots/skins/`, one folder per iteration of the skins, numbered in
+order: `v1`, `v2`, and the next set is `v3`. A set of the Skin Tester's showroom lives in this
+repository, in `media/screenshots/skins/vN/SkinTester/`; a set of an addon's own window lives in that
+addon's repository, under the same `media/screenshots/skins/vN/`.
 
-[`screenshots/v1/`](screenshots/v1/) holds the owner's screenshots from the
+[`v1/`](../../media/screenshots/skins/v1/) holds the owner's screenshots from the
 leg-1 smoke test (LibKa0s v1.78.0 at `7bc3e9b`, Ka0s Loot History as the only adopter). There is one
 pair per skin:
 
@@ -73,24 +74,32 @@ round (2026-10-26) are in the table.
 | 09 | WoW Forever | — |
 | 10 | EllesmereUI | EllesmereUI painting the addon itself (skin source EllesmereUI), for comparison. |
 
-[`screenshots/v2/`](screenshots/v2/) holds the owner's screenshots after the fifth round of skin notes
+[`v2/`](../../media/screenshots/skins/v2/) holds the owner's screenshots after the fifth round of skin notes
 (2026-10-28, LibKa0s v1.78.0 at `b2f6ec6`), which the owner called the skins looking great, each
 cropped to the window:
 
-- [`v2/SkinTester/`](screenshots/v2/SkinTester/): the Skin Tester's showroom, every element a skin
-  paints, with its showcases in [`showcase/`](screenshots/v2/SkinTester/showcase/).
+- [`v2/SkinTester/`](../../media/screenshots/skins/v2/SkinTester/): the Skin Tester's showroom, every element a skin
+  paints, with its showcases in [`showcase/`](../../media/screenshots/skins/v2/SkinTester/showcase/).
 - Loot History's History tab in the same nine skins, with its own `showcase/`, is in the
-  LootHistory repository at `docs/skins/screenshots/v2/`.
+  LootHistory repository at `media/screenshots/skins/v2/`.
 
 Each crop is `NN-<skin key>.png`, numbered in the order `SkinDefs.lua` registers the skins. Each set's
-`showcase/` folder has every skin at a glance, two ways, each as a PNG and a JPEG:
+`showcase/` folder has every skin at a glance, seven ways, each as a PNG and a JPEG, every skin under a
+label with its name and swatches:
 
-- `standalone`: every window on its own, in a grid, each under a label with its name and swatches.
-- `stacked`: the windows overlapping in two cascades that fan in toward the middle, a different skin
-  on each, the right-hand cascade behind the left-hand one.
+| Showcase | What it shows |
+|---|---|
+| `standalone` | Every window on its own, in a grid. |
+| `fan` | A hand of cards around a pivot below: Ka0s Default flat in the centre and in front, the rest tilting away behind it. |
+| `staircase` | One cascade from the top left to the bottom right, Ka0s Default in front. |
+| `hero` | Ka0s Default large on top, the other skins in a grid below it. |
+| `coverflow` | Ka0s Default flat in the centre, the others turned away in perspective on both sides. |
+| `slices` | One window cut into slanted bands, each band a different skin. |
+| `deck` | One row fanned out to the right like a spread deck, Ka0s Default in front at the left. |
 
-Both sit on a clean background and are drawn at the crops' own resolution (the Skin Tester's
-standalone is 3778×2910), so scale them down for wherever they go.
+All seven sit on the dark Slate background, lit a little behind the windows, with a faint light rim on
+each window so the near-black skins stand out. They are drawn at the crops' own resolution (the Skin
+Tester's standalone is 3778×2910), so scale them down for wherever they go.
 
 ## Making a new set
 
@@ -100,10 +109,10 @@ same window per skin, then, from this repository's root, write the set to the ne
 ```sh
 # the Skin Tester's showroom, kept here
 python3 -P tools/skin_gallery.py --title "Ka0s Skin Tester" \
-    --out docs/skins/screenshots/v3/SkinTester  shot1.png ... shot9.png
+    --out media/screenshots/skins/v3/SkinTester  shot1.png ... shot9.png
 # an addon's own window, kept in that addon's repository
 python3 -P tools/skin_gallery.py --title "Ka0s Loot History" \
-    --out ../LootHistory/docs/skins/screenshots/v3  shot1.png ... shot9.png
+    --out ../LootHistory/media/screenshots/skins/v3  shot1.png ... shot9.png
 ```
 
 The screenshots go in `SkinDefs.lua`'s order (Ka0s Default first); or put them in one folder named
@@ -111,6 +120,7 @@ The screenshots go in `SkinDefs.lua`'s order (Ka0s Default first); or put them i
 `SkinDefs.lua`, so a new or renamed skin needs no change to the script: run it again with one more
 screenshot. `--skins obsidian,glass` shoots a subset, `--no-crop` keeps screenshots already cropped,
 `--from-crops` rebuilds only the showcases from a set's own crops, `--cols` sets the standalone grid's
-columns and `--bg dark` swaps the light background for a dark one. The crop finds the window's outermost straight edges, so
+columns, `--layouts fan,hero` builds only some of the showcases, and `--bg plum` or `--bg graphite`
+swaps Slate for one of the two other dark grounds. The crop finds the window's outermost straight edges, so
 leave a little of the world showing on every side; a skin with rounded corners (Glass) keeps a few
 pixels of world in its corners.

@@ -108,7 +108,7 @@ skin's border and fill. `tools/artwork/fonts.py` is the provenance record for th
 `LibKa0s/media/fonts/`: `--fetch` downloads them from google/fonts at pinned commits, checking each
 SHA-256, into `tools/artwork/.cache/fonts/`, and `--build` copies them in and cuts static weights
 from the four variable ones (Inter, Nunito, Vollkorn, Bitter) with fontTools. `tools/skin_gallery.py`
-crops in-game skin screenshots and builds the showcases in `docs/skins/screenshots/`; it needs
+crops in-game skin screenshots and builds the showcases in `media/screenshots/skins/`; it needs
 Python 3, Pillow and NumPy only, and labels the showcases in the bundled Inter.
 
 | Tool | Why | Install |
