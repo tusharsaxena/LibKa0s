@@ -927,7 +927,7 @@ Skin Tester do, at their re-vendor).
 
 Extended on 2026-10-26, after the local tag and before any push (`SF-01`..`SF-10` of
 Ka0sAddonsCommonTasks `docs/2026-10-26-SKIN_FEEDBACK/`: the owner's notes on the leg-1 screenshots in
-`docs/skins/screenshots/2026-10-26-leg1/`, then on the Skin Tester's showroom in every skin).
+`docs/skins/screenshots/2026-10-26-leg1/`, now `docs/skins/screenshots/v1/`, then on the Skin Tester's showroom in every skin).
 `LibKa0s-Skin-1.0` key 5.13.10.3.8.1.3
 ([docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md); the
 in-flight 4.6.3.1.1.1.1 document and manifest moved to it, never shipped). No token or member is added,

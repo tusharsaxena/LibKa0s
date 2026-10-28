@@ -9,7 +9,7 @@ The skins, their order and their labels come from LibKa0s/SkinDefs.lua (its regi
 or renamed skin needs no change here. Run it again whenever a skin changes or is added.
 
 Usage:
-  python3 tools/skin_gallery.py --title "Ka0s Loot History" --out docs/skins/screenshots/<date>/LootHistory \\
+  python3 tools/skin_gallery.py --title "Ka0s Loot History" --out ../LootHistory/docs/skins/screenshots/vN \\
       shot1.png shot2.png ...          # one per skin, in SkinDefs order
   python3 tools/skin_gallery.py --title "..." --out DIR --dir SHOTS/   # SHOTS/<skin key>.png, any order
 
