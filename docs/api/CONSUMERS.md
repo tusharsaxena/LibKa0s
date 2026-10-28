@@ -71,6 +71,19 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.79.0, not in the census (2026-10-28, unreleased).** The release adds a major,
+`LibKa0s-Toast-1.0` (`Toast:New` and seven lib-level constants in
+`docs/api/Toast/members-1.json`, and the fifteen instance members of
+[its document](Toast/version-1-docs.md)), promoted under
+[LibKa0s#60](https://github.com/tusharsaxena/LibKa0s/issues/60). None gets a row here yet, and the
+v1.75.0 stamp and its numbers stand. **No host has adopted it.** Its two intended consumers are
+named so the re-run knows where to look: Ka0s DPS Race (its new-best toast, DpsRace#5, vendoring
+`Toast.lua` alone beside its v1.77.0 copy until its next full re-vendor) and Ka0s Drop Watcher (its
+upgrade toast, `modules/Toast.lua`, which keeps its content, qualification and combat hold). Ka0s
+DPS Race is not on the roster this census measured, so its first measurement is also its first
+appearance here. Both are `library-stack-§7`'s two consumers; until both call `Toast:New`, the
+major's verdict is *zero — planned at v1.79.0*.
+
 **v1.78.0, not in the census (2026-10-25).** The release adds a major, `LibKa0s-Skin-1.0`
 (its members in `docs/api/Skin/members-5.13.10.3.8.1.3.json`), the Options instance members
 `AppearanceTab` and `AppearanceRows` with the lib-level `APPEARANCE_STRINGS` (OptionsAppearance minor

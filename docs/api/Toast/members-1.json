@@ -1,0 +1,18 @@
+{
+  "major": "LibKa0s-Toast-1.0",
+  "versionKey": "1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Toast", "minor": 1 }
+  ],
+  "members": [
+    { "name": "DURATION", "kind": "number" },
+    { "name": "HEIGHT", "kind": "number" },
+    { "name": "MAX_QUEUE", "kind": "number" },
+    { "name": "New", "kind": "function" },
+    { "name": "POINT", "kind": "table" },
+    { "name": "PREVIEW", "kind": "string" },
+    { "name": "STRATA", "kind": "string" },
+    { "name": "WIDTH", "kind": "number" }
+  ]
+}

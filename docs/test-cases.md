@@ -407,6 +407,59 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
+### test_toast.lua (50)
+
+- toast: the major loads at minor 1 and reports its one file
+- toast: without Core the major is absent (no NewLibrary)
+- toast: New refuses a descriptor without a builder, naming it
+- toast: a method called on something that is not an instance raises
+- toast: nothing is built before the first Show
+- toast: the builder is called with the toast's frame and the payload, and sizes it
+- toast: a builder answering no size keeps the descriptor's, else the library's
+- toast: a builder answering false skips the payload and the next one shows
+- toast: a builder that raises costs its payload, reports through the error handler, and the next shows
+- toast: one at a time; the rest wait and show in the order they came
+- toast: past the cap the oldest waiting payload is dropped
+- toast: a toast closed mid-drag stops moving
+- toast: a cap under one still keeps the payload just queued
+- toast: Stats names the waiting payloads' keys, oldest first, false for none
+- toast: the cap defaults to MAX_QUEUE
+- toast: Remove drops queued payloads by key and closes the one on screen
+- toast: it closes after the host's duration and the next one shows with its own countdown
+- toast: a duration that is missing or not a positive number is DURATION
+- toast: hovering pauses the countdown and leaving resumes it with the time it had left
+- toast: leaving onto the toast itself (a child control) keeps it paused until the pointer goes
+- toast: the countdown resumes off the close mark even after its scripts were set again
+- toast: closing a toast while a leave watch runs cancels the watch
+- toast: a resumed countdown never has less than a second
+- toast: a sticky toast has no countdown and pausing it does nothing
+- toast: the close mark closes it and the next one shows
+- toast: a right-click anywhere closes it; a left-click does not
+- toast: hovering the close mark pauses, and a right-click on it closes
+- toast: Attach wires a host control to the pause and the right-click, keeping its own script
+- toast: the frame is the T5 alert tier: HIGH, toplevel, mouse-enabled, clamped
+- toast: the alert sound plays when the host says so, on the host's kit or the default
+- toast: no sound when the host says no
+- toast: the frame takes the host's scale, read again on Refresh
+- toast: the saved position is applied in UIParent's units, divided by the scale
+- toast: with no saved position it sits at defaultPosition, else POINT
+- toast: it drags only while the host says it may
+- toast: a drag saves the point times the scale, so the anchor survives a scale change
+- toast: ResetPosition hands the host nil and goes back to the default
+- toast: Hold puts the toast on screen back at the head and shows nothing until Release
+- toast: Hold(true) keeps the toast on screen and holds only what follows it
+- toast: a held toast gets its full duration again when it returns
+- toast: Preview shows past a Hold without releasing it
+- toast: Clear is the stand-down: nothing on screen, nothing waiting, no countdown, no hold
+- toast: Clear before anything was shown builds nothing
+- toast: Preview shows now, sticky, and the toast it covered waits at the head
+- toast: Stats and Current describe the toast
+- toast: the debug sink hears the shell, and a sink that raises costs nothing
+- toast: the skin and the close mark are Core's, called with the host's owner
+- toast: on a Core with no ApplySkin or MakeCloseButton it still shows and closes
+- toast: a close mark Core cannot build (no frame) leaves the toast without one
+- toast: two instances keep separate queues and frames
+
 ### test_media.lua (37)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
@@ -3442,6 +3495,7 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
+| test_toast.lua | 50 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
 | test_skin_defs.lua | 27 |
@@ -3557,4 +3611,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3031** |
+| **Total** | **3081** |
