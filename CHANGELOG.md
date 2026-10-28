@@ -146,6 +146,11 @@ minor 34, below; [docs/api/Options/version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.
   "<key> (not loaded)", so the field never shows blank.
 - `lib.APPEARANCE_STRINGS` gains `MEDIA_HEADING`, `FONT`, `FONT_TIP`, `TEXTURE`, `TEXTURE_TIP`,
   `SKIN_OWN` and `MEDIA_MISSING`. No instance member is added.
+- Amended before release (PK-02, the consumer reviews' finding): the skins' heading,
+  `SKIN_HEADING`, reads **"Look"**, since "Skin" repeated the tab's own name (options-ui-§7). The
+  other owners and one owner's skin copy moved to the library table (`lib.__skinOthers`,
+  `lib.__copySkinTo`, internal), so the skin picker's *Apply to all Ka0s addons* shares them;
+  the copy button behaves as before.
 
 Cases in `tests/test_options_appearance.lua`.
 

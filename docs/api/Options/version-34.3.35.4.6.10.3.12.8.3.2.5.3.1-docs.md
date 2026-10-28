@@ -60,6 +60,10 @@ attach line (`lib.__AttachSkinPicker(O, d)`) and no member of its own.
   [The Appearance tab](#the-appearance-tab-optionsappearancelua-minor-1), item 3.
 - **The copy carries them**: *Copy to every Ka0s addon…* gives each other owner this owner's font
   and texture as well, and `COPY_TIP` / `COPY_CONFIRM` say so.
+- **The skins' heading reads "Look"** (`SKIN_HEADING`), not "Skin": a subsection heading does not
+  repeat its tab's name (`options-ui-§7`). The other owners and one owner's skin copy are on the
+  library table (`lib.__skinOthers(Skin, owner)`, `lib.__copySkinTo(Skin, name, source, skin,
+  ignore, media)`, internal), shared with the skin picker's *Apply to all Ka0s addons*.
 
 The tab adds no instance member and changes no signature; `lib.APPEARANCE_STRINGS` gains
 `MEDIA_HEADING`, `FONT`, `FONT_TIP`, `TEXTURE`, `TEXTURE_TIP`, `SKIN_OWN` and `MEDIA_MISSING`.
@@ -2375,7 +2379,8 @@ Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
    client's ready-check mark (`Interface\RaidFrame\ReadyCheck-Ready`) or cross
    (`ReadyCheck-NotReady`) and, for a failing one, its fix. With a Skin copy that has no
    `GetEUIStatus` (no `SkinEUI.lua`) the choice is disabled and one line says so.
-2. **Skin**: one radio choice per registered skin, `Skin:Skins()` order, three to a line
+2. **Look** (`SKIN_HEADING`; not "Skin", the tab's own name since A3, `options-ui-§7`): one radio
+   choice per registered skin, `Skin:Skins()` order, three to a line
    (relative width 0.32), each labeled with its four swatches (`WHITE8X8` texture markup tinted from
    the skin's `swatches`) and its name, its description on the CheckBox's `SetDescription` and in its
    tooltip. While the stored source is `eui` a line says the skin is used only if EllesmereUI cannot
@@ -2458,7 +2463,8 @@ called `RegisterOwner`. Away from Ka0s Default the tab's secondary lines take th
 
 The tab's US English words, a literal table like `lib.KEYBIND_STRINGS`: `TAB_LABEL` ("Skin" since
 A3, "Appearance" before), `TAB_TIP`, `SOURCE_HEADING`, `SOURCE_KA0S`, `SOURCE_KA0S_TIP`,
-`SOURCE_EUI`, `SOURCE_EUI_TIP`, `EUI_READY`, `EUI_NOT_READY`, `EUI_MISSING`, `SKIN_HEADING`,
+`SOURCE_EUI`, `SOURCE_EUI_TIP`, `EUI_READY`, `EUI_NOT_READY`, `EUI_MISSING`, `SKIN_HEADING` ("Look"
+since A3, "Skin" before),
 `SKIN_EUI_NOTE`, `MEDIA_HEADING`, `FONT`, `FONT_TIP`, `TEXTURE`, `TEXTURE_TIP`, `SKIN_OWN` (`%s` the
 skin's own key), `MEDIA_MISSING` (`%s` a stored key LibSharedMedia lacks; those seven since A3),
 `SCOPE_HEADING`,

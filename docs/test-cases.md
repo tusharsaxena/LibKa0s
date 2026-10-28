@@ -2098,7 +2098,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (34)
+### test_options_appearance.lua (36)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2134,6 +2134,8 @@ Total.
 - appearance: without LibSharedMedia each dropdown offers only the skin's own
 - appearance: with a Skin copy before minor 6 the section is absent
 - appearance: a stored key LibSharedMedia lacks stays listed, and the skin's own names the worn face
+- appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
+- appearance: the other owners and one owner's skin copy are library-level, for the skin picker
 
 ### test_options_skin_picker.lua (16)
 
@@ -3605,7 +3607,7 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 34 |
+| test_options_appearance.lua | 36 |
 | test_options_skin_picker.lua | 16 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
@@ -3668,4 +3670,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3130** |
+| **Total** | **3132** |

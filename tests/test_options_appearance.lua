@@ -3,7 +3,8 @@
 -- O.AppearanceRows and lib.APPEARANCE_STRINGS, with the Skin major's two members the tab writes
 -- through (Skin minor 4: OwnerLabel and WriteChoice). Since OptionsAppearance minor 3 (LibKa0s#63)
 -- the tab is labeled "Skin" and draws a "Font and texture" section (Skin minor 6's SetOverride),
--- pinned at the end of this file.
+-- pinned near the end of this file; the last two cases (PK-02) pin the skins' heading, "Look", and
+-- the library-level copy helpers the skin picker shares.
 --
 -- What it pins: the tab entry (key, label, tooltip, its default place immediately before the
 -- Keybindings tab, and the overrides); the rows (the two source choices, the EllesmereUI gate's four
@@ -753,4 +754,44 @@ test("appearance: a stored key LibSharedMedia lacks stays listed, and the skin's
   assertEqual(font.list["Gone Font"], "Gone Font (not loaded)", "the stored key, marked")
   assertEqual(font.order[#font.order], "Gone Font", "after LSM's keys")
   assertEqual(font.value, "Gone Font", "so the field shows it")
+end)
+
+-- ── PK-02: the skins' heading, and the copy's shared half ────────────────────────────────────
+
+test("appearance: the skins' heading does not repeat the tab's name (options-ui-\194\167" .. "7)", function()
+  -- red under: SKIN_HEADING = "Skin", the tab's own label since minor 3.
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  O.AppearanceRows(ctx, specFor(store))
+  local S = lib.APPEARANCE_STRINGS
+  assertEqual(S.SKIN_HEADING, "Look")
+  assertTrue(S.SKIN_HEADING ~= S.TAB_LABEL, "a subsection heading is not the tab's name")
+  assertTrue(hasText(ctx, "Look"), "the skins' heading drawn")
+  for _, t in ipairs(texts(ctx)) do
+    assertTrue(t ~= S.TAB_LABEL, "no line reads the tab's name alone")
+  end
+end)
+
+test("appearance: the other owners and one owner's skin copy are library-level, for the skin picker", function()
+  -- red under: others(view) and copyTo's per-owner body private to the attach (the picker's
+  -- "Apply to all Ka0s addons" had to restate them).
+  local _, Skin, lib = env()
+  register(Skin, OWNER)
+  local other = register(Skin, OTHER)
+  register(Skin, THIRD)
+  assertEqual(table.concat(lib.__skinOthers(Skin, OWNER), "|"), OTHER .. "|" .. THIRD, "sorted, the owner left out")
+  assertEqual(#lib.__skinOthers(Skin, "NotAnOwner"), 3, "every owner for a name that is none")
+  Skin:SetIgnore(OTHER, true, false)
+  Skin:SetOverride(OTHER, "Ka0s Inter", nil)
+  local before = other.writes
+  local reload = lib.__copySkinTo(Skin, OTHER, "ka0s", "ember")
+  assertFalse(reload, "no reload for a Ka0s skin switch")
+  assertEqual(select(2, Skin:GetChoice(OTHER)), "ember", "the applied choice moved")
+  assertEqual(other.skin, "ember", "and its profile, through its own setter")
+  assertEqual(other.writes, before + 1, "one write")
+  assertNil(other.ignore, "no scope half written")
+  assertNil(other.media, "no font or texture half written")
+  assertEqual(select(1, Skin:GetIgnore(OTHER)), true, "its scope left alone")
+  assertEqual(select(1, Skin:GetOverride(OTHER)), "Ka0s Inter", "its font left alone")
 end)
