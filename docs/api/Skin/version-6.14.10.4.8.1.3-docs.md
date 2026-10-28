@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` minor **6** · `SkinDefs.lua` minor **14** · `SkinPaint.lua` minor **10** · `SkinPaintExtras.lua` minor **4** · `SkinPaintControls.lua` minor **8** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
-| Shipped in | v1.79.0 (unreleased, opened 2026-10-28) |
+| Shipped in | v1.79.0 |
 | Status | **Current** |
 | Supersedes | [version 6.13.10.4.8.1.3](./version-6.13.10.4.8.1.3-docs.md) (unreleased) — the same surface with Ka0s Default drawing Friz Quadrata and the Blizzard bar (SkinDefs minor 13); and [version 5.13.10.3.8.1.3](./version-5.13.10.3.8.1.3-docs.md) (shipped in v1.78.0), without an owner's font and texture overrides (`GetOverride`, `SetOverride`, `WriteChoice`'s `media`) and the `BarTexture` primitive |
 | Superseded by | — |

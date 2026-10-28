@@ -12,7 +12,7 @@
 | Shipped in | v1.78.0 |
 | Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | [version 6.13.10.4.8.1.3](./version-6.13.10.4.8.1.3-docs.md) |
+| Superseded by | [version 6.13.10.4.8.1.3](./version-6.13.10.4.8.1.3-docs.md) (unreleased), shipped as [version 6.14.10.4.8.1.3](./version-6.14.10.4.8.1.3-docs.md) in v1.79.0 |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 4, SkinDefs = 6, SkinPaint = 3, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
 
@@ -1362,3 +1362,24 @@ token resolves to nil, and every primitive paints only what it has a token for (
 `SkinAce.lua` (which needs `SkinPaint.lua`'s helpers from the same copy) no AceGUI row is painted and
 no Options instance's `O.AceGUI` is wrapped. The engine's state is written `lib.x = lib.x or {}`, so a newer copy that wins
 the LibStub race later keeps every owner, record and facade; the resolve cache alone is rebuilt.
+
+## Moving to version 6.14.10.4.8.1.3
+
+**Take it; no member moves or changes its signature.** Version 6.14.10.4.8.1.3, shipped in v1.79.0
+(6.13.10.4.8.1.3 was its unshipped first step), is this surface plus an owner's font and texture
+overrides and one paint primitive:
+
+- `Skin:GetOverride(owner)` and `Skin:SetOverride(owner, font, texture)` (Skin minor 6), laid over
+  the owner's tokens where they resolve, and `Skin:WriteChoice`'s optional fifth argument `media`,
+  which reaches the host's setter as its fourth. An owner that sets neither override reads exactly
+  the table this version answers, and an older setter ignores the extra argument.
+- `S.BarTexture(target, r, g, b, a)` (SkinPaintExtras minor 4), the owner's `bar.texture` on a
+  Texture or a StatusBar, tinted and recorded.
+- SkinDefs minor 14: Ka0s Default's `font.body` and `hud.font` become `Ka0s Oxanium SemiBold`, its
+  `font.title` `Ka0s Oxanium Bold` and its `bar.texture` `Ka0s Default` (shipped by
+  `LibKa0s-Media-1.0` minor 9, which a host must vendor with it), and every skin but WoW Default
+  names a generated bar of its own; every other skin keeps the faces it drew here. A host on Ka0s Default
+  that follows the skin's face or bar therefore draws differently at its re-vendor with no code
+  change; one that registers no owner is unaffected.
+
+See [version 6.14.10.4.8.1.3](./version-6.14.10.4.8.1.3-docs.md).

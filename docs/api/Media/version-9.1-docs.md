@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **9** · `MediaIcons.lua` minor **1** |
-| Shipped in | v1.79.0 (unreleased, opened 2026-10-28) |
+| Shipped in | v1.79.0 |
 | Status | **Current** |
 | Supersedes | [version 8.1](./version-8.1-docs.md) (shipped in v1.78.0) — the same surface without Oxanium in `FONTS`, and without `Ka0s Default` and the seven skins' own bars in `TEXTURES` |
 | Superseded by | — |

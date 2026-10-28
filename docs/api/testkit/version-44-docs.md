@@ -9,7 +9,7 @@
 | Payload | `testkit/` — `framework.lua`, `asserts.lua`, `inventory.lua`, `secrets.lua`, `latch.lua`, `bindings_xml.lua`, `loader.lua`, `mock_base.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`, `mock_lines.lua`, `mock_ids.lua`, `mock_bindings.lua`, `mock_layers.lua`, `mock_paint.lua`, `vendor_sync.lua`, `test_eol.lua`, `test_prose.lua`, `prose_lists.lua`, `prose_coverage.lua`, `prose_selftests.lua`, `test_layout_cap.lua`, `test_diagnostics_contract.lua`, `lizard_sighted.lua`, `test_lizard_sighted.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **44** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.79.0 (unreleased, opened 2026-10-28) |
+| First released in | v1.79.0 |
 | Status | **Current** |
 | Supersedes | [version 43](version-43-docs.md) — a StatusBar built under the paint recorder answered `SetStatusBarTexture`, `SetStatusBarColor` and `GetStatusBarColor` from the base's metatable (the frame), so a bar's fill could not be asserted |
 | Superseded by | — |

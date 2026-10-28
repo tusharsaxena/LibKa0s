@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Toast-1.0` |
 | File | `Toast.lua` minor **1** |
-| Shipped in | v1.79.0 (unreleased, opened 2026-10-28) |
+| Shipped in | v1.79.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
 | Superseded by | — |

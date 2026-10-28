@@ -3312,3 +3312,18 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 34.4.35.4.6.10.3.12.8.3.2.5.3.1
+
+**Take it; only the degradation stub moves.** Version 34.4.35.4.6.10.3.12.8.3.2.5.3.1, shipped in
+v1.79.0, is this surface plus the first-run skin picker in a fourteenth file,
+`OptionsSkinPicker.lua` (`O.SkinPicker(spec)`, `O.HideSkinPicker()`, `lib.SKIN_PICKER_STRINGS`),
+attached by one guarded line in `Options.lua` 34. `O.OpenOptionsPanel` takes an optional page key
+(OptionsRegistry minor 4); without one it opens the main category as here. The Appearance tab
+(OptionsAppearance minor 3) is labeled "Skin", its key still `"Appearance"`, its skins heading reads
+"Look", and it gains a *Font and texture* section through `LibKa0s-Skin-1.0` minor 6's overrides,
+which its copy carries; `lib.APPEARANCE_STRINGS` gains seven strings and no instance member is
+added. **Every Options degradation stub owes two new members, `SkinPicker` and `HideSkinPicker`**,
+which `Kit.assertSurfaceParity` checks against the live instance. A host that shows the picker
+declares the Media icons `eye` and `settings`. See
+[version 34.4.35.4.6.10.3.12.8.3.2.5.3.1](./version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md).

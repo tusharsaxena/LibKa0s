@@ -10,13 +10,18 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.79.0 — unreleased
+## v1.79.0 — 2026-10-28
 
 Opened 2026-10-28, on `feat/2026-10-28-toast-1.0` (a worktree off `master`, beside the skin work
 still in flight on another branch): the alert-toast shell approved in
 [LibKa0s#60](https://github.com/tusharsaxena/LibKa0s/issues/60), for Ka0s DPS Race's new-best toast
-(DpsRace#5) and Drop Watcher's upgrade toast. Not tagged; the release order against v1.78.0's
-open work is settled at finalize.
+(DpsRace#5) and Drop Watcher's upgrade toast. That branch merged to `master` after v1.78.0's tag,
+and the release is closed on `feat/2026-10-28-skin-overrides-picker`, which carries it together with
+the owner's font and texture overrides
+([LibKa0s#63](https://github.com/tusharsaxena/LibKa0s/issues/63)), the first-run skin picker
+([LibKa0s#64](https://github.com/tusharsaxena/LibKa0s/issues/64)), Ka0s Default's Oxanium face and
+a bar texture for every skin (Ka0sAddonsCommonTasks `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`,
+`SO-05`). The tag is local until the owner's go-ahead.
 
 Versions in this release: **Toast minor 1** (the new major `LibKa0s-Toast-1.0`, key **1**) and
 **DebugLogDiagnostics minor 5** (`LibKa0s-DebugLog-1.0` key **22.5.1.1**), and, from
@@ -29,17 +34,19 @@ entry below moves one. Now **nineteen majors across fifty-three files**: one maj
 added for the toast (`Toast.lua`, fifty-two), one file for the skin picker (`OptionsSkinPicker.lua`,
 fifty-three), and no `NEEDS_*` floor rises.
 
-**Pending standard change, before the tag** (the skin picker): frame-layering-§6's library-owned
-tiers gain the row `LibKa0s-Options-1.0` skin picker | `DIALOG` | inherited | toplevel / clamped, and
-library-stack-§7's module table is recounted from the Toast change's fifty-two files to
+**Pending standard change, before the tag is pushed** (the skin picker): frame-layering-§6's
+library-owned tiers gain the row `LibKa0s-Options-1.0` skin picker | `DIALOG` | inherited | toplevel /
+clamped, and library-stack-§7's module table is recounted from the Toast change's fifty-two files to
 **fifty-three**. Held until this branch merges, as the Toast change is.
 
-**Pending standard change, before the tag.** The Ka0s WoW Addon Standard has to move with this
-release, upstream in WowAddonStandards: library-stack-§7's module table gains a `Toast` row and is
-recounted to nineteen majors across fifty-two files (fifty-three once the skin picker's recount
+**Pending standard change, before the tag is pushed.** The Ka0s WoW Addon Standard has to move with
+this release, upstream in WowAddonStandards: library-stack-§7's module table gains a `Toast` row and
+is recounted to nineteen majors across fifty-two files (fifty-three once the skin picker's recount
 above lands with it, the count this release ships), and frame-layering-§6 (library-owned tiers)
-gains the row `LibKa0s-Toast-1.0` toast | `HIGH` | inherited | toplevel / clamped. It lands upstream
-before v1.79.0 is tagged, held until this branch merges (the owner's standards-push rule).
+gains the row `LibKa0s-Toast-1.0` toast | `HIGH` | inherited | toplevel / clamped. Neither change
+had landed upstream when the local tag was cut (the standard read v2.90.0, with no `Toast` row);
+both land before `v1.79.0` is pushed, held until this branch merges (the owner's standards-push
+rule).
 
 ### Toast minor 1: the alert-toast shell
 
@@ -319,6 +326,63 @@ Documented in [docs/api/testkit/version-44-docs.md](docs/api/testkit/version-44-
 Through revision 43 those calls answered the frame and recorded nothing, so `S.BarTexture` on a
 StatusBar could not be asserted (fidelity rules 1 and 3). Consumers re-vendor `tests/_kit/` whole;
 nothing else is owed. Cases in `tests/test_mock_paint.lua`.
+
+### Docs and process
+
+- **Released 2026-10-28 with no minor of its own.** Every minor above is the one its change moved;
+  the close bumps none. The versions paragraph rechecks against every major's live `lib.MODULES`
+  (`tests/test_versioning.lua` green), and the counts against the tree:
+  `grep -c 'major = "LibKa0s-' tests/majors.lua` answers 19 and
+  `grep -c '<Script' LibKa0s/LibKa0s.xml` 53. `docs/test-cases.md` and the members manifests
+  regenerate from the same tree with no diff.
+- **Built to standard v2.90.0** (was v2.89.0): the README's standards pointer moves after a read of
+  v2.90.0's one ruling, standalone-windows' new *Resizing* subsection (anti-pattern #108): a
+  resizable window does cheap layout only while it is sized, coalesced to one pass per rendered
+  frame, and runs its full redraw and its saved-size write once, when sizing ends. It names the
+  library's own windows (the debug console, its copy windows, the perf panel) as the library's to
+  keep. This release changes none of them, and none is yet checked against the subsection.
+  `Core.MakeResizable` already splits the two halves (`onResize` every size tick, `onResizeStop`
+  once per mouse-up), but its `relayout` runs on every `OnSizeChanged` call rather than once per
+  rendered frame, so the library's half of the rule is an open item for a later release, not a
+  claim of this one.
+- **Hosts affected by the preview and simulation re-look (step 5): none.** No minor of `Sim.lua`,
+  `SimTimeline.lua`, `SimPanel.lua` or `Widgets.lua` (the file that defines `W.TestStrip`) moved
+  since v1.78.0 (`git diff --stat v1.78.0 -- LibKa0s/Sim*.lua LibKa0s/Widgets.lua` prints nothing).
+- **Step 8 is LootHistory and Ka0s Skin Tester, by the plan.** The two first adopters of the
+  overrides and the picker re-vendor the tag (`LH-02` and `ST-02` of Ka0sAddonsCommonTasks
+  `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`); every other consumer re-vendors at the
+  collection-wide skinning adoption pass. In a client where either is installed, its v1.79.0 copy
+  wins every shared major it moved (Media 9, Skin 6.14.10.4.8.1.3, Options 34, DebugLog 22.5.1.1),
+  and an addon that registers no skin owner, sets no override and never calls `O.SkinPicker` draws
+  what it drew on v1.78.0. Toast has no consumer yet; Drop Watcher and Ka0s DPS Race adopt it on
+  their own runs.
+- **Consumers.** `docs/releasing.md`'s Skin row names the two adopters' override and picker sites
+  (LootHistory's `core/SkinSetup.lua` and `settings/OptionsSetup.lua`, Ka0s Skin Tester's
+  `core/SkinSetup.lua`, `settings/OptionsSetup.lua` and `modules/ShowroomTextures.lua`).
+  `docs/api/CONSUMERS.md` keeps its v1.75.0 stamp and records the release's new exports as not
+  measured until the skinning adoption pass's census.
+- **The tag is local, and a re-cut is the lead's.** While `v1.79.0` is unpushed, a LibKa0s defect
+  found by `LH-02`, `ST-02` or the owner's smoke checks becomes a new LibKa0s item that bumps the
+  minors it touches and extends this block; the lead then deletes and re-creates the local tag after
+  a clean-tree `tests/_kit/run-automated-tests.sh --release 1.79.0` with a new bundle, `ANALYSIS.md`
+  and release-gate line, as v1.78.0's twelve extensions were.
+
+### What a consumer owes
+
+- **Every Options degradation stub gains `SkinPicker` and `HideSkinPicker`** (OptionsSkinPicker
+  minor 1), in every addon, adopted or not: `Kit.assertSurfaceParity` is red at the re-vendor until
+  the stub answers them.
+- **Re-vendor the whole folder.** Two files are new (`Toast.lua`, with its major, and
+  `OptionsSkinPicker.lua`) and each must arrive with its shell; `media/fonts/` gains
+  `Oxanium-SemiBold.ttf`, `Oxanium-Bold.ttf` and `Oxanium-OFL.txt`, and `media/textures/` the eight
+  generated bars (`ka0s-default.tga`, `matte.tga`, `parchment.tga`, `glass-bar.tga`, `solid.tga`,
+  `forge.tga`, `satin.tga`, `classic.tga`).
+- **A host that shows the picker declares the icons `eye` and `settings`** in its `LibKa0s icons:`
+  line, or the icon prune removes them and the two buttons draw glyphs.
+- **Ka0s Default looks different.** Its body, HUD and title faces are Oxanium and its bars the
+  `Ka0s Default` texture, so an adopted addon on Ka0s Default changes look at its re-vendor with no
+  code change; its smoke checks re-look at it. An addon that registers no skin owner is unaffected.
+- **Nothing else is owed until an addon adopts** the overrides, `S.BarTexture`, the picker or Toast.
 
 ## v1.78.0 — 2026-10-25
 

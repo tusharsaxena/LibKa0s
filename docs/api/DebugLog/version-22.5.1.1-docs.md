@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **5** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **1** |
-| Shipped in | v1.79.0 (unreleased, opened 2026-10-28) |
+| Shipped in | v1.79.0 |
 | Status | **Current** |
 | Supersedes | [version 22.4.1.1](./version-22.4.1.1-docs.md) (shipped in v1.78.0) — the same surface; its report's identity header did not name Toast |
 | Superseded by | — |
