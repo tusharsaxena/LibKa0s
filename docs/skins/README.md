@@ -46,7 +46,11 @@ mockup and the code disagree, the code wins, and the mockup is not updated to fo
 
 ## In-game screenshots
 
-[`screenshots/2026-10-26-leg1/`](screenshots/2026-10-26-leg1/) holds the owner's screenshots from the
+Each iteration of the skins gets its own folder, `screenshots/vN/`, numbered in order: `v1`, `v2`, and
+the next set is `v3`. A set of the Skin Tester's showroom lives here, in `vN/SkinTester/`; a set of an
+addon's own window lives in that addon's repository, under the same `docs/skins/screenshots/vN/`.
+
+[`screenshots/v1/`](screenshots/v1/) holds the owner's screenshots from the
 leg-1 smoke test (LibKa0s v1.78.0 at `7bc3e9b`, Ka0s Loot History as the only adopter). There is one
 pair per skin:
 
@@ -69,26 +73,29 @@ round (2026-10-26) are in the table.
 | 09 | WoW Forever | — |
 | 10 | EllesmereUI | EllesmereUI painting the addon itself (skin source EllesmereUI), for comparison. |
 
-[`screenshots/2026-10-28-round5/`](screenshots/2026-10-28-round5/) holds the owner's screenshots after
-the fifth round of skin notes (LibKa0s v1.78.0 at `b2f6ec6`), which the owner called the skins looking
-great. There is one folder per addon, each cropped to the window:
+[`screenshots/v2/`](screenshots/v2/) holds the owner's screenshots after the fifth round of skin notes
+(2026-10-28, LibKa0s v1.78.0 at `b2f6ec6`), which the owner called the skins looking great, each
+cropped to the window:
 
-- [`SkinTester/`](screenshots/2026-10-28-round5/SkinTester/): the Skin Tester's showroom, every element
-  a skin paints. [`showcase.png`](screenshots/2026-10-28-round5/SkinTester/showcase.png) is all nine
-  at a glance.
-- [`LootHistory/`](screenshots/2026-10-28-round5/LootHistory/): Loot History's History tab.
-  [`showcase.png`](screenshots/2026-10-28-round5/LootHistory/showcase.png) is all nine at a glance.
+- [`v2/SkinTester/`](screenshots/v2/SkinTester/): the Skin Tester's showroom, every element a skin
+  paints. [`showcase.png`](screenshots/v2/SkinTester/showcase.png) is all nine at a glance.
+- Loot History's History tab in the same nine skins, with its own `showcase.png`, is in the
+  LootHistory repository at `docs/skins/screenshots/v2/`.
 
 Each crop is `NN-<skin key>.png`, numbered in the order `SkinDefs.lua` registers the skins.
 
 ## Making a new set
 
 `tools/skin_gallery.py` does the cropping and the showcase for any addon. Take one screenshot of the
-same window per skin, then, from the repository root:
+same window per skin, then, from this repository's root, write the set to the next free `vN`:
 
 ```sh
+# the Skin Tester's showroom, kept here
+python3 -P tools/skin_gallery.py --title "Ka0s Skin Tester" \
+    --out docs/skins/screenshots/v3/SkinTester  shot1.png ... shot9.png
+# an addon's own window, kept in that addon's repository
 python3 -P tools/skin_gallery.py --title "Ka0s Loot History" \
-    --out docs/skins/screenshots/<YYYY-MM-DD>-<topic>/LootHistory  shot1.png ... shot9.png
+    --out ../LootHistory/docs/skins/screenshots/v3  shot1.png ... shot9.png
 ```
 
 The screenshots go in `SkinDefs.lua`'s order (Ka0s Default first); or put them in one folder named
