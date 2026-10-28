@@ -573,6 +573,21 @@ test("toast: Hold puts the toast on screen back at the head and shows nothing un
   assertEqual(t:Current(), "b")
 end)
 
+test("toast: Hold(true) keeps the toast on screen and holds only what follows it", function()
+  local t, m = newToast()
+  t:Show("a")
+  t:Show("b")
+  t:Hold(true)
+  assertEqual(t:Current(), "a", "the toast on screen stays up")
+  assertEqual(live(m), 1, "and keeps its countdown")
+  assertTrue(t:Stats().held)
+  t:Dismiss()
+  assertNil(t:Current(), "what waits behind the hold still waits")
+  assertEqual(t:Stats().waiting, 1)
+  t:Release()
+  assertEqual(t:Current(), "b")
+end)
+
 test("toast: a held toast gets its full duration again when it returns", function()
   local t, m = newToast({ duration = 6 })
   m.__now = 0

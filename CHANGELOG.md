@@ -54,7 +54,8 @@ The new major `LibKa0s-Toast-1.0`, documented in
 - **The content is the host's.** `d.build(frame, payload)` is the one presentation argument; it
   answers the frame's size, or `false` to skip the payload, and a raise costs only its payload.
 - **No behavior flags.** `Clear()` is the stand-down; `Hold()` and `Release()` let a host keep alerts
-  off screen (Drop Watcher's combat hold) without a combat flag in the library; `Preview(payload)` is
+  off screen (Drop Watcher's combat hold) without a combat flag in the library, and `Hold(true)`
+  leaves a toast already on screen up and holds only what follows it; `Preview(payload)` is
   test mode's sticky placement toast, ended with `Remove(Toast.PREVIEW)`.
 
 It needs Core minor 1 and calls only `ApplySkin` and `MakeCloseButton`, each presence-checked, so a

@@ -407,7 +407,7 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
-### test_toast.lua (49)
+### test_toast.lua (50)
 
 - toast: the major loads at minor 1 and reports its one file
 - toast: without Core the major is absent (no NewLibrary)
@@ -447,6 +447,7 @@ Total.
 - toast: a drag saves the point times the scale, so the anchor survives a scale change
 - toast: ResetPosition hands the host nil and goes back to the default
 - toast: Hold puts the toast on screen back at the head and shows nothing until Release
+- toast: Hold(true) keeps the toast on screen and holds only what follows it
 - toast: a held toast gets its full duration again when it returns
 - toast: Preview shows past a Hold without releasing it
 - toast: Clear is the stand-down: nothing on screen, nothing waiting, no countdown, no hold
@@ -3493,7 +3494,7 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
-| test_toast.lua | 49 |
+| test_toast.lua | 50 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
 | test_skin_defs.lua | 24 |
@@ -3609,4 +3610,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3079** |
+| **Total** | **3080** |
