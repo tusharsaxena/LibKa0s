@@ -218,7 +218,7 @@ v1.78.0's close (2026-10-25): still eight, nothing over 1500, and every figure
 below is current. Re-measured 2026-10-27 after the skin-feedback rounds (`SF-*` of
 Ka0sAddonsCommonTasks `docs/2026-10-26-SKIN_FEEDBACK/`): still eight, none of them touched. Re-measured at v1.79.0's close
 (2026-10-28, `SO-05` of Ka0sAddonsCommonTasks `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`): still eight, nothing over
-1500, every figure below current; the release's new files, `LibKa0s/OptionsSkinPicker.lua` (757),
+1500, every figure below current; the release's new files, `LibKa0s/OptionsSkinPicker.lua` (765),
 `LibKa0s/Toast.lua` (460) and `tests/test_options_skin_picker.lua` (966), are out of the band. Largest first:
 
 - `testkit/mock_base.lua` (1465 with kit revision 43's one comment line pointing at `testkit/mock_paint.lua`, measured 2026-10-25, under its 1490 re-check trigger; 1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite

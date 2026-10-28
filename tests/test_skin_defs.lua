@@ -416,15 +416,20 @@ local LSM_FONTS = { ["Friz Quadrata TT"] = true }
 -- ...and its default statusbar key: the client's Blizzard bar, WoW Default's through KEEP.
 local LSM_BARS = { ["Blizzard"] = true }
 
--- One token of skin `key`: a face names a shipped or LSM font, a bar texture a shipped or LSM bar, a
--- nine-slice a known border, a border style one of the four shapes.
-local function assertNamedMedia(Media, key, name, v)
+-- A face names a shipped or LSM font, a bar texture a shipped or LSM bar.
+local function assertNamedFile(Media, key, name, v)
   if name == "bar.texture" then
     assertTrue(Media.TEXTURES[v] ~= nil or LSM_BARS[v], key .. ": bar.texture = " .. tostring(v) .. " is shipped")
   end
   if name:match("^font%.") and type(v) == "string" and name ~= "font.outline" then
     assertTrue(Media.FONTS[v] ~= nil or LSM_FONTS[v], key .. ": " .. name .. " = " .. v .. " is shipped")
   end
+end
+
+-- One token of skin `key`: its file (assertNamedFile), a nine-slice a known border, a border style
+-- one of the four shapes.
+local function assertNamedMedia(Media, key, name, v)
+  assertNamedFile(Media, key, name, v)
   local nine = type(v) == "string" and v:match("^nine:(.+)$")
   if nine then
     assertTrue(Media.BORDERS[nine] ~= nil or LSM_BORDERS[nine],
