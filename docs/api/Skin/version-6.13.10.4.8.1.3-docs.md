@@ -1375,4 +1375,7 @@ its `bar.texture` `Ka0s Default` (all shipped by `LibKa0s-Media-1.0` minor 9), a
 `translate()` gives every other skin that sets none of those four tokens Friz Quadrata TT and the
 `Blizzard` bar, the values it inherited here. A host whose saved HUD default names
 `"Friz Quadrata TT"` or `"Blizzard"` keeps it; one that follows the skin (`FROM_SKIN`) on Ka0s
-Default draws the new face and bar. See [version 6.14.10.4.8.1.3](./version-6.14.10.4.8.1.3-docs.md).
+Default draws the new face and bar. Every skin but WoW Default also draws a generated bar of its own
+(`Ka0s Matte`, `Ka0s Parchment`, `Ka0s Glass Bar`, `Ka0s Solid`, `Ka0s Forge`, `Ka0s Satin`,
+`Ka0s Classic`, shipped by Media minor 9), so a host following the skin's bar on those seven draws
+it; WoW Default keeps `Blizzard`. See [version 6.14.10.4.8.1.3](./version-6.14.10.4.8.1.3-docs.md).

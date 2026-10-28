@@ -462,6 +462,8 @@ and normalized line endings on everything, which is right for Lua and wrong for 
 
 **Take it; nothing moves.** Version 9.1 is additive: every name and path here resolves the same and
 no signature changes. What arrives: `Ka0s Oxanium SemiBold` and `Ka0s Oxanium Bold` in `FONTS`
-(Ka0s Default's faces, western only, SIL OFL 1.1 in `Oxanium-OFL.txt`) and `Ka0s Default` in
-`TEXTURES` (Ka0s Default's generated bar texture), so `RegisterLSM` counts seventeen fonts and eight
-bars. See [version 9.1](./version-9.1-docs.md).
+(Ka0s Default's faces, western only, SIL OFL 1.1 in `Oxanium-OFL.txt`), and in `TEXTURES` `Ka0s
+Default` (Ka0s Default's generated bar texture) and a generated bar for each of seven more skins
+(`Ka0s Matte`, `Ka0s Parchment`, `Ka0s Glass Bar`, `Ka0s Solid`, `Ka0s Forge`, `Ka0s Satin`, `Ka0s
+Classic`), so `RegisterLSM` counts seventeen fonts and fifteen bars. See
+[version 9.1](./version-9.1-docs.md).

@@ -413,10 +413,15 @@ local LSM_BORDERS = { ["Blizzard Dialog"] = true, ["Blizzard Tooltip"] = true }
 -- ...and its default font keys: Friz Quadrata, the client's own face, set by name (WoW Default's, and
 -- through SkinDefs' KEEP every skin's that names no face of its own).
 local LSM_FONTS = { ["Friz Quadrata TT"] = true }
+-- ...and its default statusbar key: the client's Blizzard bar, WoW Default's through KEEP.
+local LSM_BARS = { ["Blizzard"] = true }
 
--- One token of skin `key`: a face names a shipped or LSM font, a nine-slice a known border, a border
--- style one of the four shapes.
+-- One token of skin `key`: a face names a shipped or LSM font, a bar texture a shipped or LSM bar, a
+-- nine-slice a known border, a border style one of the four shapes.
 local function assertNamedMedia(Media, key, name, v)
+  if name == "bar.texture" then
+    assertTrue(Media.TEXTURES[v] ~= nil or LSM_BARS[v], key .. ": bar.texture = " .. tostring(v) .. " is shipped")
+  end
   if name:match("^font%.") and type(v) == "string" and name ~= "font.outline" then
     assertTrue(Media.FONTS[v] ~= nil or LSM_FONTS[v], key .. ": " .. name .. " = " .. v .. " is shipped")
   end
@@ -431,7 +436,7 @@ local function assertNamedMedia(Media, key, name, v)
   end
 end
 
-test("skin defs: every font and border a skin names is shipped or an LSM default", function()
+test("skin defs: every font, bar texture and border a skin names is shipped or an LSM default", function()
   local Skin = skinLib()
   local Media = T.mocks.LibStub("LibKa0s-Media-1.0")
   for _, def in ipairs(Skin:Skins()) do
@@ -480,7 +485,7 @@ test("skin defs: every skin draws one family of its own, for body and titles ali
   assertTrue(hc["font.bodySize"] > base["font.bodySize"], "High Contrast reads larger")
 end)
 
-test("skin defs: Ka0s Default's Oxanium and its own bar stay its own; every other skin keeps Friz and Blizzard", function()
+test("skin defs: Ka0s Default's Oxanium and its own bar stay its own; a skin naming neither keeps Friz and Blizzard", function()
   -- SkinDefs minor 14. Every skin inherits Ka0s Default's tokens, so without KEEP minor 14's choice
   -- would have moved every skin's HUD face and bar texture with it. red under: a skin naming no HUD
   -- face or bar texture of its own that reads Oxanium or the Ka0s Default bar.
@@ -492,7 +497,7 @@ test("skin defs: Ka0s Default's Oxanium and its own bar stay its own; every othe
     if key ~= "ka0s" then
       local own, t = Skin.skins[key].tokens, Skin:ResolveSkin(key)
       assertEqual(t["hud.font"], own["hud.font"] or FRIZ, key .. " keeps Friz Quadrata for HUD text")
-      assertEqual(t["bar.texture"], own["bar.texture"] or "Blizzard", key .. " keeps the Blizzard bar")
+      assertEqual(t["bar.texture"], own["bar.texture"] or "Blizzard", key .. " draws its own bar or Blizzard")
       assertTrue(family(t["font.body"]) ~= "Ka0s Oxanium" and family(t["font.title"]) ~= "Ka0s Oxanium",
         key .. " does not inherit Ka0s Default's face")
     end
@@ -500,6 +505,24 @@ test("skin defs: Ka0s Default's Oxanium and its own bar stay its own; every othe
   local wow = Skin:ResolveSkin("wow")
   assertEqual(wow["font.body"], FRIZ, "WoW Default's body, through KEEP")
   assertEqual(wow["font.title"], FRIZ, "WoW Default's titles, through KEEP")
+end)
+
+test("skin defs: every skin draws its own bar texture, and WoW Default the client's", function()
+  -- SO-04, the owner's approved mockup (still SkinDefs minor 14 and Media minor 9, unreleased).
+  -- red under: a skin drawing another skin's bar, or WoW Default losing the client's Blizzard bar.
+  local Skin = skinLib()
+  local want = {
+    ka0s = "Ka0s Default", obsidian = "Ka0s Matte", azeroth = "Ka0s Parchment", glass = "Ka0s Glass Bar",
+    contrast = "Ka0s Solid", ember = "Ka0s Forge", wow = "Blizzard", midnight = "Ka0s Satin",
+    forever = "Ka0s Classic",
+  }
+  local seen = {}
+  for _, key in ipairs(KEYS) do
+    local bar = Skin:ResolveSkin(key)["bar.texture"]
+    assertEqual(bar, want[key], key .. "'s bar texture")
+    assertNil(seen[bar], tostring(bar) .. " is " .. tostring(seen[bar]) .. "'s and " .. key .. "'s")
+    seen[bar] = key
+  end
 end)
 
 local function sameColor(c, want, label)

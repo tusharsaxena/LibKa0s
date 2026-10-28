@@ -11,20 +11,22 @@
 | Files and minors | `Media.lua` minor **9** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.79.0 (unreleased, opened 2026-10-28) |
 | Status | **Current** |
-| Supersedes | [version 8.1](./version-8.1-docs.md) (shipped in v1.78.0) — the same surface without Oxanium in `FONTS` and `Ka0s Default` in `TEXTURES` |
+| Supersedes | [version 8.1](./version-8.1-docs.md) (shipped in v1.78.0) — the same surface without Oxanium in `FONTS`, and without `Ka0s Default` and the seven skins' own bars in `TEXTURES` |
 | Superseded by | — |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 9, MediaIcons = 1 }` |
 
 ## What changed at this version
 
-**Additive.** Nothing version 8.1 had resolves differently and no signature moves. Three catalog
-entries arrive, Ka0s Default's own face and bar texture (the owner's choice, 2026-10-28;
-`LibKa0s-Skin-1.0`'s SkinDefs minor 14 names them). `MediaIcons.lua` does not move.
+**Additive.** Nothing version 8.1 had resolves differently and no signature moves. Ten catalog
+entries arrive: Ka0s Default's own face and bar texture (the owner's choice, 2026-10-28), and a bar
+texture of its own for each of seven more skins (the owner's approved mockup, SO-04);
+`LibKa0s-Skin-1.0`'s SkinDefs minor 14 names them all. `MediaIcons.lua` does not move.
 
 | | | Since |
 |---|---|---|
 | `Ka0s Oxanium SemiBold` and `Ka0s Oxanium Bold` in `FONTS` | `{ file = "Oxanium-SemiBold.ttf", license = "Oxanium-OFL.txt", langmask = { "western" } }` and the same with `Oxanium-Bold.ttf`: Ka0s Default's faces, SemiBold for body and HUD text, Bold for titles. SIL OFL 1.1 like every face here, chosen as the free face nearest the owner's first pick. Static instances cut by `tools/artwork/fonts.py` from google/fonts' variable `Oxanium[wght].ttf` at wght 600 and 700, pinned by commit; `Oxanium-OFL.txt` records the instancing above the license text. Latin only, so western. `FONTS` holds seventeen entries. | **9** |
-| `Ka0s Default` in `TEXTURES` | `{ file = "ka0s-default.tga" }`: Ka0s Default's bar texture, drawn by `tools/artwork/bar_textures.py` like the other seven: dim at the top, a highlight low on the bar and a short lip, on the same 256×32 RLE 32-bit canvas. `TEXTURES` holds eight entries, and `RegisterLSM` counts eight bars. | **9** |
+| `Ka0s Default` in `TEXTURES` | `{ file = "ka0s-default.tga" }`: Ka0s Default's bar texture, drawn by `tools/artwork/bar_textures.py` like the other seven: dim at the top, a highlight low on the bar and a short lip, on the same 256×32 RLE 32-bit canvas. | **9** |
+| Seven skins' bars in `TEXTURES` | `Ka0s Matte` (`matte.tga`, Obsidian), `Ka0s Parchment` (`parchment.tga`, Azeroth), `Ka0s Glass Bar` (`glass-bar.tga`, Glass), `Ka0s Solid` (`solid.tga`, High Contrast), `Ka0s Forge` (`forge.tga`, Ember), `Ka0s Satin` (`satin.tga`, WoW Midnight) and `Ka0s Classic` (`classic.tga`, WoW Forever), from the same tool on the same canvas, opaque and gray. WoW Default keeps the client's `Blizzard` bar and ships none. **Glass Bar**, not Glass, because `Ka0s Glass` is already the Glass border and background. `TEXTURES` holds fifteen entries, and `RegisterLSM` counts fifteen bars. | **9** |
 
 ## What version 8.1 changed
 
@@ -116,7 +118,7 @@ gained a second return value rather than changing its first.
 
 ### The textures, and why they are generated rather than drawn
 
-`tools/artwork/bar_textures.py` synthesizes all eight from named constants — it is the provenance
+`tools/artwork/bar_textures.py` synthesizes all fifteen from named constants — it is the provenance
 record the way `icon_cleaner.py` is for the icons, and it is also the licensing answer: nothing was
 traced, sampled or copied from anything.
 
@@ -126,9 +128,16 @@ traced, sampled or copied from anything.
 | `Ka0s Underline 1` / `2` / `4` | `underline-1/2/4.tga` | Transparent but for a solid band at the **bottom** edge — 2px, 4px, 8px |
 | `Ka0s Overline 1` / `2` / `4` | `overline-1/2/4.tga` | The same three, mirrored to the **top** edge |
 | `Ka0s Default` | `ka0s-default.tga` | Ka0s Default's bar, since **9**: opaque, dim at the top, a highlight **low** on the bar and a short lip at the bottom edge |
+| `Ka0s Matte` | `matte.tga` | Obsidian's bar, since **9**: flat at 86%, one white row at the top and one 62% row at the bottom |
+| `Ka0s Parchment` | `parchment.tga` | Azeroth's bar, since **9**: a soft fall from 97% to 77% under a seeded 2D mottle of ±6%, blurred wide along the bar with a wrap, so it **tiles horizontally without a seam**; the one bar whose columns differ |
+| `Ka0s Glass Bar` | `glass-bar.tga` | Glass's bar, since **9**: an upper half falling from white to 88%, then a step to 70% rising to 82% at the bottom |
+| `Ka0s Solid` | `solid.tga` | High Contrast's bar, since **9**: white everywhere, the tint and nothing else |
+| `Ka0s Forge` | `forge.tga` | Ember's bar, since **9**: 60% at the top, rising on an eased curve, with a hot band low on the bar |
+| `Ka0s Satin` | `satin.tga` | WoW Midnight's bar, since **9**: one broad sheen a little above the middle over a 68% floor |
+| `Ka0s Classic` | `classic.tga` | WoW Forever's bar, since **9**: a highlight high on the bar over a gentle fall to the bottom |
 
 **Every one is 256×32**, whatever the band inside it does. That is the point of the family: a bar
-frame sized for one is sized for all eight, so switching between them gives a player a different
+frame sized for one is sized for all fifteen, so switching between them gives a player a different
 line rather than a different-shaped widget, and an addon can offer the set as one dropdown.
 
 The gradient peaks at **white** where a typical bar texture peaks at light gray. A texture is tinted
@@ -152,7 +161,7 @@ the pairing in both directions: every key reads as a Ka0s label, every file read
 ## What this major is
 
 The first payload in this library that is not code. `LibKa0s/media/` ships the **art and the type
-this collection draws with** — 5,836 white icon TGAs from three sets, eight generated statusbar
+this collection draws with** — 5,836 white icon TGAs from three sets, fifteen generated statusbar
 textures, the Glass skin's generated border and fill, a monospace face, fourteen OFL skin faces and
 Ka0s Default's two Oxanium weights — and this module is the seven functions that reach them, plus
 the catalogs of what is there.
@@ -201,7 +210,7 @@ Read straight off the LibStub table. Every function is stateless.
 | `Background(addonName, name[, vendorPath])` | **6** | The path of one shipped background, extensionless, or `nil` when `name` is not a key of `BACKGROUNDS` or `addonName` is missing or empty. |
 | `BACKGROUNDS` | **6** | Map of LSM `background` name → `{ file, slice }`. `slice` is the nine-slice margin to pass `SetTextureSliceMargins`. |
 | `Texture(addonName, name[, vendorPath])` | 3 | The path of one shipped statusbar texture, extensionless, or `nil` when `name` is not a key of `TEXTURES` or `addonName` is missing or empty. |
-| `TEXTURES` | 3 (`Ka0s Default`: **9**) | Map of LSM display name → `{ file }`. The catalog of the eight bar textures. |
+| `TEXTURES` | 3 (`Ka0s Default` and the seven skins' bars: **9**) | Map of LSM display name → `{ file }`. The catalog of the fifteen bar textures. |
 | `Font(addonName, name[, vendorPath])` | 1 | The font path for one registered face, or `nil` when `name` is not a key of `FONTS` or `addonName` is missing or empty. |
 | `RegisterLSM(addonName[, vendorPath])` | 1 (second return: 3; langmask and counted-only-if-held: 4; per-face mask, borders and backgrounds: **6**; a held key is never offered: **7**) | Register every shipped font, statusbar texture, border and background with LibSharedMedia under its catalog name, each font under the mask its `langmask` list builds. Returns `fonts, bars, borders, backgrounds`, each counting what LSM holds afterwards (`LSM:IsValid`); **`0, 0, 0, 0` when LSM is absent, which is not an error**. |
 | `ICONS` | 1 (three sets since **5**) | Array of every icon name: the set's prefix, then the file's own basename. The catalog — enumerate it rather than hard-coding a list. The 113 hand-written names come first, in version 4's order; `MediaIcons.lua` appends the rest at load. |

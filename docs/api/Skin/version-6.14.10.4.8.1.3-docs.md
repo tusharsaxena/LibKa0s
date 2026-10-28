@@ -247,6 +247,12 @@ the generated `Ka0s Default` bar for `bar.texture`, all shipped by `LibKa0s-Medi
 table gives each skin that sets none of those four its earlier inherited values: Friz Quadrata TT
 for the three faces and the client's `Blizzard` bar. A skin that sets its own keeps it.
 
+**Every skin draws a bar of its own** (still SkinDefs minor 14; SO-04, the owner's approved
+mockup). A mockup entry's `barTex` writes `bar.texture`: Obsidian `Ka0s Matte`, Azeroth
+`Ka0s Parchment`, Glass `Ka0s Glass Bar`, High Contrast `Ka0s Solid`, Ember `Ka0s Forge`, WoW
+Midnight `Ka0s Satin` and WoW Forever `Ka0s Classic`, all generated and shipped by
+`LibKa0s-Media-1.0` minor 9. WoW Default sets none, so `KEEP` gives it the client's `Blizzard` bar.
+
 **Geometry is skin-invariant in leg 1.** `title.height`, `scroll.width`, `scroll.gutter` and
 `win.inset` keep Ka0s Default's value in every skin, and border or nine-slice art is drawn outset or
 inside a fixed inset, so content anchors never move and a live switch lays out exactly as a reload.
@@ -870,7 +876,7 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
 - **Inheritance.** A key a mockup skin leaves out inherits **Ka0s Default's Lua value**, never the
   mockup's `BASE`, and so does every token the mockups do not draw, except the four `KEEP` holds
   (`font.body`, `font.title`, `hud.font`, `bar.texture`: Friz Quadrata TT and `Blizzard`, since
-  SkinDefs minor 14). Ka0s Default itself stays today's constants and is not touched by the mockup.
+  SkinDefs minor 14; every skin but WoW Default now sets its own `bar.texture` through `barTex`). Ka0s Default itself stays today's constants and is not touched by the mockup.
 - **Extras.** Where the mockup draws nothing a surface needs (an opened drawer, KPI cards and
   list panels, disabled text, the hover wash on a primary button), a skin sets that token itself
   in its `extra` table, chosen from the skin's own palette. That includes `drawer.textSet` wherever
@@ -944,8 +950,8 @@ color (white leaves Blizzard's art as drawn) and `<ctl>.borderSize` its edge siz
 
 Each skin's own tokens, in schema order; `·` inherits Ka0s Default's value (the *Token reference*
 above), `none` resolves to nil. Colors are `#RRGGBB`, then the alpha when it is below 1. A group
-none of the eight sets is left out (HUD apart from `bar.gloss` and the two `KEEP` values,
-`bar.texture` and `hud.font`, and the charts apart from Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` holds.
+none of the eight sets is left out (HUD apart from `bar.texture`, `bar.gloss` and the `KEEP` value
+`hud.font`, and the charts apart from Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` holds.
 
 #### Fonts
 
@@ -1156,7 +1162,7 @@ none of the eight sets is left out (HUD apart from `bar.gloss` and the two `KEEP
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `bar.texture` | `Blizzard` | `Blizzard` | `Blizzard` | `Blizzard` | `Blizzard` | `Blizzard` | `Blizzard` | `Blizzard` |
+| `bar.texture` | `Ka0s Matte` | `Ka0s Parchment` | `Ka0s Glass Bar` | `Ka0s Solid` | `Ka0s Forge` | `Blizzard` | `Ka0s Satin` | `Ka0s Classic` |
 | `bar.gloss` | none | · | `true` | none | · | · | · | none |
 | `hud.font` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` |
 

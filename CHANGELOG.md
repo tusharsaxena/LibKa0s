@@ -283,6 +283,32 @@ instancing note, their western-only mask, and every statusbar's TGA header) and
 `tests/test_skin_defs.lua` (every other skin keeps Friz and the Blizzard bar);
 `tests/test_skin.lua`, `tests/test_skin_override.lua`, `tests/test_skin_paint.lua` and
 `tests/test_options_appearance.lua` follow Ka0s Default's new face and bar.
+
+### Media minor 9 and SkinDefs minor 14, continued: a bar texture for every skin
+
+Still `LibKa0s-Media-1.0` key 9.1 and `LibKa0s-Skin-1.0` key 6.14.10.4.8.1.3, both unreleased, so
+neither minor moves (SO-04; the owner approved the texture mockup, 2026-10-28). Every skin but WoW
+Default now draws a statusbar texture of its own.
+
+- **Media minor 9.** `TEXTURES` gains seven bars, drawn by `tools/artwork/bar_textures.py` on the
+  same 256×32 RLE 32-bit canvas, opaque and gray, each profile a set of named constants in that
+  file: `Ka0s Matte` (`matte.tga`, Obsidian: flat, a lit top row, a shaded bottom row),
+  `Ka0s Parchment` (`parchment.tga`, Azeroth: a soft fall under a seeded 2D mottle whose horizontal
+  blur wraps, so it tiles without a seam), `Ka0s Glass Bar` (`glass-bar.tga`, Glass: a bright upper
+  half over a darker lower half), `Ka0s Solid` (`solid.tga`, High Contrast: white), `Ka0s Forge`
+  (`forge.tga`, Ember: rising to a hot band low on the bar), `Ka0s Satin` (`satin.tga`, WoW
+  Midnight: a broad sheen above the middle) and `Ka0s Classic` (`classic.tga`, WoW Forever: a
+  highlight high on the bar). The Glass bar is **Ka0s Glass Bar** because `Ka0s Glass` is already
+  the Glass border and background. The other eight textures regenerate byte-identical.
+  `RegisterLSM` now counts fifteen bars.
+- **SkinDefs minor 14.** `MOCK_MAP` gains `barTex` → `bar.texture`, and each of those seven skins
+  names its bar there. WoW Default names none and keeps the client's `Blizzard` bar through `KEEP`.
+  No member change.
+
+Cases in `tests/test_media.lua` (the counts, and every skin's bar opaque, gray, flat along the bar
+but Parchment, whose mottle tiles without a seam) and `tests/test_skin_defs.lua` (each skin's bar,
+no two skins sharing one, and every bar a skin names shipped or LibSharedMedia's `Blizzard`).
+
 ### Test kit revision 44: the paint recorder's StatusBar family
 
 Documented in [docs/api/testkit/version-44-docs.md](docs/api/testkit/version-44-docs.md). Under

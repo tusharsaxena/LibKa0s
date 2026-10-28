@@ -460,7 +460,7 @@ Total.
 - toast: a close mark Core cannot build (no frame) leaves the toast without one
 - toast: two instances keep separate queues and frames
 
-### test_media.lua (38)
+### test_media.lua (39)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -499,6 +499,7 @@ Total.
 - media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
 - media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
 - media: every statusbar, Ka0s Default's bar among them, is a 256x32 32-bit TGA
+- media: every skin's own bar is in TEXTURES, opaque and gray, and tiles along the bar
 - media: RegisterLSM registers the Glass border and background, and counts them
 
 ### test_skin.lua (27)
@@ -555,7 +556,7 @@ Total.
 - skin override: a texture Untrack handed back starts from its own color
 - skin override: BarTexture leaves a frame that is neither a Texture nor a StatusBar alone
 
-### test_skin_defs.lua (28)
+### test_skin_defs.lua (29)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -577,9 +578,10 @@ Total.
 - skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art
 - skin defs: only WoW Default names Blizzard art
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
-- skin defs: every font and border a skin names is shipped or an LSM default
+- skin defs: every font, bar texture and border a skin names is shipped or an LSM default
 - skin defs: every skin draws one family of its own, for body and titles alike
-- skin defs: Ka0s Default's Oxanium and its own bar stay its own; every other skin keeps Friz and Blizzard
+- skin defs: Ka0s Default's Oxanium and its own bar stay its own; a skin naming neither keeps Friz and Blizzard
+- skin defs: every skin draws its own bar texture, and WoW Default the client's
 - skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's
 - skin defs: a hovered row is told apart from a selected one
 - skin defs: WoW Default's checkbox art is its only box
@@ -3575,10 +3577,10 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
-| test_media.lua | 38 |
+| test_media.lua | 39 |
 | test_skin.lua | 27 |
 | test_skin_override.lua | 21 |
-| test_skin_defs.lua | 28 |
+| test_skin_defs.lua | 29 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
@@ -3692,4 +3694,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3154** |
+| **Total** | **3156** |
