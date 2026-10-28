@@ -249,7 +249,98 @@ function DRESS.ScrollFrame(m, w, f)
   w.scrollbar = sb
 end
 
-local FRAME_TYPE = { CheckBox = "Button", Button = "Button", Icon = "Button", ColorPicker = "Button" }
+-- A host's own widget type with a stock type's anatomy: AuraMaster's AuraMasterDropdown is AceGUI's
+-- Dropdown constructor with its own type name (a second pool) and its closed text justified LEFT on
+-- every acquisition (AuraMaster settings/OptionsSetup.lua, NS.RegisterDropdownWidget).
+A.HOST_DROPDOWN = "AuraMasterDropdown"
+DRESS[A.HOST_DROPDOWN] = function(m, w, f)
+  DRESS.Dropdown(m, w, f)
+  local acquire = w.OnAcquire
+  w.OnAcquire = function(self)
+    acquire(self)
+    self.text:SetJustifyH("LEFT")
+  end
+end
+
+-- ── the TreeGroup (AceGUI's TreeGroup v49) ────────────────────────────────────────────────────
+
+--- The two font objects UpdateButton hands a row: GameFontNormal for a first-level row, and
+--- GameFontHighlightSmall for a deeper one. Named, as the client's are, so a restore hands them back.
+local function namedFontObject(name, size)
+  return { name = name, size = size, GetName = function(self) return self.name end,
+           GetFont = function(self) return "Fonts\\FRIZQT__.TTF", self.size, "" end }
+end
+A.ROW_FONT = { normal = namedFontObject("GameFontNormal", 12), small = namedFontObject("GameFontHighlightSmall", 10) }
+
+--- One tree row as OptionsListButtonTemplate gives it: its `text`, its highlight texture (shown while
+--- LockHighlight holds it), its plus/minus toggle; `obj` is the widget, as CreateButton sets it.
+local function treeButton(m, w)
+  local b = m.CreateFrame("Button", nil, w.treeframe)
+  b.obj = w
+  local label, hl = fs(b), tex(b, "HIGHLIGHT")
+  b.text = label
+  hl:Hide()
+  rawset(b, "GetFontString", function() return label end)
+  rawset(b, "GetHighlightTexture", function() return hl end)
+  rawset(b, "LockHighlight", function() hl:Show() end)
+  rawset(b, "UnlockHighlight", function() hl:Hide() end)
+  b.toggle = m.CreateFrame("Button", nil, b)
+  return b
+end
+
+--- UpdateButton: the row's level, its selection and the font its level takes, colors included (a
+--- first-level row reads gold, a deeper one and a selected one white).
+local function updateButton(b, line, selected)
+  b.level, b.selected, b.value = line.level, selected, line.value
+  if selected then b:LockHighlight() else b:UnlockHighlight() end
+  local first = line.level == 1
+  b.text:SetFontObject(first and A.ROW_FONT.normal or A.ROW_FONT.small)
+  if first and not selected then b.text:SetTextColor(1, 0.82, 0) else b.text:SetTextColor(1, 1, 1) end
+  b.text:SetText(line.text)
+end
+
+--- The TreeGroup's frames and the methods that touch them. A tree here is a flat list of lines
+--- `{ value, text, level }`, already expanded: RefreshTree lays one row button per line, making
+--- the buttons it lacks, and hides the rest, as AceGUI's does.
+function DRESS.TreeGroup(m, w, f)
+  w.treeframe = backdropFrame(m, "Frame", f, { 0.1, 0.1, 0.1, 0.5 }, { 0.4, 0.4, 0.4, 1 })
+  w.dragger = backdropFrame(m, "Frame", w.treeframe, { 1, 1, 1, 0 }, { 1, 1, 1, 1 })
+  local sb = m.CreateFrame("Slider", nil, w.treeframe)
+  local bg = tex(sb, "BACKGROUND")
+  bg:SetColorTexture(0, 0, 0, 0.4)
+  local thumb = tex(sb, "OVERLAY")
+  rawset(sb, "GetThumbTexture", function() return thumb end)
+  w.scrollbar, w.scrollbg = sb, bg
+  w.border = backdropFrame(m, "Frame", f, { 0.1, 0.1, 0.1, 0.5 }, { 0.4, 0.4, 0.4, 1 })
+  w.content = m.CreateFrame("Frame", nil, w.border)
+  w.buttons, w.localstatus = {}, {}
+  w.treeframe.obj, w.dragger.obj, sb.obj = w, w, w
+  w.RefreshTree = function(self)
+    local lines = self.tree or {}
+    for i, line in ipairs(lines) do
+      local b = self.buttons[i] or treeButton(m, self)
+      self.buttons[i] = b
+      updateButton(b, line, self.localstatus.selected == line.value)
+      b:Show()
+    end
+    for i = #lines + 1, #self.buttons do self.buttons[i]:Hide() end
+  end
+  w.SetTree = function(self, tree)
+    self.tree = tree
+    self:RefreshTree()
+  end
+  w.SelectByValue = function(self, value)
+    self.localstatus.selected = value
+    self:RefreshTree()
+  end
+  w.OnAcquire = function(self) self.localstatus = {} end
+  w.OnRelease = function(self)
+    self.tree, self.status = nil, nil
+    self.localstatus = {}
+  end
+end
+
+local FRAME_TYPE ={ CheckBox = "Button", Button = "Button", Icon = "Button", ColorPicker = "Button" }
 
 local function dress(m, w, wtype)
   local f = m.CreateFrame(FRAME_TYPE[wtype] or "Frame", nil, m.UIParent)

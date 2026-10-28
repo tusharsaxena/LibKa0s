@@ -19,7 +19,8 @@ rung-2 items that meet them (`LK-01` to `LK-05`), each adding a surface and none
 existing call draws. Not tagged.
 
 Versions in this release: **Skin minor 7**, **SkinPaint minor 11**, **SkinPaintExtras minor 5**,
-**SkinPaintControls minor 9** and **SkinEUI minor 2** (`LibKa0s-Skin-1.0` key **7.14.11.5.9.2.3**);
+**SkinPaintControls minor 9**, **SkinEUI minor 2** and **SkinAce minor 4** (`LibKa0s-Skin-1.0` key
+**7.14.11.5.9.2.4**);
 every other file still at its v1.79.0 minor, and **test kit revision 44**, until an entry below moves one. Still
 **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
 
@@ -79,11 +80,46 @@ paints from:
 
 New suite: `tests/test_skin_remap.lua`.
 
+### SkinAce minor 4: a host's own AceGUI type, and the TreeGroup
+
+`LibKa0s-Skin-1.0` key 7.14.11.5.9.2.4, documented in
+[docs/api/Skin/version-7.14.11.5.9.2.4-docs.md](docs/api/Skin/version-7.14.11.5.9.2.4-docs.md)
+(*AceGUI rows*; LK-03 of the same run). Two AceGUI surfaces stayed stock under every skin (AM-G1,
+PC-G1):
+
+- **`Skin:AliasAceType(hostType, baseType)`.** A host that registers its own AceGUI widget type built
+  from a stock one (AuraMaster's `AuraMasterDropdown`, AceGUI's Dropdown under a second pool name so
+  its LEFT justification never leaks into the stock pool) names the base once. `PaintAce`, the
+  proxy, the durability hooks and the release restore then treat the type as its base, pull-out
+  included; the host's own dressing is never touched. One alias per host type, shared by every
+  copy; saying it again answers true. A name that is not a string, a base with no painter, a host
+  type the library paints itself, or a second base for the same host type is refused, logged once,
+  and changes nothing.
+- **A `TreeGroup` painter.** Both panes flattened into `nav.bg` / `nav.border`, the row labels in
+  `nav.text` (a first-level row) or `nav.selText` (a deeper, selected or hovered row) in the body
+  font, the selection highlight tinted `nav.selBg`, and the tree scroll bar's track in
+  `scroll.track`. `RefreshTree` is a durability hook, so rows AceGUI makes or re-dresses later are
+  painted too, and a row AceGUI re-dressed while owned goes back with what AceGUI last set. The
+  release gives the whole widget back stock (options-ui-§19). The toggles, row icons and dragger
+  stay stock. Under Ka0s Default the panes and row colors are the TreeGroup's own; the track and the
+  selection tint are the library's (`scroll.track`, OptionsNav's `nav.selBg`), as PrettyChat's D5
+  asked.
+- `PAINT.ScrollFrame`'s track moved, unchanged, to a shared local the TreeGroup's bar uses too.
+- Under the eui source both are painted by the library from the EllesmereUI-derived tokens and never
+  handed to EllesmereUI, which takes any AceGUI widget, frame or region as shared.
+
+New suite: `tests/test_skin_ace_tree.lua`; `tests/fixture_skin_ace.lua` gains the TreeGroup's
+anatomy and a host Dropdown type.
+
 ### What a consumer owes
 
 - **Nothing until an addon uses the new surfaces.** An addon that passes no `tokens` to
   `RegisterOwner` and no `opts.tokens` to a primitive draws exactly what it drew on v1.79.0, under
-  every skin and under EllesmereUI. No member is added to or removed from a stub's surface.
+  every skin and under EllesmereUI. No member is removed from a stub's surface; `AliasAceType` is
+  added, so an addon that calls it either guards the call or gives its degradation stub the member.
+  A TreeGroup an addon acquires through its Options instance's `O.AceGUI`, or hands to
+  `PaintAce` / `PaintAceTree`, is painted from this release on; no Ka0s addon acquired one on
+  v1.79.0, so no existing page changes.
 
 ## v1.79.0 — 2026-10-28
 

@@ -739,6 +739,23 @@ Total.
 - skin ace: PaintAceTree paints a host container's widgets
 - skin ace: Skin:OnRelease chains once and answers its function
 
+### test_skin_ace_tree.lua (14)
+
+- skin ace tree: a host widget type has no painter until it is aliased
+- skin ace tree: an aliased host type is painted by its base type's painter
+- skin ace tree: an aliased widget keeps the skin through its base type's durability hooks
+- skin ace tree: a released aliased widget is stock for the next acquirer, pull-out included
+- skin ace tree: AliasAceType refuses a bad alias, logs it once and changes nothing
+- skin ace tree: a second alias to another base is refused; the same alias again is fine
+- skin ace tree: a TreeGroup's panes, rows, selection and scroll bar wear the owner's skin
+- skin ace tree: Ka0s Default draws the TreeGroup's stock colors exactly
+- skin ace tree: RefreshTree, a later row and the pointer keep the skin
+- skin ace tree: a released TreeGroup is stock for the next acquirer, a re-leveled row included
+- skin ace tree: a row hook that rides the pooled TreeGroup elsewhere is inert
+- skin ace tree: another owner's TreeGroup wears its own skin
+- skin ace tree: PaintAceTree paints a host's TreeGroup and the widgets in it
+- skin ace tree: an eui owner's TreeGroup and aliased rows never reach EllesmereUI
+
 ### test_widgets.lua (58)
 
 - Widgets.Dropdown draws the host's chevron when it is given one
@@ -3615,6 +3632,7 @@ Total.
 | test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 22 |
+| test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3724,4 +3742,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3178** |
+| **Total** | **3192** |
