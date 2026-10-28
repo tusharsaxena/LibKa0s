@@ -111,9 +111,12 @@ New suite: `tests/test_skin_override.lua`.
 `S.BarTexture(target, r, g, b, a)` puts the owner's bar texture (`bar.texture`, its texture override
 when it sets one) on a bar of data: `SetTexture` and `SetVertexColor` on a Texture,
 `SetStatusBarTexture` and `SetStatusBarColor` on a StatusBar. With no texture resolved a Texture
-falls back to `SetColorTexture(r, g, b, a)`, today's flat look, and a StatusBar to `WHITE8X8`. A
-nil color keeps the target's current color. Recorded, so a skin switch or an override change
-re-applies it. Cases in `tests/test_skin_override.lua`, and the primitive joins
+falls back to `SetColorTexture(r, g, b, a)`, today's flat look, and a StatusBar to `WHITE8X8`.
+Recorded, so a skin switch or an override change re-applies the texture. The color is the bar's own:
+a repaint keeps the color the bar wears (a host's direct `SetVertexColor` or `SetStatusBarColor`
+included), a nil color paints the bar's current color on every call, and a texture `Skin:Untrack`
+handed back starts from its own color. A flat Texture's tint, which cannot be read back, is
+remembered while its vertex color stays the white the primitive set. Cases in `tests/test_skin_override.lua`, and the primitive joins
 `tests/test_skin_paint_controls.lua`'s idempotence and repaint sweeps.
 
 ### OptionsAppearance minor 3: the Skin tab's font and texture
