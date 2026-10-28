@@ -17,7 +17,8 @@
 -- never repaints the other's frames.
 --
 --   lib.skins[key]       the registered skin definitions (SkinDefs.lua registers them)
---   lib.owners[owner]    { label, get, set, source, skin, font, texture, pendingReload, listeners }
+--   lib.owners[owner]    { label, get, set, source, skin, font, texture, pendingReload, listeners,
+--                          tokens, tokGen }
 --   lib.painted[frame]   weak-keyed: { owner, seq, calls = { [prim] = args }, order = { prim, ... } }
 --   lib.byOwner[owner]   weak-keyed set of that owner's painted frames
 --   lib.facades[owner]   the owner's facade S, one table kept across minors
@@ -75,7 +76,14 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- LibSharedMedia cannot resolve leaves the skin's own token in place, and the owner repaints when a
 -- media pack registers the key later (`LibSharedMedia_Registered`); `FROM_SKIN` stored as an
 -- override means the skin's own; `__BaseTokens` answers the owner's table without its overrides.
-local MAJOR, MINOR = "LibKa0s-Skin-1.0", 6
+-- Minor 7: owner tokens (LK-01 of Ka0sAddonsCommonTasks docs/2026-10-29-SKINNING_ROLLOUT).
+-- `RegisterOwner(owner, { tokens = { ["<ns>.<name>"] = { default, follow, skins } } })` names an
+-- addon's own colors (or any token value), laid over the owner's table in `__Tokens` after its
+-- overrides, so `Token`, `Color`, the facade and every primitive that reads a token NAME resolve
+-- them. Ka0s Default answers `default` (the addon's pixels today), a skin its `skins` entry, else the
+-- `follow` library token's value in that skin; the eui source the follow token's EllesmereUI value. A
+-- name with no dot, a schema name or a malformed definition is refused and logged once.
+local MAJOR, MINOR = "LibKa0s-Skin-1.0", 7
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -123,6 +131,12 @@ lib.__resolved = {}
 -- Each owner's token table with its overrides over it, `{ base, font, texture, t }`. A cache like
 -- `__resolved`, emptied on load so a newer minor's override rules apply.
 lib.__overTok = {}
+-- Each owner's token table with its owner tokens over it, `{ from, key, gen, t }` (minor 7). A cache
+-- like `__overTok`, emptied on load.
+lib.__ownTok = {}
+-- The owner token names refused per owner, `[owner][name] = why`, so each is logged once. Kept across
+-- minors: a newer copy re-registering the same bad name must not log it again.
+lib.__tokRefused = lib.__tokRefused or {}
 
 local SOURCE_OK = { ka0s = true, eui = true }
 
@@ -255,6 +269,71 @@ local function takeHooks(o, opts, owner)
   o.label = type(opts.label) == "string" and opts.label or o.label or owner
 end
 
+-- ── owner tokens (minor 7) ───────────────────────────────────────────────────────────────────
+
+--- True when `name` is a library token (a `lib.SCHEMA` name). With no SkinDefs.lua loaded nothing is.
+local function isSchemaName(name)
+  local idx = lib.__schemaIndex
+  return idx ~= nil and idx[name] ~= nil
+end
+
+--- Why `name` cannot be an owner token's name, or nil: it needs a dot inside it, and is never a
+--- library token's name.
+local function nameProblem(name)
+  if type(name) ~= "string" or not name:find("^[^%.].*%.") or name:sub(-1) == "." then
+    return "a name carries the owner's namespace and a dot (\"dw.upgrade\")"
+  end
+  if isSchemaName(name) then return "it is a library token's name" end
+  return nil
+end
+
+--- Why `def` cannot be an owner token's definition, or nil.
+local function defProblem(def)
+  if type(def) ~= "table" then return "the definition is not a table { default, follow, skins }" end
+  if def.default == nil then return "it has no default (Ka0s Default's value)" end
+  local follow = def.follow
+  if follow ~= nil and not (type(follow) == "string" and (lib.__schemaIndex == nil or isSchemaName(follow))) then
+    return "follow names no library token"
+  end
+  if def.skins ~= nil and type(def.skins) ~= "table" then return "skins is not a table" end
+  return nil
+end
+
+--- Why owner token `name` with definition `def` cannot be taken, or nil when it can.
+local function tokenProblem(name, def)
+  return nameProblem(name) or defProblem(def)
+end
+
+--- Refuse owner token `name` and log it once per owner and name: through the owner's `opts.log`
+--- when it gave one, else to the client's error handler.
+local function refuseToken(o, owner, name, why)
+  local seen = lib.__tokRefused[owner] or {}
+  lib.__tokRefused[owner] = seen
+  local key = tostring(name)
+  if seen[key] then return end
+  seen[key] = why
+  local line = MAJOR .. ": " .. owner .. " token " .. key .. " refused: " .. why
+  if type(o.log) ~= "function" then return report(line) end
+  local ok, err = pcall(o.log, line)
+  if not ok then report(err) end
+end
+
+--- Take a registration's owner tokens onto the record: each good name added or replaced, each bad
+--- one refused. Nothing when `tokens` is not a table.
+local function takeTokens(o, owner, tokens)
+  if type(tokens) ~= "table" then return end
+  o.tokens = o.tokens or {}
+  for name, def in pairs(tokens) do
+    local why = tokenProblem(name, def)
+    if why then
+      refuseToken(o, owner, name, why)
+    else
+      o.tokens[name] = { default = def.default, follow = def.follow, skins = def.skins }
+    end
+  end
+  o.tokGen = (o.tokGen or 0) + 1
+end
+
 --- Register `owner` (the addon folder name) at the consumer's file load. `opts.get()` answers the
 --- profile's `{ source, skin }`; `opts.set(source, skin, ignore, media)` writes it (copy to every
 --- Ka0s addon; `ignore` since minor 5, `{ panel, fonts }` or nil, and `media` since minor 6,
@@ -263,6 +342,13 @@ end
 --- EllesmereUI provider writes when it refuses or stops (SkinEUI.lua). The choice is read once,
 --- here; afterwards it moves only through `SetChoice`. A second call updates the hooks and keeps the
 --- applied choice. Answers the owner's facade.
+--- `opts.tokens` (minor 7), optional, is the owner's own tokens, `{ ["<ns>.<name>"] = { default =
+--- <Ka0s Default's value>, follow = "<library token>", skins = { [<skin key>] = <value>|false } } }`:
+--- read through `Token`, `Color`, the facade and any primitive opt that names a token, like a library
+--- token. A name carries the owner's namespace and a dot and is never a library token's name; a bad
+--- name or definition is refused and logged once (`opts.log`, else the client's error handler), and the
+--- rest still land. A second call adds its tokens and replaces a name it repeats; it does not repaint,
+--- so register them at file load, before the first paint.
 function lib:RegisterOwner(owner, opts)
   requireOwner(owner, "RegisterOwner")
   opts = type(opts) == "table" and opts or {}
@@ -273,6 +359,7 @@ function lib:RegisterOwner(owner, opts)
     self.owners[owner] = o
   end
   takeHooks(o, opts, owner)
+  takeTokens(o, owner, opts.tokens)
   local hook = self.__euiOnOwner
   if type(hook) == "function" then
     local ok, err = pcall(hook, owner)
@@ -583,24 +670,64 @@ local function withOverrides(owner, base)
   return t
 end
 
---- The owner's token table without its overrides (minor 6): its skin resolved (`ResolveSkin`), or,
---- while EllesmereUI paints the owner, the table SkinEUI.lua derives from EllesmereUI's accent, panel
---- color and font. What the Skin tab's "Skin's own" entries name. Shared: never write to it.
---- Internal.
-function lib:__BaseTokens(owner)
-  local hook = self.__euiTokens
+--- The owner's base table and the key its owner tokens resolve by: "eui" while EllesmereUI paints
+--- the owner, else the skin key it draws.
+local function baseOf(owner)
+  local hook = lib.__euiTokens
   local t = type(hook) == "function" and hook(owner) or nil
-  if t then return t end
-  local _, skin = self:GetChoice(owner)
-  return self:ResolveSkin(skin)
+  if t then return t, "eui" end
+  local _, skin = lib:GetChoice(owner)
+  local key = effectiveKey(skin)
+  return lib:ResolveSkin(key), key
+end
+
+--- The owner's token table without its overrides (minor 6) or its owner tokens (minor 7): its skin
+--- resolved (`ResolveSkin`), or, while EllesmereUI paints the owner, the table SkinEUI.lua derives
+--- from EllesmereUI's accent, panel color and font. What the Skin tab's "Skin's own" entries name.
+--- Shared: never write to it. Internal.
+function lib:__BaseTokens(owner)
+  return (baseOf(owner))
+end
+
+--- One owner token's value under `key` (a skin key, or "eui"), reading the follow token from `t`.
+--- Ka0s Default answers the default; a skin its own entry (`false` is none, unless the token is a
+--- bool); otherwise, and always under eui, the follow token's value, else the default.
+local function ownValue(def, key, t)
+  if key == lib.DEFAULT then return def.default end
+  local v
+  if key ~= "eui" and def.skins then v = def.skins[key] end
+  if v ~= nil and v ~= false then return v end
+  if v == false then
+    if type(def.default) == "boolean" then return false end
+    return nil
+  end
+  local f = def.follow and t[def.follow]
+  if f ~= nil then return f end
+  return def.default
+end
+
+--- `t` with `owner`'s owner tokens over it (minor 7): `t` itself when the owner registered none,
+--- else a derived copy cached on (t, key, the owner's token generation).
+local function withOwnTokens(owner, t, key)
+  local o = lib.owners[owner]
+  local own = o and o.tokens
+  if not own or next(own) == nil then return t end
+  local c = lib.__ownTok[owner]
+  if c and c.from == t and c.key == key and c.gen == o.tokGen then return c.t end
+  local out = {}
+  overlay(out, t)
+  for name, def in pairs(own) do out[name] = ownValue(def, key, t) end
+  lib.__ownTok[owner] = { from = t, key = key, gen = o.tokGen, t = out }
+  return out
 end
 
 --- The owner's complete token table: `__BaseTokens`, with the owner's font and texture overrides
---- over it (minor 6) where they resolve. Shared: never write to it. An unregistered owner reads Ka0s
---- Default. Internal (SkinPaint.lua's P.T and `Token` read it); a host reads tokens through `Token`
---- and `Color`.
+--- over it (minor 6) where they resolve, and its owner tokens over that (minor 7). Shared: never
+--- write to it. An unregistered owner reads Ka0s Default. Internal (SkinPaint.lua's P.T and `Token`
+--- read it); a host reads tokens through `Token` and `Color`.
 function lib:__Tokens(owner)
-  return withOverrides(owner, self:__BaseTokens(owner))
+  local base, key = baseOf(owner)
+  return withOwnTokens(owner, withOverrides(owner, base), key)
 end
 
 --- The owner's resolved token `name` (from `__Tokens`): a color is `{ r, g, b, a }`, shared, never

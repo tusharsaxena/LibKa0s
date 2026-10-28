@@ -10,6 +10,52 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.80.0 — unreleased
+
+Opened 2026-10-29, on `feat/2026-10-29-skinning-rollout`: the library half of the skinning rollout to
+the fourteen remaining Ka0s addons (Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`, M1).
+Its M0 inventory found 39 gaps no existing primitive or token covers; this release carries the
+rung-2 items that meet them (`LK-01` to `LK-05`), each adding a surface and none changing what an
+existing call draws. Not tagged.
+
+Versions in this release: **Skin minor 7** (`LibKa0s-Skin-1.0` key **7.14.10.4.8.1.3**); every other
+file still at its v1.79.0 minor, and **test kit revision 44**, until an entry below moves one. Still
+**nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
+
+### Skin minor 7: owner tokens
+
+`LibKa0s-Skin-1.0` key 7.14.10.4.8.1.3, documented in
+[docs/api/Skin/version-7.14.10.4.8.1.3-docs.md](docs/api/Skin/version-7.14.10.4.8.1.3-docs.md)
+(*Owner tokens*; LK-01 of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`). Thirty of the
+rollout's gaps are one kind: a color an addon draws under Ka0s Default whose exact value no library
+token holds. An addon now names them as its own tokens:
+
+- `Skin:RegisterOwner(owner, { tokens = { ["<ns>.<name>"] = { default = <Ka0s Default's value>,
+  follow = "<library token>", skins = { [<skin key>] = <value>|false } } } })`. Ka0s Default answers
+  `default`, so the addon's look under it is today's pixels; another skin answers its own entry, else
+  the `follow` token's value in that skin (no `follow`: the default); the eui source answers the
+  follow token's EllesmereUI value. `false` in a skin's entry is that skin's none.
+- They resolve where every token does: `__Tokens` lays them over the owner's table after its font and
+  texture overrides, so `Token`, `Color`, `Resolve`, the facade and every primitive that takes a token
+  name (`S.Divider`'s `opts.token`) read them, and a token that follows `font.body` follows the font
+  override. A skin switch repaints a primitive that named one. `ResolveSkin` and `__BaseTokens` never
+  carry them; one owner's never reach another's.
+- A name with no dot, one that starts or ends with a dot, one that collides with a `lib.SCHEMA`
+  name, or a malformed definition (not a table, no `default`, a `follow` that is not a library token,
+  a `skins` that is not a table) is refused and logged once per owner and name, through the owner's
+  `opts.log`, else to the client's error handler; the good names beside it still land. A second
+  `RegisterOwner` adds its tokens and replaces a name it repeats; registering repaints nothing.
+- An owner with no owner tokens reads the resolved table itself, and every library token is
+  unchanged for one with them, so Ka0s Default is pixel-identical for every existing caller.
+
+New suite: `tests/test_skin_owner_tokens.lua`.
+
+### What a consumer owes
+
+- **Nothing until an addon uses the new surfaces.** An addon that passes no `tokens` to
+  `RegisterOwner` (and no new option to a primitive) draws exactly what it drew on v1.79.0, under
+  every skin and under EllesmereUI. No member is added to or removed from a stub's surface.
+
 ## v1.79.0 — 2026-10-28
 
 Opened 2026-10-28, on `feat/2026-10-28-toast-1.0` (a worktree off `master`, beside the skin work

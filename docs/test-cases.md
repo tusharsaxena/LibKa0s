@@ -556,6 +556,21 @@ Total.
 - skin override: a texture Untrack handed back starts from its own color
 - skin override: BarTexture leaves a frame that is neither a Texture nor a StatusBar alone
 
+### test_skin_owner_tokens.lua (12)
+
+- skin owner tokens: Ka0s Default answers each token's default, exactly
+- skin owner tokens: a skin answers its own entry, else the follow token's value in that skin
+- skin owner tokens: false in a skin's entry is that skin's none
+- skin owner tokens: the library's tokens never move, and an owner with none reads the resolved table
+- skin owner tokens: a name with no dot, a schema name and a malformed definition are refused, logged once
+- skin owner tokens: with no log hook a refusal reaches the error handler, once
+- skin owner tokens: a second registration adds tokens and replaces a name it repeats
+- skin owner tokens: one owner's tokens never reach another owner
+- skin owner tokens: Divider's token name resolves an owner token and repaints on a skin switch
+- skin owner tokens: the owner's font and texture overrides still apply beside them
+- skin owner tokens: under eui a token answers its follow token's EllesmereUI value
+- skin owner tokens: an owner token is no vocabulary entry and needs no SkinDefs change
+
 ### test_skin_defs.lua (29)
 
 - skin defs: the nine skins register in order with their labels
@@ -3580,6 +3595,7 @@ Total.
 | test_media.lua | 39 |
 | test_skin.lua | 27 |
 | test_skin_override.lua | 21 |
+| test_skin_owner_tokens.lua | 12 |
 | test_skin_defs.lua | 29 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
@@ -3694,4 +3710,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3156** |
+| **Total** | **3168** |
