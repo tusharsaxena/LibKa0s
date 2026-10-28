@@ -335,6 +335,78 @@ test("options: OpenOptionsPanel opens the registered category out of combat", fu
   assertEqual(openedWith, 1, "the ID the canvas registration handed back")
 end)
 
+--- Run `fn` with the canvas registration answering a main category that lists its subcategories
+--- (as the client's SettingsCategoryMixin does) and OpenToCategory recording its ID. Each
+--- subcategory is { GetID, GetName }, its ID 100 plus its position. Answers the opened IDs.
+local function withSubcategories(fn)
+  local saved = {
+    main = mocks.Settings.RegisterCanvasLayoutCategory, sub = mocks.Settings.RegisterCanvasLayoutSubcategory,
+    open = mocks.Settings.OpenToCategory,
+  }
+  local subs, opened = {}, {}
+  mocks.Settings.RegisterCanvasLayoutCategory = function()
+    return { GetID = function() return 1 end, GetSubcategories = function() return subs end }
+  end
+  mocks.Settings.RegisterCanvasLayoutSubcategory = function(_, _, name)
+    local id = 100 + #subs + 1
+    local cat = { GetID = function() return id end, GetName = function() return name end }
+    subs[#subs + 1] = cat
+    return cat
+  end
+  mocks.Settings.OpenToCategory = function(id) opened[#opened + 1] = id end
+  local ok, err = pcall(fn)
+  mocks.Settings.RegisterCanvasLayoutCategory = saved.main
+  mocks.Settings.RegisterCanvasLayoutSubcategory = saved.sub
+  mocks.Settings.OpenToCategory = saved.open
+  if not ok then error(err, 0) end
+  return opened
+end
+
+test("options: OpenOptionsPanel(pageKey) opens that page's own category, not the landing page", function()
+  -- red under: OptionsRegistry minor 3, whose OpenOptionsPanel took no page and always opened the
+  -- main category (the skin picker's gear landed the player on the front page).
+  local answered = {}
+  local opened = withSubcategories(function()
+    local O = Fixture.new()
+    -- One builder answers its subcategory (the Profiles page's shape), one answers nothing
+    -- (LootHistory's General page): that one is found by its registered name.
+    O.RegisterOptionsPage("profiles", "Profiles", function(main)
+      local ctx = O.CreatePanel(nil, "Profiles", {})
+      return mocks.Settings.RegisterCanvasLayoutSubcategory(main, ctx.panel, "Profiles")
+    end)
+    O.RegisterOptionsPage("general", "General", function(main)
+      local ctx = O.CreatePanel(nil, "General", { pageKey = "general" })
+      mocks.Settings.RegisterCanvasLayoutSubcategory(main, ctx.panel, "General")
+    end)
+    O.CreateOptionsPanel()
+    answered[1] = O.OpenOptionsPanel("general")
+    answered[2] = O.OpenOptionsPanel("profiles")
+    answered[3] = O.OpenOptionsPanel("nosuchpage")
+    answered[4] = O.OpenOptionsPanel()
+  end)
+  assertEqual(table.concat(opened, ","), "102,101,1,1",
+    "General by its name, Profiles by its builder's answer, an unknown key and no key the main category")
+  for i = 1, 4 do assertEqual(answered[i], true, "call " .. i .. " answers true") end
+end)
+
+test("options: OpenOptionsPanel(pageKey) still refuses in combat and opens nothing", function()
+  local answered
+  local opened = withSubcategories(function()
+    local O = Fixture.new()
+    O.RegisterOptionsPage("general", "General", function(main)
+      local ctx = O.CreatePanel(nil, "General", {})
+      mocks.Settings.RegisterCanvasLayoutSubcategory(main, ctx.panel, "General")
+    end)
+    O.CreateOptionsPanel()
+    local savedCombat = mocks.InCombatLockdown
+    mocks.InCombatLockdown = function() return true end
+    answered = O.OpenOptionsPanel("general")
+    mocks.InCombatLockdown = savedCombat
+  end)
+  assertEqual(answered, false)
+  assertEqual(#opened, 0, "the protected call must not be made")
+end)
+
 test("options: :New refuses a descriptor with no mainPanelName", function()
   -- The one descriptor field whose entire purpose is lost in silence: a nil yields
   -- CreateFrame("Frame", nil), an anonymous canvas /framestack cannot attribute to the host, with

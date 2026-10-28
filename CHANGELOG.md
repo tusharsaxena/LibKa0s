@@ -22,8 +22,8 @@ Versions in this release: **Toast minor 1** (the new major `LibKa0s-Toast-1.0`, 
 **DebugLogDiagnostics minor 5** (`LibKa0s-DebugLog-1.0` key **22.5.1.1**), and, from
 `feat/2026-10-28-skin-overrides-picker` (LibKa0s#63 and #64), **Skin minor 6**, **SkinPaintExtras minor 4**
 and **SkinDefs minor 14** (`LibKa0s-Skin-1.0` key **6.14.10.4.8.1.3**), **Media minor 9**
-(`LibKa0s-Media-1.0` key **9.1**, `MediaIcons` 1 unchanged), **Options minor 34**, **OptionsAppearance minor 3** and
-**OptionsSkinPicker minor 1** (`LibKa0s-Options-1.0` key **34.3.35.4.6.10.3.12.8.3.2.5.3.1**, a
+(`LibKa0s-Media-1.0` key **9.1**, `MediaIcons` 1 unchanged), **Options minor 34**, **OptionsRegistry minor 4**,
+**OptionsAppearance minor 3** and **OptionsSkinPicker minor 1** (`LibKa0s-Options-1.0` key **34.4.35.4.6.10.3.12.8.3.2.5.3.1**, a
 fourteenth file) and **test kit revision 44**; every other file still at its v1.78.0 minor until an
 entry below moves one. Now **nineteen majors across fifty-three files**: one major and one file
 added for the toast (`Toast.lua`, fifty-two), one file for the skin picker (`OptionsSkinPicker.lua`,
@@ -128,8 +128,8 @@ remembered while its vertex color stays the white the primitive set. Cases in `t
 
 ### OptionsAppearance minor 3: the Skin tab's font and texture
 
-`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.8.3.2.5.3 (34.3.35.4.6.10.3.12.8.3.2.5.3.1 since Options
-minor 34, below; [docs/api/Options/version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.md))
+`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.8.3.2.5.3 (34.4.35.4.6.10.3.12.8.3.2.5.3.1 since Options
+minor 34, below; [docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md))
 (LibKa0s#63, SO-03):
 
 - The tab is labeled **"Skin"** (`TAB_LABEL`); its key stays `"Appearance"`, which hosts name in
@@ -154,10 +154,23 @@ minor 34, below; [docs/api/Options/version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.
 
 Cases in `tests/test_options_appearance.lua`.
 
+### OptionsRegistry minor 4: OpenOptionsPanel opens a page
+
+`LibKa0s-Options-1.0` key 34.4.35.4.6.10.3.12.8.3.2.5.3.1 (the unshipped 34.3.35.4.6.10.3.12.8.3.2.5.3.1
+document and manifest moved to it), documented in
+[docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md)
+(PK-02, the consumer reviews' finding). `O.OpenOptionsPanel(pageKey)` takes an optional page key,
+the key `O.RegisterOptionsPage` was given, and opens that page's own subcategory: the category its
+builder answered when it answered one, else the main category's subcategory carrying the page's
+registered name (`GetSubcategories`, under pcall). No key, or one that names no built page, opens
+the main category as before; the combat refusal and the three answers are unchanged. The skin
+picker's default gear uses it, so the player lands on the page that holds the Skin tab rather than on
+the landing page. No member is added. Cases in `tests/test_options_render.lua`.
+
 ### Options minor 34 and OptionsSkinPicker minor 1: the skin picker
 
-`LibKa0s-Options-1.0` key 34.3.35.4.6.10.3.12.8.3.2.5.3.1, documented in
-[docs/api/Options/version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.md)
+`LibKa0s-Options-1.0` key 34.4.35.4.6.10.3.12.8.3.2.5.3.1, documented in
+[docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md)
 (LibKa0s#64, PK-01). A fourteenth file, `OptionsSkinPicker.lua`, attached by one guarded line in
 `lib:New` (Options minor 34):
 

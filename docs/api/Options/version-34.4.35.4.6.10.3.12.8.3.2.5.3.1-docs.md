@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 34.3.35.4.6.10.3.12.8.3.2.5.3.1
+# `LibKa0s-Options-1.0` — version 34.4.35.4.6.10.3.12.8.3.2.5.3.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,14 +8,14 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **3** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **12** · `OptionsScroll.lua` **8** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** · `OptionsAppearance.lua` **3** · `OptionsSkinPicker.lua` **1** |
+| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **12** · `OptionsScroll.lua` **8** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** · `OptionsAppearance.lua` **3** · `OptionsSkinPicker.lua` **1** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>`, in load order — the same fourteen numbers `lib.MODULES` reports. |
 | Shipped in | v1.79.0 (unreleased, opened 2026-10-28) |
 | Status | **Current** |
 | Supersedes | [version 33.3.35.4.6.10.3.12.8.3.2.5.2](./version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md) (shipped in v1.78.0) — whose Appearance tab was labeled "Appearance" and had no font or texture override, and which had no skin picker |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 3, OptionsWidgets = 35, OptionsIds = 4, OptionsIdList = 6, OptionsTabs = 10, OptionsCombat = 3, OptionsCompose = 12, OptionsScroll = 6, OptionsNav = 3, OptionsDrawer = 2, OptionsKeybinds = 5, OptionsAppearance = 3, OptionsSkinPicker = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 35, OptionsIds = 4, OptionsIdList = 6, OptionsTabs = 10, OptionsCombat = 3, OptionsCompose = 12, OptionsScroll = 8, OptionsNav = 3, OptionsDrawer = 2, OptionsKeybinds = 5, OptionsAppearance = 3, OptionsSkinPicker = 1 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `O32` for `Options.lua` minor 32, `O33` for `Options.lua` minor 33, `O34` for `Options.lua` minor 34, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
@@ -40,9 +40,13 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-Two files move and a fourteenth arrives: `Options.lua` 33 -> **34**, `OptionsAppearance.lua` 2 ->
-**3**, and `OptionsSkinPicker.lua` at **1** (LibKa0s#63 and #64; SO-03 and PK-01 of
-Ka0sAddonsCommonTasks `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`).
+Three files move and a fourteenth arrives: `Options.lua` 33 -> **34**, `OptionsRegistry.lua` 3 ->
+**4**, `OptionsAppearance.lua` 2 -> **3**, and `OptionsSkinPicker.lua` at **1** (LibKa0s#63 and
+#64; SO-03, PK-01 and PK-02 of Ka0sAddonsCommonTasks `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`).
+
+**`O.OpenOptionsPanel(pageKey)`** (`OptionsRegistry.lua` minor 4): an optional page key, the key
+`O.RegisterOptionsPage` was given, opens that page's own subcategory instead of the main category.
+See the member table. The skin picker's default gear uses it.
 
 **The skin picker** (O34, P1): `O.SkinPicker(spec)` and `O.HideSkinPicker()`, a small window a host
 shows the first time a profile runs so the player picks a skin before opening any settings. See
@@ -1787,9 +1791,9 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `__bannerBand(rawHeight, gapTop, ruleH, gapBottom)` | **W10** | Pure arithmetic: the banner's own height widened by the gap, hairline and gap that separate it from the strip (options-ui-§14). What `ctx.__bannerHeight` holds. |
 | `__tabArtHeight()` | **W13** | The measured row pitch — the **unselected** tab art's own height, or `TAB_H` where nothing can be measured. Memoized on success only. Published because the invariant a suite has to pin is unassertable without the one number the band and every row offset are both built from. |
 | `__resetTabArtHeight()` | **W13** | Forget that measurement. A harness seam; an atlas does not change size mid-session. |
-| `RegisterOptionsPage(key, name, builder)` | O1 | Queue a page. Builders run once, in order, at `CreateOptionsPanel`. |
+| `RegisterOptionsPage(key, name, builder)` | O1 | Queue a page. Builders run once, in order, at `CreateOptionsPanel`. From `OptionsRegistry.lua` minor 4 a builder that answers its subcategory (`RegisterCanvasLayoutSubcategory`'s first answer) is remembered for `OpenOptionsPanel(key)`; answering nothing is still fine. |
 | `CreateOptionsPanel()` | O1 (combat park: **O24**) | Resolve AceGUI, hand it to the host, validate, register the main canvas, run every builder. Idempotent. **From O24**, under `InCombatLockdown()` it registers nothing, parks the call and replays it once at `PLAYER_REGEN_ENABLED`; a second call while parked is a no-op. |
-| `OpenOptionsPanel()` → `true`, `false` or `nil` | O1 (combat refusal: O3; return value: **O24**) | Open the category. **Refuses** under combat and never defers-and-replays. The gate for a page **shown** in combat another way is the lock (**O22**). **From O24** answers `true` when opened, `false` when refused in combat, and `nil` when there is no category to open; through O23 it returned nothing. |
+| `OpenOptionsPanel(pageKey)` → `true`, `false` or `nil` | O1 (combat refusal: O3; return value: **O24**; `pageKey`: `OptionsRegistry.lua` minor 4) | Open the category. With `pageKey` (minor 4), the key `RegisterOptionsPage` was given, open that page's own subcategory: the category its builder answered, else the main category's subcategory carrying the page's registered name (`GetSubcategories`, under pcall); a key that names no built page, or a page whose category is not found, opens the main category, as no key does. **Refuses** under combat and never defers-and-replays. The gate for a page **shown** in combat another way is the lock (**O22**). **From O24** answers `true` when opened, `false` when refused in combat, and `nil` when there is no category to open; through O23 it returned nothing. |
 | `RestoreDefaults(pageKey, ctx)` | O1 | The per-page Defaults button. Refreshes only the ctx it was given. **From O16** the page walk runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `pageKey`); the refresh runs after it closes. **From O22** refused in combat (nothing is reset); `RestoreAllDefaults` is not, because a slash reset verb calls it. |
 | `RestoreAllDefaults()` | O1 | Without `resetProfile`: every non-vetoed row, then `afterRestoreAll`, then a full refresh — unchanged. **With `resetProfile` (O9):** only the `sessionOnly` rows, then `resetProfile()`, then `afterRestoreAll`, then a full refresh. **From O16** everything before the refresh — the row walk, `resetProfile` and `afterRestoreAll` — runs inside the descriptor's optional `bulkBegin` / `bulkEnd` bracket (act `"reset"`, scope `"all"`). |
 | `SetRenderer(ctx, fn)` | O1 (combat lock: **O22**) | Declare how a page draws itself. The library owns *when*: first show, again after a refresh marked it dirty while hidden, and — from O22 — at `PLAYER_REGEN_ENABLED` for a page on screen that combat left owed a render. Also builds the Defaults button. Under combat it **covers** the page and draws nothing; through O21 it closed the settings window instead (anti-pattern #88). |

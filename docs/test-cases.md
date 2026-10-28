@@ -1590,7 +1590,7 @@ Total.
 - options: ClearScroll leaves the reserved band alone
 - options: ClearScroll resets BOTH heading trackers
 
-### test_options_render.lua (25)
+### test_options_render.lua (27)
 
 - options: RefreshAllPanels runs every registered panel's refreshers, isolating a thrower
 - options: registered page builders run in registration order, once, at CreateOptionsPanel
@@ -1613,6 +1613,8 @@ Total.
 - options: a ctx that never went through SetRenderer keeps the old ungated behavior
 - options: OpenOptionsPanel REFUSES under combat and does not defer-and-replay
 - options: OpenOptionsPanel opens the registered category out of combat
+- options: OpenOptionsPanel(pageKey) opens that page's own category, not the landing page
+- options: OpenOptionsPanel(pageKey) still refuses in combat and opens nothing
 - options: :New refuses a descriptor with no mainPanelName
 - options: a host that omits print still sees the combat refusal in the chat frame
 - options: CreateOptionsPanel is idempotent in both the category and the refreshers
@@ -3590,7 +3592,7 @@ Total.
 | test_launcher.lua | 45 |
 | test_atenable.lua | 21 |
 | test_options.lua | 61 |
-| test_options_render.lua | 25 |
+| test_options_render.lua | 27 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 53 |
@@ -3670,4 +3672,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3132** |
+| **Total** | **3134** |
