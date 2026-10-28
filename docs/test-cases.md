@@ -2139,7 +2139,7 @@ Total.
 - appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
 - appearance: the other owners and one owner's skin copy are library-level, for the skin picker
 
-### test_options_skin_picker.lua (35)
+### test_options_skin_picker.lua (36)
 
 - skin picker: OptionsSkinPicker is minor 1, paired on the shell, and attaches two members
 - skin picker: a newer attach of the file adopts the queue already on the library table
@@ -2151,6 +2151,7 @@ Total.
 - skin picker: a pick that asks for a reload raises the one popup at Apply, not at the pick
 - skin picker: the close control and Escape put the preview back and write nothing
 - skin picker: a close puts back the owner's stored choice now, not the one the window opened with
+- skin picker: a close with no usable spec.get puts back the choice the window opened with
 - skin picker: the eye keeps working while a preview is pending, and keeps the preview
 - skin picker: the window the eye opens, HIGH and toplevel, does not cover the picker
 - skin picker: showing re-raises a shown StaticPopup, so a reload popup stays above the next picker
@@ -3629,7 +3630,7 @@ Total.
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 36 |
-| test_options_skin_picker.lua | 35 |
+| test_options_skin_picker.lua | 36 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3691,4 +3692,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3153** |
+| **Total** | **3154** |

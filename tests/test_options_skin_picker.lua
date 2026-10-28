@@ -393,6 +393,35 @@ function()
   assertNil(store.calls)
 end)
 
+test("skin picker: a close with no usable spec.get puts back the choice the window opened with",
+function()
+  -- red under: revert() falling back to Skin:GetChoice, which by then answers the preview, so a
+  -- host with no get, a get that raises or a get naming an unknown skin kept the unsaved preview
+  -- worn after the close (PK-03).
+  local m, Skin, lib = env()
+  local errs = 0
+  m.geterrorhandler = function() return function() errs = errs + 1 end end
+  local store = register(Skin, OWNER, "obsidian")
+  local O = instance(lib, OWNER)
+  local f = O.SkinPicker(specFor(store, { get = false }))
+  pickRow(f, "ember")
+  assertEqual(applied(Skin, OWNER), "ember", "the preview is worn")
+  f.close:__fire("OnClick")
+  assertEqual(applied(Skin, OWNER), "obsidian", "no spec.get: the opened choice is back")
+  assertNil(store.calls, "no write")
+  O.SkinPicker(specFor(store, { get = function() error("get broke") end }))
+  pickRow(f, "glass")
+  local before = errs
+  O.HideSkinPicker()
+  assertEqual(applied(Skin, OWNER), "obsidian", "a raising spec.get: the opened choice is back")
+  assertTrue(errs > before, "the error is reported")
+  O.SkinPicker(specFor(store, { get = function() return { source = "ka0s", skin = "no-such-skin" } end }))
+  pickRow(f, "ember")
+  f:Hide(); f:__fire("OnHide")
+  assertEqual(applied(Skin, OWNER), "obsidian", "an unknown skin key: the opened choice is back")
+  assertNil(store.calls)
+end)
+
 test("skin picker: the eye keeps working while a preview is pending, and keeps the preview", function()
   local _, Skin, lib = env()
   local store = register(Skin, OWNER)

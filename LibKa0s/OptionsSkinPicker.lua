@@ -333,8 +333,9 @@ function lib.__AttachSkinPicker(O, d)
   end
 
   --- The owner's stored choice for picker `p` (default the one shown last): `spec.get`
-  --- (`{ source, skin }` or two values), else the Skin major's.
-  local function readChoice(p)
+  --- (`{ source, skin }` or two values), each half it gives no usable value for taken from
+  --- `fallback` (a `{ source, skin }` pair), else from the Skin major's applied choice.
+  local function readChoice(p, fallback)
     p = p or P
     local Skin, get = p.Skin, p.spec.get
     local source, skin
@@ -344,8 +345,11 @@ function lib.__AttachSkinPicker(O, d)
       elseif ok then source, skin = a, b
       else report(a) end
     end
-    if source ~= "eui" and source ~= "ka0s" then source = select(1, Skin:GetChoice(p.owner)) end
-    if type(skin) ~= "string" or not Skin:GetSkin(skin) then skin = select(2, Skin:GetChoice(p.owner)) end
+    local fs, fk
+    if fallback then fs, fk = fallback[1], fallback[2]
+    else fs, fk = Skin:GetChoice(p.owner) end
+    if source ~= "eui" and source ~= "ka0s" then source = fs end
+    if type(skin) ~= "string" or not Skin:GetSkin(skin) then skin = fk end
     return source, skin
   end
 
@@ -420,18 +424,14 @@ function lib.__AttachSkinPicker(O, d)
   end
 
   --- A dismissal of picker `p`: its pending preview put back, the Skin major moved to the owner's
-  --- stored choice as it reads now (spec.get, else the choice the window opened with), so only the
-  --- unsaved preview is undone: a skin the Skin tab or a profile change stored meanwhile stays. No
-  --- write.
+  --- stored choice as it reads now (spec.get, each half it gives no usable value for taken from the
+  --- choice the window opened with), so only the unsaved preview is undone: a skin the Skin tab or
+  --- a profile change stored meanwhile stays. Never the Skin major's applied choice: the pick moved
+  --- it to the preview. No write.
   local function revert(p)
     if p.pending == nil then return end
     p.pending, p.reload = nil, false
-    local ok, source, skin = pcall(readChoice, p)
-    if not ok then
-      report(source)
-      local opened = p.opened or {}
-      source, skin = opened[1], opened[2]
-    end
+    local source, skin = readChoice(p, p.opened or {})
     p.Skin:SetChoice(p.owner, source, skin)
   end
 
