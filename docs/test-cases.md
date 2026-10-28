@@ -477,7 +477,7 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
-### test_skin_defs.lua (26)
+### test_skin_defs.lua (27)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -487,6 +487,7 @@ Total.
 - skin defs: every skin's text reads on its own window
 - skin defs: every skin's arrows and check mark wear its own accent
 - skin defs: every skin's scroll bar draws a corridor on its window and a knob on the corridor
+- skin defs: no flat window frame is thicker than the others
 - skin defs: every skin's set drawer label differs from its unset one
 - skin defs: every skin's bind-state and danger colors read on its own window
 - skin defs: the bind-state tokens inherit Ka0s Default unless a skin overrides for legibility
@@ -3443,7 +3444,7 @@ Total.
 | test_glow.lua | 15 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
-| test_skin_defs.lua | 26 |
+| test_skin_defs.lua | 27 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
@@ -3556,4 +3557,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3030** |
+| **Total** | **3031** |

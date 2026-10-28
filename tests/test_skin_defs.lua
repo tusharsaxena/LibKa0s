@@ -181,6 +181,19 @@ test("skin defs: every skin's scroll bar draws a corridor on its window and a kn
   end
 end)
 
+test("skin defs: no flat window frame is thicker than the others", function()
+  -- The owner's 2026-10-28 note: Azeroth's border read much thicker than Ember's or WoW Midnight's.
+  -- A flat frame is its edge plus the 1px inner rule where `win.inner` is set. red under: Azeroth's
+  -- 3px edge and its rule, 4px against Ember's 2 and Midnight's 3.
+  for _, key in ipairs(KEYS) do
+    local t = skinLib():ResolveSkin(key)
+    if t["win.borderStyle"] == "flat" then
+      local frame = t["win.borderSize"] + (t["win.inner"] and 1 or 0)
+      assertTrue(frame <= 3, ("%s: a %dpx window frame, want <= 3"):format(key, frame))
+    end
+  end
+end)
+
 test("skin defs: every skin's set drawer label differs from its unset one", function()
   local Skin = skinLib()
   for _, key in ipairs(KEYS) do

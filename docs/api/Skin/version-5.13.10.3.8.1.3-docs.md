@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 5.12.10.3.8.1.3
+# `LibKa0s-Skin-1.0` — version 5.13.10.3.8.1.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,7 +8,7 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **5** · `SkinDefs.lua` minor **9** · `SkinPaint.lua` minor **8** · `SkinPaintExtras.lua` minor **3** · `SkinPaintControls.lua` minor **6** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
+| Files and minors | `Skin.lua` minor **5** · `SkinDefs.lua` minor **13** · `SkinPaint.lua` minor **10** · `SkinPaintExtras.lua` minor **3** · `SkinPaintControls.lua` minor **8** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
@@ -919,7 +919,7 @@ Default and Midnight, and WoW Forever's window texture).
 | **Glass** | A `#121622` window at .88 on `nine:Ka0s Glass` at radius 8 (above), popups the same; flat 1px frosted control edges and boxless tabs underlined in the lilac `#B69CFF` accent; translucent white washes, `bar.gloss = true`. |
 | **High Contrast** | Black, a white 2px window edge and white 1px edges on every control (2px yellow on popups and menus; controls were 2px and popups 3px until SkinDefs minor 7), yellow `#FFE600` titles, accent, selection outline and focus; the primary button and the selected tab yellow on black (since SkinDefs minor 7; black on yellow before); Atkinson Hyperlegible 13.5 / 15. |
 | **Obsidian** | True-black flat panels (a `#0A0A0B` window and a `#050506` title bar since SkinDefs minor 7, darker than Ka0s Default's navy), hairline `#202024` edges, no inner rule, a cool blue `#4DB8FF` accent, a deeper `#2A86D1` primary button with white text, Inter. |
-| **Azeroth** | Dark tooled leather `#2B1D12` (SkinDefs minor 8; light parchment until then, which did not read in Loot History) under a 3px leather `#6B4A22` edge and a `#8A6A36` inner rule, a `#1A110A` title bar with a gold title, parchment `#E9DDBC` text, Vollkorn throughout, gold `#E2B659` headings and accent, leather buttons with cream text, and the red wax seal for the primary button and the selected tab. As a dark skin it inherits Ka0s Default's semantic, quality, tooltip and chart colors. |
+| **Azeroth** | Dark tooled leather `#2B1D12` (SkinDefs minor 8; light parchment until then, which did not read in Loot History) under a 1px leather `#6B4A22` edge and a `#8A6A36` inner rule (a 3px edge until SkinDefs minor 13, which read much thicker than every other skin's frame), a `#1A110A` title bar with a gold title, parchment `#E9DDBC` text, Vollkorn throughout, gold `#E2B659` headings and accent, leather buttons with cream text, and the red wax seal for the primary button and the selected tab. As a dark skin it inherits Ka0s Default's semantic, quality, tooltip and chart colors. |
 | **Ember** | Charred brown, a `#6A2E17` edge over an amber inner rule, orange `#FF7A33` accent, gradient title bar and buttons, the primary's text white, Bitter. |
 
 An **art token** (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
@@ -954,7 +954,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `win.bgTexture` | · | · | · | · | · | `UI-DialogBox-Background-Dark` | · | · |
 | `win.bgDense` | `#0A0A0B` | `#2B1D12` | `#121622 .88` | `#000000` | `#1A0E0A .95` | `#1E1C19` | `#131527` | `#231C14` |
 | `win.border` | `#202024` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#6A2E17` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
-| `win.borderSize` | `1` | `3` | `8` | `2` | `1` | `32` | `2` | `1` |
+| `win.borderSize` | `1` | `1` | `8` | `2` | `1` | `32` | `2` | `1` |
 | `win.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
 | `win.inner` | none | `#8A6A36` | none | none | `#C98A3A .45` | none | `#3D2F12` | none |
 | `win.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
