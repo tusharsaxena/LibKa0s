@@ -10,29 +10,36 @@ repository, the commit each file is pinned to, the SHA-256 of what that commit s
 transformation applied, so a reader can rebuild the bytes that ship and check them against the
 commit rather than take them on trust.
 
-WHAT SHIPS, AND FROM WHERE (all SIL Open Font License 1.1, no Reserved Font Name in any of them):
+WHAT SHIPS, AND FROM WHERE (all SIL Open Font License 1.1, from google/fonts' ofl/ folder):
 
-    Barlow-Regular.ttf, Barlow-SemiBold.ttf      google/fonts ofl/barlow, static files, unchanged
-    AtkinsonHyperlegible-Regular.ttf, -Bold.ttf  google/fonts ofl/atkinsonhyperlegible, unchanged
-    Cinzel-SemiBold.ttf                          google/fonts ofl/cinzel, Cinzel[wght].ttf, INSTANCED
+    Inter-Regular.ttf, Inter-SemiBold.ttf              inter, Inter[opsz,wght].ttf, INSTANCED
+    Nunito-Regular.ttf, Nunito-SemiBold.ttf            nunito, Nunito[wght].ttf, INSTANCED
+    Vollkorn-Regular.ttf, Vollkorn-Bold.ttf            vollkorn, Vollkorn[wght].ttf, INSTANCED
+    Bitter-Regular.ttf, Bitter-Bold.ttf                bitter, Bitter[wght].ttf, INSTANCED
+    Philosopher-Regular.ttf, Philosopher-Bold.ttf      philosopher, static files, unchanged
+    FiraSans-Regular.ttf, FiraSans-SemiBold.ttf        firasans, static files, unchanged
+    AtkinsonHyperlegible-Regular.ttf, -Bold.ttf        atkinsonhyperlegible, static files, unchanged
 
-    and one license file per family beside them: Barlow-OFL.txt, AtkinsonHyperlegible-OFL.txt and
-    Cinzel-OFL.txt, upstream's OFL.txt verbatim (Cinzel's with a provenance note above it).
+    and one license file per family beside them, `<Family>-OFL.txt`: upstream's OFL.txt verbatim,
+    an instanced family's with a provenance note above it.
 
-WHY CINZEL IS INSTANCED. Upstream publishes Cinzel as a variable font only (wght 400-900, named
-instances Regular, Bold and Black, no SemiBold), and the WoW client is not known to honor a variable
-axis, so a variable file would draw its default instance, Regular, whatever weight was asked for.
-`fontTools.varLib.instancer` pins wght to 600 and drops the variation tables, which gives a static
-SemiBold; the name table is then rewritten to call it "Cinzel SemiBold" so the file does not claim
-to be the Regular it was cut from. The OFL allows a modified version under the same license, and the
-family carries no Reserved Font Name, so the name may stay. The note at the top of Cinzel-OFL.txt
-says the same thing to someone who only has the vendored copy.
+WHY SOME ARE INSTANCED. Upstream publishes those four as variable fonts only, and the WoW client is
+not known to honor a variable axis, so a variable file would draw its default instance whatever
+weight was asked for (Bitter's and Nunito's default is their thinnest). `fontTools.varLib.instancer`
+pins each axis (weight, and Inter's optical size at its text end, 14) and drops the variation
+tables, which gives a static face; the name table is then rewritten to name the weight, so the file
+does not claim to be the instance it was cut from. The OFL allows a modified version under the same
+license. None of the four reserves its family name (Bitter reserves only "Bitter Pro"), so the
+names stay.
 
-WHY THESE FIVE: the 2026-10-25 skinning run's spec (Ka0sAddonsCommonTasks
-docs/2026-10-25-SKINNING/03_SPEC.md, R7). Barlow is the Obsidian, Glass and WoW Forever body face,
-Cinzel the Azeroth, Ember and WoW Midnight title face, Atkinson Hyperlegible High Contrast's. None
-of the three has Hangul or Han, and Cinzel and Atkinson have no Cyrillic, so Media.lua registers
-them for western clients only.
+WHY THESE: the owner's round-5 notes of 2026-10-28 (Ka0sAddonsCommonTasks
+docs/2026-10-28-SKIN_ROUND5/): every skin has a face of its own, its titles in the same family as
+its body. Inter is Obsidian's (the modern face its mockup named), Nunito Glass's (rounded, as its
+corners are), Vollkorn Azeroth's (a dark old-style book face for the parchment), Bitter Ember's (a
+sturdy slab), Philosopher WoW Midnight's, Fira Sans WoW Forever's and Atkinson Hyperlegible High
+Contrast's. Ka0s Default and WoW Default draw the client's own Friz Quadrata. Barlow and Cinzel,
+the 2026-10-25 run's faces, left the payload in the same round. Atkinson has no Cyrillic; the other
+six cover it, so Media.lua registers them for ruRU too.
 
 Requires Python 3 and fontTools (`sudo apt install python3-fonttools`; see DEPENDENCIES.md), and
 network access for --fetch. Run it with `-I`: the cache holds other people's files.
@@ -52,22 +59,95 @@ CACHE = os.path.join(HERE, ".cache", "fonts")
 
 RAW = "https://raw.githubusercontent.com/google/fonts/%s/ofl/%s/%s"
 
-# PINNED, BY COMMIT: the last google/fonts commit to touch each family's folder on 2026-10-25. A
-# moving branch is not a provenance record; the next --fetch would quietly ship different bytes.
+# PINNED, BY COMMIT: the last google/fonts commit to touch each family's folder on the day it was
+# added (Atkinson on 2026-10-25, the rest on 2026-10-28). A moving branch is not a provenance record;
+# the next --fetch would quietly ship different bytes.
+#
+# `ship` copies a static file unchanged. `instances` cuts a static face from a variable one: the
+# source file, the output file, the axis values, and the style name it is given.
 FAMILIES = [
     {
-        "dir": "barlow",
-        "sha": "6cdf01867df0813c2390f90dff7dc66c87f14cf7",
+        "dir": "inter", "family": "Inter",
+        "sha": "0b58fb370093f9a9f4ff785d94405710b79de67c",
         "files": {
-            "Barlow-Regular.ttf": "95aa02c7c43096e0dd44d787ba6216864a67157e402adab59b35572e0c1577ea",
-            "Barlow-SemiBold.ttf": "86577cb32f8abe3673db53ca0f4221e6856751a4f6730c867e00f720f8bb1fc5",
-            "OFL.txt": "186d750eb496a4c17a76385f82be6aea2ac1cf2de074a811d63786cf374ea73f",
+            "Inter[opsz,wght].ttf": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+            "OFL.txt": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
         },
-        "license": "Barlow-OFL.txt",
-        "ship": ["Barlow-Regular.ttf", "Barlow-SemiBold.ttf"],
+        "license": "Inter-OFL.txt",
+        "ship": [],
+        "instances": [
+            ("Inter[opsz,wght].ttf", "Inter-Regular.ttf", {"opsz": 14, "wght": 400}, "Regular"),
+            ("Inter[opsz,wght].ttf", "Inter-SemiBold.ttf", {"opsz": 14, "wght": 600}, "SemiBold"),
+        ],
     },
     {
-        "dir": "atkinsonhyperlegible",
+        "dir": "nunito", "family": "Nunito",
+        "sha": "8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5",
+        "files": {
+            "Nunito[wght].ttf": "bb55a5ca5c2042335b3991af27c4d0705d0ef41cac6164ac737fd8f2a1e85207",
+            "OFL.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
+        },
+        "license": "Nunito-OFL.txt",
+        "ship": [],
+        "instances": [
+            ("Nunito[wght].ttf", "Nunito-Regular.ttf", {"wght": 400}, "Regular"),
+            ("Nunito[wght].ttf", "Nunito-SemiBold.ttf", {"wght": 600}, "SemiBold"),
+        ],
+    },
+    {
+        "dir": "vollkorn", "family": "Vollkorn",
+        "sha": "5081ec64046ff04e82233258ba3faad2545813dd",
+        "files": {
+            "Vollkorn[wght].ttf": "4ebef434f76f80286204840354a84db79a0dc3c87deeeb791e015b70b2ade49d",
+            "OFL.txt": "53f9c99fa3d47f7d632a42ee7bab4a834a60a744f6026d676c3a223cef2b2ef3",
+        },
+        "license": "Vollkorn-OFL.txt",
+        "ship": [],
+        "instances": [
+            ("Vollkorn[wght].ttf", "Vollkorn-Regular.ttf", {"wght": 400}, "Regular"),
+            ("Vollkorn[wght].ttf", "Vollkorn-Bold.ttf", {"wght": 700}, "Bold"),
+        ],
+    },
+    {
+        "dir": "bitter", "family": "Bitter",
+        "sha": "b6380fac8e94cdc92aa045cf44d80a7743dde8d6",
+        "files": {
+            "Bitter[wght].ttf": "ef2b9a711fb02f1e5823b34da1b7450e0fc76793b7d733a8b41006e24916d4a7",
+            "OFL.txt": "152a1e283e23b42c4940da4c72f2f5bebaa17969cb77c76d7af05903846006f1",
+        },
+        "license": "Bitter-OFL.txt",
+        "ship": [],
+        "instances": [
+            ("Bitter[wght].ttf", "Bitter-Regular.ttf", {"wght": 400}, "Regular"),
+            ("Bitter[wght].ttf", "Bitter-Bold.ttf", {"wght": 700}, "Bold"),
+        ],
+    },
+    {
+        "dir": "philosopher", "family": "Philosopher",
+        "sha": "8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5",
+        "files": {
+            "Philosopher-Regular.ttf": "e1cba0b5003b5694f1d6cc0fbe629f78362ad38a9ffd4d0cb7abfd9698a575ed",
+            "Philosopher-Bold.ttf": "2277c78b95657274b949f40b64b58d18fe7bbe0ec968c104d38906ec700024ea",
+            "OFL.txt": "f1e511c19c29907ff2e7a3a575e7fa4cbbf5cedf551a0044db74cf4dc52fde89",
+        },
+        "license": "Philosopher-OFL.txt",
+        "ship": ["Philosopher-Regular.ttf", "Philosopher-Bold.ttf"],
+        "instances": [],
+    },
+    {
+        "dir": "firasans", "family": "Fira Sans",
+        "sha": "e345593da2a4d596212542edbd28f2ed08fe6cbe",
+        "files": {
+            "FiraSans-Regular.ttf": "c29556a2719bf613ef3d5e070e40d903a8965d9c081beca1375dc1e6e0f93c23",
+            "FiraSans-SemiBold.ttf": "db0321f83eb3e9f527b8af384a1b3fefdc1039cf2b06fd39b3f61492bda9561c",
+            "OFL.txt": "8f24842e9174beda18a556c2ae7d54f5dc444340c19a3a9ef77e23bca366adbd",
+        },
+        "license": "FiraSans-OFL.txt",
+        "ship": ["FiraSans-Regular.ttf", "FiraSans-SemiBold.ttf"],
+        "instances": [],
+    },
+    {
+        "dir": "atkinsonhyperlegible", "family": "Atkinson Hyperlegible",
         "sha": "95f4904fc8bcf26d3420fe315560c96417c6dec7",
         "files": {
             "AtkinsonHyperlegible-Regular.ttf":
@@ -78,29 +158,15 @@ FAMILIES = [
         },
         "license": "AtkinsonHyperlegible-OFL.txt",
         "ship": ["AtkinsonHyperlegible-Regular.ttf", "AtkinsonHyperlegible-Bold.ttf"],
-    },
-    {
-        "dir": "cinzel",
-        "sha": "3dd78844021e948ceb633d1dcee3f7885561b5d9",
-        "files": {
-            "Cinzel[wght].ttf": "f4d83d34d1f6c741193e4acf4b3dff9531e5a67b6aa65228d00a7db72a4e0f34",
-            "OFL.txt": "f2b3029aba64c378bf0963b62945eee15e564fe4330b934c8f2eb058282b5e83",
-        },
-        "license": "Cinzel-OFL.txt",
-        "ship": [],   # built by instance_cinzel() below
+        "instances": [],
     },
 ]
 
-# The one transformation in this file.
-CINZEL_SOURCE = "Cinzel[wght].ttf"
-CINZEL_OUT = "Cinzel-SemiBold.ttf"
-CINZEL_WEIGHT = 600
-
-CINZEL_NOTE = (
-    "Cinzel-SemiBold.ttf is a static instance of upstream's variable Cinzel[wght].ttf at wght 600,\n"
-    "made with fontTools.varLib.instancer by tools/artwork/fonts.py in the LibKa0s repository,\n"
-    "which pins the source commit and records the change. Only the weight axis was fixed and the\n"
-    "name table renamed to \"Cinzel SemiBold\"; no glyph was edited. It remains under the license\n"
+NOTE = (
+    "%s are static instances of upstream's variable %s, made with\n"
+    "fontTools.varLib.instancer by tools/artwork/fonts.py in the LibKa0s repository, which pins\n"
+    "the source commit and records the change. Only the variation axes were fixed (%s) and the\n"
+    "name table renamed to name each weight; no glyph was edited. They remain under the license\n"
     "below.\n"
     "\n"
 )
@@ -145,25 +211,37 @@ def _write_text_crlf(text, dest):
     """Upstream's text with CRLF endings, the way .gitattributes pins every text file here."""
     body = text.replace("\r\n", "\n").replace("\n", "\r\n")
     with open(dest, "wb") as fh:
-        fh.write(body.encode("ascii"))
+        fh.write(body.encode("utf-8"))
 
 
-def instance_cinzel(src, dest):
-    """Pin Cinzel's weight axis at CINZEL_WEIGHT and rename the result as a SemiBold."""
+def _axes(axes):
+    return ", ".join("%s %s" % kv for kv in sorted(axes.items()))
+
+
+def instance(src, dest, axes, family, style):
+    """Pin every axis of `src` at `axes` and name the static result `family` `style`."""
     from fontTools.ttLib import TTFont
     from fontTools.varLib import instancer
 
     font = TTFont(src, recalcTimestamp=False)
-    static = instancer.instantiateVariableFont(font, {"wght": CINZEL_WEIGHT}, static=True)
-    static["OS/2"].usWeightClass = CINZEL_WEIGHT
+    static = instancer.instantiateVariableFont(font, axes, static=True)
+    static["OS/2"].usWeightClass = axes["wght"]
+    bold = style == "Bold"
+    # fsSelection: clear ITALIC / BOLD / REGULAR, then set the one this face is; macStyle to match.
+    static["OS/2"].fsSelection = (static["OS/2"].fsSelection & ~0x61) | (0x20 if bold else 0x40)
+    static["head"].macStyle = 1 if bold else 0
     names = static["name"]
-    # 1/2 the legacy family and style (a four-style family has no SemiBold, so the weight moves into
-    # the family name); 4 full; 6 PostScript; 16/17 the typographic family and style.
-    for name_id, value in ((1, "Cinzel SemiBold"), (2, "Regular"), (4, "Cinzel SemiBold"),
-                           (6, "Cinzel-SemiBold"), (16, "Cinzel"), (17, "SemiBold")):
+    ps = family.replace(" ", "")
+    # A four-style family names Regular and Bold in the legacy pair (1/2); any other weight moves into
+    # the legacy family name. 4 full; 6 PostScript; 16/17 the typographic family and style.
+    legacy = (family, style) if style in ("Regular", "Bold") else ("%s %s" % (family, style), "Regular")
+    full = family if style == "Regular" else "%s %s" % (family, style)
+    for name_id, value in ((1, legacy[0]), (2, legacy[1]), (4, full), (6, "%s-%s" % (ps, style)),
+                           (16, family), (17, style)):
         names.setName(value, name_id, 3, 1, 0x409)
     names.removeNames(nameID=3)
-    names.setName("Cinzel-SemiBold;instanced by LibKa0s tools/artwork/fonts.py", 3, 3, 1, 0x409)
+    names.setName("%s-%s;instanced by LibKa0s tools/artwork/fonts.py" % (ps, style), 3, 3, 1, 0x409)
+    names.removeNames(nameID=25)   # a variable font's PostScript-prefix record no longer applies
     static.save(dest)
 
 
@@ -177,12 +255,15 @@ def build():
         for name in family["ship"]:
             shutil.copyfile(_cached(family, name), os.path.join(OUT, name))
             _say("  copied  %s" % name)
-        with open(_cached(family, "OFL.txt"), "r", encoding="ascii") as fh:
+        with open(_cached(family, "OFL.txt"), "r", encoding="utf-8") as fh:
             text = fh.read()
-        if family["dir"] == "cinzel":
-            instance_cinzel(_cached(family, CINZEL_SOURCE), os.path.join(OUT, CINZEL_OUT))
-            _say("  built   %s (wght %d)" % (CINZEL_OUT, CINZEL_WEIGHT))
-            text = CINZEL_NOTE + text
+        for src, out, axes, style in family["instances"]:
+            instance(_cached(family, src), os.path.join(OUT, out), axes, family["family"], style)
+            _say("  built   %s (%s)" % (out, _axes(axes)))
+        if family["instances"]:
+            outs = " and ".join(i[1] for i in family["instances"])
+            pinned = "; ".join("%s at %s" % (i[1], _axes(i[2])) for i in family["instances"])
+            text = NOTE % (outs, family["instances"][0][0], pinned) + text
         _write_text_crlf(text, os.path.join(OUT, family["license"]))
         _say("  wrote   %s" % family["license"])
     return 0

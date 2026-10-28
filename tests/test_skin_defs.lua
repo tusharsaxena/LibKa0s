@@ -7,7 +7,7 @@
 -- on its own window; and the Blizzard-art choices recorded in docs/api/Skin stay what they say.
 
 local T = _G.LK_TEST
-local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
+local test, assertEqual, assertTrue, assertNil = T.test, T.assertEqual, T.assertTrue, T.assertNil
 
 local MAJOR = "LibKa0s-Skin-1.0"
 
@@ -20,6 +20,10 @@ local LABELS = {
 }
 
 local function skinLib() return T.mocks.LibStub(MAJOR) end
+
+local function colorKey(c)
+  return type(c) == "table" and ("%.3f,%.3f,%.3f,%.3f"):format(c[1], c[2], c[3], c[4] or 1) or tostring(c)
+end
 
 local KIND_OK = {
   color = function(v) return type(v) == "table" and type(v[1]) == "number" and #v >= 3 end,
@@ -143,6 +147,53 @@ end)
 -- OptionsDrawer draws a drawer's label in drawer.textSet when its value is set and in drawer.text
 -- when it is not: the label color is the set/unset cue, so the two must be told apart at a glance.
 -- "Apart" is one channel at least 0.2 away (Azeroth's #2A1C0C / #3A2412 differed by 0.06).
+-- A color over another, by its alpha (the client's blend), opaque.
+local function over(top, under)
+  local a = top[4] or 1
+  return { top[1] * a + under[1] * (1 - a), top[2] * a + under[2] * (1 - a), top[3] * a + under[3] * (1 - a), 1 }
+end
+
+test("skin defs: every skin's arrows and check mark wear its own accent", function()
+  -- SkinDefs minor 12 (the owner's round-5 showroom audit): the paging, dropdown and sort arrows were
+  -- the art's yellow in every skin, and WoW Forever's check mark Ka0s gold under a tan accent.
+  for _, key in ipairs(KEYS) do
+    local t = skinLib():ResolveSkin(key)
+    assertEqual(colorKey(t["icon.arrow"]), colorKey(t["text.accent"]), key .. ": the arrows in its accent")
+  end
+  local fv = skinLib():ResolveSkin("forever")
+  assertEqual(colorKey(fv["check.mark"]), colorKey(fv["text.accent"]), "WoW Forever's check mark is its tan")
+end)
+
+test("skin defs: every skin's scroll bar draws a corridor on its window and a knob on the corridor", function()
+  -- The owner's round-5 notes: "a knob and a scroll corridor" in every skin; Azeroth's was the
+  -- example (corridor 1.12). red under: a clear or window-colored `scroll.track` (Obsidian, Glass,
+  -- WoW Forever and High Contrast drew none), or a knob that sinks into it.
+  for _, key in ipairs(KEYS) do
+    local t = skinLib():ResolveSkin(key)
+    local win = over(t["win.bg"], { 0, 0, 0, 1 })
+    local corridor = over(t["scroll.track"], win)
+    local c = contrast(corridor, win)
+    assertTrue(c >= 1.12, ("%s: corridor %.2f on its window, want >= 1.12"):format(key, c))
+    for _, name in ipairs({ "scroll.thumb", "scroll.thumbOn" }) do
+      local k = contrast(over(t[name], corridor), corridor)
+      assertTrue(k >= 3, ("%s: %s %.2f on its corridor, want >= 3"):format(key, name, k))
+    end
+  end
+end)
+
+test("skin defs: no flat window frame is thicker than the others", function()
+  -- The owner's 2026-10-28 note: Azeroth's border read much thicker than Ember's or WoW Midnight's.
+  -- A flat frame is its edge plus the 1px inner rule where `win.inner` is set. red under: Azeroth's
+  -- 3px edge and its rule, 4px against Ember's 2 and Midnight's 3.
+  for _, key in ipairs(KEYS) do
+    local t = skinLib():ResolveSkin(key)
+    if t["win.borderStyle"] == "flat" then
+      local frame = t["win.borderSize"] + (t["win.inner"] and 1 or 0)
+      assertTrue(frame <= 3, ("%s: a %dpx window frame, want <= 3"):format(key, frame))
+    end
+  end
+end)
+
 test("skin defs: every skin's set drawer label differs from its unset one", function()
   local Skin = skinLib()
   for _, key in ipairs(KEYS) do
@@ -306,13 +357,12 @@ test("skin defs: WoW Default wears the Blizzard art docs/api/Skin names", functi
   assertEqual(t["input.borderSize"], 1, "inputs: 1px")
   assertEqual(t["nav.borderSize"], 1, "the nav rail: 1px")
   assertEqual(t["tab.onTexture"], "Interface\\OptionsFrame\\UI-OptionsFrame-ActiveTab", "active tab")
-  assertEqual(t["scroll.thumbTexture"], "Interface\\Buttons\\UI-ScrollBar-Knob", "scroll knob")
   assertEqual(t["check.texture"], "Interface\\Buttons\\UI-CheckBox-Up", "checkbox box")
   assertEqual(t["check.markTexture"], "Interface\\Buttons\\UI-CheckBox-Check", "checkbox tick")
 end)
 
-local ART_TOKENS = { "win.bgTexture", "tab.texture", "tab.onTexture", "scroll.thumbTexture",
-  "check.texture", "check.markTexture" }
+local ART_TOKENS = { "win.bgTexture", "tab.texture", "tab.onTexture", "check.texture",
+  "check.markTexture" }
 
 test("skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art", function()
   local t = skinLib():ResolveSkin("midnight")
@@ -353,7 +403,7 @@ test("skin defs: WoW Forever is warm charcoal, black centered titles, tan accent
     end
     local bg = t["win.bg"]
     assertTrue(bg[1] > bg[3] and luminance(bg) < 0.03, "warm charcoal window")
-    assertEqual(t["font.body"], "Ka0s Atkinson", "Atkinson Hyperlegible (minor 8: Barlow read blurry)")
+    assertEqual(t["font.body"], "Ka0s Fira Sans", "Fira Sans (minor 11: a face of its own; Barlow read blurry)")
   end)
 
 -- ── what a skin names exists ─────────────────────────────────────────────────────────────────
@@ -390,19 +440,28 @@ end)
 
 local FRIZ = "Friz Quadrata TT"
 
-test("skin defs: the font assignments follow the spec", function()
+test("skin defs: every skin draws one family of its own, for body and titles alike", function()
+  -- SkinDefs minor 11 (the owner's round-5 notes: titles that do not match the body, faces reused
+  -- across skins). red under: a skin whose titles are another family than its body (Cinzel over a
+  -- body face), or a face two skins share, but the client's Friz Quadrata, which Ka0s Default and
+  -- WoW Default both draw.
   local Skin = skinLib()
   local want = {
-    obsidian = { "Ka0s Barlow", "Ka0s Barlow SemiBold" }, glass = { "Ka0s Barlow", "Ka0s Barlow SemiBold" },
-    forever = { "Ka0s Atkinson", "Ka0s Atkinson Bold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
-    -- Ka0s Default's Friz Quadrata (minor 8) is inherited wherever a skin names no face of its own.
-    azeroth = { "Ka0s Atkinson", "Ka0s Cinzel" }, ember = { FRIZ, "Ka0s Cinzel" }, midnight = { FRIZ, "Ka0s Cinzel" },
-    wow = { FRIZ, FRIZ }, ka0s = { FRIZ, FRIZ },
+    obsidian = { "Ka0s Inter", "Ka0s Inter SemiBold" }, glass = { "Ka0s Nunito", "Ka0s Nunito SemiBold" },
+    azeroth = { "Ka0s Vollkorn", "Ka0s Vollkorn Bold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
+    ember = { "Ka0s Bitter", "Ka0s Bitter Bold" }, midnight = { "Ka0s Philosopher", "Ka0s Philosopher Bold" },
+    forever = { "Ka0s Fira Sans", "Ka0s Fira Sans SemiBold" }, wow = { FRIZ, FRIZ }, ka0s = { FRIZ, FRIZ },
   }
+  local owner = {}
   for key, pair in pairs(want) do
     local t = Skin:ResolveSkin(key)
     assertEqual(t["font.body"], pair[1], key .. " body font")
     assertEqual(t["font.title"], pair[2], key .. " title font")
+    assertEqual(pair[2]:sub(1, #pair[1]), pair[1], key .. ": its titles are its body's family")
+    if pair[1] ~= FRIZ then
+      assertNil(owner[pair[1]], pair[1] .. " is " .. tostring(owner[pair[1]]) .. "'s and " .. key .. "'s")
+      owner[pair[1]] = key
+    end
   end
   -- Every skin draws the client's shadow now: Azeroth's shadowless body was for its light parchment,
   -- and SkinDefs minor 8 made it dark. A dark label goes shadowless on its own (SkinPaint minor 5).

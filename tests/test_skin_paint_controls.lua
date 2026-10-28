@@ -185,7 +185,7 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   -- through SetFontObject overflowed the client's stack: Forever -> Midnight crashed the game.
   -- Every shipped skin sets a body face since SkinDefs minor 8, so the way back by path is reached
   -- here through a skin registered with none (`false`), as a face the client cannot resolve would.
-  local m, Skin = F.env({ lsm = { ["font:Ka0s Atkinson"] = "Fonts\\Atkinson.ttf" } })
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Fira Sans"] = "Fonts\\FiraSans.ttf" } })
   Skin:RegisterSkin({ key = "bare", tokens = { ["font.body"] = false } })
   local S = F.owner(Skin, OWNER)
   local eb = m.CreateFrame("EditBox", nil, m.UIParent)
@@ -217,12 +217,16 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   assertEqual(#objects, before, "an anonymous object recorded by an older copy is never handed back")
 end)
 
-test("skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call", function()
+test("skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call, but its arrow", function()
+  -- The arrow is SkinPaintControls minor 8's: the in-client art is yellow and a vertex color only
+  -- multiplies it, so every skin drew it yellow (the owner's round-5 showroom audit). It is
+  -- desaturated and colored `icon.arrow`, Ka0s Default's gold; Widgets' owner-less dropdown keeps
+  -- its gray tint.
   local m, Skin = F.env()
   local W = withWidgets(m)
   local S = F.owner(Skin, OWNER)
   local function paintLines(tr, dd)
-    local keep = { [tr.ids[dd]] = true, [tr.ids[dd.arrow]] = true }
+    local keep = { [tr.ids[dd]] = true }
     local out = {}
     for _, line in ipairs(tr.lines) do
       local id, method = line:match("^#(%d+):([%w]+)%(")
@@ -239,11 +243,13 @@ test("skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for cal
   dd.arrow = dd:CreateTexture(nil, "OVERLAY")
   tr2.watch(dd); tr2.watch(dd.text); tr2.watch(dd.arrow)
   tr2.start(); S.Dropdown(dd); tr2.stop(); tr2.restore()
-  local want = paintLines(tr1, real)
-  assertTrue(want:find("SetVertexColor(0.700,0.700,0.720)", 1, true) ~= nil, "the arrow's gray")
-  assertEqual(paintLines(tr2, dd), want)
+  assertEqual(paintLines(tr2, dd), paintLines(tr1, real), "the box, call for call")
+  assertTrue(survey(m, dd.arrow).desaturated == true, "the arrow art desaturated")
+  assertEqual(F.rgba(survey(m, dd.arrow).vertex), F.tok(Skin, "ka0s", "icon.arrow"), "in Ka0s Default's gold")
   Skin:SetChoice(OWNER, "ka0s", "glass")
-  assertEqual(F.rgba(survey(m, dd.arrow).vertex), F.tok(Skin, "glass", "icon.tint"), "repainted")
+  assertEqual(F.rgba(survey(m, dd.arrow).vertex), F.tok(Skin, "glass", "icon.arrow"), "repainted in Glass's accent")
+  Skin.__P.unpaint(Skin.painted[dd], dd)
+  assertTrue(not survey(m, dd.arrow).desaturated, "given back, the art's own color")
 end)
 
 -- ── checkboxes ───────────────────────────────────────────────────────────────────────────────
@@ -317,27 +323,33 @@ end)
 
 -- ── scroll bars and sliders ──────────────────────────────────────────────────────────────────
 
-test("skin controls: ScrollBar's thumb states and the console's own bar match today's tints", function()
-  -- OptionsScroll.lua THUMB_ON / THUMB_OFF; DebugLog.lua the console's track and thumb
+test("skin controls: ScrollBar's knob takes the bar's on / off state, and the console's own bar is filled", function()
+  -- OptionsScroll.lua THUMB_ON / THUMB_OFF; DebugLog.lua the console's track and thumb. red under: a
+  -- state that tints the client's art (SkinPaintControls minor 6) instead of the flat knob.
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
-  local tr = F.tracer(m)
   local sb = m.CreateFrame("Slider", nil, m.UIParent)
   local thumb = sb:CreateTexture()
   rawset(sb, "GetThumbTexture", function() return thumb end)
-  tr.watch(sb); tr.watch(thumb)
-  tr.start(); S.ScrollBar(sb, { state = "on" }); S.ScrollBar(sb, { state = "off" }); tr.stop()
-  assertEqual(F.only(tr, PAINT), "#2:SetVertexColor(1,1,1,1)\n#2:SetVertexColor(0.500,0.500,0.500,0.600)")
+  S.ScrollBar(sb, { state = "on" })
+  local knob = F.region(Skin, sb, "knob")
+  assertEqual(F.rgba(survey(m, knob).color), F.tok(Skin, "ka0s", "scroll.thumbOn"), "on")
+  S.ScrollBar(sb, { state = "off" })
+  assertEqual(F.rgba(survey(m, knob).color), F.tok(Skin, "ka0s", "scroll.thumbOff"), "off")
+  assertEqual(F.rgba(survey(m, F.region(Skin, sb, "track")).color), F.tok(Skin, "ka0s", "scroll.track"),
+    "the always-shown bar has its corridor too")
+  local tr = F.tracer(m)
   local bar = m.CreateFrame("Frame")
   local track, own = bar:CreateTexture(), bar:CreateTexture()
   tr.watch(bar); tr.watch(track); tr.watch(own)
   tr.start(); S.ScrollBar(bar, { track = track, thumb = own }); tr.stop(); tr.restore()
-  assertEqual(F.only(tr, PAINT), "#4:SetColorTexture(0.240,0.240,0.270,0.300)\n#5:SetColorTexture(0.500,0.500,0.550,0.850)")
+  assertEqual(F.only(tr, PAINT), "#2:SetColorTexture(0.240,0.240,0.270,0.400)\n#3:SetColorTexture(0.500,0.500,0.550,0.850)")
 end)
 
-test("skin controls: a skin's thumb fill lies over the bar's own thumb and follows it", function()
-  -- SkinDefs minor 9, SkinPaintControls minor 6 (the owner's note: the thumb barely visible in five
-  -- skins). red under: a ScrollBar that only tints the thumb art, or a fill that outlives a hidden thumb.
+test("skin controls: one flat knob over the bar's faded thumb art, following the thumb, in every skin", function()
+  -- SkinPaintControls minor 7 (the owner's round-5 notes: High Contrast drew two knobs). red under: a
+  -- ScrollBar that tints the thumb art, leaves it shown under the knob, or a knob that outlives a
+  -- hidden thumb.
   local m, Skin = F.env()
   -- The client's hooksecurefunc: the fixture's is a recorder that never calls through.
   m.hooksecurefunc = function(t, name, fn)
@@ -350,48 +362,29 @@ test("skin controls: a skin's thumb fill lies over the bar's own thumb and follo
   thumb:SetSize(16, 24)
   rawset(sb, "GetThumbTexture", function() return thumb end)
   S.ScrollBar(sb)
-  local fill = F.region(Skin, sb, "thumbFill")
-  assertTrue(fill ~= nil, "a fill is laid")
-  assertEqual(F.rgba(survey(m, fill).color), F.tok(Skin, "contrast", "scroll.thumbFill"), "in the skin's fill color")
-  assertEqual(survey(m, fill).layer, "OVERLAY", "over the thumb art")
-  local _, rel = fill:GetPoint(1)
+  local knob = F.region(Skin, sb, "knob")
+  assertTrue(knob ~= nil, "a knob is laid")
+  assertEqual(thumb:GetAlpha(), 0, "the client's knob art is faded: one knob, not two")
+  assertEqual(survey(m, thumb).vertex, nil, "and never tinted")
+  assertEqual(F.rgba(survey(m, knob).color), F.tok(Skin, "contrast", "scroll.thumb"), "in the skin's knob color")
+  assertEqual(survey(m, knob).layer, "OVERLAY", "over the bar")
+  local _, rel = knob:GetPoint(1)
   assertTrue(rel == thumb, "anchored to the thumb, so it moves with it")
-  assertTrue(survey(m, fill).shown, "shown with the thumb")
+  assertTrue(survey(m, knob).shown, "shown with the thumb")
   thumb:Hide()
-  assertTrue(not survey(m, fill).shown, "hidden with the thumb")
+  assertTrue(not survey(m, knob).shown, "hidden with the thumb")
   thumb:Show()
-  assertTrue(survey(m, fill).shown, "and back with it")
-  S.ScrollBar(sb, { state = "off" })
-  assertEqual(survey(m, fill).color[4], F.tok(Skin, "contrast", "scroll.thumbFill"):match("([%d.]+)$") * 0.5,
-    "half alpha on a bar that is off")
-  Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertTrue(not survey(m, fill).shown, "Ka0s Default sets none, so none is drawn")
-end)
-
-test("skin controls: exactly the five skins the owner named set a thumb fill", function()
-  local _, Skin = F.env()
-  local want = { obsidian = true, contrast = true, ember = true, wow = true, midnight = true }
+  assertTrue(survey(m, knob).shown, "and back with it")
   for _, def in ipairs(Skin:Skins()) do
-    local has = Skin:ResolveSkin(def.key)["scroll.thumbFill"] ~= nil
-    assertEqual(has, want[def.key] == true, def.key .. "'s thumb fill")
+    Skin:SetChoice(OWNER, "ka0s", def.key)
+    assertEqual(F.rgba(survey(m, knob).color), F.tok(Skin, def.key, "scroll.thumb"), def.key .. "'s knob")
+    assertEqual(F.rgba(survey(m, F.region(Skin, sb, "track")).color), F.tok(Skin, def.key, "scroll.track"),
+      def.key .. "'s corridor")
+    assertEqual(thumb:GetAlpha(), 0, def.key .. ": the art stays faded")
   end
-end)
-
-test("skin controls: a bar's own thumb is tinted and its track drawn under every skin", function()
-  local m, Skin = F.env()
-  local S = F.owner(Skin, OWNER)
-  local sb = m.CreateFrame("Slider", nil, m.UIParent)
-  local thumb = sb:CreateTexture()
-  rawset(sb, "GetThumbTexture", function() return thumb end)
-  S.ScrollBar(sb)
-  assertEqual(F.rgba(survey(m, thumb).vertex), F.tok(Skin, "ka0s", "scroll.thumb"), "Ka0s Default tints it (minor 6)")
-  Skin:SetChoice(OWNER, "ka0s", "ember")
-  assertEqual(F.rgba(survey(m, thumb).vertex), F.tok(Skin, "ember", "scroll.thumb"))
-  assertEqual(F.rgba(survey(m, F.region(Skin, sb, "track")).color), F.tok(Skin, "ember", "scroll.track"))
-  Skin:SetChoice(OWNER, "ka0s", "wow")
-  assertEqual(survey(m, thumb).texture, Skin:ResolveSkin("wow")["scroll.thumbTexture"], "WoW Default's knob")
-  Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertEqual(F.rgba(survey(m, F.region(Skin, sb, "track")).color), F.tok(Skin, "ka0s", "scroll.track"), "its own track")
+  Skin.__P.unpaint(Skin.painted[sb], sb)
+  assertEqual(thumb:GetAlpha(), 1, "given back, the art returns")
+  assertTrue(not survey(m, knob).shown, "and the knob goes")
 end)
 
 test("skin controls: Slider is painted under every skin, Ka0s Default's thin bar included", function()
@@ -505,6 +498,8 @@ test("skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and Apply
   local arrow = F.region(Skin, pb, "arrow")
   assertEqual(survey(m, arrow).texture, "Interface\\ChatFrame\\ChatFrameExpandArrow", "in-client art")
   assertEqual(arrow:GetRotation(), math.pi)
+  assertTrue(survey(m, arrow).desaturated == true, "desaturated, so the skin's color shows (minor 8)")
+  assertEqual(F.rgba(survey(m, arrow).vertex), F.tok(Skin, "contrast", "icon.arrow"), "High Contrast's yellow")
   local icon = m.CreateFrame("Button", nil, m.UIParent)
   icon.icon = icon:CreateTexture()
   S.SquareIcon(icon, { crop = true })
@@ -522,7 +517,8 @@ test("skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and Apply
   local h1, a1 = bar:CreateFontString(), bar:CreateTexture()
   S.SortHeaderBar(bar, { texts = { h1 }, arrows = { a1 } })
   assertEqual(F.rgba(survey(m, h1).textColor), F.tok(Skin, "framed", "list.header.text"))
-  assertEqual(F.rgba(survey(m, a1).vertex), F.tok(Skin, "framed", "icon.tint"))
+  assertEqual(F.rgba(survey(m, a1).vertex), F.tok(Skin, "framed", "icon.arrow"))
+  assertTrue(survey(m, a1).desaturated == true, "the sort arrow desaturated")
   assertEqual(F.rgba(survey(m, F.region(Skin, bar, "fill")).color), "0,0,0.200,1", "the header fill")
   local fill = m.CreateFrame("Frame"):CreateTexture()
   S.ApplyBarFill(fill)
@@ -741,7 +737,7 @@ end)
 
 test("skin controls: a dark label is shadowless, a light one keeps its shadow", function()
   -- red under: one shadowed font object for every label, which smears dark text on a bright fill.
-  local m, Skin = F.env({ lsm = { ["font:Ka0s Barlow"] = "Fonts\\Barlow.ttf" } })
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf" } })
   local S = F.owner(Skin, OWNER, "glass")   -- lilac primary with dark text, a light normal label
   local p, b = backdropButton(m), backdropButton(m)
   S.Button(p, { primary = true }); S.Button(b)
@@ -751,16 +747,16 @@ end)
 
 test("skin controls: an EditBox hint and a sort header's texts take the skin's face", function()
   -- red under: strings a primitive only tints, left on the client's font and its shadow.
-  local m, Skin = F.env({ lsm = { ["font:Ka0s Barlow"] = "Fonts\\Barlow.ttf" } })
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf" } })
   local S = F.owner(Skin, OWNER, "obsidian")
   local eb = m.CreateFrame("EditBox", nil, m.UIParent, "BackdropTemplate")
   eb.hint = eb:CreateFontString()
   S.EditBox(eb)
-  assertEqual(eb.hint:GetFontObject().font[1], "Fonts\\Barlow.ttf", "the hint")
+  assertEqual(eb.hint:GetFontObject().font[1], "Fonts\\Inter.ttf", "the hint")
   local bar = m.CreateFrame("Frame", nil, m.UIParent)
   local name = bar:CreateFontString()
   S.SortHeaderBar(bar, { texts = { name } })
-  assertEqual(name:GetFontObject().font[1], "Fonts\\Barlow.ttf", "the header text")
+  assertEqual(name:GetFontObject().font[1], "Fonts\\Inter.ttf", "the header text")
 end)
 
 test("skin controls: a slider's track is a thin bar centered in it", function()

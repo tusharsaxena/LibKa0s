@@ -139,7 +139,7 @@ test("compose skin: the picker shows the skin's value while its companion is set
   if not Skin:IsOwner(OWNER) then Skin:RegisterOwner(OWNER) end
   local O, rec = host(OWNER)
   local picker = rowAt(O.FontGroup({ prefix = "t.", fromSkin = true }), "t.font")
-  rec.store["t.font"] = "Ka0s Barlow"
+  rec.store["t.font"] = "Ka0s Inter"
   assertNil(picker.skinValue(picker), "companion unset: the stored pick shows")
   rec.store["t.fontFromSkin"] = true
   assertEqual(picker.skinValue(picker), Skin:Token(OWNER, "hud.font"), "companion set: the skin's font")
@@ -188,11 +188,11 @@ end)
 
 test("compose skin: ResetToSkin sets companions to true and never writes the sentinel into a pick",
   function()
-  local profile = { t = { font = "Ka0s Barlow", fontFromSkin = false, color = { 1, 0, 0, 1 } },
+  local profile = { t = { font = "Ka0s Inter", fontFromSkin = false, color = { 1, 0, 0, 1 } },
                     b = { borderStyleFromSkin = false }, size = 12 }
   local n = Skin.ResetToSkin(profile, { "t.font", "b.borderStyleFromSkin", "t.color", "size" })
   assertEqual(n, 4)
-  assertEqual(profile.t.font, "Ka0s Barlow", "the pick is kept")
+  assertEqual(profile.t.font, "Ka0s Inter", "the pick is kept")
   assertEqual(profile.t.fontFromSkin, true, "its companion is set")
   assertEqual(profile.b.borderStyleFromSkin, true, "a companion named directly is set to true")
   assertEqual(profile.t.colorFromSkin, true, "a color still takes its companion")

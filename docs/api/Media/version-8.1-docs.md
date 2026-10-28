@@ -1,4 +1,4 @@
-# `LibKa0s-Media-1.0` — version 7.1
+# `LibKa0s-Media-1.0` — version 8.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Media surface points here rather than restating it. It describes the
@@ -8,31 +8,34 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Media-1.0` |
-| Files and minors | `Media.lua` minor **7** · `MediaIcons.lua` minor **1** |
+| Files and minors | `Media.lua` minor **8** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | [version 5.1](./version-5.1-docs.md) — one face (JetBrains Mono) under one global mask, statusbars only |
 | Superseded by | — |
-| Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 7, MediaIcons = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 8, MediaIcons = 1 }` |
 
 ## What changed at this version
 
 **Additive.** Nothing version 5.1 had resolves differently, no signature moves, and `RegisterLSM`
 gains two return values after the two it had. What arrives is the art the skin engine
-(`LibKa0s-Skin-1.0`, the 2026-10-25 skinning run) names by LibSharedMedia key: five OFL faces and the
-Glass skin's rounded border and fill. `MediaIcons.lua` does not move; it re-attaches to the new
+(`LibKa0s-Skin-1.0`, the 2026-10-25 skinning run) names by LibSharedMedia key: fourteen OFL faces
+(since minor 8) and the Glass skin's rounded border and fill. `MediaIcons.lua` does not move; it re-attaches to the new
 shell on its own guard.
 
 **Minor 7, before the release left the machine.** Minor 6 was this version's first key, `6.1`, and
 never shipped: the owner's client reported "Attempt to register an invalid font" from every addon
 that loaded after LootHistory (see *A held key is never offered* below), so the fix bumped `Media.lua`
-to 7 inside the unpushed v1.78.0 and this document moved to `7.1` with it. The *Since* column keeps
-the minor each member arrived at.
+to 7 inside the unpushed v1.78.0 and this document moved to `7.1` with it. **Minor 8**, also before
+any push (the owner's round-5 notes, 2026-10-28): every skin draws a family of its own, so the
+catalog's skin faces became Inter, Nunito, Vollkorn, Bitter, Philosopher, Fira Sans and Atkinson
+Hyperlegible, a regular and a title weight each, and minor 6's Barlow and Cinzel left; the document
+moved to `8.1`. The *Since* column keeps the minor each member arrived at.
 
 | | | Since |
 |---|---|---|
-| Five skin faces in `FONTS` | `Ka0s Barlow`, `Ka0s Barlow SemiBold`, `Ka0s Cinzel` (Cinzel SemiBold), `Ka0s Atkinson` and `Ka0s Atkinson Bold` (Atkinson Hyperlegible), SIL OFL 1.1, each license beside its file in `media/fonts/`. `FONTS` holds six entries. | **6** |
-| `langmask` on every `FONTS` entry | An array of LibSharedMedia locale groups, the suffix of `LSM.LOCALE_BIT_<group>`. JetBrains Mono keeps `{ "western", "ruRU" }`; the five skin faces are `{ "western" }`. Version 5.1 applied one western + ruRU mask to every face. | **6** |
+| Fourteen skin faces in `FONTS` | `Ka0s Inter` / `Ka0s Inter SemiBold`, `Ka0s Nunito` / `Ka0s Nunito SemiBold`, `Ka0s Vollkorn` / `Ka0s Vollkorn Bold`, `Ka0s Bitter` / `Ka0s Bitter Bold`, `Ka0s Philosopher` / `Ka0s Philosopher Bold`, `Ka0s Fira Sans` / `Ka0s Fira Sans SemiBold`, `Ka0s Atkinson` / `Ka0s Atkinson Bold`, SIL OFL 1.1, each license beside its file in `media/fonts/`. `FONTS` holds fifteen entries. Minor 6 had five (`Ka0s Barlow`, `Ka0s Barlow SemiBold`, `Ka0s Cinzel` and the two Atkinson weights); those three keys left at minor 8, never shipped. | **6**, **8** |
+| `langmask` on every `FONTS` entry | An array of LibSharedMedia locale groups, the suffix of `LSM.LOCALE_BIT_<group>`. JetBrains Mono and the twelve faces with Cyrillic are `{ "western", "ruRU" }`; Atkinson Hyperlegible's two are `{ "western" }`. Version 5.1 applied one western + ruRU mask to every face. | **6** |
 | `BORDERS`, `Border(addonName, name[, vendorPath])` | The LSM `border` catalog: `["Ka0s Glass"] = { file = "glass-border.tga", edgeSize = 8 }`, and its extensionless path. | **6** |
 | `BACKGROUNDS`, `Background(addonName, name[, vendorPath])` | The LSM `background` catalog: `["Ka0s Glass"] = { file = "glass-fill.tga", slice = 8 }`, and its extensionless path. | **6** |
 | `RegisterLSM` returns `fonts, bars, borders, backgrounds` | It registers the two new catalogs as `border` and `background`, each face under its own mask, and counts each kind the way it counts fonts (what LSM holds afterwards). `0, 0, 0, 0` without LSM. | **6** |
@@ -40,12 +43,12 @@ the minor each member arrived at.
 
 **The new keys resolve into one addon's folder in leg 1.** LibSharedMedia keeps the first
 registration of a key. While LootHistory is the only consumer that vendors this version, its
-`RegisterLSM` is the first to offer the new keys, so `Ka0s Barlow` and the rest resolve into
+`RegisterLSM` is the first to offer the new keys, so `Ka0s Inter` and the rest resolve into
 `Interface\AddOns\LootHistory\libs\LibKa0s\media\...`. An addon that loads before it runs its
 own older copy, which does not offer them at all; one that loads after it runs this version's
 `RegisterLSM` (LibStub keeps the highest minor), finds the keys held and, from minor 7, offers
 nothing. The skinning run's second leg re-vendors the files into every consumer. A host
-draws a skin face through LSM (`LSM:Fetch("font", "Ka0s Barlow")`) and falls back to its template
+draws a skin face through LSM (`LSM:Fetch("font", "Ka0s Inter")`) and falls back to its template
 font or `STANDARD_TEXT_FONT` when the key is not valid on the client's locale; it never builds the
 path of a face another addon may have registered.
 
@@ -307,18 +310,23 @@ is one row in its `GLYPHS` table plus a row in `ICONS` in `Media.lua`; every oth
 | LSM name | File | License | Locales | Used by |
 |---|---|---|---|---|
 | `JetBrains Mono` | `JetBrainsMono-Regular.ttf` | `JetBrainsMono-OFL.txt` | western, ruRU | the debug console, meters, perf tables |
-| `Ka0s Barlow` | `Barlow-Regular.ttf` | `Barlow-OFL.txt` | western | Obsidian, Glass and WoW Forever body text |
-| `Ka0s Barlow SemiBold` | `Barlow-SemiBold.ttf` | `Barlow-OFL.txt` | western | the same skins' titles |
-| `Ka0s Cinzel` | `Cinzel-SemiBold.ttf` | `Cinzel-OFL.txt` | western | Azeroth, Ember and WoW Midnight titles |
-| `Ka0s Atkinson` | `AtkinsonHyperlegible-Regular.ttf` | `AtkinsonHyperlegible-OFL.txt` | western | High Contrast |
-| `Ka0s Atkinson Bold` | `AtkinsonHyperlegible-Bold.ttf` | `AtkinsonHyperlegible-OFL.txt` | western | High Contrast titles |
+| `Ka0s Inter` / `Ka0s Inter SemiBold` | `Inter-Regular.ttf` / `Inter-SemiBold.ttf` | `Inter-OFL.txt` | western, ruRU | Obsidian |
+| `Ka0s Nunito` / `Ka0s Nunito SemiBold` | `Nunito-Regular.ttf` / `Nunito-SemiBold.ttf` | `Nunito-OFL.txt` | western, ruRU | Glass |
+| `Ka0s Vollkorn` / `Ka0s Vollkorn Bold` | `Vollkorn-Regular.ttf` / `Vollkorn-Bold.ttf` | `Vollkorn-OFL.txt` | western, ruRU | Azeroth |
+| `Ka0s Bitter` / `Ka0s Bitter Bold` | `Bitter-Regular.ttf` / `Bitter-Bold.ttf` | `Bitter-OFL.txt` | western, ruRU | Ember |
+| `Ka0s Philosopher` / `Ka0s Philosopher Bold` | `Philosopher-Regular.ttf` / `Philosopher-Bold.ttf` | `Philosopher-OFL.txt` | western, ruRU | WoW Midnight |
+| `Ka0s Fira Sans` / `Ka0s Fira Sans SemiBold` | `FiraSans-Regular.ttf` / `FiraSans-SemiBold.ttf` | `FiraSans-OFL.txt` | western, ruRU | WoW Forever |
+| `Ka0s Atkinson` / `Ka0s Atkinson Bold` | `AtkinsonHyperlegible-Regular.ttf` / `-Bold.ttf` | `AtkinsonHyperlegible-OFL.txt` | western | High Contrast |
 
-Every face is SIL OFL 1.1 with no Reserved Font Name, and its license ships beside it.
-`tools/artwork/fonts.py` is the provenance record for the five skin faces: it pins each to a
-google/fonts commit and a SHA-256, and builds the shipped files. Barlow and Atkinson Hyperlegible
-ship as upstream publishes them. Cinzel is published only as a variable font (wght 400 to 900, no
-SemiBold instance), and the client is not known to honor a variable axis, so the tool cuts a static
-instance at wght 600 with fontTools and renames it "Cinzel SemiBold"; `Cinzel-OFL.txt` records that
+The first of each pair is the skin's body face, the second its titles: one family per skin, since
+minor 8. Ka0s Default and WoW Default draw the client's Friz Quadrata, which this library does not
+ship. Every face is SIL OFL 1.1 and its license ships beside it; Bitter reserves only the name
+"Bitter Pro", which nothing here uses. `tools/artwork/fonts.py` is the provenance record for the
+skin faces: it pins each to a google/fonts commit and a SHA-256, and builds the shipped files.
+Philosopher, Fira Sans and Atkinson Hyperlegible ship as upstream publishes them. Inter, Nunito,
+Vollkorn and Bitter are published only as variable fonts, and the client is not known to honor a
+variable axis, so the tool cuts static instances (weight 400 and the title weight; Inter's optical
+size at 14) with fontTools and renames each for its weight; each family's `-OFL.txt` records that
 above the license text.
 
 **JetBrains Mono is the monospace.** A meter, a debug console and a perf table are all grids of digits
@@ -361,9 +369,9 @@ files.
 **Each face carries its own mask** (western + ruRU since 4; per face since **6**). On a non-western
 client LSM refuses a font with no langmask, and one whose mask lacks the client's locale bit.
 JetBrains Mono covers Latin and Cyrillic, so western and ruRU clients get it in the dropdown and
-koKR, zhCN and zhTW clients do not: the face has no glyphs for their text. The five skin faces are
-western only, because Cinzel and Atkinson Hyperlegible have no Cyrillic either, and a skin that
-names one falls back to the client's own font on any other locale.
+koKR, zhCN and zhTW clients do not: the face has no glyphs for their text. The six families minor 8
+added cover Cyrillic as well and are western + ruRU; Atkinson Hyperlegible has no Cyrillic and is
+western only. A skin that names a face the client refused falls back to the client's own font.
 
 ## The Glass border and background
 

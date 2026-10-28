@@ -32,6 +32,8 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261028-120744`](20261028-120744/) | `2224a8c` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3031/2/3033 | skip | 66184 | 9856 | 6.6 | 2.0 | 15 | 0 | **green** |
+| [`20261028-015008`](20261028-015008/) | `3974846` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3030/2/3032 | skip | 66175 | 9855 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20261027-030736`](20261027-030736/) | `42b04c1` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3030/2/3032 | skip | 66080 | 9849 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20261027-015805`](20261027-015805/) | `0920b9a` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3028/2/3030 | skip | 66007 | 9840 | 6.6 | 2.0 | 15 | 0 | **green** |
 | [`20261027-005758`](20261027-005758/) | `854ad32` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3027/2/3029 | skip | 65926 | 9833 | 6.6 | 2.0 | 15 | 0 | **green** |
@@ -160,11 +162,11 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**3032 cases** — 3030 passed, 0 failed, 2 skipped. The generated inventory
-[`20261027-030736/test-cases.md`](20261027-030736/test-cases.md) is the authority on which cases existed at this run;
+**3033 cases** — 3031 passed, 0 failed, 2 skipped. The generated inventory
+[`20261028-120744/test-cases.md`](20261028-120744/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **3030 → 3032** since the previous run.
+Moved **3032 → 3033** since the previous run.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -188,7 +190,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261027-030736`](20261027-030736/) — **this run's measurement, not its diff.** Max CCN **15** across 9849
+Current as of [`20261028-120744`](20261028-120744/) — **this run's measurement, not its diff.** Max CCN **15** across 9856
 functions, **0** of them warned on; 8 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 

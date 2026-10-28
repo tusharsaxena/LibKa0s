@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 5.9.8.3.6.1.3
+# `LibKa0s-Skin-1.0` — version 5.13.10.3.8.1.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,7 +8,7 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **5** · `SkinDefs.lua` minor **9** · `SkinPaint.lua` minor **8** · `SkinPaintExtras.lua` minor **3** · `SkinPaintControls.lua` minor **6** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
+| Files and minors | `Skin.lua` minor **5** · `SkinDefs.lua` minor **13** · `SkinPaint.lua` minor **10** · `SkinPaintExtras.lua` minor **3** · `SkinPaintControls.lua` minor **8** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
 | Shipped in | v1.78.0 |
 | Status | **Current** |
 | Supersedes | — (first version) |
@@ -401,15 +401,13 @@ eight skins*, below.
 | `slider.trackBorder` | color | yes | none (`false`) |
 | `slider.fill` | color | yes | `1, 0.82, 0, 1` |
 | `slider.thumb` | color | yes | `0.9, 0.9, 0.9, 1` |
-| `scroll.track` | color | no | `0.24, 0.24, 0.27, 0.3` |
+| `scroll.track` | color | no | `0.24, 0.24, 0.27, 0.4` |
 | `scroll.thumb` | color | no | `0.5, 0.5, 0.55, 0.85` |
 | `scroll.thumbOn` | color | no | `1, 1, 1, 1` |
 | `scroll.thumbOff` | color | no | `0.5, 0.5, 0.5, 0.6` |
 | `scroll.width` | number | no | `8` |
 | `scroll.gutter` | number | no | `20` |
 | `scroll.radius` | number | no | `0` |
-| `scroll.thumbTexture` | string | yes | none (`false`) |
-| `scroll.thumbFill` | color | yes | none (`false`) |
 
 ### Tabs and navigation
 
@@ -481,6 +479,7 @@ eight skins*, below.
 | `section.rule` | color | no | `1, 0.82, 0, 0.35` |
 | `icon.tint` | color | no | `0.7, 0.7, 0.72, 1` |
 | `icon.hot` | color | no | `1, 1, 1, 1` |
+| `icon.arrow` | color | no | `1, 0.82, 0, 1` |
 | `handle.bg` | color | no | `0, 0, 0, 0.75` |
 | `handle.edge` | color | no | `1, 0.82, 0, 0.6 |`
 | `handle.rest` | color | no | `0.7, 0.7, 0.7, 1 |`
@@ -583,7 +582,7 @@ eight skins*, below.
 | `sem.warbandAlt` | color | no | `0.4, 0.78, 1, 1` |
 | `sem.unknown` | color | no | `0.6, 0.6, 0.6, 1` |
 
-**236 tokens.** `scroll.thumbFill` joined at SkinDefs minor 9: a flat fill over the scroll bar's own thumb, for the five skins whose tinted thumb art barely read. The five art tokens (`check.texture`, `check.markTexture`, `scroll.thumbTexture`,
+**235 tokens.** `icon.arrow` joined at SkinDefs minor 12: the in-client arrow art's color (the paging, dropdown and sort arrows), Ka0s Default's gold and every other skin's accent, which it follows. `scroll.thumbFill` (SkinDefs minor 9) and `scroll.thumbTexture` (minor 2) left at SkinDefs minor 10, never released: the scroll bar's knob is one flat `scroll.thumb` over the faded thumb art in every skin. The four art tokens (`check.texture`, `check.markTexture`,
 `tab.texture`, `tab.onTexture`) joined at SkinDefs minor 2, for WoW Default's Blizzard art. The
 eight **Widgets tokens** (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg`, `list.box`,
 `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`) joined at SkinDefs minor 3, so the drag handle and
@@ -659,7 +658,11 @@ answers nil.
 - **The holder, and fills under the target.** **Edges** (borders, a divider's line, a tab's
   underline, a nav entry's selection bar, a list row's selection outline) go on the **holder**, a child
   frame of the target made once, `SetAllPoints` over it, BackdropTemplate, at the target's frame
-  level + 1, so a nine-slice edge can be its backdrop and every edge draws over the target. **Fills and
+  level + 1, so a nine-slice edge can be its backdrop and every edge draws over the target. A
+  **window's** edge and inner rule (`Shell`, since SkinPaint minor 9) go on the **edge holder**
+  instead, the same kind of child at the window's level + 10, over the window's own children: a title
+  bar or footer one level up reached into a 2px or 3px edge and covered it at the four corners (the
+  owner's round-5 notes on Azeroth, High Contrast and WoW Midnight). **Fills and
   washes** (a list row's stripe, hover and selection washes, the strip and cover washes, the extras'
   fills and gradients: `TitleBar`, `Footer`, `Card`, `SortHeaderBar`, a boxed `Drawer` header) are, since
   SkinPaint minor 7, **regions of the target itself** at the bottom sublevels of BACKGROUND (`P.SUB`:
@@ -715,8 +718,10 @@ answers nil.
   `font.titleSize`, and Ka0s Default's (12 and 14) are the reference: a string keeps its own stock
   size times the skin's size over the reference, so a 10pt caption under a skin at 12.5 is about
   10.4pt and every layout measured against the stock fonts holds. The skins sit within a point and a
-  half of the reference (`tests/test_skin_defs.lua`), each tuned to its face's measure: Barlow 12.5,
-  Cinzel titles 12.5 (a wide face), Atkinson 12 for Azeroth's body and 13.5 and 15 for High Contrast (which still reads larger).
+  half of the reference (`tests/test_skin_defs.lua`), each tuned to its face's measure (SkinDefs
+  minor 11): Inter, Bitter and Fira Sans 12, Nunito and Philosopher 12.5, Vollkorn 13 (a small
+  x-height), titles 14 (Bitter's 13.5, a wide face), and High Contrast 13.5 and 15 (which still
+  reads larger).
 - **Colors.** A text or vertex color whose alpha is 1 is passed as three components, as every call
   site writes them; fills and backdrop colors as four. A color from a nilable token, or any color on
   a stock target, records the prior color first and puts it back when the token resolves to nil.
@@ -763,7 +768,7 @@ owner-less and Ka0s Default trace pinned when it moves.
 
 No primitive draws a `LibKa0s-Media-1.0` icon: every texture is `WHITE8X8` or in-client art, so a
 host owes no new `LibKa0s icons:` declaration for any of them. The in-client art they draw is the
-skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTexture`,
+skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 `check.texture`, `check.markTexture`, the `nine:` border keys) plus `PageButton`'s arrow,
 `Interface\ChatFrame\ChatFrameExpandArrow`.
 
@@ -771,7 +776,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 
 | Primitive | Paints | Tokens |
 |---|---|---|
-| `Shell(frame, opts)` | A window. On a backdrop frame, `Core.ApplySkin` with the skin's table (backdrop, inner rule, `frame.title`'s color, `frame.divider`'s), an inner rule cleared when the skin has none, a non-flat edge on the holder; on any frame the window gradient, the tiled art, the top bar (unless `opts.noTopBar`) and the bottom bar (`opts.bottomBar`, true or a height), and the title font on `frame.title`. A frame with no backdrop gets its fill as a region and its edge on the holder. `opts.noBorder` draws no edge and no inner rule. | `win.*`, `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.height`, `divider`, `foot.bg`, `font.title` |
+| `Shell(frame, opts)` | A window. On a backdrop frame, `Core.ApplySkin` with the skin's table (the backdrop with its own edge clear, `frame.title`'s color, `frame.divider`'s); a frame with no backdrop gets its fill as a region. On any frame the edge (`win.border*`, flat, bevel or nine-slice) and the inner rule (`win.inner`, 1px inside the edge) on the edge holder, over the window's children (SkinPaint minor 9; Core's own inner rule is cleared and given back on unpaint), the window gradient, the tiled art, the top bar (unless `opts.noTopBar`) and the bottom bar (`opts.bottomBar`, true or a height), and the title font on `frame.title`. `opts.noBorder` draws no edge and no inner rule. | `win.*`, `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.height`, `divider`, `foot.bg`, `font.title` |
 | `Panel(frame, opts)` | A flat panel; `opts.inset` paints it as an inset, `opts.noBg` / `opts.noBorder` leave out a half, `opts.nav` recolors the backdrop the frame already wears. | `panel.bg`, `panel.border`; `nav.bg`, `nav.border` |
 | `Inset(frame, opts)` | A recessed area. | `input.bg`, `input.border`, `input.borderStyle`, `input.borderSize` |
 | `FadeRegions(frame, ...)` | Fades every texture region of the frame (and of each further frame) that no primitive made. Ka0s Default fades nothing and puts them back. | none |
@@ -797,16 +802,16 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTextur
 | `StateButtonLabel(btn, on)` | The label in the accent while on, muted otherwise. | `text.accent`, `text.muted` |
 | `EditBox(eb, opts)` | A text input: the template's pieces faded, the flat-control box, the typed text and the hint (`opts.placeholder`, else `eb.hint`), the focus edge while it has the keys. `opts.padInput` sets 6px insets; `opts.noBorder` draws no edge and hooks no focus. | `input.*` |
 | `Checkbox(cb, opts)` | A check button, under every skin including Ka0s Default (SkinPaintControls minor 2: a square box rather than the client's round check button): its stock art faded (the stock check too unless `opts.stockCheck`), a box `opts.borderInset` inside it, an edge on the holder, a mark three pixels inside the box shown while checked (following `OnClick`, `OnShow` and `SetChecked`), and with `opts.hover` a highlight. | `check.*`, `menu.hover` |
-| `Dropdown(dd, opts)` | A dropdown button: the template's pieces faded, the flat-control box, the arrow (`dd.arrow` / `dd.Arrow`), the label (`dd.text` / `dd.Text`). | `input.*`, `icon.tint` |
-| `ScrollBar(sb, opts)` | A scroll bar: `opts.track` / `opts.thumb` (textures the caller drew) filled; `opts.state` `"on"` / `"off"` tints the bar's own thumb; otherwise the bar's own thumb takes the knob art or the thumb color over a track region. Where the skin sets `scroll.thumbFill` (SkinPaintControls minor 6), a flat fill of it lies over the bar's own thumb, inset to the knob's middle, anchored to it, shown and hidden with it, at half alpha while `opts.state` is `"off"`. | `scroll.*` |
+| `Dropdown(dd, opts)` | A dropdown button: the template's pieces faded, the flat-control box, the arrow (`dd.arrow` / `dd.Arrow`, desaturated and colored `icon.arrow` since SkinPaintControls minor 8: the art is yellow and a tint only multiplies it), the label (`dd.text` / `dd.Text`). | `input.*`, `icon.arrow` |
+| `ScrollBar(sb, opts)` | A scroll bar, a corridor and one knob in every skin (SkinPaintControls minor 7): `opts.track` / `opts.thumb` (textures the caller drew) filled; otherwise the bar's own thumb art is faded and a flat knob laid in its place, `scroll.thumb` (`scroll.thumbOn` / `scroll.thumbOff` for `opts.state` `"on"` / `"off"`), 3px inside the bar's sides and 2px inside the thumb's ends, anchored to the thumb and shown and hidden with it, over a `scroll.track` corridor the bar's full size. The client's art is never tinted. | `scroll.*` |
 | `Slider(slider, opts)` | A slider's track (a 4px bar centered in the slider since SkinPaintControls minor 3, Ka0s Default's host-drawn shape; its edge on the holder, none in every shipped skin), fill (`opts.fill`) and thumb (`opts.thumb`, else its own). Every slider token is nil in Ka0s Default. | `slider.*` |
 | `Tab(tab, opts)` | A tab: its stock art (and `opts.stock`) faded, the backing (`opts.fill`, else a region: the tab art, else the color and gradient), an underline on the holder while selected, the label (`opts.text`, else its own). `opts.selected` is the first state. | `tab.*` |
 | `SetTabSelection(tab, selected)` | Moves a painted tab's state and repaints it; the state lives in the tab's record, so a skin switch keeps it. | as `Tab` |
 | `CloseButton(btn, opts)` | A close control: its art (`btn.icon`, a texture, or `btn.glyph`) at rest and under the pointer. A stock close button has its art faded and an ASCII `x` drawn, under every skin. `opts.own` SetScripts the hover pair. | `close.rest`, `close.hot` |
-| `PageButton(btn, dir)` | A paging arrow (`prev`, `next`, `up`, `down`, `left`, `right`): the button look and the in-client arrow, turned. | `btn.*` |
+| `PageButton(btn, dir)` | A paging arrow (`prev`, `next`, `up`, `down`, `left`, `right`): the button look and the in-client arrow, turned, desaturated and colored `icon.arrow` (`btn.icon` until SkinPaintControls minor 8). | `btn.*`, `icon.arrow` |
 | `SquareIcon(frame, opts)` | An icon button: `opts.crop` trims the icon art (`opts.icon`, else `frame.icon` / `frame.Icon`) to .08-.92; an edge on the holder. | `icon.border` |
 | `IconBorder(frame, opts)` | An icon edge, `opts.size` pixels, on the holder. | `icon.border` |
-| `SortHeaderBar(bar, opts)` | A list header: the fill, each of `opts.texts`, each of `opts.arrows`. | `list.header.bg`, `list.header.text`, `icon.tint` |
+| `SortHeaderBar(bar, opts)` | A list header: the fill, each of `opts.texts`, each of `opts.arrows` (desaturated, since minor 8). | `list.header.bg`, `list.header.text`, `icon.arrow` |
 | `ApplyBarFill(target)` | The accent on a status bar (`SetStatusBarColor`) or a texture. | `text.accent` |
 | `NavItem(item, opts)` | A nav-rail entry: `opts.label` selected or not, `opts.sel` (the selection texture), a selection bar on the holder while `opts.selected`. | `nav.text`, `nav.selText`, `nav.selBg`, `nav.selBar` |
 | `Drawer(head, opts)` | A settings drawer: `opts.label` and `opts.summary` set or not (`opts.set`), then the edge set (`opts.edges`, OptionsDrawer's `{ fill, left, right, bottom, top }`) open or not (`opts.open`), and the box's (`opts.box`). A header with no edge set is boxed on its holders (the fill under its text, the edge over it). | `drawer.*` |
@@ -830,8 +835,8 @@ Default's window is `Shell`'s nine-slice edge, `Blizzard Dialog` at 32 outset by
 the backdrop's own edge clear, over a `#1E1C19` backdrop fill with `UI-DialogBox-Background-Dark`
 tiled in a band above it; its buttons are `Button`'s red gradient under a 1px dark rim (a 2px `bevelOut` gold edge until SkinDefs minor 7) on
 the holder; its tabs are `Tab`'s `UI-OptionsFrame-ActiveTab` art in both states (since SkinDefs minor 7: the
-`-InActiveTab` art is drawn shorter); its scroll thumb
-`ScrollBar`'s `UI-ScrollBar-Knob`; its checkbox `Checkbox`'s `UI-CheckBox-Up` box and
+`-InActiveTab` art is drawn shorter); its scroll knob
+`ScrollBar`'s flat gold knob over a black corridor (the `UI-ScrollBar-Knob` art until SkinDefs minor 10); its checkbox `Checkbox`'s `UI-CheckBox-Up` box and
 `UI-CheckBox-Check` mark; its inputs and nav rail a 1px `bevelIn` edge (2px until SkinDefs minor 7). WoW Midnight
 draws no art: `Shell`'s window and title gradients, its 2px flat window edge, `Button`'s violet
 gradients under a 1px gold edge.
@@ -886,12 +891,15 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
   nothing moves.
 - **Geometry.** The mockup's scrollbar widths (`scW`) are not translated: `title.height`,
   `scroll.width`, `scroll.gutter` and `win.inset` are Ka0s Default's in all nine skins.
-- **Fonts.** A mockup family is the shipped face that stands for it: Inter (Obsidian) and Manrope
-  (Glass) are Barlow, the face WoW Forever names; Ember and WoW Midnight draw Cinzel titles over Ka0s
-  Default's Friz Quadrata body, Azeroth Cinzel titles over an Atkinson Hyperlegible body, and WoW
-  Forever Atkinson Hyperlegible throughout (SkinDefs minor 8: Barlow read blurry); High Contrast is
-  Atkinson Hyperlegible, a step larger than the rest (*Sizes are relative*, above); Ka0s Default and
-  WoW Default set Friz Quadrata, the client's own face, by name.
+- **Fonts.** Every skin draws one family of its own, for body and titles alike (SkinDefs minor 11,
+  the owner's round-5 notes: titles that did not match the body, and faces three skins shared):
+  Obsidian Inter (its mockup's own face), Glass Nunito (rounded, as its corners are; the mockup's
+  Manrope), Azeroth Vollkorn (a dark old-style book face for the parchment), Ember Bitter (a sturdy
+  slab), WoW Midnight Philosopher, WoW Forever Fira Sans (crisp at small sizes) and High Contrast
+  Atkinson Hyperlegible, a step larger than the rest (*Sizes are relative*, above). Ka0s Default and
+  WoW Default set Friz Quadrata, the client's own face, by name: the one face two skins share,
+  because both are the client's look. Until minor 11 Obsidian and Glass drew Barlow, and Azeroth,
+  Ember and WoW Midnight titled in Cinzel, an all-capitals face no body text can share.
 - **GameTooltip lines.** `gtip.*` are drawn on Blizzard's dark GameTooltip whatever the skin, so
   each skin's `gtip.title`, `gtip.body` and `gtip.muted` read at 4.5:1 or better on
   `(.05, .05, .08)`; Azeroth's are its parchment and gold.
@@ -905,18 +913,18 @@ Default and Midnight, and WoW Forever's window texture).
 
 | Skin | Choice |
 |---|---|
-| **WoW Default** | The window is `BACKDROP_DIALOG_32_32`'s edge, LSM `Blizzard Dialog` (`Interface\DialogFrame\UI-DialogBox-Border`), `win.borderStyle = "nine:Blizzard Dialog"` at `win.borderSize = 32`, over `win.bgTexture = Interface\DialogFrame\UI-DialogBox-Background-Dark` tiled on a `#1E1C19` fill. Popups and menus wear the same edge at 16. Buttons are the red gradient `#B3200F` to `#640C05` under a 1px `#1A0805` rim with gold `#FFD100` text, white on hover, the client's own button; the primary a brighter red `#D42A16` to `#7E1007` under a 1px gold `#E0B040` edge with white text, gold on hover (both had a 2px `bevelOut` gold edge until SkinDefs minor 7). Tabs are `tab.texture` and `tab.onTexture` = `Interface\OptionsFrame\UI-OptionsFrame-ActiveTab`, one height in both states, the selected one told by its white label. The scroll thumb is `scroll.thumbTexture = Interface\Buttons\UI-ScrollBar-Knob`; the checkbox is `check.texture = Interface\Buttons\UI-CheckBox-Up` with `check.markTexture = ...UI-CheckBox-Check`. Inputs, dropdowns and the nav rail have a 1px `bevelIn` gray edge, the primary button's size (2px until SkinDefs minor 7); the checkbox art is its own box, with no edge. The client's own fonts. |
-| **WoW Midnight** | Flat `WHITE8x8` everywhere, **no Blizzard art**: a 2px `#B08A3E` window and popup edge over a `#3D2F12` inner rule, the window gradient `#171A2E` to `#0F1020`, the title bar gradient `#2A2347` to `#17142B` with a centered `#F6D27A` Cinzel title, violet `#B48CFF` accent, night-violet gradient buttons (`#3A2F6B` to `#1D1838`) under a 1px `#B08A3E` gold edge with gold `#F6D27A` text, and a brighter violet primary (`#7A5AD6` to `#3F2C86`, `#F6D27A` edge, white text) since SkinDefs minor 7. |
-| **WoW Forever** | Warm brown charcoal `#2E251C` to `#18120D` (a step browner since SkinDefs minor 8) (the mockup's radial fill as a vertical gradient, **no window texture**), black `#050505` title bars with centered white titles, a tan `#C9A07A` accent, gold `#F2B33D` headings, thin 1px edges on every control, a `#9C7A58` primary with white text under its tan edge, Atkinson Hyperlegible (Barlow until SkinDefs minor 8, which read blurry; OWNER_SCOPE R4). |
+| **WoW Default** | The window is `BACKDROP_DIALOG_32_32`'s edge, LSM `Blizzard Dialog` (`Interface\DialogFrame\UI-DialogBox-Border`), `win.borderStyle = "nine:Blizzard Dialog"` at `win.borderSize = 32`, over `win.bgTexture = Interface\DialogFrame\UI-DialogBox-Background-Dark` tiled on a `#1E1C19` fill. Popups and menus wear the same edge at 16. Buttons are the red gradient `#B3200F` to `#640C05` under a 1px `#1A0805` rim with gold `#FFD100` text, white on hover, the client's own button; the primary a brighter red `#D42A16` to `#7E1007` under a 1px gold `#E0B040` edge with white text, gold on hover (both had a 2px `bevelOut` gold edge until SkinDefs minor 7). Tabs are `tab.texture` and `tab.onTexture` = `Interface\OptionsFrame\UI-OptionsFrame-ActiveTab`, one height in both states, the selected one told by its white label. The scroll knob is a flat gold `scroll.thumb` over a black corridor (the `UI-ScrollBar-Knob` art until SkinDefs minor 10); the checkbox is `check.texture = Interface\Buttons\UI-CheckBox-Up` with `check.markTexture = ...UI-CheckBox-Check`. Inputs, dropdowns and the nav rail have a 1px `bevelIn` gray edge, the primary button's size (2px until SkinDefs minor 7); the checkbox art is its own box, with no edge. The client's own fonts. |
+| **WoW Midnight** | Flat `WHITE8x8` everywhere, **no Blizzard art**: a 2px `#B08A3E` window and popup edge over a `#3D2F12` inner rule, the window gradient `#171A2E` to `#0F1020`, the title bar gradient `#2A2347` to `#17142B` with a centered `#F6D27A` Philosopher title, violet `#B48CFF` accent, night-violet gradient buttons (`#3A2F6B` to `#1D1838`) under a 1px `#B08A3E` gold edge with gold `#F6D27A` text, and a brighter violet primary (`#7A5AD6` to `#3F2C86`, `#F6D27A` edge, white text) since SkinDefs minor 7. |
+| **WoW Forever** | Warm brown charcoal `#2E251C` to `#18120D` (a step browner since SkinDefs minor 8) (the mockup's radial fill as a vertical gradient, **no window texture**), black `#050505` title bars with centered white titles, a tan `#C9A07A` accent, gold `#F2B33D` headings, thin 1px edges on every control, a `#9C7A58` primary with white text under its tan edge, Fira Sans (SkinDefs minor 11; Barlow until minor 8, which read blurry, then Atkinson Hyperlegible; OWNER_SCOPE R4). |
 | **Glass** | A `#121622` window at .88 on `nine:Ka0s Glass` at radius 8 (above), popups the same; flat 1px frosted control edges and boxless tabs underlined in the lilac `#B69CFF` accent; translucent white washes, `bar.gloss = true`. |
 | **High Contrast** | Black, a white 2px window edge and white 1px edges on every control (2px yellow on popups and menus; controls were 2px and popups 3px until SkinDefs minor 7), yellow `#FFE600` titles, accent, selection outline and focus; the primary button and the selected tab yellow on black (since SkinDefs minor 7; black on yellow before); Atkinson Hyperlegible 13.5 / 15. |
-| **Obsidian** | True-black flat panels (a `#0A0A0B` window and a `#050506` title bar since SkinDefs minor 7, darker than Ka0s Default's navy), hairline `#202024` edges, no inner rule, a cool blue `#4DB8FF` accent, a deeper `#2A86D1` primary button with white text, Barlow. |
-| **Azeroth** | Dark tooled leather `#2B1D12` (SkinDefs minor 8; light parchment until then, which did not read in Loot History) under a 3px leather `#6B4A22` edge and a `#8A6A36` inner rule, a `#1A110A` title bar with a gold Cinzel title, parchment `#E9DDBC` text in Atkinson Hyperlegible, gold `#E2B659` headings and accent, leather buttons with cream text, and the red wax seal for the primary button and the selected tab. As a dark skin it inherits Ka0s Default's semantic, quality, tooltip and chart colors. |
-| **Ember** | Charred brown, a `#6A2E17` edge over an amber inner rule, orange `#FF7A33` accent, gradient title bar and buttons, the primary's text white, Cinzel titles. |
+| **Obsidian** | True-black flat panels (a `#0A0A0B` window and a `#050506` title bar since SkinDefs minor 7, darker than Ka0s Default's navy), hairline `#202024` edges, no inner rule, a cool blue `#4DB8FF` accent, a deeper `#2A86D1` primary button with white text, Inter. |
+| **Azeroth** | Dark tooled leather `#2B1D12` (SkinDefs minor 8; light parchment until then, which did not read in Loot History) under a 1px leather `#6B4A22` edge and a `#8A6A36` inner rule (a 3px edge until SkinDefs minor 13, which read much thicker than every other skin's frame), a `#1A110A` title bar with a gold title, parchment `#E9DDBC` text, Vollkorn throughout, gold `#E2B659` headings and accent, leather buttons with cream text, and the red wax seal for the primary button and the selected tab. As a dark skin it inherits Ka0s Default's semantic, quality, tooltip and chart colors. |
+| **Ember** | Charred brown, a `#6A2E17` edge over an amber inner rule, orange `#FF7A33` accent, gradient title bar and buttons, the primary's text white, Bitter. |
 
-An **art token** (`win.bgTexture`, `tab.texture`, `tab.onTexture`, `scroll.thumbTexture`,
+An **art token** (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 `check.texture`, `check.markTexture`) draws that art at its own colors; the color token beside it
-(`win.bg`, `tab.bg`, `scroll.thumb`, `check.bg`, `check.mark`) is the fallback when the art does
+(`win.bg`, `tab.bg`, `check.bg`, `check.mark`) is the fallback when the art does
 not load. Only WoW Default names art. For a `nine:<key>` edge, `<ctl>.border` is the art's vertex
 color (white leaves Blizzard's art as drawn) and `<ctl>.borderSize` its edge size.
 
@@ -931,10 +939,10 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `font.body` | `Ka0s Barlow` | `Ka0s Atkinson` | `Ka0s Barlow` | `Ka0s Atkinson` | · | · | · | `Ka0s Atkinson` |
-| `font.title` | `Ka0s Barlow SemiBold` | `Ka0s Cinzel` | `Ka0s Barlow SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Cinzel` | · | `Ka0s Cinzel` | `Ka0s Atkinson Bold` |
-| `font.bodySize` | `12.5` | `12` | `12.5` | `13.5` | `12` | `12` | `12` | `12` |
-| `font.titleSize` | `14` | `12.5` | `14` | `15` | `12.5` | `14` | `12.5` | `14` |
+| `font.body` | `Ka0s Inter` | `Ka0s Vollkorn` | `Ka0s Nunito` | `Ka0s Atkinson` | `Ka0s Bitter` | · | `Ka0s Philosopher` | `Ka0s Fira Sans` |
+| `font.title` | `Ka0s Inter SemiBold` | `Ka0s Vollkorn Bold` | `Ka0s Nunito SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Bitter Bold` | · | `Ka0s Philosopher Bold` | `Ka0s Fira Sans SemiBold` |
+| `font.bodySize` | `12` | `13` | `12.5` | `13.5` | `12` | `12` | `12.5` | `12` |
+| `font.titleSize` | `14` | `14` | `14` | `15` | `13.5` | `14` | `14` | `14` |
 
 #### Window
 
@@ -946,7 +954,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `win.bgTexture` | · | · | · | · | · | `UI-DialogBox-Background-Dark` | · | · |
 | `win.bgDense` | `#0A0A0B` | `#2B1D12` | `#121622 .88` | `#000000` | `#1A0E0A .95` | `#1E1C19` | `#131527` | `#231C14` |
 | `win.border` | `#202024` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#6A2E17` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
-| `win.borderSize` | `1` | `3` | `8` | `2` | `1` | `32` | `2` | `1` |
+| `win.borderSize` | `1` | `1` | `8` | `2` | `1` | `32` | `2` | `1` |
 | `win.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
 | `win.inner` | none | `#8A6A36` | none | none | `#C98A3A .45` | none | `#3D2F12` | none |
 | `win.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
@@ -1025,7 +1033,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `check.border` | `#34343B` | `#8A6A36` | `#FFFFFF .3` | `#FFFFFF` | `#8A3C1C` | none | `#B08A3E` | `#8A7A52` |
 | `check.borderSize` | `1` | `1` | `1` | `1` | `1` | `0` | `1` | `1` |
 | `check.borderStyle` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` | `flat` |
-| `check.mark` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#F6D27A` | `#FFD100` |
+| `check.mark` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#F6D27A` | `#C9A07A` |
 | `check.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 | `check.texture` | · | · | · | · | · | `UI-CheckBox-Up` | · | · |
 | `check.markTexture` | · | · | · | · | · | `UI-CheckBox-Check` | · | · |
@@ -1033,13 +1041,11 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `slider.trackBorder` | `#000000 0` | `#000000 0` | `#000000 0` | `#000000 0` | `#000000 0` | `#000000 0` | `#000000 0` | `#000000 0` |
 | `slider.fill` | `#4DB8FF` | `#C0392B` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#C9A24A` | `#B48CFF` | `#C9A07A` |
 | `slider.thumb` | `#F2F2F4` | `#E2B659` | `#FFFFFF` | `#FFFFFF` | `#FFCF9A` | `#C9A84A` | `#F6D27A` | `#C9A07A` |
-| `scroll.track` | `#000000 0` | `#000000 .3` | `#000000 0` | `#000000` | `#000000 .4` | `#000000` | `#000000 .4` | `#000000 0` |
-| `scroll.thumb` | `#3A3A42` | `#8A6A36` | `#FFFFFF .35` | `#FFFFFF` | `#8A3C1C` | `#9A7B2A` | `#B08A3E` | `#D9D4CC` |
-| `scroll.thumbOn` | `#5A5A64` | `#E2B659` | `#FFFFFF .6` | `#FFE600` | `#C7A993` | · | `#F6D27A` | `#FFFFFF` |
-| `scroll.thumbOff` | `#3A3A42` | `#8A6A36` | `#FFFFFF .35` | `#FFFFFF` | `#8A3C1C` | `#9A7B2A` | `#B08A3E` | `#D9D4CC` |
+| `scroll.track` | `#1C1C20` | `#000000 .35` | `#FFFFFF .08` | `#262626` | `#2E1810` | `#000000` | `#22224A` | `#0A0806` |
+| `scroll.thumb` | `#4DB8FF .9` | `#8A6A36` | `#FFFFFF .5` | `#FFFFFF` | `#FF7A33 .9` | `#FFD100 .9` | `#F6D27A .9` | `#C9A07A` |
+| `scroll.thumbOn` | `#4DB8FF .9` | `#8A6A36` | `#FFFFFF .6` | · | `#FF7A33 .9` | `#FFD100 .9` | `#F6D27A` | `#C9A07A` |
+| `scroll.thumbOff` | `#3A3A42` | `#8A6A36` | `#FFFFFF .25` | `#808080` | `#8A3C1C` | `#9A7B2A` | `#B08A3E` | `#6E5A46` |
 | `scroll.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
-| `scroll.thumbTexture` | · | · | · | · | · | `UI-ScrollBar-Knob` | · | · |
-| `scroll.thumbFill` | `#4DB8FF .9` | · | · | `#FFE600` | `#FF7A33 .9` | `#FFD100 .9` | `#F6D27A .9` | · |
 
 #### Tabs and navigation
 
@@ -1111,6 +1117,7 @@ Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` 
 | `section.rule` | `#4DB8FF .35` | `#E2B659 .35` | `#B69CFF .35` | `#FFE600` | `#FF7A33 .35` | `#FFD100 .35` | `#B48CFF .35` | `#C9A07A .35` |
 | `icon.tint` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `icon.hot` | `#4DB8FF` | `#E2B659` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#C9A07A` |
+| `icon.arrow` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
 | `handle.edge` | `#4DB8FF .6` | `#E2B659 .6` | `#B69CFF .6` | `#FFE600 .6` | `#FF7A33 .6` | `#FFD100 .6` | `#B48CFF .6` | `#C9A07A .6` |
 | `handle.rest` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `list.dropLine` | `#4DB8FF .9` | `#E2B659 .9` | `#B69CFF .9` | `#FFE600 .9` | `#FF7A33 .9` | `#FFD100 .9` | `#B48CFF .9` | `#C9A07A .9` |
