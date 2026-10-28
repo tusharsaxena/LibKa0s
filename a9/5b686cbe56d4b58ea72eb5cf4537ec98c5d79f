@@ -1,0 +1,10 @@
+Independent review of LK-01..05 (8 minor findings, 0 blocker/major). Resolved in a95b686:
+1. [tier tokens] ownValue ignored font/texture overrides under Ka0s Default: FIXED (override wins when it moved the follow token; Ka0s Default override test added).
+2. [tier tokens] nameProblem refused only exact schema names: FIXED (a name whose first segment is any lib.SCHEMA family is refused; text.note/gtip.note/sem.foo test).
+3. [tier tokens] defProblem type/skins checks, __Remap non-color slots: FIXED (follow kind vs default type refused; mistyped skins value refused; unknown skin key kept + logged once; non-color remap slot left unremapped + logged once).
+4. stockKept shared on lib.__regions: FIXED in part (cleared by P.unpaint, owner change and re-track after Untrack; docs say every call on a stock-kept target passes stockDefault). Declined: per-primitive marks (the give-back is the target's whole paint by design).
+5. TreeGroup changelog said only colors: FIXED (changelog + docs name the edge-shape and body-face change). Not done here: the PrettyChat smoke check for pane edges and row hover/leave/selected belongs in M2's smoke tests (Ka0sAddonsCommonTasks), outside this repo.
+6. S.Text took only a role: FIXED (accepts a color token name, library or owner; tracked and replayed; test added).
+7. buttonTokens rebuilt the remap view per hook: FIXED (view cached on rec.regions keyed by T, tokens, base; test added).
+8. CHANGELOG 997 vs 989: FIXED (figures say 'then'). Deferred to LK-90: CLAUDE.md band prose for Skin.lua, now 1044 lines (inside the 1000-1500 notice band), seam = the owner-token block plus __Remap.
+Gate: 3220 passed, 0 failed, 2 skipped; luacheck 0/0.
