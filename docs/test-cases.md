@@ -584,6 +584,17 @@ Total.
 - skin remap: the record keeps the caller's remap, so a repaint replays it
 - skin remap: under eui a remapped call is the library's, from EllesmereUI's colors
 
+### test_skin_icon_border.lua (8)
+
+- skin icon border: SkinDefs is at minor 15 and the schema's HUD group carries the family
+- skin icon border: Ka0s Default's is Drop Watcher's Window › Icons border, Solid 2px black
+- skin icon border: every skin sets both tokens itself, each a style the library draws
+- skin icon border: without fromSkin IconBorder paints exactly what it did, flat at opts.size or 1
+- skin icon border: fromSkin draws Ka0s Default's Solid 2px in icon.border
+- skin icon border: fromSkin wins over opts.size, and a skin switch repaints style and size
+- skin icon border: a skin whose icon.borderStyle is None draws no border
+- skin icon border: under eui fromSkin is the library's, from the EllesmereUI-derived tokens
+
 ### test_skin_defs.lua (29)
 
 - skin defs: the nine skins register in order with their labels
@@ -2470,7 +2481,7 @@ Total.
 - options skin: Ka0s Default colors the keybind rows in its own text roles
 - options skin: the id-suggestion popup takes the skin, Ka0s Default's edge included
 
-### test_options_compose_skin.lua (10)
+### test_options_compose_skin.lua (15)
 
 - compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
 - compose skin: without fromSkin the three groups emit exactly the rows they did
@@ -2482,6 +2493,11 @@ Total.
 - compose skin: a record-backed group reads its companion from the record
 - compose skin: ResetToSkin sets companions to true and never writes the sentinel into a pick
 - compose skin: Skin is at minor 3 or later
+- compose skin: OptionsCompose is at minor 13 or later
+- compose skin: BorderGroup fromSkin = 'icon' emits the same rows as fromSkin = true
+- compose skin: the bar family is unchanged; the icon family also governs the thickness
+- compose skin: the icon family's pickers show the skin's icon border while the companion is set
+- compose skin: a rendered icon-family thickness slider is disabled with the style picker
 
 ### test_options_throttle.lua (4)
 
@@ -3627,6 +3643,7 @@ Total.
 | test_skin_override.lua | 21 |
 | test_skin_owner_tokens.lua | 12 |
 | test_skin_remap.lua | 10 |
+| test_skin_icon_border.lua | 8 |
 | test_skin_defs.lua | 29 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
@@ -3692,7 +3709,7 @@ Total.
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
 | test_options_skin.lua | 17 |
-| test_options_compose_skin.lua | 10 |
+| test_options_compose_skin.lua | 15 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3742,4 +3759,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3192** |
+| **Total** | **3205** |

@@ -18,9 +18,10 @@ Its M0 inventory found 39 gaps no existing primitive or token covers; this relea
 rung-2 items that meet them (`LK-01` to `LK-05`), each adding a surface and none changing what an
 existing call draws. Not tagged.
 
-Versions in this release: **Skin minor 7**, **SkinPaint minor 11**, **SkinPaintExtras minor 5**,
-**SkinPaintControls minor 9**, **SkinEUI minor 2** and **SkinAce minor 4** (`LibKa0s-Skin-1.0` key
-**7.14.11.5.9.2.4**);
+Versions in this release: **Skin minor 7**, **SkinDefs minor 15**, **SkinPaint minor 11**,
+**SkinPaintExtras minor 5**, **SkinPaintControls minor 9**, **SkinEUI minor 2** and **SkinAce minor 4**
+(`LibKa0s-Skin-1.0` key **7.15.11.5.9.2.4**), and **OptionsCompose minor 13** (`LibKa0s-Options-1.0` key
+**34.4.35.4.6.10.3.13.8.3.2.5.3.1**);
 every other file still at its v1.79.0 minor, and **test kit revision 44**, until an entry below moves one. Still
 **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
 
@@ -111,6 +112,32 @@ PC-G1):
 New suite: `tests/test_skin_ace_tree.lua`; `tests/fixture_skin_ace.lua` gains the TreeGroup's
 anatomy and a host Dropdown type.
 
+### SkinDefs minor 15, SkinPaintControls minor 9, OptionsCompose minor 13: icon borders follow the skin
+
+`LibKa0s-Skin-1.0` key 7.15.11.5.9.2.4, documented in
+[docs/api/Skin/version-7.15.11.5.9.2.4-docs.md](docs/api/Skin/version-7.15.11.5.9.2.4-docs.md) (*HUD*,
+*IconBorder*), and `LibKa0s-Options-1.0` key 34.4.35.4.6.10.3.13.8.3.2.5.3.1, documented in
+[docs/api/Options/version-34.4.35.4.6.10.3.13.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.4.35.4.6.10.3.13.8.3.2.5.3.1-docs.md)
+(LK-04 of the same run). An item icon's border had a color token (`icon.border`) and nothing else, so
+Drop Watcher's Window › Icons border could not follow the skin (DW-G14):
+
+- **Two tokens in the HUD group**, `icon.borderStyle` (a LibSharedMedia border key, as `bar.borderStyle`
+  is: `"Solid"` the flat `WHITE8X8` edge, `"None"` none) and `icon.borderSize`. Ka0s Default's are Drop
+  Watcher's border today, Solid 2px (black, `icon.border`). Every other skin sets both itself: a flat
+  edge 1px in Obsidian, Glass and WoW Forever, 2px in Azeroth, High Contrast, Ember and WoW Midnight,
+  and the client's `Blizzard Tooltip` edge at 2px in WoW Default. No existing token moves.
+- **`S.IconBorder(frame, { fromSkin = true })`** draws that family: the style at `icon.borderSize`
+  pixels in `icon.border`, a nine-slice for a border key other than Solid and None, repainted on a
+  skin switch. Without `fromSkin` it paints exactly what it did, flat at `opts.size` or 1. Under the
+  eui source it stays the library's, from the EllesmereUI-derived tokens (Ka0s Default's family).
+- **`O.BorderGroup{ fromSkin = "icon" }`**: the same `borderStyleFromSkin` companion as
+  `fromSkin = true`, following `icon.borderStyle` and also governing the thickness slider, which is
+  disabled and shows `icon.borderSize` while the companion is set. `fromSkin = true` is unchanged.
+- `tests/test_skin_defs.lua` reads `icon.borderStyle` as the LibSharedMedia key it is, as it reads
+  `bar.borderStyle`, rather than as a primitive's edge shape.
+
+New suite: `tests/test_skin_icon_border.lua`; five cases in `tests/test_options_compose_skin.lua`.
+
 ### What a consumer owes
 
 - **Nothing until an addon uses the new surfaces.** An addon that passes no `tokens` to
@@ -120,6 +147,11 @@ anatomy and a host Dropdown type.
   A TreeGroup an addon acquires through its Options instance's `O.AceGUI`, or hands to
   `PaintAce` / `PaintAceTree`, is painted from this release on; no Ka0s addon acquired one on
   v1.79.0, so no existing page changes.
+- An `S.IconBorder` call without `opts.fromSkin` and a `BorderGroup` without `fromSkin = "icon"` are
+  unchanged. A host that draws an item icon's border itself and follows the skin's (`fromSkin = "icon"`
+  plus `S.Resolve("icon.borderStyle", ...)`) owes the `"Solid"` key in LibSharedMedia (the `WHITE8X8`
+  edge, as Drop Watcher registers it) or draws through `S.IconBorder(frame, { fromSkin = true })`,
+  which draws Solid itself.
 
 ## v1.79.0 — 2026-10-28
 

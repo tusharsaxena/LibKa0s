@@ -202,3 +202,73 @@ end)
 test("compose skin: Skin is at minor 3 or later", function()
   assertTrue(Skin.MINOR >= 3)
 end)
+
+-- ── the icon family (OptionsCompose minor 13, LK-04 of Ka0sAddonsCommonTasks
+-- docs/2026-10-29-SKINNING_ROLLOUT, gap DW-G14) ──────────────────────────────────────────────
+
+test("compose skin: OptionsCompose is at minor 13 or later", function()
+  assertTrue(T.options.MODULES.OptionsCompose >= 13)
+end)
+
+test("compose skin: BorderGroup fromSkin = 'icon' emits the same rows as fromSkin = true", function()
+  local O = host(OWNER)
+  local bar = O.BorderGroup({ prefix = "b.", fromSkin = true })
+  local icon = O.BorderGroup({ prefix = "b.", fromSkin = "icon" })
+  assertEqual(paths(icon), paths(bar), "one companion, after the canonical four")
+  assertEqual(rowAt(icon, "b.borderStyleFromSkin").label, "Use the skin's border")
+  assertEqual(rowAt(icon, "b.borderStyleFromSkin").default, false)
+  assertEqual(rowAt(icon, "b.borderStyle").disabledIf, "b.borderStyleFromSkin")
+  assertTrue(rowAt(icon, "b.borderStyleFromSkin").tooltip:find("thickness", 1, true) ~= nil,
+    "the icon companion says it governs the thickness too")
+end)
+
+test("compose skin: the bar family is unchanged; the icon family also governs the thickness", function()
+  local O = host(OWNER)
+  local bar = O.BorderGroup({ prefix = "b.", fromSkin = true })
+  assertNil(rowAt(bar, "b.borderSize").disabledIf, "fromSkin = true leaves the thickness the player's")
+  assertNil(rowAt(bar, "b.borderSize").skinValue)
+  assertEqual(rowAt(bar, "b.borderStyleFromSkin").tooltip,
+    "Draw this border in the skin's border style. The border picker is not read while this is on.",
+    "minor 12's words")
+  local icon = O.BorderGroup({ prefix = "b.", fromSkin = "icon" })
+  assertEqual(rowAt(icon, "b.borderSize").disabledIf, "b.borderStyleFromSkin", "the thickness follows too")
+  assertTrue(type(rowAt(icon, "b.borderSize").skinValue) == "function")
+end)
+
+test("compose skin: the icon family's pickers show the skin's icon border while the companion is set",
+  function()
+  if not Skin:IsOwner(OWNER) then Skin:RegisterOwner(OWNER) end
+  local O, rec = host(OWNER)
+  local rows = O.BorderGroup({ prefix = "i.", fromSkin = "icon" })
+  local style, size = rowAt(rows, "i.borderStyle"), rowAt(rows, "i.borderSize")
+  rec.store["i.borderStyle"], rec.store["i.borderSize"] = "Blizzard Tooltip", 6
+  assertNil(style.skinValue(style), "companion unset: the stored style shows")
+  assertNil(size.skinValue(size), "and the stored size")
+  rec.store["i.borderStyleFromSkin"] = true
+  assertEqual(style.skinValue(style), Skin:Token(OWNER, "icon.borderStyle"), "the skin's icon border style")
+  assertEqual(style.skinValue(style), "Solid", "Ka0s Default's")
+  assertEqual(size.skinValue(size), 2, "Ka0s Default's 2px")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(size.skinValue(size), Skin:ResolveSkin("obsidian")["icon.borderSize"], "read at call time")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  local bar = rowAt(O.BorderGroup({ prefix = "i.", fromSkin = true }), "i.borderStyle")
+  assertEqual(bar.skinValue(bar), Skin:Token(OWNER, "bar.borderStyle"), "fromSkin = true still reads the bar's")
+end)
+
+test("compose skin: a rendered icon-family thickness slider is disabled with the style picker", function()
+  local O, rec = host(OWNER)
+  local store = rec.store
+  local rows = O.BorderGroup({ prefix = "i.", fromSkin = "icon", page = "general", group = "Icons" })
+  seq = seq + 1
+  local ctx = O.CreatePanel("ComposeSkinIcon" .. seq, "Compose skin icon", {})
+  store["i.borderSize"] = 6
+  O.RenderRows(ctx, rows)
+  local slider = widget(ctx.scroll, "Border thickness (px)")
+  local companion = widget(ctx.scroll, "Use the skin's border")
+  assertTrue(slider ~= nil and companion ~= nil, "both rendered")
+  assertFalse(slider.disabled == true, "companion unset: the slider is live")
+  companion:__fire("OnValueChanged", true)
+  assertTrue(slider.disabled, "the slider is disabled")
+  assertEqual(slider.value, Skin:Token(OWNER, "icon.borderSize"), "showing the skin's thickness")
+  assertEqual(store["i.borderSize"], 6, "the stored thickness is untouched")
+end)

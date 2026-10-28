@@ -435,7 +435,14 @@ local function assertNamedMedia(Media, key, name, v)
     assertTrue(Media.BORDERS[nine] ~= nil or LSM_BORDERS[nine],
       key .. ": " .. name .. " names a known border, " .. nine)
   end
-  if name:match("borderStyle$") and name ~= "bar.borderStyle" and type(v) == "string" then
+  -- `bar.borderStyle` and `icon.borderStyle` (SkinDefs minor 15) name a LibSharedMedia border key, the
+  -- HUD pickers' own values, not a primitive's edge shape.
+  if name == "icon.borderStyle" then
+    assertTrue(v == "Solid" or v == "None" or Media.BORDERS[v] ~= nil or LSM_BORDERS[v],
+      key .. ": icon.borderStyle names a border the library draws, " .. tostring(v))
+  end
+  if name:match("borderStyle$") and name ~= "bar.borderStyle" and name ~= "icon.borderStyle"
+    and type(v) == "string" then
     assertTrue(v == "flat" or v == "bevelOut" or v == "bevelIn" or nine,
       key .. ": " .. name .. " is flat | bevelOut | bevelIn | nine:<key>")
   end

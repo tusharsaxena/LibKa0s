@@ -593,13 +593,29 @@ prim.SquareIcon = function(owner, frame, opts)
   P.edges(rec, frame, P.T(owner)["icon.border"], "flat", 1)
 end
 
---- S.IconBorder(frame, opts): an `icon.border` edge, `opts.size` pixels, on the frame's holder
---- (nil in Ka0s Default: none). Draws no Media icon.
+-- The edge style an `icon.borderStyle` names (minor 9, LK-04): "Solid" is the flat WHITE8X8 edge,
+-- "None" draws none (nil), any other LibSharedMedia border key a nine-slice of that art.
+local function iconEdgeStyle(style)
+  if style == "None" then return nil end
+  if style == nil or style == "Solid" then return "flat" end
+  return "nine:" .. tostring(style)
+end
+
+--- S.IconBorder(frame, opts): an `icon.border` edge on the frame's holder. Without `opts.fromSkin` it
+--- is flat, `opts.size` pixels (1 by default), as it always was. With `opts.fromSkin = true` (minor 9,
+--- LK-04) it is the skin's icon border: `icon.borderStyle` ("Solid" flat, "None" none, another
+--- LibSharedMedia border key a nine-slice) at `icon.borderSize` pixels, and `opts.size` is not read.
+--- Ka0s Default's is Solid 2px black. Draws no Media icon.
 prim.IconBorder = function(owner, frame, opts)
   if not P.isFrame(frame) then return end
   local rec = P.track(owner, frame, "IconBorder", opts)
+  local T = P.T(owner)
+  if type(opts) == "table" and opts.fromSkin == true then
+    local style = iconEdgeStyle(T["icon.borderStyle"])
+    return P.edges(rec, frame, style and T["icon.border"] or nil, style, T["icon.borderSize"] or 1)
+  end
   local size = type(opts) == "table" and opts.size or 1
-  P.edges(rec, frame, P.T(owner)["icon.border"], "flat", size)
+  P.edges(rec, frame, T["icon.border"], "flat", size)
 end
 
 --- S.SortHeaderBar(bar, opts): a list's header row. `list.header.bg` behind it (nil in Ka0s
