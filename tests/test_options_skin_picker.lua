@@ -148,6 +148,23 @@ local function applied(Skin, owner)
   return select(2, Skin:GetChoice(owner))
 end
 
+--- Make every frame's Hide fire its OnHide at once when the frame was shown, as the client does
+--- (the kit's Hide only clears the flag). Arm it before the window is built.
+local function armClientHide(m)
+  local create = m.CreateFrame
+  m.CreateFrame = function(...)
+    local f = create(...)
+    local hide = f.Hide
+    rawset(f, "Hide", function(self)
+      local was = self:IsShown()
+      hide(self)
+      if was then self:__fire("OnHide") end
+      return self
+    end)
+    return f
+  end
+end
+
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
 test("skin picker: OptionsSkinPicker is minor 1, paired on the shell, and attaches two members", function()
@@ -387,6 +404,23 @@ test("skin picker: in combat a pick, Apply and Apply to all write nothing and le
   assertEqual(store.calls[1][2], "glass", "out of combat Apply saves the preview made before")
 end)
 
+test("skin picker: in combat the close control still closes, putting a pending preview back unwritten",
+function()
+  -- Pinned as intended: the put-back is no write, so combat does not refuse it (the header's rule).
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER, "obsidian")
+  local O = instance(lib, OWNER)
+  local f = O.SkinPicker(specFor(store))
+  pickRow(f, "ember")
+  lib.__combatLocked = true
+  f.close:__fire("OnClick")
+  lib.__combatLocked = false
+  assertFalse(f:IsShown(), "the window closes")
+  assertEqual(applied(Skin, OWNER), "obsidian", "back to the choice the window opened with")
+  assertNil(store.calls, "no write")
+  assertEqual(store.closed, 1, "onClose once")
+end)
+
 -- ── Apply to all Ka0s addons ─────────────────────────────────────────────────────────────────
 
 test("skin picker: Apply to all is hidden while no other skin owner is registered", function()
@@ -611,6 +645,63 @@ function()
   b.close:__fire("OnClick")
   assertTrue(lib.__pickerQueue.current.frame == a, "the first owner's window again, reused")
   assertEqual(a.dd.text:GetText(), Skin:GetSkin("obsidian").label, "refreshed on show")
+end)
+
+test("skin picker: with the client's own OnHide, one instance's first owner closing leaves the second up",
+function()
+  -- red under: hide()'s close read the instance's current picker after the synchronous OnHide had
+  -- already closed the first and shown the second, so it closed the second too (its onClose run, its
+  -- window left on screen as a picker nobody owned, the queue emptied).
+  local m, Skin, lib = env()
+  armClientHide(m)
+  local storeA = register(Skin, OWNER)
+  local storeB = register(Skin, "Other")
+  local O = instance(lib, OWNER)
+  local a = O.SkinPicker(specFor(storeA))
+  assertNil(O.SkinPicker(specFor(storeB, { owner = "Other" })), "queued")
+  a.close:__fire("OnClick")
+  assertEqual(storeA.closed, 1, "the first closed once")
+  local q = lib.__pickerQueue
+  assertTrue(q.current ~= nil and q.current.owner == "Other", "the second is the picker up")
+  local b = q.current.frame
+  assertTrue(b ~= a and b:IsShown(), "its own window, shown")
+  assertNil(storeB.closed, "the second's onClose has not run")
+  pickRow(b, "ember")
+  assertEqual(applied(Skin, "Other"), "ember", "the second still previews")
+  assertNil(O.SkinPicker(specFor(storeA)), "the first queued behind it")
+  b.apply:__fire("OnClick")
+  assertEqual(storeB.calls[1][2], "ember", "Apply saved the second's pick")
+  assertEqual(storeB.closed, 1, "the second closed once")
+  assertTrue(q.current ~= nil and q.current.frame == a and a:IsShown(), "the first shows again")
+  assertNil(storeA.calls, "the first's write seam untouched")
+  assertEqual(storeA.closed, 1, "and its onClose not run by the second's Apply")
+  O.HideSkinPicker()
+  assertEqual(storeA.closed, 2, "HideSkinPicker closes it once")
+  assertNil(q.current, "nothing left up")
+end)
+
+test("skin picker: with the client's own OnHide, onClose still runs once per showing, by every route",
+function()
+  local m, Skin, lib = env()
+  armClientHide(m)
+  local store = register(Skin, OWNER)
+  local O = instance(lib, OWNER)
+  local f = O.SkinPicker(specFor(store))
+  f.close:__fire("OnClick")
+  assertEqual(store.closed, 1, "the close control")
+  O.SkinPicker(specFor(store))
+  f.apply:__fire("OnClick")
+  assertEqual(store.closed, 2, "Apply")
+  O.SkinPicker(specFor(store, { onSettings = function() end }))
+  f.settings:__fire("OnClick")
+  assertEqual(store.closed, 3, "the gear")
+  O.SkinPicker(specFor(store))
+  O.HideSkinPicker()
+  assertEqual(store.closed, 4, "HideSkinPicker")
+  O.SkinPicker(specFor(store))
+  f:Hide()
+  assertEqual(store.closed, 5, "Escape")
+  assertNil(lib.__pickerQueue.current)
 end)
 
 test("skin picker: a skin registered after the first show gains its row on the next", function()

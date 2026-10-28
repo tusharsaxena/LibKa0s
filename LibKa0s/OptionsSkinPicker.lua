@@ -64,6 +64,8 @@ if not lib then return end
 -- names the addon (TITLE_FOR replaces TITLE); a pick previews and Apply saves, the close control
 -- and Escape put the preview back; "Apply to all Ka0s addons"; one window across addons through
 -- lib.__pickerQueue, a queued call answering nil, "queued"; the default gear opens spec.page itself.
+-- A close acts on the picker it closes, never the instance's current one (the client's synchronous
+-- OnHide can show the instance's next owner inside the hide).
 local PICKER_MINOR = 1
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__pickerMinor and lib.__pickerMinor >= PICKER_MINOR
@@ -320,17 +322,21 @@ function lib.__AttachSkinPicker(O, d)
     end
   end
 
-  local function layout()
-    local f = P.frame
-    local listH = #P.rows * ROW_H + 4
+  --- The list shown or hidden and the window's height to match, for picker `p` (default the one
+  --- shown last).
+  local function layout(p)
+    p = p or P
+    local f = p.frame
+    local listH = #p.rows * ROW_H + 4
     f.list:SetHeight(listH)
-    f:SetHeight(BASE_H + (P.open and (listH + 2) or 0))
-    if P.open then f.list:Show() else f.list:Hide() end
+    f:SetHeight(BASE_H + (p.open and (listH + 2) or 0))
+    if p.open then f.list:Show() else f.list:Hide() end
   end
 
-  local function setOpen(open)
-    P.open = open and true or false
-    layout()
+  local function setOpen(open, p)
+    p = p or P
+    p.open = open and true or false
+    layout(p)
   end
 
   local function reloadPopup(labels)
@@ -366,31 +372,35 @@ function lib.__AttachSkinPicker(O, d)
     return reload
   end
 
-  --- A dismissal: the pending preview put back, the Skin major moved to the choice the window
-  --- opened with. No write.
-  local function revert()
-    if P.pending == nil then return end
-    P.pending, P.reload = nil, false
-    local opened = P.opened or {}
-    P.Skin:SetChoice(P.owner, opened[1], opened[2])
+  --- A dismissal of picker `p`: its pending preview put back, the Skin major moved to the choice
+  --- its window opened with. No write.
+  local function revert(p)
+    if p.pending == nil then return end
+    p.pending, p.reload = nil, false
+    local opened = p.opened or {}
+    p.Skin:SetChoice(p.owner, opened[1], opened[2])
   end
 
-  --- The window has gone, by any route: a pending preview put back, `spec.onClose` once per
-  --- showing, then the next queued picker, when this one was the picker shown.
-  local function closed()
-    if not (P and P.shown) then return end
-    P.shown = false
-    setOpen(false)
-    revert()
-    safeCall(P.spec.onClose)
+  --- Picker `p`'s window has gone, by any route: a pending preview put back, `spec.onClose` once per
+  --- showing, then the next queued picker, when `p` was the picker shown. It takes the record, never
+  --- the upvalue P: the client fires OnHide inside Hide(), and the advance there can make another
+  --- owner on this instance P before the hide that started it returns.
+  local function closed(p)
+    if not (p and p.shown) then return end
+    p.shown = false
+    setOpen(false, p)
+    revert(p)
+    safeCall(p.spec.onClose)
     local cur = queue().current
-    if cur and cur.inst == O and cur.owner == P.owner then advance() end
+    if cur and cur.inst == O and cur.owner == p.owner then advance() end
   end
 
+  --- Hide the picker shown last and close it, the record caught before Hide() can fire OnHide.
   local function hide()
-    if not (P and P.frame) then return end
-    P.frame:Hide()
-    closed()
+    local p = P
+    if not (p and p.frame) then return end
+    p.frame:Hide()
+    closed(p)
   end
 
   --- Apply: refused in combat with the window left up; otherwise save, the one reload popup when a
@@ -599,9 +609,10 @@ function lib.__AttachSkinPicker(O, d)
     -- Only this window's own owner refreshes it, and only while it is the one shown last.
     local mine = P
     -- Escape (UISpecialFrames) hides it too. A hide of UIParent fires OnHide with the window still
-    -- shown: that is not a close; nor is a late OnHide of a window another owner's has replaced.
+    -- shown: that is not a close; nor is a late OnHide of a window already closed (closed() checks
+    -- its own record's `shown`).
     f:SetScript("OnHide", function(self)
-      if P == mine and not (self.IsShown and self:IsShown()) then closed() end
+      if not (self.IsShown and self:IsShown()) then closed(mine) end
     end)
     buildChrome(f)
     buildDropdown(f)

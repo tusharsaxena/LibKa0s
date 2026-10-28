@@ -222,6 +222,10 @@ stays minor 1):
   by any route. `O.HideSkinPicker()` takes its instance's queued owners out with no `onClose` and
   dismisses its window when it is the one up. A second owner on one instance now queues instead of
   replacing the first.
+- **A close acts on its own picker.** Every close route takes the picker record it closes rather
+  than the instance's current one: the client fires `OnHide` inside `Hide()`, and the advance there
+  can show the instance's next owner before the hide returns, which closed that second picker too
+  (its `onClose` run, its window left up). Pinned with a Hide that fires `OnHide` as the client does.
 - **The gear opens the page.** The default gear calls `O.OpenOptionsPanel(spec.page)`
   (OptionsRegistry minor 4, above) and then `O.SelectTab`, so the player lands on the page that
   holds the Skin tab rather than on the landing page.
