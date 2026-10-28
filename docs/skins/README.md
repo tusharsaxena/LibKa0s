@@ -78,11 +78,19 @@ round (2026-10-26) are in the table.
 cropped to the window:
 
 - [`v2/SkinTester/`](screenshots/v2/SkinTester/): the Skin Tester's showroom, every element a skin
-  paints. [`showcase.png`](screenshots/v2/SkinTester/showcase.png) is all nine at a glance.
-- Loot History's History tab in the same nine skins, with its own `showcase.png`, is in the
+  paints, with its showcases in [`showcase/`](screenshots/v2/SkinTester/showcase/).
+- Loot History's History tab in the same nine skins, with its own `showcase/`, is in the
   LootHistory repository at `docs/skins/screenshots/v2/`.
 
-Each crop is `NN-<skin key>.png`, numbered in the order `SkinDefs.lua` registers the skins.
+Each crop is `NN-<skin key>.png`, numbered in the order `SkinDefs.lua` registers the skins. Each set's
+`showcase/` folder has every skin at a glance, two ways, each as a PNG and a JPEG:
+
+- `standalone`: every window on its own, in a grid, each under a label with its name and swatches.
+- `stacked`: the windows overlapping in two cascades that fan in toward the middle, a different skin
+  on each, the right-hand cascade behind the left-hand one.
+
+Both sit on a clean background and are drawn at the crops' own resolution (the Skin Tester's
+standalone is 3778×2910), so scale them down for wherever they go.
 
 ## Making a new set
 
@@ -102,6 +110,7 @@ The screenshots go in `SkinDefs.lua`'s order (Ka0s Default first); or put them i
 `<skin key>.png` and pass `--dir` instead. The skins, their order and their labels are read from
 `SkinDefs.lua`, so a new or renamed skin needs no change to the script: run it again with one more
 screenshot. `--skins obsidian,glass` shoots a subset, `--no-crop` keeps screenshots already cropped,
-and `--cols` and `--tile` shape the grid. The crop finds the window's outermost straight edges, so
+`--from-crops` rebuilds only the showcases from a set's own crops, `--cols` sets the standalone grid's
+columns and `--bg dark` swaps the light background for a dark one. The crop finds the window's outermost straight edges, so
 leave a little of the world showing on every side; a skin with rounded corners (Glass) keeps a few
 pixels of world in its corners.
