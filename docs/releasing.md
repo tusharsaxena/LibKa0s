@@ -54,7 +54,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `{ OptionsKeybinds, __keybindsMinor, __keybindsShellMinor }`,
    `{ OptionsAppearance, __appearanceMinor, __appearanceShellMinor }`). **A file added to an existing major moves
    that major's version key**, because the key is every file's minor in load order — the Options key
-   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1, nine from 25.32.1.1.6.1.7.4.1, ten from 26.1.32.1.1.6.1.7.4.1, eleven from 29.2.34.2.4.8.1.7.4.2.1, twelve from 30.2.34.3.5.9.2.11.4.2.1.4 and thirteen from 33.3.35.4.6.10.3.12.7.3.2.5.2. The table
+   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1, nine from 25.32.1.1.6.1.7.4.1, ten from 26.1.32.1.1.6.1.7.4.1, eleven from 29.2.34.2.4.8.1.7.4.2.1, twelve from 30.2.34.3.5.9.2.11.4.2.1.4 and thirteen from 33.3.35.4.6.10.3.12.8.3.2.5.2. The table
    carries one row per shipped major — nineteen today, since `LibKa0s-Glow-1.0` and
    `LibKa0s-Sim-1.0` at v1.75.0, `LibKa0s-Skin-1.0` at v1.78.0 and `LibKa0s-Toast-1.0` at v1.79.0. The Sim row is the example of a three-file major paired on its
    shell: `files = { Sim, SimTimeline, SimPanel }` and a `paired`

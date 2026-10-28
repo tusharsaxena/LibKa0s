@@ -92,20 +92,28 @@ Extended a sixth time on 2026-10-27 with Skin minor 5, SkinPaint minor 8, SkinAc
 OptionsScroll minor 7 and OptionsAppearance minor 2 (`SF-38`): the Appearance tab's Scope, "Ignore
 settings panel" and "Ignore fonts", per addon, copied with the skin, both live (`SF-41`). Extended a
 seventh time on 2026-10-27 with SkinDefs minor 9 and SkinPaintControls minor 6 (`SF-44`): a scroll
-thumb fill for the five skins whose thumb barely read.
+thumb fill for the five skins whose thumb barely read. Extended an eighth time on 2026-10-28 with
+SkinDefs minor 10, SkinPaintControls minor 7 and OptionsScroll minor 8 (`R5-01`): a scroll corridor
+and one flat knob in every skin. Extended a ninth time on 2026-10-28 with SkinPaint minor 9
+(`R5-02`): a window's edge drawn over its children, so no title bar or footer covers it. Extended a
+tenth time on 2026-10-28 with Media minor 8 and SkinDefs minor 11 (`R5-03`): a font family of its
+own for every skin, body and titles alike. Extended an eleventh time on 2026-10-28 with SkinDefs
+minor 12, SkinPaint minor 10 and SkinPaintControls minor 8 (`R5-04`): the showroom audit, arrows in
+each skin's accent and WoW Forever's check mark in its tan. Extended a twelfth time on 2026-10-28
+with SkinDefs minor 13 (`R5-09`): Azeroth's window frame as thin as the other skins'.
 
-Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 7**
-(`LibKa0s-Media-1.0` key **7.1**, `MediaIcons` 1 unchanged), **Skin minor 5**, **SkinDefs minor 9**,
-**SkinPaint minor 8**, **SkinPaintExtras minor 3**, **SkinPaintControls minor 6**, **SkinEUI
-minor 1** and **SkinAce minor 3** (the new major `LibKa0s-Skin-1.0`, key **5.9.8.3.6.1.3**); **Widgets minor 16**,
+Versions in this release: **Core minor 13** (`LibKa0s-Core-1.0` key **13**); **Media minor 8**
+(`LibKa0s-Media-1.0` key **8.1**, `MediaIcons` 1 unchanged), **Skin minor 5**, **SkinDefs minor 13**,
+**SkinPaint minor 10**, **SkinPaintExtras minor 3**, **SkinPaintControls minor 8**, **SkinEUI
+minor 1** and **SkinAce minor 3** (the new major `LibKa0s-Skin-1.0`, key **5.13.10.3.8.1.3**); **Widgets minor 16**,
 **WidgetsReorder minor 2**, **WidgetsDragHandle minor 6**, **WidgetsLineChart minor 4**,
 **WidgetsAutocomplete minor 4** and **WidgetsCopyWindow minor 1** (`LibKa0s-Widgets-1.0` key
 **16.2.6.4.4.1**, a new sixth file); **DebugLog minor 22**, **DebugLogDiagnostics minor 4** and
 **DebugLogWindow minor 1** (`LibKa0s-DebugLog-1.0` key **22.4.1.1**, a new fourth file); **Options minor 33**, **OptionsRegistry minor 3**, **OptionsWidgets minor 35**, **OptionsIds minor 4**,
 **OptionsIdList minor 6**, **OptionsTabs minor 10**, **OptionsCombat minor 3**, **OptionsCompose minor
-12**, **OptionsScroll minor 7**, **OptionsNav minor 3**, **OptionsDrawer minor 2**,
+12**, **OptionsScroll minor 8**, **OptionsNav minor 3**, **OptionsDrawer minor 2**,
 **OptionsKeybinds minor 5** and **OptionsAppearance minor 2** (`LibKa0s-Options-1.0` key
-**33.3.35.4.6.10.3.12.7.3.2.5.2**, a new thirteenth file); **PerfPanel
+**33.3.35.4.6.10.3.12.8.3.2.5.2**, a new thirteenth file); **PerfPanel
 minor 10** (`LibKa0s-Perf-1.0` key **15.1.1.10**); **SimPanel minor 7** (`LibKa0s-Sim-1.0` key
 **2.3.7**); every other file still at its v1.77.0 minor, and **test kit revision 43**, until an
 entry below moves one. Each change bumps the minor of the files it touches once, and this block
@@ -135,9 +143,9 @@ changes, so no file minor moves; `mock_base.lua` gains one comment line pointing
 
 ### Media minor 6: the skin faces and the Glass art
 
-`LibKa0s-Media-1.0` key 6.1 (the in-flight document moved to 7.1 with minor 7, below; 6.1 never
-shipped), documented in
-[docs/api/Media/version-7.1-docs.md](docs/api/Media/version-7.1-docs.md). Additive: every name and
+`LibKa0s-Media-1.0` key 6.1 (the in-flight document moved to 7.1 with minor 7 and to 8.1 with
+minor 8, below; 6.1 and 7.1 never shipped), documented in
+[docs/api/Media/version-8.1-docs.md](docs/api/Media/version-8.1-docs.md). Additive: every name and
 path version 5.1 had resolves the same.
 
 - **Five OFL faces in `FONTS`**, SIL OFL 1.1, each license beside it in `media/fonts/`:
@@ -445,10 +453,10 @@ OptionsCompose) now read "at least". **What a consumer owes:** nothing; an adopt
 ### SkinAce minor 1 and Options 32.3.35.4.6.10.3.12.6.3.2.5: the AceGUI rows wear their owner's skin
 
 `LibKa0s-Skin-1.0` key 3.3.2.1.1.1.1
-([docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md) since
+([docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md) since
 SkinDefs minor 4 and Skin minor 4, and SkinDefs minors 5 and 6 and SkinPaint minor 3, below; a seventh file; the in-flight 3.3.2.1.1.1 document moved to it, never shipped) and
 `LibKa0s-Options-1.0` key 32.3.35.4.6.10.3.12.6.3.2.5
-([docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md)
+([docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md)
 since Options minor 33, below; the in-flight 31.2.35.4.6.10.3.12.5.3.2.5 document moved to it), LK-08 of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`. AceGUI keeps one pool per widget type for the whole client, so a row is
 painted for exactly one acquisition and handed back stock.
@@ -528,13 +536,13 @@ pins DebugLog's constants in their new file and the panels' command and hover co
 file must arrive with the shell. **What a consumer owes:** nothing; an adopter's registered owner
 reaches its console and panels through the names it already passes.
 
-### Options 33.3.35.4.6.10.3.12.7.3.2.5.2 and Skin minor 4: the Appearance tab
+### Options 33.3.35.4.6.10.3.12.8.3.2.5.2 and Skin minor 4: the Appearance tab
 
-`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.7.3.2.5.2
-([docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md),
+`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.8.3.2.5.2
+([docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md),
 a thirteenth file; the in-flight 32.3.35.4.6.10.3.12.6.3.2.5 document moved to it, never shipped) and
 `LibKa0s-Skin-1.0` key 4.4.2.1.1.1.1
-([docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md) since
+([docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md) since
 SkinDefs minors 5 and 6 and SkinPaint minor 3, below; the in-flight 3.4.2.1.1.1.1 document moved to it, never shipped), LK-10 of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/` (`skinning-§3`; the owner's ruling R1, per addon).
 
@@ -567,7 +575,7 @@ SkinDefs minors 5 and 6 and SkinPaint minor 3, below; the in-flight 3.4.2.1.1.1.
 - **Skin minor 4: `Skin:OwnerLabel(owner)` and `Skin:WriteChoice(owner, source, skin)`**, the two
   members the copy needs: the label an owner registered with, and a write through the `opts.set` it
   registered, under pcall, which never moves the applied choice. Both are in the regenerated
-  `members-4.4.2.1.1.1.1.json` (`members-5.9.8.3.6.1.3.json` since SkinDefs minors 5, 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below).
+  `members-4.4.2.1.1.1.1.json` (`members-5.13.10.3.8.1.3.json` since SkinDefs minors 5, 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below).
 - **The ellipsis.** `COPY` carries U+2026, which `options-ui-§21` asks of a button that opens a
   confirmation; `tests/test_prose.lua`'s ASCII gate ratifies it for `LibKa0s/OptionsAppearance.lua`
   alone, beside the em dash and Core's close glyph.
@@ -580,15 +588,15 @@ owner, and combat refusing a pick, a copy click and a copy accepted after combat
 `OptionsKeybinds` the twelfth. Re-vendor the whole folder: the new file must arrive with the shell.
 **What a consumer owes: every Options degradation stub gains `AppearanceTab` and
 `AppearanceRows`**, in every addon, adopted or not (`Kit.assertSurfaceParity`, `skinning-§3`); the
-regenerated `members-33.3.35.4.6.10.3.12.7.3.2.5.2.json` lists the lib-level table only, so it names
+regenerated `members-33.3.35.4.6.10.3.12.8.3.2.5.2.json` lists the lib-level table only, so it names
 `APPEARANCE_STRINGS` and not them. An adopted addon draws the tab on its General page before
 Keybindings.
 
 ### Media minor 7: RegisterLSM never offers a key LibSharedMedia already holds
 
 Extended on 2026-10-25, after the local tag and before any push (`LK-A1` of Ka0sAddonsCommonTasks
-`docs/2026-10-25-SKINNING/`). `LibKa0s-Media-1.0` key 7.1
-([docs/api/Media/version-7.1-docs.md](docs/api/Media/version-7.1-docs.md); the in-flight 6.1
+`docs/2026-10-25-SKINNING/`). `LibKa0s-Media-1.0` key 7.1 (8.1 since Media minor 8, below:
+[docs/api/Media/version-8.1-docs.md](docs/api/Media/version-8.1-docs.md); the in-flight 6.1
 document and manifest moved to it, never shipped). No member is added and no signature moves.
 
 - **The owner's report.** With LootHistory on v1.78.0 and every other addon still on v1.77.0, the
@@ -620,8 +628,8 @@ document and manifest moved to it, never shipped). No member is added and no sig
 
 Extended on 2026-10-25, after the local tag and before any push (`LK-A2` of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-03` found). `LibKa0s-Skin-1.0` key
-4.5.2.1.1.1.1 (5.9.8.3.6.1.3 since SkinDefs minors 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below:
-[docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md);
+4.5.2.1.1.1.1 (5.13.10.3.8.1.3 since SkinDefs minors 6 and 7, SkinPaint minors 3 and 4 and SkinPaintControls minor 2, below:
+[docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md);
 the in-flight 4.4.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
 is added, removed or renamed, and every token minor 4 had resolves the same in every skin.
 
@@ -650,7 +658,7 @@ re-vendor.
 
 Extended on 2026-10-25, after the local tag and before any push (`LK-A3` of Ka0sAddonsCommonTasks
 `docs/2026-10-25-SKINNING/`, the library gap LootHistory's `LH-04` found). `LibKa0s-Skin-1.0` key
-4.6.2.1.1.1.1 (5.9.8.3.6.1.3 since SkinPaint minors 3 and 4, SkinDefs minor 7 and SkinPaintControls minor 2, below: [docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md);
+4.6.2.1.1.1.1 (5.13.10.3.8.1.3 since SkinPaint minors 3 and 4, SkinDefs minor 7 and SkinPaintControls minor 2, below: [docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md);
 the in-flight 4.5.2.1.1.1.1 document and manifest moved to it, never shipped). Additive: no member
 is added, removed or renamed, and every token minor 5 had resolves the same in every skin.
 
@@ -700,8 +708,8 @@ owes:** nothing; LootHistory reads the tokens at its next `LH-RV` re-vendor.
 ### SkinPaint minor 3: an EditBox's face goes back by path
 
 Extended on 2026-10-26, after the local tag and before any push (`LK-A4` of Ka0sAddonsCommonTasks
-`docs/2026-10-25-SKINNING/`, found by the owner's smoke test). `LibKa0s-Skin-1.0` key 4.6.3.1.1.1.1 (5.9.8.3.6.1.3 since SkinDefs minor 7, SkinPaint minor 4 and SkinPaintControls minor 2, below;
-[docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md); the
+`docs/2026-10-25-SKINNING/`, found by the owner's smoke test). `LibKa0s-Skin-1.0` key 4.6.3.1.1.1.1 (5.13.10.3.8.1.3 since SkinDefs minor 7, SkinPaint minor 4 and SkinPaintControls minor 2, below;
+[docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md); the
 in-flight 4.6.2.1.1.1.1 document and manifest moved to it, never shipped). No member is added,
 removed or renamed.
 
@@ -723,11 +731,138 @@ never handed back and the stock face returns by path; red on minor 2. Two font f
 `tests/test_skin_paint.lua` and `tests/test_skin_ace.lua` now answer `GetName`, as the client's named
 fonts do. **What a consumer owes:** nothing; LootHistory carries it at its next `LH-RV` re-vendor.
 
+### SkinDefs minor 13: Azeroth's window frame as thin as the others
+
+Extended on 2026-10-28, after the local tag and before any push (`R5-09` of Ka0sAddonsCommonTasks
+`docs/2026-10-28-SKIN_ROUND5/`, the owner's note after round 5). `LibKa0s-Skin-1.0` key
+5.13.10.3.8.1.3 ([docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md);
+the in-flight 5.12.10.3.8.1.3 document and manifest moved to it, never shipped). No member or token
+is added, removed or renamed.
+
+The owner: "Azeroth skin has a much thicker border than other skins ... make the border of Azeroth
+consistent with other skins". Azeroth drew a 3px leather edge with its 1px gold inner rule inside it,
+a 4px frame, against Ember's 2 (1px and a rule) and WoW Midnight's 3. Its `win.borderSize` is now 1,
+so its frame is Ember's 2px: the leather line outside, the gold rule inside it. A new case holds
+every flat window frame (edge plus inner rule) to at most 3px; red on minor 12. The Skin document's
+files-and-minors row and the Options document's `OptionsScroll` minor, both stale since `R5-01`,
+are corrected. **What a consumer owes:** nothing; LootHistory and the Skin Tester carry it at their
+next re-vendor.
+
+### SkinDefs minor 12, SkinPaint minor 10, SkinPaintControls minor 8: the showroom audit
+
+Extended on 2026-10-28, after the local tag and before any push (`R5-04` of Ka0sAddonsCommonTasks
+`docs/2026-10-28-SKIN_ROUND5/`). `LibKa0s-Skin-1.0` key 5.12.10.3.8.1.3 (5.13.10.3.8.1.3 since
+SkinDefs minor 13, above:
+[docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md); the
+in-flight 5.11.9.3.7.1.3 document and manifest moved to it, never shipped).
+
+The owner asked for the showroom's inconsistencies in every skin, found and fixed. Read from the nine
+screenshots, pixel-sampled:
+
+- **The arrows were yellow in every skin.** The paging arrow, a dropdown's arrow and a sort header's
+  arrow are in-client art drawn yellow, and a vertex color only multiplies it, so Obsidian's blue,
+  Glass's lilac and WoW Forever's tan all came out yellow. `icon.arrow` (SkinDefs minor 12), Ka0s
+  Default's gold and every other skin's accent (FOLLOW from `text.accent`); `P.glyph` (SkinPaint
+  minor 10) desaturates the art before it tints it and gives the desaturation back on unpaint;
+  PageButton, Dropdown and SortHeaderBar color their arrows through it (SkinPaintControls minor 8).
+- **WoW Forever's check mark** was Ka0s gold `#FFD100` under its tan accent; it is the tan `#C9A07A`.
+- Glass's "On" label looked dim; the sampled pixels are its lilac `#B69CFF`, so nothing changed.
+
+Tests: a case holds every skin's arrows to its accent and WoW Forever's check to its tan; the
+dropdown, page-button and sort-arrow cases read the desaturated `icon.arrow` (the dropdown's box
+still matches Widgets' own, call for call).
+
+### Media minor 8, SkinDefs minor 11: a face of its own for every skin
+
+Extended on 2026-10-28, after the local tag and before any push (`R5-03` of Ka0sAddonsCommonTasks
+`docs/2026-10-28-SKIN_ROUND5/`). `LibKa0s-Media-1.0` key 8.1
+([docs/api/Media/version-8.1-docs.md](docs/api/Media/version-8.1-docs.md); the in-flight 7.1
+document and manifest moved to it, never shipped). `LibKa0s-Skin-1.0` key 5.13.10.3.8.1.3
+([docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md); the
+in-flight 5.10.9.3.7.1.3 document and manifest moved to it, never shipped).
+
+The owner, on WoW Midnight, Ember and Azeroth: the header font does not match the rest, the three
+reuse one face, and every skin should have a face of its own that fits its style; on Obsidian, a more
+modern face. Azeroth, Ember and WoW Midnight titled in Cinzel, an all-capitals face no body text can
+share, over three different bodies; Obsidian and Glass drew Barlow, and WoW Forever and High Contrast
+Atkinson Hyperlegible.
+
+- **Media minor 8**: the catalog's skin faces are seven families, a regular and a title weight each:
+  Inter, Nunito, Vollkorn, Bitter, Philosopher, Fira Sans and Atkinson Hyperlegible (`FONTS` holds
+  fifteen entries with JetBrains Mono). Barlow and Cinzel leave (never released). The six new families
+  draw Cyrillic and register western + ruRU; Atkinson stays western only.
+  `tools/artwork/fonts.py` pins them to google/fonts commits and SHA-256s and cuts static weights from
+  the four published only as variable fonts (Inter, Nunito, Vollkorn, Bitter). The payload's fonts
+  folder grows from about 0.6 MB to 3.6 MB.
+- **SkinDefs minor 11**: every skin names one family for body and titles: Obsidian Inter, Glass
+  Nunito, Azeroth Vollkorn, Ember Bitter, WoW Midnight Philosopher, WoW Forever Fira Sans, High
+  Contrast Atkinson Hyperlegible; Ka0s Default and WoW Default keep the client's Friz Quadrata, the
+  one face two skins share. Sizes retuned per face, all within a point and a half of Ka0s Default's.
+
+Tests: the font-assignment case holds every skin's titles to its body's family and no face to two
+skins but Friz Quadrata; the media cases follow the fifteen-face catalog, the per-face masks and the
+four instanced families' license notes.
+
+### SkinPaint minor 9: a window's edge over its children
+
+Extended on 2026-10-28, after the local tag and before any push (`R5-02` of Ka0sAddonsCommonTasks
+`docs/2026-10-28-SKIN_ROUND5/`). `LibKa0s-Skin-1.0` key 5.13.10.3.8.1.3
+([docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md); the
+in-flight 5.10.8.3.7.1.3 document and manifest moved to it, never shipped).
+
+The owner: on Azeroth, High Contrast and WoW Midnight the title bar and footer overlap the window's
+border at its four corners. The window's flat edge was its own backdrop edge, and the bars are child
+frames a level above it that reach to within 1px of its outside, so wherever the edge is wider than 1px
+(Azeroth 3, High Contrast and WoW Midnight 2) their fills covered it.
+
+- **Shell** draws the window's edge (flat, bevel or nine-slice) and its inner rule (`win.inner`, 1px
+  inside the edge) on an **edge holder**, `P.edgeHolder`, a child frame at the window's level + 10,
+  over the window's own children. The backdrop's own edge is clear, and Core's inner-rule child frame
+  is cleared, its color recorded and given back on unpaint. Ka0s Default's 1px edge and inner rule
+  draw on the same pixels as before.
+- `P.edges` takes the holder to draw on; a nine-slice remembers the holder it went on.
+
+Tests: the Shell cases read the edge and inner rule from the edge holder (and the backdrop's edge
+clear); the holder case pins the edge holder ten levels up, over a title bar at the window's level + 1.
+
+### SkinDefs minor 10, SkinPaintControls minor 7, OptionsScroll minor 8: a corridor and one knob
+
+Extended on 2026-10-28, after the local tag and before any push (`R5-01` of Ka0sAddonsCommonTasks
+`docs/2026-10-28-SKIN_ROUND5/`). `LibKa0s-Skin-1.0` key 5.13.10.3.8.1.3
+([docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md); the
+in-flight 5.9.8.3.6.1.3 document and manifest moved to it, never shipped). `LibKa0s-Options-1.0` key
+33.3.35.4.6.10.3.12.8.3.2.5.2
+([docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md);
+the in-flight 33.3.35.4.6.10.3.12.7.3.2.5.2 document and manifest moved to it).
+
+The owner's fifth round: every skin's scroll bar should draw a knob in a corridor, as Azeroth's does,
+and High Contrast drew two knobs. Obsidian, Glass and WoW Forever set `scroll.track` clear and High
+Contrast black on its black window, so they drew no corridor; and the knob was the client's art tinted
+`scroll.thumb` with, since minor 9, a flat `scroll.thumbFill` over its middle in five skins. High
+Contrast tinted the art white and filled it yellow.
+
+- **ScrollBar (SkinPaintControls minor 7)** fades the bar's own thumb art and lays one flat knob in
+  its place, `scroll.thumb` (`scroll.thumbOn` / `scroll.thumbOff` for the always-shown bar's two
+  states), 3px inside the bar's sides and 2px inside the thumb's ends, anchored to the thumb and
+  shown and hidden with it; and lays the `scroll.track` corridor under the always-shown bar too. The
+  client's art is never tinted.
+- **SkinDefs minor 10**: `scroll.thumbFill` and `scroll.thumbTexture` are retired (234 tokens), and
+  every skin's corridor reads against its window (Obsidian `#1C1C20`, Glass white .08, High Contrast
+  `#262626`, Ember `#2E1810`, WoW Midnight `#22224A`, WoW Forever `#0A0806`; Ka0s Default's alpha .3
+  -> .4, Azeroth's .3 -> .35) under a knob in its accent (Obsidian `#4DB8FF`, Ember `#FF7A33`, WoW
+  Default `#FFD100`, WoW Midnight `#F6D27A`, each at .9; WoW Forever's tan; Glass white .5).
+- **OptionsScroll minor 8**: a released AceGUI bar is handed back through `lib.__chromeUnpaint`, not
+  only untracked, so the pooled widget gets its knob art back.
+
+Tests: the knob replaces the fill case (one knob over faded art, following the thumb, in every skin,
+and the art back when unpainted); a new contrast case holds every skin's corridor at 1.12 or more on
+its window and its knob at 3 or more on the corridor; the options case checks the released bar's art.
+
 ### SkinDefs minor 9, SkinPaintControls minor 6: the scroll thumb fill
 
 Extended on 2026-10-27, after the local tag and before any push (`SF-44` of Ka0sAddonsCommonTasks
-`docs/2026-10-26-SKIN_FEEDBACK/`). `LibKa0s-Skin-1.0` key 5.9.8.3.6.1.3
-([docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md); the
+`docs/2026-10-26-SKIN_FEEDBACK/`). `LibKa0s-Skin-1.0` key 5.13.10.3.8.1.3
+([docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md); the
 in-flight 5.8.8.3.5.1.3 document and manifest moved to it, never shipped).
 
 The owner: the scroll bar's thumb is barely visible in Obsidian, High Contrast, Ember, WoW Default
@@ -750,10 +885,10 @@ when off, none on Ka0s Default; exactly the five skins set one).
 ### Skin minor 5, SkinPaint minor 8, SkinAce minor 3, OptionsScroll minor 7, OptionsAppearance minor 2: the Appearance tab's Scope
 
 Extended on 2026-10-27, after the local tag and before any push (`SF-38` of Ka0sAddonsCommonTasks
-`docs/2026-10-26-SKIN_FEEDBACK/`, the owner's request). `LibKa0s-Skin-1.0` key 5.9.8.3.6.1.3
-([docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md));
-`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.7.3.2.5.2
-([docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.7.3.2.5.2-docs.md));
+`docs/2026-10-26-SKIN_FEEDBACK/`, the owner's request). `LibKa0s-Skin-1.0` key 5.13.10.3.8.1.3
+([docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md));
+`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.8.3.2.5.2
+([docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md));
 both documents and manifests moved from the in-flight keys, never shipped.
 
 - **Two exceptions per owner (Skin minor 5).** `Skin:GetIgnore(owner)` and `Skin:SetIgnore(owner,
@@ -793,8 +928,8 @@ Skin Tester do, at their re-vendor).
 Extended on 2026-10-26, after the local tag and before any push (`SF-01`..`SF-10` of
 Ka0sAddonsCommonTasks `docs/2026-10-26-SKIN_FEEDBACK/`: the owner's notes on the leg-1 screenshots in
 `docs/skins/screenshots/2026-10-26-leg1/`, then on the Skin Tester's showroom in every skin).
-`LibKa0s-Skin-1.0` key 5.9.8.3.6.1.3
-([docs/api/Skin/version-5.9.8.3.6.1.3-docs.md](docs/api/Skin/version-5.9.8.3.6.1.3-docs.md); the
+`LibKa0s-Skin-1.0` key 5.13.10.3.8.1.3
+([docs/api/Skin/version-5.13.10.3.8.1.3-docs.md](docs/api/Skin/version-5.13.10.3.8.1.3-docs.md); the
 in-flight 4.6.3.1.1.1.1 document and manifest moved to it, never shipped). No token or member is added,
 removed or renamed.
 
@@ -965,7 +1100,13 @@ re-vendor.
   never calls `Skin:RegisterOwner` keeps its look, and test kit revision 43's `mock_paint.lua` is
   opt-in too.
 
-Release gate (`docs/automated-tests/20261027-030736/`, re-measured at `42b04c1` after SF-44): lint pass,
+Release gate (`docs/automated-tests/20261028-120744/`, re-measured at `2224a8c` after R5-09): lint pass,
+0/0 in 223 files; tests pass, 3031 passed, 2 skipped, 0 failed; complexity pass, 0 over CCN 15. Perf SKIPPED, not
+measured.
+After R5-04: (`docs/automated-tests/20261028-015008/`, re-measured at `3974846`): lint pass,
+0/0 in 223 files; tests pass, 3030 passed, 2 skipped, 0 failed; complexity pass, 0 over CCN 15. Perf SKIPPED, not
+measured.
+After SF-44: (`docs/automated-tests/20261027-030736/`, re-measured at `42b04c1`): lint pass,
 0/0 in 223 files; tests pass, 3030 passed, 2 skipped, 0 failed; complexity pass, 0 over CCN 15. Perf SKIPPED, not
 measured.
 After SF-41: (`docs/automated-tests/20261027-015805/`, re-measured at `0920b9a`): lint pass,

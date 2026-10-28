@@ -68,3 +68,33 @@ round (2026-10-26) are in the table.
 | 08 | WoW Midnight | The buttons are not Midnight-themed. |
 | 09 | WoW Forever | — |
 | 10 | EllesmereUI | EllesmereUI painting the addon itself (skin source EllesmereUI), for comparison. |
+
+[`screenshots/2026-10-28-round5/`](screenshots/2026-10-28-round5/) holds the owner's screenshots after
+the fifth round of skin notes (LibKa0s v1.78.0 at `b2f6ec6`), which the owner called the skins looking
+great. There is one folder per addon, each cropped to the window:
+
+- [`SkinTester/`](screenshots/2026-10-28-round5/SkinTester/): the Skin Tester's showroom, every element
+  a skin paints. [`showcase.png`](screenshots/2026-10-28-round5/SkinTester/showcase.png) is all nine
+  at a glance.
+- [`LootHistory/`](screenshots/2026-10-28-round5/LootHistory/): Loot History's History tab.
+  [`showcase.png`](screenshots/2026-10-28-round5/LootHistory/showcase.png) is all nine at a glance.
+
+Each crop is `NN-<skin key>.png`, numbered in the order `SkinDefs.lua` registers the skins.
+
+## Making a new set
+
+`tools/skin_gallery.py` does the cropping and the showcase for any addon. Take one screenshot of the
+same window per skin, then, from the repository root:
+
+```sh
+python3 -P tools/skin_gallery.py --title "Ka0s Loot History" \
+    --out docs/skins/screenshots/<YYYY-MM-DD>-<topic>/LootHistory  shot1.png ... shot9.png
+```
+
+The screenshots go in `SkinDefs.lua`'s order (Ka0s Default first); or put them in one folder named
+`<skin key>.png` and pass `--dir` instead. The skins, their order and their labels are read from
+`SkinDefs.lua`, so a new or renamed skin needs no change to the script: run it again with one more
+screenshot. `--skins obsidian,glass` shoots a subset, `--no-crop` keeps screenshots already cropped,
+and `--cols` and `--tile` shape the grid. The crop finds the window's outermost straight edges, so
+leave a little of the world showing on every side; a skin with rounded corners (Glass) keeps a few
+pixels of world in its corners.
