@@ -290,6 +290,65 @@ test("skin picker: the gear opens the panel at the Skin tab by default, then clo
   assertEqual(#calls, 0)
 end)
 
+test("skin picker: in combat the gear opens nothing and the window stays up, not marked seen", function()
+  -- red under: hide() after a refused OpenOptionsPanel (onClose set pickerSeen with nothing opened).
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O = instance(lib, OWNER)
+  local own = 0
+  local f = O.SkinPicker(specFor(store, { onSettings = function() own = own + 1 end }))
+  lib.__combatLocked = true
+  f.settings:__fire("OnClick")
+  lib.__combatLocked = false
+  assertEqual(own, 0, "spec.onSettings not called in combat")
+  assertTrue(f:IsShown(), "the window stays")
+  assertNil(store.closed, "onClose did not run")
+  O.SkinPicker(specFor(store))
+  O.OpenOptionsPanel = function() return false end
+  f.settings:__fire("OnClick")
+  assertTrue(f:IsShown(), "a panel that refused to open leaves the window up")
+  assertNil(store.closed)
+end)
+
+test("skin picker: a window per owner, each refreshed only by its own owner", function()
+  -- red under: one P for the instance (the first window orphaned, its listener refreshing the second).
+  local _, Skin, lib = env()
+  local storeA = register(Skin, OWNER)
+  local storeB = register(Skin, "Other")
+  local O = instance(lib, OWNER)
+  local a = O.SkinPicker(specFor(storeA))
+  local b = O.SkinPicker(specFor(storeB, { owner = "Other" }))
+  assertTrue(a ~= b, "the other owner's own window")
+  assertFalse(a:IsShown(), "the first hidden")
+  assertEqual(storeA.closed, 1, "and closed once")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(b.dd.text:GetText(), Skin:GetSkin("ka0s").label, "the first owner's switch leaves the second alone")
+  storeB.skin = "ember"
+  Skin:SetChoice("Other", "ka0s", "ember")
+  assertEqual(b.dd.text:GetText(), Skin:GetSkin("ember").label, "its own owner's switch refreshes it")
+  storeA.skin = "obsidian"
+  assertTrue(O.SkinPicker(specFor(storeA)) == a, "the first owner's window again, reused")
+  assertFalse(b:IsShown())
+  assertEqual(a.dd.text:GetText(), Skin:GetSkin("obsidian").label, "refreshed on show")
+end)
+
+test("skin picker: a skin registered after the first show gains its row on the next", function()
+  -- red under: the rows built once per window.
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O = instance(lib, OWNER)
+  local f = O.SkinPicker(specFor(store))
+  local before = #{ f.list:GetChildren() }
+  Skin:RegisterSkin({ key = "late", label = "Late Skin", swatches = { "#112233", "#445566", "#778899" },
+                      tokens = {} })
+  O.HideSkinPicker()
+  O.SkinPicker(specFor(store))
+  local rows = { f.list:GetChildren() }
+  assertEqual(#rows, before + 1, "one row added")
+  assertEqual(rows[#rows].key, "late", "at the end")
+  assertEqual(rows[#rows].text:GetText(), "Late Skin")
+end)
+
 test("skin picker: onClose runs once per showing, by every route", function()
   local _, Skin, lib = env()
   local store = register(Skin, OWNER)

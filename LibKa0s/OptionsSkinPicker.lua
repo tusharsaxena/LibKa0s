@@ -17,7 +17,8 @@
 --   * an eye button (Media icon "eye"), only when `spec.onPreview` is a function: the host's test
 --     mode, so the player sees the skin on the addon's own frames;
 --   * a gear button (Media icon "settings"): `spec.onSettings`, by default the settings panel opened
---     at the Skin tab; then the window closes.
+--     at the Skin tab; then the window closes. Refused in combat (the panel cannot open), and the
+--     window stays up, so the first-run picker is not marked seen by a gear that opened nothing.
 -- Closing it by any route (the close control, the gear, Escape, O.HideSkinPicker) calls
 -- `spec.onClose` once, where the host records that the picker was seen.
 --
@@ -33,7 +34,9 @@
 local lib = LibStub and LibStub("LibKa0s-Options-1.0", true)
 if not lib then return end
 
--- Minor 1: O.SkinPicker, O.HideSkinPicker and lib.SKIN_PICKER_STRINGS (LibKa0s#64).
+-- Minor 1: O.SkinPicker, O.HideSkinPicker and lib.SKIN_PICKER_STRINGS (LibKa0s#64). One window per
+-- owner on an instance, each refreshed only by its own owner's looks; a skin registered after the
+-- first show gains its row on the next show; the gear in combat leaves the window up.
 local PICKER_MINOR = 1
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__pickerMinor and lib.__pickerMinor >= PICKER_MINOR
@@ -155,7 +158,8 @@ end
 --- Called by lib:New (Options minor 34), guarded. Attaches the picker's two members.
 function lib.__AttachSkinPicker(O, d)
   local defaultOwner = type(d) == "table" and type(d.addonName) == "string" and d.addonName or nil
-  local P   -- this instance's picker: { frame, spec, S, owner, Skin, Sk, rows, open, shown }
+  local P   -- the picker shown last: { frame, spec, S, owner, Skin, Sk, rows, open, shown }
+  local pickers = {}   -- every owner's picker on this instance, so a window is never orphaned
 
   --- The owner's stored choice: `spec.get` (`{ source, skin }` or two values), else the Skin major's.
   local function readChoice()
@@ -239,13 +243,17 @@ function lib.__AttachSkinPicker(O, d)
     closed()
   end
 
+  --- The gear: refused in combat with the window left up (nothing can open, and closing would mark
+  --- the picker seen); otherwise `spec.onSettings`, or the panel at the Skin tab, then the close. A
+  --- panel that refused to open (OpenOptionsPanel answering false) leaves the window up too.
   local function openSettings()
+    if O.__combatRefused and O.__combatRefused("skin picker", P.owner) then return end
     local spec = P.spec
     if type(spec.onSettings) == "function" then
       local ok, err = pcall(spec.onSettings)
       if not ok then report(err) end
     else
-      if O.OpenOptionsPanel then O.OpenOptionsPanel() end
+      if O.OpenOptionsPanel and O.OpenOptionsPanel() == false then return end
       if O.SelectTab then O.SelectTab(spec.page, spec.tab or "Appearance") end
     end
     hide()
@@ -302,13 +310,21 @@ function lib.__AttachSkinPicker(O, d)
     return row
   end
 
+  --- A row for every registered skin the list lacks: skins only append to Skin:Skins(), so one
+  --- registered after the first show gains its row at the end.
+  local function syncRows()
+    for i, def in ipairs(P.Skin:Skins()) do
+      if not P.rows[i] then P.rows[i] = makeRow(P.frame.list, i, def) end
+    end
+  end
+
   local function buildList(f)
     local list = CreateFrame("Frame", nil, f, "BackdropTemplate")
     list:SetPoint("TOPLEFT", f.dd, "BOTTOMLEFT", 0, -2)
     list:SetPoint("TOPRIGHT", f.dd, "BOTTOMRIGHT", 0, -2)
     f.list = list
     P.Sk.MenuFrame(list)
-    for i, def in ipairs(P.Skin:Skins()) do P.rows[i] = makeRow(list, i, def) end
+    syncRows()
     list:Hide()
   end
 
@@ -376,13 +392,17 @@ function lib.__AttachSkinPicker(O, d)
     f.settings:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -PAD, 10)
     f.preview = iconButton(f, "eye", P.S.PREVIEW_GLYPH, P.S.PREVIEW_TIP, preview)
     f.preview:SetPoint("RIGHT", f.settings, "LEFT", -6, 0)
-    P.Sk.OnLooksChanged(refresh)
+    -- Only this window's own owner refreshes it, and only while it is the one shown last.
+    local mine = P
+    P.Sk.OnLooksChanged(function()
+      if P == mine then refresh() end
+    end)
     if type(UISpecialFrames) == "table" then table.insert(UISpecialFrames, name) end
     return f
   end
 
-  --- Show the skin picker for `spec.owner` (default the descriptor's `addonName`), one per
-  --- instance, and answer its frame; nil without the Skin major, a client, or for an owner that
+  --- Show the skin picker for `spec.owner` (default the descriptor's `addonName`), one shown per
+  --- instance (a window per owner, the other owner's hidden first), and answer its frame; nil without the Skin major, a client, or for an owner that
   --- never registered. `spec`: get and set (the Skin tab's seams: set MUST be the owner's write
   --- seam), onPreview (the eye; absent without it), onSettings (the gear; default: the settings
   --- panel opened, then O.SelectTab(spec.page, spec.tab or "Appearance")), page, tab, onClose
@@ -390,13 +410,15 @@ function lib.__AttachSkinPicker(O, d)
   function O.SkinPicker(spec)
     spec = type(spec) == "table" and spec or {}
     local Skin = skinMajor()
-    local owner = spec.owner or (P and P.owner) or defaultOwner
+    local owner = spec.owner or defaultOwner or (P and P.owner)
     if not (Skin and type(Skin.IsOwner) == "function" and Skin:IsOwner(owner)) then return nil end
     if type(CreateFrame) ~= "function" then return nil end
-    if P and P.owner ~= owner then hide(); P = nil end
-    if not P then P = { owner = owner, rows = {}, open = false } end
+    if P and P.owner ~= owner then hide() end
+    P = pickers[owner] or { owner = owner, rows = {}, open = false }
+    pickers[owner] = P
     P.spec, P.Skin, P.Sk, P.S = spec, Skin, Skin:For(owner), mergeStrings(spec.strings)
     local f = P.frame or build()
+    syncRows()
     f.title:SetText(P.S.TITLE)
     f.dd.__tip, f.settings.__tip, f.preview.__tip = P.S.CHOOSE_TIP, P.S.SETTINGS_TIP, P.S.PREVIEW_TIP
     if type(spec.onPreview) == "function" then f.preview:Show() else f.preview:Hide() end

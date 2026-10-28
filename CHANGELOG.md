@@ -154,7 +154,8 @@ Cases in `tests/test_options_appearance.lua`.
 (LibKa0s#64, PK-01). A fourteenth file, `OptionsSkinPicker.lua`, attached by one guarded line in
 `lib:New` (Options minor 34):
 
-- `O.SkinPicker(spec)` shows a small window (about 280 wide; `HIGH`, toplevel, clamped, movable)
+- `O.SkinPicker(spec)` shows a small window (about 280 wide; `HIGH`, toplevel, clamped, movable;
+  one per owner on an instance, one shown at a time, each refreshed only by its own owner's looks)
   for the host to show the first time a profile runs, and answers its frame; nil without the Skin
   major or for an unregistered owner. Its title is "Choose a skin"; a dropdown button shows the
   skin worn now as three swatches and its name, and opens, inside the window, the list of every
@@ -163,7 +164,9 @@ Cases in `tests/test_options_appearance.lua`.
   popup) and closes the list, not the window.
 - An eye button (Media icon `eye`, "Preview: open test mode"), shown only with `spec.onPreview`;
   a gear button (Media icon `settings`, "Open the Skin settings") calls `spec.onSettings` or opens
-  the panel at the Skin tab, then closes the window. Without LibKa0s-Media-1.0 both draw glyphs.
+  the panel at the Skin tab, then closes the window; in combat the gear is refused and the window
+  stays up, unmarked. A skin registered after the first show gains its row on the next. Without
+  LibKa0s-Media-1.0 both draw glyphs.
 - Closing by any route (the close control, the gear, Escape, `O.HideSkinPicker()`) calls
   `spec.onClose` once; the host sets `skin.pickerSeen` there.
 - Painted for the owner through the Skin facade, so a skin switch repaints it live, and the

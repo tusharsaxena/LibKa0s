@@ -1769,7 +1769,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `KEYBINDS_UNCHANGED` | **K2** | `"Key bindings are not changed."`, the sentence a General page's `opts.defaultsTooltip` ends with (`options-ui-§20`). |
 | `AppearanceTab(spec)` | **A1** | The Appearance tab's entry, `{ key, label, tooltip, before, render }`: for `RenderTabbedSchema`'s `opts.tabs`, key `Appearance` (labeled "Skin" since **A3**) and `before` the Keybindings tab's key unless `spec` says otherwise, or for a host-drawn strip (`render` is the body). See [The Appearance tab](#the-appearance-tab-optionsappearancelua-minor-1). |
 | `AppearanceRows(ctx, spec, parent)` | **A1** | Draws the Appearance rows into `parent` (default the page's scroll) and returns the view, or nil when degraded. For a host-built strip's body. |
-| `SkinPicker(spec)` | **P1** | Shows the skin picker (one per instance) and answers its frame, or nil when degraded. See [The skin picker](#the-skin-picker-optionsskinpickerlua-minor-1). |
+| `SkinPicker(spec)` | **P1** | Shows the skin picker (one shown per instance, a window per owner) and answers its frame, or nil when degraded. See [The skin picker](#the-skin-picker-optionsskinpickerlua-minor-1). |
 | `HideSkinPicker()` | **P1** | Hides the picker when it is up; its `spec.onClose` runs, as for any close. |
 | `Drawer(ctx, spec)` | **D1** | A header bar (chevron, name gold while set, one-line summary) that opens a bordered box joined under it, filled by `spec.body(ctx, box)` with ordinary rows. See [The drawer](#the-drawer). |
 | `NavRail(ctx, spec)` | **N1** | The pinned nav rail, the first level of a page that edits one instance out of many (options-ui-§13): `spec = { entries = { { key, label, tooltip } }, value, onSelect, width }`, `width` 120 by default. Draw after `PageBanner`, before `TabStrip`. Records `ctx.railWidth`, which `lib.__railInset` turns into the inset the strip, the content panel and the scroll start at. Entries pooled per page, released on every call; the selected entry disabled; a click refused in combat by the library; `onSelect` pcall'd. The selection is the host's, as `SubTabStrip`'s is. Returns the entry buttons in rail order, or nil having drawn nothing (an empty list releases the rail, `railWidth` 0). |
@@ -2267,20 +2267,22 @@ the defaults, so both show it), so the player picks a skin before opening any se
 
 ### `O.SkinPicker(spec)` → frame or `nil`
 
-Shows the picker and answers its frame: one window per Options instance, built on the first call
-and kept (frames are never destroyed), so a second call while it is up re-reads `spec` and answers
-the same frame. Answers nil, drawing nothing, without `LibKa0s-Skin-1.0`, without a client
+Shows the picker and answers its frame: one window per owner on an Options instance, built on that
+owner's first call and kept (frames are never destroyed), so a second call re-reads `spec` and
+answers the same frame. One is shown at a time: a call for another owner hides (closes) the one up
+first, and each window refreshes only on its own owner's `OnLooksChanged`. A skin registered after a
+window was built gains its row, at the end, on the next call. Answers nil, drawing nothing, without `LibKa0s-Skin-1.0`, without a client
 (`CreateFrame`), or for an owner that never called `RegisterOwner`.
 
 `spec`:
 
 | Field | Meaning |
 |---|---|
-| `owner` | The skin owner; default the descriptor's `addonName`. |
+| `owner` | The skin owner; default the descriptor's `addonName` (else the owner shown last). |
 | `get` | The owner's read, as `O.AppearanceTab`'s: `{ source, skin }` or two values, under pcall; without it, or for a value that is not a source or a registered skin, `Skin:GetChoice` stands in. |
 | `set` | **MUST be the owner's write seam** (`options-ui-§1`), as `O.AppearanceTab`'s: called as `set(source, skin)` by a pick, under pcall. |
 | `onPreview` | The eye. A function: the button is shown and a click calls it (the host's test mode, so the player sees the skin on the addon's own frames); the window stays. Absent, the button is hidden. |
-| `onSettings` | The gear. A function replaces the default, which is `O.OpenOptionsPanel()` and then `O.SelectTab(spec.page, spec.tab or "Appearance")`. Either way the window then closes. |
+| `onSettings` | The gear. A function replaces the default, which is `O.OpenOptionsPanel()` and then `O.SelectTab(spec.page, spec.tab or "Appearance")`. Either way the window then closes. In combat the gear is refused (`O.__combatRefused("skin picker", owner)`): nothing is called and the window stays up, so a gear that opened nothing never runs `onClose` (where the host marks the picker seen). The default also leaves the window up when `O.OpenOptionsPanel()` answers false. |
 | `page`, `tab` | The page key and the tab key the default gear selects (`tab` defaults to `"Appearance"`, the Skin tab's key). |
 | `onClose` | Called once each time the window closes, by any route: the close control, the gear, Escape (the window's name is in `UISpecialFrames`) or `O.HideSkinPicker()`. A hide of UIParent, which leaves the window shown, is not a close. Where the host sets `skin.pickerSeen`. Under pcall. |
 | `strings` | Translations of `lib.SKIN_PICKER_STRINGS` keys, `SKIN_<key>` (a skin's name), and the reload popup's `RELOAD`, `RELOAD_ACCEPT`, `RELOAD_LATER` (default `lib.APPEARANCE_STRINGS`'). |
