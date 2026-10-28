@@ -2090,7 +2090,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (26)
+### test_options_appearance.lua (33)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2118,6 +2118,13 @@ Total.
 - appearance: SetIgnore keeps a nil half, never asks for a reload, and WriteChoice passes it on
 - appearance: copy gives every other owner this owner's scope as well as its skin
 - appearance: an instance whose owner ignores its panel still hears a skin switch
+- appearance: the Font and texture section draws two dropdowns between the skins and the scope
+- appearance: a font pick moves the Skin major first, then writes the seam's fourth argument
+- appearance: in combat a font or texture pick writes nothing and snaps back
+- appearance: sync re-reads the overrides, and the skin's own entry follows a skin switch
+- appearance: copy gives every other owner this owner's font and texture
+- appearance: without LibSharedMedia each dropdown offers only the skin's own
+- appearance: with a Skin copy before minor 6 the section is absent
 
 ### test_options_idsuggest.lua (29)
 
@@ -3570,7 +3577,7 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 26 |
+| test_options_appearance.lua | 33 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3632,4 +3639,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3098** |
+| **Total** | **3105** |

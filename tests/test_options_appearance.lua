@@ -1,7 +1,9 @@
 -- tests/test_options_appearance.lua -- LibKa0s-Options-1.0's Appearance tab (OptionsAppearance.lua
 -- minor 1, skinning-§3; LK-10 of Ka0sAddonsCommonTasks docs/2026-10-25-SKINNING): O.AppearanceTab,
 -- O.AppearanceRows and lib.APPEARANCE_STRINGS, with the Skin major's two members the tab writes
--- through (Skin minor 4: OwnerLabel and WriteChoice).
+-- through (Skin minor 4: OwnerLabel and WriteChoice). Since OptionsAppearance minor 3 (LibKa0s#63)
+-- the tab is labeled "Skin" and draws a "Font and texture" section (Skin minor 6's SetOverride),
+-- pinned at the end of this file.
 --
 -- What it pins: the tab entry (key, label, tooltip, its default place immediately before the
 -- Keybindings tab, and the overrides); the rows (the two source choices, the EllesmereUI gate's four
@@ -70,8 +72,8 @@ local function register(Skin, owner, source, skin)
   Skin:RegisterOwner(owner, {
     label = owner .. " Label",
     get = function() return { source = store.source, skin = store.skin } end,
-    set = function(src, sk, ig)
-      store.source, store.skin, store.writes, store.ignore = src, sk, store.writes + 1, ig
+    set = function(src, sk, ig, media)
+      store.source, store.skin, store.writes, store.ignore, store.media = src, sk, store.writes + 1, ig, media
     end,
   })
   return store
@@ -98,11 +100,12 @@ end
 local function specFor(store, extra)
   local spec = {
     get = function() return { source = store.source, skin = store.skin } end,
-    set = function(src, sk, ig)
+    set = function(src, sk, ig, media)
       store.seamCalls = (store.seamCalls or 0) + 1
       if src ~= nil then store.source = src end
       if sk ~= nil then store.skin = sk end
       if ig ~= nil then store.ignore = ig end
+      if media ~= nil then store.media = media end
     end,
   }
   for k, v in pairs(extra or {}) do spec[k] = v end
@@ -171,8 +174,8 @@ test("appearance: AppearanceTab's defaults", function()
   local _, _, lib = env()
   local O = page(lib, OWNER)
   local tab = O.AppearanceTab({})
-  assertEqual(tab.key, "Appearance")
-  assertEqual(tab.label, "Appearance")
+  assertEqual(tab.key, "Appearance", "the key stays Appearance (hosts name it in before and a stored tab)")
+  assertEqual(tab.label, "Skin", "labeled Skin since OptionsAppearance minor 3")
   assertEqual(tab.tooltip, lib.APPEARANCE_STRINGS.TAB_TIP)
   assertEqual(tab.before, "Keybindings", "immediately before the Keybindings tab (skinning-§3)")
   assertEqual(type(tab.render), "function")
@@ -187,7 +190,7 @@ test("appearance: spec.key, spec.before and spec.strings override", function()
   assertEqual(tab.tooltip, "T")
   assertEqual(tab.before, "Keys")
   assertNil(O.AppearanceTab({ before = false }).before, "before = false puts it last")
-  assertEqual(lib.APPEARANCE_STRINGS.TAB_LABEL, "Appearance", "the library's words are not written through")
+  assertEqual(lib.APPEARANCE_STRINGS.TAB_LABEL, "Skin", "the library's words are not written through")
 end)
 
 test("appearance: RenderTabbedSchema puts it immediately before Keybindings, and its render draws rows",
@@ -573,7 +576,8 @@ test("appearance: copy gives every other owner this owner's scope as well as its
   local O, ctx = page(lib, OWNER)
   local view = O.AppearanceRows(ctx, specFor(store))
   view.copy:__fire("OnClick")
-  assertTrue(m.popups[1].dialog.text:find("skin source, skin and scope", 1, true) ~= nil, "says scope")
+  assertTrue(m.popups[1].dialog.text:find("skin source, skin, scope, font and texture", 1, true) ~= nil,
+    "says scope, font and texture")
   m.popups[1].dialog.OnAccept(nil, m.popups[1].data)
   local panel, fonts = Skin:GetIgnore(OTHER)
   assertEqual(panel, false); assertEqual(fonts, true, "the other owner ignores fonts now")
@@ -590,4 +594,147 @@ test("appearance: an instance whose owner ignores its panel still hears a skin s
   local O = page(lib, OWNER)
   assertNil(O.__chromeSkin(), "nothing to paint with")
   assertTrue(#Skin.owners[OWNER].listeners > 0, "the listener is installed all the same")
+end)
+
+-- ── Font and texture (OptionsAppearance minor 3, LibKa0s-Skin-1.0 minor 6) ───────────────────
+
+local MEDIA_LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["font:Arial Narrow"] = "Fonts\\ARIALN.ttf",
+                    ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat", ["statusbar:Blizzard"] = "Interface\\Bar" }
+
+--- A client whose LibSharedMedia also lists its keys (the fixture's fake fetches only).
+local function mediaEnv()
+  local m, Skin, lib = env({ lsm = MEDIA_LSM })
+  local LSM = m.LibStub("LibSharedMedia-3.0")
+  LSM.List = function(_, kind)
+    local out = {}
+    for k in pairs(MEDIA_LSM) do
+      local kk, key = k:match("^(%w+):(.+)$")
+      if kk == kind then out[#out + 1] = key end
+    end
+    return out
+  end
+  return m, Skin, lib
+end
+
+test("appearance: the Font and texture section draws two dropdowns between the skins and the scope", function()
+  local _, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  local S = lib.APPEARANCE_STRINGS
+  assertTrue(hasText(ctx, S.MEDIA_HEADING), "its own heading")
+  local font, texture = view.media.font, view.media.texture
+  assertEqual(font.labelText, "Font"); assertEqual(texture.labelText, "Texture")
+  assertEqual(font.order[1], "@skin", "the skin's own entry first")
+  assertEqual(font.list["@skin"], "Skin's own (Friz Quadrata TT)", "naming Ka0s Default's face")
+  assertEqual(texture.list["@skin"], "Skin's own (Blizzard)")
+  assertEqual(table.concat(font.order, "|"), "@skin|Arial Narrow|Ka0s Inter", "then LSM's font keys, sorted")
+  assertEqual(table.concat(texture.order, "|"), "@skin|Blizzard|Ka0s Flat", "and its statusbar keys")
+  assertEqual(font.value, "@skin", "no override: the skin's own")
+  assertEqual(texture.value, "@skin")
+  local all = flatten(ctx.scroll)
+  local lastSkin = indexOf(all, view.skins[view.order[#view.order]])
+  assertTrue(lastSkin < indexOf(all, font) and indexOf(all, font) < indexOf(all, texture)
+    and indexOf(all, texture) < indexOf(all, view.ignore.panel), "after the skins, side by side, before the scope")
+end)
+
+test("appearance: a font pick moves the Skin major first, then writes the seam's fourth argument", function()
+  local m, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  local frame = F.window(m)
+  frame.title:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
+  Skin:For(OWNER).Shell(frame)
+  local O, ctx = page(lib, OWNER)
+  local spec = specFor(store)
+  local seam, seen = spec.set, nil
+  spec.set = function(...)
+    seen = { override = (Skin:GetOverride(OWNER)), n = select("#", ...), ... }
+    seam(...)
+  end
+  local view = O.AppearanceRows(ctx, spec)
+  view.media.font:__fire("OnValueChanged", "Ka0s Inter")
+  assertEqual(seen.override, "Ka0s Inter", "SetOverride ran before the owner's write seam")
+  assertNil(seen[1]); assertNil(seen[2]); assertNil(seen[3], "no source, skin or scope")
+  assertEqual(store.media.font, "Ka0s Inter")
+  assertEqual(store.media.texture, false, "the other half as it was: the skin's own")
+  assertEqual(store.seamCalls, 1)
+  assertEqual((frame.title:GetFont()), "Fonts\\Inter.ttf", "the title repainted with the override, live")
+  assertEqual(view.media.font.value, "Ka0s Inter")
+  view.media.texture:__fire("OnValueChanged", "Ka0s Flat")
+  assertEqual(select(2, Skin:GetOverride(OWNER)), "Ka0s Flat")
+  assertEqual(store.media.font, "Ka0s Inter", "both halves on every write")
+  view.media.font:__fire("OnValueChanged", "@skin")
+  assertNil((Skin:GetOverride(OWNER)), "the skin's own entry clears it")
+  assertEqual(store.media.font, false)
+  assertEqual(view.media.font.value, "@skin")
+  assertEqual(select(2, Skin:GetChoice(OWNER)), "ka0s", "the skin untouched")
+end)
+
+test("appearance: in combat a font or texture pick writes nothing and snaps back", function()
+  local _, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  lib.__combatLocked = true
+  view.media.font:__fire("OnValueChanged", "Ka0s Inter")
+  view.media.texture:__fire("OnValueChanged", "Ka0s Flat")
+  local font, texture = Skin:GetOverride(OWNER)
+  assertNil(font); assertNil(texture, "the Skin major did not move")
+  assertNil(store.seamCalls, "the seam was not called")
+  assertEqual(view.media.font.value, "@skin", "the refused pick snaps back")
+  lib.__combatLocked = false
+  view.media.font:__fire("OnValueChanged", "Ka0s Inter")
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Inter", "out of combat it lands")
+end)
+
+test("appearance: sync re-reads the overrides, and the skin's own entry follows a skin switch", function()
+  local _, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  ctx.refreshers = {}
+  local view = O.AppearanceRows(ctx, specFor(store))
+  Skin:SetOverride(OWNER, nil, "Ka0s Flat")
+  view.skins.obsidian:__fire("OnValueChanged", true)
+  assertEqual(view.media.texture.value, "Ka0s Flat", "the override set elsewhere is read back")
+  assertEqual(view.media.font.list["@skin"], "Skin's own (" .. Skin:ResolveSkin("obsidian")["font.body"] .. ")",
+    "the first entry names the skin worn now")
+  Skin:SetOverride(OWNER, nil, false)
+  for _, fn in ipairs(ctx.refreshers) do fn() end
+  assertEqual(view.media.texture.value, "@skin", "the refresher re-reads it too")
+end)
+
+test("appearance: copy gives every other owner this owner's font and texture", function()
+  local m, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER, "ka0s", "ember")
+  local other = register(Skin, OTHER)
+  Skin:SetOverride(OWNER, "Ka0s Inter", nil)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  view.copy:__fire("OnClick")
+  m.popups[1].dialog.OnAccept(nil, m.popups[1].data)
+  local font, texture = Skin:GetOverride(OTHER)
+  assertEqual(font, "Ka0s Inter", "the other owner wears the font now")
+  assertNil(texture, "and the skin's own texture")
+  assertEqual(other.media.font, "Ka0s Inter", "its profile is written through WriteChoice's media")
+  assertEqual(other.media.texture, false)
+  assertEqual(other.skin, "ember")
+end)
+
+test("appearance: without LibSharedMedia each dropdown offers only the skin's own", function()
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  assertEqual(table.concat(view.media.font.order, "|"), "@skin")
+  assertEqual(table.concat(view.media.texture.order, "|"), "@skin")
+end)
+
+test("appearance: with a Skin copy before minor 6 the section is absent", function()
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  Skin.SetOverride, Skin.GetOverride = nil, nil
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  assertNil(view.media.font, "no dropdowns")
+  assertFalse(hasText(ctx, lib.APPEARANCE_STRINGS.MEDIA_HEADING), "no heading")
 end)

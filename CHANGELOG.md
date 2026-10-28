@@ -21,7 +21,8 @@ open work is settled at finalize.
 Versions in this release: **Toast minor 1** (the new major `LibKa0s-Toast-1.0`, key **1**) and
 **DebugLogDiagnostics minor 5** (`LibKa0s-DebugLog-1.0` key **22.5.1.1**), and, from
 `feat/2026-10-28-skin-overrides-picker` (LibKa0s#63 and #64), **Skin minor 6** and **SkinPaintExtras minor 4**
-(`LibKa0s-Skin-1.0` key **6.13.10.4.8.1.3**) and **test kit revision 44**; every other file still at
+(`LibKa0s-Skin-1.0` key **6.13.10.4.8.1.3**), **OptionsAppearance minor 3** (`LibKa0s-Options-1.0`
+key **33.3.35.4.6.10.3.12.8.3.2.5.3**) and **test kit revision 44**; every other file still at
 its v1.78.0 minor until an entry below moves one. Now **nineteen
 majors across fifty-two files**: one major and one file added (`Toast.lua`), and no `NEEDS_*` floor
 rises.
@@ -108,6 +109,26 @@ falls back to `SetColorTexture(r, g, b, a)`, today's flat look, and a StatusBar 
 nil color keeps the target's current color. Recorded, so a skin switch or an override change
 re-applies it. Cases in `tests/test_skin_override.lua`, and the primitive joins
 `tests/test_skin_paint_controls.lua`'s idempotence and repaint sweeps.
+
+### OptionsAppearance minor 3: the Skin tab's font and texture
+
+`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.8.3.2.5.3, documented in
+[docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.3-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.3-docs.md)
+(LibKa0s#63, SO-03):
+
+- The tab is labeled **"Skin"** (`TAB_LABEL`); its key stays `"Appearance"`, which hosts name in
+  `before` and in a stored active tab. `TAB_TIP` names the font and bar texture.
+- A **"Font and texture"** section between the skins and the scope: two AceGUI `Dropdown`s side by
+  side, *Font* and *Texture*, listing LibSharedMedia-3.0's `font` and `statusbar` keys sorted, led by
+  "Skin's own (<the skin's key>)" (the value `"@skin"`). A pick is refused in combat, calls
+  `Skin:SetOverride` first (the live repaint), then `spec.set(nil, nil, nil, { font, texture })`;
+  `sync` re-reads `Skin:GetOverride`. Without LibSharedMedia each lists the skin's own entry alone.
+- *Copy to every Ka0s addon…* carries the overrides (`SetOverride` and `WriteChoice`'s `media`), and
+  `COPY_TIP` / `COPY_CONFIRM` say "skin source, skin, scope, font and texture".
+- `lib.APPEARANCE_STRINGS` gains `MEDIA_HEADING`, `FONT`, `FONT_TIP`, `TEXTURE`, `TEXTURE_TIP` and
+  `SKIN_OWN`. No instance member is added.
+
+Cases in `tests/test_options_appearance.lua`.
 
 ### Test kit revision 44: the paint recorder's StatusBar family
 
