@@ -460,7 +460,7 @@ Total.
 - toast: a close mark Core cannot build (no frame) leaves the toast without one
 - toast: two instances keep separate queues and frames
 
-### test_media.lua (37)
+### test_media.lua (38)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -491,13 +491,14 @@ Total.
 - media: an LSM without the locale bits gets a plain Register
 - media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
-- media: FONTS carries the fourteen skin faces beside JetBrains Mono
+- media: FONTS carries the fourteen skin faces beside JetBrains Mono and Ka0s Default's Oxanium
 - media: each face names its own locales, and only a face with Cyrillic reaches ruRU
 - media: every OFL face ships with its license text beside it
 - media: RegisterLSM('X') registers 'Ka0s Inter' under X's own libs folder, each face with its mask
 - media: a ruRU client keeps every Cyrillic face and is refused the western-only ones
 - media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
 - media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
+- media: every statusbar, Ka0s Default's bar among them, is a 256x32 32-bit TGA
 - media: RegisterLSM registers the Glass border and background, and counts them
 
 ### test_skin.lua (27)
@@ -530,7 +531,7 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
-### test_skin_override.lua (15)
+### test_skin_override.lua (21)
 
 - skin override: an unregistered owner has none and cannot set one
 - skin override: a font and a texture reach every token read, and nothing else moves
@@ -541,14 +542,20 @@ Total.
 - skin override: one owner's override never reaches another owner
 - skin override: SetOverride while a reload is pending stores the pair and repaints nothing
 - skin override: WriteChoice hands media to the setter as its fourth argument, normalized
+- skin override: FROM_SKIN stored as an override means the skin's own
+- skin override: a key LibSharedMedia lacks leaves the skin's own, until a pack registers it
+- skin override: __BaseTokens is the owner's table without its overrides, EllesmereUI's when it paints
 - skin override: BarTexture puts the owner's bar texture on a Texture, tinted
 - skin override: BarTexture follows a texture override and its clearing, live
 - skin override: with no texture resolved BarTexture is the flat look
 - skin override: BarTexture on a StatusBar sets its bar texture and color
 - skin override: a nil color keeps the target's current color across repaints
+- skin override: a repaint keeps a host's recolor made between paints, nil color or not
+- skin override: a flat bar keeps its tint through a texture and back
+- skin override: a texture Untrack handed back starts from its own color
 - skin override: BarTexture leaves a frame that is neither a Texture nor a StatusBar alone
 
-### test_skin_defs.lua (27)
+### test_skin_defs.lua (28)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -572,6 +579,7 @@ Total.
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
 - skin defs: every font and border a skin names is shipped or an LSM default
 - skin defs: every skin draws one family of its own, for body and titles alike
+- skin defs: Ka0s Default's Oxanium and its own bar stay its own; every other skin keeps Friz and Blizzard
 - skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's
 - skin defs: a hovered row is told apart from a selected one
 - skin defs: WoW Default's checkbox art is its only box
@@ -2090,7 +2098,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (33)
+### test_options_appearance.lua (34)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2125,8 +2133,9 @@ Total.
 - appearance: copy gives every other owner this owner's font and texture
 - appearance: without LibSharedMedia each dropdown offers only the skin's own
 - appearance: with a Skin copy before minor 6 the section is absent
+- appearance: a stored key LibSharedMedia lacks stays listed, and the skin's own names the worn face
 
-### test_options_skin_picker.lua (13)
+### test_options_skin_picker.lua (16)
 
 - skin picker: OptionsSkinPicker is minor 1, paired on the shell, and attaches two members
 - skin picker: shows one small HIGH, toplevel, clamped window naming the skin worn now
@@ -2137,6 +2146,9 @@ Total.
 - skin picker: in combat a pick writes nothing
 - skin picker: the eye shows only with onPreview, and calls it
 - skin picker: the gear opens the panel at the Skin tab by default, then closes
+- skin picker: in combat the gear opens nothing and the window stays up, not marked seen
+- skin picker: a window per owner, each refreshed only by its own owner
+- skin picker: a skin registered after the first show gains its row on the next
 - skin picker: onClose runs once per showing, by every route
 - skin picker: the icons come from LibKa0s-Media-1.0, and are glyphs without it
 - skin picker: spec.strings translates the title, the tips and a skin's name
@@ -3539,10 +3551,10 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
-| test_media.lua | 37 |
+| test_media.lua | 38 |
 | test_skin.lua | 27 |
-| test_skin_override.lua | 15 |
-| test_skin_defs.lua | 27 |
+| test_skin_override.lua | 21 |
+| test_skin_defs.lua | 28 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
@@ -3593,8 +3605,8 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 33 |
-| test_options_skin_picker.lua | 13 |
+| test_options_appearance.lua | 34 |
+| test_options_skin_picker.lua | 16 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3656,4 +3668,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3118** |
+| **Total** | **3130** |

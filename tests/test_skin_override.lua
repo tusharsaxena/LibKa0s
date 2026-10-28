@@ -20,8 +20,11 @@ local test, assertEqual, assertTrue, assertFalse, assertNil =
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER, OTHER = "LootHistory", "BankLedger"
+-- Ka0s Default's bar texture (SkinDefs minor 14), where Media.RegisterLSM would put it for OWNER.
+local KA0S_BAR = "Interface\\AddOns\\LootHistory\\libs\\LibKa0s\\media\\textures\\ka0s-default"
 local LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf",
               ["statusbar:Blizzard"] = "Interface\\TargetingFrame\\UI-StatusBar",
+              ["statusbar:Ka0s Default"] = KA0S_BAR,
               ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat" }
 
 --- Register `owner` with a store its setter writes; answers the store.
@@ -60,8 +63,8 @@ test("skin override: a font and a texture reach every token read, and nothing el
   assertEqual(Skin:Token(OWNER, "font.mono"), base["font.mono"], "the mono face stays the skin's")
   assertEqual(Skin:Token(OWNER, "font.bodySize"), base["font.bodySize"], "sizes stay the skin's")
   assertEqual(F.rgba({ Skin:Color(OWNER, "win.bg") }), F.rgba(base["win.bg"]), "colors stay the skin's")
-  assertEqual(base["font.body"], "Friz Quadrata TT", "ResolveSkin is override-free")
-  assertEqual(Skin:ResolveSkin("ka0s")["bar.texture"], "Blizzard", "and keeps the skin's texture")
+  assertEqual(base["font.body"], "Ka0s Oxanium SemiBold", "ResolveSkin is override-free")
+  assertEqual(Skin:ResolveSkin("ka0s")["bar.texture"], "Ka0s Default", "and keeps the skin's texture")
   assertTrue(Skin:__Tokens(OWNER) == Skin:__Tokens(OWNER), "the derived table is cached")
   local bar = S.BarStyle()
   assertEqual(bar.textureKey, "Ka0s Flat"); assertEqual(bar.texture, "Interface\\Ka0s\\Flat")
@@ -139,8 +142,8 @@ test("skin override: one owner's override never reaches another owner", function
   local fired = 0
   Skin:OnLooksChanged(OTHER, function() fired = fired + 1 end)
   Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
-  assertEqual(Skin:Token(OTHER, "font.body"), "Friz Quadrata TT", "the other owner reads its skin's face")
-  assertEqual(Skin:Token(OTHER, "bar.texture"), "Blizzard")
+  assertEqual(Skin:Token(OTHER, "font.body"), "Ka0s Oxanium SemiBold", "the other owner reads its skin's face")
+  assertEqual(Skin:Token(OTHER, "bar.texture"), "Ka0s Default")
   assertNil((Skin:GetOverride(OTHER)))
   assertEqual((fs:GetFont()), "Fonts\\FRIZQT__.TTF", "its string was not repainted")
   assertEqual(fired, 0, "its listener did not fire")
@@ -183,7 +186,7 @@ test("skin override: FROM_SKIN stored as an override means the skin's own", func
   register(Skin, OWNER)
   assertFalse(Skin:SetOverride(OWNER, Skin.FROM_SKIN, Skin.FROM_SKIN), "no override, so no change")
   assertNil((Skin:GetOverride(OWNER)))
-  assertEqual(Skin:Token(OWNER, "font.body"), "Friz Quadrata TT")
+  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Oxanium SemiBold")
   Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
   assertTrue(Skin:SetOverride(OWNER, Skin.FROM_SKIN, nil), "FROM_SKIN clears a set override")
   assertNil((Skin:GetOverride(OWNER)))
@@ -210,8 +213,8 @@ end
 
 test("skin override: a key LibSharedMedia lacks leaves the skin's own, until a pack registers it", function()
   -- red under: withOverrides laying any string over the tokens (the stock font and the flat bar).
-  local media = { ["font:Friz Quadrata TT"] = "Fonts\\FRIZQT__.TTF",
-                  ["statusbar:Blizzard"] = "Interface\\TargetingFrame\\UI-StatusBar" }
+  local media = { ["font:Ka0s Oxanium SemiBold"] = "Fonts\\Oxanium-SemiBold.ttf",
+                  ["statusbar:Ka0s Default"] = KA0S_BAR }
   local m, Skin = F.env({ lsm = {} })
   local L = lateLSM(m, media)
   register(Skin, OWNER)
@@ -226,10 +229,10 @@ test("skin override: a key LibSharedMedia lacks leaves the skin's own, until a p
   assertTrue(Skin:SetOverride(OWNER, "Gone Font", "Gone Bar"), "stored")
   local font, texture = Skin:GetOverride(OWNER)
   assertEqual(font, "Gone Font"); assertEqual(texture, "Gone Bar", "GetOverride answers the stored keys")
-  assertEqual(Skin:Token(OWNER, "font.body"), "Friz Quadrata TT", "the skin's own face stands")
-  assertEqual(Skin:Token(OWNER, "bar.texture"), "Blizzard", "and its own texture")
-  assertEqual(fs:GetFontObject().font[1], "Fonts\\FRIZQT__.TTF", "the string wears the skin's face, not stock")
-  assertEqual(m.__paint(tex).texture, "Interface\\TargetingFrame\\UI-StatusBar", "the bar is not flat")
+  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Oxanium SemiBold", "the skin's own face stands")
+  assertEqual(Skin:Token(OWNER, "bar.texture"), "Ka0s Default", "and its own texture")
+  assertEqual(fs:GetFontObject().font[1], "Fonts\\Oxanium-SemiBold.ttf", "the string wears the skin's face, not stock")
+  assertEqual(m.__paint(tex).texture, KA0S_BAR, "the bar is not flat")
   fired = 0
   L:Register("statusbar", "Unrelated", "Interface\\X")
   assertEqual(fired, 0, "a key no override names repaints nothing")
@@ -264,7 +267,7 @@ test("skin override: BarTexture puts the owner's bar texture on a Texture, tinte
   local tex = m.CreateFrame("Frame"):CreateTexture()
   S.BarTexture(tex, 0.2, 0.4, 0.6, 0.8)
   local s = m.__paint(tex)
-  assertEqual(s.texture, "Interface\\TargetingFrame\\UI-StatusBar", "Ka0s Default's Blizzard bar, through LSM")
+  assertEqual(s.texture, KA0S_BAR, "Ka0s Default's own bar, through LSM")
   assertEqual(F.rgba(s.vertex), "0.200,0.400,0.600,0.800", "tinted")
   assertTrue(Skin.painted[tex] ~= nil, "recorded")
 end)
@@ -279,11 +282,11 @@ test("skin override: BarTexture follows a texture override and its clearing, liv
   assertEqual(m.__paint(tex).texture, "Interface\\Ka0s\\Flat", "the override, on the repaint")
   assertEqual(F.rgba(m.__paint(tex).vertex), "1,0,0,1", "the same tint")
   Skin:SetOverride(OWNER, nil, false)
-  assertEqual(m.__paint(tex).texture, "Interface\\TargetingFrame\\UI-StatusBar", "the skin's own again")
+  assertEqual(m.__paint(tex).texture, KA0S_BAR, "the skin's own again")
 end)
 
 test("skin override: with no texture resolved BarTexture is the flat look", function()
-  local m, Skin = F.env()   -- no LibSharedMedia: "Blizzard" resolves to nothing
+  local m, Skin = F.env()   -- no LibSharedMedia: "Ka0s Default" resolves to nothing
   register(Skin, OWNER)
   local tex = m.CreateFrame("Frame"):CreateTexture()
   tex:SetVertexColor(0.5, 0.5, 0.5)
@@ -301,7 +304,7 @@ test("skin override: BarTexture on a StatusBar sets its bar texture and color", 
   local bar = m.CreateFrame("StatusBar", nil, m.UIParent)
   S.BarTexture(bar, 0, 1, 0, 0.5)
   local s = m.__paint(bar)
-  assertEqual(s.statusBarTexture, "Interface\\TargetingFrame\\UI-StatusBar")
+  assertEqual(s.statusBarTexture, KA0S_BAR)
   assertEqual(F.rgba(s.statusBarColor), "0,1,0,0.500")
   Skin:SetOverride(OWNER, nil, "Ka0s Flat")
   assertEqual(m.__paint(bar).statusBarTexture, "Interface\\Ka0s\\Flat", "repainted with the override")
@@ -354,7 +357,7 @@ end)
 
 test("skin override: a flat bar keeps its tint through a texture and back", function()
   local m, Skin = F.env({ lsm = { ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat" } })
-  register(Skin, OWNER)   -- Ka0s Default's "Blizzard" is not in this LSM: flat
+  register(Skin, OWNER)   -- Ka0s Default's "Ka0s Default" bar is not in this LSM: flat
   local S = Skin:For(OWNER)
   local tex = m.CreateFrame("Frame"):CreateTexture()
   S.BarTexture(tex, 0.2, 0.4, 0.6, 1)

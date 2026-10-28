@@ -20,8 +20,9 @@ open work is settled at finalize.
 
 Versions in this release: **Toast minor 1** (the new major `LibKa0s-Toast-1.0`, key **1**) and
 **DebugLogDiagnostics minor 5** (`LibKa0s-DebugLog-1.0` key **22.5.1.1**), and, from
-`feat/2026-10-28-skin-overrides-picker` (LibKa0s#63 and #64), **Skin minor 6** and **SkinPaintExtras minor 4**
-(`LibKa0s-Skin-1.0` key **6.13.10.4.8.1.3**), **Options minor 34**, **OptionsAppearance minor 3** and
+`feat/2026-10-28-skin-overrides-picker` (LibKa0s#63 and #64), **Skin minor 6**, **SkinPaintExtras minor 4**
+and **SkinDefs minor 14** (`LibKa0s-Skin-1.0` key **6.14.10.4.8.1.3**), **Media minor 9**
+(`LibKa0s-Media-1.0` key **9.1**, `MediaIcons` 1 unchanged), **Options minor 34**, **OptionsAppearance minor 3** and
 **OptionsSkinPicker minor 1** (`LibKa0s-Options-1.0` key **34.3.35.4.6.10.3.12.8.3.2.5.3.1**, a
 fourteenth file) and **test kit revision 44**; every other file still at its v1.78.0 minor until an
 entry below moves one. Now **nineteen majors across fifty-three files**: one major and one file
@@ -82,8 +83,8 @@ without the major prints the same header as before. No member change.
 
 ### Skin minor 6: an owner's font and texture overrides
 
-`LibKa0s-Skin-1.0` key 6.13.10.3.8.1.3 (6.13.10.4.8.1.3 since SkinPaintExtras minor 4, below;
-[docs/api/Skin/version-6.13.10.4.8.1.3-docs.md](docs/api/Skin/version-6.13.10.4.8.1.3-docs.md))
+`LibKa0s-Skin-1.0` key 6.13.10.3.8.1.3 (6.14.10.4.8.1.3 since SkinPaintExtras minor 4 and SkinDefs
+minor 14, below; [docs/api/Skin/version-6.14.10.4.8.1.3-docs.md](docs/api/Skin/version-6.14.10.4.8.1.3-docs.md))
 (LibKa0s#63; SO-01 of Ka0sAddonsCommonTasks `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`). Each
 owner can now replace its skin's font and its bar texture, the way most WoW addons offer "Font" and
 "Texture":
@@ -111,8 +112,8 @@ New suite: `tests/test_skin_override.lua`.
 
 ### SkinPaintExtras minor 4: S.BarTexture
 
-`LibKa0s-Skin-1.0` key 6.13.10.4.8.1.3, documented in
-[docs/api/Skin/version-6.13.10.4.8.1.3-docs.md](docs/api/Skin/version-6.13.10.4.8.1.3-docs.md)
+`LibKa0s-Skin-1.0` key 6.13.10.4.8.1.3 (6.14.10.4.8.1.3 since SkinDefs minor 14, below), documented in
+[docs/api/Skin/version-6.14.10.4.8.1.3-docs.md](docs/api/Skin/version-6.14.10.4.8.1.3-docs.md)
 (LibKa0s#63, SO-02). `VOCAB` gains `BarTexture`, so every facade carries the trampoline.
 `S.BarTexture(target, r, g, b, a)` puts the owner's bar texture (`bar.texture`, its texture override
 when it sets one) on a bar of data: `SetTexture` and `SetVertexColor` on a Texture,
@@ -177,6 +178,34 @@ Cases in `tests/test_options_appearance.lua`.
 Every Options degradation stub gains `SkinPicker` and `HideSkinPicker`; a host that shows the
 picker declares the icons `eye` and `settings`. New suite: `tests/test_options_skin_picker.lua`.
 
+### Media minor 9 and SkinDefs minor 14: Ka0s Default's Oxanium face and its own bar
+
+`LibKa0s-Media-1.0` key 9.1, documented in
+[docs/api/Media/version-9.1-docs.md](docs/api/Media/version-9.1-docs.md), and `LibKa0s-Skin-1.0`
+key 6.14.10.4.8.1.3, documented in
+[docs/api/Skin/version-6.14.10.4.8.1.3-docs.md](docs/api/Skin/version-6.14.10.4.8.1.3-docs.md).
+The owner's choice (2026-10-28): Ka0s Default draws a face and a bar texture of its own.
+
+- **Media minor 9.** `FONTS` gains `Ka0s Oxanium SemiBold` (`Oxanium-SemiBold.ttf`) and
+  `Ka0s Oxanium Bold` (`Oxanium-Bold.ttf`), both western only and both under
+  `Oxanium-OFL.txt` (SIL OFL 1.1), chosen as the free face nearest the owner's first pick. They
+  are static instances cut by `tools/artwork/fonts.py` from google/fonts' variable
+  `Oxanium[wght].ttf` at wght 600 and 700, pinned by commit, and the license file records the
+  instancing. `TEXTURES` gains `Ka0s Default` (`ka0s-default.tga`), drawn by
+  `tools/artwork/bar_textures.py` like the other seven on the same 256×32 RLE 32-bit canvas: dim at
+  the top, a highlight low on the bar and a short lip. `RegisterLSM` now counts seventeen fonts and
+  eight bars.
+- **SkinDefs minor 14.** Ka0s Default's `font.body` and `hud.font` are `Ka0s Oxanium SemiBold`,
+  its `font.title` is `Ka0s Oxanium Bold` and its `bar.texture` is `Ka0s Default` (Friz Quadrata TT
+  and `Blizzard` until now). Every other skin derives from Ka0s Default, so a new `KEEP` table in
+  `translate()` gives each skin that sets none of those four tokens its earlier inherited values,
+  Friz Quadrata TT and `Blizzard`: no other skin changes. No member change.
+
+Cases in `tests/test_media.lua` (the counts, the Oxanium entries, their OFL license and its
+instancing note, their western-only mask, and every statusbar's TGA header) and
+`tests/test_skin_defs.lua` (every other skin keeps Friz and the Blizzard bar);
+`tests/test_skin.lua`, `tests/test_skin_override.lua`, `tests/test_skin_paint.lua` and
+`tests/test_options_appearance.lua` follow Ka0s Default's new face and bar.
 ### Test kit revision 44: the paint recorder's StatusBar family
 
 Documented in [docs/api/testkit/version-44-docs.md](docs/api/testkit/version-44-docs.md). Under

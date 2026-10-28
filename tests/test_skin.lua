@@ -124,9 +124,10 @@ end)
 
 test("skin: Ka0s Default sets every token, faces and sizes included", function()
   -- SkinDefs minor 8, the owner's ruling (2026-10-26): Ka0s Default leaves nothing to the client.
-  -- Every schema token carries a value or `false` (the explicit "none"); its faces are Friz
-  -- Quadrata, set rather than inherited from the client's font objects, and its sizes the reference
-  -- every skin scales against. red under: a Ka0s Default token left nil.
+  -- Every schema token carries a value or `false` (the explicit "none"); its faces are Oxanium,
+  -- SemiBold for body and HUD and Bold for titles (SkinDefs minor 14, the owner's choice), set rather than inherited from the client's
+  -- font objects, and its sizes the reference every skin scales against. red under: a Ka0s Default
+  -- token left nil.
   local Skin = T.mocks.LibStub(MAJOR)
   local own = Skin.skins.ka0s.tokens
   local missing = {}
@@ -135,8 +136,13 @@ test("skin: Ka0s Default sets every token, faces and sizes included", function()
   end
   assertEqual(#missing, 0, "Ka0s Default leaves these to the client: " .. table.concat(missing, ", "))
   local tokens = Skin:ResolveSkin("ka0s")
-  assertEqual(tokens["font.body"], "Friz Quadrata TT", "the body face, set")
-  assertEqual(tokens["font.title"], "Friz Quadrata TT", "the title face, set")
+  assertEqual(tokens["font.body"], "Ka0s Oxanium SemiBold", "the body face, set")
+  assertEqual(tokens["font.title"], "Ka0s Oxanium Bold", "the title face, set")
+  assertEqual(tokens["hud.font"], "Ka0s Oxanium SemiBold", "the HUD face, set")
+  assertEqual(tokens["bar.texture"], "Ka0s Default", "the bar texture, set")
+  local wow = Skin:ResolveSkin("wow")
+  assertEqual(wow["font.body"], "Friz Quadrata TT", "WoW Default keeps the client's face")
+  assertEqual(wow["font.title"], "Friz Quadrata TT", "and for its titles")
   assertEqual(tokens["font.bodySize"], 12, "the body reference")
   assertEqual(tokens["font.titleSize"], 14, "the title reference")
   sameColor(tokens["q.epic"], { 0.64, 0.21, 0.93, 1 }, "the client's epic purple, written out")
@@ -613,9 +619,9 @@ test("skin: Resolve answers the skin's value for the sentinel or a fromSkin comp
   local _, Skin = env()
   redSkin(Skin)
   local S = Skin:RegisterOwner("A")
-  assertEqual(S.Resolve("bar.texture", "@skin"), "Blizzard", "the sentinel resolves")
+  assertEqual(S.Resolve("bar.texture", "@skin"), "Ka0s Default", "the sentinel resolves")
   assertEqual(S.Resolve("bar.texture", "Smooth"), "Smooth", "a real value passes through")
-  assertEqual(S.Resolve("bar.texture", "Smooth", true), "Blizzard", "the companion wins")
+  assertEqual(S.Resolve("bar.texture", "Smooth", true), "Ka0s Default", "the companion wins")
   assertEqual(S.Resolve("bar.texture", nil, false), nil, "nil stays nil")
   Skin:SetChoice("A", nil, "red")
   assertEqual(S.Resolve("bar.gloss", Skin.FROM_SKIN), true, "follows the owner's skin")

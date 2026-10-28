@@ -20,6 +20,7 @@ WHY THIS IS A PROGRAM AND NOT SEVEN CHECKED-IN BINARIES:
 WHAT IT WRITES:
 
     gradient.tga    a statusbar fill: opaque, a vertical gradient, white at the top
+    ka0s-default    Ka0s Default's bar: opaque, dim at the top, a highlight low down, a short lip
     underline-1     transparent but for a 2px band at the BOTTOM edge
     underline-2     the same band at 2x height (4px)
     underline-4     the same band at 4x height (8px)
@@ -94,6 +95,44 @@ def gradient():
 
 
 # ---------------------------------------------------------------------------
+# ka0s-default.tga -- Ka0s Default's bar
+# ---------------------------------------------------------------------------
+
+# The owner asked for a bar in the manner of the "Melli Dark" statusbar common in SharedMedia packs,
+# drawn here rather than shipped, because that file's author is not recorded. What it shares with
+# that look is the idea, not a pixel: dark at the top, a broad rise into a highlight low on the bar,
+# and a short lip below the highlight, so the bar reads as a lit rounded edge under a dim face. Every
+# value is ours.
+#
+# DARK BY DESIGN, unlike `gradient`: this is the bar Ka0s Default draws its data in, and its dim top
+# is what gives the bar depth under a saturated tint. The highlight stops short of white so a bright
+# series color does not blow out on the lit edge.
+DEF_TOP = 0.47        # the dim top edge
+DEF_PEAK = 0.81       # the highlight
+DEF_PEAK_AT = 0.85    # where the highlight sits, as a fraction of the height from the top
+DEF_BOTTOM = 0.60     # the lip's floor, at the bottom edge
+
+
+def ka0s_default():
+    """Ka0s Default's bar: opaque, dim at the top, a highlight low on the bar, a short lip."""
+    t = np.linspace(0.0, 1.0, HEIGHT, dtype=np.float64)
+    rise = np.clip(t / DEF_PEAK_AT, 0.0, 1.0)
+    # A sine ease into the highlight: it leaves the top slowly and arrives without a crease.
+    level = DEF_TOP + (DEF_PEAK - DEF_TOP) * np.sin(rise * np.pi / 2.0)
+    # Below the highlight the lip falls on a quadratic, steepest at the very edge.
+    lip = np.clip((t - DEF_PEAK_AT) / (1.0 - DEF_PEAK_AT), 0.0, 1.0)
+    level = level - (DEF_PEAK - DEF_BOTTOM) * lip ** 2
+    column = np.clip(np.rint(level * 255.0), 0, 255).astype(np.uint8)
+
+    a = np.zeros((HEIGHT, WIDTH, 4), dtype=np.uint8)
+    a[..., 0] = column[:, None]
+    a[..., 1] = column[:, None]
+    a[..., 2] = column[:, None]
+    a[..., 3] = 255
+    return a
+
+
+# ---------------------------------------------------------------------------
 # The underlines
 # ---------------------------------------------------------------------------
 
@@ -133,7 +172,7 @@ def write(name, array):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    written = [("gradient", gradient())]
+    written = [("gradient", gradient()), ("ka0s-default", ka0s_default())]
     for step in STEPS:
         rows = UNIT * step
         written.append(("underline-%d" % step, line(rows, at_top=False)))

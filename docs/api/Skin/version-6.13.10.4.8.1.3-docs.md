@@ -9,10 +9,10 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` minor **6** · `SkinDefs.lua` minor **13** · `SkinPaint.lua` minor **10** · `SkinPaintExtras.lua` minor **4** · `SkinPaintControls.lua` minor **8** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
-| Shipped in | v1.79.0 (unreleased, opened 2026-10-28) |
-| Status | **Current** |
+| Shipped in | unreleased (superseded before v1.79.0) |
+| Status | Superseded |
 | Supersedes | [version 5.13.10.3.8.1.3](./version-5.13.10.3.8.1.3-docs.md) (shipped in v1.78.0) — the same surface without an owner's font and texture overrides (`GetOverride`, `SetOverride`, `WriteChoice`'s `media`) and the `BarTexture` primitive |
-| Superseded by | — |
+| Superseded by | [version 6.14.10.4.8.1.3](./version-6.14.10.4.8.1.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 6, SkinDefs = 13, SkinPaint = 10, SkinPaintExtras = 4, SkinPaintControls = 8, SkinEUI = 1, SkinAce = 3 }` |
 
@@ -1366,3 +1366,13 @@ token resolves to nil, and every primitive paints only what it has a token for (
 `SkinAce.lua` (which needs `SkinPaint.lua`'s helpers from the same copy) no AceGUI row is painted and
 no Options instance's `O.AceGUI` is wrapped. The engine's state is written `lib.x = lib.x or {}`, so a newer copy that wins
 the LibStub race later keeps every owner, record and facade; the resolve cache alone is rebuilt.
+
+## Moving to version 6.14.10.4.8.1.3
+
+**Take it; no member moves.** SkinDefs minor 14 changes Ka0s Default's values only: its
+`font.body` and `hud.font` become `Ka0s Oxanium SemiBold`, its `font.title` `Ka0s Oxanium Bold` and
+its `bar.texture` `Ka0s Default` (all shipped by `LibKa0s-Media-1.0` minor 9), and the `KEEP` table in
+`translate()` gives every other skin that sets none of those four tokens Friz Quadrata TT and the
+`Blizzard` bar, the values it inherited here. A host whose saved HUD default names
+`"Friz Quadrata TT"` or `"Blizzard"` keeps it; one that follows the skin (`FROM_SKIN`) on Ka0s
+Default draws the new face and bar. See [version 6.14.10.4.8.1.3](./version-6.14.10.4.8.1.3-docs.md).

@@ -160,6 +160,23 @@ FAMILIES = [
         "ship": ["AtkinsonHyperlegible-Regular.ttf", "AtkinsonHyperlegible-Bold.ttf"],
         "instances": [],
     },
+    {
+        # Ka0s Default's face (2026-10-28): a squared techno sans, the free stand-in for the
+        # personal-use-only Prototype the owner first chose. SemiBold for body and HUD text, which is
+        # Prototype's weight; Bold for titles.
+        "dir": "oxanium", "family": "Oxanium",
+        "sha": "8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5",
+        "files": {
+            "Oxanium[wght].ttf": "2ce01d946e1e1ffc8d7eecfffbda8623bedd63eaf811a20488c4b69af45babb0",
+            "OFL.txt": "fe17c0f2581d71b4e1ea7e636e7f4877c29223e11bb1dd1a871e8c3f2a86336b",
+        },
+        "license": "Oxanium-OFL.txt",
+        "ship": [],
+        "instances": [
+            ("Oxanium[wght].ttf", "Oxanium-SemiBold.ttf", {"wght": 600}, "SemiBold"),
+            ("Oxanium[wght].ttf", "Oxanium-Bold.ttf", {"wght": 700}, "Bold"),
+        ],
+    },
 ]
 
 NOTE = (

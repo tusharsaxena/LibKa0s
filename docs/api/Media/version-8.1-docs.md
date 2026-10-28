@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **8** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.78.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 5.1](./version-5.1-docs.md) — one face (JetBrains Mono) under one global mask, statusbars only |
-| Superseded by | — |
+| Superseded by | [version 9.1](./version-9.1-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 8, MediaIcons = 1 }` |
 
 ## What changed at this version
@@ -457,3 +457,11 @@ The consumer-side gate compares the vendored payload against the tag byte for by
 and normalized line endings on everything, which is right for Lua and wrong for a TGA. **Kit revision
 11 or newer is required** to vendor a payload with `media/` in it — see
 [`../testkit/version-11-docs.md`](../testkit/version-11-docs.md).
+
+## Moving to version 9.1
+
+**Take it; nothing moves.** Version 9.1 is additive: every name and path here resolves the same and
+no signature changes. What arrives: `Ka0s Oxanium SemiBold` and `Ka0s Oxanium Bold` in `FONTS`
+(Ka0s Default's faces, western only, SIL OFL 1.1 in `Oxanium-OFL.txt`) and `Ka0s Default` in
+`TEXTURES` (Ka0s Default's generated bar texture), so `RegisterLSM` counts seventeen fonts and eight
+bars. See [version 9.1](./version-9.1-docs.md).
