@@ -17,7 +17,7 @@
 -- never repaints the other's frames.
 --
 --   lib.skins[key]       the registered skin definitions (SkinDefs.lua registers them)
---   lib.owners[owner]    { label, get, set, source, skin, pendingReload, listeners }
+--   lib.owners[owner]    { label, get, set, source, skin, font, texture, pendingReload, listeners }
 --   lib.painted[frame]   weak-keyed: { owner, seq, calls = { [prim] = args }, order = { prim, ... } }
 --   lib.byOwner[owner]   weak-keyed set of that owner's painted frames
 --   lib.facades[owner]   the owner's facade S, one table kept across minors
@@ -65,7 +65,11 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 5: each owner's two exceptions, the Appearance tab's "Ignore settings panel" and "Ignore
 -- fonts" (the owner's request, 2026-10-27): GetIgnore, SetIgnore, WriteChoice's third argument, and
 -- the two questions the paint paths ask (__PanelSkinned, __FontsIgnored).
-local MAJOR, MINOR = "LibKa0s-Skin-1.0", 5
+-- Minor 6: each owner's font and texture override, the Appearance tab's "Font and texture" section
+-- (LibKa0s#63): GetOverride, SetOverride, WriteChoice's fourth argument `media`, and `__Tokens`
+-- laying the overrides over the skin's table (font.body, font.title and hud.font; bar.texture).
+-- ResolveSkin stays override-free: a picker reads another skin's own tokens through it.
+local MAJOR, MINOR = "LibKa0s-Skin-1.0", 6
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -109,6 +113,9 @@ lib.__paintSeq = lib.__paintSeq or 0
 -- The resolved token tables, one per skin key. A cache, rebuilt on demand: emptied here so a newer
 -- minor's resolution rules apply, and by RegisterSkin because a skin derives from Ka0s Default.
 lib.__resolved = {}
+-- Each owner's token table with its overrides over it, `{ base, font, texture, t }`. A cache like
+-- `__resolved`, emptied on load so a newer minor's override rules apply.
+lib.__overTok = {}
 
 local SOURCE_OK = { ka0s = true, eui = true }
 
@@ -222,6 +229,12 @@ local function cleanSkin(skin)
   return lib.DEFAULT
 end
 
+--- An override's stored form: a non-empty string key, else nil ("the skin's own").
+local function mediaKey(v)
+  if type(v) == "string" and v ~= "" then return v end
+  return nil
+end
+
 local function fnOr(v, old)
   if type(v) == "function" then return v end
   return old
@@ -235,8 +248,9 @@ local function takeHooks(o, opts, owner)
 end
 
 --- Register `owner` (the addon folder name) at the consumer's file load. `opts.get()` answers the
---- profile's `{ source, skin }`; `opts.set(source, skin, ignore)` writes it (copy to every Ka0s
---- addon; `ignore` since minor 5, `{ panel, fonts }` or nil, see WriteChoice);
+--- profile's `{ source, skin }`; `opts.set(source, skin, ignore, media)` writes it (copy to every
+--- Ka0s addon; `ignore` since minor 5, `{ panel, fonts }` or nil, and `media` since minor 6,
+--- `{ font, texture }` or nil, see WriteChoice);
 --- `opts.label` names the addon to the player; `opts.log(line)`, optional, takes the one line the
 --- EllesmereUI provider writes when it refuses or stops (SkinEUI.lua). The choice is read once,
 --- here; afterwards it moves only through `SetChoice`. A second call updates the hooks and keeps the
@@ -284,15 +298,20 @@ end
 --- pcall: the write of the Appearance tab's copy to every Ka0s addon, which reaches each addon only
 --- through its own write seam. `ignore` (minor 5), optional, is `{ panel = bool, fonts = bool }`
 --- and reaches the setter as its third argument; a setter written before minor 5 ignores it. Never
---- moves the applied choice (SetChoice and SetIgnore do). Answers true when a setter ran and did not
---- raise; false for an unregistered owner, one with no setter, or a raise (handed to the client's
---- error handler).
-function lib:WriteChoice(owner, source, skin, ignore)
+--- moves the applied choice (SetChoice and SetIgnore do). `media` (minor 6), optional, is
+--- `{ font = key|false, texture = key|false }` and reaches the setter as its fourth argument, each
+--- half an LSM key or false for "the skin's own"; a setter written before minor 6 ignores it, and
+--- it never moves the applied overrides (SetOverride does). Answers true when a setter ran and did
+--- not raise; false for an unregistered owner, one with no setter, or a raise (handed to the
+--- client's error handler).
+function lib:WriteChoice(owner, source, skin, ignore, media)
   local o = self.owners[owner]
   if not o or type(o.set) ~= "function" then return false end
   if type(ignore) == "table" then ignore = { panel = ignore.panel == true, fonts = ignore.fonts == true }
   else ignore = nil end
-  local ok, err = pcall(o.set, cleanSource(source), cleanSkin(skin), ignore)
+  if type(media) == "table" then media = { font = mediaKey(media.font) or false, texture = mediaKey(media.texture) or false }
+  else media = nil end
+  local ok, err = pcall(o.set, cleanSource(source), cleanSkin(skin), ignore, media)
   if not ok then report(err); return false end
   return true
 end
@@ -442,6 +461,43 @@ function lib:__FontsIgnored(owner)
   return o ~= nil and o.ignoreFonts == true
 end
 
+-- ── the owner's font and texture ─────────────────────────────────────────────────────────────
+
+--- The owner's overrides: font, texture, each an LSM key (a `font` and a `statusbar` key), or nil
+--- for "the skin's own". nil, nil for an unregistered owner.
+function lib:GetOverride(owner)
+  local o = self.owners[owner]
+  if not o then return nil, nil end
+  return o.font, o.texture
+end
+
+--- One half of SetOverride: nil keeps `old`, false or "" clears it, a string key sets it.
+local function nextOverride(v, old)
+  if v == nil then return old end
+  return mediaKey(v)
+end
+
+--- Set `owner`'s font and texture overrides (the Appearance tab's "Font and texture"); nil keeps
+--- that half, false or "" clears it. Idempotent. A font override replaces `font.body`,
+--- `font.title` and `hud.font` (`font.mono` and every size stay the skin's); a texture override
+--- replaces `bar.texture`. "Ignore fonts" wins over a font override: P.font gives every string its
+--- own face either way. Never writes the host's profile (WriteChoice's fourth argument does). A
+--- change repaints every frame recorded for the owner and fires its OnLooksChanged listeners,
+--- unless a reload is pending. Answers changed.
+function lib:SetOverride(owner, font, texture)
+  requireOwner(owner, "SetOverride")
+  local o = self.owners[owner]
+  if not o then return false end
+  font, texture = nextOverride(font, o.font), nextOverride(texture, o.texture)
+  if font == o.font and texture == o.texture then return false end
+  o.font, o.texture = font, texture
+  if not o.pendingReload then
+    self:Repaint(owner)
+    notify(o)
+  end
+  return true
+end
+
 --- Call `fn(source, skin)` after each change of the owner's skin. Registering the same function
 --- twice keeps one entry. Answers fn.
 function lib:OnLooksChanged(owner, fn)
@@ -454,16 +510,35 @@ end
 
 -- ── tokens ───────────────────────────────────────────────────────────────────────────────────
 
+--- `base` with `owner`'s overrides over it (minor 6): `base` itself when the owner sets none, so
+--- Ka0s Default reads unchanged, else a derived copy cached on (base, font, texture).
+local function withOverrides(owner, base)
+  local o = lib.owners[owner]
+  local font, texture = o and o.font, o and o.texture
+  if not font and not texture then return base end
+  local c = lib.__overTok[owner]
+  if c and c.base == base and c.font == font and c.texture == texture then return c.t end
+  local t = {}
+  overlay(t, base)
+  if font then t["font.body"], t["font.title"], t["hud.font"] = font, font, font end
+  if texture then t["bar.texture"] = texture end
+  lib.__overTok[owner] = { base = base, font = font, texture = texture, t = t }
+  return t
+end
+
 --- The owner's complete token table: its skin resolved (`ResolveSkin`), or, while EllesmereUI paints
---- the owner, the table SkinEUI.lua derives from EllesmereUI's accent, panel color and font. Shared:
---- never write to it. An unregistered owner reads Ka0s Default. Internal (SkinPaint.lua's P.T and
---- `Token` read it); a host reads tokens through `Token` and `Color`.
+--- the owner, the table SkinEUI.lua derives from EllesmereUI's accent, panel color and font; with
+--- the owner's font and texture overrides over either (minor 6). Shared: never write to it. An
+--- unregistered owner reads Ka0s Default. Internal (SkinPaint.lua's P.T and `Token` read it); a host
+--- reads tokens through `Token` and `Color`.
 function lib:__Tokens(owner)
   local hook = self.__euiTokens
   local t = type(hook) == "function" and hook(owner) or nil
-  if t then return t end
-  local _, skin = self:GetChoice(owner)
-  return self:ResolveSkin(skin)
+  if not t then
+    local _, skin = self:GetChoice(owner)
+    t = self:ResolveSkin(skin)
+  end
+  return withOverrides(owner, t)
 end
 
 --- The owner's resolved token `name` (from `__Tokens`): a color is `{ r, g, b, a }`, shared, never

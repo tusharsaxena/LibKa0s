@@ -19,7 +19,9 @@ still in flight on another branch): the alert-toast shell approved in
 open work is settled at finalize.
 
 Versions in this release: **Toast minor 1** (the new major `LibKa0s-Toast-1.0`, key **1**) and
-**DebugLogDiagnostics minor 5** (`LibKa0s-DebugLog-1.0` key **22.5.1.1**); every other file still at
+**DebugLogDiagnostics minor 5** (`LibKa0s-DebugLog-1.0` key **22.5.1.1**), and, from
+`feat/2026-10-28-skin-overrides-picker` (LibKa0s#63 and #64), **Skin minor 6**
+(`LibKa0s-Skin-1.0` key **6.13.10.3.8.1.3**); every other file still at
 its v1.78.0 minor, and **test kit revision 43**, until an entry below moves one. Now **nineteen
 majors across fifty-two files**: one major and one file added (`Toast.lua`), and no `NEEDS_*` floor
 rises.
@@ -69,6 +71,30 @@ Ka0s DPS Race are the intended two ([docs/api/CONSUMERS.md](docs/api/CONSUMERS.m
 [docs/api/DebugLog/version-22.5.1.1-docs.md](docs/api/DebugLog/version-22.5.1.1-docs.md). The
 report's `LibKa0s running:` line lists `Toast` after `Glow`, in `tests/majors.lua` order; a client
 without the major prints the same header as before. No member change.
+
+### Skin minor 6: an owner's font and texture overrides
+
+`LibKa0s-Skin-1.0` key 6.13.10.3.8.1.3, documented in
+[docs/api/Skin/version-6.13.10.3.8.1.3-docs.md](docs/api/Skin/version-6.13.10.3.8.1.3-docs.md)
+(LibKa0s#63; SO-01 of Ka0sAddonsCommonTasks `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`). Each
+owner can now replace its skin's font and its bar texture, the way most WoW addons offer "Font" and
+"Texture":
+
+- `Skin:GetOverride(owner)` answers `font, texture`, LSM keys or nil for the skin's own;
+  `Skin:SetOverride(owner, font, texture)` sets them (nil keeps a half, `false` or `""` clears it),
+  idempotent, and a change repaints the owner's frames and fires its `OnLooksChanged` listeners
+  unless a reload is pending. Answers `changed`.
+- The overrides apply where tokens resolve: `__Tokens` lays them over the owner's skin (or the
+  EllesmereUI-derived table), so every primitive and every `S.Token` read sees them with no
+  per-primitive change. A font override replaces `font.body`, `font.title` and `hud.font`;
+  `font.mono` and every size stay the skin's. A texture override replaces `bar.texture`. An owner
+  with neither reads the resolved table itself, so Ka0s Default is unchanged.
+- `ResolveSkin` stays override-free, so a skin picker reads every skin's own faces.
+- *Ignore fonts* wins over a font override: the strings keep their own face and the override is kept.
+- `WriteChoice(owner, source, skin, ignore, media)`: `media`, `{ font = key|false, texture =
+  key|false }`, reaches the host's setter as its fourth argument; an older setter ignores it.
+
+New suite: `tests/test_skin_override.lua`.
 
 ## v1.78.0 — 2026-10-25
 

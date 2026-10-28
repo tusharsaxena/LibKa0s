@@ -530,6 +530,18 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
+### test_skin_override.lua (9)
+
+- skin override: an unregistered owner has none and cannot set one
+- skin override: a font and a texture reach every token read, and nothing else moves
+- skin override: the override follows a skin switch, over the new skin's table
+- skin override: nil keeps a half, false and the empty string clear it, a repeat changes nothing
+- skin override: a painted string takes the override's face on the repaint, and the skin's back on a clear
+- skin override: Ignore fonts wins over a font override
+- skin override: one owner's override never reaches another owner
+- skin override: SetOverride while a reload is pending stores the pair and repaints nothing
+- skin override: WriteChoice hands media to the setter as its fourth argument, normalized
+
 ### test_skin_defs.lua (27)
 
 - skin defs: the nine skins register in order with their labels
@@ -3498,6 +3510,7 @@ Total.
 | test_toast.lua | 50 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
+| test_skin_override.lua | 9 |
 | test_skin_defs.lua | 27 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
@@ -3611,4 +3624,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3081** |
+| **Total** | **3090** |
