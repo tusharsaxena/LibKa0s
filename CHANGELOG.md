@@ -21,9 +21,15 @@ open work is settled at finalize.
 Versions in this release: **Toast minor 1** (the new major `LibKa0s-Toast-1.0`, key **1**) and
 **DebugLogDiagnostics minor 5** (`LibKa0s-DebugLog-1.0` key **22.5.1.1**), and, from
 `feat/2026-10-28-skin-overrides-picker` (LibKa0s#63 and #64), **Skin minor 6** and **SkinPaintExtras minor 4**
-(`LibKa0s-Skin-1.0` key **6.13.10.4.8.1.3**), **OptionsAppearance minor 3** (`LibKa0s-Options-1.0`
-key **33.3.35.4.6.10.3.12.8.3.2.5.3**) and **test kit revision 44**; every other file still at
-its v1.78.0 minor until an entry below moves one. Now **nineteen
+(`LibKa0s-Skin-1.0` key **6.13.10.4.8.1.3**), **Options minor 34**, **OptionsAppearance minor 3** and
+**OptionsSkinPicker minor 1** (`LibKa0s-Options-1.0` key **34.3.35.4.6.10.3.12.8.3.2.5.3.1**, a
+fourteenth file) and **test kit revision 44**; every other file still at its v1.78.0 minor until an
+entry below moves one. Now **nineteen majors across fifty-three files**.
+
+**Pending standard change, before the tag** (the skin picker): frame-layering-§6's library-owned
+tiers gain the row `LibKa0s-Options-1.0` skin picker | `HIGH` | inherited | toplevel / clamped, and
+library-stack-§7's module table is recounted to fifty-three files. Held until this branch merges,
+as the Toast change is. Now **nineteen
 majors across fifty-two files**: one major and one file added (`Toast.lua`), and no `NEEDS_*` floor
 rises.
 
@@ -112,8 +118,8 @@ re-applies it. Cases in `tests/test_skin_override.lua`, and the primitive joins
 
 ### OptionsAppearance minor 3: the Skin tab's font and texture
 
-`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.8.3.2.5.3, documented in
-[docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.3-docs.md](docs/api/Options/version-33.3.35.4.6.10.3.12.8.3.2.5.3-docs.md)
+`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.8.3.2.5.3 (34.3.35.4.6.10.3.12.8.3.2.5.3.1 since Options
+minor 34, below; [docs/api/Options/version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.md))
 (LibKa0s#63, SO-03):
 
 - The tab is labeled **"Skin"** (`TAB_LABEL`); its key stays `"Appearance"`, which hosts name in
@@ -129,6 +135,32 @@ re-applies it. Cases in `tests/test_skin_override.lua`, and the primitive joins
   `SKIN_OWN`. No instance member is added.
 
 Cases in `tests/test_options_appearance.lua`.
+
+### Options minor 34 and OptionsSkinPicker minor 1: the skin picker
+
+`LibKa0s-Options-1.0` key 34.3.35.4.6.10.3.12.8.3.2.5.3.1, documented in
+[docs/api/Options/version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.md)
+(LibKa0s#64, PK-01). A fourteenth file, `OptionsSkinPicker.lua`, attached by one guarded line in
+`lib:New` (Options minor 34):
+
+- `O.SkinPicker(spec)` shows a small window (about 280 wide; `HIGH`, toplevel, clamped, movable)
+  for the host to show the first time a profile runs, and answers its frame; nil without the Skin
+  major or for an unregistered owner. Its title is "Choose a skin"; a dropdown button shows the
+  skin worn now as three swatches and its name, and opens, inside the window, the list of every
+  skin, each row three swatches and the skin's name in that skin's own body face and size. A pick
+  applies the skin as the Skin tab's does (combat refusal, `SetChoice`, `spec.set`, the one reload
+  popup) and closes the list, not the window.
+- An eye button (Media icon `eye`, "Preview: open test mode"), shown only with `spec.onPreview`;
+  a gear button (Media icon `settings`, "Open the Skin settings") calls `spec.onSettings` or opens
+  the panel at the Skin tab, then closes the window. Without LibKa0s-Media-1.0 both draw glyphs.
+- Closing by any route (the close control, the gear, Escape, `O.HideSkinPicker()`) calls
+  `spec.onClose` once; the host sets `skin.pickerSeen` there.
+- Painted for the owner through the Skin facade, so a skin switch repaints it live, and the
+  dropdown follows `OnLooksChanged`. Words in `lib.SKIN_PICKER_STRINGS`, overridable by
+  `spec.strings`.
+
+Every Options degradation stub gains `SkinPicker` and `HideSkinPicker`; a host that shows the
+picker declares the icons `eye` and `settings`. New suite: `tests/test_options_skin_picker.lua`.
 
 ### Test kit revision 44: the paint recorder's StatusBar family
 

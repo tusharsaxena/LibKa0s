@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 33.3.35.4.6.10.3.12.8.3.2.5.3
+# `LibKa0s-Options-1.0` — version 34.3.35.4.6.10.3.12.8.3.2.5.3.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,19 +8,19 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **33** · `OptionsRegistry.lua` **3** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **12** · `OptionsScroll.lua` **8** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** · `OptionsAppearance.lua` **3** |
-| Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>`, in load order — the same thirteen numbers `lib.MODULES` reports. |
+| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **3** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **12** · `OptionsScroll.lua` **8** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** · `OptionsAppearance.lua` **3** · `OptionsSkinPicker.lua` **1** |
+| Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>`, in load order — the same fourteen numbers `lib.MODULES` reports. |
 | Shipped in | v1.79.0 (unreleased, opened 2026-10-28) |
 | Status | **Current** |
-| Supersedes | [version 33.3.35.4.6.10.3.12.8.3.2.5.2](./version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md) (shipped in v1.78.0) — whose Appearance tab was labeled "Appearance" and had no font or texture override |
+| Supersedes | [version 33.3.35.4.6.10.3.12.8.3.2.5.2](./version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md) (shipped in v1.78.0) — whose Appearance tab was labeled "Appearance" and had no font or texture override, and which had no skin picker |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 33, OptionsRegistry = 3, OptionsWidgets = 35, OptionsIds = 4, OptionsIdList = 6, OptionsTabs = 10, OptionsCombat = 3, OptionsCompose = 12, OptionsScroll = 6, OptionsNav = 3, OptionsDrawer = 2, OptionsKeybinds = 5, OptionsAppearance = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 3, OptionsWidgets = 35, OptionsIds = 4, OptionsIdList = 6, OptionsTabs = 10, OptionsCombat = 3, OptionsCompose = 12, OptionsScroll = 6, OptionsNav = 3, OptionsDrawer = 2, OptionsKeybinds = 5, OptionsAppearance = 3, OptionsSkinPicker = 1 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
-for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `O32` for `Options.lua` minor 32, `O33` for `Options.lua` minor 33, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
+for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `O32` for `Options.lua` minor 32, `O33` for `Options.lua` minor 33, `O34` for `Options.lua` minor 34, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
 minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `W35` for `OptionsWidgets.lua` minor 35, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `T10` for `OptionsTabs.lua` minor 10, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `C9` for `OptionsCompose.lua` minor 9, `C10` for `OptionsCompose.lua` minor 10, `C11` for `OptionsCompose.lua` minor 11, `C12` for `OptionsCompose.lua` minor 12, `S1` for
-`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `S5` for `OptionsScroll.lua` minor 5, `S6` for `OptionsScroll.lua` minor 6, `N1` for `OptionsNav.lua` minor 1, `N3` for `OptionsNav.lua` minor 3, `D1` for `OptionsDrawer.lua` minor 1, `D2` for `OptionsDrawer.lua` minor 2, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `K4` for `OptionsKeybinds.lua` minor 4, `K5` for `OptionsKeybinds.lua` minor 5, `A1` for `OptionsAppearance.lua` minor 1, `A3` for `OptionsAppearance.lua` minor 3, `I1` for
+`OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `S5` for `OptionsScroll.lua` minor 5, `S6` for `OptionsScroll.lua` minor 6, `N1` for `OptionsNav.lua` minor 1, `N3` for `OptionsNav.lua` minor 3, `D1` for `OptionsDrawer.lua` minor 1, `D2` for `OptionsDrawer.lua` minor 2, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `K4` for `OptionsKeybinds.lua` minor 4, `K5` for `OptionsKeybinds.lua` minor 5, `A1` for `OptionsAppearance.lua` minor 1, `A3` for `OptionsAppearance.lua` minor 3, `P1` for `OptionsSkinPicker.lua` minor 1, `I1` for
 `OptionsIds.lua` minor 1, `I3` for `OptionsIds.lua` minor 3, `I4` for `OptionsIds.lua` minor 4, `OC2` for `OptionsCombat.lua` minor 2, `OC3` for `OptionsCombat.lua` minor 3, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4, `L6` for `OptionsIdList.lua` minor 6. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
@@ -40,9 +40,17 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-One file moves: `OptionsAppearance.lua` 2 -> **3** (LibKa0s#63; SO-03 of Ka0sAddonsCommonTasks
-`docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`), with `LibKa0s-Skin-1.0` minor 6's `GetOverride`,
-`SetOverride` and `WriteChoice`'s `media`, read at call time:
+Two files move and a fourteenth arrives: `Options.lua` 33 -> **34**, `OptionsAppearance.lua` 2 ->
+**3**, and `OptionsSkinPicker.lua` at **1** (LibKa0s#63 and #64; SO-03 and PK-01 of
+Ka0sAddonsCommonTasks `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`).
+
+**The skin picker** (O34, P1): `O.SkinPicker(spec)` and `O.HideSkinPicker()`, a small window a host
+shows the first time a profile runs so the player picks a skin before opening any settings. See
+[The skin picker](#the-skin-picker-optionsskinpickerlua-minor-1). `Options.lua` 34 adds one guarded
+attach line (`lib.__AttachSkinPicker(O, d)`) and no member of its own.
+
+**The Skin tab** (A3), with `LibKa0s-Skin-1.0` minor 6's `GetOverride`, `SetOverride` and
+`WriteChoice`'s `media`, read at call time:
 
 - **The tab is labeled "Skin"** (`TAB_LABEL`); its key stays `"Appearance"`, because hosts name the
   key in `before` and in a stored active tab, and renaming it would move every one of them for no
@@ -53,8 +61,14 @@ One file moves: `OptionsAppearance.lua` 2 -> **3** (LibKa0s#63; SO-03 of Ka0sAdd
 - **The copy carries them**: *Copy to every Ka0s addon…* gives each other owner this owner's font
   and texture as well, and `COPY_TIP` / `COPY_CONFIRM` say so.
 
-No instance member is added and none changes its signature; `lib.APPEARANCE_STRINGS` gains
+The tab adds no instance member and changes no signature; `lib.APPEARANCE_STRINGS` gains
 `MEDIA_HEADING`, `FONT`, `FONT_TIP`, `TEXTURE`, `TEXTURE_TIP` and `SKIN_OWN`.
+
+**What a consumer owes.** Every Options degradation stub gains `SkinPicker` and `HideSkinPicker`
+(`Kit.assertSurfaceParity` compares the stub with the live instance), for instance
+`SkinPicker = function() return nil end, HideSkinPicker = function() end`. A host that shows the
+picker declares the Media icons `eye` and `settings` in its `LibKa0s icons:` line, or the buttons
+draw their text glyphs.
 
 ## What changed at version 33.3.35.4.6.10.3.12.8.3.2.5.2
 
@@ -1755,6 +1769,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `KEYBINDS_UNCHANGED` | **K2** | `"Key bindings are not changed."`, the sentence a General page's `opts.defaultsTooltip` ends with (`options-ui-§20`). |
 | `AppearanceTab(spec)` | **A1** | The Appearance tab's entry, `{ key, label, tooltip, before, render }`: for `RenderTabbedSchema`'s `opts.tabs`, key `Appearance` (labeled "Skin" since **A3**) and `before` the Keybindings tab's key unless `spec` says otherwise, or for a host-drawn strip (`render` is the body). See [The Appearance tab](#the-appearance-tab-optionsappearancelua-minor-1). |
 | `AppearanceRows(ctx, spec, parent)` | **A1** | Draws the Appearance rows into `parent` (default the page's scroll) and returns the view, or nil when degraded. For a host-built strip's body. |
+| `SkinPicker(spec)` | **P1** | Shows the skin picker (one per instance) and answers its frame, or nil when degraded. See [The skin picker](#the-skin-picker-optionsskinpickerlua-minor-1). |
+| `HideSkinPicker()` | **P1** | Hides the picker when it is up; its `spec.onClose` runs, as for any close. |
 | `Drawer(ctx, spec)` | **D1** | A header bar (chevron, name gold while set, one-line summary) that opens a bordered box joined under it, filled by `spec.body(ctx, box)` with ordinary rows. See [The drawer](#the-drawer). |
 | `NavRail(ctx, spec)` | **N1** | The pinned nav rail, the first level of a page that edits one instance out of many (options-ui-§13): `spec = { entries = { { key, label, tooltip } }, value, onSelect, width }`, `width` 120 by default. Draw after `PageBanner`, before `TabStrip`. Records `ctx.railWidth`, which `lib.__railInset` turns into the inset the strip, the content panel and the scroll start at. Entries pooled per page, released on every call; the selected entry disabled; a click refused in combat by the library; `onSelect` pcall'd. The selection is the host's, as `SubTabStrip`'s is. Returns the entry buttons in rail order, or nil having drawn nothing (an empty list releases the rail, `railWidth` 0). |
 | `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip, action }`; `action = { text, tooltip, onClick }` (**T4**) draws a `Button` in the band's right half for the picker+create band, pcall'd, refused in combat, and Released like the dropdown. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). From **T4** the previous render's dropdown is Released to AceGUI once the new one exists, rather than hidden and kept. **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing, and the action's `Button` as a second value when there is one. |
@@ -2239,6 +2255,94 @@ capture, conflict, combat and settings-window cases to this library's suite (`te
 
 Cases: `tests/test_options_keybinds.lua` (on `tests/fixture_keybinds.lua`'s bench, which fails a
 case on any touch of Blizzard's settings window), and `tests/test_kit_bindings.lua` for the driver.
+
+## The skin picker (OptionsSkinPicker.lua, minor 1)
+
+New at `OptionsSkinPicker.lua` minor 1, a fourteenth file paired on the shell's minor
+(`lib.__pickerMinor` / `lib.__pickerShellMinor`) and attached by `Options.lua` minor 34
+(`lib.__AttachSkinPicker(O, d)`, guarded). LibKa0s#64: a small window a host shows the first time a
+profile runs (its `skin.pickerSeen` key is false: a new profile and a reset profile both start from
+the defaults, so both show it), so the player picks a skin before opening any settings. It reads
+`LibKa0s-Skin-1.0`, `LibKa0s-Core-1.0` and `LibKa0s-Media-1.0` at call time, never as a floor.
+
+### `O.SkinPicker(spec)` → frame or `nil`
+
+Shows the picker and answers its frame: one window per Options instance, built on the first call
+and kept (frames are never destroyed), so a second call while it is up re-reads `spec` and answers
+the same frame. Answers nil, drawing nothing, without `LibKa0s-Skin-1.0`, without a client
+(`CreateFrame`), or for an owner that never called `RegisterOwner`.
+
+`spec`:
+
+| Field | Meaning |
+|---|---|
+| `owner` | The skin owner; default the descriptor's `addonName`. |
+| `get` | The owner's read, as `O.AppearanceTab`'s: `{ source, skin }` or two values, under pcall; without it, or for a value that is not a source or a registered skin, `Skin:GetChoice` stands in. |
+| `set` | **MUST be the owner's write seam** (`options-ui-§1`), as `O.AppearanceTab`'s: called as `set(source, skin)` by a pick, under pcall. |
+| `onPreview` | The eye. A function: the button is shown and a click calls it (the host's test mode, so the player sees the skin on the addon's own frames); the window stays. Absent, the button is hidden. |
+| `onSettings` | The gear. A function replaces the default, which is `O.OpenOptionsPanel()` and then `O.SelectTab(spec.page, spec.tab or "Appearance")`. Either way the window then closes. |
+| `page`, `tab` | The page key and the tab key the default gear selects (`tab` defaults to `"Appearance"`, the Skin tab's key). |
+| `onClose` | Called once each time the window closes, by any route: the close control, the gear, Escape (the window's name is in `UISpecialFrames`) or `O.HideSkinPicker()`. A hide of UIParent, which leaves the window shown, is not a close. Where the host sets `skin.pickerSeen`. Under pcall. |
+| `strings` | Translations of `lib.SKIN_PICKER_STRINGS` keys, `SKIN_<key>` (a skin's name), and the reload popup's `RELOAD`, `RELOAD_ACCEPT`, `RELOAD_LATER` (default `lib.APPEARANCE_STRINGS`'). |
+
+**The window**, about 280 wide, top to bottom:
+
+1. The title, "Choose a skin" (`frame.title`), and the close control (`Core.MakeCloseButton` for
+   the owner) at its top right.
+2. A dropdown button (`frame.dd`): the skin worn now, as the first three of its four swatches and
+   its name. A click opens the list **inside the window**, under the button, and the window grows
+   to hold it; a second click closes it.
+3. The list (`frame.list`): one row per skin, `Skin:Skins()` order, each three swatches and the
+   skin's name drawn in **that skin's own body face and size** (`Skin:ResolveSkin(key)["font.body"]`
+   fetched through LibSharedMedia-3.0, at `font.bodySize`; a face LSM lacks leaves the row's normal
+   font). The skin worn now is selected, the others striped, and the pointer hovers a row.
+4. At the bottom right, the eye (Media icon `eye`, tooltip "Preview: open test mode") and the gear
+   (Media icon `settings`, tooltip "Open the Skin settings"). Without LibKa0s-Media-1.0, or for a
+   name the host's icon declaration pruned, each draws its text glyph (`PREVIEW_GLYPH`,
+   `SETTINGS_GLYPH`).
+
+**A pick** applies the skin exactly as the Skin tab's does: refused in combat
+(`O.__combatRefused("skin picker", owner)`); otherwise `Skin:SetChoice(owner, source, key)` first
+(the stored source kept), then `spec.set(source, key)`, then, when `SetChoice` answers `reload`, the
+one reload popup (`lib.__appearanceReload`, `LIBKA0S_SKIN_RELOAD`). It closes the list and never the
+window, and picking does not count as seeing the picker: only a close does.
+
+**Layering** (`frame-layering` §1, §4): an on-demand window, tier T4: `HIGH`, `SetToplevel(true)`,
+clamped, moved by dragging its body. The list is part of the window, not a transient popup, so it
+takes no strata of its own and closes with the window.
+
+**Skin.** Every piece is painted for the owner through the Skin facade: the window by
+`Core.ApplySkin(frame, nil, owner)` (so `S.Shell`, the title in the title font), the close control
+by `S.CloseButton`, the dropdown button by `S.Dropdown`, the eye and the gear by `S.Button`, the
+list by `S.MenuFrame` and its rows by `S.ListRow`. A skin switch repaints all of it live
+(`Skin:Repaint`), and the dropdown's swatches and name and the rows' states follow the owner's
+`OnLooksChanged`. The rows' names keep their own skins' faces: no font primitive reaches them.
+
+### `O.HideSkinPicker()`
+
+Hides the picker when it is up; `spec.onClose` runs, as for any close. Nothing up, it does nothing.
+
+### `lib.SKIN_PICKER_STRINGS`
+
+The picker's US English words, a literal table like `lib.APPEARANCE_STRINGS`: `TITLE` ("Choose a
+skin"), `CHOOSE_TIP` (the dropdown button's tooltip), `PREVIEW_TIP` ("Preview: open test mode"),
+`SETTINGS_TIP` ("Open the Skin settings"), `PREVIEW_GLYPH` and `SETTINGS_GLYPH`. ASCII throughout.
+Read, never written through: `spec.strings` builds a fresh table per show.
+
+### Declaring it
+
+```lua
+-- after the profile is ready, once per login:
+if not NS.db.profile.skin.pickerSeen then
+  O.SkinPicker({
+    get = readAppearance, set = writeAppearance, page = "general",
+    onPreview = function() NS.TestMode:Toggle() end,
+    onClose = function() writeSkin("pickerSeen", true) end,
+  })
+end
+```
+
+Cases: `tests/test_options_skin_picker.lua`.
 
 ## The Appearance tab (OptionsAppearance.lua, minor 1)
 

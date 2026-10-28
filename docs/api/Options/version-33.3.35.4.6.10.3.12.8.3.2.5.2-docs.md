@@ -13,7 +13,7 @@
 | Shipped in | v1.78.0 |
 | Status | Superseded |
 | Supersedes | [version 30.2.34.3.5.9.2.11.4.2.1.4](./version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md) — whose settings chrome had no skin owner, whose group composers could not follow a skin, and whose AceGUI rows were stock for every owner |
-| Superseded by | [version 33.3.35.4.6.10.3.12.8.3.2.5.3](./version-33.3.35.4.6.10.3.12.8.3.2.5.3-docs.md) |
+| Superseded by | [version 34.3.35.4.6.10.3.12.8.3.2.5.3.1](./version-34.3.35.4.6.10.3.12.8.3.2.5.3.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 33, OptionsRegistry = 3, OptionsWidgets = 35, OptionsIds = 4, OptionsIdList = 6, OptionsTabs = 10, OptionsCombat = 3, OptionsCompose = 12, OptionsScroll = 6, OptionsNav = 3, OptionsDrawer = 2, OptionsKeybinds = 5, OptionsAppearance = 1 }` |
 

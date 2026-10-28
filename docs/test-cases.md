@@ -2126,6 +2126,22 @@ Total.
 - appearance: without LibSharedMedia each dropdown offers only the skin's own
 - appearance: with a Skin copy before minor 6 the section is absent
 
+### test_options_skin_picker.lua (13)
+
+- skin picker: OptionsSkinPicker is minor 1, paired on the shell, and attaches two members
+- skin picker: shows one small HIGH, toplevel, clamped window naming the skin worn now
+- skin picker: the list holds every skin, three swatches each and its name in its own face
+- skin picker: a pick moves the Skin major, then the seam, closes the list and keeps the window
+- skin picker: the dropdown follows a switch made elsewhere
+- skin picker: a pick that needs a reload raises the one reload popup
+- skin picker: in combat a pick writes nothing
+- skin picker: the eye shows only with onPreview, and calls it
+- skin picker: the gear opens the panel at the Skin tab by default, then closes
+- skin picker: onClose runs once per showing, by every route
+- skin picker: the icons come from LibKa0s-Media-1.0, and are glyphs without it
+- skin picker: spec.strings translates the title, the tips and a skin's name
+- skin picker: nil with no Skin major, or for an owner that never registered
+
 ### test_options_idsuggest.lua (29)
 
 - IdInput suggestions: exact, then prefix, then a word, then anywhere; shorter first
@@ -3578,6 +3594,7 @@ Total.
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 33 |
+| test_options_skin_picker.lua | 13 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3639,4 +3656,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3105** |
+| **Total** | **3118** |
