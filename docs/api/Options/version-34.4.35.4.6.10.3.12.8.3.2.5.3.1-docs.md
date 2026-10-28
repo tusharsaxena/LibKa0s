@@ -49,7 +49,10 @@ Three files move and a fourteenth arrives: `Options.lua` 33 -> **34**, `OptionsR
 See the member table. The skin picker's default gear uses it.
 
 **The skin picker** (O34, P1): `O.SkinPicker(spec)` and `O.HideSkinPicker()`, a small window a host
-shows the first time a profile runs so the player picks a skin before opening any settings. See
+shows the first time a profile runs so the player picks a skin before opening any settings: a pick
+previews, **Apply** saves, the close control puts the preview back, *Apply to all Ka0s addons* gives
+every other owner the same skin, and one window is up at a time across every Ka0s addon (a queued
+call answers `nil, "queued"`). See
 [The skin picker](#the-skin-picker-optionsskinpickerlua-minor-1). `Options.lua` 34 adds one guarded
 attach line (`lib.__AttachSkinPicker(O, d)`) and no member of its own.
 
@@ -76,7 +79,10 @@ The tab adds no instance member and changes no signature; `lib.APPEARANCE_STRING
 (`Kit.assertSurfaceParity` compares the stub with the live instance), for instance
 `SkinPicker = function() return nil end, HideSkinPicker = function() end`. A host that shows the
 picker declares the Media icons `eye` and `settings` in its `LibKa0s icons:` line, or the buttons
-draw their text glyphs.
+draw their text glyphs. Its `set` is reached only by Apply, *Apply to all* and the gear, never by a
+pick; its `onClose` runs for every close and for a queued picker *Apply to all* dismisses; its
+`page` is the key it gave `O.RegisterOptionsPage`. A host that reads `O.SkinPicker`'s answer as
+"the picker is up" sees `nil` for a queued call, which shows by itself later.
 
 ## What changed at version 33.3.35.4.6.10.3.12.8.3.2.5.2
 
@@ -1777,8 +1783,8 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `KEYBINDS_UNCHANGED` | **K2** | `"Key bindings are not changed."`, the sentence a General page's `opts.defaultsTooltip` ends with (`options-ui-§20`). |
 | `AppearanceTab(spec)` | **A1** | The Appearance tab's entry, `{ key, label, tooltip, before, render }`: for `RenderTabbedSchema`'s `opts.tabs`, key `Appearance` (labeled "Skin" since **A3**) and `before` the Keybindings tab's key unless `spec` says otherwise, or for a host-drawn strip (`render` is the body). See [The Appearance tab](#the-appearance-tab-optionsappearancelua-minor-1). |
 | `AppearanceRows(ctx, spec, parent)` | **A1** | Draws the Appearance rows into `parent` (default the page's scroll) and returns the view, or nil when degraded. For a host-built strip's body. |
-| `SkinPicker(spec)` | **P1** | Shows the skin picker (one shown per instance, a window per owner) and answers its frame, or nil when degraded. See [The skin picker](#the-skin-picker-optionsskinpickerlua-minor-1). |
-| `HideSkinPicker()` | **P1** | Hides the picker when it is up; its `spec.onClose` runs, as for any close. |
+| `SkinPicker(spec)` | **P1** | Shows the skin picker (one up at a time across every Ka0s addon, a window per owner) and answers its frame; `nil, "queued"` while another owner's picker is up (it shows when that one closes); nil when degraded. See [The skin picker](#the-skin-picker-optionsskinpickerlua-minor-1). |
+| `HideSkinPicker()` | **P1** | Takes this instance's owners out of the picker queue (no `onClose`) and dismisses its window when it is the one up (`spec.onClose` runs, a pending preview is put back). |
 | `Drawer(ctx, spec)` | **D1** | A header bar (chevron, name gold while set, one-line summary) that opens a bordered box joined under it, filled by `spec.body(ctx, box)` with ordinary rows. See [The drawer](#the-drawer). |
 | `NavRail(ctx, spec)` | **N1** | The pinned nav rail, the first level of a page that edits one instance out of many (options-ui-§13): `spec = { entries = { { key, label, tooltip } }, value, onSelect, width }`, `width` 120 by default. Draw after `PageBanner`, before `TabStrip`. Records `ctx.railWidth`, which `lib.__railInset` turns into the inset the strip, the content panel and the scroll start at. Entries pooled per page, released on every call; the selected entry disabled; a click refused in combat by the library; `onSelect` pcall'd. The selection is the host's, as `SubTabStrip`'s is. Returns the entry buttons in rail order, or nil having drawn nothing (an empty list releases the rail, `railWidth` 0). |
 | `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip, action }`; `action = { text, tooltip, onClick }` (**T4**) draws a `Button` in the band's right half for the picker+create band, pcall'd, refused in combat, and Released like the dropdown. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). From **T4** the previous render's dropdown is Released to AceGUI once the new one exists, rather than hidden and kept. **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing, and the action's `Button` as a second value when there is one. |
@@ -2271,51 +2277,96 @@ New at `OptionsSkinPicker.lua` minor 1, a fourteenth file paired on the shell's 
 (`lib.__AttachSkinPicker(O, d)`, guarded). LibKa0s#64: a small window a host shows the first time a
 profile runs (its `skin.pickerSeen` key is false: a new profile and a reset profile both start from
 the defaults, so both show it), so the player picks a skin before opening any settings. It reads
-`LibKa0s-Skin-1.0`, `LibKa0s-Core-1.0` and `LibKa0s-Media-1.0` at call time, never as a floor.
+`LibKa0s-Skin-1.0`, `LibKa0s-Core-1.0` and `LibKa0s-Media-1.0` at call time, never as a floor, and
+`OptionsAppearance.lua`'s reload popup and its other-owner helpers through the library table.
 
-### `O.SkinPicker(spec)` → frame or `nil`
+Minor 1 was amended before release (PK-02 of the same bundle, the owner's in-game pass): the window
+sits higher, its title names the addon, a pick previews and **Apply** saves, *Apply to all Ka0s
+addons* is new, one window is shared across every Ka0s addon, and the default gear opens the page
+itself. What follows is the amended file.
 
-Shows the picker and answers its frame: one window per owner on an Options instance, built on that
-owner's first call and kept (frames are never destroyed), so a second call re-reads `spec` and
-answers the same frame. One is shown at a time: a call for another owner hides (closes) the one up
-first, and each window refreshes only on its own owner's `OnLooksChanged`. A skin registered after a
-window was built gains its row, at the end, on the next call. Answers nil, drawing nothing, without `LibKa0s-Skin-1.0`, without a client
-(`CreateFrame`), or for an owner that never called `RegisterOwner`.
+### `O.SkinPicker(spec)` → frame, `nil, "queued"`, or `nil`
+
+**One picker is up at a time across every Ka0s addon.** LibStub keeps one copy of this major for the
+whole client, so its library table is shared by every addon's Options instance, and the queue lives
+there: `lib.__pickerQueue`, `{ current = { owner, inst, frame } | nil, waiting = { { owner, inst,
+spec, show }, ... } }`, created when absent and adopted by a newer copy of the file.
+
+- **Nothing up, or this owner up on this instance:** shows the picker and answers its frame. A
+  window is built per owner on an instance on that owner's first show and kept (frames are never
+  destroyed), so a second call while it is up re-reads `spec` (keeping a pending preview) and
+  answers the same frame. Each window refreshes only on its own owner's `OnLooksChanged`. A skin
+  registered after a window was built gains its row, at the end, on the next call.
+- **Another owner's picker up** (on any instance, this one included): the owner is queued and the
+  call answers **`nil, "queued"`**; nothing is drawn. A repeat call while queued refreshes the
+  queued `spec` (one entry per owner). When the picker up closes, by any route, the next owner
+  waiting shows, oldest first. A host that ignores the answers keeps working: a queued picker
+  shows by itself later.
+- **This owner already up on another instance:** answers that window, `spec` unread.
+- **Degraded:** answers nil, drawing nothing, without `LibKa0s-Skin-1.0`, without a client
+  (`CreateFrame`), or for an owner that never called `RegisterOwner`.
 
 `spec`:
 
 | Field | Meaning |
 |---|---|
-| `owner` | The skin owner; default the descriptor's `addonName` (else the owner shown last). |
+| `owner` | The skin owner; default the descriptor's `addonName` (else the owner shown last on the instance). |
 | `get` | The owner's read, as `O.AppearanceTab`'s: `{ source, skin }` or two values, under pcall; without it, or for a value that is not a source or a registered skin, `Skin:GetChoice` stands in. |
-| `set` | **MUST be the owner's write seam** (`options-ui-§1`), as `O.AppearanceTab`'s: called as `set(source, skin)` by a pick, under pcall. |
-| `onPreview` | The eye. A function: the button is shown and a click calls it (the host's test mode, so the player sees the skin on the addon's own frames); the window stays. Absent, the button is hidden. |
-| `onSettings` | The gear. A function replaces the default, which is `O.OpenOptionsPanel()` and then `O.SelectTab(spec.page, spec.tab or "Appearance")`. Either way the window then closes. In combat the gear is refused (`O.__combatRefused("skin picker", owner)`): nothing is called and the window stays up, so a gear that opened nothing never runs `onClose` (where the host marks the picker seen). The default also leaves the window up when `O.OpenOptionsPanel()` answers false. |
-| `page`, `tab` | The page key and the tab key the default gear selects (`tab` defaults to `"Appearance"`, the Skin tab's key). |
-| `onClose` | Called once each time the window closes, by any route: the close control, the gear, Escape (the window's name is in `UISpecialFrames`) or `O.HideSkinPicker()`. A hide of UIParent, which leaves the window shown, is not a close. Where the host sets `skin.pickerSeen`. Under pcall. |
+| `set` | **MUST be the owner's write seam** (`options-ui-§1`), as `O.AppearanceTab`'s: called as `set(source, skin)` by **Apply**, *Apply to all* and the gear, with the pending pick and the stored source, under pcall. **A pick never calls it.** Not called when nothing was picked. |
+| `onPreview` | The eye. A function: the button is shown and a click calls it (the host's test mode, so the player sees the skin on the addon's own frames); the window and a pending preview stay. Absent, the button is hidden. |
+| `onSettings` | The gear. A function replaces the default, which is `O.OpenOptionsPanel(spec.page)` (the page's own subcategory, `OptionsRegistry.lua` minor 4) and then `O.SelectTab(spec.page, spec.tab or "Appearance")`. Either way the pending pick is saved first, as Apply saves it, and the window then closes. In combat the gear is refused (`O.__combatRefused("skin picker", owner)`): nothing is saved or called and the window stays up, so a gear that opened nothing never runs `onClose` (where the host marks the picker seen). The default also leaves the window up when `O.OpenOptionsPanel` answers false. |
+| `page`, `tab` | The page key (the key `O.RegisterOptionsPage` was given) and the tab key the default gear opens (`tab` defaults to `"Appearance"`, the Skin tab's key). |
+| `onClose` | Called once each time the window closes, by any route: Apply, *Apply to all*, the gear, the close control, Escape (the window's name is in `UISpecialFrames`) or `O.HideSkinPicker()`; and once for each queued picker *Apply to all* dismisses, which never shows. A hide of UIParent, which leaves the window shown, is not a close. Where the host sets `skin.pickerSeen`. Under pcall. |
 | `strings` | Translations of `lib.SKIN_PICKER_STRINGS` keys, `SKIN_<key>` (a skin's name), and the reload popup's `RELOAD`, `RELOAD_ACCEPT`, `RELOAD_LATER` (default `lib.APPEARANCE_STRINGS`'). |
 
-**The window**, about 280 wide, top to bottom:
+**The window**, about 280 wide, its **center 75% of the way up UIParent** (`SetPoint("CENTER",
+UIParent, "BOTTOM", 0, UIParent:GetHeight() * 0.75)`, re-anchored on every show, since UIParent's
+height can change; clamped and movable), so it sits above the addon's main window the eye opens.
+Top to bottom:
 
-1. The title, "Choose a skin" (`frame.title`), and the close control (`Core.MakeCloseButton` for
-   the owner) at its top right.
-2. A dropdown button (`frame.dd`): the skin worn now, as the first three of its four swatches and
-   its name. A click opens the list **inside the window**, under the button, and the window grows
-   to hold it; a second click closes it.
+1. The title, "Choose a skin for <the addon's label>" (`TITLE_FOR` with `Skin:OwnerLabel(owner)`,
+   else the owner's name; `frame.title`, one line), and the close control (`Core.MakeCloseButton`
+   for the owner) at its top right.
+2. A dropdown button (`frame.dd`): the skin worn now (the pending pick, else the stored choice), as
+   the first three of its four swatches and its name, with the eye (`frame.preview`) and the gear
+   (`frame.settings`) at its right. A click opens the list **inside the window**, under the button,
+   and the window grows to hold it; a second click closes it.
 3. The list (`frame.list`): one row per skin, `Skin:Skins()` order, each three swatches and the
    skin's name drawn in **that skin's own body face and size** (`Skin:ResolveSkin(key)["font.body"]`
    fetched through LibSharedMedia-3.0, at `font.bodySize`; a face LSM lacks leaves the row's normal
    font). The skin worn now is selected, the others striped, and the pointer hovers a row.
-4. At the bottom right, the eye (Media icon `eye`, tooltip "Preview: open test mode") and the gear
-   (Media icon `settings`, tooltip "Open the Skin settings"). Without LibKa0s-Media-1.0, or for a
-   name the host's icon declaration pruned, each draws its text glyph (`PREVIEW_GLYPH`,
-   `SETTINGS_GLYPH`).
+4. At the bottom, *Apply to all Ka0s addons* (`frame.applyAll`, shown only while another skin owner
+   is registered, read on every show) and **Apply** (`frame.apply`, a primary button:
+   `S.Button(btn, { primary = true })`).
 
-**A pick** applies the skin exactly as the Skin tab's does: refused in combat
-(`O.__combatRefused("skin picker", owner)`); otherwise `Skin:SetChoice(owner, source, key)` first
-(the stored source kept), then `spec.set(source, key)`, then, when `SetChoice` answers `reload`, the
-one reload popup (`lib.__appearanceReload`, `LIBKA0S_SKIN_RELOAD`). It closes the list and never the
-window, and picking does not count as seeing the picker: only a close does.
+The eye is the Media icon `eye` (tooltip "Preview: open test mode") and the gear `settings`
+("Keep this skin and open the Skin settings"). Without LibKa0s-Media-1.0, or for a name the host's
+icon declaration pruned, each draws its text glyph (`PREVIEW_GLYPH`, `SETTINGS_GLYPH`).
+
+**A pick previews.** Refused in combat (`O.__combatRefused("skin picker", owner)`); otherwise
+`Skin:SetChoice(owner, source, key)` (the stored source kept), so the addon and the window repaint
+live, and the reload flag `SetChoice` answers is kept. The owner's write seam is **not** called and
+no popup is raised. It closes the list and never the window, and picking does not count as seeing
+the picker.
+
+**Apply** saves: refused in combat with the window left up; otherwise `spec.set(source, key)` for
+the pending pick, then, when any pick in this showing asked for a reload, the one reload popup
+(`lib.__appearanceReload`, `LIBKA0S_SKIN_RELOAD`, naming the addon), then the window closes.
+
+**The close control and Escape dismiss without saving:** a pending preview is put back
+(`Skin:SetChoice(owner, <the source and skin applied when the window opened>)`, no write), then the
+window closes and `onClose` runs, so a dismissal still counts as seen. In combat they still close;
+putting the preview back writes nothing. `O.HideSkinPicker()` dismisses the same way.
+
+**Apply to all Ka0s addons** (`O.__combatRefused("skin picker", "copy")` in combat, the window left
+up): Apply for this owner, then every other registered owner (`lib.__skinOthers`, the Skin tab's
+own list) gets the same source and skin through `lib.__copySkinTo(Skin, name, source, skin)`:
+`Skin:SetChoice` (its live repaint) and then `Skin:WriteChoice(name, source, skin)`, its own
+registered setter, with no scope or media half, so its *Ignore* choices and its font and texture are
+left alone (the skin half of the Skin tab's copy, which carries all three). One reload popup names
+every addon that needs one, this one first (`"<label>, <label>"`). Then this window closes and every
+queued picker is dismissed: each one's `onClose` runs and none shows. Hidden while no other owner is
+registered, or on a copy without `OptionsAppearance.lua`'s helpers or `Skin:WriteChoice`.
 
 **Layering** (`frame-layering` §1, §4): an on-demand window, tier T4: `HIGH`, `SetToplevel(true)`,
 clamped, moved by dragging its body. The list is part of the window, not a transient popup, so it
@@ -2323,20 +2374,26 @@ takes no strata of its own and closes with the window.
 
 **Skin.** Every piece is painted for the owner through the Skin facade: the window by
 `Core.ApplySkin(frame, nil, owner)` (so `S.Shell`, the title in the title font), the close control
-by `S.CloseButton`, the dropdown button by `S.Dropdown`, the eye and the gear by `S.Button`, the
-list by `S.MenuFrame` and its rows by `S.ListRow`. A skin switch repaints all of it live
-(`Skin:Repaint`), and the dropdown's swatches and name and the rows' states follow the owner's
-`OnLooksChanged`. The rows' names keep their own skins' faces: no font primitive reaches them.
+by `S.CloseButton`, the dropdown button by `S.Dropdown`, the eye, the gear and both text buttons by
+`S.Button` (Apply as the primary), the list by `S.MenuFrame` and its rows by `S.ListRow`. A skin
+switch, a preview's included, repaints all of it live (`Skin:Repaint`), and the dropdown's swatches
+and name and the rows' states follow the owner's `OnLooksChanged`. The rows' names keep their own
+skins' faces: no font primitive reaches them.
 
 ### `O.HideSkinPicker()`
 
-Hides the picker when it is up; `spec.onClose` runs, as for any close. Nothing up, it does nothing.
+Takes this instance's pickers down. Its owners waiting in the queue leave it, with **no**
+`onClose` (they were never seen); its window, when it is the one up, is dismissed as by the close
+control (a pending preview put back, `spec.onClose` run), and the next owner waiting shows. Nothing
+of this instance's up or queued, it does nothing.
 
 ### `lib.SKIN_PICKER_STRINGS`
 
-The picker's US English words, a literal table like `lib.APPEARANCE_STRINGS`: `TITLE` ("Choose a
-skin"), `CHOOSE_TIP` (the dropdown button's tooltip), `PREVIEW_TIP` ("Preview: open test mode"),
-`SETTINGS_TIP` ("Open the Skin settings"), `PREVIEW_GLYPH` and `SETTINGS_GLYPH`. ASCII throughout.
+The picker's US English words, a literal table like `lib.APPEARANCE_STRINGS`: `TITLE_FOR` ("Choose a
+skin for %s", the addon's label; a translation that does not format is shown as it is),
+`CHOOSE_TIP` (the dropdown button's tooltip), `APPLY` ("Apply"), `APPLY_TIP`, `APPLY_ALL` ("Apply to
+all Ka0s addons"), `APPLY_ALL_TIP`, `PREVIEW_TIP` ("Preview: open test mode"), `SETTINGS_TIP` ("Keep
+this skin and open the Skin settings"), `PREVIEW_GLYPH` and `SETTINGS_GLYPH`. ASCII throughout.
 Read, never written through: `spec.strings` builds a fresh table per show.
 
 ### Declaring it
@@ -2344,7 +2401,7 @@ Read, never written through: `spec.strings` builds a fresh table per show.
 ```lua
 -- after the profile is ready, once per login:
 if not NS.db.profile.skin.pickerSeen then
-  O.SkinPicker({
+  O.SkinPicker({                     -- answers nil, "queued" while another addon's picker is up
     get = readAppearance, set = writeAppearance, page = "general",
     onPreview = function() NS.TestMode:Toggle() end,
     onClose = function() writeSkin("pickerSeen", true) end,

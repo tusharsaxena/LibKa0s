@@ -175,23 +175,56 @@ the landing page. No member is added. Cases in `tests/test_options_render.lua`.
 `lib:New` (Options minor 34):
 
 - `O.SkinPicker(spec)` shows a small window (about 280 wide; `HIGH`, toplevel, clamped, movable;
-  one per owner on an instance, one shown at a time, each refreshed only by its own owner's looks)
-  for the host to show the first time a profile runs, and answers its frame; nil without the Skin
-  major or for an unregistered owner. Its title is "Choose a skin"; a dropdown button shows the
-  skin worn now as three swatches and its name, and opens, inside the window, the list of every
+  a window per owner, one up at a time across every Ka0s addon, each refreshed only by its own
+  owner's looks) for the host to show the first time a profile runs, and answers its frame;
+  `nil, "queued"` while another owner's picker is up; nil without the Skin major or for an
+  unregistered owner. Its title is "Choose a skin for <the addon's label>"; a dropdown button shows
+  the skin worn now as three swatches and its name, and opens, inside the window, the list of every
   skin, each row three swatches and the skin's name in that skin's own body face and size. A pick
-  applies the skin as the Skin tab's does (combat refusal, `SetChoice`, `spec.set`, the one reload
-  popup) and closes the list, not the window.
+  previews the skin (combat refusal, `SetChoice`; no write) and closes the list, not the window;
+  **Apply** saves it (`spec.set`, the one reload popup) and closes the window.
 - An eye button (Media icon `eye`, "Preview: open test mode"), shown only with `spec.onPreview`;
-  a gear button (Media icon `settings`, "Open the Skin settings") calls `spec.onSettings` or opens
-  the panel at the Skin tab, then closes the window; in combat the gear is refused and the window
-  stays up, unmarked. A skin registered after the first show gains its row on the next. Without
-  LibKa0s-Media-1.0 both draw glyphs.
-- Closing by any route (the close control, the gear, Escape, `O.HideSkinPicker()`) calls
-  `spec.onClose` once; the host sets `skin.pickerSeen` there.
+  a gear button (Media icon `settings`) saves the pending pick, calls `spec.onSettings` or opens
+  `spec.page` at the Skin tab, then closes the window; in combat the gear is refused and the window
+  stays up, unmarked. *Apply to all Ka0s addons* gives every other owner the same skin. A skin
+  registered after the first show gains its row on the next. Without LibKa0s-Media-1.0 both icons
+  draw glyphs.
+- Closing by any route (Apply, the close control, the gear, Escape, `O.HideSkinPicker()`) calls
+  `spec.onClose` once; the host sets `skin.pickerSeen` there. The close control and Escape put a
+  pending preview back first.
 - Painted for the owner through the Skin facade, so a skin switch repaints it live, and the
   dropdown follows `OnLooksChanged`. Words in `lib.SKIN_PICKER_STRINGS`, overridable by
   `spec.strings`.
+
+Amended before release (PK-02, the owner's in-game pass of the first picker; OptionsSkinPicker
+stays minor 1):
+
+- **Position.** The window's center sits 75% of the way up UIParent, re-anchored on every show,
+  so the addon's main window the eye opens does not cover it. Still clamped and movable.
+- **The addon's name.** The title reads "Choose a skin for <the addon's label>": `TITLE_FOR`
+  ("Choose a skin for %s", `Skin:OwnerLabel` or the owner's name) replaces `TITLE`.
+- **Preview, then Apply.** A pick now previews: `Skin:SetChoice` moves the owner live, the reload
+  flag it answers is kept, and neither `spec.set` nor a popup runs. A new primary **Apply** button
+  (`APPLY`, `APPLY_TIP`) saves (`spec.set(source, key)`), raises the one reload popup when a pick in
+  this showing asked for it, and closes. The close control and Escape dismiss without saving: the
+  Skin major goes back to the choice the window opened with (no write), and `onClose` still runs.
+  The gear saves the pending pick as Apply does before it opens the settings. `SETTINGS_TIP` and
+  `CHOOSE_TIP` say so. Every write path stays refused in combat.
+- **Apply to all Ka0s addons** (`APPLY_ALL`, `APPLY_ALL_TIP`), shown only while another skin owner
+  is registered: Apply, then each other owner gets the same source and skin (`SetChoice`, then
+  `WriteChoice`, through OptionsAppearance's shared `lib.__skinOthers` and `lib.__copySkinTo`;
+  their scope and overrides are left alone), one reload popup naming every addon that needs it,
+  then this window closes and every queued picker is dismissed (its `onClose` runs; it never shows).
+- **One window across addons.** A library-level queue, `lib.__pickerQueue` (`current`, `waiting`;
+  created when absent, adopted by a newer copy), is shared by every Options instance. While one
+  owner's picker is up, `O.SkinPicker` for another owner, on any instance, queues it (a repeat call
+  refreshes its spec) and answers **`nil, "queued"`**; the next owner shows when the one up closes
+  by any route. `O.HideSkinPicker()` takes its instance's queued owners out with no `onClose` and
+  dismisses its window when it is the one up. A second owner on one instance now queues instead of
+  replacing the first.
+- **The gear opens the page.** The default gear calls `O.OpenOptionsPanel(spec.page)`
+  (OptionsRegistry minor 4, above) and then `O.SelectTab`, so the player lands on the page that
+  holds the Skin tab rather than on the landing page.
 
 Every Options degradation stub gains `SkinPicker` and `HideSkinPicker`; a host that shows the
 picker declares the icons `eye` and `settings`. New suite: `tests/test_options_skin_picker.lua`.
