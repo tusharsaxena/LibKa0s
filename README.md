@@ -330,8 +330,8 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
                         third-party set carries its license beside it
   Skin.lua           -- LibKa0s-Skin-1.0, MINOR at the top of the file; needs Core
   SkinDefs.lua       -- the token schema and the skins, same module, DEFS_MINOR of its own
-  SkinPaint.lua      -- the paint primitives' helpers, Shell, Panel, the faders, PAINT_MINOR
-  SkinPaintExtras.lua -- the window extras, text and getters, same module, EXTRAS_MINOR
+  SkinPaint.lua      -- the paint primitives' helpers, Shell, Panel, Inset, PAINT_MINOR
+  SkinPaintExtras.lua -- the window extras, the faders, text and getters, same module, EXTRAS_MINOR
   SkinPaintControls.lua -- the control primitives, same module, CONTROLS_MINOR of its own
   SkinEUI.lua        -- the EllesmereUI provider, same module, EUI_MINOR of its own
   SkinAce.lua        -- the AceGUI rows, same module, ACE_MINOR of its own

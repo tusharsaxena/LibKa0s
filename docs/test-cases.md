@@ -571,6 +571,19 @@ Total.
 - skin owner tokens: under eui a token answers its follow token's EllesmereUI value
 - skin owner tokens: an owner token is no vocabulary entry and needs no SkinDefs change
 
+### test_skin_remap.lua (10)
+
+- skin remap: no opts.tokens, or an empty one, paints exactly what the primitive painted
+- skin remap: a danger button paints its fill, edge, label and hover from owner tokens
+- skin remap: a skin switch replays the remap, and a fill slot drops the gradient it replaces
+- skin remap: a disabled remapped button reads its disabled slot, else text.disabled
+- skin remap: an opaque modal Shell paints its window fill flat from the named token
+- skin remap: Shell's border, inner rule, top bar and title text slots
+- skin remap: a caution callout Panel and Card, an Inset and the nav rail's recolor
+- skin remap: a name no token carries, or a value, is ignored for its slot and logged once
+- skin remap: the record keeps the caller's remap, so a repaint replays it
+- skin remap: under eui a remapped call is the library's, from EllesmereUI's colors
+
 ### test_skin_defs.lua (29)
 
 - skin defs: the nine skins register in order with their labels
@@ -3596,6 +3609,7 @@ Total.
 | test_skin.lua | 27 |
 | test_skin_override.lua | 21 |
 | test_skin_owner_tokens.lua | 12 |
+| test_skin_remap.lua | 10 |
 | test_skin_defs.lua | 29 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
@@ -3710,4 +3724,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3168** |
+| **Total** | **3178** |

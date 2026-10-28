@@ -82,7 +82,8 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- overrides, so `Token`, `Color`, the facade and every primitive that reads a token NAME resolve
 -- them. Ka0s Default answers `default` (the addon's pixels today), a skin its `skins` entry, else the
 -- `follow` library token's value in that skin; the eui source the follow token's EllesmereUI value. A
--- name with no dot, a schema name or a malformed definition is refused and logged once.
+-- name with no dot, a schema name or a malformed definition is refused and logged once. And
+-- `__RemapName`, the check a primitive's `opts.tokens` slot remap makes of each name (LK-02).
 local MAJOR, MINOR = "LibKa0s-Skin-1.0", 7
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -332,6 +333,23 @@ local function takeTokens(o, owner, tokens)
     end
   end
   o.tokGen = (o.tokGen or 0) + 1
+end
+
+--- True when `name` names a token `owner` can read: a library token, or one of the owner's own
+--- tokens. Anything else (a name no token carries, or a value where a name belongs) answers false,
+--- logged once per owner, `where` and name (opts.log, else the client's error handler). The question
+--- a primitive's `opts.tokens` remap asks of each slot (SkinPaint minor 11). Internal.
+function lib:__RemapName(owner, name, where)
+  local o = self.owners[owner]
+  if type(name) == "string" then
+    if self.__schemaIndex == nil or isSchemaName(name) then return true end
+    if o and o.tokens and o.tokens[name] then return true end
+  end
+  if o then
+    local label = tostring(where) .. " " .. (type(name) == "string" and name or "<" .. type(name) .. ">")
+    refuseToken(o, owner, label, "the remap names no token (a library or owner token NAME)")
+  end
+  return false
 end
 
 --- Register `owner` (the addon folder name) at the consumer's file load. `opts.get()` answers the
@@ -741,6 +759,39 @@ function lib:Color(owner, name)
   local c = self:Token(owner, name)
   if type(c) ~= "table" then return nil end
   return c[1], c[2], c[3], c[4] or 1
+end
+
+-- A remapped slot whose named token resolves to nil: the view answers nil, not the primitive's own.
+local NONE = {}
+
+local function orNone(v) if v == nil then return NONE end return v end
+
+--- `T` seen through a caller's slot remap (LK-02; SkinPaint minor 11's P.remap): `tokens` is the
+--- caller's `opts.tokens`, `{ [slot] = token name }`; `slots` maps each slot the primitive has to the
+--- library token it paints from; `fills` names the slots that are fills, whose `<token>Top` /
+--- `<token>Bottom` gradient pair follows the named token's (none when it has none). A slot whose
+--- name is not a token the owner can read is left as it was and logged once (`__RemapName`, from
+--- `where`). Answers `T` itself when nothing is remapped, else a read-only view over it. Internal.
+function lib:__Remap(owner, T, tokens, slots, fills, where)
+  if type(tokens) ~= "table" or next(tokens) == nil then return T end
+  local ov
+  for slot, target in pairs(slots) do
+    local name = tokens[slot]
+    if name ~= nil and self:__RemapName(owner, name, tostring(where) .. "." .. slot) then
+      ov = ov or {}
+      ov[target] = orNone(T[name])
+      if fills and fills[slot] then
+        ov[target .. "Top"], ov[target .. "Bottom"] = orNone(T[name .. "Top"]), orNone(T[name .. "Bottom"])
+      end
+    end
+  end
+  if not ov then return T end
+  return setmetatable({}, { __index = function(_, k)
+    local v = ov[k]
+    if v == NONE then return nil end
+    if v ~= nil then return v end
+    return T[k]
+  end })
 end
 
 --- True when `value` is the FROM_SKIN sentinel.

@@ -42,7 +42,11 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Minor 8 (the owner's round-5 showroom audit): the paging arrow, a dropdown's arrow and a sort
 -- header's arrows take `icon.arrow` through P.glyph, desaturated first, so they wear the skin's color
 -- and not the art's yellow.
-local CONTROLS_MINOR = 8
+-- Minor 9 (LK-02 of Ka0sAddonsCommonTasks docs/2026-10-29-SKINNING_ROLLOUT): Button's `opts.tokens`
+-- slot remap (`bg`, `border`, `text`, `hover`, `icon`, `disabled`; SkinPaint minor 11's P.remap),
+-- kept on the button's regions so its hover and enable hooks paint the remapped label (a danger
+-- button).
+local CONTROLS_MINOR = 9
 if lib.__controlsMinor and lib.__controlsMinor >= CONTROLS_MINOR
   and lib.__controlsShellMinor == lib.MINOR then return end
 lib.__controlsMinor      = CONTROLS_MINOR
@@ -98,6 +102,22 @@ end
 
 local function buttonBase(rec) return rec.regions.primary and "btnPrimary" or "btn" end
 
+-- The slots Button's `opts.tokens` remaps, per base (minor 9), and its one fill slot.
+local BUTTON_SLOTS = {}
+for _, base in ipairs({ "btn", "btnPrimary" }) do
+  BUTTON_SLOTS[base] = { bg = base .. ".bg", border = base .. ".border", text = base .. ".text",
+                         hover = base .. ".hover", icon = base .. ".icon", disabled = "text.disabled" }
+end
+local BUTTON_FILLS = { bg = true }
+
+--- The owner's tokens as the button's record remaps them (minor 9): its `opts.tokens`, kept on its
+--- regions by its last Button call.
+local function buttonTokens(owner, rec)
+  local T = P.T(owner)
+  if not P.remap then return T end
+  return P.remap(owner, T, rec.regions.btnTokens, BUTTON_SLOTS[buttonBase(rec)], BUTTON_FILLS, "Button")
+end
+
 local function enabled(btn)
   return type(btn.IsEnabled) ~= "function" or btn:IsEnabled() ~= false
 end
@@ -105,7 +125,7 @@ end
 --- The label's color for the button's state: `text.disabled` while disabled, else the hover or
 --- rest color.
 local function buttonLabel(btn, rec, hot)
-  local T = P.T(rec.owner)
+  local T = buttonTokens(rec.owner, rec)
   local base = buttonBase(rec)
   local fs = labelOf(btn)
   local c
@@ -123,14 +143,17 @@ local function buttonHover(btn, rec, on) buttonLabel(btn, rec, on) end
 --- `btnPrimary.*` with `opts.primary`): backdrop, gradient, non-flat edge on the holder; the stock
 --- textures faded unless kept (`keepKeys == true` or `opts.keep`); the label in `btn.text` and the
 --- body font, `btn.hover` under the pointer; `btn.icon` (a texture) in `btn.icon`. Ka0s Default
---- leaves a stock-template button stock. Draws no Media icon.
+--- leaves a stock-template button stock. `opts.tokens` (minor 9) remaps `bg`, `border`, `text`,
+--- `hover`, `icon` and `disabled` to a library or owner token by NAME (a danger button), for the
+--- first paint, every repaint and the hover and enable hooks. Draws no Media icon.
 prim.Button = function(owner, btn, a)
   if not P.isFrame(btn) then return end
   local rec = P.track(owner, btn, "Button", a)
   local opts = buttonOpts(a)
   if P.stockDefault(owner, rec, btn, opts) then return end
-  local T = P.T(owner)
   rec.regions.primary = opts.primary == true
+  rec.regions.btnTokens = type(opts.tokens) == "table" and opts.tokens or nil
+  local T = buttonTokens(owner, rec)
   if not opts.keep then
     P.fadeAll(rec, P.stockRegions(btn, opts))
     P.box(rec, btn, T, opts.primary and BTN_PRIMARY or BTN, opts)

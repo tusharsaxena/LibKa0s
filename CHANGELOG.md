@@ -18,14 +18,15 @@ Its M0 inventory found 39 gaps no existing primitive or token covers; this relea
 rung-2 items that meet them (`LK-01` to `LK-05`), each adding a surface and none changing what an
 existing call draws. Not tagged.
 
-Versions in this release: **Skin minor 7** (`LibKa0s-Skin-1.0` key **7.14.10.4.8.1.3**); every other
-file still at its v1.79.0 minor, and **test kit revision 44**, until an entry below moves one. Still
+Versions in this release: **Skin minor 7**, **SkinPaint minor 11**, **SkinPaintExtras minor 5**,
+**SkinPaintControls minor 9** and **SkinEUI minor 2** (`LibKa0s-Skin-1.0` key **7.14.11.5.9.2.3**);
+every other file still at its v1.79.0 minor, and **test kit revision 44**, until an entry below moves one. Still
 **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
 
 ### Skin minor 7: owner tokens
 
-`LibKa0s-Skin-1.0` key 7.14.10.4.8.1.3, documented in
-[docs/api/Skin/version-7.14.10.4.8.1.3-docs.md](docs/api/Skin/version-7.14.10.4.8.1.3-docs.md)
+`LibKa0s-Skin-1.0` key 7.14.10.4.8.1.3 (7.14.11.5.9.2.3 since the slot remap, below), documented in
+[docs/api/Skin/version-7.14.11.5.9.2.3-docs.md](docs/api/Skin/version-7.14.11.5.9.2.3-docs.md)
 (*Owner tokens*; LK-01 of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`). Thirty of the
 rollout's gaps are one kind: a color an addon draws under Ka0s Default whose exact value no library
 token holds. An addon now names them as its own tokens:
@@ -50,10 +51,38 @@ token holds. An addon now names them as its own tokens:
 
 New suite: `tests/test_skin_owner_tokens.lua`.
 
+### SkinPaint minor 11, SkinPaintExtras minor 5, SkinPaintControls minor 9, SkinEUI minor 2: the slot remap
+
+`LibKa0s-Skin-1.0` key 7.14.11.5.9.2.3, documented in
+[docs/api/Skin/version-7.14.11.5.9.2.3-docs.md](docs/api/Skin/version-7.14.11.5.9.2.3-docs.md)
+(*The slot remap*; LK-02 of the same run). A danger button, a caution callout, an opaque modal and an
+alternate card fill are stock primitives with a slot or two in another color (DR-G1, DR-G2, DR-G3,
+DW-G10, DW-G13). `opts.tokens = { [slot] = <token name> }` names the library or owner token a slot
+paints from:
+
+- **`Shell`**: `bg`, `border`, `inner`, `top`, `bottom`, `text`, `divider`. **`Panel`** and **`Inset`**:
+  `bg`, `border` (the panel's, the inset's or the nav rail's). **`Card`**: `bg`, `border`, `title`,
+  `text`. **`Button`**: `bg`, `border`, `text`, `hover`, `icon` (each the `btnPrimary.*` one with
+  `opts.primary`), `disabled`.
+- Token **names**, never values (anti-pattern #107). A name the owner cannot read, or a value, leaves
+  that slot as the primitive paints it and is logged once; the other slots land. A fill slot takes the
+  named token's gradient pair or none, so no skin gradient shows over a remapped fill.
+- The options are recorded as given, so every repaint replays the remap; a button keeps it on its
+  regions for its hover and enable hooks. No `opts.tokens`, or an empty one, paints exactly what the
+  primitive painted before.
+- Under the eui source a remapped call is painted by the library from the EllesmereUI-derived tokens
+  and never handed to EllesmereUI (`SkinEUI.lua` minor 2); a plain call goes to EllesmereUI as before.
+- The resolution is `Skin.lua`'s (`__Remap`, `__RemapName`, internal), added to minor 7 in place.
+- `FadeRegions` and `FadeNineSlice` moved, unchanged, from `SkinPaint.lua` to `SkinPaintExtras.lua`,
+  which keeps `SkinPaint.lua` at 997 lines, out of layout-§1's 1000-line band; `P.NINE_KEYS` is the
+  shared list.
+
+New suite: `tests/test_skin_remap.lua`.
+
 ### What a consumer owes
 
 - **Nothing until an addon uses the new surfaces.** An addon that passes no `tokens` to
-  `RegisterOwner` (and no new option to a primitive) draws exactly what it drew on v1.79.0, under
+  `RegisterOwner` and no `opts.tokens` to a primitive draws exactly what it drew on v1.79.0, under
   every skin and under EllesmereUI. No member is added to or removed from a stub's surface.
 
 ## v1.79.0 — 2026-10-28

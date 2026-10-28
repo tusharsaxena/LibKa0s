@@ -1,7 +1,8 @@
 -- LibKa0s-Skin-1.0 — the Ka0s paint primitives, part two: the window family's Ka0s extras
--- (TitleBar, Divider, Footer, Card, Strip, Cover, Tooltip, MenuFrame), the text and font
--- primitives (Text, Font, White), the bar texture (BarTexture) and the getters (GetAccentColor,
--- GetPanelColor, GetFont, GlowColor, ChartStyle, BarStyle).
+-- (TitleBar, Divider, Footer, Card, Strip, Cover, Tooltip, MenuFrame), the stock-art faders of
+-- EllesmereUI's vocabulary (FadeRegions, FadeNineSlice, from SkinPaint.lua since its minor 11), the
+-- text and font primitives (Text, Font, White), the bar texture (BarTexture) and the getters
+-- (GetAccentColor, GetPanelColor, GetFont, GlowColor, ChartStyle, BarStyle).
 --
 -- A file of its own so no primitive file reaches layout-§1's 1000-line band: it is part of the same
 -- major, paired on the shell's minor (`__extrasMinor` / `__extrasShellMinor`), and it paints with
@@ -24,7 +25,10 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Minor 4: BarTexture, the owner's bar texture (`bar.texture`, its texture override when it sets
 -- one, Skin minor 6) on a Texture or a StatusBar, tinted and recorded (LibKa0s#63). A repaint and a
 -- nil color keep the bar's live color (a host's own recolor included), never a first-paint snapshot.
-local EXTRAS_MINOR = 4
+-- Minor 5 (LK-02 of Ka0sAddonsCommonTasks docs/2026-10-29-SKINNING_ROLLOUT): Card's `opts.tokens`
+-- slot remap (`bg`, `border`, `title`, `text`; SkinPaint minor 11's P.remap), and the two faders,
+-- moved here unchanged from SkinPaint.lua, which they would have taken into layout-§1's band.
+local EXTRAS_MINOR = 5
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
 lib.__extrasMinor      = EXTRAS_MINOR
@@ -112,14 +116,19 @@ prim.Footer = function(owner, frame, opts)
   if fs then P.label(owner, rec, fs, T, "text.muted") end
 end
 
+local CARD_SLOTS = { bg = "card.bg", border = "card.border", title = "text.heading", text = "text.body" }
+local CARD_FILLS = { bg = true }
+
 --- S.Card(frame, opts): a card (LootHistory's KPI cards), `card.bg` under `card.border` as the
---- flat-control backdrop; `opts.title` takes `text.heading`, `opts.text` `text.body`. Draws no
---- Media icon.
+--- flat-control backdrop; `opts.title` takes `text.heading`, `opts.text` `text.body`. `opts.tokens`
+--- (minor 5) remaps `bg`, `border`, `title` and `text` to a library or owner token by NAME (an
+--- alternate card fill, a callout). Draws no Media icon.
 prim.Card = function(owner, frame, opts)
   if type(frame) ~= "table" then return end
   local rec = P.track(owner, frame, "Card", opts)
   opts = type(opts) == "table" and opts or {}
   local T = P.T(owner)
+  if P.remap then T = P.remap(owner, T, opts.tokens, CARD_SLOTS, CARD_FILLS, "Card") end
   P.box(rec, frame, T, CARD, opts)
   if P.isFS(opts.title) then P.label(owner, rec, opts.title, T, "text.heading", "title") end
   if P.isFS(opts.text) then P.label(owner, rec, opts.text, T, "text.body") end
@@ -204,6 +213,34 @@ prim.MenuFrame = function(owner, frame, opts)
     return P.recolor(frame, bg, border)
   end
   P.box(rec, frame, T, opts.alt and MENU_ALT or MENU, opts)
+end
+
+-- ── the stock-art faders (SkinPaint.lua's until its minor 11) ───────────────────────────────
+
+--- S.FadeRegions(frame, ...): fade every texture region of `frame` (and of each further frame) that
+--- no primitive made, prior alphas recorded, under every skin (Ka0s Default too since minor 6).
+prim.FadeRegions = function(owner, frame, ...)
+  if not P.isFrame(frame) then return end
+  local rec = P.track(owner, frame, "FadeRegions", ...)
+  rec.regions.stock = true
+  local frames = { frame, ... }
+  for _, f in ipairs(frames) do
+    if P.isFrame(f) and type(f.GetRegions) == "function" then
+      for _, r in ipairs({ f:GetRegions() }) do
+        if P.isTexture(r) and not lib.__ours[r] then P.fade(rec, r) end
+      end
+    end
+  end
+end
+
+--- S.FadeNineSlice(frame): fade the nine pieces of `frame.NineSlice`, under every skin.
+prim.FadeNineSlice = function(owner, frame)
+  if not P.isFrame(frame) then return end
+  local rec = P.track(owner, frame, "FadeNineSlice")
+  rec.regions.stock = true
+  local ns = rawget(frame, "NineSlice")
+  if not P.isFrame(ns) then return end
+  for _, k in ipairs(P.NINE_KEYS or {}) do P.fade(rec, P.field(ns, k, "Texture")) end
 end
 
 -- ── text and fonts ───────────────────────────────────────────────────────────────────────────
