@@ -24,18 +24,19 @@ Versions in this release: **Toast minor 1** (the new major `LibKa0s-Toast-1.0`, 
 (`LibKa0s-Skin-1.0` key **6.13.10.4.8.1.3**), **Options minor 34**, **OptionsAppearance minor 3** and
 **OptionsSkinPicker minor 1** (`LibKa0s-Options-1.0` key **34.3.35.4.6.10.3.12.8.3.2.5.3.1**, a
 fourteenth file) and **test kit revision 44**; every other file still at its v1.78.0 minor until an
-entry below moves one. Now **nineteen majors across fifty-three files**.
+entry below moves one. Now **nineteen majors across fifty-three files**: one major and one file
+added for the toast (`Toast.lua`, fifty-two), one file for the skin picker (`OptionsSkinPicker.lua`,
+fifty-three), and no `NEEDS_*` floor rises.
 
 **Pending standard change, before the tag** (the skin picker): frame-layering-§6's library-owned
 tiers gain the row `LibKa0s-Options-1.0` skin picker | `HIGH` | inherited | toplevel / clamped, and
-library-stack-§7's module table is recounted to fifty-three files. Held until this branch merges,
-as the Toast change is. Now **nineteen
-majors across fifty-two files**: one major and one file added (`Toast.lua`), and no `NEEDS_*` floor
-rises.
+library-stack-§7's module table is recounted from the Toast change's fifty-two files to
+**fifty-three**. Held until this branch merges, as the Toast change is.
 
 **Pending standard change, before the tag.** The Ka0s WoW Addon Standard has to move with this
 release, upstream in WowAddonStandards: library-stack-§7's module table gains a `Toast` row and is
-recounted to **nineteen majors across fifty-two files**, and frame-layering-§6 (library-owned tiers)
+recounted to nineteen majors across fifty-two files (fifty-three once the skin picker's recount
+above lands with it, the count this release ships), and frame-layering-§6 (library-owned tiers)
 gains the row `LibKa0s-Toast-1.0` toast | `HIGH` | inherited | toplevel / clamped. It lands upstream
 before v1.79.0 is tagged, held until this branch merges (the owner's standards-push rule).
 
