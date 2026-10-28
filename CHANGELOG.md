@@ -30,7 +30,7 @@ added for the toast (`Toast.lua`, fifty-two), one file for the skin picker (`Opt
 fifty-three), and no `NEEDS_*` floor rises.
 
 **Pending standard change, before the tag** (the skin picker): frame-layering-§6's library-owned
-tiers gain the row `LibKa0s-Options-1.0` skin picker | `HIGH` | inherited | toplevel / clamped, and
+tiers gain the row `LibKa0s-Options-1.0` skin picker | `DIALOG` | inherited | toplevel / clamped, and
 library-stack-§7's module table is recounted from the Toast change's fifty-two files to
 **fifty-three**. Held until this branch merges, as the Toast change is.
 
@@ -174,7 +174,7 @@ the landing page. No member is added. Cases in `tests/test_options_render.lua`.
 (LibKa0s#64, PK-01). A fourteenth file, `OptionsSkinPicker.lua`, attached by one guarded line in
 `lib:New` (Options minor 34):
 
-- `O.SkinPicker(spec)` shows a small window (about 280 wide; `HIGH`, toplevel, clamped, movable;
+- `O.SkinPicker(spec)` shows a small window (about 280 wide; `DIALOG`, toplevel, clamped, movable;
   a window per owner, one up at a time across every Ka0s addon, each refreshed only by its own
   owner's looks) for the host to show the first time a profile runs, and answers its frame;
   `nil, "queued"` while another owner's picker is up; nil without the Skin major or for an
@@ -200,14 +200,16 @@ Amended before release (PK-02, the owner's in-game pass of the first picker; Opt
 stays minor 1):
 
 - **Position.** The window's center sits 75% of the way up UIParent, re-anchored on every show,
-  so the addon's main window the eye opens does not cover it. Still clamped and movable.
+  clear of the middle of the screen where most main windows open. Still clamped and movable. (What
+  keeps the window the eye opens from covering it is PK-03's strata, below.)
 - **The addon's name.** The title reads "Choose a skin for <the addon's label>": `TITLE_FOR`
   ("Choose a skin for %s", `Skin:OwnerLabel` or the owner's name) replaces `TITLE`.
 - **Preview, then Apply.** A pick now previews: `Skin:SetChoice` moves the owner live, the reload
   flag it answers is kept, and neither `spec.set` nor a popup runs. A new primary **Apply** button
   (`APPLY`, `APPLY_TIP`) saves (`spec.set(source, key)`), raises the one reload popup when a pick in
   this showing asked for it, and closes. The close control and Escape dismiss without saving: the
-  Skin major goes back to the choice the window opened with (no write), and `onClose` still runs.
+  Skin major goes back to the owner's stored choice (no write; PK-03, below), and `onClose` still
+  runs.
   The gear saves the pending pick as Apply does before it opens the settings. `SETTINGS_TIP` and
   `CHOOSE_TIP` say so. Every write path stays refused in combat.
 - **Apply to all Ka0s addons** (`APPLY_ALL`, `APPLY_ALL_TIP`), shown only while another skin owner
@@ -229,6 +231,26 @@ stays minor 1):
 - **The gear opens the page.** The default gear calls `O.OpenOptionsPanel(spec.page)`
   (OptionsRegistry minor 4, above) and then `O.SelectTab`, so the player lands on the page that
   holds the Skin tab rather than on the landing page.
+
+Amended again before release (PK-03, the consumer reviews; OptionsSkinPicker stays minor 1):
+
+- **Above the window the eye opens.** The picker sits at `DIALOG` (frame-layering T6, a dialog the
+  player answers), not `HIGH`: the eye's `onPreview` typically shows the addon's main window, itself
+  `HIGH` and toplevel, which came up over the picker when shown and again on every click. No `HIGH`
+  window can cover it now, and it is `Raise()`d after `onPreview` returns (even when it raises an
+  error), for a preview that shows a `DIALOG` window of its own. On every show it re-raises a shown
+  StaticPopup (`Core.RaiseStaticPopups`, frame-layering-§4), so the reload popup one picker's Apply
+  raised stays above the next queued picker.
+- **A dismissal undoes only the preview.** The close control, Escape and `O.HideSkinPicker()` put
+  back the owner's stored choice as it reads at the close (`spec.get`, else `Skin:GetChoice`), not
+  the choice the window opened with, so a skin the Skin tab or a profile change stored while the
+  picker was up is kept. Still no write.
+- **The queue waits out combat.** A close under `InCombatLockdown()` shows no next owner: the queue
+  parks on OptionsRegistry's end-of-combat park (`lib.__parkRegistration`, its one
+  `PLAYER_REGEN_ENABLED` frame) and advances when combat ends, unless something came up meanwhile.
+  While it waits, `O.SkinPicker` for another owner answers `nil, "queued"` too. A queue emptied in
+  the meantime (`HideSkinPicker`, *Apply to all*) shows nothing. A copy without the park shows at
+  once, as before.
 
 Every Options degradation stub gains `SkinPicker` and `HideSkinPicker`; a host that shows the
 picker declares the icons `eye` and `settings`. New suite: `tests/test_options_skin_picker.lua`.

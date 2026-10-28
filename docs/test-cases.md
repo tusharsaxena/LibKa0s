@@ -2139,19 +2139,23 @@ Total.
 - appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
 - appearance: the other owners and one owner's skin copy are library-level, for the skin picker
 
-### test_options_skin_picker.lua (27)
+### test_options_skin_picker.lua (35)
 
 - skin picker: OptionsSkinPicker is minor 1, paired on the shell, and attaches two members
 - skin picker: a newer attach of the file adopts the queue already on the library table
-- skin picker: shows one small HIGH, toplevel, clamped window naming the addon and the skin worn now
+- skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
 - skin picker: the list holds every skin, three swatches each and its name in its own face
 - skin picker: a pick previews: the Skin major moves live, nothing is written, the window stays
 - skin picker: Apply saves the pending pick through the owner's seam, then closes
 - skin picker: a pick that asks for a reload raises the one popup at Apply, not at the pick
 - skin picker: the close control and Escape put the preview back and write nothing
+- skin picker: a close puts back the owner's stored choice now, not the one the window opened with
 - skin picker: the eye keeps working while a preview is pending, and keeps the preview
+- skin picker: the window the eye opens, HIGH and toplevel, does not cover the picker
+- skin picker: showing re-raises a shown StaticPopup, so a reload popup stays above the next picker
 - skin picker: in combat a pick, Apply and Apply to all write nothing and leave the window up
+- skin picker: in combat the close control still closes, putting a pending preview back unwritten
 - skin picker: Apply to all is hidden while no other skin owner is registered
 - skin picker: Apply to all saves here and gives every other owner the source and skin alone
 - skin picker: Apply to all raises one reload popup naming every addon that needs it
@@ -2159,9 +2163,13 @@ Total.
 - skin picker: the gear saves, opens the page itself, then the Skin tab, then closes
 - skin picker: in combat the gear opens nothing and the window stays up, not marked seen
 - skin picker: two instances on one library: the second owner queues, and shows when the first closes
+- skin picker: a queued owner waits out combat and shows when it ends
+- skin picker: a queue dismissed while waiting out combat shows nothing when combat ends
 - skin picker: a queued owner is shown after Apply and after the gear, too
 - skin picker: HideSkinPicker takes a queued owner out unseen, and a shown one down with onClose
 - skin picker: one instance's second owner queues behind its first, each refreshed only by its own
+- skin picker: with the client's own OnHide, one instance's first owner closing leaves the second up
+- skin picker: with the client's own OnHide, onClose still runs once per showing, by every route
 - skin picker: a skin registered after the first show gains its row on the next
 - skin picker: onClose runs once per showing, by every route
 - skin picker: the icons come from LibKa0s-Media-1.0, and are glyphs without it
@@ -3621,7 +3629,7 @@ Total.
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 36 |
-| test_options_skin_picker.lua | 27 |
+| test_options_skin_picker.lua | 35 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3683,4 +3691,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3145** |
+| **Total** | **3153** |
