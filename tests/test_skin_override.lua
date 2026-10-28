@@ -1,7 +1,8 @@
 -- tests/test_skin_override.lua — LibKa0s-Skin-1.0's per-owner font and texture overrides (Skin
 -- minor 6, LibKa0s#63; SO-01 of Ka0sAddonsCommonTasks docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER):
 -- GetOverride, SetOverride, the overrides laid over the owner's tokens in `__Tokens`, and
--- WriteChoice's fourth setter argument `media`.
+-- WriteChoice's fourth setter argument `media`; and S.BarTexture (SkinPaintExtras minor 4, SO-02), the
+-- owner's bar texture on a Texture or a StatusBar, which a texture override reaches live.
 --
 -- What it pins: an override reaches every token read (`Token`, `Color`, the facade) and a painted
 -- string's face on the repaint it triggers; clearing it gives the skin's own back; a repeat is no
@@ -174,4 +175,86 @@ test("skin override: WriteChoice hands media to the setter as its fourth argumen
   Skin:WriteChoice(OWNER, "ka0s", "glass")
   assertNil(store.media, "no media, no fourth argument")
   assertNil((Skin:GetOverride(OWNER)), "WriteChoice never moves the applied overrides")
+end)
+
+-- ── S.BarTexture (SkinPaintExtras minor 4) ───────────────────────────────────────────────────
+
+test("skin override: BarTexture puts the owner's bar texture on a Texture, tinted", function()
+  local m, Skin = F.env({ lsm = LSM })
+  register(Skin, OWNER)
+  local S = Skin:For(OWNER)
+  local tex = m.CreateFrame("Frame"):CreateTexture()
+  S.BarTexture(tex, 0.2, 0.4, 0.6, 0.8)
+  local s = m.__paint(tex)
+  assertEqual(s.texture, "Interface\\TargetingFrame\\UI-StatusBar", "Ka0s Default's Blizzard bar, through LSM")
+  assertEqual(F.rgba(s.vertex), "0.200,0.400,0.600,0.800", "tinted")
+  assertTrue(Skin.painted[tex] ~= nil, "recorded")
+end)
+
+test("skin override: BarTexture follows a texture override and its clearing, live", function()
+  -- red under: BarTexture left unrecorded (the override reaches no bar until the host paints again).
+  local m, Skin = F.env({ lsm = LSM })
+  register(Skin, OWNER)
+  local tex = m.CreateFrame("Frame"):CreateTexture()
+  Skin:For(OWNER).BarTexture(tex, 1, 0, 0)
+  Skin:SetOverride(OWNER, nil, "Ka0s Flat")
+  assertEqual(m.__paint(tex).texture, "Interface\\Ka0s\\Flat", "the override, on the repaint")
+  assertEqual(F.rgba(m.__paint(tex).vertex), "1,0,0,1", "the same tint")
+  Skin:SetOverride(OWNER, nil, false)
+  assertEqual(m.__paint(tex).texture, "Interface\\TargetingFrame\\UI-StatusBar", "the skin's own again")
+end)
+
+test("skin override: with no texture resolved BarTexture is the flat look", function()
+  local m, Skin = F.env()   -- no LibSharedMedia: "Blizzard" resolves to nothing
+  register(Skin, OWNER)
+  local tex = m.CreateFrame("Frame"):CreateTexture()
+  tex:SetVertexColor(0.5, 0.5, 0.5)
+  Skin:For(OWNER).BarTexture(tex, 0.1, 0.2, 0.3, 1)
+  local s = m.__paint(tex)
+  assertEqual(F.rgba(s.color), "0.100,0.200,0.300,1", "SetColorTexture with the tint")
+  assertNil(s.texture, "no file")
+  assertEqual(F.rgba(s.vertex), "1,1,1,1", "and a white vertex color, so the tint is not multiplied")
+end)
+
+test("skin override: BarTexture on a StatusBar sets its bar texture and color", function()
+  local m, Skin = F.env({ lsm = LSM })
+  register(Skin, OWNER)
+  local S = Skin:For(OWNER)
+  local bar = m.CreateFrame("StatusBar", nil, m.UIParent)
+  S.BarTexture(bar, 0, 1, 0, 0.5)
+  local s = m.__paint(bar)
+  assertEqual(s.statusBarTexture, "Interface\\TargetingFrame\\UI-StatusBar")
+  assertEqual(F.rgba(s.statusBarColor), "0,1,0,0.500")
+  Skin:SetOverride(OWNER, nil, "Ka0s Flat")
+  assertEqual(m.__paint(bar).statusBarTexture, "Interface\\Ka0s\\Flat", "repainted with the override")
+  local m2, Skin2 = F.env()
+  register(Skin2, OWNER)
+  local flat = m2.CreateFrame("StatusBar", nil, m2.UIParent)
+  Skin2:For(OWNER).BarTexture(flat, 1, 1, 0)
+  assertEqual(m2.__paint(flat).statusBarTexture, "Interface\\Buttons\\WHITE8X8", "flat with nothing resolved")
+end)
+
+test("skin override: a nil color keeps the target's current color across repaints", function()
+  local m, Skin = F.env({ lsm = LSM })
+  register(Skin, OWNER)
+  local bar = m.CreateFrame("StatusBar", nil, m.UIParent)
+  bar:SetStatusBarColor(0.3, 0.6, 0.9)
+  local tex = m.CreateFrame("Frame"):CreateTexture()
+  tex:SetVertexColor(0.9, 0.1, 0.1)
+  local S = Skin:For(OWNER)
+  S.BarTexture(bar); S.BarTexture(tex)
+  assertEqual(F.rgba({ bar:GetStatusBarColor() }), "0.300,0.600,0.900,1", "the bar keeps its color")
+  assertEqual(F.rgba({ tex:GetVertexColor() }), "0.900,0.100,0.100,1", "the texture keeps its tint")
+  Skin:SetOverride(OWNER, nil, "Ka0s Flat")
+  assertEqual(F.rgba({ bar:GetStatusBarColor() }), "0.300,0.600,0.900,1", "and on the repaint")
+  assertEqual(m.__paint(tex).texture, "Interface\\Ka0s\\Flat")
+end)
+
+test("skin override: BarTexture leaves a frame that is neither a Texture nor a StatusBar alone", function()
+  local m, Skin = F.env({ lsm = LSM })
+  register(Skin, OWNER)
+  local f = m.CreateFrame("Frame", nil, m.UIParent)
+  Skin:For(OWNER).BarTexture(f, 1, 0, 0)
+  assertNil(Skin.painted[f], "nothing recorded")
+  Skin:For(OWNER).BarTexture(nil, 1, 0, 0)
 end)

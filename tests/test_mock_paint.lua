@@ -1,4 +1,5 @@
--- tests/test_mock_paint.lua — the kit's opt-in paint recorder (revision 43, testkit/mock_paint.lua).
+-- tests/test_mock_paint.lua — the kit's opt-in paint recorder (revision 43, testkit/mock_paint.lua;
+-- the StatusBar family since revision 44).
 --
 -- Through revision 42 every paint call answered from the base's metatable: CreateTexture and
 -- CreateFontString handed back THE FRAME, and SetColorTexture, SetVertexColor, SetTextColor, SetFont,
@@ -202,4 +203,40 @@ test("paint mock: composes with the layer recorder in either order", function()
   assertEqual(select("#", parent:GetChildren()), 0, "a reparented child leaves its old parent's list")
   assertTrue((other:GetChildren()) == child)
   r2(); r1()
+end)
+
+-- ── the StatusBar family (revision 44) ──────────────────────────────────────────────────────
+
+test("paint mock: a StatusBar records its fill texture and color, and answers them back", function()
+  -- red under: revision 43, where SetStatusBarColor answered the frame and recorded nothing
+  local M = buildMocks(); install(M)
+  local bar = M.CreateFrame("StatusBar")
+  assertEqual(bar:GetObjectType(), "StatusBar")
+  assertTrue(bar:IsObjectType("StatusBar") and bar:IsObjectType("Frame"))
+  assertEqual(rgba(bar:GetStatusBarColor()), "1,1,1,1", "white until set")
+  assertNil(M.__paint(bar).statusBarTexture, "no fill painted yet")
+  bar:SetStatusBarColor(0.1, 0.2, 0.3)
+  bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+  assertEqual(rgba(bar:GetStatusBarColor()), "0.1,0.2,0.3,1", "the color survives a new file, as in the client")
+  local s = M.__paint(bar)
+  assertEqual(s.statusBarTexture, "Interface\\TargetingFrame\\UI-StatusBar")
+  assertEqual(rgba(unpack(s.statusBarColor)), "0.1,0.2,0.3,1")
+  local fill = bar:GetStatusBarTexture()
+  assertEqual(fill:GetObjectType(), "Texture", "the fill is a Texture region of the bar")
+  assertTrue(fill:GetParent() == bar)
+  assertTrue(bar:GetStatusBarTexture() == fill, "made once")
+  local own = bar:CreateTexture()
+  bar:SetStatusBarTexture(own)
+  assertTrue(bar:GetStatusBarTexture() == own, "a Texture handed in becomes the fill")
+  assertEqual(rgba(bar:GetStatusBarColor()), "0.1,0.2,0.3,1", "and takes the color")
+  bar:SetMinMaxValues(0, 50); bar:SetValue(20)
+  assertEqual(rgba(bar:GetMinMaxValues()), "0,50"); assertEqual(bar:GetValue(), 20)
+end)
+
+test("paint mock: only a StatusBar answers the StatusBar family", function()
+  local M = buildMocks(); install(M)
+  local f = M.CreateFrame("Frame")
+  assertNil(rawget(f, "SetStatusBarTexture"), "a plain frame is the base's for these")
+  assertNil(rawget(f, "GetObjectType"))
+  assertNil(M.__paint(f).statusBarColor)
 end)

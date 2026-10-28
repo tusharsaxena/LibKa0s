@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 6.13.10.3.8.1.3
+# `LibKa0s-Skin-1.0` — version 6.13.10.4.8.1.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **6** · `SkinDefs.lua` minor **13** · `SkinPaint.lua` minor **10** · `SkinPaintExtras.lua` minor **3** · `SkinPaintControls.lua` minor **8** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
+| Files and minors | `Skin.lua` minor **6** · `SkinDefs.lua` minor **13** · `SkinPaint.lua` minor **10** · `SkinPaintExtras.lua` minor **4** · `SkinPaintControls.lua` minor **8** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
 | Shipped in | v1.79.0 (unreleased, opened 2026-10-28) |
 | Status | **Current** |
-| Supersedes | [version 5.13.10.3.8.1.3](./version-5.13.10.3.8.1.3-docs.md) (shipped in v1.78.0) — the same surface without an owner's font and texture overrides (`GetOverride`, `SetOverride`, `WriteChoice`'s `media`) |
+| Supersedes | [version 5.13.10.3.8.1.3](./version-5.13.10.3.8.1.3-docs.md) (shipped in v1.78.0) — the same surface without an owner's font and texture overrides (`GetOverride`, `SetOverride`, `WriteChoice`'s `media`) and the `BarTexture` primitive |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 6, SkinDefs = 13, SkinPaint = 10, SkinPaintExtras = 3, SkinPaintControls = 8, SkinEUI = 1, SkinAce = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 6, SkinDefs = 13, SkinPaint = 10, SkinPaintExtras = 4, SkinPaintControls = 8, SkinEUI = 1, SkinAce = 3 }` |
 
 ## What this major is
 
@@ -112,7 +112,8 @@ still runs the engine: no skin is registered and every token resolves to nil.
   `CloseButton`, `PageButton`, `SquareIcon`, `SortHeaderBar`, `Font`, `White`, `ApplyBarFill`,
   `GetAccentColor`, `GetPanelColor`, `GetFont`), then the Ka0s extras (`TitleBar`, `Divider`,
   `Footer`, `Card`, `Slider`, `NavItem`, `Drawer`, `ListRow`, `MenuFrame`, `Tooltip`, `Strip`,
-  `Cover`, `Text`, `ChartStyle`, `BarStyle`, `IconBorder`, `GlowColor`). A primitive no loaded file
+  `Cover`, `Text`, `ChartStyle`, `BarStyle`, `IconBorder`, `GlowColor`, and since Skin minor 6
+  `BarTexture`). A primitive no loaded file
   provides answers nil and touches nothing. **At this version every one is provided** (*The
   primitives*, below).
 - **The engine, bound to the owner:** `S.Token(name)`, `S.Color(name)`, `S.Resolve(kind, value,
@@ -794,6 +795,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 | `Text(fs, role)` | A text role's color and font: `body`, `muted`, `heading`, `headingAlt`, `accent`, `disabled`, `link`, `linkHot`, `title` (the title font for `title` and the headings, the body font otherwise). | `text.*`, `title.text`, `font.*` |
 | `Font(fs, r, g, b)` | The body font, and the color when given. | `font.body`, `font.bodySize`, `font.outline`, `font.shadow` |
 | `White(fs)` | The body font and the body color (EllesmereUI's `White`, legible in a light skin). | `font.body`, `text.body` |
+| `BarTexture(target, r, g, b, a)` | A bar of data (SkinPaintExtras minor 4, LibKa0s#63): the owner's bar texture, its texture override when it sets one (`SetOverride`), tinted. A Texture takes `SetTexture(path)` and `SetVertexColor(r, g, b, a)`; a StatusBar `SetStatusBarTexture(path)` and `SetStatusBarColor(r, g, b, a)`. With no texture resolved (no LibSharedMedia, or a key it lacks) a Texture falls back to `SetColorTexture(r, g, b, a)` with a white vertex color, the flat look a host's chart bar draws today, and a StatusBar to `WHITE8X8`. A nil color keeps the target's color: the last one a call gave it, else the one it wore at its first paint (a Texture's vertex color, a StatusBar's bar color). Recorded, so a skin switch and an override change re-apply it live. Any other target is left alone and nothing is recorded. | `bar.texture` |
 
 **The controls** (`SkinPaintControls.lua`):
 

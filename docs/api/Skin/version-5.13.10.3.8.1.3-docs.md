@@ -12,7 +12,7 @@
 | Shipped in | v1.78.0 |
 | Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | [version 6.13.10.3.8.1.3](./version-6.13.10.3.8.1.3-docs.md) |
+| Superseded by | [version 6.13.10.4.8.1.3](./version-6.13.10.4.8.1.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 4, SkinDefs = 6, SkinPaint = 3, SkinPaintExtras = 1, SkinPaintControls = 1, SkinEUI = 1, SkinAce = 1 }` |
 

@@ -668,6 +668,7 @@ local BUILD = {
   IconBorder = function(m) return bare(m) end,
   SortHeaderBar = function(m) local f = bare(m); return f, { texts = { f:CreateFontString() } } end,
   ApplyBarFill = function(m) return bare(m, "StatusBar") end,
+  BarTexture = function(m) return bare(m, "StatusBar"), 0.2, 0.4, 0.6, 1 end,
   NavItem = function(m)
     local f = bare(m); return f, { label = f:CreateFontString(), sel = f:CreateTexture(), selected = true }
   end,

@@ -1,7 +1,7 @@
 -- LibKa0s-Skin-1.0 — the Ka0s paint primitives, part two: the window family's Ka0s extras
 -- (TitleBar, Divider, Footer, Card, Strip, Cover, Tooltip, MenuFrame), the text and font
--- primitives (Text, Font, White) and the getters (GetAccentColor, GetPanelColor, GetFont,
--- GlowColor, ChartStyle, BarStyle).
+-- primitives (Text, Font, White), the bar texture (BarTexture) and the getters (GetAccentColor,
+-- GetPanelColor, GetFont, GlowColor, ChartStyle, BarStyle).
 --
 -- A file of its own so no primitive file reaches layout-§1's 1000-line band: it is part of the same
 -- major, paired on the shell's minor (`__extrasMinor` / `__extrasShellMinor`), and it paints with
@@ -21,7 +21,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- skin's face through P.label, so no labeled string keeps the client's font and its shadow.
 -- Minor 3: a wash is a region of its frame at the bottom of BACKGROUND (SkinPaint minor 7's P.SUB),
 -- not of the fill holder, which could tie the frame's parent for frame level.
-local EXTRAS_MINOR = 3
+-- Minor 4: BarTexture, the owner's bar texture (`bar.texture`, its texture override when it sets
+-- one, Skin minor 6) on a Texture or a StatusBar, tinted and recorded (LibKa0s#63).
+local EXTRAS_MINOR = 4
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
 lib.__extrasMinor      = EXTRAS_MINOR
@@ -238,6 +240,48 @@ prim.White = function(owner, fs)
   local rec = P.track(owner, fs, "White")
   P.font(owner, rec, fs, "body")
   P.tint(rec, fs, P.T(owner), "text.body")
+end
+
+-- ── the bar texture ──────────────────────────────────────────────────────────────────────────
+
+--- The tint a BarTexture call paints with: its own color, remembered for the target; else the one
+--- remembered from an earlier call; else the target's color at its first paint (a Texture's vertex
+--- color, a StatusBar's bar color), so a nil color keeps the target's current color.
+local function barTint(rec, target, statusBar, r, g, b, a)
+  local tints = P.saved(rec, "barTint")
+  if type(r) == "number" then
+    tints[target] = { r, tonumber(g) or 0, tonumber(b) or 0, tonumber(a) or 1 }
+  elseif tints[target] == nil then
+    local get = statusBar and target.GetStatusBarColor or target.GetVertexColor
+    local c = type(get) == "function" and { get(target) } or {}
+    tints[target] = { tonumber(c[1]) or 1, tonumber(c[2]) or 1, tonumber(c[3]) or 1, tonumber(c[4]) or 1 }
+  end
+  return unpack(tints[target])
+end
+
+--- S.BarTexture(target, r, g, b, a): the owner's bar texture (`bar.texture`, an LSM statusbar key;
+--- the owner's texture override when it sets one) on a bar of data, tinted r, g, b, a. A Texture
+--- takes SetTexture and SetVertexColor; a StatusBar SetStatusBarTexture and SetStatusBarColor. With
+--- no texture resolved a Texture falls back to SetColorTexture(r, g, b, a), the flat look (its
+--- vertex color white), and a StatusBar to WHITE8X8. A nil color keeps the target's current color.
+--- Recorded, so a skin switch or an override change re-applies it. Draws no Media icon.
+prim.BarTexture = function(owner, target, r, g, b, a)
+  if type(target) ~= "table" then return end
+  local statusBar = P.kind(target) == "StatusBar"
+  if not statusBar and not P.isTexture(target) then return end
+  local rec = P.track(owner, target, "BarTexture", r, g, b, a)
+  local path = P.media("statusbar", P.T(owner)["bar.texture"])
+  local tr, tg, tb, ta = barTint(rec, target, statusBar, r, g, b, a)
+  if statusBar then
+    target:SetStatusBarTexture(path or P.WHITE8)
+    return target:SetStatusBarColor(tr, tg, tb, ta)
+  end
+  if path then
+    target:SetTexture(path)
+    return target:SetVertexColor(tr, tg, tb, ta)
+  end
+  target:SetColorTexture(tr, tg, tb, ta)
+  target:SetVertexColor(1, 1, 1, 1)
 end
 
 -- ── the getters (never recorded: they paint nothing) ─────────────────────────────────────────

@@ -20,9 +20,9 @@ open work is settled at finalize.
 
 Versions in this release: **Toast minor 1** (the new major `LibKa0s-Toast-1.0`, key **1**) and
 **DebugLogDiagnostics minor 5** (`LibKa0s-DebugLog-1.0` key **22.5.1.1**), and, from
-`feat/2026-10-28-skin-overrides-picker` (LibKa0s#63 and #64), **Skin minor 6**
-(`LibKa0s-Skin-1.0` key **6.13.10.3.8.1.3**); every other file still at
-its v1.78.0 minor, and **test kit revision 43**, until an entry below moves one. Now **nineteen
+`feat/2026-10-28-skin-overrides-picker` (LibKa0s#63 and #64), **Skin minor 6** and **SkinPaintExtras minor 4**
+(`LibKa0s-Skin-1.0` key **6.13.10.4.8.1.3**) and **test kit revision 44**; every other file still at
+its v1.78.0 minor until an entry below moves one. Now **nineteen
 majors across fifty-two files**: one major and one file added (`Toast.lua`), and no `NEEDS_*` floor
 rises.
 
@@ -74,8 +74,8 @@ without the major prints the same header as before. No member change.
 
 ### Skin minor 6: an owner's font and texture overrides
 
-`LibKa0s-Skin-1.0` key 6.13.10.3.8.1.3, documented in
-[docs/api/Skin/version-6.13.10.3.8.1.3-docs.md](docs/api/Skin/version-6.13.10.3.8.1.3-docs.md)
+`LibKa0s-Skin-1.0` key 6.13.10.3.8.1.3 (6.13.10.4.8.1.3 since SkinPaintExtras minor 4, below;
+[docs/api/Skin/version-6.13.10.4.8.1.3-docs.md](docs/api/Skin/version-6.13.10.4.8.1.3-docs.md))
 (LibKa0s#63; SO-01 of Ka0sAddonsCommonTasks `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`). Each
 owner can now replace its skin's font and its bar texture, the way most WoW addons offer "Font" and
 "Texture":
@@ -95,6 +95,30 @@ owner can now replace its skin's font and its bar texture, the way most WoW addo
   key|false }`, reaches the host's setter as its fourth argument; an older setter ignores it.
 
 New suite: `tests/test_skin_override.lua`.
+
+### SkinPaintExtras minor 4: S.BarTexture
+
+`LibKa0s-Skin-1.0` key 6.13.10.4.8.1.3, documented in
+[docs/api/Skin/version-6.13.10.4.8.1.3-docs.md](docs/api/Skin/version-6.13.10.4.8.1.3-docs.md)
+(LibKa0s#63, SO-02). `VOCAB` gains `BarTexture`, so every facade carries the trampoline.
+`S.BarTexture(target, r, g, b, a)` puts the owner's bar texture (`bar.texture`, its texture override
+when it sets one) on a bar of data: `SetTexture` and `SetVertexColor` on a Texture,
+`SetStatusBarTexture` and `SetStatusBarColor` on a StatusBar. With no texture resolved a Texture
+falls back to `SetColorTexture(r, g, b, a)`, today's flat look, and a StatusBar to `WHITE8X8`. A
+nil color keeps the target's current color. Recorded, so a skin switch or an override change
+re-applies it. Cases in `tests/test_skin_override.lua`, and the primitive joins
+`tests/test_skin_paint_controls.lua`'s idempotence and repaint sweeps.
+
+### Test kit revision 44: the paint recorder's StatusBar family
+
+Documented in [docs/api/testkit/version-44-docs.md](docs/api/testkit/version-44-docs.md). Under
+`mock_paint.lua`, a frame built as `"StatusBar"` answers `GetObjectType` (`"StatusBar"`),
+`SetStatusBarTexture` / `GetStatusBarTexture` (the fill, a Texture region of the bar),
+`SetStatusBarColor` / `GetStatusBarColor` (the fill's vertex color, kept across a new file),
+`SetMinMaxValues` and `SetValue`, and the survey reports `statusBarTexture` and `statusBarColor`.
+Through revision 43 those calls answered the frame and recorded nothing, so `S.BarTexture` on a
+StatusBar could not be asserted (fidelity rules 1 and 3). Consumers re-vendor `tests/_kit/` whole;
+nothing else is owed. Cases in `tests/test_mock_paint.lua`.
 
 ## v1.78.0 — 2026-10-25
 

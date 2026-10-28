@@ -530,7 +530,7 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
-### test_skin_override.lua (9)
+### test_skin_override.lua (15)
 
 - skin override: an unregistered owner has none and cannot set one
 - skin override: a font and a texture reach every token read, and nothing else moves
@@ -541,6 +541,12 @@ Total.
 - skin override: one owner's override never reaches another owner
 - skin override: SetOverride while a reload is pending stores the pair and repaints nothing
 - skin override: WriteChoice hands media to the setter as its fourth argument, normalized
+- skin override: BarTexture puts the owner's bar texture on a Texture, tinted
+- skin override: BarTexture follows a texture override and its clearing, live
+- skin override: with no texture resolved BarTexture is the flat look
+- skin override: BarTexture on a StatusBar sets its bar texture and color
+- skin override: a nil color keeps the target's current color across repaints
+- skin override: BarTexture leaves a frame that is neither a Texture nor a StatusBar alone
 
 ### test_skin_defs.lua (27)
 
@@ -3242,7 +3248,7 @@ Total.
 - layer mock: UIParent carries the recorder too
 - layer mock: restore() puts CreateFrame back, and later frames are plain
 
-### test_mock_paint.lua (13)
+### test_mock_paint.lua (15)
 
 - paint mock: CreateTexture and CreateFontString answer distinct regions the frame owns
 - paint mock: texture paint calls are recorded and answered back
@@ -3257,6 +3263,8 @@ Total.
 - paint mock: UIParent records too, and frames from __paintFrame
 - paint mock: off by default, and restore() puts everything back
 - paint mock: composes with the layer recorder in either order
+- paint mock: a StatusBar records its fill texture and color, and answers them back
+- paint mock: only a StatusBar answers the StatusBar family
 
 ### test_surface_parity.lua (7)
 
@@ -3330,7 +3338,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 43
+- the kit is revision 44
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -3510,7 +3518,7 @@ Total.
 | test_toast.lua | 50 |
 | test_media.lua | 37 |
 | test_skin.lua | 27 |
-| test_skin_override.lua | 9 |
+| test_skin_override.lua | 15 |
 | test_skin_defs.lua | 27 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
@@ -3608,7 +3616,7 @@ Total.
 | test_mock_lines.lua | 5 |
 | test_mock_bindings.lua | 17 |
 | test_mock_layers.lua | 7 |
-| test_mock_paint.lua | 13 |
+| test_mock_paint.lua | 15 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
@@ -3624,4 +3632,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3090** |
+| **Total** | **3098** |

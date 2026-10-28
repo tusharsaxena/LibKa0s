@@ -68,7 +68,8 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 6: each owner's font and texture override, the Appearance tab's "Font and texture" section
 -- (LibKa0s#63): GetOverride, SetOverride, WriteChoice's fourth argument `media`, and `__Tokens`
 -- laying the overrides over the skin's table (font.body, font.title and hud.font; bar.texture).
--- ResolveSkin stays override-free: a picker reads another skin's own tokens through it.
+-- ResolveSkin stays override-free: a picker reads another skin's own tokens through it. VOCAB gains
+-- BarTexture (SkinPaintExtras minor 4), the bar texture on a Texture or a StatusBar.
 local MAJOR, MINOR = "LibKa0s-Skin-1.0", 6
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -95,6 +96,7 @@ lib.VOCAB = {
   "GetAccentColor", "GetPanelColor", "GetFont",
   "TitleBar", "Divider", "Footer", "Card", "Slider", "NavItem", "Drawer", "ListRow", "MenuFrame",
   "Tooltip", "Strip", "Cover", "Text", "ChartStyle", "BarStyle", "IconBorder", "GlowColor",
+  "BarTexture",
 }
 
 local WEAK_KEYS = { __mode = "k" }

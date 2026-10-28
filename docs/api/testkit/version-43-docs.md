@@ -10,9 +10,9 @@
 | Version | **43** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.78.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 42](version-42-docs.md) — `CreateTexture` and `CreateFontString` answered the frame itself, and no paint call (colors, fonts, textures, backdrops) was recorded anywhere a skin suite could read it |
-| Superseded by | — |
+| Superseded by | [version 44](version-44-docs.md) — the paint recorder answers a StatusBar's fill texture and color |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `43` |
 
