@@ -371,6 +371,9 @@ tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json 
 tools/prune-icons.lua -- after the cp -r re-vendor, deletes every icon under <Addon>/libs/LibKa0s/
                         media/icons/ that the addon's `LibKa0s icons:` line does not declare, with
                         the kit's own parser (testkit/vendor_sync.lua). Pure Lua 5.1
+tools/skin_gallery.py -- crops in-game screenshots of one addon window, one per skin, to the window,
+                        and builds a labeled showcase grid of every skin; reads the skins and their
+                        order from SkinDefs.lua. Not shipped (docs/skins/README.md)
 tools/artwork/       -- icon_cleaner.py rebuilds media/icons/ and MediaIcons.lua from Open Iconic,
                         Phosphor and Game-icons (pinned commits, its own venv); bar_textures.py
                         and glass_textures.py synthesize media/textures/ from named constants;
