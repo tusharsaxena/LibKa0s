@@ -10,13 +10,14 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.80.0 — unreleased
+## v1.80.0 — 2026-10-29
 
 Opened 2026-10-29, on `feat/2026-10-29-skinning-rollout`: the library half of the skinning rollout to
 the fourteen remaining Ka0s addons (Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`, M1).
 Its M0 inventory found 39 gaps no existing primitive or token covers; this release carries the
 rung-2 items that meet them (`LK-01` to `LK-05`), each adding a surface and none changing what an
-existing call draws. Not tagged.
+existing call draws. The release closes on the same branch (`LK-90`); the tag is the lead's, local
+until the owner's go-ahead.
 
 Versions in this release: **Skin minor 7**, **SkinDefs minor 15**, **SkinPaint minor 11**,
 **SkinPaintExtras minor 5**, **SkinPaintControls minor 9**, **SkinEUI minor 2** and **SkinAce minor 4**
@@ -172,6 +173,49 @@ give the window back on a live switch (QC-G4):
   `SkinPaint.lua` at 989 lines then, out of layout-§1's 1000-line band; `P.FILL_SLOTS` is shared.
 
 New suite: `tests/test_skin_stock_default.lua`.
+
+### Docs and process
+
+- **Released 2026-10-29 with no minor of its own.** Every minor above is the one its change moved;
+  the close (`LK-90`) bumps none. The versions paragraph rechecks against every major's live
+  `lib.MODULES` (`tests/test_versioning.lua` green), and the counts against the tree:
+  `grep -c 'major = "LibKa0s-' tests/majors.lua` answers 19 and
+  `grep -c '<Script' LibKa0s/LibKa0s.xml` 53. `docs/test-cases.md` and the members manifests
+  regenerate from the same tree with no diff.
+- **Built to standard v2.91.0** (was v2.90.0): the README's standards pointer moves after a read of
+  v2.91.0's one ruling, `WS-01` of the same run, which is on WowAddonStandards'
+  `feat/2026-10-29-skinning-rollout` and merges with this release. skinning-§1 gains the three
+  surfaces this release ships: an addon's own colors are owner tokens (a name in the addon's
+  namespace, a `default` that is the Ka0s Default pixel, a `follow` library role token, optional
+  per-skin values), a box or button that needs other tokens names them in `opts.tokens` (names, never
+  values, anti-pattern #107), and a window built to match Blizzard's settings window MAY keep its
+  stock art under Ka0s Default through `opts.stockDefault`. The rule binds an adopted addon from its
+  re-vendor of this tag. The library's refusals already match it: a name with no dot, one inside a
+  library family and a malformed definition are refused and logged. v2.90.0's *Resizing* item stays
+  open, as v1.79.0 recorded it: this release touches no resizable window.
+- **Hosts affected by the preview and simulation re-look (step 5): none.** No minor of `Sim.lua`,
+  `SimTimeline.lua`, `SimPanel.lua` or `Widgets.lua` (the file that defines `W.TestStrip`) moved
+  since v1.79.0 (`git diff --stat v1.79.0 -- LibKa0s/Sim*.lua LibKa0s/Widgets.lua` prints nothing).
+- **Step 8 is the rollout's M2.** The fourteen remaining addons re-vendor this tag in their `<PFX>-RV`
+  items of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/` and adopt skins there; Ka0s
+  Skin Tester carries the showroom samples (`ST-01`). LootHistory stays on v1.79.0 until its own next
+  re-vendor. In a client where any re-vendored addon is installed, its v1.80.0 copy wins the Skin
+  and Options majors, and every addon that uses none of the new surfaces draws what it drew on
+  v1.79.0.
+- **`LibKa0s/Skin.lua` enters layout-§1's 1000-line notice band**, 802 → 1044 with minor 7's owner
+  tokens, slot-remap resolution and `__DrawsKey`. Accepted, with a named seam: the owner-token block
+  (`isSchemaName` through `takeTokens`, `__RemapName`, `ownValue`, `withOwnTokens` and `__Remap`) to a
+  secondary file of its own at the next Skin minor that adds to it. The ruling is in `CLAUDE.md`'s
+  band and in `docs/automated-tests/RESULTS.md`'s disposition. Nine band files now; nothing over
+  1500.
+- **Consumers.** `docs/releasing.md`'s Skin row says what v1.80.0 adds and where the rollout adopts
+  it; `docs/api/CONSUMERS.md` keeps its v1.75.0 stamp and records the release's new exports as not
+  measured until the rollout's census.
+- **The tag is local, and a re-cut is the lead's.** While `v1.80.0` is unpushed, a LibKa0s defect an
+  M2 adoption finds (`LK-A<n>` of the run) bumps the minors it touches and extends this block; the
+  lead then deletes and re-creates the local tag after a clean-tree
+  `tests/_kit/run-automated-tests.sh --release 1.80.0` with a new bundle, `ANALYSIS.md` and
+  release-gate line.
 
 ### What a consumer owes
 

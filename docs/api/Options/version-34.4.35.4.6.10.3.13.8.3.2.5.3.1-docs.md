@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **13** · `OptionsScroll.lua` **8** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** · `OptionsAppearance.lua` **3** · `OptionsSkinPicker.lua` **1** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>`, in load order — the same fourteen numbers `lib.MODULES` reports. |
-| Shipped in | unreleased (v1.80.0) |
+| Shipped in | v1.80.0 |
 | Status | **Current** |
 | Supersedes | [version 34.4.35.4.6.10.3.12.8.3.2.5.3.1](./version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md) (shipped in v1.79.0) — whose `BorderGroup` followed only the bar's border (`fromSkin = true`), with no icon family; and [version 33.3.35.4.6.10.3.12.8.3.2.5.2](./version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md) (shipped in v1.78.0), whose Appearance tab was labeled "Appearance" and had no font or texture override, and which had no skin picker |
 | Superseded by | — |

@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` minor **7** · `SkinDefs.lua` minor **15** · `SkinPaint.lua` minor **11** · `SkinPaintExtras.lua` minor **5** · `SkinPaintControls.lua` minor **9** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
-| Shipped in | unreleased (v1.80.0) |
+| Shipped in | v1.80.0 |
 | Status | **Current** |
 | Supersedes | [version 7.14.11.5.9.2.4](./version-7.14.11.5.9.2.4-docs.md) (unreleased) — the same surface without the icon border family (`icon.borderStyle`, `icon.borderSize`, `IconBorder`'s `opts.fromSkin`) and without `opts.stockDefault`; [version 7.14.11.5.9.2.3](./version-7.14.11.5.9.2.3-docs.md) (unreleased), without `AliasAceType` and the `TreeGroup` painter either; [version 7.14.10.4.8.1.3](./version-7.14.10.4.8.1.3-docs.md) (unreleased), without the slot remap either (`opts.tokens` on `Shell`, `Panel`, `Inset`, `Card` and `Button`); and [version 6.14.10.4.8.1.3](./version-6.14.10.4.8.1.3-docs.md) (shipped in v1.79.0), without owner tokens either |
 | Superseded by | — |

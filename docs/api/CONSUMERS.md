@@ -71,6 +71,15 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.80.0, not in the census (2026-10-29).** The release adds Skin's `Skin:AliasAceType` (SkinAce
+minor 4) and three opt-in surfaces with no member of their own: `RegisterOwner`'s `tokens` (owner
+tokens, Skin minor 7, with `S.Text` given a token name, SkinPaintExtras minor 5), the primitives'
+`opts.tokens` slot remap and `opts.stockDefault`, plus the icon border family's two tokens (SkinDefs
+minor 15, drawn by `S.IconBorder`'s `fromSkin`) and `O.BorderGroup`'s `fromSkin = "icon"`
+(OptionsCompose minor 13). None gets a row here yet, and the v1.75.0 stamp and its numbers stand: the
+fourteen addons of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/` adopt them in its M2, and
+the census re-run after that pass measures them with v1.78.0's and v1.79.0's exports.
+
 **v1.79.0, not in the census (2026-10-28).** The skin half of the release adds Skin's
 `Skin:GetOverride` and `Skin:SetOverride` with `Skin:WriteChoice`'s `media` (Skin minor 6), the facade
 primitive `S.BarTexture` (SkinPaintExtras minor 4), the Options instance members `SkinPicker` and

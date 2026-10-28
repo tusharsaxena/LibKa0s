@@ -3543,3 +3543,12 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 34.4.35.4.6.10.3.13.8.3.2.5.3.1
+
+**Take it; nothing is owed.** Version 34.4.35.4.6.10.3.13.8.3.2.5.3.1, shipped in v1.80.0, moves one
+file, `OptionsCompose.lua` 12 -> 13, and adds and removes no member. `O.BorderGroup{ fromSkin = "icon" }`
+follows the skin's icon border family (`LibKa0s-Skin-1.0`'s `icon.borderStyle` and `icon.borderSize`,
+SkinDefs minor 15, which its copy carries) in style and thickness; `fromSkin = true` is this version's
+bar family, row for row. See
+[version 34.4.35.4.6.10.3.13.8.3.2.5.3.1](./version-34.4.35.4.6.10.3.13.8.3.2.5.3.1-docs.md).
