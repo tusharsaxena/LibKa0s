@@ -215,6 +215,23 @@ test("toast: a cap under one still keeps the payload just queued", function()
   assertEqual(t:Current(), "c")
 end)
 
+test("toast: Stats names the waiting payloads' keys, oldest first, false for none", function()
+  local t = newToast()
+  assertEqual(#t:Stats().keys, 0, "nothing waits")
+  t:Show("a", { key = 1 })
+  t:Show("b", { key = "x" })
+  t:Show("c")
+  t:Show("d", { key = 4 })
+  local s = t:Stats()
+  assertEqual(s.key, 1, "the one on screen is key, not in keys")
+  assertEqual(#s.keys, 3)
+  assertEqual(s.keys[1], "x"); assertEqual(s.keys[2], false); assertEqual(s.keys[3], 4)
+  s.keys[1] = "changed"
+  assertEqual(t:Stats().keys[1], "x", "a fresh list each call: the queue is not handed out")
+  t:Hold()
+  assertEqual(t:Stats().keys[1], 1, "a held toast goes back to the head of the queue")
+end)
+
 test("toast: the cap defaults to MAX_QUEUE", function()
   local t, _, _, Toast = newToast()
   for i = 1, Toast.MAX_QUEUE + 4 do t:Show(i) end

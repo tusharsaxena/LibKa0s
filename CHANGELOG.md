@@ -38,7 +38,8 @@ The new major `LibKa0s-Toast-1.0`, documented in
 
 - **One at a time.** `Show(payload, opts)` queues; the next payload shows when the current one goes,
   and past `d.maxQueue` (default `MAX_QUEUE`, 5) the oldest waiting one is dropped. `opts.key` names a
-  payload for `Remove(key)`; `opts.sticky` gives it no countdown.
+  payload for `Remove(key)`; `opts.sticky` gives it no countdown. `Stats()` reports the toast's
+  state, `keys` naming the waiting payloads oldest first, for a host's diagnostics report.
 - **Lifetime.** It closes after `d.duration` (default `DURATION`, 8 seconds); the countdown pauses
   while the pointer is over the toast or a control attached with `Attach(widget)`, and resumes with
   the time it had left (never under a second). The close mark (Core's `MakeCloseButton`) and a

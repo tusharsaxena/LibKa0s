@@ -110,7 +110,7 @@ stub mirrors them by name.
 | `Refresh()` | 1 | Re-read `scale` and the position and re-anchor a built frame (after the host's scale row, or a profile switch). |
 | `ResetPosition()` | 1 | `setPosition(nil)`, then re-anchor: the toast goes back to `defaultPosition` or `POINT`. |
 | `Current()` | 1 | The payload on screen and its key, or nil. |
-| `Stats()` | 1 | `{ built, shown, waiting, held, paused, sticky, key }`, for a host's diagnostics report and suites. |
+| `Stats()` | 1 | `{ built, shown, waiting, held, paused, sticky, key, keys }`, for a host's diagnostics report and suites. `key` is the toast on screen's; `keys` is a fresh list of the waiting payloads' keys, oldest first, `false` for a payload queued without one, so a host names what waits (Drop Watcher's diagnostics list the waiting drops) without keeping a copy of the queue. |
 | `Frame()` | 1 | The frame, or nil before the first toast. Its `close` field is the close mark, when there is one. |
 
 ## The frame
@@ -177,7 +177,7 @@ NS.ToastStub = {
     Attach = function() end, Refresh = function() end, ResetPosition = function() end,
     Current = function() return nil end, Frame = function() return nil end,
     Stats = function() return { built = false, shown = false, waiting = 0, held = false,
-        paused = false, sticky = false } end,
+        paused = false, sticky = false, keys = {} } end,
 }
 ```
 
