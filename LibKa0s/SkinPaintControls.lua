@@ -118,11 +118,17 @@ end
 local BUTTON_FILLS = { bg = true }
 
 --- The owner's tokens as the button's record remaps them (minor 9): its `opts.tokens`, kept on its
---- regions by its last Button call.
+--- regions by its last Button call. The view is cached on the regions, keyed by the token table,
+--- the remap and the base, so a hover or enable hook builds nothing while none of them moves.
 local function buttonTokens(owner, rec)
   local T = P.T(owner)
-  if not P.remap then return T end
-  return P.remap(owner, T, rec.regions.btnTokens, BUTTON_SLOTS[buttonBase(rec)], BUTTON_FILLS, "Button")
+  local tokens, base, r = rec.regions.btnTokens, buttonBase(rec), rec.regions
+  if not P.remap or tokens == nil then return T end
+  local c = r.btnView
+  if c and c.T == T and c.tokens == tokens and c.base == base then return c.view end
+  local view = P.remap(owner, T, tokens, BUTTON_SLOTS[base], BUTTON_FILLS, "Button")
+  r.btnView = { T = T, tokens = tokens, base = base, view = view }
+  return view
 end
 
 local function enabled(btn)

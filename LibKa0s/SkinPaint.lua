@@ -773,6 +773,7 @@ function P.unpaint(rec, frame)
     if key ~= "holder" and lib.__ours[r] then r:Hide() end
   end
   if rec.regions.holder then rec.regions.holder:Hide() end
+  rec.regions.stockKept = nil   -- given back: no mark outlives the paint it stood for
 end
 
 --- The caller's `opts.stockDefault` (minor 11, LK-05 of the skinning rollout): true when it asks
@@ -781,7 +782,10 @@ end
 --- target wears from the library is given back (P.unpaint, so a live switch back to Ka0s Default is
 --- the stock target again), the record marks it `stockKept` so its hover and enable hooks stand
 --- down, and the caller paints nothing. Otherwise clears the mark and answers false. The target
---- stays recorded either way, so a skin switch replays the call.
+--- stays recorded either way, so a skin switch replays the call. The mark and the give-back are the
+--- TARGET's, shared by every primitive that paints it, so every call on a stock-kept target passes
+--- `stockDefault` (a second call without it paints, and clears the mark). An owner change, an
+--- Untrack and P.unpaint clear it.
 function P.keepStock(owner, rec, frame, opts)
   if not rec then return false end
   local want = type(opts) == "table" and opts.stockDefault == true
@@ -814,6 +818,7 @@ function P.track(owner, target, name, ...)
   if not rec then return nil end
   local regions = lib.__regions[target]
   if regions then
+    if not old then regions.stockKept = nil end   -- Untracked meanwhile: its stock mark goes with it
     rec.regions = regions
   else
     lib.__regions[target] = rec.regions

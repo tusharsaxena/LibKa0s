@@ -30,7 +30,8 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- moved here unchanged from SkinPaint.lua, which they would have taken into layout-§1's band.
 -- Then (LK-05 of the same run, still minor 5): TitleBar's and FadeNineSlice's `opts.stockDefault`
 -- (SkinPaint minor 11's P.keepStock), and Panel and Inset, moved here unchanged from SkinPaint.lua
--- for the same reason.
+-- for the same reason. And (LK-01's review, still minor 5): S.Text takes an owner or library token
+-- NAME as well as a role, so an owner token is drawn through a tracked, replayed primitive.
 local EXTRAS_MINOR = 5
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
@@ -308,12 +309,20 @@ local TEXT_FONT = { title = "title", heading = "title", headingAlt = "title" }
 
 --- S.Text(fs, role): a text role, "body", "muted", "heading", "headingAlt", "accent", "disabled",
 --- "link", "linkHot" or "title": its color and its font (the title font for the title and heading
---- roles, the body font for the rest). Draws no Media icon.
+--- roles, the body font for the rest). Or (minor 5) a token NAME, library or owner ("dw.note",
+--- "sem.good"): the color from that token, in the body font, replayed on a skin switch like a role.
+--- A name the owner cannot read (logged once) or a token that is not a color draws as "body". Draws
+--- no Media icon.
 prim.Text = function(owner, fs, role)
   if not P.isFS(fs) then return end
   local rec = P.track(owner, fs, "Text", role)
-  role = TEXT_ROLE[role] and role or "body"
-  P.tint(rec, fs, P.T(owner), TEXT_ROLE[role])
+  local T, token = P.T(owner), TEXT_ROLE[role]
+  if not token and type(role) == "string" and role:find(".", 1, true)
+    and type(lib.__RemapName) == "function" and lib:__RemapName(owner, role, "Text")
+    and (T[role] == nil or type(T[role]) == "table") then   -- a color token; never a face or a size
+    token = role
+  end
+  P.tint(rec, fs, T, token or "text.body")
   P.font(owner, rec, fs, TEXT_FONT[role] or "body")
 end
 

@@ -40,13 +40,20 @@ token holds. An addon now names them as its own tokens:
   follow token's EllesmereUI value. `false` in a skin's entry is that skin's none.
 - They resolve where every token does: `__Tokens` lays them over the owner's table after its font and
   texture overrides, so `Token`, `Color`, `Resolve`, the facade and every primitive that takes a token
-  name (`S.Divider`'s `opts.token`) read them, and a token that follows `font.body` follows the font
-  override. A skin switch repaints a primitive that named one. `ResolveSkin` and `__BaseTokens` never
+  name (`S.Divider`'s `opts.token`, and `S.Text` given a token name) read them, and a token that
+  follows `font.body` follows the font override, under Ka0s Default too, where the override wins over
+  `default`. A skin switch repaints a primitive that named one. `ResolveSkin` and `__BaseTokens` never
   carry them; one owner's never reach another's.
-- A name with no dot, one that starts or ends with a dot, one that collides with a `lib.SCHEMA`
-  name, or a malformed definition (not a table, no `default`, a `follow` that is not a library token,
-  a `skins` that is not a table) is refused and logged once per owner and name, through the owner's
-  `opts.log`, else to the client's error handler; the good names beside it still land. A second
+- A name with no dot, one that starts or ends with a dot, one inside a library token family (its
+  first dotted segment is any `lib.SCHEMA` name's, `text`, `sem`, `gtip` and the rest, so a later
+  SkinDefs minor can never take it), or a malformed definition (not a table, no `default`, a `follow`
+  that is not a library token or whose kind disagrees with the default's type, a `skins` that is not
+  a table) is refused and logged once per owner and name, through the owner's `opts.log`, else to
+  the client's error handler; the good names beside it still land. A `skins` entry whose value's type
+  is not the default's is refused, and a key no registered skin carries is kept but logged.
+- **`S.Text(fs, "<token name>")`** (SkinPaintExtras minor 5): a library or owner color token's name
+  where a role goes, drawn in the body font and replayed on a skin switch, so an owner token's text
+  needs no host repaint. A second
   `RegisterOwner` adds its tokens and replaces a name it repeats; registering repaints nothing.
 - An owner with no owner tokens reads the resolved table itself, and every library token is
   unchanged for one with them, so Ka0s Default is pixel-identical for every existing caller.
@@ -66,7 +73,7 @@ paints from:
   `bg`, `border` (the panel's, the inset's or the nav rail's). **`Card`**: `bg`, `border`, `title`,
   `text`. **`Button`**: `bg`, `border`, `text`, `hover`, `icon` (each the `btnPrimary.*` one with
   `opts.primary`), `disabled`.
-- Token **names**, never values (anti-pattern #107). A name the owner cannot read, or a value, leaves
+- Token **names**, never values (anti-pattern #107). A name the owner cannot read, a value, or a non-color token leaves
   that slot as the primitive paints it and is logged once; the other slots land. A fill slot takes the
   named token's gradient pair or none, so no skin gradient shows over a remapped fill.
 - The options are recorded as given, so every repaint replays the remap; a button keeps it on its
@@ -76,8 +83,8 @@ paints from:
   and never handed to EllesmereUI (`SkinEUI.lua` minor 2); a plain call goes to EllesmereUI as before.
 - The resolution is `Skin.lua`'s (`__Remap`, `__RemapName`, internal), added to minor 7 in place.
 - `FadeRegions` and `FadeNineSlice` moved, unchanged, from `SkinPaint.lua` to `SkinPaintExtras.lua`,
-  which keeps `SkinPaint.lua` at 997 lines, out of layout-§1's 1000-line band; `P.NINE_KEYS` is the
-  shared list.
+  which kept `SkinPaint.lua` at 997 lines then, out of layout-§1's 1000-line band; `P.NINE_KEYS` is
+  the shared list.
 
 New suite: `tests/test_skin_remap.lua`.
 
@@ -102,9 +109,10 @@ PC-G1):
   `scroll.track`. `RefreshTree` is a durability hook, so rows AceGUI makes or re-dresses later are
   painted too, and a row AceGUI re-dressed while owned goes back with what AceGUI last set. The
   release gives the whole widget back stock (options-ui-§19). The toggles, row icons and dragger
-  stay stock. Under Ka0s Default the panes and row colors are the TreeGroup's own; the track and the
-  selection tint are the library's (`scroll.track`, OptionsNav's `nav.selBg`), as PrettyChat's D5
-  asked.
+  stay stock. Under Ka0s Default the panes' and rows' colors are the TreeGroup's own, but not their
+  shape: the panes' tooltip edge becomes the flat `nav.borderSize` edge and the rows take the body
+  face, as every v1.79.0 Ka0s Default surface does; the track and the selection tint are the
+  library's (`scroll.track`, OptionsNav's `nav.selBg`), as PrettyChat's D5 asked.
 - `PAINT.ScrollFrame`'s track moved, unchanged, to a shared local the TreeGroup's bar uses too.
 - Under the eui source both are painted by the library from the EllesmereUI-derived tokens and never
   handed to EllesmereUI, which takes any AceGUI widget, frame or region as shared.
@@ -152,7 +160,8 @@ give the window back on a live switch (QC-G4):
   while the owner draws Ka0s Default the call paints nothing and gives back whatever the library
   painted on the target (faded art, fonts, text and vertex colors, a saved backdrop, a title's
   alignment), so a live switch back is the stock window again; its hover and enable hooks do nothing
-  meanwhile. Under every other skin it paints as before. The mechanism is `P.stockDefault`, which
+  meanwhile. The stock mark is the target's, shared by every call on it, so a host passes the option
+  on every call on that target; an owner change, an Untrack and a give-back clear it. Under every other skin it paints as before. The mechanism is `P.stockDefault`, which
   `Slider` and the other controls already called and which answered false since SkinPaint minor 6;
   `P.keepStock` is its half that `TitleBar` and `FadeNineSlice` call.
 - **eui:** a call goes to EllesmereUI as any does, `stockDefault` stripped; before EllesmereUI paints,
@@ -160,7 +169,7 @@ give the window back on a live switch (QC-G4):
   from the derived tokens, never left stock. `Skin:__DrawsKey(owner)` (internal) answers which.
 - Without the option, or with `false`, every primitive paints exactly as before.
 - `Panel` and `Inset` moved, unchanged, from `SkinPaint.lua` to `SkinPaintExtras.lua`, which keeps
-  `SkinPaint.lua` at 989 lines, out of layout-§1's 1000-line band; `P.FILL_SLOTS` is shared.
+  `SkinPaint.lua` at 989 lines then, out of layout-§1's 1000-line band; `P.FILL_SLOTS` is shared.
 
 New suite: `tests/test_skin_stock_default.lua`.
 

@@ -196,14 +196,22 @@ fs:SetTextColor(S.Color("dw.idle"))
 S.Divider(rule, { token = "dw.idle" })
 ```
 
-- **The name** carries the owner's namespace and a dot (`dw.upgrade`, `dr.ahead`), and is never a
-  library token's name (`lib.SCHEMA`). A name with no dot, one that starts or ends with a dot, or
-  one that collides with a schema name is **refused**; so is a definition that is not a table, has
-  no `default`, names a `follow` that is not a library token, or gives a `skins` that is not a
-  table. Each refusal is logged **once** per owner and name, through `opts.log` when the owner gave
-  one, else to the client's error handler, and the good names beside it still land.
+- **The name** carries the owner's namespace and a dot (`dw.upgrade`, `dr.ahead`), and its
+  namespace is never a library token **family**: the first dotted segment of any `lib.SCHEMA` name
+  (`text`, `sem`, `gtip`, `btn`, `nav`, `win`, ...). So `text.note` or `gtip.note` is refused even
+  though no library token carries it today, because a later SkinDefs minor may add one, and the
+  library's value would then replace the owner's Ka0s Default pixels with no error anywhere. A name
+  with no dot, one that starts or ends with a dot, or one inside a family is **refused**; so is a
+  definition that is not a table, has no `default`, names a `follow` that is not a library token or
+  whose kind disagrees with the default's type (a color that follows `font.body`), or gives a
+  `skins` that is not a table. In `skins`, an entry whose value's type is not the default's
+  (`false` aside) is refused and the rest kept, and a key no registered skin carries (`obsidain`)
+  is kept, for a skin registered later, but logged. Each line is logged **once** per owner and name,
+  through `opts.log` when the owner gave one, else to the client's error handler, and the good names
+  beside it still land.
 - **What it resolves to.** Ka0s Default answers `default`, so the addon's look under it is today's,
-  pixel for pixel. Any other skin answers its own `skins[<skin key>]` entry when it has one (`false`
+  pixel for pixel, unless the owner's font or texture override moved the `follow` token (a token that
+  follows `font.body` or `bar.texture`): then the override, as under every other skin. Any other skin answers its own `skins[<skin key>]` entry when it has one (`false`
   there is that skin's none, nil to every read, unless the token is a bool), else the `follow`
   token's value **in that skin**, so every skin draws it in its own palette; a token with no
   `follow` keeps `default`. While EllesmereUI paints the owner (*The EllesmereUI provider*) it
@@ -214,7 +222,8 @@ S.Divider(rule, { token = "dw.idle" })
   and texture overrides (Skin minor 6), so `Token`, `Color`, `Resolve`, the facade's `S.Token` /
   `S.Color` / `S.Resolve` and every primitive that takes a token name (`S.Divider`'s `opts.token`)
   read them like a library token (and so does a slot of a primitive's `opts.tokens` remap, *The slot
-  remap*), and a token that follows `font.body` follows the font override.
+  remap*, and `S.Text` given the token's name), and a token that follows `font.body` follows the font
+  override, under every skin, Ka0s Default included.
   `ResolveSkin` and `__BaseTokens` never carry them. One owner's tokens never reach another owner.
   The derived table is cached per owner and rebuilt when the skin, the overrides, EllesmereUI's
   looks or the owner's tokens change.
@@ -879,7 +888,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 | `Cover(target, opts)` | The combat cover's dim, and `opts.text`. | `cover.dim`, `cover.text` |
 | `Tooltip(frame)` | A **library-owned** tooltip's backdrop, recolored; never GameTooltip. | `tooltip.bg`, `tooltip.border` |
 | `MenuFrame(frame, opts)` | A popup menu's flat backdrop (no insets); `opts.alt` the alternate edge; `opts.popup` recolors the backdrop the frame already wears, and a nil `popup.*` token puts that half back as the frame wore it before the first paint (a skin switch to Ka0s Default gives the edge back). | `menu.bg`, `menu.border`, `menu.borderAlt`, `menu.borderStyle`, `menu.borderSize`; `popup.bg`, `popup.border` |
-| `Text(fs, role)` | A text role's color and font: `body`, `muted`, `heading`, `headingAlt`, `accent`, `disabled`, `link`, `linkHot`, `title` (the title font for `title` and the headings, the body font otherwise). | `text.*`, `title.text`, `font.*` |
+| `Text(fs, role)` | A text role's color and font: `body`, `muted`, `heading`, `headingAlt`, `accent`, `disabled`, `link`, `linkHot`, `title` (the title font for `title` and the headings, the body font otherwise). Or (SkinPaintExtras minor 5) a color token's **name**, library or owner (`S.Text(fs, "dw.idle")`): that token's color in the body font, recorded and replayed on a skin switch like a role, so an owner token needs no `OnLooksChanged` repaint of the host's own. A name the owner cannot read is logged once (as a remap slot's is) and draws as `body`; so does a token that is not a color. | `text.*`, `title.text`, `font.*` |
 | `Font(fs, r, g, b)` | The body font, and the color when given. | `font.body`, `font.bodySize`, `font.outline`, `font.shadow` |
 | `White(fs)` | The body font and the body color (EllesmereUI's `White`, legible in a light skin). | `font.body`, `text.body` |
 | `BarTexture(target, r, g, b, a)` | A bar of data (SkinPaintExtras minor 4, LibKa0s#63): the owner's bar texture, its texture override when it sets one (`SetOverride`), tinted. A Texture takes `SetTexture(path)` and `SetVertexColor(r, g, b, a)`; a StatusBar `SetStatusBarTexture(path)` and `SetStatusBarColor(r, g, b, a)`. With no texture resolved (no LibSharedMedia, or a key it lacks) a Texture falls back to `SetColorTexture(r, g, b, a)` with a white vertex color, the flat look a host's chart bar draws today, and a StatusBar to `WHITE8X8`. Recorded, so a skin switch and an override change re-apply the texture live. The color is the bar's own from then on: a host's call that names a color paints it; a nil color, and every repaint, paint the color the bar wears at that moment (a Texture's vertex color, a StatusBar's bar color), so a host's direct `SetVertexColor` or `SetStatusBarColor` between paints holds. A flat Texture's tint lives in `SetColorTexture` and cannot be read back, so it is remembered while the vertex color stays the white the primitive set. A texture `Untrack` handed back starts from its own color. Any other target is left alone and nothing is recorded. | `bar.texture` |
@@ -947,8 +956,8 @@ S.Card(box, { title = head, tokens = { bg = "dw.boxBg", border = "dw.boxEdge" } 
 
 - **Names, never values** (anti-pattern #107 holds): a slot names a token, and the token's value in the
   owner's skin is what paints. A name the owner cannot read (no library token and none of its own),
-  or a value where a name belongs, leaves that slot as the primitive paints it and is logged once per
-  owner, primitive slot and name, through the owner's `opts.log` (else the client's error handler);
+  or a value where a name belongs, or a token that is not a color (`bg = "bar.texture"`), leaves that
+  slot as the primitive paints it and is logged once per owner, primitive slot and name, through the owner's `opts.log` (else the client's error handler);
   the other slots still land.
 - **A fill slot carries its token's gradient.** `bg`, `top` and `bottom` take the named token's
   `<name>Top` / `<name>Bottom` pair, or **none** when it has none, so a remapped fill is flat where
@@ -957,7 +966,9 @@ S.Card(box, { title = head, tokens = { bg = "dw.boxBg", border = "dw.boxEdge" } 
   nil token. The style and size tokens (`win.borderStyle`, `btn.borderSize`, ...) are never remapped.
 - **Recorded and replayed.** The options table is recorded as given, so a skin switch, an override
   change and EllesmereUI's live looks change replay the remap; a button keeps its remap on its
-  regions, so its hover and enable hooks paint the remapped label. A later call without `tokens`
+  regions, so its hover and enable hooks paint the remapped label (from a view cached on the regions
+  and rebuilt only when the owner's token table, the remap or the base moves, so a hover builds
+  nothing). A later call without `tokens`
   paints the primitive's own again.
 - **No `opts.tokens`, or an empty one, paints exactly what the primitive painted before**, call for
   call, in every skin.
@@ -986,8 +997,11 @@ S.CloseButton(win.ClosePanelButton, { stockDefault = true })
 - **Which primitives take it.** Every primitive that marks a stock target: `Shell`, `Panel`, `Inset`,
   `Button`, `EditBox`, `Dropdown`, `Slider`, `Tab` and `CloseButton` (`P.stockDefault`), and
   `TitleBar` and `FadeNineSlice` (`P.keepStock`). `PageButton` takes no options and `Checkbox` always
-  draws its own box, so neither does. Pass it on every primitive one target wears: the give-back is
-  the target's whole paint.
+  draws its own box, so neither does. Pass it on **every** call on one target: the give-back is the
+  target's whole paint, and the stock mark is the target's, shared by every primitive and owner that
+  paints it. A second call on the same target without the option paints and clears the mark. The
+  mark leaves with the paint it stood for: an owner change, a `Skin:Untrack` and every give-back
+  clear it, so a later primitive that never asks for stock is never left with inert hooks.
 - **While the owner draws Ka0s Default** (`Skin:__DrawsKey(owner) == "ka0s"`, internal) the call
   paints nothing and gives back anything the library painted on the target before: faded art back to
   its alpha, fonts, text and vertex colors, a saved backdrop, a title's alignment, every library
@@ -1501,7 +1515,7 @@ widget's table are the release wrapper and the durability post-hooks below.
 | `ColorPicker` | The label `text.body`; a 1px `input.border` edge around the swatch |
 | `InlineGroup` | The title `text.heading`; the border frame's backdrop into `panel.bg` / `panel.border` |
 | `ScrollFrame` | The bar's stock background faded under a `scroll.track` region (the always-shown thumb is Options' own) |
-| `TreeGroup` | Minor 4. Both panes (the tree pane and the content pane's border frame) flattened from their tooltip-edged backdrop into `nav.bg` under a `nav.borderSize` edge in `nav.border`; each row button's label `nav.text` for a first-level row at rest and `nav.selText` for a deeper row, the selected row and the row under the pointer, in the body font; its highlight (the selection AceGUI locks) tinted `nav.selBg`; the tree scroll bar's stock background faded under a `scroll.track` region, as `ScrollFrame`'s. The rows' plus/minus toggles, their icons and the dragger stay stock. Under Ka0s Default the panes and the row colors are the TreeGroup's own (`nav.*` was taken from them); the scroll track and the selection tint are the library's (`scroll.track`, OptionsNav's `nav.selBg`) |
+| `TreeGroup` | Minor 4. Both panes (the tree pane and the content pane's border frame) flattened from their tooltip-edged backdrop into `nav.bg` under a `nav.borderSize` edge in `nav.border`; each row button's label `nav.text` for a first-level row at rest and `nav.selText` for a deeper row, the selected row and the row under the pointer, in the body font; its highlight (the selection AceGUI locks) tinted `nav.selBg`; the tree scroll bar's stock background faded under a `scroll.track` region, as `ScrollFrame`'s. The rows' plus/minus toggles, their icons and the dragger stay stock. Under Ka0s Default the panes' colors and the row colors are the TreeGroup's own (`nav.*` was taken from them), but not their shape: the panes' tooltip edge (edgeSize 16) becomes the flat `nav.borderSize` edge and the rows take the body face, as every Ka0s Default surface since v1.79.0 does; the scroll track and the selection tint are the library's (`scroll.track`, OptionsNav's `nav.selBg`) |
 
 `SimpleGroup` has no art and no painter. **Stock, always:** LSM30_* widgets and their pull-out lists,
 TabGroup, and Blizzard's `ColorPickerFrame` (the spec's non-goals). Every field is guarded: a widget

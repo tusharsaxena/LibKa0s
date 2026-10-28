@@ -556,7 +556,7 @@ Total.
 - skin override: a texture Untrack handed back starts from its own color
 - skin override: BarTexture leaves a frame that is neither a Texture nor a StatusBar alone
 
-### test_skin_owner_tokens.lua (12)
+### test_skin_owner_tokens.lua (16)
 
 - skin owner tokens: Ka0s Default answers each token's default, exactly
 - skin owner tokens: a skin answers its own entry, else the follow token's value in that skin
@@ -568,10 +568,14 @@ Total.
 - skin owner tokens: one owner's tokens never reach another owner
 - skin owner tokens: Divider's token name resolves an owner token and repaints on a skin switch
 - skin owner tokens: the owner's font and texture overrides still apply beside them
+- skin owner tokens: under Ka0s Default an override still reaches a token that follows it
+- skin owner tokens: a name inside a library token family is refused, schema name or not
+- skin owner tokens: a follow of another kind is refused; a mistyped skins entry is dropped or flagged
+- skin owner tokens: S.Text draws a token name and repaints it on a skin switch
 - skin owner tokens: under eui a token answers its follow token's EllesmereUI value
 - skin owner tokens: an owner token is no vocabulary entry and needs no SkinDefs change
 
-### test_skin_remap.lua (10)
+### test_skin_remap.lua (12)
 
 - skin remap: no opts.tokens, or an empty one, paints exactly what the primitive painted
 - skin remap: a danger button paints its fill, edge, label and hover from owner tokens
@@ -581,6 +585,8 @@ Total.
 - skin remap: Shell's border, inner rule, top bar and title text slots
 - skin remap: a caution callout Panel and Card, an Inset and the nav rail's recolor
 - skin remap: a name no token carries, or a value, is ignored for its slot and logged once
+- skin remap: a slot named to a token that is not a color is ignored and logged once
+- skin remap: a button's hooks reuse its remapped view until the tokens move
 - skin remap: the record keeps the caller's remap, so a repaint replays it
 - skin remap: under eui a remapped call is the library's, from EllesmereUI's colors
 
@@ -595,12 +601,13 @@ Total.
 - skin icon border: a skin whose icon.borderStyle is None draws no border
 - skin icon border: under eui fromSkin is the library's, from the EllesmereUI-derived tokens
 
-### test_skin_stock_default.lua (8)
+### test_skin_stock_default.lua (9)
 
 - skin stock default: under Ka0s Default a SettingsFrameTemplate window stays the client's
 - skin stock default: another skin paints it, and a switch back gives the stock window back
 - skin stock default: TitleBar gives back the title's justification with its color
 - skin stock default: a stock target's hover and enable hooks do nothing under Ka0s Default
+- skin stock default: the stock mark leaves with the record: an Untrack or another owner clears it
 - skin stock default: Slider, EditBox and Tab take the option through the same mechanism
 - skin stock default: without the option Ka0s Default paints exactly as before
 - skin stock default: under eui the window goes to EllesmereUI; its fallback is stock
@@ -3652,10 +3659,10 @@ Total.
 | test_media.lua | 39 |
 | test_skin.lua | 27 |
 | test_skin_override.lua | 21 |
-| test_skin_owner_tokens.lua | 12 |
-| test_skin_remap.lua | 10 |
+| test_skin_owner_tokens.lua | 16 |
+| test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
-| test_skin_stock_default.lua | 8 |
+| test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 29 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
@@ -3771,4 +3778,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3213** |
+| **Total** | **3220** |

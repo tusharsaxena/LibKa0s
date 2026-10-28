@@ -9,8 +9,9 @@
 -- or a malformed definition is refused and logged once, and the good names beside it still land. The
 -- library's own tokens never move: an owner with no owner tokens reads the resolved table itself, and
 -- one with them reads every library token unchanged. A skin switch repaints a primitive that named an
--- owner token; an owner's font and texture overrides still apply; one owner's tokens never reach
--- another owner.
+-- owner token; an owner's font and texture overrides still apply, under Ka0s Default too; a name
+-- inside a library token family, a follow of another kind and a mistyped skins entry are refused;
+-- S.Text draws a token name; one owner's tokens never reach another owner.
 --
 -- Every case runs on a fresh environment (tests/fixture_skin_paint.lua, tests/fixture_skin_eui.lua).
 
@@ -167,6 +168,80 @@ test("skin owner tokens: the owner's font and texture overrides still apply besi
   assertEqual(S.Token("dw.face"), "Ka0s Inter", "an owner token following font.body follows the override")
   Skin:SetOverride(OWNER, false, false)
   assertEqual(S.Token("dw.face"), Skin:ResolveSkin("obsidian")["font.body"], "cleared: the skin's own again")
+end)
+
+test("skin owner tokens: under Ka0s Default an override still reaches a token that follows it", function()
+  local LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat" }
+  local _, Skin = F.env({ lsm = LSM })
+  local S = register(Skin, OWNER, {
+    ["dw.face"] = { default = "Ka0s Oxanium SemiBold", follow = "font.body" },
+    ["dw.bar"] = { default = "Interface\\Own\\Bar", follow = "bar.texture" },
+  })
+  assertEqual(S.Token("dw.face"), "Ka0s Oxanium SemiBold", "no override: the default, exactly")
+  assertEqual(S.Token("dw.bar"), "Interface\\Own\\Bar", "and the texture's default")
+  Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
+  assertEqual(S.Token("dw.face"), "Ka0s Inter", "the font override wins under Ka0s Default")
+  assertEqual(S.Token("dw.bar"), "Ka0s Flat", "and the texture override")
+  Skin:SetOverride(OWNER, false, false)
+  assertEqual(S.Token("dw.face"), "Ka0s Oxanium SemiBold", "cleared: the default again")
+  assertEqual(S.Token("dw.bar"), "Interface\\Own\\Bar", "both halves")
+end)
+
+test("skin owner tokens: a name inside a library token family is refused, schema name or not", function()
+  local _, Skin = F.env()
+  local S, log = register(Skin, OWNER, {
+    ["text.note"] = { default = RULE, follow = "text.muted" },
+    ["gtip.note"] = { default = RULE, follow = "gtip.muted" },
+    ["sem.foo"] = { default = RULE },
+    ["pc.note"] = { default = RULE, follow = "text.muted" },
+  })
+  for _, name in ipairs({ "text.note", "gtip.note", "sem.foo" }) do
+    assertNil(S.Token(name), name .. " was refused")
+  end
+  assertEqual(F.rgba(S.Token("pc.note")), F.rgba(RULE), "the addon's own namespace lands")
+  assertEqual(#log, 3, "one line per refused name")
+  assertTrue(table.concat(log, "\n"):find("library token family", 1, true) ~= nil, "the line says why")
+end)
+
+test("skin owner tokens: a follow of another kind is refused; a mistyped skins entry is dropped or flagged", function()
+  local _, Skin = F.env()
+  local S, log = register(Skin, OWNER, {
+    ["dw.colorFace"] = { default = RULE, follow = "font.body" },
+    ["dw.typed"] = { default = RULE, follow = "divider", skins = { obsidian = "red", azeroth = GAIN } },
+    ["dw.typo"] = { default = RULE, skins = { obsidain = GAIN } },
+  })
+  assertNil(S.Token("dw.colorFace"), "a color never follows a font face")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(F.rgba(S.Token("dw.typed")), F.tok(Skin, "obsidian", "divider"), "the string entry dropped: the follow")
+  Skin:SetChoice(OWNER, "ka0s", "azeroth")
+  assertEqual(F.rgba(S.Token("dw.typed")), F.rgba(GAIN), "the good entry beside it kept")
+  assertEqual(#log, 3, "the follow, the mistyped value and the unknown skin key, once each")
+  local all = table.concat(log, "\n")
+  assertTrue(all:find("dw.typo.skins.obsidain kept", 1, true) ~= nil, "an unknown key is kept, and flagged")
+  assertTrue(all:find("dw.typed.skins.obsidian refused", 1, true) ~= nil, "a mistyped value is refused")
+  Skin:RegisterOwner(OWNER, { tokens = { ["dw.typo"] = { default = RULE, skins = { obsidain = GAIN } } } })
+  assertEqual(#log, 3, "a second registration logs nothing again")
+end)
+
+test("skin owner tokens: S.Text draws a token name and repaints it on a skin switch", function()
+  local m, Skin = F.env()
+  local S, log = register(Skin, OWNER, tokens())
+  local fs = m.CreateFrame("Frame", nil, m.UIParent):CreateFontString(nil, "OVERLAY")
+  local function color() return F.rgba(m.__paint(fs).textColor) end
+  S.Text(fs, "dw.gain")
+  assertEqual(color(), F.rgba(GAIN), "Ka0s Default's exact pixels")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(color(), F.rgba(OBSIDIAN_GAIN), "the switch repainted it")
+  S.Text(fs, "sem.good")
+  assertEqual(color(), F.tok(Skin, "obsidian", "sem.good"), "a library token name too")
+  S.Text(fs, "muted")
+  assertEqual(color(), F.tok(Skin, "obsidian", "text.muted"), "a role is still a role")
+  S.Text(fs, "font.body")
+  assertEqual(color(), F.tok(Skin, "obsidian", "text.body"), "a token that is not a color draws as body")
+  assertEqual(#log, 0, "a readable name logs nothing")
+  S.Text(fs, "dw.nope")
+  assertEqual(color(), F.tok(Skin, "obsidian", "text.body"), "an unknown name draws as body")
+  assertEqual(#log, 1, "and is logged once")
 end)
 
 test("skin owner tokens: under eui a token answers its follow token's EllesmereUI value", function()
