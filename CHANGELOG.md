@@ -235,6 +235,12 @@ New suite: `tests/test_skin_stock_default.lua`.
   host that passes it to a `FadeNineSlice` or `TitleBar` call either guards on a v1.80.0 payload or
   accepts that an older copy ignores the option and paints.
 
+Release gate (`docs/automated-tests/20261029-032426/`): lint pass, 0/0 in 233 files;
+tests pass, 3222 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — the release moved no minor of `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` or `Widgets.lua` (`git diff --stat v1.79.0 -- LibKa0s/Sim.lua LibKa0s/SimTimeline.lua LibKa0s/SimPanel.lua LibKa0s/Widgets.lua` prints nothing), so no host's scenarios or test-mode strips change.
+
 ## v1.79.0 — 2026-10-28
 
 Opened 2026-10-28, on `feat/2026-10-28-toast-1.0` (a worktree off `master`, beside the skin work
