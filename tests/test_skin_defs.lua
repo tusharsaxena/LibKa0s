@@ -410,15 +410,26 @@ test("skin defs: WoW Forever is warm charcoal, black centered titles, tan accent
 
 -- LibSharedMedia's own default border keys a skin may name besides the shipped ones.
 local LSM_BORDERS = { ["Blizzard Dialog"] = true, ["Blizzard Tooltip"] = true }
--- ...and its default font keys: Friz Quadrata, Ka0s Default's face (the client's own, set by name).
+-- ...and its default font keys: Friz Quadrata, the client's own face, set by name (WoW Default's, and
+-- through SkinDefs' KEEP every skin's that names no face of its own).
 local LSM_FONTS = { ["Friz Quadrata TT"] = true }
+-- ...and its default statusbar key: the client's Blizzard bar, WoW Default's through KEEP.
+local LSM_BARS = { ["Blizzard"] = true }
 
--- One token of skin `key`: a face names a shipped or LSM font, a nine-slice a known border, a border
--- style one of the four shapes.
-local function assertNamedMedia(Media, key, name, v)
+-- A face names a shipped or LSM font, a bar texture a shipped or LSM bar.
+local function assertNamedFile(Media, key, name, v)
+  if name == "bar.texture" then
+    assertTrue(Media.TEXTURES[v] ~= nil or LSM_BARS[v], key .. ": bar.texture = " .. tostring(v) .. " is shipped")
+  end
   if name:match("^font%.") and type(v) == "string" and name ~= "font.outline" then
     assertTrue(Media.FONTS[v] ~= nil or LSM_FONTS[v], key .. ": " .. name .. " = " .. v .. " is shipped")
   end
+end
+
+-- One token of skin `key`: its file (assertNamedFile), a nine-slice a known border, a border style
+-- one of the four shapes.
+local function assertNamedMedia(Media, key, name, v)
+  assertNamedFile(Media, key, name, v)
   local nine = type(v) == "string" and v:match("^nine:(.+)$")
   if nine then
     assertTrue(Media.BORDERS[nine] ~= nil or LSM_BORDERS[nine],
@@ -430,7 +441,7 @@ local function assertNamedMedia(Media, key, name, v)
   end
 end
 
-test("skin defs: every font and border a skin names is shipped or an LSM default", function()
+test("skin defs: every font, bar texture and border a skin names is shipped or an LSM default", function()
   local Skin = skinLib()
   local Media = T.mocks.LibStub("LibKa0s-Media-1.0")
   for _, def in ipairs(Skin:Skins()) do
@@ -440,27 +451,34 @@ end)
 
 local FRIZ = "Friz Quadrata TT"
 
+--- A face's family: its LSM key without the weight.
+local function family(face)
+  return (face:gsub(" SemiBold$", ""):gsub(" Bold$", ""))
+end
+
 test("skin defs: every skin draws one family of its own, for body and titles alike", function()
   -- SkinDefs minor 11 (the owner's round-5 notes: titles that do not match the body, faces reused
   -- across skins). red under: a skin whose titles are another family than its body (Cinzel over a
-  -- body face), or a face two skins share, but the client's Friz Quadrata, which Ka0s Default and
-  -- WoW Default both draw.
+  -- body face), or a face two skins share, but the client's Friz Quadrata, which WoW Default draws.
+  -- SkinDefs minor 14: Ka0s Default draws Oxanium, SemiBold body and Bold titles, the owner's choice.
   local Skin = skinLib()
   local want = {
     obsidian = { "Ka0s Inter", "Ka0s Inter SemiBold" }, glass = { "Ka0s Nunito", "Ka0s Nunito SemiBold" },
     azeroth = { "Ka0s Vollkorn", "Ka0s Vollkorn Bold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
     ember = { "Ka0s Bitter", "Ka0s Bitter Bold" }, midnight = { "Ka0s Philosopher", "Ka0s Philosopher Bold" },
-    forever = { "Ka0s Fira Sans", "Ka0s Fira Sans SemiBold" }, wow = { FRIZ, FRIZ }, ka0s = { FRIZ, FRIZ },
+    forever = { "Ka0s Fira Sans", "Ka0s Fira Sans SemiBold" }, wow = { FRIZ, FRIZ },
+    ka0s = { "Ka0s Oxanium SemiBold", "Ka0s Oxanium Bold" },
   }
   local owner = {}
   for key, pair in pairs(want) do
     local t = Skin:ResolveSkin(key)
     assertEqual(t["font.body"], pair[1], key .. " body font")
     assertEqual(t["font.title"], pair[2], key .. " title font")
-    assertEqual(pair[2]:sub(1, #pair[1]), pair[1], key .. ": its titles are its body's family")
-    if pair[1] ~= FRIZ then
-      assertNil(owner[pair[1]], pair[1] .. " is " .. tostring(owner[pair[1]]) .. "'s and " .. key .. "'s")
-      owner[pair[1]] = key
+    assertEqual(family(pair[2]), family(pair[1]), key .. ": its titles are its body's family")
+    local fam = family(pair[1])
+    if fam ~= FRIZ then
+      assertNil(owner[fam], fam .. " is " .. tostring(owner[fam]) .. "'s and " .. key .. "'s")
+      owner[fam] = key
     end
   end
   -- Every skin draws the client's shadow now: Azeroth's shadowless body was for its light parchment,
@@ -470,6 +488,46 @@ test("skin defs: every skin draws one family of its own, for body and titles ali
   end
   local base, hc = Skin:ResolveSkin("obsidian"), Skin:ResolveSkin("contrast")
   assertTrue(hc["font.bodySize"] > base["font.bodySize"], "High Contrast reads larger")
+end)
+
+test("skin defs: Ka0s Default's Oxanium and its own bar stay its own; a skin naming neither keeps Friz and Blizzard", function()
+  -- SkinDefs minor 14. Every skin inherits Ka0s Default's tokens, so without KEEP minor 14's choice
+  -- would have moved every skin's HUD face and bar texture with it. red under: a skin naming no HUD
+  -- face or bar texture of its own that reads Oxanium or the Ka0s Default bar.
+  local Skin = skinLib()
+  local k = Skin:ResolveSkin("ka0s")
+  assertEqual(k["hud.font"], "Ka0s Oxanium SemiBold", "Ka0s Default's HUD face")
+  assertEqual(k["bar.texture"], "Ka0s Default", "Ka0s Default's bar texture")
+  for _, key in ipairs(KEYS) do
+    if key ~= "ka0s" then
+      local own, t = Skin.skins[key].tokens, Skin:ResolveSkin(key)
+      assertEqual(t["hud.font"], own["hud.font"] or FRIZ, key .. " keeps Friz Quadrata for HUD text")
+      assertEqual(t["bar.texture"], own["bar.texture"] or "Blizzard", key .. " draws its own bar or Blizzard")
+      assertTrue(family(t["font.body"]) ~= "Ka0s Oxanium" and family(t["font.title"]) ~= "Ka0s Oxanium",
+        key .. " does not inherit Ka0s Default's face")
+    end
+  end
+  local wow = Skin:ResolveSkin("wow")
+  assertEqual(wow["font.body"], FRIZ, "WoW Default's body, through KEEP")
+  assertEqual(wow["font.title"], FRIZ, "WoW Default's titles, through KEEP")
+end)
+
+test("skin defs: every skin draws its own bar texture, and WoW Default the client's", function()
+  -- SO-04, the owner's approved mockup (still SkinDefs minor 14 and Media minor 9, unreleased).
+  -- red under: a skin drawing another skin's bar, or WoW Default losing the client's Blizzard bar.
+  local Skin = skinLib()
+  local want = {
+    ka0s = "Ka0s Default", obsidian = "Ka0s Matte", azeroth = "Ka0s Parchment", glass = "Ka0s Glass Bar",
+    contrast = "Ka0s Solid", ember = "Ka0s Forge", wow = "Blizzard", midnight = "Ka0s Satin",
+    forever = "Ka0s Classic",
+  }
+  local seen = {}
+  for _, key in ipairs(KEYS) do
+    local bar = Skin:ResolveSkin(key)["bar.texture"]
+    assertEqual(bar, want[key], key .. "'s bar texture")
+    assertNil(seen[bar], tostring(bar) .. " is " .. tostring(seen[bar]) .. "'s and " .. key .. "'s")
+    seen[bar] = key
+  end
 end)
 
 local function sameColor(c, want, label)

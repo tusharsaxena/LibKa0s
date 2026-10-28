@@ -518,7 +518,8 @@ end)
 
 local LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["font:Ka0s Inter SemiBold"] = "Fonts\\InterSB.ttf",
               ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf",
-              ["statusbar:Blizzard"] = "Interface\\TargetingFrame\\UI-StatusBar" }
+              ["statusbar:Blizzard"] = "Interface\\TargetingFrame\\UI-StatusBar",
+              ["statusbar:Ka0s Default"] = "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\textures\\ka0s-default" }
 
 test("skin paint: Text colors a role, and a skin's font reaches it through the owner's font object", function()
   local m, Skin = F.env({ lsm = LSM })
@@ -567,9 +568,14 @@ test("skin paint: the getters answer the owner's skin", function()
   assertTrue(chart.axis == Skin:ResolveSkin("ka0s")["chart.axis"], "ChartStyle reads chart.*")
   assertEqual(#chart.series, 21, "the series palette")
   local bar = K.BarStyle()
-  assertEqual(bar.textureKey, "Blizzard"); assertEqual(bar.texture, "Interface\\TargetingFrame\\UI-StatusBar")
+  assertEqual(bar.textureKey, "Ka0s Default", "Ka0s Default's bar (SkinDefs minor 14)")
+  assertEqual(bar.texture, "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\textures\\ka0s-default")
   assertFalse(bar.gloss)
-  assertEqual(bar.fontKey, "Friz Quadrata TT")
+  assertEqual(bar.fontKey, "Ka0s Oxanium SemiBold")
+  local wow = F.owner(Skin, "Classic", "wow").BarStyle()
+  assertEqual(wow.textureKey, "Blizzard", "WoW Default keeps the client's bar")
+  assertEqual(wow.texture, "Interface\\TargetingFrame\\UI-StatusBar")
+  assertEqual(wow.fontKey, "Friz Quadrata TT", "and the client's face")
   assertNil(Skin.painted[S], "a getter records nothing")
 end)
 

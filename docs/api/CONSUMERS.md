@@ -71,7 +71,16 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
-**v1.79.0, not in the census (2026-10-28, unreleased).** The release adds a major,
+**v1.79.0, not in the census (2026-10-28).** The skin half of the release adds Skin's
+`Skin:GetOverride` and `Skin:SetOverride` with `Skin:WriteChoice`'s `media` (Skin minor 6), the facade
+primitive `S.BarTexture` (SkinPaintExtras minor 4), the Options instance members `SkinPicker` and
+`HideSkinPicker` with the lib-level `SKIN_PICKER_STRINGS` (OptionsSkinPicker minor 1),
+`OpenOptionsPanel`'s `pageKey` (OptionsRegistry minor 4), seven `APPEARANCE_STRINGS` keys
+(OptionsAppearance minor 3) and the Media catalog's Oxanium faces and eight generated bars (Media
+minor 9). None gets a row here yet, and the v1.75.0 stamp and its numbers stand: LootHistory and
+Ka0s Skin Tester adopt them (`LH-01` and `ST-01` of Ka0sAddonsCommonTasks
+`docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`), and the other consumers at the skinning adoption pass,
+whose census re-run measures them all at once. The Toast half adds a major,
 `LibKa0s-Toast-1.0` (`Toast:New` and seven lib-level constants in
 `docs/api/Toast/members-1.json`, and the fifteen instance members of
 [its document](Toast/version-1-docs.md)), promoted under

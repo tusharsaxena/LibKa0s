@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **33** · `OptionsRegistry.lua` **3** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **12** · `OptionsScroll.lua` **8** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** · `OptionsAppearance.lua` **2** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>`, in load order — the same thirteen numbers `lib.MODULES` reports. |
 | Shipped in | v1.78.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 30.2.34.3.5.9.2.11.4.2.1.4](./version-30.2.34.3.5.9.2.11.4.2.1.4-docs.md) — whose settings chrome had no skin owner, whose group composers could not follow a skin, and whose AceGUI rows were stock for every owner |
-| Superseded by | — |
+| Superseded by | [version 34.4.35.4.6.10.3.12.8.3.2.5.3.1](./version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 33, OptionsRegistry = 3, OptionsWidgets = 35, OptionsIds = 4, OptionsIdList = 6, OptionsTabs = 10, OptionsCombat = 3, OptionsCompose = 12, OptionsScroll = 6, OptionsNav = 3, OptionsDrawer = 2, OptionsKeybinds = 5, OptionsAppearance = 1 }` |
 
@@ -3312,3 +3312,18 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 34.4.35.4.6.10.3.12.8.3.2.5.3.1
+
+**Take it; only the degradation stub moves.** Version 34.4.35.4.6.10.3.12.8.3.2.5.3.1, shipped in
+v1.79.0, is this surface plus the first-run skin picker in a fourteenth file,
+`OptionsSkinPicker.lua` (`O.SkinPicker(spec)`, `O.HideSkinPicker()`, `lib.SKIN_PICKER_STRINGS`),
+attached by one guarded line in `Options.lua` 34. `O.OpenOptionsPanel` takes an optional page key
+(OptionsRegistry minor 4); without one it opens the main category as here. The Appearance tab
+(OptionsAppearance minor 3) is labeled "Skin", its key still `"Appearance"`, its skins heading reads
+"Look", and it gains a *Font and texture* section through `LibKa0s-Skin-1.0` minor 6's overrides,
+which its copy carries; `lib.APPEARANCE_STRINGS` gains seven strings and no instance member is
+added. **Every Options degradation stub owes two new members, `SkinPicker` and `HideSkinPicker`**,
+which `Kit.assertSurfaceParity` checks against the live instance. A host that shows the picker
+declares the Media icons `eye` and `settings`. See
+[version 34.4.35.4.6.10.3.12.8.3.2.5.3.1](./version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md).

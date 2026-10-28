@@ -460,7 +460,7 @@ Total.
 - toast: a close mark Core cannot build (no frame) leaves the toast without one
 - toast: two instances keep separate queues and frames
 
-### test_media.lua (37)
+### test_media.lua (39)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -491,13 +491,15 @@ Total.
 - media: an LSM without the locale bits gets a plain Register
 - media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
-- media: FONTS carries the fourteen skin faces beside JetBrains Mono
+- media: FONTS carries the fourteen skin faces beside JetBrains Mono and Ka0s Default's Oxanium
 - media: each face names its own locales, and only a face with Cyrillic reaches ruRU
 - media: every OFL face ships with its license text beside it
 - media: RegisterLSM('X') registers 'Ka0s Inter' under X's own libs folder, each face with its mask
 - media: a ruRU client keeps every Cyrillic face and is refused the western-only ones
 - media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
 - media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
+- media: every statusbar, Ka0s Default's bar among them, is a 256x32 32-bit TGA
+- media: every skin's own bar is in TEXTURES, opaque and gray, and tiles along the bar
 - media: RegisterLSM registers the Glass border and background, and counts them
 
 ### test_skin.lua (27)
@@ -530,7 +532,31 @@ Total.
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
 
-### test_skin_defs.lua (27)
+### test_skin_override.lua (21)
+
+- skin override: an unregistered owner has none and cannot set one
+- skin override: a font and a texture reach every token read, and nothing else moves
+- skin override: the override follows a skin switch, over the new skin's table
+- skin override: nil keeps a half, false and the empty string clear it, a repeat changes nothing
+- skin override: a painted string takes the override's face on the repaint, and the skin's back on a clear
+- skin override: Ignore fonts wins over a font override
+- skin override: one owner's override never reaches another owner
+- skin override: SetOverride while a reload is pending stores the pair and repaints nothing
+- skin override: WriteChoice hands media to the setter as its fourth argument, normalized
+- skin override: FROM_SKIN stored as an override means the skin's own
+- skin override: a key LibSharedMedia lacks leaves the skin's own, until a pack registers it
+- skin override: __BaseTokens is the owner's table without its overrides, EllesmereUI's when it paints
+- skin override: BarTexture puts the owner's bar texture on a Texture, tinted
+- skin override: BarTexture follows a texture override and its clearing, live
+- skin override: with no texture resolved BarTexture is the flat look
+- skin override: BarTexture on a StatusBar sets its bar texture and color
+- skin override: a nil color keeps the target's current color across repaints
+- skin override: a repaint keeps a host's recolor made between paints, nil color or not
+- skin override: a flat bar keeps its tint through a texture and back
+- skin override: a texture Untrack handed back starts from its own color
+- skin override: BarTexture leaves a frame that is neither a Texture nor a StatusBar alone
+
+### test_skin_defs.lua (29)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -552,8 +578,10 @@ Total.
 - skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art
 - skin defs: only WoW Default names Blizzard art
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
-- skin defs: every font and border a skin names is shipped or an LSM default
+- skin defs: every font, bar texture and border a skin names is shipped or an LSM default
 - skin defs: every skin draws one family of its own, for body and titles alike
+- skin defs: Ka0s Default's Oxanium and its own bar stay its own; a skin naming neither keeps Friz and Blizzard
+- skin defs: every skin draws its own bar texture, and WoW Default the client's
 - skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's
 - skin defs: a hovered row is told apart from a selected one
 - skin defs: WoW Default's checkbox art is its only box
@@ -1564,7 +1592,7 @@ Total.
 - options: ClearScroll leaves the reserved band alone
 - options: ClearScroll resets BOTH heading trackers
 
-### test_options_render.lua (25)
+### test_options_render.lua (27)
 
 - options: RefreshAllPanels runs every registered panel's refreshers, isolating a thrower
 - options: registered page builders run in registration order, once, at CreateOptionsPanel
@@ -1587,6 +1615,8 @@ Total.
 - options: a ctx that never went through SetRenderer keeps the old ungated behavior
 - options: OpenOptionsPanel REFUSES under combat and does not defer-and-replay
 - options: OpenOptionsPanel opens the registered category out of combat
+- options: OpenOptionsPanel(pageKey) opens that page's own category, not the landing page
+- options: OpenOptionsPanel(pageKey) still refuses in combat and opens nothing
 - options: :New refuses a descriptor with no mainPanelName
 - options: a host that omits print still sees the combat refusal in the chat frame
 - options: CreateOptionsPanel is idempotent in both the category and the refreshers
@@ -2072,7 +2102,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (26)
+### test_options_appearance.lua (36)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2100,6 +2130,55 @@ Total.
 - appearance: SetIgnore keeps a nil half, never asks for a reload, and WriteChoice passes it on
 - appearance: copy gives every other owner this owner's scope as well as its skin
 - appearance: an instance whose owner ignores its panel still hears a skin switch
+- appearance: the Font and texture section draws two dropdowns between the skins and the scope
+- appearance: a font pick moves the Skin major first, then writes the seam's fourth argument
+- appearance: in combat a font or texture pick writes nothing and snaps back
+- appearance: sync re-reads the overrides, and the skin's own entry follows a skin switch
+- appearance: copy gives every other owner this owner's font and texture
+- appearance: without LibSharedMedia each dropdown offers only the skin's own
+- appearance: with a Skin copy before minor 6 the section is absent
+- appearance: a stored key LibSharedMedia lacks stays listed, and the skin's own names the worn face
+- appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
+- appearance: the other owners and one owner's skin copy are library-level, for the skin picker
+
+### test_options_skin_picker.lua (36)
+
+- skin picker: OptionsSkinPicker is minor 1, paired on the shell, and attaches two members
+- skin picker: a newer attach of the file adopts the queue already on the library table
+- skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
+- skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
+- skin picker: the list holds every skin, three swatches each and its name in its own face
+- skin picker: a pick previews: the Skin major moves live, nothing is written, the window stays
+- skin picker: Apply saves the pending pick through the owner's seam, then closes
+- skin picker: a pick that asks for a reload raises the one popup at Apply, not at the pick
+- skin picker: the close control and Escape put the preview back and write nothing
+- skin picker: a close puts back the owner's stored choice now, not the one the window opened with
+- skin picker: a close with no usable spec.get puts back the choice the window opened with
+- skin picker: the eye keeps working while a preview is pending, and keeps the preview
+- skin picker: the window the eye opens, HIGH and toplevel, does not cover the picker
+- skin picker: showing re-raises a shown StaticPopup, so a reload popup stays above the next picker
+- skin picker: in combat a pick, Apply and Apply to all write nothing and leave the window up
+- skin picker: in combat the close control still closes, putting a pending preview back unwritten
+- skin picker: Apply to all is hidden while no other skin owner is registered
+- skin picker: Apply to all saves here and gives every other owner the source and skin alone
+- skin picker: Apply to all raises one reload popup naming every addon that needs it
+- skin picker: Apply to all dismisses every queued picker, each onClose run, none shown
+- skin picker: the gear saves, opens the page itself, then the Skin tab, then closes
+- skin picker: in combat the gear opens nothing and the window stays up, not marked seen
+- skin picker: two instances on one library: the second owner queues, and shows when the first closes
+- skin picker: a queued owner waits out combat and shows when it ends
+- skin picker: a queue dismissed while waiting out combat shows nothing when combat ends
+- skin picker: a queued owner is shown after Apply and after the gear, too
+- skin picker: HideSkinPicker takes a queued owner out unseen, and a shown one down with onClose
+- skin picker: one instance's second owner queues behind its first, each refreshed only by its own
+- skin picker: with the client's own OnHide, one instance's first owner closing leaves the second up
+- skin picker: with the client's own OnHide, onClose still runs once per showing, by every route
+- skin picker: a skin registered after the first show gains its row on the next
+- skin picker: onClose runs once per showing, by every route
+- skin picker: the icons come from LibKa0s-Media-1.0, and are glyphs without it
+- skin picker: the eye shows only with onPreview, and calls it
+- skin picker: spec.strings translates the title, the buttons, the tips and a skin's name
+- skin picker: nil with no Skin major, or for an owner that never registered
 
 ### test_options_idsuggest.lua (29)
 
@@ -3230,7 +3309,7 @@ Total.
 - layer mock: UIParent carries the recorder too
 - layer mock: restore() puts CreateFrame back, and later frames are plain
 
-### test_mock_paint.lua (13)
+### test_mock_paint.lua (15)
 
 - paint mock: CreateTexture and CreateFontString answer distinct regions the frame owns
 - paint mock: texture paint calls are recorded and answered back
@@ -3245,6 +3324,8 @@ Total.
 - paint mock: UIParent records too, and frames from __paintFrame
 - paint mock: off by default, and restore() puts everything back
 - paint mock: composes with the layer recorder in either order
+- paint mock: a StatusBar records its fill texture and color, and answers them back
+- paint mock: only a StatusBar answers the StatusBar family
 
 ### test_surface_parity.lua (7)
 
@@ -3318,7 +3399,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 43
+- the kit is revision 44
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -3496,9 +3577,10 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
-| test_media.lua | 37 |
+| test_media.lua | 39 |
 | test_skin.lua | 27 |
-| test_skin_defs.lua | 27 |
+| test_skin_override.lua | 21 |
+| test_skin_defs.lua | 29 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
@@ -3532,7 +3614,7 @@ Total.
 | test_launcher.lua | 45 |
 | test_atenable.lua | 21 |
 | test_options.lua | 61 |
-| test_options_render.lua | 25 |
+| test_options_render.lua | 27 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 53 |
@@ -3549,7 +3631,8 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 26 |
+| test_options_appearance.lua | 36 |
+| test_options_skin_picker.lua | 36 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3595,7 +3678,7 @@ Total.
 | test_mock_lines.lua | 5 |
 | test_mock_bindings.lua | 17 |
 | test_mock_layers.lua | 7 |
-| test_mock_paint.lua | 13 |
+| test_mock_paint.lua | 15 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
@@ -3611,4 +3694,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3081** |
+| **Total** | **3156** |

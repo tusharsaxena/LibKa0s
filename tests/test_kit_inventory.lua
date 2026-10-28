@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 43", function()
-  assertEqual(Kit.VERSION, 43, "v1.78.0 ships revision 43: the opt-in paint recorder")
-  assertEqual(T.KIT_VERSION, 43, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 44", function()
+  assertEqual(Kit.VERSION, 44, "v1.79.0 ships revision 44: the paint recorder's StatusBar family")
+  assertEqual(T.KIT_VERSION, 44, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

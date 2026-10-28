@@ -448,7 +448,9 @@ test("toast: the alert sound plays when the host says so, on the host's kit or t
 end)
 
 test("toast: no sound when the host says no", function()
-  for _, off in ipairs({ false, function() return false end }) do
+  -- Hoisted out of the for header: lizard 1.24.0 does not see a function literal there.
+  local never = function() return false end
+  for _, off in ipairs({ false, never }) do
     local t, m = newToast({ sound = off })
     t:Show("a")
     assertEqual(#m.__sounds, 0)

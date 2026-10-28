@@ -10,25 +10,43 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.79.0 — unreleased
+## v1.79.0 — 2026-10-28
 
 Opened 2026-10-28, on `feat/2026-10-28-toast-1.0` (a worktree off `master`, beside the skin work
 still in flight on another branch): the alert-toast shell approved in
 [LibKa0s#60](https://github.com/tusharsaxena/LibKa0s/issues/60), for Ka0s DPS Race's new-best toast
-(DpsRace#5) and Drop Watcher's upgrade toast. Not tagged; the release order against v1.78.0's
-open work is settled at finalize.
+(DpsRace#5) and Drop Watcher's upgrade toast. That branch merged to `master` after v1.78.0's tag,
+and the release is closed on `feat/2026-10-28-skin-overrides-picker`, which carries it together with
+the owner's font and texture overrides
+([LibKa0s#63](https://github.com/tusharsaxena/LibKa0s/issues/63)), the first-run skin picker
+([LibKa0s#64](https://github.com/tusharsaxena/LibKa0s/issues/64)), Ka0s Default's Oxanium face and
+a bar texture for every skin (Ka0sAddonsCommonTasks `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`,
+`SO-05`). The tag is local until the owner's go-ahead.
 
 Versions in this release: **Toast minor 1** (the new major `LibKa0s-Toast-1.0`, key **1**) and
-**DebugLogDiagnostics minor 5** (`LibKa0s-DebugLog-1.0` key **22.5.1.1**); every other file still at
-its v1.78.0 minor, and **test kit revision 43**, until an entry below moves one. Now **nineteen
-majors across fifty-two files**: one major and one file added (`Toast.lua`), and no `NEEDS_*` floor
-rises.
+**DebugLogDiagnostics minor 5** (`LibKa0s-DebugLog-1.0` key **22.5.1.1**), and, from
+`feat/2026-10-28-skin-overrides-picker` (LibKa0s#63 and #64), **Skin minor 6**, **SkinPaintExtras minor 4**
+and **SkinDefs minor 14** (`LibKa0s-Skin-1.0` key **6.14.10.4.8.1.3**), **Media minor 9**
+(`LibKa0s-Media-1.0` key **9.1**, `MediaIcons` 1 unchanged), **Options minor 34**, **OptionsRegistry minor 4**,
+**OptionsAppearance minor 3** and **OptionsSkinPicker minor 1** (`LibKa0s-Options-1.0` key **34.4.35.4.6.10.3.12.8.3.2.5.3.1**, a
+fourteenth file) and **test kit revision 44**; every other file still at its v1.78.0 minor until an
+entry below moves one. Now **nineteen majors across fifty-three files**: one major and one file
+added for the toast (`Toast.lua`, fifty-two), one file for the skin picker (`OptionsSkinPicker.lua`,
+fifty-three), and no `NEEDS_*` floor rises.
 
-**Pending standard change, before the tag.** The Ka0s WoW Addon Standard has to move with this
-release, upstream in WowAddonStandards: library-stack-§7's module table gains a `Toast` row and is
-recounted to **nineteen majors across fifty-two files**, and frame-layering-§6 (library-owned tiers)
-gains the row `LibKa0s-Toast-1.0` toast | `HIGH` | inherited | toplevel / clamped. It lands upstream
-before v1.79.0 is tagged, held until this branch merges (the owner's standards-push rule).
+**Pending standard change, before the tag is pushed** (the skin picker): frame-layering-§6's
+library-owned tiers gain the row `LibKa0s-Options-1.0` skin picker | `DIALOG` | inherited | toplevel /
+clamped, and library-stack-§7's module table is recounted from the Toast change's fifty-two files to
+**fifty-three**. Held until this branch merges, as the Toast change is.
+
+**Pending standard change, before the tag is pushed.** The Ka0s WoW Addon Standard has to move with
+this release, upstream in WowAddonStandards: library-stack-§7's module table gains a `Toast` row and
+is recounted to nineteen majors across fifty-two files (fifty-three once the skin picker's recount
+above lands with it, the count this release ships), and frame-layering-§6 (library-owned tiers)
+gains the row `LibKa0s-Toast-1.0` toast | `HIGH` | inherited | toplevel / clamped. Neither change
+had landed upstream when the local tag was cut (the standard read v2.90.0, with no `Toast` row);
+both land before `v1.79.0` is pushed, held until this branch merges (the owner's standards-push
+rule).
 
 ### Toast minor 1: the alert-toast shell
 
@@ -69,6 +87,307 @@ Ka0s DPS Race are the intended two ([docs/api/CONSUMERS.md](docs/api/CONSUMERS.m
 [docs/api/DebugLog/version-22.5.1.1-docs.md](docs/api/DebugLog/version-22.5.1.1-docs.md). The
 report's `LibKa0s running:` line lists `Toast` after `Glow`, in `tests/majors.lua` order; a client
 without the major prints the same header as before. No member change.
+
+### Skin minor 6: an owner's font and texture overrides
+
+`LibKa0s-Skin-1.0` key 6.13.10.3.8.1.3 (6.14.10.4.8.1.3 since SkinPaintExtras minor 4 and SkinDefs
+minor 14, below; [docs/api/Skin/version-6.14.10.4.8.1.3-docs.md](docs/api/Skin/version-6.14.10.4.8.1.3-docs.md))
+(LibKa0s#63; SO-01 of Ka0sAddonsCommonTasks `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`). Each
+owner can now replace its skin's font and its bar texture, the way most WoW addons offer "Font" and
+"Texture":
+
+- `Skin:GetOverride(owner)` answers `font, texture`, LSM keys or nil for the skin's own;
+  `Skin:SetOverride(owner, font, texture)` sets them (nil keeps a half, `false` or `""` clears it),
+  idempotent, and a change repaints the owner's frames and fires its `OnLooksChanged` listeners
+  unless a reload is pending. Answers `changed`.
+- The overrides apply where tokens resolve: `__Tokens` lays them over the owner's skin (or the
+  EllesmereUI-derived table), so every primitive and every `S.Token` read sees them with no
+  per-primitive change. A font override replaces `font.body`, `font.title` and `hud.font`;
+  `font.mono` and every size stay the skin's. A texture override replaces `bar.texture`. An owner
+  with neither reads the resolved table itself, so Ka0s Default is unchanged.
+- `ResolveSkin` stays override-free, so a skin picker reads every skin's own faces.
+- An override LibSharedMedia cannot resolve (a pack removed, or one that registers late) is kept
+  but leaves the skin's own face or texture in place, never the stock font or the flat bar. The
+  engine subscribes once to `LibSharedMedia_Registered`, and a key registered later repaints the
+  owners that name it. `FROM_SKIN` stored as an override means the skin's own. The internal
+  `__BaseTokens(owner)` answers the owner's table without its overrides.
+- *Ignore fonts* wins over a font override: the strings keep their own face and the override is kept.
+- `WriteChoice(owner, source, skin, ignore, media)`: `media`, `{ font = key|false, texture =
+  key|false }`, reaches the host's setter as its fourth argument; an older setter ignores it.
+
+New suite: `tests/test_skin_override.lua`.
+
+### SkinPaintExtras minor 4: S.BarTexture
+
+`LibKa0s-Skin-1.0` key 6.13.10.4.8.1.3 (6.14.10.4.8.1.3 since SkinDefs minor 14, below), documented in
+[docs/api/Skin/version-6.14.10.4.8.1.3-docs.md](docs/api/Skin/version-6.14.10.4.8.1.3-docs.md)
+(LibKa0s#63, SO-02). `VOCAB` gains `BarTexture`, so every facade carries the trampoline.
+`S.BarTexture(target, r, g, b, a)` puts the owner's bar texture (`bar.texture`, its texture override
+when it sets one) on a bar of data: `SetTexture` and `SetVertexColor` on a Texture,
+`SetStatusBarTexture` and `SetStatusBarColor` on a StatusBar. With no texture resolved a Texture
+falls back to `SetColorTexture(r, g, b, a)`, today's flat look, and a StatusBar to `WHITE8X8`.
+Recorded, so a skin switch or an override change re-applies the texture. The color is the bar's own:
+a repaint keeps the color the bar wears (a host's direct `SetVertexColor` or `SetStatusBarColor`
+included), a nil color paints the bar's current color on every call, and a texture `Skin:Untrack`
+handed back starts from its own color. A flat Texture's tint, which cannot be read back, is
+remembered while its vertex color stays the white the primitive set. Cases in `tests/test_skin_override.lua`, and the primitive joins
+`tests/test_skin_paint_controls.lua`'s idempotence and repaint sweeps.
+
+### OptionsAppearance minor 3: the Skin tab's font and texture
+
+`LibKa0s-Options-1.0` key 33.3.35.4.6.10.3.12.8.3.2.5.3 (34.4.35.4.6.10.3.12.8.3.2.5.3.1 since Options
+minor 34, below; [docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md))
+(LibKa0s#63, SO-03):
+
+- The tab is labeled **"Skin"** (`TAB_LABEL`); its key stays `"Appearance"`, which hosts name in
+  `before` and in a stored active tab. `TAB_TIP` names the font and bar texture.
+- A **"Font and texture"** section between the skins and the scope: two AceGUI `Dropdown`s side by
+  side, *Font* and *Texture*, listing LibSharedMedia-3.0's `font` and `statusbar` keys sorted, led by
+  "Skin's own (<the skin's key>)" (the value `"@skin"`). A pick is refused in combat, calls
+  `Skin:SetOverride` first (the live repaint), then `spec.set(nil, nil, nil, { font, texture })`;
+  `sync` re-reads `Skin:GetOverride`. Without LibSharedMedia each lists the skin's own entry alone.
+- *Copy to every Ka0s addon…* carries the overrides (`SetOverride` and `WriteChoice`'s `media`), and
+  `COPY_TIP` / `COPY_CONFIRM` say "skin source, skin, scope, font and texture".
+- "Skin's own" names the face the owner wears without its overrides (`Skin:__BaseTokens`, so
+  EllesmereUI's while it paints the owner), and a stored key LibSharedMedia lacks stays listed as
+  "<key> (not loaded)", so the field never shows blank.
+- `lib.APPEARANCE_STRINGS` gains `MEDIA_HEADING`, `FONT`, `FONT_TIP`, `TEXTURE`, `TEXTURE_TIP`,
+  `SKIN_OWN` and `MEDIA_MISSING`. No instance member is added.
+- Amended before release (PK-02, the consumer reviews' finding): the skins' heading,
+  `SKIN_HEADING`, reads **"Look"**, since "Skin" repeated the tab's own name (options-ui-§7). The
+  other owners and one owner's skin copy moved to the library table (`lib.__skinOthers`,
+  `lib.__copySkinTo`, internal), so the skin picker's *Apply to all Ka0s addons* shares them;
+  the copy button behaves as before.
+
+Cases in `tests/test_options_appearance.lua`.
+
+### OptionsRegistry minor 4: OpenOptionsPanel opens a page
+
+`LibKa0s-Options-1.0` key 34.4.35.4.6.10.3.12.8.3.2.5.3.1 (the unshipped 34.3.35.4.6.10.3.12.8.3.2.5.3.1
+document and manifest moved to it), documented in
+[docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md)
+(PK-02, the consumer reviews' finding). `O.OpenOptionsPanel(pageKey)` takes an optional page key,
+the key `O.RegisterOptionsPage` was given, and opens that page's own subcategory: the category its
+builder answered when it answered one, else the main category's subcategory carrying the page's
+registered name (`GetSubcategories`, under pcall). No key, or one that names no built page, opens
+the main category as before; the combat refusal and the three answers are unchanged. The skin
+picker's default gear uses it, so the player lands on the page that holds the Skin tab rather than on
+the landing page. No member is added. Cases in `tests/test_options_render.lua`.
+
+### Options minor 34 and OptionsSkinPicker minor 1: the skin picker
+
+`LibKa0s-Options-1.0` key 34.4.35.4.6.10.3.12.8.3.2.5.3.1, documented in
+[docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md)
+(LibKa0s#64, PK-01). A fourteenth file, `OptionsSkinPicker.lua`, attached by one guarded line in
+`lib:New` (Options minor 34):
+
+- `O.SkinPicker(spec)` shows a small window (about 280 wide; `DIALOG`, toplevel, clamped, movable;
+  a window per owner, one up at a time across every Ka0s addon, each refreshed only by its own
+  owner's looks) for the host to show the first time a profile runs, and answers its frame;
+  `nil, "queued"` while another owner's picker is up; nil without the Skin major or for an
+  unregistered owner. Its title is "Choose a skin for <the addon's label>"; a dropdown button shows
+  the skin worn now as three swatches and its name, and opens, inside the window, the list of every
+  skin, each row three swatches and the skin's name in that skin's own body face and size. A pick
+  previews the skin (combat refusal, `SetChoice`; no write) and closes the list, not the window;
+  **Apply** saves it (`spec.set`, the one reload popup) and closes the window.
+- An eye button (Media icon `eye`, "Preview: open test mode"), shown only with `spec.onPreview`;
+  a gear button (Media icon `settings`) saves the pending pick, calls `spec.onSettings` or opens
+  `spec.page` at the Skin tab, then closes the window; in combat the gear is refused and the window
+  stays up, unmarked. *Apply to all Ka0s addons* gives every other owner the same skin. A skin
+  registered after the first show gains its row on the next. Without LibKa0s-Media-1.0 both icons
+  draw glyphs.
+- Closing by any route (Apply, the close control, the gear, Escape, `O.HideSkinPicker()`) calls
+  `spec.onClose` once; the host sets `skin.pickerSeen` there. The close control and Escape put a
+  pending preview back first.
+- Painted for the owner through the Skin facade, so a skin switch repaints it live, and the
+  dropdown follows `OnLooksChanged`. Words in `lib.SKIN_PICKER_STRINGS`, overridable by
+  `spec.strings`.
+
+Amended before release (PK-02, the owner's in-game pass of the first picker; OptionsSkinPicker
+stays minor 1):
+
+- **Position.** The window's center sits 75% of the way up UIParent, re-anchored on every show,
+  clear of the middle of the screen where most main windows open. Still clamped and movable. (What
+  keeps the window the eye opens from covering it is PK-03's strata, below.)
+- **The addon's name.** The title reads "Choose a skin for <the addon's label>": `TITLE_FOR`
+  ("Choose a skin for %s", `Skin:OwnerLabel` or the owner's name) replaces `TITLE`.
+- **Preview, then Apply.** A pick now previews: `Skin:SetChoice` moves the owner live, the reload
+  flag it answers is kept, and neither `spec.set` nor a popup runs. A new primary **Apply** button
+  (`APPLY`, `APPLY_TIP`) saves (`spec.set(source, key)`), raises the one reload popup when a pick in
+  this showing asked for it, and closes. The close control and Escape dismiss without saving: the
+  Skin major goes back to the owner's stored choice (no write; PK-03, below), and `onClose` still
+  runs.
+  The gear saves the pending pick as Apply does before it opens the settings. `SETTINGS_TIP` and
+  `CHOOSE_TIP` say so. Every write path stays refused in combat.
+- **Apply to all Ka0s addons** (`APPLY_ALL`, `APPLY_ALL_TIP`), shown only while another skin owner
+  is registered: Apply, then each other owner gets the same source and skin (`SetChoice`, then
+  `WriteChoice`, through OptionsAppearance's shared `lib.__skinOthers` and `lib.__copySkinTo`;
+  their scope and overrides are left alone), one reload popup naming every addon that needs it,
+  then this window closes and every queued picker is dismissed (its `onClose` runs; it never shows).
+- **One window across addons.** A library-level queue, `lib.__pickerQueue` (`current`, `waiting`;
+  created when absent, adopted by a newer copy), is shared by every Options instance. While one
+  owner's picker is up, `O.SkinPicker` for another owner, on any instance, queues it (a repeat call
+  refreshes its spec) and answers **`nil, "queued"`**; the next owner shows when the one up closes
+  by any route. `O.HideSkinPicker()` takes its instance's queued owners out with no `onClose` and
+  dismisses its window when it is the one up. A second owner on one instance now queues instead of
+  replacing the first.
+- **A close acts on its own picker.** Every close route takes the picker record it closes rather
+  than the instance's current one: the client fires `OnHide` inside `Hide()`, and the advance there
+  can show the instance's next owner before the hide returns, which closed that second picker too
+  (its `onClose` run, its window left up). Pinned with a Hide that fires `OnHide` as the client does.
+- **The gear opens the page.** The default gear calls `O.OpenOptionsPanel(spec.page)`
+  (OptionsRegistry minor 4, above) and then `O.SelectTab`, so the player lands on the page that
+  holds the Skin tab rather than on the landing page.
+
+Amended again before release (PK-03, the consumer reviews; OptionsSkinPicker stays minor 1):
+
+- **Above the window the eye opens.** The picker sits at `DIALOG` (frame-layering T6, a dialog the
+  player answers), not `HIGH`: the eye's `onPreview` typically shows the addon's main window, itself
+  `HIGH` and toplevel, which came up over the picker when shown and again on every click. No `HIGH`
+  window can cover it now, and it is `Raise()`d after `onPreview` returns (even when it raises an
+  error), for a preview that shows a `DIALOG` window of its own. On every show it re-raises a shown
+  StaticPopup (`Core.RaiseStaticPopups`, frame-layering-§4), so the reload popup one picker's Apply
+  raised stays above the next queued picker.
+- **A dismissal undoes only the preview.** The close control, Escape and `O.HideSkinPicker()` put
+  back the owner's stored choice as it reads at the close (`spec.get`, else `Skin:GetChoice`), not
+  the choice the window opened with, so a skin the Skin tab or a profile change stored while the
+  picker was up is kept. Still no write.
+- **The queue waits out combat.** A close under `InCombatLockdown()` shows no next owner: the queue
+  parks on OptionsRegistry's end-of-combat park (`lib.__parkRegistration`, its one
+  `PLAYER_REGEN_ENABLED` frame) and advances when combat ends, unless something came up meanwhile.
+  While it waits, `O.SkinPicker` for another owner answers `nil, "queued"` too. A queue emptied in
+  the meantime (`HideSkinPicker`, *Apply to all*) shows nothing. A copy without the park shows at
+  once, as before.
+
+Every Options degradation stub gains `SkinPicker` and `HideSkinPicker`; a host that shows the
+picker declares the icons `eye` and `settings`. New suite: `tests/test_options_skin_picker.lua`.
+
+### Media minor 9 and SkinDefs minor 14: Ka0s Default's Oxanium face and its own bar
+
+`LibKa0s-Media-1.0` key 9.1, documented in
+[docs/api/Media/version-9.1-docs.md](docs/api/Media/version-9.1-docs.md), and `LibKa0s-Skin-1.0`
+key 6.14.10.4.8.1.3, documented in
+[docs/api/Skin/version-6.14.10.4.8.1.3-docs.md](docs/api/Skin/version-6.14.10.4.8.1.3-docs.md).
+The owner's choice (2026-10-28): Ka0s Default draws a face and a bar texture of its own.
+
+- **Media minor 9.** `FONTS` gains `Ka0s Oxanium SemiBold` (`Oxanium-SemiBold.ttf`) and
+  `Ka0s Oxanium Bold` (`Oxanium-Bold.ttf`), both western only and both under
+  `Oxanium-OFL.txt` (SIL OFL 1.1), chosen as the free face nearest the owner's first pick. They
+  are static instances cut by `tools/artwork/fonts.py` from google/fonts' variable
+  `Oxanium[wght].ttf` at wght 600 and 700, pinned by commit, and the license file records the
+  instancing. `TEXTURES` gains `Ka0s Default` (`ka0s-default.tga`), drawn by
+  `tools/artwork/bar_textures.py` like the other seven on the same 256×32 RLE 32-bit canvas: dim at
+  the top, a highlight low on the bar and a short lip. `RegisterLSM` now counts seventeen fonts and
+  eight bars.
+- **SkinDefs minor 14.** Ka0s Default's `font.body` and `hud.font` are `Ka0s Oxanium SemiBold`,
+  its `font.title` is `Ka0s Oxanium Bold` and its `bar.texture` is `Ka0s Default` (Friz Quadrata TT
+  and `Blizzard` until now). Every other skin derives from Ka0s Default, so a new `KEEP` table in
+  `translate()` gives each skin that sets none of those four tokens its earlier inherited values,
+  Friz Quadrata TT and `Blizzard`: no other skin changes. No member change.
+
+Cases in `tests/test_media.lua` (the counts, the Oxanium entries, their OFL license and its
+instancing note, their western-only mask, and every statusbar's TGA header) and
+`tests/test_skin_defs.lua` (every other skin keeps Friz and the Blizzard bar);
+`tests/test_skin.lua`, `tests/test_skin_override.lua`, `tests/test_skin_paint.lua` and
+`tests/test_options_appearance.lua` follow Ka0s Default's new face and bar.
+
+### Media minor 9 and SkinDefs minor 14, continued: a bar texture for every skin
+
+Still `LibKa0s-Media-1.0` key 9.1 and `LibKa0s-Skin-1.0` key 6.14.10.4.8.1.3, both unreleased, so
+neither minor moves (SO-04; the owner approved the texture mockup, 2026-10-28). Every skin but WoW
+Default now draws a statusbar texture of its own.
+
+- **Media minor 9.** `TEXTURES` gains seven bars, drawn by `tools/artwork/bar_textures.py` on the
+  same 256×32 RLE 32-bit canvas, opaque and gray, each profile a set of named constants in that
+  file: `Ka0s Matte` (`matte.tga`, Obsidian: flat, a lit top row, a shaded bottom row),
+  `Ka0s Parchment` (`parchment.tga`, Azeroth: a soft fall under a seeded 2D mottle whose horizontal
+  blur wraps, so it tiles without a seam), `Ka0s Glass Bar` (`glass-bar.tga`, Glass: a bright upper
+  half over a darker lower half), `Ka0s Solid` (`solid.tga`, High Contrast: white), `Ka0s Forge`
+  (`forge.tga`, Ember: rising to a hot band low on the bar), `Ka0s Satin` (`satin.tga`, WoW
+  Midnight: a broad sheen above the middle) and `Ka0s Classic` (`classic.tga`, WoW Forever: a
+  highlight high on the bar). The Glass bar is **Ka0s Glass Bar** because `Ka0s Glass` is already
+  the Glass border and background. The other eight textures regenerate byte-identical.
+  `RegisterLSM` now counts fifteen bars.
+- **SkinDefs minor 14.** `MOCK_MAP` gains `barTex` → `bar.texture`, and each of those seven skins
+  names its bar there. WoW Default names none and keeps the client's `Blizzard` bar through `KEEP`.
+  No member change.
+
+Cases in `tests/test_media.lua` (the counts, and every skin's bar opaque, gray, flat along the bar
+but Parchment, whose mottle tiles without a seam) and `tests/test_skin_defs.lua` (each skin's bar,
+no two skins sharing one, and every bar a skin names shipped or LibSharedMedia's `Blizzard`).
+
+### Test kit revision 44: the paint recorder's StatusBar family
+
+Documented in [docs/api/testkit/version-44-docs.md](docs/api/testkit/version-44-docs.md). Under
+`mock_paint.lua`, a frame built as `"StatusBar"` answers `GetObjectType` (`"StatusBar"`),
+`SetStatusBarTexture` / `GetStatusBarTexture` (the fill, a Texture region of the bar),
+`SetStatusBarColor` / `GetStatusBarColor` (the fill's vertex color, kept across a new file),
+`SetMinMaxValues` and `SetValue`, and the survey reports `statusBarTexture` and `statusBarColor`.
+Through revision 43 those calls answered the frame and recorded nothing, so `S.BarTexture` on a
+StatusBar could not be asserted (fidelity rules 1 and 3). Consumers re-vendor `tests/_kit/` whole;
+nothing else is owed. Cases in `tests/test_mock_paint.lua`.
+
+### Docs and process
+
+- **Released 2026-10-28 with no minor of its own.** Every minor above is the one its change moved;
+  the close bumps none. The versions paragraph rechecks against every major's live `lib.MODULES`
+  (`tests/test_versioning.lua` green), and the counts against the tree:
+  `grep -c 'major = "LibKa0s-' tests/majors.lua` answers 19 and
+  `grep -c '<Script' LibKa0s/LibKa0s.xml` 53. `docs/test-cases.md` and the members manifests
+  regenerate from the same tree with no diff.
+- **Built to standard v2.90.0** (was v2.89.0): the README's standards pointer moves after a read of
+  v2.90.0's one ruling, standalone-windows' new *Resizing* subsection (anti-pattern #108): a
+  resizable window does cheap layout only while it is sized, coalesced to one pass per rendered
+  frame, and runs its full redraw and its saved-size write once, when sizing ends. It names the
+  library's own windows (the debug console, its copy windows, the perf panel) as the library's to
+  keep. This release changes none of them, and none is yet checked against the subsection.
+  `Core.MakeResizable` already splits the two halves (`onResize` every size tick, `onResizeStop`
+  once per mouse-up), but its `relayout` runs on every `OnSizeChanged` call rather than once per
+  rendered frame, so the library's half of the rule is an open item for a later release, not a
+  claim of this one.
+- **Hosts affected by the preview and simulation re-look (step 5): none.** No minor of `Sim.lua`,
+  `SimTimeline.lua`, `SimPanel.lua` or `Widgets.lua` (the file that defines `W.TestStrip`) moved
+  since v1.78.0 (`git diff --stat v1.78.0 -- LibKa0s/Sim*.lua LibKa0s/Widgets.lua` prints nothing).
+- **Step 8 is LootHistory and Ka0s Skin Tester, by the plan.** The two first adopters of the
+  overrides and the picker re-vendor the tag (`LH-02` and `ST-02` of Ka0sAddonsCommonTasks
+  `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`); every other consumer re-vendors at the
+  collection-wide skinning adoption pass. In a client where either is installed, its v1.79.0 copy
+  wins every shared major it moved (Media 9, Skin 6.14.10.4.8.1.3, Options 34, DebugLog 22.5.1.1),
+  and an addon that registers no skin owner, sets no override and never calls `O.SkinPicker` draws
+  what it drew on v1.78.0. Toast has no consumer yet; Drop Watcher and Ka0s DPS Race adopt it on
+  their own runs.
+- **Consumers.** `docs/releasing.md`'s Skin row names the two adopters' override and picker sites
+  (LootHistory's `core/SkinSetup.lua` and `settings/OptionsSetup.lua`, Ka0s Skin Tester's
+  `core/SkinSetup.lua`, `settings/OptionsSetup.lua` and `modules/ShowroomTextures.lua`).
+  `docs/api/CONSUMERS.md` keeps its v1.75.0 stamp and records the release's new exports as not
+  measured until the skinning adoption pass's census.
+- **The tag is local, and a re-cut is the lead's.** While `v1.79.0` is unpushed, a LibKa0s defect
+  found by `LH-02`, `ST-02` or the owner's smoke checks becomes a new LibKa0s item that bumps the
+  minors it touches and extends this block; the lead then deletes and re-creates the local tag after
+  a clean-tree `tests/_kit/run-automated-tests.sh --release 1.79.0` with a new bundle, `ANALYSIS.md`
+  and release-gate line, as v1.78.0's twelve extensions were.
+
+### What a consumer owes
+
+- **Every Options degradation stub gains `SkinPicker` and `HideSkinPicker`** (OptionsSkinPicker
+  minor 1), in every addon, adopted or not: `Kit.assertSurfaceParity` is red at the re-vendor until
+  the stub answers them.
+- **Re-vendor the whole folder.** Two files are new (`Toast.lua`, with its major, and
+  `OptionsSkinPicker.lua`) and each must arrive with its shell; `media/fonts/` gains
+  `Oxanium-SemiBold.ttf`, `Oxanium-Bold.ttf` and `Oxanium-OFL.txt`, and `media/textures/` the eight
+  generated bars (`ka0s-default.tga`, `matte.tga`, `parchment.tga`, `glass-bar.tga`, `solid.tga`,
+  `forge.tga`, `satin.tga`, `classic.tga`).
+- **A host that shows the picker declares the icons `eye` and `settings`** in its `LibKa0s icons:`
+  line, or the icon prune removes them and the two buttons draw glyphs.
+- **Ka0s Default looks different.** Its body, HUD and title faces are Oxanium and its bars the
+  `Ka0s Default` texture, so an adopted addon on Ka0s Default changes look at its re-vendor with no
+  code change; its smoke checks re-look at it. An addon that registers no skin owner is unaffected.
+- **Nothing else is owed until an addon adopts** the overrides, `S.BarTexture`, the picker or Toast.
+
+Release gate (`docs/automated-tests/20261028-223958/`): lint pass, 0/0 in 228 files;
+tests pass, 3158 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+Preview and simulation re-look: Not applicable — the release moved no minor of `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` or `Widgets.lua` (`git diff --stat v1.78.0 -- LibKa0s/Sim.lua LibKa0s/SimTimeline.lua LibKa0s/SimPanel.lua LibKa0s/Widgets.lua` prints nothing), so no host's scenarios or test-mode strips change.
 
 ## v1.78.0 — 2026-10-25
 

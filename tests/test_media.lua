@@ -191,7 +191,7 @@ test("media: the texture keys are the labels a player reads", function()
     assertTrue(entry.file:find("%u") == nil and entry.file:find(" ") == nil,
       "'" .. entry.file .. "' does not read as a path")
   end
-  assertEqual(n, 7, "the family is one gradient plus three underlines and three overlines")
+  assertEqual(n, 15, "one gradient, three underlines, three overlines, Ka0s Default's bar and seven skins' bars")
 end)
 
 test("media: every font in FONTS ships with its license", function()
@@ -401,7 +401,7 @@ test("media: RegisterLSM flags the face western+ruRU, so a ruRU client keeps it"
   assertEqual(masks["JetBrains Mono"], 128 + 2, "the face must be flagged western + ruRU")
   assertEqual(store.font and store.font["JetBrains Mono"],
     media.Font("MythicMeters", "JetBrains Mono"), "the face did not land in LSM")
-  assertEqual(fonts, 13, "JetBrains Mono and the twelve Cyrillic skin faces; Atkinson is western only")
+  assertEqual(fonts, 13, "JetBrains Mono and the twelve Cyrillic skin faces; Atkinson and Oxanium are western only")
 end)
 
 test("media: RegisterLSM counts only what LibSharedMedia kept", function()
@@ -434,7 +434,7 @@ test("media: RegisterLSM counts a face another copy registered first", function(
   T.mocks.__libs["LibSharedMedia-3.0"] = localeLSM(128, store, masks)
   local fonts = media.RegisterLSM("MythicMeters")
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
-  assertEqual(fonts, 15, "JetBrains Mono, held by the other copy, and the fourteen skin faces")
+  assertEqual(fonts, 17, "JetBrains Mono, held by the other copy, the fourteen skin faces and two Oxanium")
   assertEqual(store.font["JetBrains Mono"], first, "the first registration stays")
 end)
 
@@ -476,9 +476,9 @@ test("media: RegisterLSM never offers a key LibSharedMedia already holds", funct
   for _, call in ipairs(calls) do
     assertTrue(call:find("^statusbar:") ~= nil, "Register was offered a held key: " .. call)
   end
-  assertEqual(#calls, 7, "only the seven statusbars, which nobody held, are offered")
-  assertEqual(fonts, 15, "a held face still counts")
-  assertEqual(bars, 7)
+  assertEqual(#calls, 15, "only the fifteen statusbars, which nobody held, are offered")
+  assertEqual(fonts, 17, "a held face still counts")
+  assertEqual(bars, 15)
   assertEqual(borders, 1, "the held Glass border still counts")
   assertEqual(backgrounds, 1, "the held Glass fill still counts")
   assertEqual(held.font["Ka0s Inter"], media.Font("Other", "Ka0s Inter"), "the first registration stays")
@@ -502,8 +502,8 @@ test("media: an LSM without the locale bits gets a plain Register", function()
   }
   local fonts = media.RegisterLSM("MythicMeters")
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
-  assertEqual(fonts, 15)
-  assertEqual(#argc, 15)
+  assertEqual(fonts, 17)
+  assertEqual(#argc, 17)
   for i = 1, #argc do assertEqual(argc[i], 2, "key and path, and no langmask argument") end
 end)
 
@@ -522,7 +522,7 @@ test("media: an LSM without IsValid counts every Register call, as minor 3 did",
   assertTrue(ok, "RegisterLSM raised on an LSM without IsValid: " .. tostring(fonts))
   assertEqual(fonts + bars + borders + backgrounds, registered,
     "every Register call counts when IsValid is absent")
-  assertEqual(fonts, 15)
+  assertEqual(fonts, 17)
 end)
 
 test("media: no LibSharedMedia is 0 registrations, not an error", function()
@@ -559,14 +559,28 @@ local SKIN_FACES = {
 }
 
 -- The families cut from a variable font upstream, whose license records the instancing.
-local INSTANCED = { "Inter-OFL.txt", "Nunito-OFL.txt", "Vollkorn-OFL.txt", "Bitter-OFL.txt" }
+local INSTANCED = { "Inter-OFL.txt", "Nunito-OFL.txt", "Vollkorn-OFL.txt", "Bitter-OFL.txt", "Oxanium-OFL.txt" }
 
-test("media: FONTS carries the fourteen skin faces beside JetBrains Mono", function()
+-- Ka0s Default's own faces (minor 9): Oxanium, SemiBold for body and HUD text, Bold for titles.
+local OXANIUM = {
+  ["Ka0s Oxanium SemiBold"] = "Oxanium-SemiBold.ttf",
+  ["Ka0s Oxanium Bold"]     = "Oxanium-Bold.ttf",
+}
+
+test("media: FONTS carries the fourteen skin faces beside JetBrains Mono and Ka0s Default's Oxanium", function()
   -- red under: minor 5, whose catalog was one monospace face; and minor 6's five, Barlow and Cinzel
-  -- among them, which three skins shared.
+  -- among them, which three skins shared. Minor 9 adds Oxanium SemiBold and Bold, Ka0s Default's faces.
   local n = 0
   for _ in pairs(media.FONTS) do n = n + 1 end
-  assertEqual(n, 15, "JetBrains Mono plus fourteen skin faces")
+  assertEqual(n, 17, "JetBrains Mono, fourteen skin faces and two Oxanium")
+  for name, file in pairs(OXANIUM) do
+    local entry = media.FONTS[name]
+    assertTrue(entry ~= nil, "FONTS has no '" .. name .. "'")
+    if entry then
+      assertEqual(entry.file, file, name .. "'s file")
+      assertEqual(entry.license, "Oxanium-OFL.txt", name .. "'s license")
+    end
+  end
   for name, want in pairs(SKIN_FACES) do
     local entry = media.FONTS[name]
     assertTrue(entry ~= nil, "FONTS has no '" .. name .. "'")
@@ -585,6 +599,9 @@ test("media: each face names its own locales, and only a face with Cyrillic reac
       name .. " carries no langmask list")
   end
   assertEqual(table.concat(media.FONTS["JetBrains Mono"].langmask or {}, ","), "western,ruRU")
+  for name in pairs(OXANIUM) do
+    assertEqual(table.concat(media.FONTS[name].langmask or {}, ","), "western", name .. " is Latin only")
+  end
   for name, want in pairs(SKIN_FACES) do
     assertEqual(table.concat(media.FONTS[name].langmask or {}, ","), want.ru and "western,ruRU" or "western",
       name .. "'s locales")
@@ -602,7 +619,7 @@ test("media: every OFL face ships with its license text beside it", function()
         entry.license .. " is not the OFL 1.1 text")
     end
   end
-  -- Four families ship as static instances cut from upstream's variable fonts; their licenses say so.
+  -- Five families ship as static instances cut from upstream's variable fonts; their licenses say so.
   for _, license in ipairs(INSTANCED) do
     local fh = io.open(FONT_DIR .. "/" .. license, "rb")
     local body = fh and fh:read("*a") or ""
@@ -624,7 +641,11 @@ test("media: RegisterLSM('X') registers 'Ka0s Inter' under X's own libs folder, 
     assertEqual(store.font[name], "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\fonts\\" .. want.file)
   end
   assertEqual(masks["JetBrains Mono"], 128 + 2, "JetBrains Mono keeps western + ruRU")
-  assertEqual(fonts, 15)
+  for name, file in pairs(OXANIUM) do
+    assertEqual(masks[name], 128, name .. " is western only")
+    assertEqual(store.font[name], "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\fonts\\" .. file)
+  end
+  assertEqual(fonts, 17)
 end)
 
 test("media: a ruRU client keeps every Cyrillic face and is refused the western-only ones", function()
@@ -634,6 +655,9 @@ test("media: a ruRU client keeps every Cyrillic face and is refused the western-
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
   assertEqual(fonts, 13, "JetBrains Mono and the twelve Cyrillic faces land on ruRU")
   assertTrue(store.font["Ka0s Atkinson"] == nil, "a western-only face landed on ruRU")
+  for name in pairs(OXANIUM) do
+    assertTrue(store.font[name] == nil, name .. ", western only, landed on ruRU")
+  end
   assertTrue(store.font["Ka0s Inter"] ~= nil, "a Cyrillic face was refused on ruRU")
 end)
 
@@ -684,6 +708,111 @@ test("media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
   end
 end)
 
+test("media: every statusbar, Ka0s Default's bar among them, is a 256x32 32-bit TGA", function()
+  -- Minor 9 adds Ka0s Default, drawn by tools/artwork/bar_textures.py like the other seven: the same
+  -- 256x32 canvas, so a frame sized for one is sized for all, and RLE true-color (type 10) as the
+  -- tool writes it, or uncompressed (type 2).
+  local entry = media.TEXTURES["Ka0s Default"]
+  assertTrue(entry ~= nil, "TEXTURES has no 'Ka0s Default'")
+  if entry then
+    assertEqual(entry.file, "ka0s-default.tga")
+    assertTrue(entry.source == nil, "Ka0s Default is generated, so it records no source")
+    assertEqual(media.Texture("X", "Ka0s Default"),
+      "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\textures\\ka0s-default")
+  end
+  for name, bar in pairs(media.TEXTURES) do
+    local kind, w, h, bpp = tgaHeader("LibKa0s/media/textures/" .. bar.file)
+    assertTrue(kind ~= nil, bar.file .. " is not readable")
+    assertTrue(kind == 10 or kind == 2, bar.file .. " must be true-color TGA (type 10 or 2), got " .. tostring(kind))
+    assertEqual(bpp, 32, name .. " needs an alpha channel")
+    assertEqual(w, 256, name .. " width")
+    assertEqual(h, 32, name .. " height")
+  end
+end)
+
+-- Every skin's own bar (minor 9, SO-04): the LSM key, its file, and the skin that draws it. WoW
+-- Default keeps the client's Blizzard bar and ships none.
+local SKIN_BARS = {
+  { "Ka0s Matte", "matte.tga", "obsidian" }, { "Ka0s Parchment", "parchment.tga", "azeroth" },
+  { "Ka0s Glass Bar", "glass-bar.tga", "glass" }, { "Ka0s Solid", "solid.tga", "contrast" },
+  { "Ka0s Forge", "forge.tga", "ember" }, { "Ka0s Satin", "satin.tga", "midnight" },
+  { "Ka0s Classic", "classic.tga", "forever" },
+}
+
+--- A 32-bit TGA's pixels as rows of { b, g, r, a }, top row first: RLE (type 10) or raw (type 2).
+local function tgaPixels(path)
+  local fh = io.open(path, "rb")
+  if not fh then return nil end
+  local data = fh:read("*a")
+  fh:close()
+  local kind, w, h = data:byte(3), data:byte(13) + 256 * data:byte(14), data:byte(15) + 256 * data:byte(16)
+  local topFirst = data:byte(18) % 64 >= 32
+  local pos, flat = 19 + data:byte(1), {}
+  local function pixel() local p = { data:byte(pos, pos + 3) }; pos = pos + 4; return p end
+  while #flat < w * h do
+    if kind == 2 then
+      flat[#flat + 1] = pixel()
+    else
+      local c = data:byte(pos); pos = pos + 1
+      if c >= 128 then
+        local p = pixel()
+        for _ = 1, c - 127 do flat[#flat + 1] = p end
+      else
+        for _ = 1, c + 1 do flat[#flat + 1] = pixel() end
+      end
+    end
+  end
+  local rows = {}
+  for r = 1, h do
+    local row = {}
+    for x = 1, w do row[x] = flat[(r - 1) * w + x] end
+    rows[topFirst and r or (h - r + 1)] = row
+  end
+  return rows, w, h
+end
+
+test("media: every skin's own bar is in TEXTURES, opaque and gray, and tiles along the bar", function()
+  -- Minor 9 (SO-04, the owner's approved mockup). Opaque, because a bar of data is a fill and not an
+  -- overlay; gray, because a texture is tinted by multiplying; every column the same but Parchment's,
+  -- whose mottle wraps, so the seam where a wide bar repeats it is no harder than any step inside it.
+  -- red under: a skin's bar missing, translucent, tinted, or a Parchment whose blur does not wrap.
+  for _, want in ipairs(SKIN_BARS) do
+    local name, file = want[1], want[2]
+    local entry = media.TEXTURES[name]
+    assertTrue(entry ~= nil, "TEXTURES has no '" .. name .. "'")
+    assertEqual(entry and entry.file, file, name .. "'s file")
+    local rows, w, h = tgaPixels("LibKa0s/media/textures/" .. file)
+    assertTrue(rows ~= nil, file .. " is not readable")
+    local opaque, gray, flat, seam, step = true, true, true, 0, 0
+    for y = 1, h or 0 do
+      local row = rows[y]
+      for x = 1, w do
+        local p = row[x]
+        opaque = opaque and p[4] == 255
+        gray = gray and p[1] == p[2] and p[2] == p[3]
+        flat = flat and p[1] == row[1][1]
+        if x > 1 then step = math.max(step, math.abs(p[1] - row[x - 1][1])) end
+      end
+      seam = math.max(seam, math.abs(row[1][1] - row[w][1]))
+    end
+    assertTrue(opaque, name .. " is not opaque")
+    assertTrue(gray, name .. " is not gray")
+    if name == "Ka0s Parchment" then
+      assertTrue(not flat, "Parchment's mottle is missing: every column is the same")
+      assertTrue(seam <= step, "Parchment shows a seam where it tiles: " .. seam .. " against " .. step)
+    else
+      assertTrue(flat, name .. "'s columns differ")
+    end
+  end
+  assertTrue(media.TEXTURES["Ka0s Glass"] == nil, "the Glass statusbar is 'Ka0s Glass Bar'; 'Ka0s Glass' is its border")
+  local matte = tgaPixels("LibKa0s/media/textures/matte.tga")
+  assertEqual(matte[1][1][1], 255, "Matte's lit top row")
+  assertEqual(matte[16][1][1], 219, "Matte's face, 0.86")
+  assertEqual(matte[32][1][1], 158, "Matte's shaded bottom row, 0.62")
+  local solid = tgaPixels("LibKa0s/media/textures/solid.tga")
+  assertEqual(solid[1][1][1] + solid[32][256][1], 510, "Solid is white everywhere")
+end)
+
 test("media: RegisterLSM registers the Glass border and background, and counts them", function()
   local byKind = {}
   T.mocks.__libs["LibSharedMedia-3.0"] = {
@@ -697,8 +826,8 @@ test("media: RegisterLSM registers the Glass border and background, and counts t
   }
   local fonts, bars, borders, backgrounds = media.RegisterLSM("X")
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
-  assertEqual(fonts, 15)
-  assertEqual(bars, 7)
+  assertEqual(fonts, 17)
+  assertEqual(bars, 15)
   assertEqual(borders, 1)
   assertEqual(backgrounds, 1)
   assertEqual(byKind.border and byKind.border["Ka0s Glass"], media.Border("X", "Ka0s Glass"))

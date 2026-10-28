@@ -1,0 +1,30 @@
+{
+  "major": "LibKa0s-Options-1.0",
+  "versionKey": "34.4.35.4.6.10.3.12.8.3.2.5.3.1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Options", "minor": 34 },
+    { "file": "OptionsRegistry", "minor": 4 },
+    { "file": "OptionsWidgets", "minor": 35 },
+    { "file": "OptionsIds", "minor": 4 },
+    { "file": "OptionsIdList", "minor": 6 },
+    { "file": "OptionsTabs", "minor": 10 },
+    { "file": "OptionsCombat", "minor": 3 },
+    { "file": "OptionsCompose", "minor": 12 },
+    { "file": "OptionsScroll", "minor": 8 },
+    { "file": "OptionsNav", "minor": 3 },
+    { "file": "OptionsDrawer", "minor": 2 },
+    { "file": "OptionsKeybinds", "minor": 5 },
+    { "file": "OptionsAppearance", "minor": 3 },
+    { "file": "OptionsSkinPicker", "minor": 1 }
+  ],
+  "members": [
+    { "name": "APPEARANCE_STRINGS", "kind": "table" },
+    { "name": "KEYBIND_STRINGS", "kind": "table" },
+    { "name": "LAYOUT", "kind": "table" },
+    { "name": "New", "kind": "function" },
+    { "name": "PatchAlwaysShowScrollbar", "kind": "function" },
+    { "name": "SKIN_PICKER_STRINGS", "kind": "table" },
+    { "name": "STRINGS", "kind": "table" }
+  ]
+}
