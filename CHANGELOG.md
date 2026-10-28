@@ -384,6 +384,11 @@ nothing else is owed. Cases in `tests/test_mock_paint.lua`.
   code change; its smoke checks re-look at it. An addon that registers no skin owner is unaffected.
 - **Nothing else is owed until an addon adopts** the overrides, `S.BarTexture`, the picker or Toast.
 
+Release gate (`docs/automated-tests/20261028-223958/`): lint pass, 0/0 in 228 files;
+tests pass, 3158 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+Preview and simulation re-look: Not applicable — the release moved no minor of `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` or `Widgets.lua` (`git diff --stat v1.78.0 -- LibKa0s/Sim.lua LibKa0s/SimTimeline.lua LibKa0s/SimPanel.lua LibKa0s/Widgets.lua` prints nothing), so no host's scenarios or test-mode strips change.
+
 ## v1.78.0 — 2026-10-25
 
 Opened 2026-10-25. Skinning, leg 1: the LibKa0s skin engine, its paint primitives and the skin
