@@ -45,7 +45,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Minor 9 (LK-02 of Ka0sAddonsCommonTasks docs/2026-10-29-SKINNING_ROLLOUT): Button's `opts.tokens`
 -- slot remap (`bg`, `border`, `text`, `hover`, `icon`, `disabled`; SkinPaint minor 11's P.remap),
 -- kept on the button's regions so its hover and enable hooks paint the remapped label (a danger
--- button).
+-- button). Then, still minor 9: IconBorder's `opts.fromSkin` draws the skin's icon border family
+-- (`icon.borderStyle`, `icon.borderSize`; LK-04), and a target kept stock by `opts.stockDefault`
+-- (SkinPaint minor 11's P.keepStock; LK-05) is not live to its hover pair.
 local CONTROLS_MINOR = 9
 if lib.__controlsMinor and lib.__controlsMinor >= CONTROLS_MINOR
   and lib.__controlsShellMinor == lib.MINOR then return end
@@ -71,7 +73,12 @@ local INPUT = { fill = "input.bg", border = "input.border", style = "input.borde
                 size = "input.borderSize" }
 
 --- The live record of `frame`, for a hook: nil once the frame was released.
-local function live(frame) return lib.painted[frame] end
+-- A painted target's record, or nil while it is kept stock (`opts.stockDefault`, SkinPaint minor 11).
+local function live(frame)
+  local r = lib.painted[frame]
+  if r and r.regions.stockKept then return nil end
+  return r
+end
 
 --- Recolor a box's edge: the backdrop's, or the holder's flat edges.
 local function edgeColor(rec, frame, c)
@@ -533,8 +540,9 @@ end
 --- `btn.glyph`, a font string) in `close.rest`, `close.hot` under the pointer. A stock close button
 --- (the client's template) is left stock in Ka0s Default; elsewhere its art is faded and an "x"
 --- glyph drawn. `opts.own` (a button the library built, Core.MakeCloseButton's) SetScripts the hover pair
---- as Core does; otherwise it is HookScript'd. Draws no Media icon (Core's `close` icon is the
---- caller's).
+--- as Core does; otherwise it is HookScript'd. `opts.stockDefault` (minor 9, LK-05) leaves a stock
+--- close button the client's while the owner draws Ka0s Default, its hover inert. Draws no Media
+--- icon (Core's `close` icon is the caller's).
 prim.CloseButton = function(owner, btn, opts)
   if not P.isFrame(btn) then return end
   local rec = P.track(owner, btn, "CloseButton", opts)

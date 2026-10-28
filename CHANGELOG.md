@@ -138,6 +138,32 @@ Drop Watcher's Window › Icons border could not follow the skin (DW-G14):
 
 New suite: `tests/test_skin_icon_border.lua`; five cases in `tests/test_options_compose_skin.lua`.
 
+### SkinPaint minor 11, SkinPaintExtras minor 5, SkinPaintControls minor 9, Skin minor 7: stock under Ka0s Default
+
+Still `LibKa0s-Skin-1.0` key 7.15.11.5.9.2.4 (every file already moved in this release), documented in
+[docs/api/Skin/version-7.15.11.5.9.2.4-docs.md](docs/api/Skin/version-7.15.11.5.9.2.4-docs.md) (*Stock
+under Ka0s Default*; LK-05 of the same run). Quick Comms' callout popup and icon browser are built on
+`SettingsFrameTemplate` and were ratified as matching the settings window, but since SkinPaint minor 6
+every skin, Ka0s Default included, fades a template's art, and a host that skipped the call could not
+give the window back on a live switch (QC-G4):
+
+- **`opts.stockDefault = true`** on `Shell`, `TitleBar`, `FadeNineSlice`, `CloseButton` and every
+  control that marks stock art (`Panel`, `Inset`, `Button`, `EditBox`, `Dropdown`, `Slider`, `Tab`):
+  while the owner draws Ka0s Default the call paints nothing and gives back whatever the library
+  painted on the target (faded art, fonts, text and vertex colors, a saved backdrop, a title's
+  alignment), so a live switch back is the stock window again; its hover and enable hooks do nothing
+  meanwhile. Under every other skin it paints as before. The mechanism is `P.stockDefault`, which
+  `Slider` and the other controls already called and which answered false since SkinPaint minor 6;
+  `P.keepStock` is its half that `TitleBar` and `FadeNineSlice` call.
+- **eui:** a call goes to EllesmereUI as any does, `stockDefault` stripped; before EllesmereUI paints,
+  a Ka0s Default fallback stays stock; a refused EllesmereUI (fail closed) is painted by the library
+  from the derived tokens, never left stock. `Skin:__DrawsKey(owner)` (internal) answers which.
+- Without the option, or with `false`, every primitive paints exactly as before.
+- `Panel` and `Inset` moved, unchanged, from `SkinPaint.lua` to `SkinPaintExtras.lua`, which keeps
+  `SkinPaint.lua` at 989 lines, out of layout-§1's 1000-line band; `P.FILL_SLOTS` is shared.
+
+New suite: `tests/test_skin_stock_default.lua`.
+
 ### What a consumer owes
 
 - **Nothing until an addon uses the new surfaces.** An addon that passes no `tokens` to
@@ -152,6 +178,9 @@ New suite: `tests/test_skin_icon_border.lua`; five cases in `tests/test_options_
   plus `S.Resolve("icon.borderStyle", ...)`) owes the `"Solid"` key in LibSharedMedia (the `WHITE8X8`
   edge, as Drop Watcher registers it) or draws through `S.IconBorder(frame, { fromSkin = true })`,
   which draws Solid itself.
+- `opts.stockDefault` is opt-in: a window whose calls do not pass it looks as it did on v1.79.0. A
+  host that passes it to a `FadeNineSlice` or `TitleBar` call either guards on a v1.80.0 payload or
+  accepts that an older copy ignores the option and paints.
 
 ## v1.79.0 — 2026-10-28
 

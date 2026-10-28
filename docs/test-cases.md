@@ -595,6 +595,17 @@ Total.
 - skin icon border: a skin whose icon.borderStyle is None draws no border
 - skin icon border: under eui fromSkin is the library's, from the EllesmereUI-derived tokens
 
+### test_skin_stock_default.lua (8)
+
+- skin stock default: under Ka0s Default a SettingsFrameTemplate window stays the client's
+- skin stock default: another skin paints it, and a switch back gives the stock window back
+- skin stock default: TitleBar gives back the title's justification with its color
+- skin stock default: a stock target's hover and enable hooks do nothing under Ka0s Default
+- skin stock default: Slider, EditBox and Tab take the option through the same mechanism
+- skin stock default: without the option Ka0s Default paints exactly as before
+- skin stock default: under eui the window goes to EllesmereUI; its fallback is stock
+- skin stock default: a refused EllesmereUI (fail closed) is the library's paint, never stock
+
 ### test_skin_defs.lua (29)
 
 - skin defs: the nine skins register in order with their labels
@@ -3644,6 +3655,7 @@ Total.
 | test_skin_owner_tokens.lua | 12 |
 | test_skin_remap.lua | 10 |
 | test_skin_icon_border.lua | 8 |
+| test_skin_stock_default.lua | 8 |
 | test_skin_defs.lua | 29 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
@@ -3759,4 +3771,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3205** |
+| **Total** | **3213** |

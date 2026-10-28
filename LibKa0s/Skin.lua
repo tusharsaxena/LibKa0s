@@ -84,6 +84,7 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- `follow` library token's value in that skin; the eui source the follow token's EllesmereUI value. A
 -- name with no dot, a schema name or a malformed definition is refused and logged once. And
 -- `__RemapName`, the check a primitive's `opts.tokens` slot remap makes of each name (LK-02).
+-- And `__DrawsKey`, the key an owner draws by, which a primitive's `opts.stockDefault` asks (LK-05).
 local MAJOR, MINOR = "LibKa0s-Skin-1.0", 7
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -705,6 +706,15 @@ end
 --- Shared: never write to it. Internal.
 function lib:__BaseTokens(owner)
   return (baseOf(owner))
+end
+
+--- The key `owner` draws by: "eui" while EllesmereUI paints it (its derived tokens, the library's
+--- technique when EllesmereUI is refused included), else the skin key it wears (`lib.DEFAULT` for
+--- Ka0s Default, and for an owner on `eui` before EllesmereUI paints it: the live fallback). What a
+--- primitive's `opts.stockDefault` asks (minor 7, LK-05 of the skinning rollout). Internal.
+function lib:__DrawsKey(owner)
+  local _, key = baseOf(owner)
+  return key
 end
 
 --- One owner token's value under `key` (a skin key, or "eui"), reading the follow token from `t`.
