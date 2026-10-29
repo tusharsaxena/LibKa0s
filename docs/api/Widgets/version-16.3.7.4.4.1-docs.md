@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 16.3.6.4.4.1
+# `LibKa0s-Widgets-1.0` — version 16.3.7.4.4.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,21 +8,25 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **16** · `WidgetsReorder.lua` minor **3** · `WidgetsDragHandle.lua` minor **6** · `WidgetsLineChart.lua` minor **4** · `WidgetsAutocomplete.lua` minor **4** · `WidgetsCopyWindow.lua` minor **1** |
+| Files and minors | `Widgets.lua` minor **16** · `WidgetsReorder.lua` minor **3** · `WidgetsDragHandle.lua` minor **7** · `WidgetsLineChart.lua` minor **4** · `WidgetsAutocomplete.lua` minor **4** · `WidgetsCopyWindow.lua` minor **1** |
 | Shipped in | unreleased (v1.81.0) |
 | Status | **Current** |
-| Supersedes | [version 16.2.6.4.4.1](./version-16.2.6.4.4.1-docs.md) (shipped in v1.78.0) — the same members, with a `ReorderList` that keeps its owner's skin while the owner ignores its settings panel; and [version 15.1.5.3.3](./version-15.1.5.3.3-docs.md) (shipped in v1.77.0), none taking a skin owner, and the copy window inside `Widgets.lua` |
+| Supersedes | [version 16.2.6.4.4.1](./version-16.2.6.4.4.1-docs.md) (shipped in v1.78.0) — the same members, with a `ReorderList` that keeps its owner's skin while the owner ignores its settings panel and an owned `DragHandle` whose tooltip draws the fixed gold, white and gray whatever its owner's skin; and [version 15.1.5.3.3](./version-15.1.5.3.3-docs.md) (shipped in v1.77.0), none taking a skin owner, and the copy window inside `Widgets.lua` |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 16, WidgetsReorder = 3, WidgetsDragHandle = 6, WidgetsLineChart = 4, WidgetsAutocomplete = 4, WidgetsCopyWindow = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 16, WidgetsReorder = 3, WidgetsDragHandle = 7, WidgetsLineChart = 4, WidgetsAutocomplete = 4, WidgetsCopyWindow = 1 }` |
 
-## What changed at 16.3.6.4.4.1
+## What changed at 16.3.7.4.4.1
 
-**A reorder list obeys its owner's "Ignore settings panel".** `WidgetsReorder.lua` moves from **2**
-to **3**; every other file keeps its minor, so the key is 16.3.6.4.4.1. **No lib-level member is
-added, removed or renamed**, so `members-16.3.6.4.4.1.json` lists the same names as 16.2.6.4.4.1;
-what is new is one optional field. LK-05 of Ka0sAddonsCommonTasks
-`docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/` (ruling R-5, decisions D-01 and D-02).
+**A reorder list obeys its owner's "Ignore settings panel", and an owned drag handle's tooltip
+wears its skin.** `WidgetsReorder.lua` moves from **2** to **3** and `WidgetsDragHandle.lua` from
+**6** to **7**; every other file keeps its minor, so the key is 16.3.7.4.4.1. **No lib-level member
+is added, removed or renamed**, so `members-16.3.7.4.4.1.json` lists the same names as
+16.2.6.4.4.1; what is new is one optional field and the tooltip's colors. LK-05 of
+Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/` (ruling R-5, decisions D-01 and
+D-02) and LK-08 of the same plan (ruling R-7, decision D-14). Within the v1.81.0 cycle the reorder
+change was first written up under key 16.3.6.4.4.1; that key never shipped, and this document is
+the same one under the release's key.
 
 - **Panel-scoped by default** (**Since Reorder 3**). Every consumer puts a reorder list on a
   settings page, so it is scoped to that page the way an AceGUI row is: while its owner ignores its
@@ -33,8 +37,21 @@ what is new is one optional field. LK-05 of Ka0sAddonsCommonTasks
   new answer. Ignore fonts has nothing to give back: the ghost's text has no skin face.
 - **`opts.panel = false`** (**Since Reorder 3**) opts a list out, for a list on a window, which
   wears the skin whatever that switch says (D-01). No consumer passes it today.
+- **An owned drag handle's tooltip in its skin's tooltip colors** (**Since DragHandle 7**). The
+  three bands drew fixed literals (a `1, 0.82, 0` title, a white body, a `0.6` gray footer) whatever
+  the owner's skin. They now default to the owner's `gtip.title`, `gtip.value` and `gtip.footer`
+  (`LibKa0s-Skin-1.0`'s *The token schema*; `gtip.footer` joined at SkinDefs minor 16), read from
+  the handle's palette at every hover, so a skin switch reaches the next hover with no rebuild. The
+  strip, its help mark and its close mark draw the same colors, the placed path (`tooltipPlace`)
+  included. Ka0s Default's values are those literals, so an owned strip on Ka0s Default draws what
+  it drew, and an owner-less strip draws them as before. An entry's own `{ text, r, g, b }` color
+  still wins over its band's. The tooltip is the client's `GameTooltip`; only the line colors move,
+  never the frame. Neither *Ignore* switch applies: the lines carry no face of ours and are not the
+  settings panel.
 
-**What a host must change: nothing.** A host that hid its reorder list's owner while the panel was
+**What a host must change: nothing.** A host that colored its drag handle's title and body lines
+itself to follow its skin (AuraMaster's `gtip.title` / `gtip.value` entries) may drop those colors:
+the bands now draw the same. A host that hid its reorder list's owner while the panel was
 ignored (ConsumableMaster's `KCM.SkinPanelOwner()`) may pass its owner plainly. A host that left the
 owner in (MultiMeters' Columns page, LootHistory's lists) now draws those lists as minor 1 did under
 "Ignore settings panel", which is the setting's meaning; its smoke checks move with it.
@@ -92,7 +109,7 @@ exactly as an owner-less widget does. A color the host passes (an option row's `
 | `TestStrip` | `S.Strip` | `strip.test` / `strip.sim` | on the owner's switch |
 | `CopyWindow` | `Core.ApplySkin(f, nil, owner)` (`S.Shell`), `S.ScrollBar`, `Core.MakeCloseButton` | the window tokens, `win.bgDense` (the denser fill, unless the host passed `backdrop`), `close.rest` / `close.hot` | on the owner's switch |
 | `Autocomplete` rows | read on each show | `menu.text`, `menu.hover`; the list's fill and edge still follow the box | the next show |
-| `DragHandle` | `Skin:Token` | `handle.bg`, `handle.edge`, `text.accent` (the label), `icon.tint` / `icon.hot` (the marks); a host's `spec.edge` pixels are its own | on the owner's switch |
+| `DragHandle` | `Skin:Token` | `handle.bg`, `handle.edge`, `text.accent` (the label), `icon.tint` / `icon.hot` (the marks), `gtip.title`, `gtip.value`, `gtip.footer` (the tooltip's bands, DragHandle 7); a host's `spec.edge` pixels are its own | on the owner's switch; the tooltip on every hover |
 | `ReorderList` | `Skin:Token`; none while the owner ignores its settings panel, unless `panel = false` (Reorder 3) | `list.box`, `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`, `handle.rest`, `text.accent` (hover), `list.dropLine`, `list.ghostBg`, `text.accent` (the ghost's text) | the next render; the ghost on every drag |
 | `LineChart` | `S.ChartStyle()` | `chart.axis`, `chart.grid`, `chart.crosshair`, `chart.marker`, `chart.line`, `chart.series` (`colorIndex`), `text.disabled` (the tick labels) | re-rendered at its last size on the owner's switch |
 
@@ -1170,7 +1187,7 @@ also spends it in its clamp reach, `HEIGHT + GAP`.
 |---|---|---|
 | `label` **(required)** | the strip's centered text, already localized | empty |
 | `moveFrame` **(required)** | the frame `StartMoving` / `StopMovingOrSizing` are called on | the drag moves nothing |
-| `owner` | **DragHandle 6.** A registered skin owner: the fill, the edge, the label and the marks' tints come from that owner's skin and follow its switches (*Skin owners*). Not a tooltip owner: that is `tooltipOwner`, and a tooltip descriptor's own `owner` | minor 5's colors |
+| `owner` | **DragHandle 6.** A registered skin owner: the fill, the edge, the label and the marks' tints come from that owner's skin and follow its switches (*Skin owners*); **from DragHandle 7** the tooltip's band colors too (`gtip.title`, `gtip.value`, `gtip.footer`, read at every hover). Not a tooltip owner: that is `tooltipOwner`, and a tooltip descriptor's own `owner` | minor 5's colors |
 | `name` | global frame name (`"KCMMacroBarHandle"`) | anonymous |
 | `helpIcon` | resolved texture path for the mark, the host's `Icon("help")` | `Interface\FriendsFrame\InformationIcon` |
 | `canDrag` | `function() -> boolean`, asked at `OnDragStart` | always allowed |
@@ -1244,9 +1261,9 @@ end
 
 ```lua
 tooltip = {
-  title  = <entry>,              -- gold, 1, 0.82, 0
-  body   = { <entry>, … },       -- white, wrapped
-  footer = { <entry>, … },       -- gray, after one blank line
+  title  = <entry>,              -- gold, 1, 0.82, 0 (Since 7, an owned strip: gtip.title)
+  body   = { <entry>, … },       -- white, wrapped (Since 7, an owned strip: gtip.value)
+  footer = { <entry>, … },       -- gray, 0.6, after one blank line (Since 7: gtip.footer)
   owner  = <"cursor" | nil>,     -- overrides spec.tooltipOwner for this descriptor
   anchor = <string | nil>,       -- overrides spec.tooltipAnchor for this descriptor
   place  = <function | nil>,     -- Since 4. overrides spec.tooltipPlace for this descriptor

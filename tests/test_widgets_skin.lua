@@ -484,3 +484,70 @@ test("skin owner: Ka0s Default's eight Widgets tokens are the constants they rep
   assertEqual(F.rgba(O["list.box"]), F.rgba({ O["text.body"][1], O["text.body"][2], O["text.body"][3], 0.06 }),
     "and the boxes from its body text")
 end)
+
+-- ── the drag handle's tooltip (WidgetsDragHandle minor 7) ────────────────────────────────────
+
+--- Hover `frame` with the client's GameTooltip recorded: every line's text and color, in order.
+local function hoverLines(m, frame)
+  local tip, seen = m.GameTooltip, {}
+  local savedOwner, savedText, savedLine = rawget(tip, "SetOwner"), rawget(tip, "SetText"), rawget(tip, "AddLine")
+  local function rec(_, text, r, g, b) seen[#seen + 1] = { text = text, color = F.rgba({ r, g, b }) } end
+  rawset(tip, "SetOwner", function() end)
+  rawset(tip, "SetText", rec)
+  rawset(tip, "AddLine", rec)
+  local ok, err = pcall(function() frame:__fire("OnEnter") end)
+  rawset(tip, "SetOwner", savedOwner); rawset(tip, "SetText", savedText); rawset(tip, "AddLine", savedLine)
+  assertTrue(ok, tostring(err))
+  return seen
+end
+
+local TIP = { title = "Bar", body = { "Drag to move.", { "Attached.", 1, 0.82, 0 } }, footer = { "Locked." } }
+
+local function tipHandle(m, W, owner)
+  return W.DragHandle(m.UIParent, { label = "Move", moveFrame = m.CreateFrame("Frame"), owner = owner,
+                                    onClose = function() end, tooltip = TIP })
+end
+
+local function rgb(Skin, skin, name)
+  local c = Skin:ResolveSkin(skin)[name]
+  return F.rgba({ c[1], c[2], c[3] })
+end
+
+test("skin owner: an owned DragHandle's tooltip is minor 6's gold, white and gray under Ka0s Default", function()
+  -- LK-08 (R-7, D-14). red under: a band reading a token whose Ka0s Default is not the literal it
+  -- replaces (`gtip.body` for the body, `gtip.muted` for the footer).
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER)
+  local h = tipHandle(m, W, OWNER)
+  for _, frame in ipairs({ h, h.help, h.close }) do
+    local seen = hoverLines(m, frame)
+    assertEqual(#seen, 5)
+    assertEqual(seen[1].color, "1,0.820,0,1", "the title")
+    assertEqual(seen[2].color, "1,1,1,1", "the body")
+    assertEqual(seen[3].color, "1,0.820,0,1", "a band entry's own color")
+    assertEqual(seen[4].text, " ")
+    assertEqual(seen[5].color, "0.600,0.600,0.600,1", "the footer")
+  end
+end)
+
+test("skin owner: an owned DragHandle's tooltip takes its skin's gtip colors and follows a switch", function()
+  -- LK-08 (R-7, D-14). red under: the tooltip's literals (every skin's tooltip gold, white and gray),
+  -- a palette captured at build (the switch would not reach the next hover), or a skin color laid
+  -- over an entry's own.
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "azeroth")
+  local h, o = tipHandle(m, W, OWNER), tipHandle(m, W, nil)
+  local seen = hoverLines(m, h.help)
+  assertEqual(seen[1].color, rgb(Skin, "azeroth", "gtip.title"), "Azeroth's tooltip title")
+  assertTrue(seen[1].color ~= "1,0.820,0,1", "not Ka0s Default's gold")
+  assertEqual(seen[2].color, rgb(Skin, "azeroth", "gtip.value"), "Azeroth's tooltip value")
+  assertEqual(seen[3].color, "1,0.820,0,1", "a band entry's own color still wins")
+  assertEqual(seen[5].color, rgb(Skin, "azeroth", "gtip.muted"), "Azeroth's tooltip gray")
+  Skin:SetChoice(OWNER, "ka0s", "contrast")
+  seen = hoverLines(m, h)
+  assertEqual(seen[1].color, rgb(Skin, "contrast", "gtip.title"), "the next hover after a switch")
+  assertEqual(seen[5].color, rgb(Skin, "contrast", "gtip.footer"))
+  seen = hoverLines(m, o.close)
+  assertEqual(seen[1].color, "1,0.820,0,1", "an owner-less handle keeps minor 6's tooltip")
+  assertEqual(seen[5].color, "0.600,0.600,0.600,1")
+end)

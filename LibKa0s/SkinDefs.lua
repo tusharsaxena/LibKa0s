@@ -102,7 +102,10 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- Atkinson Bold, Ember Bitter Bold, WoW Midnight Philosopher Bold, WoW Forever Fira Sans SemiBold, and
 -- WoW Default the client's Friz Quadrata, set explicitly. `hud.font` leaves KEEP, which minor 14 had
 -- send every one of them to Friz Quadrata. `hud.outline` (OUTLINE) and `hud.fontSize` (12) stay Ka0s
--- Default's everywhere. The eui source derives from Ka0s Default and keeps its Oxanium.
+-- Default's everywhere. The eui source derives from Ka0s Default and keeps its Oxanium. Then (LK-08,
+-- the owner's ruling R-7, DECISIONS D-14, still minor 16): `gtip.footer`, the drag handle's tooltip footer,
+-- Ka0s Default's 0.6 gray (the literal WidgetsDragHandle drew) and every other skin's `gtip.muted`
+-- through FOLLOW. The eui source derives it from Ka0s Default.
 local DEFS_MINOR = 16
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
@@ -127,7 +130,7 @@ local GROUPS = {
     .. "text.accent:color text.disabled:color text.link:color text.linkHot:color "
     .. "gtip.title:color gtip.body:color gtip.muted:color text.faint:color log.ts:color "
     .. "log.tag:color log.text:color log.count:color text.value:color text.bodyAlt:color "
-    .. "text.subtle:color text.highlight:color gtip.value:color gtip.subtle:color" },
+    .. "text.subtle:color text.highlight:color gtip.value:color gtip.subtle:color gtip.footer:color" },
   { "Buttons", "btn.bg:color btn.bgTop:color? btn.bgBottom:color? btn.border:color "
     .. "btn.borderSize:number? btn.borderStyle:string? btn.text:color btn.hover:color "
     .. "btn.icon:color btn.radius:number btnPrimary.bg:color btnPrimary.bgTop:color? "
@@ -249,6 +252,8 @@ local KA0S = {
   ["text.value"] = { 0.8, 0.8, 0.82, 1 }, ["text.bodyAlt"] = { 0.86, 0.86, 0.86, 1 },
   ["text.subtle"] = { 0.85, 0.85, 0.85, 1 }, ["text.highlight"] = WHITE,
   ["gtip.value"] = WHITE, ["gtip.subtle"] = { 0.7, 0.7, 0.7, 1 },
+  -- The drag handle's tooltip footer (minor 16, LK-08): the 0.6 gray WidgetsDragHandle drew.
+  ["gtip.footer"] = { 0.6, 0.6, 0.6, 1 },
   -- Buttons: LootHistory's flat buttons (BrowserFilterBar, Export, Timeline). No primary today.
   ["btn.bg"] = CTL_FILL, ["btn.border"] = CTL_LINE, ["btn.borderSize"] = 1,
   ["btn.borderStyle"] = "flat", ["btn.text"] = WHITE, ["btn.hover"] = GOLD,
@@ -498,7 +503,7 @@ local FOLLOW = {
   { "log.ts", "sem.info" }, { "log.tag", "text.headingAlt" },
   { "sem.stepReady", "text.body" }, { "sem.stepBusy", "text.accent" },
   { "sem.stepLocked", "text.disabled" }, { "sem.stepCancel", "sem.off" }, { "sem.stepCancelHot", "sem.bad" },
-  { "icon.arrow", "text.accent" },
+  { "icon.arrow", "text.accent" }, { "gtip.footer", "gtip.muted" },
 }
 
 local function blend(a, b)

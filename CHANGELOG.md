@@ -19,10 +19,29 @@ listed. Not tagged.
 
 Versions in this release: **Skin minor 8**, **SkinDefs minor 16**, **SkinPaint minor 12**,
 **SkinPaintExtras minor 6** and **SkinPaintControls minor 10** (`LibKa0s-Skin-1.0` key
-**8.16.12.6.10.2.4**), **WidgetsReorder minor 3** (`LibKa0s-Widgets-1.0` key **16.3.6.4.4.1**) and
+**8.16.12.6.10.2.4**), **WidgetsReorder minor 3** and **WidgetsDragHandle minor 7** (`LibKa0s-Widgets-1.0` key **16.3.7.4.4.1**) and
 **OptionsSkinPicker minor 2** (`LibKa0s-Options-1.0` key **34.4.35.4.6.10.3.13.8.3.2.5.3.2**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
 until an entry below moves one.
 Still **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
+
+### WidgetsDragHandle minor 7, SkinDefs minor 16: the drag handle's tooltip in its skin's colors
+
+`LibKa0s-Widgets-1.0` key 16.3.7.4.4.1, documented in
+[docs/api/Widgets/version-16.3.7.4.4.1-docs.md](docs/api/Widgets/version-16.3.7.4.4.1-docs.md)
+(*Skin owners*, `DragHandle`'s `spec.owner` and tooltip descriptor), and `LibKa0s-Skin-1.0` key
+8.16.12.6.10.2.4, the same document (*Text*, *The eight skins' tokens*; LK-08, ruling R-7, decision
+D-14). An owned drag handle painted its strip from its skin but drew its tooltip in fixed literals:
+a `1, 0.82, 0` title, a white body and a `0.6` gray footer. The three bands now default to the
+owner's `gtip.title`, `gtip.value` and the new `gtip.footer`, read from the handle's palette at
+every hover, on the strip, its help mark and its close mark, the placed path included; a skin
+switch reaches the next hover with no rebuild. `gtip.footer` is Ka0s Default's 0.6 gray and every
+other skin's `gtip.muted` (`FOLLOW`); the `eui` source derives it from Ka0s Default. Ka0s Default's
+three values are the literals, so an owned strip on Ka0s Default draws what it drew, and an
+owner-less strip is unchanged. An entry's own color still wins over its band's. **What a consumer
+owes:** nothing; AuraMaster may drop the `gtip.title` / `gtip.value` colors it puts on its handle's
+title and body entries, since the bands now draw the same. Two cases in `tests/test_widgets_skin.lua`
+and one in `tests/test_skin_defs.lua` pin it. The Widgets document LK-05 opened under key
+16.3.6.4.4.1 was renamed to this key and extended (one docs file per key per release).
 
 ### OptionsSkinPicker minor 2: "Choose a skin", the addon's name on its own line
 
@@ -111,8 +130,9 @@ pin it.
 ### SkinPaintExtras minor 6, WidgetsReorder minor 3: `S.Text` and the reorder list obey the panel scope
 
 `LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, the same document (*Members*, `SetIgnore`; *The primitives*,
-`Text`), and `LibKa0s-Widgets-1.0` key 16.3.6.4.4.1, documented in
-[docs/api/Widgets/version-16.3.6.4.4.1-docs.md](docs/api/Widgets/version-16.3.6.4.4.1-docs.md)
+`Text`), and `LibKa0s-Widgets-1.0` key 16.3.7.4.4.1 (16.3.6.4.4.1 when this entry was written),
+documented in
+[docs/api/Widgets/version-16.3.7.4.4.1-docs.md](docs/api/Widgets/version-16.3.7.4.4.1-docs.md)
 (LK-05, ruling R-5, decisions D-01 and D-02). "Ignore settings panel" reached the AceGUI rows and
 the Options chrome only, so a string a host colored with `S.Text` on its settings page, and every
 reorder list, kept the skin while it was on. `S.Text(fs, role, { panel = true })` now puts a string

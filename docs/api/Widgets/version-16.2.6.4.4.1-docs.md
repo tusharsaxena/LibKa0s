@@ -12,7 +12,7 @@
 | Shipped in | v1.78.0 |
 | Status | Superseded |
 | Supersedes | [version 15.1.5.3.3](./version-15.1.5.3.3-docs.md) (shipped in v1.77.0) — the same members, none taking a skin owner, and the copy window inside `Widgets.lua` |
-| Superseded by | [version 16.3.6.4.4.1](./version-16.3.6.4.4.1-docs.md) |
+| Superseded by | [version 16.3.7.4.4.1](./version-16.3.7.4.4.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 16, WidgetsReorder = 2, WidgetsDragHandle = 6, WidgetsLineChart = 4, WidgetsAutocomplete = 4, WidgetsCopyWindow = 1 }` |
 

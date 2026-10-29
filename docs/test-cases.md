@@ -624,7 +624,7 @@ Total.
 - skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
 - skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (30)
+### test_skin_defs.lua (31)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -656,6 +656,7 @@ Total.
 - skin defs: WoW Default's checkbox art is its only box
 - skin defs: in every skin a primary button differs from a normal one
 - skin defs: no skin draws a box round a slider's bar
+- skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 
 ### test_skin_paint.lua (36)
 
@@ -1102,7 +1103,7 @@ Total.
 - reorder: ReorderList lives in WidgetsReorder.lua at minor 1, paired on the live shell
 - reorder: a payload without WidgetsReorder.lua loads whole, with no ReorderList
 
-### test_widgets_skin.lua (26)
+### test_widgets_skin.lua (28)
 
 - skin owner: Core.ApplySkin and MakeCloseButton without a registered owner are minor 12's
 - skin owner: Core.ApplySkin paints a registered owner's window from its skin and repaints it
@@ -1130,6 +1131,8 @@ Total.
 - skin owner: LineChart without a registered owner reads lib.LINE_CHART as minor 3 did
 - skin owner: an owned LineChart takes its chrome and series from ChartStyle and re-renders
 - skin owner: Ka0s Default's eight Widgets tokens are the constants they replace
+- skin owner: an owned DragHandle's tooltip is minor 6's gold, white and gray under Ka0s Default
+- skin owner: an owned DragHandle's tooltip takes its skin's gtip colors and follows a switch
 
 ### test_debuglog.lua (75)
 
@@ -3688,7 +3691,7 @@ Total.
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 30 |
+| test_skin_defs.lua | 31 |
 | test_skin_paint.lua | 36 |
 | test_skin_paint_controls.lua | 31 |
 | test_skin_eui.lua | 29 |
@@ -3705,7 +3708,7 @@ Total.
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
-| test_widgets_skin.lua | 26 |
+| test_widgets_skin.lua | 28 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -3803,4 +3806,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3245** |
+| **Total** | **3248** |

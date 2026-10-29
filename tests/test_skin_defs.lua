@@ -629,3 +629,18 @@ test("skin defs: no skin draws a box round a slider's bar", function()
     assertTrue(b == nil or (b[4] or 1) == 0, key .. ": no slider track border")
   end
 end)
+
+test("skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted", function()
+  -- SkinDefs minor 16 (LK-08 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, ruling
+  -- R-7, DECISIONS D-14): the drag handle's tooltip footer. red under: the token missing from the
+  -- schema or Ka0s Default (WidgetsDragHandle's footer would fall back to its literal in every
+  -- skin), Ka0s Default's value moved off the 0.6 gray the footer drew, or the FOLLOW row dropped.
+  local Skin = skinLib()
+  assertEqual(colorKey(Skin:ResolveSkin("ka0s")["gtip.footer"]), "0.600,0.600,0.600,1.000", "Ka0s Default's footer")
+  for _, key in ipairs(KEYS) do
+    if key ~= "ka0s" then
+      local t = Skin:ResolveSkin(key)
+      assertEqual(colorKey(t["gtip.footer"]), colorKey(t["gtip.muted"]), key .. ": the footer is its tooltip gray")
+    end
+  end
+end)

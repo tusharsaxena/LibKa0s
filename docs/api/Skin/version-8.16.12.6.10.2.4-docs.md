@@ -11,7 +11,7 @@
 | Files and minors | `Skin.lua` minor **8** · `SkinDefs.lua` minor **16** · `SkinPaint.lua` minor **12** · `SkinPaintExtras.lua` minor **6** · `SkinPaintControls.lua` minor **10** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
 | Shipped in | unreleased (v1.81.0) |
 | Status | **Current** |
-| Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places and every skin but Ka0s Default drawing HUD text in Friz Quadrata through `KEEP` (SkinDefs minor 15), with a `ResetToSkin` that wrote `FROM_SKIN` into a companion it could not see stored and took no `opts`, with the key an owner draws by only as the internal `__DrawsKey` (Skin minor 7), and with *Ignore fonts* stopping at `P.font`, so `Token`, `Resolve` and `BarStyle` still answered the skin's HUD face and outline while it was on (Skin minor 7, SkinPaintExtras minor 5), with no settings-panel scope on `S.Text`, and with `opts.stockDefault` keeping a template-built target the client's under Ka0s Default (SkinPaint minor 11, SkinPaintControls minor 9), `PageButton` taking no options and `P.unpaint` leaving a title's alignment as the skin set it |
+| Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places and every skin but Ka0s Default drawing HUD text in Friz Quadrata through `KEEP` (SkinDefs minor 15), with a `ResetToSkin` that wrote `FROM_SKIN` into a companion it could not see stored and took no `opts`, with the key an owner draws by only as the internal `__DrawsKey` (Skin minor 7), and with *Ignore fonts* stopping at `P.font`, so `Token`, `Resolve` and `BarStyle` still answered the skin's HUD face and outline while it was on (Skin minor 7, SkinPaintExtras minor 5), with no settings-panel scope on `S.Text`, with no `gtip.footer` (SkinDefs minor 15), and with `opts.stockDefault` keeping a template-built target the client's under Ka0s Default (SkinPaint minor 11, SkinPaintControls minor 9), `PageButton` taking no options and `P.unpaint` leaving a title's alignment as the skin set it |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 8, SkinDefs = 16, SkinPaint = 12, SkinPaintExtras = 6, SkinPaintControls = 10, SkinEUI = 2, SkinAce = 4 }` |
@@ -381,7 +381,7 @@ changing:
 | Secondary text | `text.muted` `.7, .7, .72` · `text.value` `.8, .8, .82` | axis labels, Insights' strip labels · Insights' value and legend column (AnalyticsCharts.lua:170/:256/:283/:393) |
 | Body text | `text.body` `.9, .9, .9` · `text.bodyAlt` `.86, .86, .86` · `text.subtle` `.85, .85, .85` · `text.highlight` `1, 1, 1` | menu rows, table cells, the AH table's price module · its live addon name (Panel.lua:707-708) · Holdings' holder total and fresh age (HoldingsTab.lua:416/:418) · Holdings' cell default (HoldingsTab.lua:391) |
 | Tooltip value | `gtip.body` `.9, .9, .9` · `gtip.value` `1, 1, 1` | a label or body line · the value column (Compat.lua:647/:661/:674, Timeline.lua:542, TimelineModel.lua:386, AnalyticsCharts.lua:29/:140, Panel.lua:647) |
-| Tooltip gray | `gtip.muted` `.5, .5, .5` · `gtip.subtle` `.7, .7, .7` | a hint line · the launcher's record count (LauncherSetup.lua:206) |
+| Tooltip gray | `gtip.muted` `.5, .5, .5` · `gtip.subtle` `.7, .7, .7` · `gtip.footer` `.6, .6, .6` | a hint line · the launcher's record count (LauncherSetup.lua:206) · the drag handle's tooltip footer (`LibKa0s-Widgets-1.0` DragHandle 7) |
 | Dimmed icon | `icon.tint` `.7, .7, .72` · `icon.dim` `.55, .55, .55` | a resting icon · the AH table's inactive info icon (Panel.lua:721-722) |
 | Signed figure | `sem.good` / `sem.bad` · `sem.goodAlt` `.25, 1, .25` / `sem.badAlt` `1, .25, .25` | `C.DirRGB` · LedgerFormat's `\|cff40ff40` / `\|cffff4040` (LedgerFormat.lua:35-44) |
 | Warband | `sem.warband` `.25, .75, .95` · `sem.warbandAlt` `.4, .78, 1` | `C.TIMELINE.WARBAND` · Holdings' Warband label (HoldingsTab.lua:309) |
@@ -464,6 +464,7 @@ eight skins*, below.
 | `text.highlight` | color | no | `1, 1, 1, 1` |
 | `gtip.value` | color | no | `1, 1, 1, 1` |
 | `gtip.subtle` | color | no | `0.7, 0.7, 0.7, 1` |
+| `gtip.footer` | color | no | `0.6, 0.6, 0.6, 1` (SkinDefs minor 16) |
 
 ### Buttons
 
@@ -731,7 +732,13 @@ own color for qualities 6 to 8.
 | `sem.warbandAlt` | color | no | `0.4, 0.78, 1, 1` |
 | `sem.unknown` | color | no | `0.6, 0.6, 0.6, 1` |
 
-**235 tokens.** `icon.arrow` joined at SkinDefs minor 12: the in-client arrow art's color (the paging, dropdown and sort arrows), Ka0s Default's gold and every other skin's accent, which it follows. `scroll.thumbFill` (SkinDefs minor 9) and `scroll.thumbTexture` (minor 2) left at SkinDefs minor 10, never released: the scroll bar's knob is one flat `scroll.thumb` over the faded thumb art in every skin. The four art tokens (`check.texture`, `check.markTexture`,
+**236 tokens.** `gtip.footer` joined at SkinDefs minor 16 (LK-08 of Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, ruling R-7, decision D-14): the drag handle's tooltip
+footer (`LibKa0s-Widgets-1.0` 16.3.7.4.4.1, *Skin owners*), Ka0s Default's 0.6 gray, the literal
+that footer drew, where no token held it (`gtip.muted` is 0.5, `gtip.subtle` 0.7); every other skin
+follows its `gtip.muted` (`FOLLOW`), and the `eui` source derives it from Ka0s Default. The handle's
+title and body take the existing `gtip.title` and `gtip.value`, whose Ka0s Default values are its
+gold and white. `icon.arrow` joined at SkinDefs minor 12: the in-client arrow art's color (the paging, dropdown and sort arrows), Ka0s Default's gold and every other skin's accent, which it follows. `scroll.thumbFill` (SkinDefs minor 9) and `scroll.thumbTexture` (minor 2) left at SkinDefs minor 10, never released: the scroll bar's knob is one flat `scroll.thumb` over the faded thumb art in every skin. The four art tokens (`check.texture`, `check.markTexture`,
 `tab.texture`, `tab.onTexture`) joined at SkinDefs minor 2, for WoW Default's Blizzard art. The
 eight **Widgets tokens** (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg`, `list.box`,
 `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`) joined at SkinDefs minor 3, so the drag handle and
@@ -1142,7 +1149,7 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
   until SkinDefs minor 14 gave it Oxanium (the owner's choice). Until minor 11 Obsidian and Glass
   drew Barlow, and Azeroth, Ember and WoW Midnight titled in Cinzel, an all-capitals face no body text can share.
 - **GameTooltip lines.** `gtip.*` are drawn on Blizzard's dark GameTooltip whatever the skin, so
-  each skin's `gtip.title`, `gtip.body` and `gtip.muted` read at 4.5:1 or better on
+  each skin's `gtip.title`, `gtip.body` and `gtip.muted` (and `gtip.footer`, which follows it) read at 4.5:1 or better on
   `(.05, .05, .08)`; Azeroth's are its parchment and gold.
 - **Legibility.** Each skin's `text.body` reads at 4.5:1 or better on its own `win.bg`, and its
   other text roles at 3:1 or better.
@@ -1224,6 +1231,7 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 | `gtip.title` | · | `#F5C542` | · | `#FFE600` | `#FFB45A` | · | `#F6D27A` | `#FFD100` |
 | `gtip.body` | · | `#E9DDBC` | · | `#FFFFFF` | · | · | · | · |
 | `gtip.muted` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
+| `gtip.footer` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `text.faint` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `log.tag` | `#F2F2F4` | `#D4A84A` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#F2B33D` |
 | `log.text` | `#E8E8EC` | `#E9DDBC` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
