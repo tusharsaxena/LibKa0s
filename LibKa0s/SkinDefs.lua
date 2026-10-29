@@ -105,7 +105,10 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- Default's everywhere. The eui source derives from Ka0s Default and keeps its Oxanium. Then (LK-08,
 -- the owner's ruling R-7, DECISIONS D-14, still minor 16): `gtip.footer`, the drag handle's tooltip footer,
 -- Ka0s Default's 0.6 gray (the literal WidgetsDragHandle drew) and every other skin's `gtip.muted`
--- through FOLLOW. The eui source derives it from Ka0s Default.
+-- through FOLLOW. The eui source derives it from Ka0s Default. Then (LK-06b, ruling R-5, decision
+-- D-14, still minor 16): `icon.grip`, the resize grip's art color (Core.MakeResizable's
+-- `opts.owner`), `false` in Ka0s Default and WoW Default (the client's size-grabber art as drawn) and
+-- every other skin's `icon.tint` through FOLLOW. The eui source derives it from Ka0s Default.
 local DEFS_MINOR = 16
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
@@ -162,7 +165,7 @@ local GROUPS = {
     .. "panel.bg:color panel.border:color section.rule:color icon.tint:color icon.hot:color "
     .. "handle.bg:color handle.edge:color handle.rest:color list.dropLine:color list.ghostBg:color "
     .. "list.box:color list.boxDim:color list.boxEdge:color list.boxEdgeDim:color icon.dim:color "
-    .. "icon.arrow:color" },
+    .. "icon.arrow:color icon.grip:color?" },
   { "Overlays", "popup.bg:color popup.border:color? popup.borderSize:number? "
     .. "popup.borderStyle:string? popup.radius:number tooltip.bg:color? tooltip.border:color? "
     .. "strip.test:color strip.sim:color cover.dim:color cover.text:color" },
@@ -306,7 +309,9 @@ local KA0S = {
   ["card.bg"] = { 0.1, 0.1, 0.12, 0.85 }, ["card.border"] = CTL_LINE,
   ["panel.bg"] = { 0.08, 0.08, 0.10, 0.6 }, ["panel.border"] = { 0.24, 0.24, 0.27, 0.7 },
   ["section.rule"] = { 1, 0.82, 0, 0.35 },
-  ["icon.tint"] = GRAY, ["icon.hot"] = WHITE, ["icon.arrow"] = GOLD, ["handle.bg"] = { 0, 0, 0, 0.75 },
+  ["icon.tint"] = GRAY, ["icon.hot"] = WHITE, ["icon.arrow"] = GOLD,
+  -- The resize grip (minor 16, LK-06b): `false`, the client's size-grabber art as it draws it.
+  ["icon.grip"] = false, ["handle.bg"] = { 0, 0, 0, 0.75 },
   -- Widgets: WidgetsDragHandle's gold edge; WidgetsReorder's handle at rest, its insertion line, its
   -- carried copy and lib.ROW_BOX's fills and edges.
   ["handle.edge"] = { 1, 0.82, 0, 0.6 }, ["handle.rest"] = { 0.7, 0.7, 0.7, 1 },
@@ -504,6 +509,7 @@ local FOLLOW = {
   { "sem.stepReady", "text.body" }, { "sem.stepBusy", "text.accent" },
   { "sem.stepLocked", "text.disabled" }, { "sem.stepCancel", "sem.off" }, { "sem.stepCancelHot", "sem.bad" },
   { "icon.arrow", "text.accent" }, { "gtip.footer", "gtip.muted" },
+  { "icon.grip", "icon.tint" },
 }
 
 local function blend(a, b)
@@ -889,6 +895,8 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
     ["drawer.bgOpen"] = hex("#3a3a3a"), ["drawer.boxBg"] = hex("#111111"),
     ["card.bg"] = rgba(0, 0, 0, 0.4), ["card.border"] = hex("#6e6e6e"),
     ["panel.bg"] = rgba(0, 0, 0, 0.3), ["panel.border"] = hex("#6e6e6e"),
+    -- The client's own resize grip art, as the client draws it (minor 16): FOLLOW would tint it.
+    ["icon.grip"] = false,
   })
 
 -- ── WoW Midnight ── mockup `midnight`: night blue and violet under gold. Flat WHITE8x8 with a 2px

@@ -71,6 +71,12 @@ local SIM_PANEL_MINOR = 8
 -- Default's gold where minor 7 drew 0.9, 0.82, 0.5, DECISIONS D-14) and every white line
 -- `gtip.value`; the title still names no color. A window, so Ignore settings panel leaves them
 -- skinned (D-01). LK-06d of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS.
+-- Then (LK-06b of the same run, ruling R-5, decisions D-01 and D-13, still minor 8): an owned
+-- panel's row, command and button labels in its skin's body face through the facade (`S.Font`, a
+-- recorded paint), so a switch and "Ignore fonts" reach them (Oxanium under Ka0s Default); the
+-- picker's two dropdowns are built with the panel's owner, where minor 7 built them with none and
+-- they drew Widgets' literals in every skin (finding F-2); and the resize grip takes the owner
+-- (Core minor 14). An owner-less panel is minor 7's, call for call.
 -- Read at call time and guarded: an older Core without RaiseStaticPopups raises nothing.
 local function raisePopups()
   if type(core.RaiseStaticPopups) == "function" then core.RaiseStaticPopups() end
@@ -337,12 +343,14 @@ local function StepPanel(d)
       b.check:Hide()
     end
     b.cmd = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    if frame.__skin then frame.__skin.Font(b.cmd) end   -- minor 8: the skin's body face, recorded
     b.cmd:SetPoint("RIGHT", b, "RIGHT", -CMD_PAD, 0)
     b.cmd:SetJustifyH("RIGHT")
     setColor(b.cmd, pal.cmd)
     -- One line, bounded on both sides (LK-91), so a long label truncates with an ellipsis instead
     -- of running under the command; the right bound is set by paintRow (anchorLabel).
     b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    if frame.__skin then frame.__skin.Font(b.text) end
     b.text:SetJustifyH("LEFT")
     b.text:SetWordWrap(false)
     b.__index = index
@@ -427,6 +435,7 @@ local function StepPanel(d)
     if type(core.MakeResizable) == "function" then
       core.MakeResizable(frame, {
         minWidth = minW, minHeight = heightFor(n), widthOnly = true, onResize = stretchRows,
+        owner = S and d.addonName or nil,   -- minor 8: the grip wears the skin (Core minor 14)
       })
     end
     pinnedCount = n
@@ -715,6 +724,7 @@ local function makeButton(f, parent, width, text, onClick, typed)
   core.ApplySkin(b)
   if f.__skin then f.__skin.Shell(b, { noTopBar = true }) end
   b.label = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  if f.__skin then f.__skin.Font(b.label) end   -- minor 8: the skin's body face, recorded
   b.label:SetPoint("CENTER", b, "CENTER", 0, 0)
   b.label:SetText(text)
   setColor(b.label, pal.rest)
@@ -769,7 +779,10 @@ end
 
 local function buildPicker(P, f)
   local pk = bar(f)
-  pk.scenario = W.Dropdown(pk, SCENARIO_W)
+  -- Minor 8 (F-2): an owned panel's dropdowns wear its skin, and their menu opens in it; an
+  -- owner-less panel builds them with no opts, as minor 7 did. A window's, so not `panel`.
+  local ddOpts = f.__skin and { owner = tostring(P.ctx.d.name) } or nil
+  pk.scenario = W.Dropdown(pk, SCENARIO_W, ddOpts)
   pk.scenario:SetPoint("LEFT", pk, "LEFT", 0, 0)
   -- One line: a label too long for the width truncates rather than wrapping out of the box.
   local label = pk.scenario.text
@@ -778,7 +791,7 @@ local function buildPicker(P, f)
     if defOf(P, v) then P.choice.scenario = v end
     P.refresh()
   end
-  pk.size = W.Dropdown(pk, SIZE_W)
+  pk.size = W.Dropdown(pk, SIZE_W, ddOpts)
   pk.size:SetPoint("LEFT", pk, "LEFT", SCENARIO_W + BUTTON_GAP, 0)
   pk.size.onSelect = function(v)
     P.choice.size = tonumber(v) or 0

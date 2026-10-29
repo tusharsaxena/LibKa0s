@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **13** |
 | Shipped in | v1.78.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 12](./version-12-docs.md) — the same members; `ApplySkin` took no `owner` and `MakeCloseButton`'s `addonName` named no skin owner |
-| Superseded by | — |
+| Superseded by | [version 14](./version-14-docs.md) |
 | Requires | nothing new: `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 13 }` |
 

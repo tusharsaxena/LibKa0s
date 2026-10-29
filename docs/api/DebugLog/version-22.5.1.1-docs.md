@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **5** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **1** |
 | Shipped in | v1.79.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 22.4.1.1](./version-22.4.1.1-docs.md) (shipped in v1.78.0) — the same surface; its report's identity header did not name Toast |
-| Superseded by | — |
+| Superseded by | [version 22.5.1.2](./version-22.5.1.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 22, DebugLogDiagnostics = 5, DebugLogGates = 1, DebugLogWindow = 1 }` |
 

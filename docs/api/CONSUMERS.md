@@ -77,7 +77,9 @@ minor 10). It retires v1.80.0's `opts.stockDefault` (SkinPaint minor 12): the ke
 consumer that passes it (Ka0s Quick Comms, Ka0s Skin Tester) paints the Ka0s look under Ka0s Default
 until it drops the key. The skin picker (OptionsSkinPicker minor 2) titles its window
 `SKIN_PICKER_STRINGS.TITLE`, "Choose a skin", where `TITLE_FOR` named the addon, and puts the
-addon's label on its own line, `frame.ownerLabel`. None gets a row here yet, and the v1.75.0 stamp and its numbers stand: the
+addon's label on its own line, `frame.ownerLabel`. `Core.MakeResizable` takes `opts.owner` (Core
+minor 14), a registered skin owner whose `icon.grip` tints the grip; the library's own windows pass
+theirs, and a host's own resizable window may. None gets a row here yet, and the v1.75.0 stamp and its numbers stand: the
 addons adopt them in Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`'s M2, and the
 next census re-run measures them.
 

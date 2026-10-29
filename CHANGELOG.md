@@ -19,19 +19,60 @@ listed. Not tagged.
 
 Versions in this release: **Skin minor 8**, **SkinDefs minor 16**, **SkinPaint minor 12**,
 **SkinPaintExtras minor 6** and **SkinPaintControls minor 10** (`LibKa0s-Skin-1.0` key
-**8.16.12.6.10.2.4**), **Widgets minor 17**, **WidgetsReorder minor 3**, **WidgetsDragHandle minor 7**, **WidgetsLineChart minor 5** and **WidgetsAutocomplete minor 5** (`LibKa0s-Widgets-1.0` key **17.3.7.5.5.1**),
+**8.16.12.6.10.2.4**), **Widgets minor 17**, **WidgetsReorder minor 3**, **WidgetsDragHandle minor 7**, **WidgetsLineChart minor 5**, **WidgetsAutocomplete minor 5** and **WidgetsCopyWindow minor 2** (`LibKa0s-Widgets-1.0` key **17.3.7.5.5.2**),
 **OptionsWidgets minor 36**, **OptionsIdList minor 7**, **OptionsTabs minor 11**, **OptionsScroll minor 9**,
 **OptionsNav minor 4**, **OptionsDrawer minor 3**, **OptionsKeybinds minor 6** and
 **OptionsSkinPicker minor 2** (`LibKa0s-Options-1.0` key **34.4.36.4.7.11.3.13.9.4.3.6.3.2**) and
-**SimPanel minor 8** (`LibKa0s-Sim-1.0` key **2.3.8**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
+**SimPanel minor 8** (`LibKa0s-Sim-1.0` key **2.3.8**), **Core minor 14** (`LibKa0s-Core-1.0` key **14**),
+**DebugLogWindow minor 2** (`LibKa0s-DebugLog-1.0` key **22.5.1.2**) and **PerfPanel minor 11**
+(`LibKa0s-Perf-1.0` key **15.1.1.11**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
 until an entry below moves one.
 Still **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
 
+### The tool windows obey Ignore fonts, and the resize grip wears the skin
+
+`LibKa0s-Core-1.0` key 14, documented in [docs/api/Core/version-14-docs.md](docs/api/Core/version-14-docs.md)
+(*What changed at this version*, *The resize grip*); `LibKa0s-DebugLog-1.0` key 22.5.1.2, documented
+in [docs/api/DebugLog/version-22.5.1.2-docs.md](docs/api/DebugLog/version-22.5.1.2-docs.md);
+`LibKa0s-Perf-1.0` key 15.1.1.11, documented in
+[docs/api/Perf/version-15.1.1.11-docs.md](docs/api/Perf/version-15.1.1.11-docs.md); SimPanel minor 8
+(already bumped on this branch; [docs/api/Sim/version-2.3.8-docs.md](docs/api/Sim/version-2.3.8-docs.md));
+WidgetsCopyWindow minor 2 (`LibKa0s-Widgets-1.0` key 17.3.7.5.5.2, *What changed at 17.3.7.5.5.2*);
+and SkinDefs minor 16 (already bumped; `LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, the token rows).
+LK-06b, ruling R-5, decisions D-01, D-13 and D-14.
+
+- **Ignore fonts reaches every string a tool window draws.** An owned debug console's title-bar
+  labels (the toggle, the Diagnostics link, and the Copy and Clear words where the art is missing),
+  an owned perf panel's step and command columns, and an owned sim panel's row, command and button
+  labels drew their template's face in every skin, so the switch had nothing to act on. They are
+  painted through the owner's facade (`S.Font`), a recorded paint, so a skin switch reaches them and
+  *Ignore fonts* gives each its template back, live. The console's Diagnostics link is measured in
+  the face it wears, again after each switch. **Ka0s Default's one look change:** these strings are
+  Oxanium where the template drew Friz Quadrata (D-13); the smoke test lists them. The windows are
+  windows, not the settings panel (D-01): *Ignore settings panel* leaves them skinned.
+- **The sim panel's dropdowns have an owner** (SimPanel minor 8; finding F-2 of the plan's
+  inventory). Minor 7 built the picker's scenario and size dropdowns with no owner, so they drew
+  `LibKa0s-Widgets-1.0`'s literals in every skin and their menu opened owner-less. An owned panel
+  now builds them with its owner: the button wears the skin and the menu opens in it.
+- **The resize grip wears the window's skin.** `Core.MakeResizable` takes `opts.owner` (Core minor
+  14): a registered skin owner's new `icon.grip` token desaturates and tints the grip's normal,
+  highlight and pushed art, again after each of its skin switches. `icon.grip` is `false` in Ka0s
+  Default and WoW Default, so the client's size-grabber art is drawn as the client draws it, and
+  every other skin's `icon.tint` (`FOLLOW`; WoW Default's `extra` holds it at `false`); the `eui`
+  source derives it from Ka0s Default. The console, the perf panel, the sim panel and every copy
+  window (WidgetsCopyWindow minor 2) pass their owner. A grip with no registered owner, a client
+  without the Skin major, and Ka0s Default draw exactly what they drew.
+
+No member is added. **What a consumer owes:** nothing; a host that builds its own resizable window
+and adopted skins may pass its folder name as `MakeResizable`'s `opts.owner`, and a host suite that
+pins `Core 13`, `DebugLogWindow 1`, `PerfPanel 10` or `WidgetsCopyWindow 1` re-pins it.
+`tests/test_tool_windows_scope.lua` (new, ten cases) pins it.
+
 ### Widgets minor 17, WidgetsAutocomplete minor 5, WidgetsLineChart minor 5: the controls obey both Scope switches
 
-`LibKa0s-Widgets-1.0` key 17.3.7.5.5.1, documented in
-[docs/api/Widgets/version-17.3.7.5.5.1-docs.md](docs/api/Widgets/version-17.3.7.5.5.1-docs.md)
-(*What changed at 17.3.7.5.5.1*, *Skin owners*), with WidgetsDragHandle minor 7 and, in
+`LibKa0s-Widgets-1.0` key 17.3.7.5.5.2 (17.3.7.5.5.1 when this entry was written), documented in
+[docs/api/Widgets/version-17.3.7.5.5.2-docs.md](docs/api/Widgets/version-17.3.7.5.5.2-docs.md)
+(*What changed at 17.3.7.5.5.2*, *Skin owners*), with WidgetsDragHandle minor 7 and, in
 `LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, SkinPaintControls minor 10, SkinPaintExtras minor 6 and
 SkinPaint minor 12 (all already bumped on this branch; *The primitives*, `Dropdown`, `EditBox`,
 `Strip`). LK-06a, ruling R-5, decisions D-01, D-02 and D-13.
@@ -95,8 +136,8 @@ member is added, no token is new, and nothing is owed by a consumer. `tests/test
 
 ### WidgetsDragHandle minor 7, SkinDefs minor 16: the drag handle's tooltip in its skin's colors
 
-`LibKa0s-Widgets-1.0` key 17.3.7.5.5.1 (16.3.7.4.4.1 when this entry was written), documented in
-[docs/api/Widgets/version-17.3.7.5.5.1-docs.md](docs/api/Widgets/version-17.3.7.5.5.1-docs.md)
+`LibKa0s-Widgets-1.0` key 17.3.7.5.5.2 (16.3.7.4.4.1 when this entry was written), documented in
+[docs/api/Widgets/version-17.3.7.5.5.2-docs.md](docs/api/Widgets/version-17.3.7.5.5.2-docs.md)
 (*Skin owners*, `DragHandle`'s `spec.owner` and tooltip descriptor), and `LibKa0s-Skin-1.0` key
 8.16.12.6.10.2.4, the same document (*Text*, *The eight skins' tokens*; LK-08, ruling R-7, decision
 D-14). An owned drag handle painted its strip from its skin but drew its tooltip in fixed literals:
@@ -199,9 +240,9 @@ pin it.
 ### SkinPaintExtras minor 6, WidgetsReorder minor 3: `S.Text` and the reorder list obey the panel scope
 
 `LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, the same document (*Members*, `SetIgnore`; *The primitives*,
-`Text`), and `LibKa0s-Widgets-1.0` key 17.3.7.5.5.1 (16.3.6.4.4.1 when this entry was written),
+`Text`), and `LibKa0s-Widgets-1.0` key 17.3.7.5.5.2 (16.3.6.4.4.1 when this entry was written),
 documented in
-[docs/api/Widgets/version-17.3.7.5.5.1-docs.md](docs/api/Widgets/version-17.3.7.5.5.1-docs.md)
+[docs/api/Widgets/version-17.3.7.5.5.2-docs.md](docs/api/Widgets/version-17.3.7.5.5.2-docs.md)
 (LK-05, ruling R-5, decisions D-01 and D-02). "Ignore settings panel" reached the AceGUI rows and
 the Options chrome only, so a string a host colored with `S.Text` on its settings page, and every
 reorder list, kept the skin while it was on. `S.Text(fs, role, { panel = true })` now puts a string

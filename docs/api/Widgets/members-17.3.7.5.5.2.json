@@ -1,6 +1,6 @@
 {
   "major": "LibKa0s-Widgets-1.0",
-  "versionKey": "17.3.7.5.5.1",
+  "versionKey": "17.3.7.5.5.2",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Widgets", "minor": 17 },
@@ -8,7 +8,7 @@
     { "file": "WidgetsDragHandle", "minor": 7 },
     { "file": "WidgetsLineChart", "minor": 5 },
     { "file": "WidgetsAutocomplete", "minor": 5 },
-    { "file": "WidgetsCopyWindow", "minor": 1 }
+    { "file": "WidgetsCopyWindow", "minor": 2 }
   ],
   "members": [
     { "name": "AUTOCOMPLETE", "kind": "table" },

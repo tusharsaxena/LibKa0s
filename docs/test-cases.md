@@ -1382,6 +1382,19 @@ Total.
 - tool windows skin: Ka0s Default's tool-window tokens are the constants the windows drew
 - tool windows skin: every skin's tool-window text reads on its own window
 
+### test_tool_windows_scope.lua (10)
+
+- tool windows scope: an owned console's labels take the skin's face and obey Ignore fonts
+- tool windows scope: an owned perf panel's step and command columns take the skin's face
+- tool windows scope: an owned sim panel's rows and button labels take the skin's face
+- tool windows scope: the console's Diagnostics link is measured in the face it wears
+- tool windows scope: an owned sim panel's dropdowns wear its skin
+- tool windows scope: an owner-less sim panel's dropdowns are built as before
+- tool windows scope: MakeResizable's owner tints the grip with icon.grip, live
+- tool windows scope: a grip without a registered owner is drawn as before
+- tool windows scope: every library window passes its owner to its grip
+- tool windows scope: icon.grip is the client's art in Ka0s Default and WoW Default, icon.tint elsewhere
+
 ### test_slash.lua (74)
 
 - sl: an empty message runs the host's config verb (minor 11), printing no help
@@ -3747,6 +3760,7 @@ Total.
 | test_resize_windows.lua | 23 |
 | test_tool_windows_layering.lua | 8 |
 | test_tool_windows_skin.lua | 17 |
+| test_tool_windows_scope.lua | 10 |
 | test_slash.lua | 74 |
 | test_slash_parse.lua | 33 |
 | test_slash_disabled.lua | 16 |
@@ -3837,4 +3851,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3271** |
+| **Total** | **3281** |

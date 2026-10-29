@@ -12,18 +12,19 @@
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
 | Shipped in | unreleased (v1.81.0) |
 | Status | **Current** |
-| Supersedes | [2.3.7](./version-2.3.7-docs.md) (shipped in v1.78.0 – v1.80.0) — the same surface; its tooltips wrote their colors as literals whatever the owner's skin |
+| Supersedes | [2.3.7](./version-2.3.7-docs.md) (shipped in v1.78.0 – v1.80.0) — the same surface; its tooltips wrote their colors as literals whatever the owner's skin, its labels kept their template's face, its picker's dropdowns had no owner and its resize grip was the client's art |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 8 }` |
 
 ## What changed at this version
 
-**`SimPanel.lua` minor 8: an owned panel's tooltips take its skin's tooltip colors.** **No member is
-added or removed**, and the members manifest lists the same surface. `Sim.lua` and `SimTimeline.lua`
-are untouched, so the key moves in its third number, 2.3.7 → 2.3.8, and the attach-file floor does
-not move (LK-06d of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, ruling R-5,
-decision D-14).
+**`SimPanel.lua` minor 8: an owned panel's tooltips take its skin's tooltip colors, its labels obey
+*Ignore fonts*, its dropdowns and its resize grip wear its skin.** **No member is added or removed**,
+and the members manifest lists the same surface. `Sim.lua` and `SimTimeline.lua` are untouched, so
+the key moves in its third number, 2.3.7 → 2.3.8, and the attach-file floor does not move (LK-06d of
+Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, ruling R-5, decision D-14; and
+LK-06b of the same plan, ruling R-5, decisions D-01 and D-13).
 
 - **The row and button tooltips** read the panel's palette at each hover: the key column of a
   `{ left, right }` tip line takes `gtip.title` and every white line (a right column, a string line,
@@ -37,6 +38,21 @@ decision D-14).
   names no color, so it stays the client's.
 - The private renderer's `d.tooltip` is called `(button, row, palette)`; the third argument is new
   and the library's own adapter is the only filler.
+- **Every label an owned panel draws in its skin's body face** (LK-06b): each row's label and
+  command column and every button's label (Start, Pause / Resume, Restart, Stop) drew their template's
+  face (`GameFontNormalSmall`) in every skin. They are painted through the owner's facade
+  (`S.Font`), a recorded paint, so a skin switch reaches them and the owner's *Ignore fonts* gives
+  each its template back, live. Under Ka0s Default that face is Oxanium where the template drew Friz
+  Quadrata (decision D-13). Their colors are the palette's, as before.
+- **The picker's two dropdowns have the panel's owner** (LK-06b; finding F-2 of that plan's
+  inventory): minor 7 built the scenario and size dropdowns with no owner, so they drew
+  `LibKa0s-Widgets-1.0`'s literals in every skin and their menu opened as an owner-less one. An owned
+  panel builds them with `{ owner = <the panel's owner> }`, so the button wears the skin and the
+  menu opens in it, its rows in the skin's face. Not `panel`: a window's dropdowns keep the skin
+  under *Ignore settings panel*. An owner-less panel builds them as minor 7 did.
+- **The resize grip wears the panel's skin** (LK-06b): the panel passes its owner to
+  `LibKa0s-Core-1.0`'s `MakeResizable` as `opts.owner` (Core minor 14), so the grip's art takes the
+  owner's `icon.grip`.
 
 **What a host must change: nothing.**
 

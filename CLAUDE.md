@@ -327,7 +327,11 @@ to `LibKa0s/DebugLogWindow.lua` (575), a fourth DebugLog file paired on the shel
 measured 2026-10-25. The logging half (`append` through `CopyText`) is the next seam; the re-check
 trigger is 1000 lines. `LibKa0s/Perf.lua` was not touched by the same item (still 997): PerfPanel
 minor 10's skin owner is painted in `LibKa0s/PerfPanel.lua` (346). Of v1.75.0's new files only `tests/test_sim_panel.lua` is in the band
-(1056 at v1.76.0, listed above); `LibKa0s/SimPanel.lua`, the largest payload file among them, is 997
+(1056 at v1.76.0, listed above); `LibKa0s/SimPanel.lua`, the largest payload file among them, came
+into the band at SimPanel minor 8 (1018, measured 2026-10-30: its tooltip palette, `LK-06d`, and its
+skinned labels, owned dropdowns and grip owner, `LK-06b`, of Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`; the renderer section is the seam, to a file of its own,
+when the next SimPanel minor grows it); 997
 at SimPanel minor 7's skin owner (`LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`,
 measured 2026-10-25, three under the band: the renderer section is the seam if it grows, to a file
 of its own), 956 at SimPanel minor 6's toplevel and popup re-raise (v1.77.0, measured 2026-10-24); 949 after SimPanel

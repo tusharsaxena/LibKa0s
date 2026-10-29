@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 17.3.7.5.5.1
+# `LibKa0s-Widgets-1.0` — version 17.3.7.5.5.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,28 +8,37 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **17** · `WidgetsReorder.lua` minor **3** · `WidgetsDragHandle.lua` minor **7** · `WidgetsLineChart.lua` minor **5** · `WidgetsAutocomplete.lua` minor **5** · `WidgetsCopyWindow.lua` minor **1** |
+| Files and minors | `Widgets.lua` minor **17** · `WidgetsReorder.lua` minor **3** · `WidgetsDragHandle.lua` minor **7** · `WidgetsLineChart.lua` minor **5** · `WidgetsAutocomplete.lua` minor **5** · `WidgetsCopyWindow.lua` minor **2** |
 | Shipped in | unreleased (v1.81.0) |
 | Status | **Current** |
-| Supersedes | [version 16.2.6.4.4.1](./version-16.2.6.4.4.1-docs.md) (shipped in v1.78.0) — the same members, with a `ReorderList` that keeps its owner's skin while the owner ignores its settings panel, an owned `DragHandle` whose tooltip draws the fixed gold, white and gray whatever its owner's skin, owned controls whose strings keep their template's face (so *Ignore fonts* has nothing to give back) and no `panel` scope on the other constructors; and [version 15.1.5.3.3](./version-15.1.5.3.3-docs.md) (shipped in v1.77.0), none taking a skin owner, and the copy window inside `Widgets.lua` |
+| Supersedes | [version 16.2.6.4.4.1](./version-16.2.6.4.4.1-docs.md) (shipped in v1.78.0) — the same members, with a `ReorderList` that keeps its owner's skin while the owner ignores its settings panel, an owned `DragHandle` whose tooltip draws the fixed gold, white and gray whatever its owner's skin, owned controls whose strings keep their template's face (so *Ignore fonts* has nothing to give back), a copy window whose resize grip is the client's art whatever its owner's skin, and no `panel` scope on the other constructors; and [version 15.1.5.3.3](./version-15.1.5.3.3-docs.md) (shipped in v1.77.0), none taking a skin owner, and the copy window inside `Widgets.lua` |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 17, WidgetsReorder = 3, WidgetsDragHandle = 7, WidgetsLineChart = 5, WidgetsAutocomplete = 5, WidgetsCopyWindow = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 17, WidgetsReorder = 3, WidgetsDragHandle = 7, WidgetsLineChart = 5, WidgetsAutocomplete = 5, WidgetsCopyWindow = 2 }` |
 
-## What changed at 17.3.7.5.5.1
+## What changed at 17.3.7.5.5.2
 
 **A reorder list obeys its owner's "Ignore settings panel", an owned drag handle's tooltip wears
-its skin, and every owned control obeys both Scope switches.** `Widgets.lua` moves from **16** to
-**17**, `WidgetsReorder.lua` from **2** to **3**, `WidgetsDragHandle.lua` from **6** to **7**,
-`WidgetsLineChart.lua` from **4** to **5** and `WidgetsAutocomplete.lua` from **4** to **5**;
-`WidgetsCopyWindow.lua` keeps its minor, so the key is 17.3.7.5.5.1. **No lib-level member is
-added, removed or renamed**, so `members-17.3.7.5.5.1.json` lists the same names as 16.2.6.4.4.1;
-what is new is one optional field per constructor, the tooltip's colors and the strings' face.
-LK-05 of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/` (ruling R-5, decisions
-D-01 and D-02), LK-08 of the same plan (ruling R-7, decision D-14) and LK-06a (ruling R-5,
-decisions D-01, D-02 and D-13). Within the v1.81.0 cycle these changes were first written up under
-keys 16.3.6.4.4.1 and 16.3.7.4.4.1; neither key shipped, and this document is the same one under
-the release's key.
+its skin, every owned control obeys both Scope switches, and an owned copy window's grip wears its
+skin.** `Widgets.lua` moves from **16** to **17**, `WidgetsReorder.lua` from **2** to **3**,
+`WidgetsDragHandle.lua` from **6** to **7**, `WidgetsLineChart.lua` from **4** to **5**,
+`WidgetsAutocomplete.lua` from **4** to **5** and `WidgetsCopyWindow.lua` from **1** to **2**, so
+the key is 17.3.7.5.5.2. **No lib-level member is added, removed or renamed**, so
+`members-17.3.7.5.5.2.json` lists the same names as 16.2.6.4.4.1; what is new is one optional field
+per constructor, the tooltip's colors, the strings' face and the copy window's grip. LK-05 of
+Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/` (ruling R-5, decisions D-01 and
+D-02), LK-08 of the same plan (ruling R-7, decision D-14), LK-06a (ruling R-5, decisions D-01, D-02
+and D-13) and LK-06b (ruling R-5, decision D-14). Within the v1.81.0 cycle these changes were first
+written up under keys 16.3.6.4.4.1, 16.3.7.4.4.1 and 17.3.7.5.5.1; none of them shipped, and this
+document is the same one under the release's key.
+
+- **An owned copy window's resize grip wears its skin** (**Since CopyWindow 2**). The window hands
+  its skin owner (the descriptor's `addonName`, when it is a registered owner and the host passed no
+  `applySkin`) to `LibKa0s-Core-1.0`'s `MakeResizable` as `opts.owner` (Core minor 14), so the grip's
+  art takes the owner's `icon.grip`: the client's art as drawn under Ka0s Default and WoW Default,
+  desaturated and tinted the skin's `icon.tint` under the other seven, again after each skin
+  switch. A window's grip, so neither *Ignore* switch applies. An older Core ignores the key, and an
+  owner-less window's grip is drawn as before.
 
 - **Panel-scoped by default** (**Since Reorder 3**). Every consumer puts a reorder list on a
   settings page, so it is scoped to that page the way an AceGUI row is: while its owner ignores its
@@ -138,7 +147,7 @@ exactly as an owner-less widget does. A color the host passes (an option row's `
 | the shared menu | `S.MenuFrame`, then the rows; `S.Font` on each row and on the measuring string (Widgets 17) | `menu.bg`, `menu.border`, `menu.textSel`, `menu.text`, `menu.hover`, the body face | on every open |
 | `SearchBox` | `S.EditBox`, then the icon | `input.bg`, `input.border`, `input.focus`, `input.text`, `input.placeholder`, `icon.tint` | on the owner's switch |
 | `TestStrip` | `S.Strip`, `S.Text` (the line, Widgets 17) | `strip.test` / `strip.sim`, `text.accent` and the body face (the line) | on the owner's switch |
-| `CopyWindow` | `Core.ApplySkin(f, nil, owner)` (`S.Shell`), `S.ScrollBar`, `Core.MakeCloseButton` | the window tokens, `win.bgDense` (the denser fill, unless the host passed `backdrop`), `close.rest` / `close.hot` | on the owner's switch |
+| `CopyWindow` | `Core.ApplySkin(f, nil, owner)` (`S.Shell`), `S.ScrollBar`, `Core.MakeCloseButton`, `Core.MakeResizable`'s `opts.owner` (the grip, CopyWindow 2) | the window tokens, `win.bgDense` (the denser fill, unless the host passed `backdrop`), `close.rest` / `close.hot`, `icon.grip` (the grip) | on the owner's switch |
 | `Autocomplete` rows | read on each show; `S.Font` on each row unless the host named a `font` (Autocomplete 5) | `menu.text`, `menu.hover`, the body face; the list's fill and edge still follow the box | the next show |
 | `DragHandle` | `Skin:Token` | `handle.bg`, `handle.edge`, `text.accent` (the label), `icon.tint` / `icon.hot` (the marks), `gtip.title`, `gtip.value`, `gtip.footer` (the tooltip's bands, DragHandle 7), the body face (the label, `S.Font`, unless the host named a `labelFont`; DragHandle 7); a host's `spec.edge` pixels are its own | on the owner's switch; the tooltip on every hover |
 | `ReorderList` | `Skin:Token`; none while the owner ignores its settings panel, unless `panel = false` (Reorder 3) | `list.box`, `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`, `handle.rest`, `text.accent` (hover), `list.dropLine`, `list.ghostBg`, `text.accent` (the ghost's text) | the next render; the ghost on every drag |
@@ -161,7 +170,7 @@ Widgets 17's `lib.__panelOff` (the `panel` test, `Skin:GetIgnore(owner)`'s panel
 Every constructor but `ReorderList` and `CopyWindow` takes **`panel`** (Widgets 17, Autocomplete 5,
 LineChart 5, DragHandle 7): `true` for a control on its owner's settings page, drawn as an
 owner-less one while that owner ignores its settings panel, live both ways (*What changed at
-17.3.7.5.5.1*). Absent or anything but `true`, the control is a window's and keeps its skin.
+17.3.7.5.5.2*). Absent or anything but `true`, the control is a window's and keeps its skin.
 
 ## What changed at 15.1.5.3.3
 
@@ -717,7 +726,7 @@ library's.
 | `SearchBox(parent, width, opts)` | **13** (`opts.owner` **Since 16**) | Builds one flat search box, an `EditBox` parented to `parent`, in the dropdown's skin, with a hint while empty and the gold focus line. Returns the box. See *The search box*. |
 | `TestStrip(parent, opts)` | **13** (`opts.owner` **Since 16**) | Builds one mode strip, a `Frame` parented to `parent`: an amber band (test mode) or, with `opts.kind = "sim"`, a cyan one (a simulation), an optional host-passed mark and one line of text, born hidden and unanchored. Returns the strip. See *The test-mode strip*. |
 | `TEST_STRIP` | **13** | `{ HEIGHT = 18 }`, the strip's height, published so a host lays out around it. Read-only in effect: a write moves no strip. See *The test-mode strip*. |
-| `CopyWindow(descriptor)` | **6** (in `WidgetsCopyWindow` **1** from 16; the skin owner **Since 16**) | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
+| `CopyWindow(descriptor)` | **6** (in `WidgetsCopyWindow` **1** from 16; the skin owner **Since 16**; the grip's skin **Since CopyWindow 2**) | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
 | `CloseMenu()` | **2** | Closes the shared popup menu if it is open. Safe no-op if no dropdown has ever opened it, and safe no-op if it is already hidden. Takes no parameters. |
 | `ReorderList(opts)` | **8** (`opts.owner`: `WidgetsReorder` **2**; `opts.panel`: **3**) | Builds a drag-to-reorder controller for one render of a list. Returns the controller. See *The reorderable list*. |
 | `LineChart(parent, opts)` | `WidgetsLineChart` **1** (`opts.pxPerPoint` **Since 2**; clipping and the hover re-sync **Since 3**; `opts.owner` and `colorIndex` **Since 4**) | Builds one pooled line chart, a `Frame` parented to `parent`. Returns the chart. See *The line chart*. |

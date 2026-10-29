@@ -11,7 +11,7 @@
 | Files and minors | `Skin.lua` minor **8** · `SkinDefs.lua` minor **16** · `SkinPaint.lua` minor **12** · `SkinPaintExtras.lua` minor **6** · `SkinPaintControls.lua` minor **10** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
 | Shipped in | unreleased (v1.81.0) |
 | Status | **Current** |
-| Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places and every skin but Ka0s Default drawing HUD text in Friz Quadrata through `KEEP` (SkinDefs minor 15), with a `ResetToSkin` that wrote `FROM_SKIN` into a companion it could not see stored and took no `opts`, with the key an owner draws by only as the internal `__DrawsKey` (Skin minor 7), and with *Ignore fonts* stopping at `P.font`, so `Token`, `Resolve` and `BarStyle` still answered the skin's HUD face and outline while it was on (Skin minor 7, SkinPaintExtras minor 5), with no settings-panel scope on `S.Text`, with no `gtip.footer` (SkinDefs minor 15), and with `opts.stockDefault` keeping a template-built target the client's under Ka0s Default (SkinPaint minor 11, SkinPaintControls minor 9), `PageButton` taking no options and `P.unpaint` leaving a title's alignment as the skin set it |
+| Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places and every skin but Ka0s Default drawing HUD text in Friz Quadrata through `KEEP` (SkinDefs minor 15), with a `ResetToSkin` that wrote `FROM_SKIN` into a companion it could not see stored and took no `opts`, with the key an owner draws by only as the internal `__DrawsKey` (Skin minor 7), and with *Ignore fonts* stopping at `P.font`, so `Token`, `Resolve` and `BarStyle` still answered the skin's HUD face and outline while it was on (Skin minor 7, SkinPaintExtras minor 5), with no settings-panel scope on `S.Text`, with no `gtip.footer` and no `icon.grip` (SkinDefs minor 15), and with `opts.stockDefault` keeping a template-built target the client's under Ka0s Default (SkinPaint minor 11, SkinPaintControls minor 9), `PageButton` taking no options and `P.unpaint` leaving a title's alignment as the skin set it |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 8, SkinDefs = 16, SkinPaint = 12, SkinPaintExtras = 6, SkinPaintControls = 10, SkinEUI = 2, SkinAce = 4 }` |
@@ -594,6 +594,7 @@ eight skins*, below.
 | `icon.tint` | color | no | `0.7, 0.7, 0.72, 1` |
 | `icon.hot` | color | no | `1, 1, 1, 1` |
 | `icon.arrow` | color | no | `1, 0.82, 0, 1` |
+| `icon.grip` | color | yes | none (`false`: the client's art as drawn; SkinDefs minor 16) |
 | `handle.bg` | color | no | `0, 0, 0, 0.75` |
 | `handle.edge` | color | no | `1, 0.82, 0, 0.6 |`
 | `handle.rest` | color | no | `0.7, 0.7, 0.7, 1 |`
@@ -732,9 +733,15 @@ own color for qualities 6 to 8.
 | `sem.warbandAlt` | color | no | `0.4, 0.78, 1, 1` |
 | `sem.unknown` | color | no | `0.6, 0.6, 0.6, 1` |
 
-**236 tokens.** `gtip.footer` joined at SkinDefs minor 16 (LK-08 of Ka0sAddonsCommonTasks
+**237 tokens.** `icon.grip` joined at SkinDefs minor 16 (LK-06b of Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, ruling R-5, decision D-14): the resize grip's art color
+(`LibKa0s-Core-1.0` 14's `MakeResizable` `opts.owner`, which every library window passes), `false`
+in Ka0s Default and WoW Default, so the client's size-grabber art is drawn as the client draws it,
+and every other skin's `icon.tint` (`FOLLOW`; WoW Default's `extra` stops it). A color desaturates
+the art and tints it, as `icon.arrow` does the arrows. The `eui` source derives it from Ka0s Default.
+`gtip.footer` joined at SkinDefs minor 16 (LK-08 of Ka0sAddonsCommonTasks
 `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, ruling R-7, decision D-14): the drag handle's tooltip
-footer (`LibKa0s-Widgets-1.0` 17.3.7.5.5.1, *Skin owners*), Ka0s Default's 0.6 gray, the literal
+footer (`LibKa0s-Widgets-1.0` 17.3.7.5.5.2, *Skin owners*), Ka0s Default's 0.6 gray, the literal
 that footer drew, where no token held it (`gtip.muted` is 0.5, `gtip.subtle` 0.7); every other skin
 follows its `gtip.muted` (`FOLLOW`), and the `eui` source derives it from Ka0s Default. The handle's
 title and body take the existing `gtip.title` and `gtip.value`, whose Ka0s Default values are its
@@ -1370,6 +1377,7 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 | `icon.tint` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `icon.hot` | `#4DB8FF` | `#E2B659` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#C9A07A` |
 | `icon.arrow` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
+| `icon.grip` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | · | `#B4AFC8` | `#A39E97` |
 | `handle.edge` | `#4DB8FF .6` | `#E2B659 .6` | `#B69CFF .6` | `#FFE600 .6` | `#FF7A33 .6` | `#FFD100 .6` | `#B48CFF .6` | `#C9A07A .6` |
 | `handle.rest` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `list.dropLine` | `#4DB8FF .9` | `#E2B659 .9` | `#B69CFF .9` | `#FFE600 .9` | `#FF7A33 .9` | `#FFD100 .9` | `#B48CFF .9` | `#C9A07A .9` |

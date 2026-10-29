@@ -11,9 +11,9 @@
 | Files and minors | `Perf.lua` **15** · `PerfSampler.lua` **1** · `PerfCommands.lua` **1** · `PerfPanel.lua` **10** |
 | Version key | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>`, in load order — the same four numbers `lib.MODULES` reports |
 | Shipped in | v1.78.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 15.1.1.9](./version-15.1.1.9-docs.md) (shipped in v1.77.0) — the same surface; its panel wore Core's skin whatever its owner |
-| Superseded by | — |
+| Superseded by | [version 15.1.1.11](./version-15.1.1.11-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
 | Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 15, PerfSampler = 1, PerfCommands = 1, PerfPanel = 10 }` |
