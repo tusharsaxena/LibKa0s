@@ -96,7 +96,13 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- ruling R-8): Ka0s Default's `q.*` tokens equal the client's quality colors exactly, hex / 255
 -- (9d9d9d, ffffff, 1eff00, 0070dd, a335ee, ff8000), where they were rounded to two places (0.64,
 -- 0.21, 0.93 is a3 36 ed, not the client's a335ee). Every skin that sets no `q.*` of its own, and
--- the eui source, inherits them.
+-- the eui source, inherits them. Then (LK-04, the owner's ruling R-4, DECISIONS D-11, still minor
+-- 16): every skin names a HUD face of its own (HUD_FACE below), its text's family at the heavier
+-- shipped weight: Obsidian Inter SemiBold, Azeroth Vollkorn Bold, Glass Nunito SemiBold, High Contrast
+-- Atkinson Bold, Ember Bitter Bold, WoW Midnight Philosopher Bold, WoW Forever Fira Sans SemiBold, and
+-- WoW Default the client's Friz Quadrata, set explicitly. `hud.font` leaves KEEP, which minor 14 had
+-- send every one of them to Friz Quadrata. `hud.outline` (OUTLINE) and `hud.fontSize` (12) stay Ka0s
+-- Default's everywhere. The eui source derives from Ka0s Default and keeps its Oxanium.
 local DEFS_MINOR = 16
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
@@ -528,9 +534,10 @@ end
 
 -- What every other skin inherited from Ka0s Default before minor 14 gave it Oxanium and the Ka0s
 -- Default bar: the client's Friz Quadrata and its Blizzard bar. A skin that sets its own keeps that;
--- of the bars, WoW Default is the one skin that sets none, so the Blizzard bar is its.
+-- WoW Default is the one skin that sets no face and no bar, so these are its. The HUD face left KEEP
+-- in minor 16: every skin names its own (HUD_FACE below).
 local FRIZ = "Friz Quadrata TT"
-local KEEP = { ["font.body"] = FRIZ, ["font.title"] = FRIZ, ["hud.font"] = FRIZ, ["bar.texture"] = "Blizzard" }
+local KEEP = { ["font.body"] = FRIZ, ["font.title"] = FRIZ, ["bar.texture"] = "Blizzard" }
 
 --- A skin's tokens: its mockup entry through MOCK_MAP, the accent and text washes, then its extras.
 local function translate(mock, extra)
@@ -562,8 +569,18 @@ local ICON_EDGE = {
   ember = { "Solid", 2 }, wow = { "Blizzard Tooltip", 2 }, midnight = { "Solid", 2 }, forever = { "Solid", 1 },
 }
 
+-- Each skin's HUD face (minor 16, R-4): its own family at the heavier shipped weight, since HUD text
+-- is 12px under an OUTLINE and a Regular's thin strokes close up under it; WoW Default the client's
+-- own face, named here rather than left to a fallback. A skin's `extra` may still override.
+local HUD_FACE = {
+  obsidian = "Ka0s Inter SemiBold", azeroth = "Ka0s Vollkorn Bold", glass = "Ka0s Nunito SemiBold",
+  contrast = "Ka0s Atkinson Bold", ember = "Ka0s Bitter Bold", wow = FRIZ,
+  midnight = "Ka0s Philosopher Bold", forever = "Ka0s Fira Sans SemiBold",
+}
+
 local function register(key, label, desc, swatches, mock, extra)
   local tokens = translate(mock, extra)
+  if tokens["hud.font"] == nil then tokens["hud.font"] = HUD_FACE[key] end
   local icon = ICON_EDGE[key]
   if icon and tokens["icon.borderStyle"] == nil then tokens["icon.borderStyle"] = icon[1] end
   if icon and tokens["icon.borderSize"] == nil then tokens["icon.borderSize"] = icon[2] end

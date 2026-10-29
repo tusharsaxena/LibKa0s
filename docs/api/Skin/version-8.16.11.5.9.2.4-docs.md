@@ -11,7 +11,7 @@
 | Files and minors | `Skin.lua` minor **8** · `SkinDefs.lua` minor **16** · `SkinPaint.lua` minor **11** · `SkinPaintExtras.lua` minor **5** · `SkinPaintControls.lua` minor **9** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
 | Shipped in | unreleased (v1.81.0) |
 | Status | **Current** |
-| Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places (SkinDefs minor 15), with a `ResetToSkin` that wrote `FROM_SKIN` into a companion it could not see stored and took no `opts`, and with the key an owner draws by only as the internal `__DrawsKey` (Skin minor 7) |
+| Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places and every skin but Ka0s Default drawing HUD text in Friz Quadrata through `KEEP` (SkinDefs minor 15), with a `ResetToSkin` that wrote `FROM_SKIN` into a companion it could not see stored and took no `opts`, and with the key an owner draws by only as the internal `__DrawsKey` (Skin minor 7) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 8, SkinDefs = 16, SkinPaint = 11, SkinPaintExtras = 5, SkinPaintControls = 9, SkinEUI = 2, SkinAce = 4 }` |
@@ -323,8 +323,20 @@ prior object and restoring it on a switch away.
 **Ka0s Default's face and bar stay its own** (SkinDefs minor 14). Ka0s Default draws
 `Ka0s Oxanium SemiBold` for `font.body` and `hud.font`, `Ka0s Oxanium Bold` for `font.title`, and
 the generated `Ka0s Default` bar for `bar.texture`, all shipped by `LibKa0s-Media-1.0` minor 9. Every other skin derives from Ka0s Default, so `SkinDefs.lua`'s `KEEP`
-table gives each skin that sets none of those four its earlier inherited values: Friz Quadrata TT
-for the three faces and the client's `Blizzard` bar. A skin that sets its own keeps it.
+table gives each skin that sets none of the body face, the title face and the bar its earlier
+inherited values: Friz Quadrata TT for the two faces and the client's `Blizzard` bar. A skin that
+sets its own keeps it. Until SkinDefs minor 16 `KEEP` held `hud.font` too, so every skin but Ka0s
+Default drew HUD text in Friz Quadrata.
+
+**Every skin names a HUD face of its own** (SkinDefs minor 16; LK-04, the owner's ruling R-4). It is
+the skin's own text family at the heavier shipped weight, since HUD text is 12px under an OUTLINE
+and a Regular's thin strokes close up under it: Obsidian `Ka0s Inter SemiBold`, Azeroth
+`Ka0s Vollkorn Bold`, Glass `Ka0s Nunito SemiBold`, High Contrast `Ka0s Atkinson Bold`, Ember
+`Ka0s Bitter Bold`, WoW Midnight `Ka0s Philosopher Bold` and WoW Forever `Ka0s Fira Sans SemiBold`,
+every one already shipped by `LibKa0s-Media-1.0` and SIL OFL. WoW Default names the client's own
+`Friz Quadrata TT` explicitly, its point being the client look. `hud.outline` (`OUTLINE`) and
+`hud.fontSize` (`12`) stay Ka0s Default's in every skin, and the `eui` source keeps Ka0s Default's
+`Ka0s Oxanium SemiBold`. A font override still replaces `hud.font`.
 
 **Every skin draws a bar of its own** (still SkinDefs minor 14; SO-04, the owner's approved
 mockup). A mockup entry's `barTex` writes `bar.texture`: Obsidian `Ka0s Matte`, Azeroth
@@ -1074,9 +1086,10 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
   unchanged. Its `eui` entry is only the EllesmereUI preview and is never registered: the `eui`
   source reads EllesmereUI itself.
 - **Inheritance.** A key a mockup skin leaves out inherits **Ka0s Default's Lua value**, never the
-  mockup's `BASE`, and so does every token the mockups do not draw, except the four `KEEP` holds
-  (`font.body`, `font.title`, `hud.font`, `bar.texture`: Friz Quadrata TT and `Blizzard`, since
-  SkinDefs minor 14; every skin but WoW Default now sets its own `bar.texture` through `barTex`). Ka0s Default itself stays today's constants and is not touched by the mockup.
+  mockup's `BASE`, and so does every token the mockups do not draw, except the three `KEEP` holds
+  (`font.body`, `font.title`, `bar.texture`: Friz Quadrata TT and `Blizzard`, since SkinDefs
+  minor 14; every skin but WoW Default now sets its own `bar.texture` through `barTex`) and
+  `hud.font`, which every skin names itself (SkinDefs minor 16, `HUD_FACE`; `KEEP` held it until then). Ka0s Default itself stays today's constants and is not touched by the mockup.
 - **Extras.** Where the mockup draws nothing a surface needs (an opened drawer, KPI cards and
   list panels, disabled text, the hover wash on a primary button), a skin sets that token itself
   in its `extra` table, chosen from the skin's own palette. That includes `drawer.textSet` wherever
@@ -1115,7 +1128,8 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
   Manrope), Azeroth Vollkorn (a dark old-style book face for the parchment), Ember Bitter (a sturdy
   slab), WoW Midnight Philosopher, WoW Forever Fira Sans (crisp at small sizes) and High Contrast
   Atkinson Hyperlegible, a step larger than the rest (*Sizes are relative*, above). WoW Default
-  draws Friz Quadrata, the client's own face, set by name through `KEEP`; Ka0s Default drew it too
+  draws Friz Quadrata, the client's own face, set by name (its body and titles through `KEEP`, its
+  HUD text explicitly since SkinDefs minor 16); Ka0s Default drew it too
   until SkinDefs minor 14 gave it Oxanium (the owner's choice). Until minor 11 Obsidian and Glass
   drew Barlow, and Azeroth, Ember and WoW Midnight titled in Cinzel, an all-capitals face no body text can share.
 - **GameTooltip lines.** `gtip.*` are drawn on Blizzard's dark GameTooltip whatever the skin, so
@@ -1150,8 +1164,8 @@ color (white leaves Blizzard's art as drawn) and `<ctl>.borderSize` its edge siz
 
 Each skin's own tokens, in schema order; `·` inherits Ka0s Default's value (the *Token reference*
 above), `none` resolves to nil. Colors are `#RRGGBB`, then the alpha when it is below 1. A group
-none of the eight sets is left out (HUD apart from `bar.texture`, `bar.gloss` and the `KEEP` value
-`hud.font`, and the charts apart from Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` holds.
+none of the eight sets is left out (HUD apart from `bar.texture`, `bar.gloss` and `hud.font`, and
+the charts apart from Azeroth's). Generated from the live tables, so this list is what `SkinDefs.lua` holds.
 
 #### Fonts
 
@@ -1364,7 +1378,7 @@ none of the eight sets is left out (HUD apart from `bar.texture`, `bar.gloss` an
 |---|---|---|---|---|---|---|---|---|
 | `bar.texture` | `Ka0s Matte` | `Ka0s Parchment` | `Ka0s Glass Bar` | `Ka0s Solid` | `Ka0s Forge` | `Blizzard` | `Ka0s Satin` | `Ka0s Classic` |
 | `bar.gloss` | none | · | `true` | none | · | · | · | none |
-| `hud.font` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` | `Friz Quadrata TT` |
+| `hud.font` | `Ka0s Inter SemiBold` | `Ka0s Vollkorn Bold` | `Ka0s Nunito SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Bitter Bold` | `Friz Quadrata TT` | `Ka0s Philosopher Bold` | `Ka0s Fira Sans SemiBold` |
 | `icon.borderStyle` | `Solid` | `Solid` | `Solid` | `Solid` | `Solid` | `Blizzard Tooltip` | `Solid` | `Solid` |
 | `icon.borderSize` | `1` | `2` | `1` | `2` | `2` | `2` | `2` | `1` |
 

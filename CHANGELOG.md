@@ -36,6 +36,23 @@ Forever; Glass and High Contrast for `q.poor`, `q.common` and `q.legendary`) and
 inherit them. No other token moves. Two cases in `tests/test_skin.lua` pin all six against the mock's
 real hex, byte for byte.
 
+### SkinDefs minor 16: every skin draws HUD text in a face of its own
+
+Same key and document (*The eight skins*, *Fonts*; LK-04, ruling R-4, Ka0sAddonsCommonTasks
+`DECISIONS.md` D-11). `KEEP` gave every skin but Ka0s Default the client's Friz Quadrata for
+`hud.font`, so a meter or a timer bar under Obsidian or Ember drew the stock face over the skin's own
+bar. `hud.font` leaves `KEEP`, and SkinDefs' new `HUD_FACE` names each skin's face: its own text
+family at the heavier shipped weight (HUD text is 12px under an OUTLINE). Obsidian
+`Ka0s Inter SemiBold`, Azeroth `Ka0s Vollkorn Bold`, Glass `Ka0s Nunito SemiBold`, High Contrast
+`Ka0s Atkinson Bold`, Ember `Ka0s Bitter Bold`, WoW Midnight `Ka0s Philosopher Bold`, WoW Forever
+`Ka0s Fira Sans SemiBold`, and WoW Default the client's `Friz Quadrata TT`, now named explicitly.
+Every face is already shipped and SIL OFL, so Media does not move and nothing new is credited.
+`hud.outline` and `hud.fontSize` stay Ka0s Default's (`OUTLINE`, 12) everywhere; Ka0s Default and
+the `eui` source keep Oxanium SemiBold. A consumer whose smoke checks expected Friz Quadrata on the
+HUD under a non-Ka0s skin moves them to that skin's face. A new case in `tests/test_skin_defs.lua`
+pins every skin's face and its family, the shipped-file check now covers `hud.font`, and
+`tests/test_skin_paint.lua` pins Obsidian's `BarStyle().fontKey`.
+
 ### Skin minor 8: `ResetToSkin` sets an absent companion, never the sentinel
 
 `LibKa0s-Skin-1.0` key 8.16.11.5.9.2.4, the same document (*FROM_SKIN*; LK-07, ruling R-6, decision

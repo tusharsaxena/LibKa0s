@@ -576,6 +576,8 @@ test("skin paint: the getters answer the owner's skin", function()
   assertEqual(wow.textureKey, "Blizzard", "WoW Default keeps the client's bar")
   assertEqual(wow.texture, "Interface\\TargetingFrame\\UI-StatusBar")
   assertEqual(wow.fontKey, "Friz Quadrata TT", "and the client's face")
+  assertEqual(F.owner(Skin, "Modern", "obsidian").BarStyle().fontKey, "Ka0s Inter SemiBold",
+    "Obsidian's own HUD face (SkinDefs minor 16)")
   assertNil(Skin.painted[S], "a getter records nothing")
 end)
 

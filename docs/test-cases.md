@@ -619,7 +619,7 @@ Total.
 - skin stock default: under eui the window goes to EllesmereUI; its fallback is stock
 - skin stock default: a refused EllesmereUI (fail closed) is the library's paint, never stock
 
-### test_skin_defs.lua (29)
+### test_skin_defs.lua (30)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -643,6 +643,7 @@ Total.
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
 - skin defs: every font, bar texture and border a skin names is shipped or an LSM default
 - skin defs: every skin draws one family of its own, for body and titles alike
+- skin defs: every skin names a HUD face of its own, its text's family; only WoW Default draws Friz
 - skin defs: Ka0s Default's Oxanium and its own bar stay its own; a skin naming neither keeps Friz and Blizzard
 - skin defs: every skin draws its own bar texture, and WoW Default the client's
 - skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's
@@ -3669,7 +3670,7 @@ Total.
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 29 |
+| test_skin_defs.lua | 30 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
@@ -3784,4 +3785,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3226** |
+| **Total** | **3227** |

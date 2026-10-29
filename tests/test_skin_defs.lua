@@ -410,8 +410,8 @@ test("skin defs: WoW Forever is warm charcoal, black centered titles, tan accent
 
 -- LibSharedMedia's own default border keys a skin may name besides the shipped ones.
 local LSM_BORDERS = { ["Blizzard Dialog"] = true, ["Blizzard Tooltip"] = true }
--- ...and its default font keys: Friz Quadrata, the client's own face, set by name (WoW Default's, and
--- through SkinDefs' KEEP every skin's that names no face of its own).
+-- ...and its default font keys: Friz Quadrata, the client's own face, set by name (WoW Default's: its
+-- HUD face explicitly since SkinDefs minor 16, its body and titles through KEEP).
 local LSM_FONTS = { ["Friz Quadrata TT"] = true }
 -- ...and its default statusbar key: the client's Blizzard bar, WoW Default's through KEEP.
 local LSM_BARS = { ["Blizzard"] = true }
@@ -421,7 +421,7 @@ local function assertNamedFile(Media, key, name, v)
   if name == "bar.texture" then
     assertTrue(Media.TEXTURES[v] ~= nil or LSM_BARS[v], key .. ": bar.texture = " .. tostring(v) .. " is shipped")
   end
-  if name:match("^font%.") and type(v) == "string" and name ~= "font.outline" then
+  if (name:match("^font%.") or name == "hud.font") and type(v) == "string" and name ~= "font.outline" then
     assertTrue(Media.FONTS[v] ~= nil or LSM_FONTS[v], key .. ": " .. name .. " = " .. v .. " is shipped")
   end
 end
@@ -497,10 +497,35 @@ test("skin defs: every skin draws one family of its own, for body and titles ali
   assertTrue(hc["font.bodySize"] > base["font.bodySize"], "High Contrast reads larger")
 end)
 
+-- Each skin's HUD face (SkinDefs minor 16, the owner's ruling R-4, DECISIONS D-11): the skin's own
+-- family at its heavier shipped weight; WoW Default the client's Friz Quadrata, set explicitly.
+local HUD_FACE = {
+  ka0s = "Ka0s Oxanium SemiBold", obsidian = "Ka0s Inter SemiBold", azeroth = "Ka0s Vollkorn Bold",
+  glass = "Ka0s Nunito SemiBold", contrast = "Ka0s Atkinson Bold", ember = "Ka0s Bitter Bold",
+  wow = FRIZ, midnight = "Ka0s Philosopher Bold", forever = "Ka0s Fira Sans SemiBold",
+}
+
+test("skin defs: every skin names a HUD face of its own, its text's family; only WoW Default draws Friz", function()
+  -- SkinDefs minor 16 (R-4, D-11). red under: `hud.font` back in KEEP or a skin's entry dropped (that
+  -- skin's HUD text falls back to Friz Quadrata), a HUD face of another family than the skin's text,
+  -- or WoW Default's Friz left to a fallback instead of named in its own tokens.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    assertEqual(t["hud.font"], HUD_FACE[key], key .. "'s HUD face")
+    assertEqual(Skin.skins[key].tokens["hud.font"], HUD_FACE[key], key .. " names its HUD face itself")
+    assertEqual(family(t["hud.font"]), family(t["font.body"]), key .. ": its HUD face is its text's family")
+    assertEqual(t["hud.outline"], "OUTLINE", key .. " outlines HUD text")
+    assertEqual(t["hud.fontSize"], 12, key .. "'s HUD size stays 12")
+    if key ~= "wow" then assertTrue(t["hud.font"] ~= FRIZ, key .. " does not draw Friz on the HUD") end
+  end
+end)
+
 test("skin defs: Ka0s Default's Oxanium and its own bar stay its own; a skin naming neither keeps Friz and Blizzard", function()
   -- SkinDefs minor 14. Every skin inherits Ka0s Default's tokens, so without KEEP minor 14's choice
-  -- would have moved every skin's HUD face and bar texture with it. red under: a skin naming no HUD
-  -- face or bar texture of its own that reads Oxanium or the Ka0s Default bar.
+  -- would have moved every skin's faces and bar texture with it. red under: a skin naming no body
+  -- face or bar texture of its own that reads Oxanium or the Ka0s Default bar. (The HUD face left
+  -- KEEP in minor 16: every skin names its own, pinned above.)
   local Skin = skinLib()
   local k = Skin:ResolveSkin("ka0s")
   assertEqual(k["hud.font"], "Ka0s Oxanium SemiBold", "Ka0s Default's HUD face")
@@ -508,7 +533,7 @@ test("skin defs: Ka0s Default's Oxanium and its own bar stay its own; a skin nam
   for _, key in ipairs(KEYS) do
     if key ~= "ka0s" then
       local own, t = Skin.skins[key].tokens, Skin:ResolveSkin(key)
-      assertEqual(t["hud.font"], own["hud.font"] or FRIZ, key .. " keeps Friz Quadrata for HUD text")
+      assertTrue(family(t["hud.font"]) ~= "Ka0s Oxanium", key .. " does not inherit Ka0s Default's HUD face")
       assertEqual(t["bar.texture"], own["bar.texture"] or "Blizzard", key .. " draws its own bar or Blizzard")
       assertTrue(family(t["font.body"]) ~= "Ka0s Oxanium" and family(t["font.title"]) ~= "Ka0s Oxanium",
         key .. " does not inherit Ka0s Default's face")
