@@ -223,7 +223,14 @@ Ka0sAddonsCommonTasks `docs/2026-10-26-SKIN_FEEDBACK/`): still eight, none of th
 close (2026-10-29, the release close of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`): **nine**, nothing over
 1500. `LibKa0s/Skin.lua` came in (below); the other eight are untouched since v1.79.0, so their figures stand. The
 release's other grown files are out of the band: `LibKa0s/SkinPaint.lua` 994, `LibKa0s/SkinAce.lua` 917,
-`LibKa0s/OptionsCompose.lua` 848, `LibKa0s/SkinPaintControls.lua` 752. Largest first:
+`LibKa0s/OptionsCompose.lua` 848, `LibKa0s/SkinPaintControls.lua` 752. Re-measured 2026-10-30 on the branch of
+Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/` (the run that releases v1.81.0): **twelve**, nothing over
+1500, no re-check trigger fired. Three came in: `LibKa0s/SkinDefs.lua` and `tests/test_options_skin_picker.lua` (below),
+and `LibKa0s/SimPanel.lua` (1018, recorded with SimPanel's history further down). `LibKa0s/OptionsIds.lua`,
+`LibKa0s/OptionsIdList.lua` and `LibKa0s/Skin.lua` grew and their figures below are re-measured; `LibKa0s/OptionsTabs.lua`
+(1382, two comment lines of `LK-06c`) and `LibKa0s/OptionsWidgets.lua` (1447, unchanged) added no member or maker, and
+`LibKa0s/Options.lua` is untouched (1335). The run's other grown payload files are out of the band:
+`LibKa0s/SkinPaint.lua` 979 at minor 12. Largest first:
 
 - `testkit/mock_base.lua` (1465 with kit revision 43's one comment line pointing at `testkit/mock_paint.lua`, measured 2026-10-25, under its 1490 re-check trigger; 1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
@@ -236,7 +243,7 @@ release's other grown files are out of the band: `LibKa0s/SkinPaint.lua` 994, `L
 - `LibKa0s/OptionsWidgets.lua` (1447 with minor 35's `skinValue` read, the settings skin owner (`LK-07` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`), measured 2026-10-25, no maker added and three under its 1450 re-check trigger; re-measured 2026-10-25 after `LK-08`'s AceGUI rows, unchanged: they paint at one choke point, `O.AceGUI`'s proxy (`LibKa0s/SkinAce.lua`), so no maker grew; 1444 with minor 34's `RenderGrid` parent and gap, KickCD#10,
   measured 2026-10-01, six under its 1450 re-check trigger; 1423 with v1.65.0's combat-refusal line;
   1422 new to the band: it came down from the census's 3852 when the id surface left it), ruled below.
-- `LibKa0s/OptionsIds.lua` (1378 with minor 4's skinned suggestion list (`LK-07` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`), measured 2026-10-25, under its 1450 re-check trigger; 1375 with minor 3's `__closeOwnedSuggest`, measured 2026-10-24, under its 1450
+- `LibKa0s/OptionsIds.lua` (1412 with minor 5's skinned suggestion rows, more line and id gray (`LK-06c` of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`), measured 2026-10-30, under its 1450 re-check trigger; 1378 with minor 4's skinned suggestion list (`LK-07` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`), measured 2026-10-25, under its 1450 re-check trigger; 1375 with minor 3's `__closeOwnedSuggest`, measured 2026-10-24, under its 1450
   re-check trigger; 1359 at v1.65.0; 1358 new: the id peel), ruled below.
 - `LibKa0s/OptionsTabs.lua` (1380 at minor 10's thin skin calls and their three file-local helpers (`LK-07` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`), measured 2026-10-25, no member added and under its 1400 re-check trigger; 1350 at minor 9, which dropped the `O.__releaseChrome` export and added
   its header note, LibKa0s#45, measured 2026-10-22; 1349 with minor 8's three `RenderTabbedSchema` opts, AbsorbTracker#32,
@@ -248,7 +255,7 @@ release's other grown files are out of the band: `LibKa0s/SkinPaint.lua` 994, `L
   `LibKa0s/OptionsRegistry.lua`; 1462 before; 1312 at v1.40.0, 1460 at v1.46.0 with minor 22's
   combat lock, and `LK-24` to `LK-26` moved the font preload out and the park in), peeled then
   accepted, below.
-- `LibKa0s/OptionsIdList.lua` (1268 with minor 6's skinned help tints (`LK-07` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`), measured 2026-10-25, under its 1350 re-check trigger; 1251 at v1.75.0's minor 5, the #57 help-mark comment, measured
+- `LibKa0s/OptionsIdList.lua` (1290 with `LK-06d`'s tooltip lines and `LK-06c`'s shared id gray (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`), measured 2026-10-30, under its 1350 re-check trigger; 1268 with minor 6's skinned help tints (`LK-07` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`), measured 2026-10-25, under its 1350 re-check trigger; 1251 at v1.75.0's minor 5, the #57 help-mark comment, measured
   2026-10-22, under its 1350 re-check trigger; 1247 at v1.71.0's minor 4, measured 2026-10-07; 1246 with minor 3's loaded-addon check on `addonName`, LibKa0s#42, measured 2026-10-02;
   1197 at v1.65.0; 1193 new: the id peel), ruled below.
 - `tests/test_sim_panel.lua` (1056 with the step-label truncation's tooltip case (2026-10-23), which moved no
@@ -261,13 +268,28 @@ release's other grown files are out of the band: `LibKa0s/SkinPaint.lua` 994, `L
   SimPanel minor 7 (the skin owner, `LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`)
   added none either: its cases are the new `tests/test_tool_windows_skin.lua`'s, and only the two
   pins moved, to "at least" (re-measured 2026-10-25, still 1056).
-- `LibKa0s/Skin.lua` (1044, new to the band at v1.80.0, measured 2026-10-29: 802 → 1044 with minor 7's owner
+- `LibKa0s/Skin.lua` (1081 at minor 8, measured 2026-10-30: `ResetToSkin`'s companion option (`LK-07`), the public
+  `DrawsKey` (`LK-10`), *Ignore fonts* reaching the HUD tokens (`LK-01`) and the retired stock look (`LK-02`) of
+  Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, none of them in the owner-token block, so the trigger
+  below did not fire; 1044, new to the band at v1.80.0, measured 2026-10-29: 802 → 1044 with minor 7's owner
   tokens, the slot remap's resolution (`__Remap`, `__RemapName`) and `__DrawsKey` (the owner-token, slot-remap and
   stock-under-Default items of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`)) — **accepted.** The engine is still one piece of
   state with one cache discipline, and the owner-token block is the part with the clearest boundary. The seam
   is that block (`isSchemaName` through `takeTokens`, `__RemapName`, `ownValue`, `withOwnTokens` and `__Remap`),
   to a secondary file of its own with its own minor, paired on the Skin shell. **Re-check trigger: 1150 lines, or
   the next Skin minor that adds to the owner-token block.**
+- `LibKa0s/SkinDefs.lua` (1005, new to the band at minor 16, measured 2026-10-30: 959 → 1005 with the exact `q.*`
+  colors (`LK-09`), every skin's HUD face (`LK-04`), `gtip.*` and `icon.grip` (`LK-08`, `LK-06b`) and `list.hoverArt`
+  (`LK-06c`) of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`) — **accepted.** A token lands as a
+  Ka0s Default value, a value or `FOLLOW` per other skin and its docs, so the file grows with the vocabulary, not with
+  logic. The seam is the eight other skins (*the eight other skins* section: `FOLLOW`, `ICON_EDGE`, `HUD_FACE`,
+  `register` and the eight `register(...)` blocks), to a secondary file of its own with its own minor, paired on the
+  Skin shell as this file is. **Re-check trigger: 1100 lines, or a release that adds more than 40 lines here.**
+- `tests/test_options_skin_picker.lua` (1064, new to the band, measured 2026-10-30: 966 → 1064 with the picker's
+  "Choose a skin" title and addon-name line (`LK-11` of Ka0sAddonsCommonTasks
+  `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`)) — **accepted.** The seam is the *one window across addons* section, to
+  its own `tests/test_options_skin_picker_shared.lua`. **Re-check trigger: 1200 lines, or the next OptionsSkinPicker
+  minor that adds cases here.**
 - `tests/test_options_compose.lua` (1012, new to the band at v1.77.0, measured 2026-10-24: 944 →
   1012 with OptionsCompose minor 8's six `O.StrataTooltip` cases, `LK-20` of Ka0sAddonsCommonTasks
   `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) — **accepted.** The seam is the record-backed arm
