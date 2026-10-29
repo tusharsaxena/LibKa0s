@@ -41,6 +41,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Then (LK-02 of the same run, ruling R-2, still minor 6): the stock look is retired. TitleBar,
 -- FadeNineSlice, Panel and Inset ignore a stale `opts.stockDefault` and paint under Ka0s Default as
 -- under every skin (SkinPaint minor 12, which gives a TitleBar's alignment back in P.unpaint).
+-- Then (LK-06a of the same run, ruling R-5, decision D-02, still minor 6): S.Strip takes
+-- `opts.panel` as S.Text does, for `W.TestStrip`'s `opts.panel`; P.panelIgnored records its answer
+-- as `rec.panelOff` for P.hook.
 local EXTRAS_MINOR = 6
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
@@ -60,9 +63,15 @@ local rgba = P.rgba
 --- back (P.unpaint) and the caller paints nothing. The call stays recorded, so `SetIgnore`'s repaint
 --- replays it and the switch is live both ways. Without `opts.panel` it answers false: a window wears
 --- the skin whatever that switch says (D-01).
+--- The answer is kept on the record as `rec.panelOff` (LK-06a, still minor 6), so a hook a primitive
+--- laid (P.hook: the search box's focus line) stands down with the paint it belongs to, live both ways.
+--- Dropdown, EditBox and Strip take the same `opts.panel` from LK-06a, for the Widgets controls.
 function P.panelIgnored(owner, rec, frame, opts)
-  if not (rec and type(opts) == "table" and opts.panel == true) then return false end
-  if type(lib.GetIgnore) ~= "function" or lib:GetIgnore(owner) ~= true then return false end
+  if not rec then return false end
+  local off = type(opts) == "table" and opts.panel == true
+    and type(lib.GetIgnore) == "function" and lib:GetIgnore(owner) == true
+  rec.panelOff = off or nil
+  if not off then return false end
   P.unpaint(rec, frame)
   return true
 end
@@ -166,6 +175,7 @@ end
 local function wash(owner, target, name, token, opts)
   if type(target) ~= "table" then return nil end
   local rec = P.track(owner, target, name, opts)
+  if P.panelIgnored(owner, rec, target, opts) then return rec end
   local c = P.T(owner)[token]
   if P.isTexture(target) then
     if c then target:SetColorTexture(rgba(c)) end
@@ -184,7 +194,10 @@ end
 
 --- S.Strip(target, opts): the test / simulation strip's wash, `strip.test` or `strip.sim`
 --- (`opts.kind`), on a texture in place (`W.TestStrip`'s fill) or as a region of a frame. The strip's
---- meaning colors are the library's; a skin changes only their legibility. Draws no Media icon.
+--- meaning colors are the library's; a skin changes only their legibility. `opts.panel = true`
+--- (minor 6, LK-06a): the strip is on its owner's settings panel, so nothing is painted while the
+--- owner ignores its panel (P.panelIgnored); a texture's own color cannot be read back, so the caller
+--- puts it back (`W.TestStrip` does). Draws no Media icon.
 prim.Strip = function(owner, target, opts)
   local kind = type(opts) == "table" and opts.kind == "sim" and "sim" or "test"
   wash(owner, target, "Strip", "strip." .. kind, opts)

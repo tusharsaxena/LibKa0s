@@ -55,6 +55,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Still minor 10 (LK-03, ruling R-3): CloseButton tints its art through P.tint, so the art's own
 -- color is recorded on the first paint and given back by P.unpaint; and an `own` button keeps the
 -- host's OnEnter / OnLeave (Core's) and falls back to them once it is no longer painted.
+-- Still minor 10 (LK-06a, ruling R-5, decision D-02): Dropdown and EditBox take `opts.panel` as
+-- S.Text does: a control on its owner's settings panel is given back while the owner ignores its
+-- panel (SkinPaintExtras' P.panelIgnored), live both ways, its focus hooks standing down with it.
 local CONTROLS_MINOR = 10
 if lib.__controlsMinor and lib.__controlsMinor >= CONTROLS_MINOR
   and lib.__controlsShellMinor == lib.MINOR then return end
@@ -216,10 +219,13 @@ end
 --- Left/Middle/Right faded, the typed text in `input.text` (nil in Ka0s Default: left alone) and
 --- the body font, the hint (`opts.placeholder`, else `eb.hint`) in `input.placeholder`, and the
 --- edge in `input.focus` while it has the keys. `opts.padInput` sets 6px text insets;
---- `opts.noBorder` draws no edge. Draws no Media icon.
+--- `opts.noBorder` draws no edge. `opts.panel = true` (minor 10, LK-06a): the box is on its owner's
+--- settings panel, so it is given back while the owner ignores its panel (P.panelIgnored), its focus
+--- hooks inert. Draws no Media icon.
 prim.EditBox = function(owner, eb, opts)
   if not P.isFrame(eb) then return end
   local rec = P.track(owner, eb, "EditBox", opts)
+  if P.panelIgnored(owner, rec, eb, opts) then return end
   opts = type(opts) == "table" and opts or {}
   P.markStock(rec, eb, opts)
   local T = P.T(owner)
@@ -323,10 +329,12 @@ end
 --- S.Dropdown(dd, opts): a dropdown button. The flat-control box from `input.*` (Widgets'
 --- dropdown: its backdrop, fill and edge, call for call), the template's pieces faded, the arrow
 --- (`dd.arrow` / `dd.Arrow`) in `icon.tint`, the label (`dd.text` / `dd.Text`) in `input.text` and
---- the body font. Draws no Media icon.
+--- the body font. `opts.panel = true` (minor 10, LK-06a): given back while the owner ignores its
+--- settings panel (P.panelIgnored), live both ways. Draws no Media icon.
 prim.Dropdown = function(owner, dd, opts)
   if not P.isFrame(dd) then return end
   local rec = P.track(owner, dd, "Dropdown", opts)
+  if P.panelIgnored(owner, rec, dd, opts) then return end
   opts = type(opts) == "table" and opts or {}
   P.markStock(rec, dd, opts)
   local T = P.T(owner)

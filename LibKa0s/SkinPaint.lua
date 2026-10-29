@@ -110,7 +110,9 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- stock look is retired. `opts.stockDefault` (minor 11's P.keepStock and its `stockKept` mark) is
 -- ignored, so Ka0s Default paints the Ka0s look everywhere; `opts.stock` stays the fade list it is
 -- under every skin. P.markStock keeps the `stock` mark. And P.unpaint gives back the text alignment
--- a TitleBar set (D-08).
+-- a TitleBar set (D-08). And (LK-06a of the same run, ruling R-5, D-02, still minor 12): a hook laid
+-- by P.hook does nothing while its record is given back on a settings panel (`rec.panelOff`,
+-- SkinPaintExtras' P.panelIgnored), so a panel-scoped search box's focus line stays its own.
 local PAINT_MINOR = 12
 if lib.__paintMinor and lib.__paintMinor >= PAINT_MINOR
   and lib.__paintShellMinor == lib.MINOR then return end
@@ -444,7 +446,7 @@ function P.hook(rec, frame, script, fn)
   hooks[script] = true
   frame:HookScript(script, function(self, ...)
     local r = lib.painted[self]
-    if r then fn(self, r, ...) end
+    if r and not r.panelOff then fn(self, r, ...) end   -- given back on a settings panel (P.panelIgnored)
   end)
 end
 

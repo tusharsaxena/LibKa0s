@@ -1135,6 +1135,22 @@ Total.
 - skin owner: an owned DragHandle's tooltip is minor 6's gold, white and gray under Ka0s Default
 - skin owner: an owned DragHandle's tooltip takes its skin's gtip colors and follows a switch
 
+### test_widgets_skin_scope.lua (13)
+
+- skin scope: an owned dropdown's menu rows and measure take the skin's body face
+- skin scope: an owner-less open after an owned one gives the rows their template back
+- skin scope: a panel-scoped dropdown is owner-less while its owner ignores the panel, live
+- skin scope: a dropdown with no panel scope keeps the skin while the panel is ignored
+- skin scope: a panel-scoped search box is owner-less while the panel is ignored, focus included
+- skin scope: an owned strip's line is text.accent in the body face, and Ignore fonts gives it back
+- skin scope: a panel-scoped strip is owner-less while the panel is ignored, live
+- skin scope: an owned autocomplete's rows take the body face unless the host named one
+- skin scope: a panel-scoped autocomplete is owner-less while the panel is ignored
+- skin scope: an owned chart's labels take the body face unless the host named one
+- skin scope: a panel-scoped chart reads lib.LINE_CHART while the panel is ignored, live
+- skin scope: an owned drag handle's label takes the body face, and is measured in it
+- skin scope: a panel-scoped drag handle is owner-less while the panel is ignored, live
+
 ### test_debuglog.lua (75)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
@@ -3722,6 +3738,7 @@ Total.
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
+| test_widgets_skin_scope.lua | 13 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -3820,4 +3837,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3258** |
+| **Total** | **3271** |

@@ -19,13 +19,47 @@ listed. Not tagged.
 
 Versions in this release: **Skin minor 8**, **SkinDefs minor 16**, **SkinPaint minor 12**,
 **SkinPaintExtras minor 6** and **SkinPaintControls minor 10** (`LibKa0s-Skin-1.0` key
-**8.16.12.6.10.2.4**), **WidgetsReorder minor 3** and **WidgetsDragHandle minor 7** (`LibKa0s-Widgets-1.0` key **16.3.7.4.4.1**),
+**8.16.12.6.10.2.4**), **Widgets minor 17**, **WidgetsReorder minor 3**, **WidgetsDragHandle minor 7**, **WidgetsLineChart minor 5** and **WidgetsAutocomplete minor 5** (`LibKa0s-Widgets-1.0` key **17.3.7.5.5.1**),
 **OptionsWidgets minor 36**, **OptionsIdList minor 7**, **OptionsTabs minor 11**, **OptionsScroll minor 9**,
 **OptionsNav minor 4**, **OptionsDrawer minor 3**, **OptionsKeybinds minor 6** and
 **OptionsSkinPicker minor 2** (`LibKa0s-Options-1.0` key **34.4.36.4.7.11.3.13.9.4.3.6.3.2**) and
 **SimPanel minor 8** (`LibKa0s-Sim-1.0` key **2.3.8**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
 until an entry below moves one.
 Still **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
+
+### Widgets minor 17, WidgetsAutocomplete minor 5, WidgetsLineChart minor 5: the controls obey both Scope switches
+
+`LibKa0s-Widgets-1.0` key 17.3.7.5.5.1, documented in
+[docs/api/Widgets/version-17.3.7.5.5.1-docs.md](docs/api/Widgets/version-17.3.7.5.5.1-docs.md)
+(*What changed at 17.3.7.5.5.1*, *Skin owners*), with WidgetsDragHandle minor 7 and, in
+`LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, SkinPaintControls minor 10, SkinPaintExtras minor 6 and
+SkinPaint minor 12 (all already bumped on this branch; *The primitives*, `Dropdown`, `EditBox`,
+`Strip`). LK-06a, ruling R-5, decisions D-01, D-02 and D-13.
+
+- **Ignore fonts reaches every string an owned control draws.** The shared menu's rows and the
+  hidden string it is measured on, the mode strip's line, the autocomplete's rows, the chart's tick
+  labels and the drag handle's label drew their template's face in every skin, so the switch had
+  nothing to act on. An owned control now paints them in its skin's body face through the facade
+  (`S.Font`; the strip's line `S.Text(.., "accent")`, the template's gold under Ka0s Default), a
+  recorded paint, so a skin switch reaches them and Ignore fonts gives each its template back,
+  live. The drag handle's label is measured in the face it wears, so `ApplyWidth` sizes the strip
+  for it; the menu is measured the same way. A face the host named (`opts.font`, `spec.labelFont`,
+  `opts.glyphFont`) is never touched, and the pooled menu rows take their template back on an
+  owner-less open. **Ka0s Default's one look change:** these strings are Oxanium where the template
+  drew Friz Quadrata (D-13); the smoke test lists them.
+- **`panel = true` on every owned constructor** (`Dropdown`, `SearchBox`, `TestStrip`,
+  `Autocomplete`, `LineChart`, `DragHandle`): the control sits on its owner's settings page, so
+  while the owner ignores its settings panel it is drawn as an owner-less one, live both ways (the
+  autocomplete from its next show). `S.Dropdown`, `S.EditBox` and `S.Strip` take the same
+  `opts.panel` as `S.Text` (`P.panelIgnored`, which now records its answer as `rec.panelOff`, and a
+  hook `P.hook` laid does nothing while it is set, so a given-back search box's focus line is its own
+  gold). Without `panel` a control is a window's and keeps its skin (D-01).
+
+No lib-level member is added; the shell gains three internals (`lib.__panelOff`, `lib.__skinFont`,
+`lib.__fonted`). **What a consumer owes:** nothing; a host that places one of these controls on its
+settings page should pass `panel = true`. `tests/test_widgets_skin_scope.lua` (new, thirteen cases)
+pins it. The Widgets document opened as 16.3.6.4.4.1 and renamed 16.3.7.4.4.1 was renamed to this
+key and extended (one docs file per key per release).
 
 ### The tooltip lines the library writes take the skin's tooltip colors
 
@@ -61,8 +95,8 @@ member is added, no token is new, and nothing is owed by a consumer. `tests/test
 
 ### WidgetsDragHandle minor 7, SkinDefs minor 16: the drag handle's tooltip in its skin's colors
 
-`LibKa0s-Widgets-1.0` key 16.3.7.4.4.1, documented in
-[docs/api/Widgets/version-16.3.7.4.4.1-docs.md](docs/api/Widgets/version-16.3.7.4.4.1-docs.md)
+`LibKa0s-Widgets-1.0` key 17.3.7.5.5.1 (16.3.7.4.4.1 when this entry was written), documented in
+[docs/api/Widgets/version-17.3.7.5.5.1-docs.md](docs/api/Widgets/version-17.3.7.5.5.1-docs.md)
 (*Skin owners*, `DragHandle`'s `spec.owner` and tooltip descriptor), and `LibKa0s-Skin-1.0` key
 8.16.12.6.10.2.4, the same document (*Text*, *The eight skins' tokens*; LK-08, ruling R-7, decision
 D-14). An owned drag handle painted its strip from its skin but drew its tooltip in fixed literals:
@@ -165,9 +199,9 @@ pin it.
 ### SkinPaintExtras minor 6, WidgetsReorder minor 3: `S.Text` and the reorder list obey the panel scope
 
 `LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, the same document (*Members*, `SetIgnore`; *The primitives*,
-`Text`), and `LibKa0s-Widgets-1.0` key 16.3.7.4.4.1 (16.3.6.4.4.1 when this entry was written),
+`Text`), and `LibKa0s-Widgets-1.0` key 17.3.7.5.5.1 (16.3.6.4.4.1 when this entry was written),
 documented in
-[docs/api/Widgets/version-16.3.7.4.4.1-docs.md](docs/api/Widgets/version-16.3.7.4.4.1-docs.md)
+[docs/api/Widgets/version-17.3.7.5.5.1-docs.md](docs/api/Widgets/version-17.3.7.5.5.1-docs.md)
 (LK-05, ruling R-5, decisions D-01 and D-02). "Ignore settings panel" reached the AceGUI rows and
 the Options chrome only, so a string a host colored with `S.Text` on its settings page, and every
 reorder list, kept the skin while it was on. `S.Text(fs, role, { panel = true })` now puts a string

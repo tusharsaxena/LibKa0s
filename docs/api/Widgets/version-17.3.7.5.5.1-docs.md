@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 16.3.7.4.4.1
+# `LibKa0s-Widgets-1.0` — version 17.3.7.5.5.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,25 +8,28 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` minor **16** · `WidgetsReorder.lua` minor **3** · `WidgetsDragHandle.lua` minor **7** · `WidgetsLineChart.lua` minor **4** · `WidgetsAutocomplete.lua` minor **4** · `WidgetsCopyWindow.lua` minor **1** |
+| Files and minors | `Widgets.lua` minor **17** · `WidgetsReorder.lua` minor **3** · `WidgetsDragHandle.lua` minor **7** · `WidgetsLineChart.lua` minor **5** · `WidgetsAutocomplete.lua` minor **5** · `WidgetsCopyWindow.lua` minor **1** |
 | Shipped in | unreleased (v1.81.0) |
 | Status | **Current** |
-| Supersedes | [version 16.2.6.4.4.1](./version-16.2.6.4.4.1-docs.md) (shipped in v1.78.0) — the same members, with a `ReorderList` that keeps its owner's skin while the owner ignores its settings panel and an owned `DragHandle` whose tooltip draws the fixed gold, white and gray whatever its owner's skin; and [version 15.1.5.3.3](./version-15.1.5.3.3-docs.md) (shipped in v1.77.0), none taking a skin owner, and the copy window inside `Widgets.lua` |
+| Supersedes | [version 16.2.6.4.4.1](./version-16.2.6.4.4.1-docs.md) (shipped in v1.78.0) — the same members, with a `ReorderList` that keeps its owner's skin while the owner ignores its settings panel, an owned `DragHandle` whose tooltip draws the fixed gold, white and gray whatever its owner's skin, owned controls whose strings keep their template's face (so *Ignore fonts* has nothing to give back) and no `panel` scope on the other constructors; and [version 15.1.5.3.3](./version-15.1.5.3.3-docs.md) (shipped in v1.77.0), none taking a skin owner, and the copy window inside `Widgets.lua` |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 16, WidgetsReorder = 3, WidgetsDragHandle = 7, WidgetsLineChart = 4, WidgetsAutocomplete = 4, WidgetsCopyWindow = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 17, WidgetsReorder = 3, WidgetsDragHandle = 7, WidgetsLineChart = 5, WidgetsAutocomplete = 5, WidgetsCopyWindow = 1 }` |
 
-## What changed at 16.3.7.4.4.1
+## What changed at 17.3.7.5.5.1
 
-**A reorder list obeys its owner's "Ignore settings panel", and an owned drag handle's tooltip
-wears its skin.** `WidgetsReorder.lua` moves from **2** to **3** and `WidgetsDragHandle.lua` from
-**6** to **7**; every other file keeps its minor, so the key is 16.3.7.4.4.1. **No lib-level member
-is added, removed or renamed**, so `members-16.3.7.4.4.1.json` lists the same names as
-16.2.6.4.4.1; what is new is one optional field and the tooltip's colors. LK-05 of
-Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/` (ruling R-5, decisions D-01 and
-D-02) and LK-08 of the same plan (ruling R-7, decision D-14). Within the v1.81.0 cycle the reorder
-change was first written up under key 16.3.6.4.4.1; that key never shipped, and this document is
-the same one under the release's key.
+**A reorder list obeys its owner's "Ignore settings panel", an owned drag handle's tooltip wears
+its skin, and every owned control obeys both Scope switches.** `Widgets.lua` moves from **16** to
+**17**, `WidgetsReorder.lua` from **2** to **3**, `WidgetsDragHandle.lua` from **6** to **7**,
+`WidgetsLineChart.lua` from **4** to **5** and `WidgetsAutocomplete.lua` from **4** to **5**;
+`WidgetsCopyWindow.lua` keeps its minor, so the key is 17.3.7.5.5.1. **No lib-level member is
+added, removed or renamed**, so `members-17.3.7.5.5.1.json` lists the same names as 16.2.6.4.4.1;
+what is new is one optional field per constructor, the tooltip's colors and the strings' face.
+LK-05 of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/` (ruling R-5, decisions
+D-01 and D-02), LK-08 of the same plan (ruling R-7, decision D-14) and LK-06a (ruling R-5,
+decisions D-01, D-02 and D-13). Within the v1.81.0 cycle these changes were first written up under
+keys 16.3.6.4.4.1 and 16.3.7.4.4.1; neither key shipped, and this document is the same one under
+the release's key.
 
 - **Panel-scoped by default** (**Since Reorder 3**). Every consumer puts a reorder list on a
   settings page, so it is scoped to that page the way an AceGUI row is: while its owner ignores its
@@ -48,8 +51,36 @@ the same one under the release's key.
   still wins over its band's. The tooltip is the client's `GameTooltip`; only the line colors move,
   never the frame. Neither *Ignore* switch applies: the lines carry no face of ours and are not the
   settings panel.
+- **Every string an owned control draws, in its skin's body face** (**Since Widgets 17,
+  Autocomplete 5, LineChart 5, DragHandle 7**). The shared menu's rows (and the hidden string the
+  menu is measured on, so a wider face never truncates a label), the mode strip's line (now also
+  colored `text.accent`, which is the template's gold under Ka0s Default), the autocomplete's rows,
+  the chart's tick labels and the drag handle's label drew their template's face in every skin, so
+  the owner's *Ignore fonts* had nothing to give back. An owned control now paints them through its
+  owner's facade (`S.Font`, `S.Text`), a recorded paint: a skin switch reaches them and *Ignore
+  fonts* gives each its template back, live. Under Ka0s Default the face is Oxanium where the
+  template drew Friz Quadrata (decision D-13): the one look change of this key. The drag handle's
+  label is **measured** in the face it is drawn in (the measurer borrows the label's font object), so
+  `ApplyWidth` sizes the strip for it. A face the host named is the host's and is never touched:
+  `Autocomplete`'s and `LineChart`'s `opts.font`, `DragHandle`'s `spec.labelFont`, and the menu's
+  `opts.glyphFont` column. The pooled menu rows take the opener's face on every open and their
+  template back on an owner-less one.
+- **`panel = true` on every owned constructor** (**Since Widgets 17, Autocomplete 5, LineChart 5,
+  DragHandle 7**): `Dropdown`, `SearchBox`, `TestStrip`, `Autocomplete` and `LineChart` take
+  `opts.panel`, `DragHandle` takes `spec.panel`. It says the control sits on its owner's settings
+  page, so while that owner ignores its settings panel the control is drawn as an owner-less one,
+  live both ways: the dropdown's button and the search box are given back by their primitives
+  (`LibKa0s-Skin-1.0`'s `S.Dropdown` / `S.EditBox` / `S.Strip` take the same `opts.panel` as
+  `S.Text`; a given-back search box's focus line is its own gold again), the menu opens owner-less,
+  the strip's wash is put back to the library's fill, the chart reads `lib.LINE_CHART` and the drag
+  handle draws minor 5's strip; the autocomplete reads it on its next show. Without `panel` a control
+  is a window's and wears the skin whatever that switch says (decision D-01). The opposite default
+  from `ReorderList`'s, on purpose: every reorder list sits on a settings page, and these controls
+  sit on windows and HUD strips unless the host says otherwise (decision D-02).
 
-**What a host must change: nothing.** A host that colored its drag handle's title and body lines
+**What a host must change: nothing.** A host that puts a dropdown, search box, strip, list or
+chart on its settings page should pass `panel = true` so "Ignore settings panel" reaches it. A host
+that colored its drag handle's title and body lines
 itself to follow its skin (AuraMaster's `gtip.title` / `gtip.value` entries) may drop those colors:
 the bands now draw the same. A host that hid its reorder list's owner while the panel was
 ignored (ConsumableMaster's `KCM.SkinPanelOwner()`) may pass its owner plainly. A host that left the
@@ -104,14 +135,14 @@ exactly as an owner-less widget does. A color the host passes (an option row's `
 | Widget | Painted through | Tokens | Repaint |
 |---|---|---|---|
 | `Dropdown` button | `S.Dropdown` | `input.bg`, `input.border`, `icon.tint` (the arrow), `input.text` (nil in Ka0s Default) | on the owner's switch |
-| the shared menu | `S.MenuFrame`, then the rows | `menu.bg`, `menu.border`, `menu.textSel`, `menu.text`, `menu.hover` | on every open |
+| the shared menu | `S.MenuFrame`, then the rows; `S.Font` on each row and on the measuring string (Widgets 17) | `menu.bg`, `menu.border`, `menu.textSel`, `menu.text`, `menu.hover`, the body face | on every open |
 | `SearchBox` | `S.EditBox`, then the icon | `input.bg`, `input.border`, `input.focus`, `input.text`, `input.placeholder`, `icon.tint` | on the owner's switch |
-| `TestStrip` | `S.Strip` | `strip.test` / `strip.sim` | on the owner's switch |
+| `TestStrip` | `S.Strip`, `S.Text` (the line, Widgets 17) | `strip.test` / `strip.sim`, `text.accent` and the body face (the line) | on the owner's switch |
 | `CopyWindow` | `Core.ApplySkin(f, nil, owner)` (`S.Shell`), `S.ScrollBar`, `Core.MakeCloseButton` | the window tokens, `win.bgDense` (the denser fill, unless the host passed `backdrop`), `close.rest` / `close.hot` | on the owner's switch |
-| `Autocomplete` rows | read on each show | `menu.text`, `menu.hover`; the list's fill and edge still follow the box | the next show |
-| `DragHandle` | `Skin:Token` | `handle.bg`, `handle.edge`, `text.accent` (the label), `icon.tint` / `icon.hot` (the marks), `gtip.title`, `gtip.value`, `gtip.footer` (the tooltip's bands, DragHandle 7); a host's `spec.edge` pixels are its own | on the owner's switch; the tooltip on every hover |
+| `Autocomplete` rows | read on each show; `S.Font` on each row unless the host named a `font` (Autocomplete 5) | `menu.text`, `menu.hover`, the body face; the list's fill and edge still follow the box | the next show |
+| `DragHandle` | `Skin:Token` | `handle.bg`, `handle.edge`, `text.accent` (the label), `icon.tint` / `icon.hot` (the marks), `gtip.title`, `gtip.value`, `gtip.footer` (the tooltip's bands, DragHandle 7), the body face (the label, `S.Font`, unless the host named a `labelFont`; DragHandle 7); a host's `spec.edge` pixels are its own | on the owner's switch; the tooltip on every hover |
 | `ReorderList` | `Skin:Token`; none while the owner ignores its settings panel, unless `panel = false` (Reorder 3) | `list.box`, `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`, `handle.rest`, `text.accent` (hover), `list.dropLine`, `list.ghostBg`, `text.accent` (the ghost's text) | the next render; the ghost on every drag |
-| `LineChart` | `S.ChartStyle()` | `chart.axis`, `chart.grid`, `chart.crosshair`, `chart.marker`, `chart.line`, `chart.series` (`colorIndex`), `text.disabled` (the tick labels) | re-rendered at its last size on the owner's switch |
+| `LineChart` | `S.ChartStyle()`; `S.Font` on each tick label unless the host named a `font` (LineChart 5) | `chart.axis`, `chart.grid`, `chart.crosshair`, `chart.marker`, `chart.line`, `chart.series` (`colorIndex`), `text.disabled` and the body face (the tick labels) | re-rendered at its last size on the owner's switch |
 
 The shared menu is given back to Ka0s Default through the facade of a name no addon registers (the
 major's own name), so the menu's backdrop calls are the ones it made when it was built. The menu is
@@ -122,7 +153,15 @@ The repaints a primitive does not cover (the search icon, the copy window's dens
 handle, the line chart) are recorded per owner in a weak table on the shell (`lib.__skinned`) and
 re-run by one `OnLooksChanged` listener per owner, a trampoline into the live copy of the major.
 `lib.__skinOf`, `lib.__onSkin`, `lib.__repaintSkinned`, `lib.__skinned` and
-`lib.__skinHooked` are internal (`__`-prefixed: not host contract, not in the manifest).
+`lib.__skinHooked` are internal (`__`-prefixed: not host contract, not in the manifest), and so are
+Widgets 17's `lib.__panelOff` (the `panel` test, `Skin:GetIgnore(owner)`'s panel half),
+`lib.__skinFont` (a string's body face through the facade, or its template back) and
+`lib.__fonted` (the strings it fonted).
+
+Every constructor but `ReorderList` and `CopyWindow` takes **`panel`** (Widgets 17, Autocomplete 5,
+LineChart 5, DragHandle 7): `true` for a control on its owner's settings page, drawn as an
+owner-less one while that owner ignores its settings panel, live both ways (*What changed at
+17.3.7.5.5.1*). Absent or anything but `true`, the control is a window's and keeps its skin.
 
 ## What changed at 15.1.5.3.3
 
@@ -694,7 +733,8 @@ library's.
 |---|---|---|---|
 | `chevron` | 1 | Resolved texture path for the collapsed button's ▼ affordance. | `Interface\Buttons\Arrow-Down-Up` (Blizzard's own arrow) |
 | `check` | 1 | Resolved texture path for the tick a multi-select row draws in front of a selected value. Built once per dropdown into inline `\|T…:0\|t ` markup and stored on `dd.__check`. | `Interface\Buttons\UI-CheckBox-Check` |
-| `owner` | **16** | A registered skin owner (an addon folder name): the button, and the shared menu each time this dropdown opens it, wear that owner's skin. See *Skin owners*. | Today's flat skin; an unregistered name is the same. |
+| `owner` | **16** | A registered skin owner (an addon folder name): the button, and the shared menu each time this dropdown opens it, wear that owner's skin, the menu's rows in its body face from 17. See *Skin owners*. | Today's flat skin; an unregistered name is the same. |
+| `panel` | **17** | `true`: the dropdown sits on its owner's settings page, so while the owner ignores its settings panel the button is given back and the menu opens owner-less, live. | A window's dropdown: it keeps the skin. |
 | `glyphFont` | 1 | Resolved font path for the optional leading glyph a row may carry (`opt.glyph`). **A precondition for any option carrying `glyph`** — see *Behavior a host must know* below. | No glyph column is drawn at all: the glyph `FontString` is hidden on every row regardless of whether that row's option has a `glyph`. |
 
 ### `CloseMenu()`
@@ -889,7 +929,7 @@ defaults are filled into a copy.
 |---|---|
 | `parent` | The frame to parent it to. |
 | `width` | The box's width, set **only when it is a number**. Pass `nil` when the host anchors both edges (LootHistory and DropWatcher do). |
-| `opts` | Optional. Four fields, each optional: the three of version 13, and `owner` (16). |
+| `opts` | Optional. Five fields, each optional: the three of version 13, `owner` (16) and `panel` (17). |
 
 | `opts` field | Since | Meaning | With no value |
 |---|---|---|---|
@@ -897,6 +937,7 @@ defaults are filled into a copy.
 | `icon` | 13 | A resolved texture path or a fileID, drawn as an 11x11 mark at the box's left edge (+5px), tinted 0.7, 0.7, 0.72. **Host-passed**: `Widgets.lua` cannot call `LibKa0s-Media-1.0` (see *Why it takes no dependency* above), so a host that passes a Media icon declares that icon's name on its `LibKa0s icons:` line. It adds nothing to the closed set the library draws itself (close, copy, clear, info). Any other type is ignored. | No icon; `box.icon` is `nil`. |
 | `onChange` | 13 | `function(text, box)`, called once per text change, after the hint is toggled. `text` is the box's text, `""` when the client answers `nil`. | Nothing is called. |
 | `owner` | **16** | A registered skin owner: the box, its hint, its focus line and its icon wear that owner's skin, painted after the five scripts are set so the facade's focus hooks run after them. See *Skin owners*. | The flat skin; an unregistered name is the same. |
+| `panel` | **17** | `true`: the box sits on its owner's settings page, so while the owner ignores its settings panel the box, its hint, its focus line and its icon are the flat skin's, live. | A window's box: it keeps the skin. |
 
 ### What it builds
 
@@ -935,14 +976,15 @@ shows, where it sits and what it says.
 | Parameter | Meaning |
 |---|---|
 | `parent` | The frame to parent it to. |
-| `opts` | Optional; anything that is not a table counts as none. Four fields, each optional. |
+| `opts` | Optional; anything that is not a table counts as none. Five fields, each optional. |
 
 | `opts` field | Since | Meaning | With no value |
 |---|---|---|---|
 | `text` | 13 | The host's **localized** line, set once at birth. Later changes go through `strip.text:SetText`. Anything that is not a string counts as none. | `""`. |
 | `icon` | 13 | A resolved texture path or a fileID, drawn as a 12x12 mark at the strip's left edge (+6px), the same for both kinds. **Host-passed**: the adopters pass their own `NS.Icon("info")`, so `info` is a **host-declared** icon, declared on each adopter's `LibKa0s icons:` line, and the closed set the library draws itself stays close, copy, clear, info (`OptionsIdList`'s). Any other type is ignored. There is no fallback. | No mark; the text starts at the strip's left edge (+6px). |
 | `kind` | **14** | `"test"` or `"sim"`: which flavor, read once at birth. Exactly `"sim"` gives the simulation cyan; anything else (a non-string, `"Sim"`, `"preview"`) is `"test"`. | `"test"`, the amber. |
-| `owner` | **16** | A registered skin owner: the wash is that skin's `strip.test` / `strip.sim`. The meaning colors stay the library's; a skin changes only their legibility. | The library's two fills. |
+| `owner` | **16** | A registered skin owner: the wash is that skin's `strip.test` / `strip.sim`. The meaning colors stay the library's; a skin changes only their legibility. From **17** the line is `text.accent` in the skin's body face (`S.Text`), so *Ignore fonts* gives it its template's face back. | The library's two fills. |
+| `panel` | **17** | `true`: the strip sits on its owner's settings page, so while the owner ignores its settings panel the wash is the library's fill and the line its template's, live. | A window's strip: it keeps the skin. |
 
 ### `lib.TEST_STRIP`
 
@@ -1186,8 +1228,9 @@ also spends it in its clamp reach, `HEIGHT + GAP`.
 | Field | Meaning | Absent |
 |---|---|---|
 | `label` **(required)** | the strip's centered text, already localized | empty |
+| `panel` | **DragHandle 7.** `true`: the strip sits on its owner's settings page, so while the owner ignores its settings panel it is minor 5's, live both ways. No consumer's strip does today: a drag handle is a HUD element | a HUD strip: it keeps the skin |
 | `moveFrame` **(required)** | the frame `StartMoving` / `StopMovingOrSizing` are called on | the drag moves nothing |
-| `owner` | **DragHandle 6.** A registered skin owner: the fill, the edge, the label and the marks' tints come from that owner's skin and follow its switches (*Skin owners*); **from DragHandle 7** the tooltip's band colors too (`gtip.title`, `gtip.value`, `gtip.footer`, read at every hover). Not a tooltip owner: that is `tooltipOwner`, and a tooltip descriptor's own `owner` | minor 5's colors |
+| `owner` | **DragHandle 6.** A registered skin owner: the fill, the edge, the label and the marks' tints come from that owner's skin and follow its switches (*Skin owners*); **from DragHandle 7** the tooltip's band colors too (`gtip.title`, `gtip.value`, `gtip.footer`, read at every hover), and the label's face, the skin's body face unless `labelFont` names one, drawn and measured in it. Not a tooltip owner: that is `tooltipOwner`, and a tooltip descriptor's own `owner` | minor 5's colors |
 | `name` | global frame name (`"KCMMacroBarHandle"`) | anonymous |
 | `helpIcon` | resolved texture path for the mark, the host's `Icon("help")` | `Interface\FriendsFrame\InformationIcon` |
 | `canDrag` | `function() -> boolean`, asked at `OnDragStart` | always allowed |
@@ -1546,11 +1589,12 @@ Read on every render and every hover, never written. Every field is optional and
 
 | Field | Default | Meaning |
 |---|---|---|
-| `font` | `"GameFontDisableSmall"` | FontObject name the axis labels are created with. Read when a label is first made, so a change reaches only labels the pool has not made yet. |
+| `font` | `"GameFontDisableSmall"` | FontObject name the axis labels are created with. Read when a label is first made, so a change reaches only labels the pool has not made yet. A host's face is never re-fonted by a skin (**Since 5**). |
 | `onHover` | none | `onHover(chart, index, x)` when the hovered index changes, again on the first hover after a render (**Since 3**, even for the same index), and `onHover(chart, nil, nil)` when a hover clears. `index` is into `data.hoverXs`, `x` is `hoverXs[index]`. The host draws its own tooltip. |
 | `pxPerPoint` | `LINE_CHART.PX_PER_POINT` (2) | **Since 2.** Plot pixels per drawn point: the thinning budget is `floor(plot width / pxPerPoint)`. Larger is smoother and draws fewer segments. A non-positive or non-number value falls to the default. Read on every render. |
 | `formatY` | integer as-is, otherwise `%.2f` | `formatY(v) → string` for each y tick label. |
-| `owner` | none | **Since 4.** A registered skin owner: the axis, grid, crosshair, default marker and default series colors come from `S.ChartStyle()`, the tick labels are tinted `text.disabled`, a series' `colorIndex` indexes `chart.series`, and a skin switch re-renders the chart at its last size (*Skin owners*). |
+| `owner` | none | **Since 4.** A registered skin owner: the axis, grid, crosshair, default marker and default series colors come from `S.ChartStyle()`, the tick labels are tinted `text.disabled`, a series' `colorIndex` indexes `chart.series`, and a skin switch re-renders the chart at its last size (*Skin owners*). **Since 5** the tick labels are in the skin's body face unless `font` names one. |
+| `panel` | none | **Since 5.** `true`: the chart sits on its owner's settings page, so while the owner ignores its settings panel it reads `lib.LINE_CHART` and its labels' template face, live both ways. |
 | `formatX` | `date("%H:%M")` under a day step, otherwise `date("%d %b")` | `formatX(x, step) → string` for each x tick label; `step` is `ChartMath.TimeTicks`'s step in seconds. The day-step default is `date("%d %b")`, whose `%b` is the C runtime's month abbreviation (English), so a localized host should pass `formatX`. |
 
 ### `data`
@@ -1692,9 +1736,10 @@ Read when the handle is made. Every field is **Since 1**.
 | `rowHeight` | `AUTOCOMPLETE.ROW_H` | Row height in pixels. |
 | `minChars` | `AUTOCOMPLETE.MIN_CHARS` | Trimmed characters before the provider is asked. |
 | `debounce` | `AUTOCOMPLETE.DEBOUNCE` | Seconds; never below `AUTOCOMPLETE.DEBOUNCE`. |
-| `font` | `AUTOCOMPLETE.FONT` | Font object the row labels are created with. |
+| `font` | `AUTOCOMPLETE.FONT` | Font object the row labels are created with. A host's face is never re-fonted by a skin (**Since 5**). |
 | `strata` | `AUTOCOMPLETE.STRATA` | The list's frame strata. |
-| `owner` | none | **Since 4.** A registered skin owner: plain rows in `menu.text`, the highlight in `menu.hover`, read on every show (*Skin owners*). |
+| `owner` | none | **Since 4.** A registered skin owner: plain rows in `menu.text`, the highlight in `menu.hover`, read on every show (*Skin owners*); **since 5** the rows in the skin's body face unless `font` names one. |
+| `panel` | none | **Since 5.** `true`: the list hangs under a box on its owner's settings page, so while the owner ignores its settings panel its rows are minor 3's, colors and face, from the next show. |
 
 ### Handle methods
 
