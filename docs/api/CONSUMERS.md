@@ -72,9 +72,12 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
 ## What moved since v1.66.0
 
 **v1.81.0, not in the census (unreleased).** The release adds Skin's `Skin:DrawsKey` (Skin minor 8),
-the public form of v1.80.0's internal `__DrawsKey`. It gets no row here yet, and the v1.75.0 stamp
-and its numbers stand: Ka0s Premade Groups Filter Extension adopts it in Ka0sAddonsCommonTasks
-`docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`'s M2, and the next census re-run measures it.
+the public form of v1.80.0's internal `__DrawsKey`, and `S.PageButton`'s `opts` (SkinPaintControls
+minor 10). It retires v1.80.0's `opts.stockDefault` (SkinPaint minor 12): the key is ignored, so a
+consumer that passes it (Ka0s Quick Comms, Ka0s Skin Tester) paints the Ka0s look under Ka0s Default
+until it drops the key. None gets a row here yet, and the v1.75.0 stamp and its numbers stand: the
+addons adopt them in Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`'s M2, and the
+next census re-run measures them.
 
 **v1.80.0, not in the census (2026-10-29).** The release adds Skin's `Skin:AliasAceType` (SkinAce
 minor 4) and three opt-in surfaces with no member of their own: `RegisterOwner`'s `tokens` (owner

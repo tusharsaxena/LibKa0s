@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 8.16.11.6.9.2.4
+# `LibKa0s-Skin-1.0` — version 8.16.12.6.10.2.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **8** · `SkinDefs.lua` minor **16** · `SkinPaint.lua` minor **11** · `SkinPaintExtras.lua` minor **6** · `SkinPaintControls.lua` minor **9** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
+| Files and minors | `Skin.lua` minor **8** · `SkinDefs.lua` minor **16** · `SkinPaint.lua` minor **12** · `SkinPaintExtras.lua` minor **6** · `SkinPaintControls.lua` minor **10** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
 | Shipped in | unreleased (v1.81.0) |
 | Status | **Current** |
-| Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places and every skin but Ka0s Default drawing HUD text in Friz Quadrata through `KEEP` (SkinDefs minor 15), with a `ResetToSkin` that wrote `FROM_SKIN` into a companion it could not see stored and took no `opts`, with the key an owner draws by only as the internal `__DrawsKey` (Skin minor 7), and with *Ignore fonts* stopping at `P.font`, so `Token`, `Resolve` and `BarStyle` still answered the skin's HUD face and outline while it was on (Skin minor 7, SkinPaintExtras minor 5), and with no settings-panel scope on `S.Text` |
+| Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places and every skin but Ka0s Default drawing HUD text in Friz Quadrata through `KEEP` (SkinDefs minor 15), with a `ResetToSkin` that wrote `FROM_SKIN` into a companion it could not see stored and took no `opts`, with the key an owner draws by only as the internal `__DrawsKey` (Skin minor 7), and with *Ignore fonts* stopping at `P.font`, so `Token`, `Resolve` and `BarStyle` still answered the skin's HUD face and outline while it was on (Skin minor 7, SkinPaintExtras minor 5), with no settings-panel scope on `S.Text`, and with `opts.stockDefault` keeping a template-built target the client's under Ka0s Default (SkinPaint minor 11, SkinPaintControls minor 9), `PageButton` taking no options and `P.unpaint` leaving a title's alignment as the skin set it |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 8, SkinDefs = 16, SkinPaint = 11, SkinPaintExtras = 6, SkinPaintControls = 9, SkinEUI = 2, SkinAce = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 8, SkinDefs = 16, SkinPaint = 12, SkinPaintExtras = 6, SkinPaintControls = 10, SkinEUI = 2, SkinAce = 4 }` |
 
 ## What this major is
 
@@ -74,7 +74,7 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `Skin:SetOverride(owner, font, texture)` | changed | Sets the overrides; nil keeps that half, `false`, `""` or `FROM_SKIN` (`"@skin"`) clears it. Idempotent: the same pair answers false and does nothing. A font override replaces `font.body`, `font.title` and `hud.font` in every token read (`Token`, `Color`, the facade, every primitive: `__Tokens` lays the overrides over the owner's table); `font.mono` stays the skin's (the console and the tables need a monospace face) and so does every size. A texture override replaces `bar.texture` (`BarStyle`, and every bar drawn through it). *Ignore fonts* wins: with it on, `P.font` gives every string its own face, `Token` / `Resolve` / `BarStyle` give the HUD its own face and outline (Skin minor 8), and the font override is kept with no effect. A change repaints every frame recorded for the owner and fires its `OnLooksChanged` listeners, unless a reload is pending (then it is stored and the reload applies it). Never writes the host's profile (`WriteChoice`'s `media` does). A host applies its stored overrides with one `SetOverride` after `RegisterOwner`. `ResolveSkin` stays override-free. **An override that does not resolve** (a key no loaded LibSharedMedia pack registers, and not a file path) is stored, and `GetOverride` answers it, but every token read keeps the skin's own face or texture, so the strings never drop to the client's stock font nor the bars to flat. The first time an override is checked against LibSharedMedia the engine subscribes once to its `LibSharedMedia_Registered` callback; a key registered later repaints and notifies every owner whose override names it (unless a reload is pending). |
 | `Skin:For(owner)` | facade `S` | The owner's facade, `lib.facades[owner]`: one table per owner, kept for the session and across minors. Does not register the owner; an unregistered owner's facade reads Ka0s Default. |
 | `Skin:GetChoice(owner)` | source, skin | The applied choice. An unregistered owner answers `"ka0s", "ka0s"`. |
-| `Skin:DrawsKey(owner)` | key | The key the owner draws by (Skin minor 8): `"eui"` while EllesmereUI paints it (its derived tokens; a refused EllesmereUI included, since the library then paints from them), else the skin key it wears. `DEFAULT` (`"ka0s"`) for Ka0s Default, for a key no skin registers, for an owner on `eui` before EllesmereUI paints it (the live fallback) and for an unregistered owner. Derived on every call, never stored. Lib-level only: no facade member answers it. Minor 7's internal `__DrawsKey` stays one release as an alias of the same function. What `opts.stockDefault` asks, and what a host that keeps its own look stock under Ka0s Default asks instead of rebuilding the answer from `GetChoice` and `GetSkin`. |
+| `Skin:DrawsKey(owner)` | key | The key the owner draws by (Skin minor 8): `"eui"` while EllesmereUI paints it (its derived tokens; a refused EllesmereUI included, since the library then paints from them), else the skin key it wears. `DEFAULT` (`"ka0s"`) for Ka0s Default, for a key no skin registers, for an owner on `eui` before EllesmereUI paints it (the live fallback) and for an unregistered owner. Derived on every call, never stored. Lib-level only: no facade member answers it. Minor 7's internal `__DrawsKey` stays one release as an alias of the same function. What a host that asks which skin an owner draws calls instead of rebuilding the answer from `GetChoice` and `GetSkin`; no primitive asks it since `opts.stockDefault` retired (SkinPaint minor 12). |
 | `Skin:SetChoice(owner, source, skin)` | changed, reload | See *Changing the skin* below. `nil` keeps that half. Never writes the host's profile. |
 | `Skin:PendingReload(owner)` | boolean | True once the owner needs a reload: it left `eui`, or a gate condition failed, after EllesmereUI painted it this session. |
 | `Skin:OnReloadRequest(owner, fn)` | fn | Calls `fn(owner)` once, when `PendingReload` first turns true: on the switch `SetChoice` answers `reload = true` for, or when the gate closes after EllesmereUI painted the owner (read through `GetEUIStatus`). Under pcall; the same function twice is one entry. A caller raises its reload popup from this **or** from `SetChoice`'s answer, not both. |
@@ -803,9 +803,9 @@ answers nil.
 - **Stock art is faded under every skin.** A target that carries template art has it faded and is
   painted from the skin's tokens, Ka0s Default's included (SkinPaint minor 6; until then Ka0s Default
   left a stock target as the client drew it). A custom target (a BackdropTemplate frame the library
-  or the host built) is painted the same way. The one exception is a caller's `opts.stockDefault`
-  (*Stock under Ka0s Default*, below): a target it names stays the client's while the owner draws
-  Ka0s Default.
+  or the host built) is painted the same way. There is no exception: `opts.stockDefault`, which once
+  kept a target the client's under Ka0s Default, is retired (SkinPaint minor 12; *The stock look,
+  retired*, below).
 - **The holder, and fills under the target.** **Edges** (borders, a divider's line, a tab's
   underline, a nav entry's selection bar, a list row's selection outline) go on the **holder**, a child
   frame of the target made once, `SetAllPoints` over it, BackdropTemplate, at the target's frame
@@ -884,8 +884,8 @@ answers nil.
 
 ### Ka0s Default is a skin like the others
 
-Since SkinPaint minor 6 no primitive branches on Ka0s Default unless its caller asks with
-`opts.stockDefault` (SkinPaint minor 11, *Stock under Ka0s Default*): it paints from Ka0s Default's tokens
+Since SkinPaint minor 6 no primitive branches on Ka0s Default (and since SkinPaint minor 12 no caller
+can ask one to; *The stock look, retired*): it paints from Ka0s Default's tokens
 exactly as from any skin's, and those tokens carry the library's own look (Core.SKIN, Widgets' SKIN,
 LootHistory's constants). `tests/test_skin_paint.lua` and `tests/test_skin_paint_controls.lua` pin
 each primitive's Ka0s Default draw against the code it stands for; where a row below says a call is
@@ -931,9 +931,9 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 | `Shell(frame, opts)` | A window. On a backdrop frame, `Core.ApplySkin` with the skin's table (the backdrop with its own edge clear, `frame.title`'s color, `frame.divider`'s); a frame with no backdrop gets its fill as a region. On any frame the edge (`win.border*`, flat, bevel or nine-slice) and the inner rule (`win.inner`, 1px inside the edge) on the edge holder, over the window's children (SkinPaint minor 9; Core's own inner rule is cleared and given back on unpaint), the window gradient, the tiled art, the top bar (unless `opts.noTopBar`) and the bottom bar (`opts.bottomBar`, true or a height), and the title font on `frame.title`. `opts.noBorder` draws no edge and no inner rule. `opts.tokens` remaps `bg`, `border`, `inner`, `top`, `bottom`, `text`, `divider` (*The slot remap*, below; SkinPaint minor 11). | `win.*`, `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.height`, `divider`, `foot.bg`, `font.title` |
 | `Panel(frame, opts)` | A flat panel; `opts.inset` paints it as an inset, `opts.noBg` / `opts.noBorder` leave out a half, `opts.nav` recolors the backdrop the frame already wears. `opts.tokens` remaps `bg` and `border` (SkinPaint minor 11). | `panel.bg`, `panel.border`; `nav.bg`, `nav.border` |
 | `Inset(frame, opts)` | A recessed area. `opts.tokens` remaps `bg` and `border` (SkinPaint minor 11). | `input.bg`, `input.border`, `input.borderStyle`, `input.borderSize` |
-| `FadeRegions(frame, ...)` | Fades every texture region of the frame (and of each further frame) that no primitive made. Ka0s Default fades nothing and puts them back. | none |
-| `FadeNineSlice(frame, opts)` | Fades `frame.NineSlice`'s nine pieces, under every skin. `opts.stockDefault` leaves them while the owner draws Ka0s Default (SkinPaintExtras minor 5). | none |
-| `TitleBar(bar, opts)` | A title bar: the fill (the bar's backdrop, or a region of the bar under its text), its text (`opts.text`, else `bar.title` / `bar.text`) in the title color, font and alignment (the prior alignment put back when the skin sets none). `opts.stockDefault` leaves a template's title bar as the client draws it while the owner draws Ka0s Default, its text's color, font and alignment given back (SkinPaintExtras minor 5). | `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.align`, `font.title` |
+| `FadeRegions(frame, ...)` | Fades every texture region of the frame (and of each further frame) that no primitive made. Under every skin, Ka0s Default included (SkinPaint minor 6). | none |
+| `FadeNineSlice(frame, opts)` | Fades `frame.NineSlice`'s nine pieces, under every skin. | none |
+| `TitleBar(bar, opts)` | A title bar: the fill (the bar's backdrop, or a region of the bar under its text), its text (`opts.text`, else `bar.title` / `bar.text`) in the title color, font and alignment (the prior alignment put back when the skin sets none, and on every give-back since SkinPaint minor 12). | `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.align`, `font.title` |
 | `Divider(target, opts)` | A texture colored in place, or a line filling a frame on its holder; `opts.token` names another color (`section.rule`, `tab.rule`). | `divider` |
 | `Footer(frame, opts)` | A footer band; its text (`opts.text`, else `frame.text`) muted. | `foot.bg`, `text.muted` |
 | `Card(frame, opts)` | A card: `opts.title` in the heading color, `opts.text` in the body color. `opts.tokens` remaps `bg`, `border`, `title`, `text` (SkinPaintExtras minor 5). | `card.bg`, `card.border`, `text.heading`, `text.body` |
@@ -960,8 +960,8 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 | `Slider(slider, opts)` | A slider's track (a 4px bar centered in the slider since SkinPaintControls minor 3, Ka0s Default's host-drawn shape; its edge on the holder, none in every shipped skin), fill (`opts.fill`) and thumb (`opts.thumb`, else its own). Every slider token is nil in Ka0s Default. | `slider.*` |
 | `Tab(tab, opts)` | A tab: its stock art (and `opts.stock`) faded, the backing (`opts.fill`, else a region: the tab art, else the color and gradient), an underline on the holder while selected, the label (`opts.text`, else its own). `opts.selected` is the first state. | `tab.*` |
 | `SetTabSelection(tab, selected)` | Moves a painted tab's state and repaints it; the state lives in the tab's record, so a skin switch keeps it. | as `Tab` |
-| `CloseButton(btn, opts)` | A close control: its art (`btn.icon`, a texture, or `btn.glyph`) at rest and under the pointer. A stock close button has its art faded and an ASCII `x` drawn, under every skin. `opts.own` SetScripts the hover pair. `opts.stockDefault` leaves a stock close button the client's while the owner draws Ka0s Default, its hover inert (SkinPaintControls minor 9). | `close.rest`, `close.hot` |
-| `PageButton(btn, dir)` | A paging arrow (`prev`, `next`, `up`, `down`, `left`, `right`): the button look and the in-client arrow, turned, desaturated and colored `icon.arrow` (`btn.icon` until SkinPaintControls minor 8). | `btn.*`, `icon.arrow` |
+| `CloseButton(btn, opts)` | A close control: its art (`btn.icon`, a texture, or `btn.glyph`) at rest and under the pointer. A stock close button has its art faded and an ASCII `x` drawn, under every skin. `opts.own` SetScripts the hover pair. | `close.rest`, `close.hot` |
+| `PageButton(btn, dir, opts)` | A paging arrow (`prev`, `next`, `up`, `down`, `left`, `right`): the button look and the in-client arrow, turned, desaturated and colored `icon.arrow` (`btn.icon` until SkinPaintControls minor 8). `opts` (SkinPaintControls minor 10) is the box's: `stock` (more art to fade), `noBg`, `noBorder`, replayed on a repaint. | `btn.*`, `icon.arrow` |
 | `SquareIcon(frame, opts)` | An icon button: `opts.crop` trims the icon art (`opts.icon`, else `frame.icon` / `frame.Icon`) to .08-.92; an edge on the holder. | `icon.border` |
 | `IconBorder(frame, opts)` | An icon edge on the holder. Without `opts.fromSkin`, flat and `opts.size` pixels (1 by default), as it always was. With `opts.fromSkin = true` (SkinPaintControls minor 9, LK-04), the skin's icon border: `icon.borderStyle` (`"Solid"` flat, `"None"` none, another LibSharedMedia border key a nine-slice of that art, an unknown key flat 1px) at `icon.borderSize` pixels, and `opts.size` is not read; recorded, so a skin switch repaints style and size. Ka0s Default's is Solid 2px black, Drop Watcher's Window › Icons border. A Ka0s extra: under `eui` the library paints it from the EllesmereUI-derived tokens, where the family is Ka0s Default's. | `icon.border`; with `fromSkin`, `icon.borderStyle`, `icon.borderSize` |
 | `SortHeaderBar(bar, opts)` | A list header: the fill, each of `opts.texts`, each of `opts.arrows` (desaturated, since minor 8). | `list.header.bg`, `list.header.text`, `icon.arrow` |
@@ -1030,47 +1030,37 @@ S.Card(box, { title = head, tokens = { bg = "dw.boxBg", border = "dw.boxEdge" } 
   (`SkinEUI.lua` minor 2): the danger button keeps its meaning. A call without `tokens` goes to
   EllesmereUI as before, and `tokens` is stripped like every Ka0s-only key.
 
-### Stock under Ka0s Default (`opts.stockDefault`)
+### The stock look, retired (`opts.stockDefault`)
 
-**A window that deliberately matches Blizzard's settings window keeps the client's art under Ka0s
-Default** (SkinPaint minor 11, SkinPaintExtras minor 5, SkinPaintControls minor 9, Skin minor 7; LK-05
-of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`, gap QC-G4). Since SkinPaint minor 6 every
-skin, Ka0s Default included, fades a template's art and paints the target, and a host that skipped the
-call under Ka0s Default could not give the frame back on a live switch (`Skin:Untrack` restores
-nothing). Quick Comms' callout popup and icon browser are built on `SettingsFrameTemplate` and were
-ratified as matching the settings window exactly, which no skin touches. `opts.stockDefault = true`
-says so per call:
+**Ka0s Default looks like Ka0s Default everywhere** (SkinPaint minor 12, SkinPaintControls minor 10;
+LK-02 of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, the owner's ruling R-2).
+SkinPaint minor 11 let a caller keep a template-built target the client's while its owner drew Ka0s
+Default (`opts.stockDefault = true`). That is retired: a player who wants the client's look picks the
+WoW Default skin.
+
+- **A stale `stockDefault` is ignored, without error.** No primitive reads the key, so a call that
+  still passes it paints exactly as the same call without it, under every skin, Ka0s Default
+  included: the template's art faded, the target painted from the skin's tokens, its hover and
+  enable hooks live. Nothing validates unknown keys, so nothing raises.
+- **`opts.stock` stays.** It is not a stock look: it is a list of more template art to fade, under
+  every skin (the settings strip's atlas slices on `Tab`, a template window's `Bg` on `Shell`). Only
+  textures are faded; a Frame in the list is dropped, so a frame's art is faded with
+  `FadeRegions(frame)`, which fades that frame's own texture regions:
 
 ```lua
-S.Shell(win, { stockDefault = true, stock = { win.Bg } })          -- NineSlice and Bg
-S.TitleBar(win.NineSlice, { stockDefault = true, text = win.NineSlice.Text, noBg = true })
-S.CloseButton(win.ClosePanelButton, { stockDefault = true })
+S.Shell(win)                                   -- NineSlice faded, the window painted
+S.FadeRegions(win.Bg)                          -- SettingsFrameTemplate's Bg is a Frame
+S.TitleBar(win.NineSlice, { text = win.NineSlice.Text, noBg = true })
+S.CloseButton(win.ClosePanelButton)            -- art faded, an "x" drawn
 ```
 
-- **Which primitives take it.** Every primitive that marks a stock target: `Shell`, `Panel`, `Inset`,
-  `Button`, `EditBox`, `Dropdown`, `Slider`, `Tab` and `CloseButton` (`P.stockDefault`), and
-  `TitleBar` and `FadeNineSlice` (`P.keepStock`). `PageButton` takes no options and `Checkbox` always
-  draws its own box, so neither does. Pass it on **every** call on one target: the give-back is the
-  target's whole paint, and the stock mark is the target's, shared by every primitive and owner that
-  paints it. A second call on the same target without the option paints and clears the mark. The
-  mark leaves with the paint it stood for: an owner change, a `Skin:Untrack` and every give-back
-  clear it, so a later primitive that never asks for stock is never left with inert hooks.
-- **While the owner draws Ka0s Default** (`Skin:DrawsKey(owner) == "ka0s"`) the call
-  paints nothing and gives back anything the library painted on the target before: faded art back to
-  its alpha, fonts, text and vertex colors, a saved backdrop, a title's alignment, every library
-  region hidden. So a live switch back to Ka0s Default is the stock window again. The target stays
-  recorded, so a later switch to another skin paints it, and its hover and enable hooks (and a
-  library close button's `own` pair) do nothing while it is kept stock.
-- **Under every other skin** the call paints exactly as without the option.
-- **Under the eui source.** While EllesmereUI paints the owner, a call goes to EllesmereUI as any
-  call does, `stockDefault` stripped with every Ka0s-only key, so the window is EllesmereUI's. Before
-  EllesmereUI paints (the live fallback, the owner's Ka0s skin) a Ka0s Default fallback keeps it
-  stock. When EllesmereUI is refused (fail closed) the owner still draws the EllesmereUI-derived
-  tokens, so the library paints the window with its own technique: never stock.
-- **Without the option, or with `false`,** every primitive paints exactly as before, Ka0s Default
-  included.
-- A backdrop window `Shell` paints through `Core.ApplySkin` is not a template-built window: its title
-  and divider colors are Core's, which the give-back does not reach.
+- **`PageButton` forwards its opts** (`PageButton(btn, dir, opts)`): `stock`, `noBg` and `noBorder`
+  reach its box, as on `Button`.
+- **The give-back restores a title's alignment.** `P.unpaint` (an owner change, *Ignore settings
+  panel*, an EllesmereUI hand-over) puts back every text alignment a `TitleBar` set.
+- **The per-owner exception stays.** *Ignore settings panel* (`Skin:SetIgnore`) hands the settings
+  panel back to the client's look by the player's choice, under every skin; it is a different
+  mechanism and is unchanged.
 
 Cases: `tests/test_skin_stock_default.lua`.
 
@@ -1506,13 +1496,13 @@ facade, the Ka0s extras repaint from its getters) and fires the owner's `OnLooks
 - **Ka0s-only options are stripped.** EllesmereUI sees only the keys it reads: `Shell`'s `noBorder`,
   `noTopBar`, `bottomBar`; `Panel`'s `inset`, `noBorder`, `noBg`; `EditBox`'s `padInput`,
   `noBorder`; `Checkbox`'s `stockCheck`; and `Button`'s array of region names (its `keepKeys`). Any
-  other options table (`primary`, `role`, `stockDefault`, ...) is dropped. The record keeps the caller's arguments
+  other options table (`primary`, `role`, ...) is dropped. The record keeps the caller's arguments
   whole.
 - **Pooled and shared objects are never handed to EllesmereUI.** An AceGUI widget or its frame
   (AceGUI sets `frame.obj`), a region of such a frame, and any `__MarkShared` target or a region of one
   keep the library's technique, colored from EllesmereUI's getters, because EllesmereUI's paint is
   one-way and a pooled frame would carry it into another addon. Under `eui`, a stock target there is
-  painted (Ka0s Default's stock rule does not apply while EllesmereUI paints the owner).
+  painted.
 
 ### Fail closed
 

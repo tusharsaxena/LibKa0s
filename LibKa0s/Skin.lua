@@ -95,6 +95,8 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- `__DrawsKey` stays one release as its alias. And Ignore fonts reaches the HUD (LK-01, R-1, D-09):
 -- while the owner ignores fonts, `Token` answers nil for `hud.font` and `hud.outline` and `Resolve`
 -- answers the stored value for them (nil for a stored FROM_SKIN), whatever the companion says.
+-- And the stock look is retired (LK-02, R-2): no primitive reads `opts.stockDefault` any more
+-- (SkinPaint minor 12), so the library itself no longer asks `DrawsKey`; a host may.
 local MAJOR, MINOR = "LibKa0s-Skin-1.0", 8
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -771,9 +773,8 @@ end
 --- The key `owner` draws by: "eui" while EllesmereUI paints it (its derived tokens, the library's
 --- technique when EllesmereUI is refused included), else the skin key it wears (`lib.DEFAULT` for
 --- Ka0s Default, for a key no skin registers, and for an owner on `eui` before EllesmereUI paints
---- it: the live fallback). An unregistered owner answers `lib.DEFAULT`. What a primitive's
---- `opts.stockDefault` asks (minor 7, LK-05 of the skinning rollout); public since minor 8 (R-9),
---- lib-level and never a facade member.
+--- it: the live fallback). An unregistered owner answers `lib.DEFAULT`. Minor 7 (LK-05 of the
+--- skinning rollout); public since minor 8 (R-9), lib-level and never a facade member.
 function lib:DrawsKey(owner)
   local _, key = baseOf(owner)
   return key

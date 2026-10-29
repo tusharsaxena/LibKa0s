@@ -1,13 +1,13 @@
 {
   "major": "LibKa0s-Skin-1.0",
-  "versionKey": "8.16.11.6.9.2.4",
+  "versionKey": "8.16.12.6.10.2.4",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Skin", "minor": 8 },
     { "file": "SkinDefs", "minor": 16 },
-    { "file": "SkinPaint", "minor": 11 },
+    { "file": "SkinPaint", "minor": 12 },
     { "file": "SkinPaintExtras", "minor": 6 },
-    { "file": "SkinPaintControls", "minor": 9 },
+    { "file": "SkinPaintControls", "minor": 10 },
     { "file": "SkinEUI", "minor": 2 },
     { "file": "SkinAce", "minor": 4 }
   ],

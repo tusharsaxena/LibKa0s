@@ -17,16 +17,16 @@ follow-ups (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, M1)
 to `LK-11` that meet the owner's rulings `R-1` to `R-11` on the nine follow-ups v1.80.0's run
 listed. Not tagged.
 
-Versions in this release: **Skin minor 8**, **SkinDefs minor 16** and **SkinPaintExtras minor 6**
-(`LibKa0s-Skin-1.0` key
-**8.16.11.6.9.2.4**) and **WidgetsReorder minor 3** (`LibKa0s-Widgets-1.0` key **16.3.6.4.4.1**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
+Versions in this release: **Skin minor 8**, **SkinDefs minor 16**, **SkinPaint minor 12**,
+**SkinPaintExtras minor 6** and **SkinPaintControls minor 10** (`LibKa0s-Skin-1.0` key
+**8.16.12.6.10.2.4**) and **WidgetsReorder minor 3** (`LibKa0s-Widgets-1.0` key **16.3.6.4.4.1**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
 until an entry below moves one.
 Still **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
 
 ### SkinDefs minor 16: the quality colors are the client's exactly
 
-`LibKa0s-Skin-1.0` key 8.16.11.6.9.2.4, documented in
-[docs/api/Skin/version-8.16.11.6.9.2.4-docs.md](docs/api/Skin/version-8.16.11.6.9.2.4-docs.md)
+`LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, documented in
+[docs/api/Skin/version-8.16.12.6.10.2.4-docs.md](docs/api/Skin/version-8.16.12.6.10.2.4-docs.md)
 (*Semantic*; LK-09, ruling R-8). Ka0s Default's `q.*` tokens were the client's
 `ITEM_QUALITY_COLORS` rounded to two places, so a library-drawn epic was `#a336ed` beside the
 client's `#a335ee`. Each is now the client's hex divided by 255, written out in SkinDefs (never read
@@ -56,7 +56,7 @@ pins every skin's face and its family, the shipped-file check now covers `hud.fo
 
 ### Skin minor 8: `ResetToSkin` sets an absent companion, never the sentinel
 
-`LibKa0s-Skin-1.0` key 8.16.11.6.9.2.4, the same document (*FROM_SKIN*; LK-07, ruling R-6, decision
+`LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, the same document (*FROM_SKIN*; LK-07, ruling R-6, decision
 D-19). A raw profile holds only what differs from the AceDB defaults, so a `<key>FromSkin` companion
 new in a release, or equal to its default `false`, is absent. Minor 7 recognized a companion only
 when it was stored: one named directly and absent took `"@skin"`, which `Resolve` reads as not
@@ -68,7 +68,7 @@ still takes the sentinel, as before. Two cases in `tests/test_skin.lua` pin both
 
 ### Skin minor 8: `Skin:DrawsKey(owner)` is public
 
-`LibKa0s-Skin-1.0` key 8.16.11.6.9.2.4, the same document (*Members*; LK-10, ruling R-9, decision
+`LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, the same document (*Members*; LK-10, ruling R-9, decision
 D-16). The key an owner draws by was the internal `Skin:__DrawsKey`, so a host that keeps its own
 look stock under Ka0s Default (Premade Groups Filter Extension's `NS.SkinDrawsDefault`) rebuilt the
 answer from `GetChoice`, its own EllesmereUI check and `GetSkin`. `Skin:DrawsKey(owner)` now answers
@@ -80,7 +80,7 @@ moves). Two cases in `tests/test_skin.lua` pin it; the Skin manifest gains `Draw
 
 ### Skin minor 8, SkinPaintExtras minor 6: Ignore fonts reaches the HUD
 
-`LibKa0s-Skin-1.0` key 8.16.11.6.9.2.4, the same document (*Members*, *HUD*, *FROM_SKIN*; LK-01,
+`LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, the same document (*Members*, *HUD*, *FROM_SKIN*; LK-01,
 ruling R-1, decision D-09). "Ignore fonts" was asked only by `P.font`, so a HUD element set to follow
 the skin's font still drew the skin's face and outline. Now, while the owner ignores fonts,
 `Resolve` answers the stored value for `hud.font` and `hud.outline` whatever the companion says (nil
@@ -94,7 +94,7 @@ pin it.
 
 ### SkinPaintExtras minor 6, WidgetsReorder minor 3: `S.Text` and the reorder list obey the panel scope
 
-`LibKa0s-Skin-1.0` key 8.16.11.6.9.2.4, the same document (*Members*, `SetIgnore`; *The primitives*,
+`LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, the same document (*Members*, `SetIgnore`; *The primitives*,
 `Text`), and `LibKa0s-Widgets-1.0` key 16.3.6.4.4.1, documented in
 [docs/api/Widgets/version-16.3.6.4.4.1-docs.md](docs/api/Widgets/version-16.3.6.4.4.1-docs.md)
 (LK-05, ruling R-5, decisions D-01 and D-02). "Ignore settings panel" reached the AceGUI rows and
@@ -105,13 +105,33 @@ color and font and nothing is painted, and since the call stays recorded `SetIgn
 turns it live both ways. Without `opts.panel` Text paints as before, because it also draws window
 strings, which wear the skin whatever that switch says (D-01). The test is the public
 `Skin:GetIgnore(owner)` panel half, so an unregistered owner keeps reading Ka0s Default. It is one
-helper, `P.panelIgnored` (in SkinPaintExtras, independent of `P.keepStock`), that the other custom
+helper, `P.panelIgnored` (in SkinPaintExtras), that the other custom
 widgets can share. `ReorderList` is panel-scoped **by default**, because every consumer puts it on
 a settings page: while its owner ignores its panel every color is minor 1's, the ghost included, and
 the page's re-render on the switch builds a controller that reads the new answer.
 `opts.panel = false` opts a list on a window out. *Ignore fonts* already reached `S.Text` through
 `P.font`, and the reorder ghost's text has no skin face. Four cases in `tests/test_skin_paint.lua`
 and two in `tests/test_widgets_skin.lua` pin it.
+
+### SkinPaint minor 12, SkinPaintExtras minor 6, SkinPaintControls minor 10: the stock look is retired
+
+`LibKa0s-Skin-1.0` key 8.16.12.6.10.2.4, the same document (*The stock look, retired*, *The
+primitives*; LK-02, ruling R-2, decisions D-04 and D-08). v1.80.0's `opts.stockDefault` kept a
+template-built target as the client drew it while its owner drew Ka0s Default, and only in part:
+`Checkbox`, `FadeRegions`, the text primitives and `PageButton` could not keep stock. R-2 retires it:
+Ka0s Default looks like Ka0s Default everywhere, and a player who wants the client's look picks WoW
+Default. `P.keepStock` and its `stockKept` mark are gone, and so are the guards that made a kept
+target's hover and enable hooks inert; `P.stockDefault` is now `P.markStock`, which only sets the
+`stock` mark `Shell` and `CloseButton` read. No primitive reads `stockDefault`, so a stale key is
+ignored without error and the target paints exactly as the same call without it. `opts.stock` stays:
+it is the list of more template art to fade, under every skin, and the library's own settings strip
+depends on it; the doc's example that handed it a Frame (which the list drops) is corrected to
+`FadeRegions`. `S.PageButton(btn, dir, opts)` now forwards `stock`, `noBg` and `noBorder` to its box,
+replayed on a repaint. `P.unpaint` gives back the text alignment a `TitleBar` set, so a title handed
+to another owner or given back keeps its own alignment (TitleBar's private `unjustify` goes with
+`keepStock`). The `FadeRegions` doc row, which still said Ka0s Default fades nothing, now says what
+the code has done since SkinPaint minor 6. `tests/test_skin_stock_default.lua` is rewritten to pin
+the retirement: nine cases.
 
 ### What a consumer owes
 
@@ -132,6 +152,12 @@ and two in `tests/test_widgets_skin.lua` pin it.
   reorder list's owner while the panel was ignored (`KCM.SkinPanelOwner()`) passes the owner
   plainly. MultiMeters' and LootHistory's reorder lists now draw as minor 1 did under "Ignore
   settings panel" with no change of their own, so their smoke checks move with it.
+- **LK-02:** a host that passes `opts.stockDefault` (Ka0s Quick Comms' popup and browser, Ka0s
+  Skin Tester's showroom) drops the key; until it does, the target paints the Ka0s look under Ka0s
+  Default with no error. A host that put a Frame in `opts.stock` fades it with
+  `S.FadeRegions(frame)` instead. A paging arrow that wants `noBorder` or more art faded passes it
+  as `PageButton`'s third argument. Smoke checks that expected the client's art under Ka0s Default
+  move to the Ka0s look.
 - **LK-10:** a host that rebuilds "does this owner draw Ka0s Default" asks
   `Skin:DrawsKey(owner) == Skin.DEFAULT` instead, guarded by `type(Skin.DrawsKey) == "function"`
   where an older copy may load first. A call to `__DrawsKey` keeps working this release; move it.

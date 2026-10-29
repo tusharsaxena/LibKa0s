@@ -48,7 +48,11 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- button). Then, still minor 9: IconBorder's `opts.fromSkin` draws the skin's icon border family
 -- (`icon.borderStyle`, `icon.borderSize`; LK-04), and a target kept stock by `opts.stockDefault`
 -- (SkinPaint minor 11's P.keepStock; LK-05) is not live to its hover pair.
-local CONTROLS_MINOR = 9
+-- Minor 10 (LK-02 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, ruling R-2): the
+-- stock look is retired. Button, EditBox, Dropdown, Slider, Tab, CloseButton and PageButton ignore a
+-- stale `opts.stockDefault` and paint under Ka0s Default as under every skin, their hooks live
+-- (SkinPaint minor 12's P.markStock); and PageButton takes `opts` (`stock`, `noBg`, `noBorder`).
+local CONTROLS_MINOR = 10
 if lib.__controlsMinor and lib.__controlsMinor >= CONTROLS_MINOR
   and lib.__controlsShellMinor == lib.MINOR then return end
 lib.__controlsMinor      = CONTROLS_MINOR
@@ -73,12 +77,7 @@ local INPUT = { fill = "input.bg", border = "input.border", style = "input.borde
                 size = "input.borderSize" }
 
 --- The live record of `frame`, for a hook: nil once the frame was released.
--- A painted target's record, or nil while it is kept stock (`opts.stockDefault`, SkinPaint minor 11).
-local function live(frame)
-  local r = lib.painted[frame]
-  if r and r.regions.stockKept then return nil end
-  return r
-end
+local function live(frame) return lib.painted[frame] end
 
 --- Recolor a box's edge: the backdrop's, or the holder's flat edges.
 local function edgeColor(rec, frame, c)
@@ -155,15 +154,15 @@ local function buttonHover(btn, rec, on) buttonLabel(btn, rec, on) end
 --- S.Button(btn, keepKeys | opts): a push button. The flat-control box from `btn.*` (or
 --- `btnPrimary.*` with `opts.primary`): backdrop, gradient, non-flat edge on the holder; the stock
 --- textures faded unless kept (`keepKeys == true` or `opts.keep`); the label in `btn.text` and the
---- body font, `btn.hover` under the pointer; `btn.icon` (a texture) in `btn.icon`. Ka0s Default
---- leaves a stock-template button stock. `opts.tokens` (minor 9) remaps `bg`, `border`, `text`,
+--- body font, `btn.hover` under the pointer; `btn.icon` (a texture) in `btn.icon`, under every
+--- skin, Ka0s Default included. `opts.tokens` (minor 9) remaps `bg`, `border`, `text`,
 --- `hover`, `icon` and `disabled` to a library or owner token by NAME (a danger button), for the
 --- first paint, every repaint and the hover and enable hooks. Draws no Media icon.
 prim.Button = function(owner, btn, a)
   if not P.isFrame(btn) then return end
   local rec = P.track(owner, btn, "Button", a)
   local opts = buttonOpts(a)
-  if P.stockDefault(owner, rec, btn, opts) then return end
+  P.markStock(rec, btn, opts)
   rec.regions.primary = opts.primary == true
   rec.regions.btnTokens = type(opts.tokens) == "table" and opts.tokens or nil
   local T = buttonTokens(owner, rec)
@@ -219,7 +218,7 @@ prim.EditBox = function(owner, eb, opts)
   if not P.isFrame(eb) then return end
   local rec = P.track(owner, eb, "EditBox", opts)
   opts = type(opts) == "table" and opts or {}
-  if P.stockDefault(owner, rec, eb, opts) then return end
+  P.markStock(rec, eb, opts)
   local T = P.T(owner)
   P.fadeAll(rec, P.stockRegions(eb, opts))
   P.box(rec, eb, T, INPUT, opts)
@@ -298,7 +297,7 @@ prim.Checkbox = function(owner, cb, opts)
   if not P.isFrame(cb) then return end
   local rec = P.track(owner, cb, "Checkbox", opts)
   opts = type(opts) == "table" and opts or {}
-  -- No stockDefault here (minor 2): Ka0s Default draws its own square box too.
+  -- Ka0s Default draws its own square box too (minor 2), as every skin does.
   local T = P.T(owner)
   P.fadeAll(rec, P.stockRegions(cb, opts, CHECK_GETTERS))
   local inset = type(opts.borderInset) == "number" and opts.borderInset or 0
@@ -326,7 +325,7 @@ prim.Dropdown = function(owner, dd, opts)
   if not P.isFrame(dd) then return end
   local rec = P.track(owner, dd, "Dropdown", opts)
   opts = type(opts) == "table" and opts or {}
-  if P.stockDefault(owner, rec, dd, opts) then return end
+  P.markStock(rec, dd, opts)
   local T = P.T(owner)
   P.fadeAll(rec, P.stockRegions(dd, opts))
   P.box(rec, dd, T, INPUT, opts)
@@ -425,7 +424,7 @@ prim.Slider = function(owner, slider, opts)
   if not P.isFrame(slider) then return end
   local rec = P.track(owner, slider, "Slider", opts)
   opts = type(opts) == "table" and opts or {}
-  if P.stockDefault(owner, rec, slider, opts) then return end
+  P.markStock(rec, slider, opts)
   local T = P.T(owner)
   if T["slider.track"] then
     P.fadeAll(rec, P.stockRegions(slider, opts))
@@ -481,7 +480,7 @@ end
 --- `tab.onTexture` / `tab.texture` art, else `tab.onBg` / `tab.bg` and its gradient; a `tab.onLine`
 --- underline on the holder while selected; the label (`opts.text`, else the tab's own) in
 --- `tab.onText` / `tab.text` and the body font. `opts.selected` is the first state;
---- `S.SetTabSelection` moves it. Ka0s Default leaves a stock tab stock. Draws no Media icon.
+--- `S.SetTabSelection` moves it. Draws no Media icon.
 prim.Tab = function(owner, tab, opts)
   if not P.isFrame(tab) then return end
   local rec = P.track(owner, tab, "Tab", opts)
@@ -490,7 +489,7 @@ prim.Tab = function(owner, tab, opts)
     or not (lib.__repainting or rec.regions.keepSelection)) then
     rec.regions.selected = opts.selected == true
   end
-  if P.stockDefault(owner, rec, tab, opts) then return end
+  P.markStock(rec, tab, opts)
   local T, selected = P.T(owner), rec.regions.selected == true
   P.fadeAll(rec, P.stockRegions(tab, opts))
   tabFill(rec, tab, T, opts, selected)
@@ -531,7 +530,7 @@ local function closeHover(btn, rec, on)
   if art and c then art[method](art, rgb(c)) end
 end
 
--- A stock close button away from Ka0s Default: its art faded, an ASCII "x" drawn in its place
+-- A stock close button, under every skin: its art faded, an ASCII "x" drawn in its place
 -- (the shipped library's player-facing strings stay ASCII; Core's multiplication sign is the one
 -- ratified exception, tests/test_prose.lua).
 local function closeGlyph(rec, btn)
@@ -544,16 +543,14 @@ end
 
 --- S.CloseButton(btn, opts): a window's close control. Its art (`btn.icon`, a texture, or
 --- `btn.glyph`, a font string) in `close.rest`, `close.hot` under the pointer. A stock close button
---- (the client's template) is left stock in Ka0s Default; elsewhere its art is faded and an "x"
---- glyph drawn. `opts.own` (a button the library built, Core.MakeCloseButton's) SetScripts the hover pair
---- as Core does; otherwise it is HookScript'd. `opts.stockDefault` (minor 9, LK-05) leaves a stock
---- close button the client's while the owner draws Ka0s Default, its hover inert. Draws no Media
---- icon (Core's `close` icon is the caller's).
+--- (the client's template) has its art faded and an "x" glyph drawn, under every skin. `opts.own` (a
+--- button the library built, Core.MakeCloseButton's) SetScripts the hover pair as Core does;
+--- otherwise it is HookScript'd. Draws no Media icon (Core's `close` icon is the caller's).
 prim.CloseButton = function(owner, btn, opts)
   if not P.isFrame(btn) then return end
   local rec = P.track(owner, btn, "CloseButton", opts)
   opts = type(opts) == "table" and opts or {}
-  if P.stockDefault(owner, rec, btn, opts) then return end
+  P.markStock(rec, btn, opts)
   if rec.regions.stock then
     P.fadeAll(rec, P.stockRegions(btn, opts))
     closeGlyph(rec, btn)
@@ -573,16 +570,18 @@ end
 local PAGE_ROTATION = { prev = math.pi, left = math.pi, next = 0, right = 0,
                         up = math.pi / 2, down = -math.pi / 2 }
 
---- S.PageButton(btn, dir): a paging arrow ("prev", "next", "up", "down"; "left", "right"). The
---- Button look, plus an in-client arrow (`ChatFrameExpandArrow`, turned to `dir`) in `btn.icon`.
---- Ka0s Default leaves a stock-template arrow button stock. Draws no Media icon.
-prim.PageButton = function(owner, btn, dir)
+--- S.PageButton(btn, dir, opts): a paging arrow ("prev", "next", "up", "down"; "left", "right").
+--- The Button look, plus an in-client arrow (`ChatFrameExpandArrow`, turned to `dir`) in
+--- `btn.icon`. `opts` (minor 10) is Button's box options: `stock` (more art to fade), `noBg`,
+--- `noBorder`, replayed on a repaint. Draws no Media icon.
+prim.PageButton = function(owner, btn, dir, opts)
   if not P.isFrame(btn) then return end
-  local rec = P.track(owner, btn, "PageButton", dir)
-  if P.stockDefault(owner, rec, btn) then return end
+  local rec = P.track(owner, btn, "PageButton", dir, opts)
+  opts = type(opts) == "table" and opts or {}
+  P.markStock(rec, btn, opts)
   local T = P.T(owner)
-  P.fadeAll(rec, P.stockRegions(btn))
-  P.box(rec, btn, T, BTN)
+  P.fadeAll(rec, P.stockRegions(btn, opts))
+  P.box(rec, btn, T, BTN, opts)
   local t = P.tex(rec, "arrow", btn, "OVERLAY")
   if not t then return end
   t:ClearAllPoints()

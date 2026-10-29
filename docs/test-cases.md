@@ -614,15 +614,15 @@ Total.
 
 ### test_skin_stock_default.lua (9)
 
-- skin stock default: under Ka0s Default a SettingsFrameTemplate window stays the client's
-- skin stock default: another skin paints it, and a switch back gives the stock window back
-- skin stock default: TitleBar gives back the title's justification with its color
-- skin stock default: a stock target's hover and enable hooks do nothing under Ka0s Default
-- skin stock default: the stock mark leaves with the record: an Untrack or another owner clears it
-- skin stock default: Slider, EditBox and Tab take the option through the same mechanism
-- skin stock default: without the option Ka0s Default paints exactly as before
-- skin stock default: under eui the window goes to EllesmereUI; its fallback is stock
-- skin stock default: a refused EllesmereUI (fail closed) is the library's paint, never stock
+- skin stock retired: under Ka0s Default a stale stockDefault window is painted the Ka0s look
+- skin stock retired: a stale stockDefault paints exactly as the same calls without it
+- skin stock retired: every primitive that once read stockDefault ignores it without error
+- skin stock retired: a stale stockDefault target's hover and enable hooks run under Ka0s Default
+- skin stock retired: opts.stock stays the fade list under Ka0s Default
+- skin stock retired: PageButton forwards stock, noBorder and noBg, and a repaint replays them
+- skin stock retired: P.unpaint gives a TitleBar's text alignment back
+- skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
+- skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
 ### test_skin_defs.lua (30)
 

@@ -29,16 +29,18 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- slot remap (`bg`, `border`, `title`, `text`; SkinPaint minor 11's P.remap), and the two faders,
 -- moved here unchanged from SkinPaint.lua, which they would have taken into layout-§1's band.
 -- Then (LK-05 of the same run, still minor 5): TitleBar's and FadeNineSlice's `opts.stockDefault`
--- (SkinPaint minor 11's P.keepStock), and Panel and Inset, moved here unchanged from SkinPaint.lua
--- for the same reason. And (LK-01's review, still minor 5): S.Text takes an owner or library token
+-- (SkinPaint minor 11's P.keepStock, retired at SkinPaint minor 12), and Panel and Inset, moved here
+-- unchanged from SkinPaint.lua for the same reason. And (LK-01's review, still minor 5): S.Text takes an owner or library token
 -- NAME as well as a role, so an owner token is drawn through a tracked, replayed primitive.
 -- Minor 6 (LK-01 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, ruling R-1):
 -- BarStyle's `font`, `fontKey` and `outline` are nil while the owner ignores fonts, read through
 -- `Skin:Token` like every host read, so the host's own setting stands.
 -- Then (LK-05 of the same run, ruling R-5, decision D-02, still minor 6): P.panelIgnored, the
 -- settings-panel scope every primitive and widget can share, and S.Text's `opts.panel`. It lives here
--- rather than beside SkinPaint.lua's P.keepStock, which LK-02 retires and which it never calls, so
--- SkinPaint.lua stays out of layout-§1's 1000-line band and keeps its minor.
+-- rather than in SkinPaint.lua, so that file stays out of layout-§1's 1000-line band.
+-- Then (LK-02 of the same run, ruling R-2, still minor 6): the stock look is retired. TitleBar,
+-- FadeNineSlice, Panel and Inset ignore a stale `opts.stockDefault` and paint under Ka0s Default as
+-- under every skin (SkinPaint minor 12, which gives a TitleBar's alignment back in P.unpaint).
 local EXTRAS_MINOR = 6
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
@@ -57,7 +59,7 @@ local rgba = P.rgba
 --- facade keeps reading Ka0s Default). Then everything the target wears from the library is given
 --- back (P.unpaint) and the caller paints nothing. The call stays recorded, so `SetIgnore`'s repaint
 --- replays it and the switch is live both ways. Without `opts.panel` it answers false: a window wears
---- the skin whatever that switch says (D-01). Independent of P.keepStock.
+--- the skin whatever that switch says (D-01).
 function P.panelIgnored(owner, rec, frame, opts)
   if not (rec and type(opts) == "table" and opts.panel == true) then return false end
   if type(lib.GetIgnore) ~= "function" or lib:GetIgnore(owner) ~= true then return false end
@@ -92,25 +94,14 @@ local function justify(rec, fs, align)
   end
 end
 
--- Give back every alignment `justify` set (a TitleBar kept stock, minor 5).
-local function unjustify(rec)
-  local priors = P.saved(rec, "justify")
-  for fs, align in pairs(priors) do
-    fs:SetJustifyH(align)
-    priors[fs] = nil
-  end
-end
-
 --- S.TitleBar(bar, opts): a title bar. Its fill is `title.bg` (or the `title.bgTop` / `bgBottom`
 --- gradient), the bar's backdrop when it has one, else a region of the bar under its text; its text (`opts.text`, else
---- `bar.title` / `bar.text`) takes `title.text`, the title font and `title.align`. `opts.stockDefault`
---- (minor 5, LK-05) leaves a template's title bar as the client draws it while the owner draws Ka0s
---- Default, the text's color, font and alignment given back. Draws no Media icon.
+--- `bar.title` / `bar.text`) takes `title.text`, the title font and `title.align`, every one given
+--- back by P.unpaint (the alignment since SkinPaint minor 12). Draws no Media icon.
 prim.TitleBar = function(owner, bar, opts)
   if type(bar) ~= "table" then return end
   local rec = P.track(owner, bar, "TitleBar", opts)
   opts = type(opts) == "table" and opts or {}
-  if P.keepStock(owner, rec, bar, opts) then return unjustify(rec) end
   local T = P.T(owner)
   P.box(rec, bar, T, TITLE, opts)
   local fs = textOf(bar, opts, "text", { "title", "text" })
@@ -262,7 +253,7 @@ local function panel(owner, frame, opts, name, spec)
   if type(frame) ~= "table" then return end
   local rec = P.track(owner, frame, name, opts)
   opts = type(opts) == "table" and opts or {}
-  if P.stockDefault(owner, rec, frame, opts) then return end
+  P.markStock(rec, frame, opts)
   local T = P.T(owner)
   if opts.nav then
     -- The settings nav rail keeps its own backdrop art and is recolored (OptionsNav's pane); its
@@ -291,7 +282,8 @@ prim.Inset = function(owner, frame, opts) return panel(owner, frame, opts, "Inse
 -- ── the stock-art faders (SkinPaint.lua's until its minor 11) ───────────────────────────────
 
 --- S.FadeRegions(frame, ...): fade every texture region of `frame` (and of each further frame) that
---- no primitive made, prior alphas recorded, under every skin (Ka0s Default too since minor 6).
+--- no primitive made, prior alphas recorded, under every skin, Ka0s Default included (SkinPaint
+--- minor 6).
 prim.FadeRegions = function(owner, frame, ...)
   if not P.isFrame(frame) then return end
   local rec = P.track(owner, frame, "FadeRegions", ...)
@@ -306,13 +298,11 @@ prim.FadeRegions = function(owner, frame, ...)
   end
 end
 
---- S.FadeNineSlice(frame, opts): fade the nine pieces of `frame.NineSlice`, under every skin;
---- `opts.stockDefault` (minor 5, LK-05) leaves them, and gives them back, while the owner draws Ka0s
---- Default.
+--- S.FadeNineSlice(frame, opts): fade the nine pieces of `frame.NineSlice`, under every skin, Ka0s
+--- Default included.
 prim.FadeNineSlice = function(owner, frame, opts)
   if not P.isFrame(frame) then return end
   local rec = P.track(owner, frame, "FadeNineSlice", opts)
-  if P.keepStock(owner, rec, frame, opts) then return end
   rec.regions.stock = true
   local ns = rawget(frame, "NineSlice")
   if not P.isFrame(ns) then return end
