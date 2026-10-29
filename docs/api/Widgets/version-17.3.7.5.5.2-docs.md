@@ -96,6 +96,19 @@ ignored (ConsumableMaster's `KCM.SkinPanelOwner()`) may pass its owner plainly. 
 owner in (MultiMeters' Columns page, LootHistory's lists) now draws those lists as minor 1 did under
 "Ignore settings panel", which is the setting's meaning; its smoke checks move with it.
 
+## What a consumer owes at 17.3.7.5.5.2
+
+- **Check each reorder list's scope** (Reorder 3). A `ReorderList` is panel-scoped by default, so
+  under its owner's *Ignore settings panel* it draws as an owner-less list does. A list on a settings
+  page needs nothing (ConsumableMaster's `settings/Category.lua`, `MacroBar.lua` and
+  `StatPriority.lua`, KickCD's `settings/Spells.lua`, MultiMeters' `settings/ColumnBlocks.lua` and
+  Ka0s Quick Comms' `settings/Editors.lua` at this version's writing, and LootHistory's
+  `NS.MakeReorderList` wrapper, which has no caller). A list on a window passes `panel = false` so it
+  keeps the skin whatever the switch says.
+- **Nothing else is owed.** The drag handle's tooltip colors, the controls' scope and the copy
+  window's grip need no host change; a host that colored those lines or that grip itself may drop
+  its own coloring.
+
 ## What changed at 16.2.6.4.4.1
 
 **Every widget takes a skin owner, and the copy window has a file of its own.** `Widgets.lua` moves

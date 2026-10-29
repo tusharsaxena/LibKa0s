@@ -74,8 +74,12 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
 **v1.81.0, not in the census (unreleased).** The release adds Skin's `Skin:DrawsKey` (Skin minor 8),
 the public form of v1.80.0's internal `__DrawsKey`, and `S.PageButton`'s `opts` (SkinPaintControls
 minor 10). It retires v1.80.0's `opts.stockDefault` (SkinPaint minor 12): the key is ignored, so a
-consumer that passes it (Ka0s Quick Comms, Ka0s Skin Tester) paints the Ka0s look under Ka0s Default
-until it drops the key. The skin picker (OptionsSkinPicker minor 2) titles its window
+consumer that passes it (Ka0s Quick Comms, DpsRace's custom box in `modules/Hud_States.lua`, Ka0s Skin
+Tester) paints the Ka0s look under Ka0s Default until it drops the key. What each host owes on
+re-vendor is the Skin and Widgets documents' *What a consumer owes*: drop `stockDefault`, handle a nil
+`hud.font` / `hud.outline` while fonts are ignored (Skin minor 8), name a `ResetToSkin` companion or
+pass `{ companions = true }` before dropping a seeding workaround, and give a reorder list on a
+window `panel = false` (WidgetsReorder minor 3). The skin picker (OptionsSkinPicker minor 2) titles its window
 `SKIN_PICKER_STRINGS.TITLE`, "Choose a skin", where `TITLE_FOR` named the addon, and puts the
 addon's label on its own line, `frame.ownerLabel`. `Core.MakeResizable` takes `opts.owner` (Core
 minor 14), a registered skin owner whose `icon.grip` tints the grip; the library's own windows pass

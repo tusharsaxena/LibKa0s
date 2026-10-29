@@ -1645,6 +1645,33 @@ region of it as shared (`SkinEUI.lua`), so it fails closed to the library's tech
 Cases: `tests/test_skin_ace.lua` and `tests/test_skin_ace_tree.lua` (minor 4), on a pooled AceGUI
 fake with AceGUI's anatomy (`tests/fixture_skin_ace.lua`).
 
+## What a consumer owes
+
+What a host acts on when it re-vendors this version (Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`'s M2 items). Nothing raises if a host does none of it; each
+point is what the player sees until it does.
+
+- **Drop `opts.stockDefault`** (SkinPaint minor 12, *The stock look, retired*). The key is ignored,
+  so a target a host kept the client's under Ka0s Default now wears the Ka0s look there. Callers at
+  this version's writing: Ka0s Quick Comms (`settings/ModalWindow.lua`, `S.Shell`), DpsRace
+  (`modules/Hud_States.lua`, `S.EditBox` on the custom box, which gains the Ka0s input box) and Ka0s
+  Skin Tester (`modules/ShowroomOwner.lua`'s stock-window sample). Delete the key, and with it any
+  comment or test that pins the stock look under Ka0s Default.
+- **Handle nil HUD font tokens while fonts are ignored** (Skin minor 8, *HUD*). While the owner
+  ignores fonts, `Token("hud.font")` and `Token("hud.outline")` answer nil, `Resolve` answers the
+  stored value (nil for a stored `FROM_SKIN`) and `BarStyle()`'s `font`, `fontKey` and `outline` are
+  nil. A host that feeds any of them straight to `SetFont`, `LSM:Fetch` or a font-object builder
+  falls back to its own face and outline (its stored pick, else its default) on nil.
+- **Name the companions to drop the seeding** (Skin minor 8, `ResetToSkin`). The fix for an absent
+  companion is opt-in: `ResetToSkin(p, { "font" })` with `fontFromSkin` absent still writes
+  `FROM_SKIN` into `font`. A host that seeds `<key>FromSkin = false` before its reset as a
+  workaround (ConsumableMaster's `core/Database.lua` `D.MigrateHudSkinV4`, and AuraMaster's,
+  AbsorbTracker's and DpsRace's migrations) may drop the seeding only if it names the companions
+  (`"fontFromSkin"`) or passes `{ companions = true }`; otherwise it keeps it.
+- **Optional:** a host that rebuilds "which skin does this owner draw" from `GetChoice` and
+  `GetSkin` (or calls `__DrawsKey`) can call `Skin:DrawsKey(owner)` instead; `__DrawsKey` stays one
+  release as an alias.
+
 ## What is not here
 
 - **No routing yet.** The library's own windows, widgets and settings chrome still paint with
