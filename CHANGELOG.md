@@ -19,9 +19,25 @@ listed. Not tagged.
 
 Versions in this release: **Skin minor 8**, **SkinDefs minor 16**, **SkinPaint minor 12**,
 **SkinPaintExtras minor 6** and **SkinPaintControls minor 10** (`LibKa0s-Skin-1.0` key
-**8.16.12.6.10.2.4**) and **WidgetsReorder minor 3** (`LibKa0s-Widgets-1.0` key **16.3.6.4.4.1**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
+**8.16.12.6.10.2.4**), **WidgetsReorder minor 3** (`LibKa0s-Widgets-1.0` key **16.3.6.4.4.1**) and
+**OptionsSkinPicker minor 2** (`LibKa0s-Options-1.0` key **34.4.35.4.6.10.3.13.8.3.2.5.3.2**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
 until an entry below moves one.
 Still **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
+
+### OptionsSkinPicker minor 2: "Choose a skin", the addon's name on its own line
+
+`LibKa0s-Options-1.0` key 34.4.35.4.6.10.3.13.8.3.2.5.3.2, documented in
+[docs/api/Options/version-34.4.35.4.6.10.3.13.8.3.2.5.3.2-docs.md](docs/api/Options/version-34.4.35.4.6.10.3.13.8.3.2.5.3.2-docs.md)
+(*The skin picker*; LK-11, ruling R-11, decision D-17). The first-run picker's one-line title,
+"Choose a skin for <the addon's label>", had 224 px, and the client cut a long label off in every
+addon. The title is now `TITLE`, "Choose a skin" (`TITLE_FOR` is gone; a stale translation of it is
+an unused key). The label (`Skin:OwnerLabel`, else the owner's name) has its own line above the
+dropdown, `frame.ownerLabel`, painted as a heading, and is never cut off: the window widens to the
+label's unbounded width plus its padding, never narrower than 280, on every show and every change of
+the owner's looks. The dropdown row moves down one line. **What a consumer owes:** a test or smoke
+check that read the addon's name from `frame.title` reads `frame.ownerLabel`. Three new cases in
+`tests/test_options_skin_picker.lua` pin the line, the widening (with "Ka0s Premade Groups Filter
+Extension") and the refit on a skin change.
 
 ### SkinDefs minor 16: the quality colors are the client's exactly
 

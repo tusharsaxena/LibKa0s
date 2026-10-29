@@ -2236,13 +2236,16 @@ Total.
 - appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
 - appearance: the other owners and one owner's skin copy are library-level, for the skin picker
 
-### test_options_skin_picker.lua (36)
+### test_options_skin_picker.lua (39)
 
-- skin picker: OptionsSkinPicker is minor 1, paired on the shell, and attaches two members
+- skin picker: OptionsSkinPicker is minor 2, paired on the shell, and attaches two members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
 - skin picker: the list holds every skin, three swatches each and its name in its own face
+- skin picker: the addon's label sits on its own line above the dropdown, as a heading
+- skin picker: a long label widens the window to its unbounded width, never cutting it off
+- skin picker: a skin change that moves the label's width refits the window
 - skin picker: a pick previews: the Skin major moves live, nothing is written, the window stays
 - skin picker: Apply saves the pending pick through the owner's seam, then closes
 - skin picker: a pick that asks for a reload raises the one popup at Apply, not at the pick
@@ -3738,7 +3741,7 @@ Total.
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 36 |
-| test_options_skin_picker.lua | 36 |
+| test_options_skin_picker.lua | 39 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3800,4 +3803,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3242** |
+| **Total** | **3245** |

@@ -1,11 +1,13 @@
 -- tests/test_options_skin_picker.lua -- LibKa0s-Options-1.0's skin picker (OptionsSkinPicker.lua
--- minor 1, Options minor 34; LibKa0s#64, PK-01, PK-02 and PK-03 of Ka0sAddonsCommonTasks
--- docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER): O.SkinPicker, O.HideSkinPicker,
+-- minor 2, Options minor 34; LibKa0s#64, PK-01, PK-02 and PK-03 of Ka0sAddonsCommonTasks
+-- docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER, and LK-11 of docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS):
+-- O.SkinPicker, O.HideSkinPicker,
 -- lib.SKIN_PICKER_STRINGS and the library-level queue, lib.__pickerQueue.
 --
 -- What it pins: the attach and the file's pairing; the window (shown, one per owner, about 280
 -- wide, DIALOG, toplevel, clamped, movable, its center 75% of the way up UIParent on every show,
--- titled "Choose a skin for <the addon's label>"); the dropdown button naming the skin worn now
+-- titled "Choose a skin", the addon's label on its own line above the dropdown, never cut off: the
+-- window widens to it, on every show and skin change); the dropdown button naming the skin worn now
 -- with its three swatches; the list of every skin, each row three swatches and the skin's name in
 -- that skin's own body face and size; a pick previewing (the Skin major moves, the window repaints,
 -- no write and no popup), closing the list and not the window; Apply saving through the owner's
@@ -169,14 +171,15 @@ end
 
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
-test("skin picker: OptionsSkinPicker is minor 1, paired on the shell, and attaches two members", function()
+test("skin picker: OptionsSkinPicker is minor 2, paired on the shell, and attaches two members", function()
   local _, _, lib = env()
-  assertEqual(lib.MODULES.OptionsSkinPicker, 1)
-  assertEqual(lib.__pickerMinor, 1)
+  assertEqual(lib.MODULES.OptionsSkinPicker, 2)
+  assertEqual(lib.__pickerMinor, 2)
   assertEqual(lib.__pickerShellMinor, lib.MINOR, "paired on the shell's minor")
   assertTrue(lib.MINOR >= 34, "Options minor 34 attaches it")
   assertEqual(type(lib.SKIN_PICKER_STRINGS), "table")
-  assertEqual(lib.SKIN_PICKER_STRINGS.TITLE_FOR, "Choose a skin for %s")
+  assertEqual(lib.SKIN_PICKER_STRINGS.TITLE, "Choose a skin")
+  assertNil(lib.SKIN_PICKER_STRINGS.TITLE_FOR, "retired: the addon's name has its own line (R-11)")
   assertEqual(lib.SKIN_PICKER_STRINGS.APPLY, "Apply")
   assertEqual(lib.SKIN_PICKER_STRINGS.APPLY_ALL, "Apply to all Ka0s addons")
   assertEqual(type(lib.__pickerQueue), "table", "the library-level queue")
@@ -205,7 +208,8 @@ end)
 
 test("skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now",
 function()
-  -- red under: TITLE, "Choose a skin", which did not say which addon was asking; and HIGH (PK-03).
+  -- red under: TITLE_FOR, which put the addon in the title, where a long label was cut off (R-11);
+  -- and HIGH (PK-03).
   local m, Skin, lib = env()
   local store = register(Skin, OWNER, "obsidian")
   local O = instance(lib, OWNER)
@@ -216,7 +220,8 @@ function()
   assertTrue(layers.toplevel, "toplevel (frame-layering §4)")
   assertTrue(layers.clamped, "clamped")
   assertEqual(f:GetWidth(), 280)
-  assertEqual(f.title:GetText(), "Choose a skin for " .. OWNER .. " Label", "the addon's label")
+  assertEqual(f.title:GetText(), "Choose a skin", "the title")
+  assertEqual(f.ownerLabel:GetText(), OWNER .. " Label", "the addon's label on its own line")
   local def = Skin:GetSkin("obsidian")
   assertEqual(f.dd.text:GetText(), def.label, "the dropdown names the skin worn now")
   local sw = swatchesOf(m, f.dd.swatches)
@@ -281,6 +286,97 @@ test("skin picker: the list holds every skin, three swatches each and its name i
   end
   f.dd:__fire("OnClick")
   assertFalse(f.list:IsShown(), "a second click closes it")
+end)
+
+test("skin picker: the addon's label sits on its own line above the dropdown, as a heading", function()
+  -- red under: TITLE_FOR, "Choose a skin for <label>" in the title, cut off past 224 px (R-11).
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O = instance(lib, OWNER)
+  local f = O.SkinPicker(specFor(store))
+  local fs = f.ownerLabel
+  assertTrue(fs ~= nil, "frame.ownerLabel")
+  assertEqual(fs:GetText(), OWNER .. " Label", "Skin:OwnerLabel(owner)")
+  assertEqual(rawget(fs, "__wordWrap"), false, "one line")
+  assertEqual(rawget(fs, "__justifyH"), "LEFT")
+  local function topY(frame)
+    for _, pt in ipairs(rawget(frame, "__pts") or rawget(frame, "__points") or {}) do
+      if pt[1] == "TOPLEFT" then return pt[5] end
+    end
+  end
+  local labelY, ddY = topY(fs), topY(f.dd)
+  assertTrue(labelY ~= nil and ddY ~= nil, "both anchored by their top left")
+  assertTrue(labelY > ddY, "the label above the dropdown")
+  assertTrue(labelY < -8, "and below the title")
+  assertEqual(Skin.painted[fs] and Skin.painted[fs].owner, OWNER, "painted for the owner")
+  assertEqual(F.rgba(m.__paint(fs).textColor), F.tok(Skin, "ka0s", "text.heading"), "the heading role")
+  register(Skin, OTHER)
+  local B = instance(lib, OTHER)
+  O.HideSkinPicker()
+  local g = B.SkinPicker(specFor(store))
+  assertEqual(g.ownerLabel:GetText(), OTHER .. " Label", "each owner's own label")
+end)
+
+test("skin picker: a long label widens the window to its unbounded width, never cutting it off", function()
+  -- red under: a fixed 280 wide window whose one-line title truncated the longest roster label.
+  local m, Skin, lib = env()
+  local long = "Ka0s Premade Groups Filter Extension"
+  local store = { source = "ka0s", skin = "ka0s" }
+  Skin:RegisterOwner("PremadeGroupsFilterExtension", {
+    label = long,
+    get = function() return { source = store.source, skin = store.skin } end,
+    set = function(src, sk) store.source, store.skin = src, sk end,
+  })
+  local width = 300
+  local create = m.CreateFrame
+  m.CreateFrame = function(...)
+    local fr = create(...)
+    local mk = fr.CreateFontString
+    rawset(fr, "CreateFontString", function(self, ...)
+      local fs = mk(self, ...)
+      rawset(fs, "GetUnboundedStringWidth", function(s2)
+        return s2:GetText() == long and width or 0
+      end)
+      return fs
+    end)
+    return fr
+  end
+  local O = instance(lib, "PremadeGroupsFilterExtension")
+  local f = O.SkinPicker(specFor(store, { owner = "PremadeGroupsFilterExtension" }))
+  assertEqual(f.ownerLabel:GetText(), long)
+  assertEqual(f:GetWidth(), 300 + 2 * 12, "the label's width plus the side padding")
+  assertEqual(f.title:GetText(), "Choose a skin", "the title is unchanged")
+  width = 250.4
+  O.HideSkinPicker()
+  O.SkinPicker(specFor(store, { owner = "PremadeGroupsFilterExtension" }))
+  assertEqual(f:GetWidth(), 280, "never narrower than 280: refit on every show")
+end)
+
+test("skin picker: a skin change that moves the label's width refits the window", function()
+  -- red under: a width set once at build.
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local width = 0
+  local create = m.CreateFrame
+  m.CreateFrame = function(...)
+    local fr = create(...)
+    local mk = fr.CreateFontString
+    rawset(fr, "CreateFontString", function(self, ...)
+      local fs = mk(self, ...)
+      rawset(fs, "GetUnboundedStringWidth", function() return width end)
+      return fs
+    end)
+    return fr
+  end
+  local O = instance(lib, OWNER)
+  local f = O.SkinPicker(specFor(store))
+  assertEqual(f:GetWidth(), 280)
+  width = 290.2
+  pickRow(f, "ember")
+  assertEqual(f:GetWidth(), 291 + 2 * 12, "refit on the owner's looks changing, rounded up")
+  width = 10
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertEqual(f:GetWidth(), 280, "and back")
 end)
 
 -- ── preview, Apply, dismiss ──────────────────────────────────────────────────────────────────
@@ -673,7 +769,7 @@ function()
   assertEqual(why, "queued")
   assertTrue(a:IsShown(), "the first stays up")
   assertEqual(#lib.__pickerQueue.waiting, 1)
-  local refreshed = specFor(storeB, { strings = { TITLE_FOR = "Second: %s" } })
+  local refreshed = specFor(storeB, { strings = { TITLE = "Second" } })
   assertNil(B.SkinPicker(refreshed), "a repeat call")
   assertEqual(#lib.__pickerQueue.waiting, 1, "one entry per owner")
   assertNil(storeB.closed, "a queued picker is not closed")
@@ -683,7 +779,8 @@ function()
   assertTrue(q.current ~= nil and q.current.owner == OTHER, "the second owner's picker is up")
   b = q.current.frame
   assertTrue(b:IsShown() and b ~= a, "its own window")
-  assertEqual(b.title:GetText(), "Second: " .. OTHER .. " Label", "with the spec the repeat call gave")
+  assertEqual(b.title:GetText(), "Second", "with the spec the repeat call gave")
+  assertEqual(b.ownerLabel:GetText(), OTHER .. " Label")
   b.apply:__fire("OnClick")
   assertEqual(storeB.closed, 1)
   assertNil(q.current, "nothing left to show")
@@ -940,18 +1037,19 @@ test("skin picker: spec.strings translates the title, the buttons, the tips and 
   register(Skin, OTHER)
   local O = instance(lib, OWNER)
   local f = O.SkinPicker(specFor(store, { strings = {
-    TITLE_FOR = "Skin waehlen: %s", SETTINGS_TIP = "Einstellungen", SKIN_ka0s = "Ka0s (de)",
+    TITLE = "Skin waehlen", SETTINGS_TIP = "Einstellungen", SKIN_ka0s = "Ka0s (de)",
     APPLY = "Anwenden", APPLY_ALL = "Allen geben", APPLY_TIP = "Behalten" } }))
-  assertEqual(f.title:GetText(), "Skin waehlen: " .. OWNER .. " Label")
+  assertEqual(f.title:GetText(), "Skin waehlen")
+  assertEqual(f.ownerLabel:GetText(), OWNER .. " Label", "the label is the owner's, not a word")
   assertEqual(f.settings.__tip, "Einstellungen")
   assertEqual(f.dd.text:GetText(), "Ka0s (de)")
   assertEqual(f.apply.text:GetText(), "Anwenden")
   assertEqual(f.apply.__tip, "Behalten")
   assertEqual(f.applyAll.text:GetText(), "Allen geben")
-  assertEqual(lib.SKIN_PICKER_STRINGS.TITLE_FOR, "Choose a skin for %s", "the library's words are not written through")
+  assertEqual(lib.SKIN_PICKER_STRINGS.TITLE, "Choose a skin", "the library's words are not written through")
   O.HideSkinPicker()
-  O.SkinPicker(specFor(store, { strings = { TITLE_FOR = "100% %d" } }))
-  assertEqual(f.title:GetText(), "100% %d", "a translation that does not format is shown as it is")
+  O.SkinPicker(specFor(store, { strings = { TITLE = "100% %d" } }))
+  assertEqual(f.title:GetText(), "100% %d", "a title is shown verbatim, never formatted")
 end)
 
 test("skin picker: nil with no Skin major, or for an owner that never registered", function()
