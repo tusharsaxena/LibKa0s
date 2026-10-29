@@ -10,6 +10,38 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.81.0 — unreleased
+
+Opened 2026-10-30, on `feat/2026-10-30-skin-library-followups`: the skinning rollout's library
+follow-ups (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, M1), the items `LK-01`
+to `LK-11` that meet the owner's rulings `R-1` to `R-11` on the nine follow-ups v1.80.0's run
+listed. Not tagged.
+
+Versions in this release: **SkinDefs minor 16** (`LibKa0s-Skin-1.0` key **7.16.11.5.9.2.4**); every
+other file still at its v1.80.0 minor, and **test kit revision 44**, until an entry below moves one.
+Still **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
+
+### SkinDefs minor 16: the quality colors are the client's exactly
+
+`LibKa0s-Skin-1.0` key 7.16.11.5.9.2.4, documented in
+[docs/api/Skin/version-7.16.11.5.9.2.4-docs.md](docs/api/Skin/version-7.16.11.5.9.2.4-docs.md)
+(*Semantic*; LK-09, ruling R-8). Ka0s Default's `q.*` tokens were the client's
+`ITEM_QUALITY_COLORS` rounded to two places, so a library-drawn epic was `#a336ed` beside the
+client's `#a335ee`. Each is now the client's hex divided by 255, written out in SkinDefs (never read
+from the client at load, when it may not have filled the table): `q.poor` `#9d9d9d`, `q.common`
+`#ffffff`, `q.uncommon` `#1eff00`, `q.rare` `#0070dd`, `q.epic` `#a335ee`, `q.legendary` `#ff8000`.
+Every skin that sets no `q.*` of its own (Obsidian, Azeroth, Ember, WoW Default, WoW Midnight, WoW
+Forever; Glass and High Contrast for `q.poor`, `q.common` and `q.legendary`) and the `eui` source
+inherit them. No other token moves. Two cases in `tests/test_skin.lua` pin all six against the mock's
+real hex, byte for byte.
+
+### What a consumer owes
+
+- **LK-09:** nothing to call. `q.*` under Ka0s Default, every skin that does not override them, and
+  eui now equal the client's colors byte for byte. A test that pins the rounded values (for example
+  LootHistory `tests/test_skin_table.lua`) moves, and a "token equals the rounded default, so use the
+  client's" workaround (Drop Watcher `core/SkinSetup.lua`'s `defaultQuality`) may go.
+
 ## v1.80.0 — 2026-10-29
 
 Opened 2026-10-29, on `feat/2026-10-29-skinning-rollout`: the library half of the skinning rollout to

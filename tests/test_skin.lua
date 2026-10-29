@@ -145,7 +145,49 @@ test("skin: Ka0s Default sets every token, faces and sizes included", function()
   assertEqual(wow["font.title"], "Friz Quadrata TT", "and for its titles")
   assertEqual(tokens["font.bodySize"], 12, "the body reference")
   assertEqual(tokens["font.titleSize"], 14, "the title reference")
-  sameColor(tokens["q.epic"], { 0.64, 0.21, 0.93, 1 }, "the client's epic purple, written out")
+  sameColor(tokens["q.epic"], { 163 / 255, 53 / 255, 238 / 255, 1 }, "the client's epic purple, written out")
+end)
+
+-- LK-09 (R-8 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS): the q.* tokens are
+-- the client's ITEM_QUALITY_COLORS exactly, hex / 255, not rounded to two places. The mock's palette
+-- carries the live client's hex, so the token and the mock cannot drift apart.
+local QUALITY_TOKENS = { [0] = "q.poor", "q.common", "q.uncommon", "q.rare", "q.epic", "q.legendary" }
+
+--- The client's color for quality `q`, out of the mock's `|cffRRGGBB` hex, as 0-1 floats.
+local function clientQuality(q)
+  local hex = T.mocks.ITEM_QUALITY_COLORS[q].hex
+  local rr, gg, bb = hex:match("^|cff(%x%x)(%x%x)(%x%x)$")
+  return { tonumber(rr, 16) / 255, tonumber(gg, 16) / 255, tonumber(bb, 16) / 255, 1 }
+end
+
+test("skin: Ka0s Default's q.* tokens are the client's quality colors exactly", function()
+  -- red under: a q.* token rounded (0.64, 0.21, 0.93 is a3/36/ed, not the client's a335ee).
+  local Skin = T.mocks.LibStub(MAJOR)
+  local tokens = Skin:ResolveSkin("ka0s")
+  for q = 0, 5 do
+    local name = QUALITY_TOKENS[q]
+    local want = clientQuality(q)
+    sameColor(tokens[name], want, name)
+    for i = 1, 3 do
+      assertEqual(math.floor(tokens[name][i] * 255 + 0.5), math.floor(want[i] * 255 + 0.5),
+        name .. " byte " .. i)
+    end
+  end
+end)
+
+test("skin: a skin that sets no q.* token draws the client's quality colors", function()
+  -- Every skin derives from Ka0s Default; Glass and High Contrast retune uncommon, rare and epic
+  -- for their own panels and inherit the rest. red under: a rounded Ka0s Default reaching them.
+  local Skin = T.mocks.LibStub(MAJOR)
+  local own = { glass = { ["q.uncommon"] = true, ["q.rare"] = true, ["q.epic"] = true },
+    contrast = { ["q.uncommon"] = true, ["q.rare"] = true, ["q.epic"] = true } }
+  for _, key in ipairs({ "obsidian", "azeroth", "glass", "contrast", "ember", "wow", "midnight", "forever" }) do
+    local tokens = Skin:ResolveSkin(key)
+    for q = 0, 5 do
+      local name = QUALITY_TOKENS[q]
+      if not (own[key] and own[key][name]) then sameColor(tokens[name], clientQuality(q), key .. " " .. name) end
+    end
+  end
 end)
 
 test("skin: Ka0s Default equals the published constants", function()

@@ -25,8 +25,9 @@
 -- sites draw one role in two colors, both survive as two tokens (`text.heading` and
 -- `text.headingAlt`, `menu.border` and `menu.borderAlt`, ...) rather than one pixel changing; the
 -- list is docs/api/Skin's "Split roles", the candidates for leg 2. Meaning-carrying colors (item
--- quality) stay the client's: the `q.*` tokens are nil in Ka0s Default, which reads the client's
--- ITEM_QUALITY_COLORS.
+-- quality) stay the client's: Ka0s Default's `q.*` tokens are the client's ITEM_QUALITY_COLORS
+-- written out exactly, hex / 255 (minor 16), never read from the client at load, when it may not
+-- have filled them yet.
 --
 -- Geometry (`title.height`, `scroll.width`, `scroll.gutter`, `win.inset`) is skin-invariant in leg
 -- 1: every skin carries Ka0s Default's value, so a live switch and a reload lay out the same.
@@ -91,7 +92,12 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- icon's border can follow the skin (S.IconBorder's `opts.fromSkin`, OptionsCompose's
 -- `BorderGroup{ fromSkin = "icon" }`). Ka0s Default's is Drop Watcher's Window › Icons border today,
 -- Solid 2px; every other skin sets its own (ICON_EDGE below). No existing token moves.
-local DEFS_MINOR = 15
+-- Minor 16 (LK-09 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, the owner's
+-- ruling R-8): Ka0s Default's `q.*` tokens equal the client's quality colors exactly, hex / 255
+-- (9d9d9d, ffffff, 1eff00, 0070dd, a335ee, ff8000), where they were rounded to two places (0.64,
+-- 0.21, 0.93 is a3 36 ed, not the client's a335ee). Every skin that sets no `q.*` of its own, and
+-- the eui source, inherits them.
+local DEFS_MINOR = 16
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -366,9 +372,11 @@ local KA0S = {
   ["tooltip.bg"] = { 0.05, 0.05, 0.08, 0.95 }, ["tooltip.border"] = CTL_LINE,
   ["bar.bg"] = { 0, 0, 0, 0.5 }, ["bar.border"] = { 0, 0, 0, 1 }, ["icon.border"] = { 0, 0, 0, 1 },
   ["glow.color"] = GOLD,
-  -- The client's ITEM_QUALITY_COLORS, written out: the values every Blizzard frame draws.
-  ["q.poor"] = { 0.62, 0.62, 0.62, 1 }, ["q.common"] = WHITE, ["q.uncommon"] = { 0.12, 1, 0, 1 },
-  ["q.rare"] = { 0, 0.44, 0.87, 1 }, ["q.epic"] = { 0.64, 0.21, 0.93, 1 }, ["q.legendary"] = { 1, 0.5, 0, 1 },
+  -- The client's ITEM_QUALITY_COLORS, written out exactly (hex / 255, minor 16): the values every
+  -- Blizzard frame draws.
+  ["q.poor"] = { 0x9d / 255, 0x9d / 255, 0x9d / 255, 1 }, ["q.common"] = WHITE,
+  ["q.uncommon"] = { 0x1e / 255, 1, 0, 1 }, ["q.rare"] = { 0, 0x70 / 255, 0xdd / 255, 1 },
+  ["q.epic"] = { 0xa3 / 255, 0x35 / 255, 0xee / 255, 1 }, ["q.legendary"] = { 1, 0x80 / 255, 0, 1 },
 }
 
 lib:RegisterSkin({

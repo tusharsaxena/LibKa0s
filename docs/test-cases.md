@@ -502,7 +502,7 @@ Total.
 - media: every skin's own bar is in TEXTURES, opaque and gray, and tiles along the bar
 - media: RegisterLSM registers the Glass border and background, and counts them
 
-### test_skin.lua (27)
+### test_skin.lua (29)
 
 - skin: the major registers both files and the sentinel
 - skin: the shell refuses without Core, and SkinDefs then attaches to nothing
@@ -510,6 +510,8 @@ Total.
 - skin: the schema names each token once, with a known kind
 - skin: every registered skin resolves every schema token to its kind
 - skin: Ka0s Default sets every token, faces and sizes included
+- skin: Ka0s Default's q.* tokens are the client's quality colors exactly
+- skin: a skin that sets no q.* token draws the client's quality colors
 - skin: Ka0s Default equals the published constants
 - skin: Ka0s Default equals the file-local constants it replaces
 - skin: Ka0s Default equals LootHistory's constants
@@ -3657,7 +3659,7 @@ Total.
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
 | test_media.lua | 39 |
-| test_skin.lua | 27 |
+| test_skin.lua | 29 |
 | test_skin_override.lua | 21 |
 | test_skin_owner_tokens.lua | 16 |
 | test_skin_remap.lua | 12 |
@@ -3778,4 +3780,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3220** |
+| **Total** | **3222** |
