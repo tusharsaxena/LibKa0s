@@ -20,14 +20,57 @@ listed. Not tagged.
 Versions in this release: **Skin minor 8**, **SkinDefs minor 16**, **SkinPaint minor 12**,
 **SkinPaintExtras minor 6** and **SkinPaintControls minor 10** (`LibKa0s-Skin-1.0` key
 **8.16.12.6.10.2.4**), **Widgets minor 17**, **WidgetsReorder minor 3**, **WidgetsDragHandle minor 7**, **WidgetsLineChart minor 5**, **WidgetsAutocomplete minor 5** and **WidgetsCopyWindow minor 2** (`LibKa0s-Widgets-1.0` key **17.3.7.5.5.2**),
-**OptionsWidgets minor 36**, **OptionsIdList minor 7**, **OptionsTabs minor 11**, **OptionsScroll minor 9**,
+**OptionsWidgets minor 36**, **OptionsIds minor 5**, **OptionsIdList minor 7**, **OptionsTabs minor 11**, **OptionsScroll minor 9**,
 **OptionsNav minor 4**, **OptionsDrawer minor 3**, **OptionsKeybinds minor 6** and
-**OptionsSkinPicker minor 2** (`LibKa0s-Options-1.0` key **34.4.36.4.7.11.3.13.9.4.3.6.3.2**) and
+**OptionsSkinPicker minor 2** (`LibKa0s-Options-1.0` key **34.4.36.5.7.11.3.13.9.4.3.6.3.2**) and
 **SimPanel minor 8** (`LibKa0s-Sim-1.0` key **2.3.8**), **Core minor 14** (`LibKa0s-Core-1.0` key **14**),
 **DebugLogWindow minor 2** (`LibKa0s-DebugLog-1.0` key **22.5.1.2**) and **PerfPanel minor 11**
 (`LibKa0s-Perf-1.0` key **15.1.1.11**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
 until an entry below moves one.
 Still **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
+
+### The settings chrome's last pieces wear the skin and stand down with the panel
+
+`LibKa0s-Options-1.0` key 34.4.36.5.7.11.3.13.9.4.3.6.3.2, documented in
+[docs/api/Options/version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md)
+(*What changed at this version*): OptionsIds minor 5, and OptionsScroll 9, OptionsNav 4,
+OptionsDrawer 3 and OptionsIdList 7 (already bumped on this branch; the key moved from
+34.4.36.4.7.11.3.13.9.4.3.6.3.2 with OptionsIds, its document and member manifest renamed with it);
+SkinPaintControls minor 10 and SkinDefs minor 16 (already bumped; `LibKa0s-Skin-1.0` key
+8.16.12.6.10.2.4, *Primitive reference* and the token rows). LK-06c, ruling R-5, decisions D-01,
+D-07, D-13 and D-14.
+
+- **The drawer head's label and summary wear the skin's face.** `S.Drawer` tinted them only, so they
+  kept `GameFontNormal` and `GameFontHighlightSmall` in every skin and *Ignore fonts* had nothing to
+  act on. It now labels them (`P.label`): the same `drawer.*` colors, in the skin's body face, the
+  summary's smaller size scaled. **Ka0s Default's look change:** Oxanium where the templates drew
+  Friz Quadrata (D-13).
+- **The drawer's chevron is colored `icon.arrow`**, desaturated first, as every arrow the library
+  draws (`S.Drawer`'s new `opts.chevron`): Ka0s Default's gold on the desaturated art, where the
+  client's own yellow arrow was drawn.
+- **The hover art takes a new token, `list.hoverArt`**: the drawer head and the nav entry through
+  `S.Drawer`'s and `S.NavItem`'s new `opts.hover`, the id list entry and the id suggestion row through
+  an internal `O.__hoverArt`. It is `false` in Ka0s Default and WoW Default, so the client's ADD
+  highlight art is drawn as the client draws it, and every other skin's `text.accent`; a color
+  desaturates the art and tints it. The `eui` source derives it from Ka0s Default.
+- **The id suggestion popup's rows** take `menu.text` (the dropdown menu's rows' color; Ka0s
+  Default's 0.9 where the template drew white, D-14) in the body face, its "+N more" line
+  `text.disabled` (the template's 0.5 gray in Ka0s Default), and **the gray every id is drawn in**,
+  in the popup and in the id list's labels, suffixes and notes, is the owner's `text.disabled`
+  (`|cff808080` exactly in Ka0s Default).
+- **All of it is the settings panel** (D-01): an owner-less page and an owner that ignores its
+  settings panel draw the templates, the client's art and `|cff808080`, and *Ignore settings panel*
+  gives a painted piece back live. A pooled drawer head or nav entry is put back on the client's
+  faces and art before every dress, and a released id list entry hands its highlight back untinted,
+  so no pooled widget keeps another owner's look.
+- **`__chromeAway` says what it does** (D-07). Since SkinPaint minor 6 no skin is special, so it
+  answers the facade wherever `__chromeSkin` does, Ka0s Default included; its comments, the id
+  list help mark's and the keybind rows' said "away from Ka0s Default only". Comments only: the help
+  mark keeps drawing Ka0s Default's `text.accent`, `sem.bad` and `text.disabled`, as the retired
+  stock look asks, rather than gaining tokens for its old constants.
+
+Nothing is owed by a consumer. `tests/test_options_chrome_skin.lua` (new) pins every piece, owned,
+owner-less, under both switches and through the pools.
 
 ### The tool windows obey Ignore fonts, and the resize grip wears the skin
 
@@ -104,8 +147,8 @@ key and extended (one docs file per key per release).
 
 ### The tooltip lines the library writes take the skin's tooltip colors
 
-`LibKa0s-Options-1.0` key 34.4.36.4.7.11.3.13.9.4.3.6.3.2, documented in
-[docs/api/Options/version-34.4.36.4.7.11.3.13.9.4.3.6.3.2-docs.md](docs/api/Options/version-34.4.36.4.7.11.3.13.9.4.3.6.3.2-docs.md)
+`LibKa0s-Options-1.0` key 34.4.36.5.7.11.3.13.9.4.3.6.3.2, documented in
+[docs/api/Options/version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md)
 (*What changed at this version*), `LibKa0s-Sim-1.0` key 2.3.8, documented in
 [docs/api/Sim/version-2.3.8-docs.md](docs/api/Sim/version-2.3.8-docs.md), and WidgetsReorder minor 3
 (already bumped on this branch; the Widgets document's *ReorderList*). LK-06d, ruling R-5, decision
@@ -155,8 +198,8 @@ and one in `tests/test_skin_defs.lua` pin it. The Widgets document LK-05 opened 
 
 ### OptionsSkinPicker minor 2: "Choose a skin", the addon's name on its own line
 
-`LibKa0s-Options-1.0` key 34.4.36.4.7.11.3.13.9.4.3.6.3.2, documented in
-[docs/api/Options/version-34.4.36.4.7.11.3.13.9.4.3.6.3.2-docs.md](docs/api/Options/version-34.4.36.4.7.11.3.13.9.4.3.6.3.2-docs.md)
+`LibKa0s-Options-1.0` key 34.4.36.5.7.11.3.13.9.4.3.6.3.2, documented in
+[docs/api/Options/version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md)
 (*The skin picker*; LK-11, ruling R-11, decision D-17). The first-run picker's one-line title,
 "Choose a skin for <the addon's label>", had 224 px, and the client cut a long label off in every
 addon. The title is now `TITLE`, "Choose a skin" (`TITLE_FOR` is gone; a stale translation of it is

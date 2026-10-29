@@ -58,6 +58,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Still minor 10 (LK-06a, ruling R-5, decision D-02): Dropdown and EditBox take `opts.panel` as
 -- S.Text does: a control on its owner's settings panel is given back while the owner ignores its
 -- panel (SkinPaintExtras' P.panelIgnored), live both ways, its focus hooks standing down with it.
+-- Still minor 10 (LK-06c, ruling R-5, decisions D-13 and D-14): Drawer labels its label and summary
+-- through P.label (the body face, so Ignore fonts reaches them), colors `opts.chevron` with
+-- `icon.arrow` and `opts.hover` with `list.hoverArt`; NavItem colors `opts.hover` the same way.
 local CONTROLS_MINOR = 10
 if lib.__controlsMinor and lib.__controlsMinor >= CONTROLS_MINOR
   and lib.__controlsShellMinor == lib.MINOR then return end
@@ -697,7 +700,9 @@ end
 --- S.NavItem(item, opts): a nav-rail entry. Its label (`opts.label`) in `nav.selText` while
 --- `opts.selected`, `nav.text` otherwise (OptionsNav's white and gold); its selection texture
 --- (`opts.sel`) in `nav.selBg` (OptionsNav's select tint); a `nav.selBar` on the holder while
---- selected (nil in Ka0s Default). Draws no Media icon.
+--- selected (nil in Ka0s Default); its hover art (`opts.hover`, minor 10) desaturated and colored
+--- `list.hoverArt`, left as the client draws it where that is `false` (Ka0s Default, WoW Default).
+--- Draws no Media icon.
 prim.NavItem = function(owner, item, opts)
   if type(item) ~= "table" then return end
   local rec = P.track(owner, item, "NavItem", opts)
@@ -705,6 +710,7 @@ prim.NavItem = function(owner, item, opts)
   local T = P.T(owner)
   if P.isFS(opts.label) then P.label(owner, rec, opts.label, T, opts.selected and "nav.selText" or "nav.text") end
   if P.isTexture(opts.sel) then P.tint(rec, opts.sel, T, "nav.selBg", "SetVertexColor") end
+  if P.isTexture(opts.hover) then P.glyph(rec, opts.hover, T, "list.hoverArt") end
   local c = opts.selected and T["nav.selBar"] or nil
   P.edges(rec, item, c, "flat", 2)
 end
@@ -728,15 +734,20 @@ local DRAWER_HEAD_OPEN = { fill = "drawer.bgOpen", border = "drawer.borderOpen",
 
 --- S.Drawer(head, opts): a settings drawer's header (and box). Its label (`opts.label`) in
 --- `drawer.textSet` when `opts.set`, `drawer.text` otherwise; its summary (`opts.summary`) in
---- `drawer.summarySet` / `drawer.summary`; then its edge set (`opts.edges`, OptionsDrawer's
+--- `drawer.summarySet` / `drawer.summary`, both in the body face (minor 10, LK-06c: so Ignore fonts
+--- reaches them; the summary keeps its smaller stock size, scaled); its chevron (`opts.chevron`)
+--- desaturated and colored `icon.arrow`, as every arrow; its hover art (`opts.hover`) in
+--- `list.hoverArt`, the client's art where that is `false`; then its edge set (`opts.edges`, OptionsDrawer's
 --- `{ fill, left, right, bottom, top }`) in `drawer.bgOpen` / `drawer.borderOpen` while `opts.open`,
 --- else `drawer.bg` / `drawer.border`, and the box's (`opts.box`) in `drawer.boxBg` /
 --- `drawer.boxBorder`. A header with no edge set is boxed on its holders (the fill under its text,
 --- the edge over it). Draws no Media icon.
-local function drawerText(rec, T, opts)
+local function drawerText(owner, rec, T, opts)
   local set = opts.set and true or false
-  if P.isFS(opts.label) then P.tint(rec, opts.label, T, set and "drawer.textSet" or "drawer.text") end
-  if P.isFS(opts.summary) then P.tint(rec, opts.summary, T, set and "drawer.summarySet" or "drawer.summary") end
+  P.label(owner, rec, opts.label, T, set and "drawer.textSet" or "drawer.text")
+  P.label(owner, rec, opts.summary, T, set and "drawer.summarySet" or "drawer.summary")
+  if P.isTexture(opts.chevron) then P.glyph(rec, opts.chevron, T, "icon.arrow") end
+  if P.isTexture(opts.hover) then P.glyph(rec, opts.hover, T, "list.hoverArt") end
 end
 
 prim.Drawer = function(owner, head, opts)
@@ -744,7 +755,7 @@ prim.Drawer = function(owner, head, opts)
   local rec = P.track(owner, head, "Drawer", opts)
   opts = type(opts) == "table" and opts or {}
   local T, open = P.T(owner), opts.open and true or false
-  drawerText(rec, T, opts)
+  drawerText(owner, rec, T, opts)
   if type(opts.edges) == "table" then
     paintEdgeSet(opts.edges, T[open and "drawer.bgOpen" or "drawer.bg"],
       T[open and "drawer.borderOpen" or "drawer.border"])

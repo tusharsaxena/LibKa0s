@@ -29,6 +29,9 @@ if not Pool or (Pool.MINOR or 0) < NEEDS_POOL then return end
 -- Minor 4: an entry's tooltip title through the page's O.__tipColor (`gtip.value`; OptionsScroll
 -- minor 9), the instance read off the entry's last dress (LK-06d of Ka0sAddonsCommonTasks
 -- docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS).
+-- Still minor 4 (LK-06c of the same run, ruling R-5): an owned entry's hover art takes
+-- `list.hoverArt` (S.NavItem's `hover`); every dress puts the art back on the client's first, so a
+-- pooled entry drawn for no owner never keeps another owner's tint.
 local NAV_MINOR = 4
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__navMinor and lib.__navMinor >= NAV_MINOR
@@ -179,7 +182,7 @@ local function newEntry(rail)
   sel:SetVertexColor(SELECT_RGB[1], SELECT_RGB[2], SELECT_RGB[3])
   sel:SetBlendMode("ADD")
   sel:SetAllPoints(b)
-  b.__ka0sNavLabel, b.__ka0sNavSel = label, sel
+  b.__ka0sNavLabel, b.__ka0sNavSel, b.__ka0sNavHover = label, sel, hover
   attachEntryTooltip(b)
   return b
 end
@@ -204,8 +207,14 @@ local function dressEntry(O, b, entry, selected, onSelect)
     if O.__combatRefused and O.__combatRefused("rail", entry.key) then return end
     if onSelect then pcall(onSelect, entry.key) end
   end)
+  -- The hover art as the client draws it (minor 4), then the owner's skin over it.
+  local hover = b.__ka0sNavHover
+  if hover then
+    if hover.SetDesaturated then hover:SetDesaturated(false) end
+    hover:SetVertexColor(1, 1, 1)
+  end
   if O.__chromePaint then
-    O.__chromePaint("NavItem", b, { label = label, sel = b.__ka0sNavSel, selected = selected })
+    O.__chromePaint("NavItem", b, { label = label, sel = b.__ka0sNavSel, selected = selected, hover = hover })
   end
 end
 

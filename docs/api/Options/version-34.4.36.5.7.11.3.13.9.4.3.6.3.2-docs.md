@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 34.4.36.4.7.11.3.13.9.4.3.6.3.2
+# `LibKa0s-Options-1.0` — version 34.4.36.5.7.11.3.13.9.4.3.6.3.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,20 +8,20 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **36** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **13** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **3** · `OptionsSkinPicker.lua` **2** |
+| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **36** · `OptionsIds.lua` **5** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **13** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **3** · `OptionsSkinPicker.lua` **2** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>`, in load order — the same fourteen numbers `lib.MODULES` reports. |
 | Shipped in | unreleased (v1.81.0) |
 | Status | **Current** |
 | Supersedes | [version 34.4.35.4.6.10.3.13.8.3.2.5.3.1](./version-34.4.35.4.6.10.3.13.8.3.2.5.3.1-docs.md) (shipped in v1.80.0) — whose skin picker titled its window "Choose a skin for <the addon's label>" (`TITLE_FOR`) in a fixed 280-wide window, where a long label was cut off, and whose settings tooltips wrote their colors as literals whatever the skin |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 36, OptionsIds = 4, OptionsIdList = 7, OptionsTabs = 11, OptionsCombat = 3, OptionsCompose = 13, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 3, OptionsSkinPicker = 2 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 36, OptionsIds = 5, OptionsIdList = 7, OptionsTabs = 11, OptionsCombat = 3, OptionsCompose = 13, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 3, OptionsSkinPicker = 2 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `O32` for `Options.lua` minor 32, `O33` for `Options.lua` minor 33, `O34` for `Options.lua` minor 34, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
 minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `W35` for `OptionsWidgets.lua` minor 35, `W36` for `OptionsWidgets.lua` minor 36, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `T10` for `OptionsTabs.lua` minor 10, `T11` for `OptionsTabs.lua` minor 11, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `C9` for `OptionsCompose.lua` minor 9, `C10` for `OptionsCompose.lua` minor 10, `C11` for `OptionsCompose.lua` minor 11, `C12` for `OptionsCompose.lua` minor 12, `C13` for `OptionsCompose.lua` minor 13, `S1` for
 `OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `S5` for `OptionsScroll.lua` minor 5, `S6` for `OptionsScroll.lua` minor 6, `S9` for `OptionsScroll.lua` minor 9, `N1` for `OptionsNav.lua` minor 1, `N3` for `OptionsNav.lua` minor 3, `N4` for `OptionsNav.lua` minor 4, `D1` for `OptionsDrawer.lua` minor 1, `D2` for `OptionsDrawer.lua` minor 2, `D3` for `OptionsDrawer.lua` minor 3, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `K4` for `OptionsKeybinds.lua` minor 4, `K5` for `OptionsKeybinds.lua` minor 5, `K6` for `OptionsKeybinds.lua` minor 6, `A1` for `OptionsAppearance.lua` minor 1, `A3` for `OptionsAppearance.lua` minor 3, `P1` for `OptionsSkinPicker.lua` minor 1, `P2` for `OptionsSkinPicker.lua` minor 2, `I1` for
-`OptionsIds.lua` minor 1, `I3` for `OptionsIds.lua` minor 3, `I4` for `OptionsIds.lua` minor 4, `OC2` for `OptionsCombat.lua` minor 2, `OC3` for `OptionsCombat.lua` minor 3, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4, `L6` for `OptionsIdList.lua` minor 6, `L7` for `OptionsIdList.lua` minor 7. **A `W`
+`OptionsIds.lua` minor 1, `I3` for `OptionsIds.lua` minor 3, `I4` for `OptionsIds.lua` minor 4, `I5` for `OptionsIds.lua` minor 5, `OC2` for `OptionsCombat.lua` minor 2, `OC3` for `OptionsCombat.lua` minor 3, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4, `L6` for `OptionsIdList.lua` minor 6, `L7` for `OptionsIdList.lua` minor 7. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
 `O.SubTabStrip` and the four geometry seams were `OptionsWidgets.lua`'s until 21.20.1.7.3 and are
 `OptionsTabs.lua`'s from it, with no change to what any of them does; `O.RenderTabbedSchema` (**W9**)
@@ -40,12 +40,14 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-Eight files move, for two items of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`:
-`OptionsSkinPicker.lua` 1 -> **2** (LK-11, the owner's ruling R-11 and decision D-17), and
+Nine files move, for three items of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`:
+`OptionsSkinPicker.lua` 1 -> **2** (LK-11, the owner's ruling R-11 and decision D-17);
 `OptionsWidgets.lua` 35 -> **36**, `OptionsIdList.lua` 6 -> **7**, `OptionsTabs.lua` 10 -> **11**,
 `OptionsScroll.lua` 8 -> **9**, `OptionsNav.lua` 3 -> **4**, `OptionsDrawer.lua` 2 -> **3** and
-`OptionsKeybinds.lua` 5 -> **6** (LK-06d, ruling R-5 and decision D-14). No public member is added
-or removed.
+`OptionsKeybinds.lua` 5 -> **6** (LK-06d, ruling R-5 and decision D-14); and `OptionsIds.lua` 4 ->
+**5**, with `OptionsScroll.lua` 9, `OptionsNav.lua` 4, `OptionsDrawer.lua` 3 and `OptionsIdList.lua`
+7 again (LK-06c, ruling R-5, decisions D-01, D-07, D-13 and D-14). No public member is added or
+removed.
 
 **The tooltip lines the chrome writes take the skin's tooltip colors** (S9, W36, D3, N4, T11, K6,
 L7). Each line that named an explicit color was a literal whatever the skin. They now go through one
@@ -69,6 +71,30 @@ minors drew. It is read at hover, so a skin switch reaches the next tooltip with
 EllesmereUI's derived table. A line that names no color (every tooltip body above) stays the
 client's. A pooled nav entry or tab reads the instance that dressed it last (`__ka0sNavO`,
 `__ka0sTabO`), never the one that built it. Nothing is owed by a consumer.
+
+**The chrome's last unskinned pieces wear the page owner's skin** (I5, S9, D3, N4, L7; with
+`LibKa0s-Skin-1.0` 8.16.12.6.10.2.4's `S.Drawer` and `S.NavItem` and its new `list.hoverArt`).
+Everything below is the settings panel (D-01): it is painted through `O.__chromePaint` or read
+through `O.__chromeSkin()`, so an owner-less page and an owner that ignores its settings panel draw
+the client's look, and *Ignore settings panel* gives a painted piece back live.
+
+| Piece | On an owned page | Ka0s Default | Unskinned |
+|---|---|---|---|
+| Drawer head's label and summary (D3) | `S.Drawer` labels them (`P.label`): `drawer.text*` / `drawer.summary*` as before, now in the skin's body face, the summary's smaller size scaled, so *Ignore fonts* reaches them | **Oxanium** where the templates drew Friz Quadrata (D-13) | `GameFontNormal`, `GameFontHighlightSmall` |
+| Drawer chevron (D3) | `S.Drawer`'s `chevron`: desaturated and colored `icon.arrow`, as every arrow the library draws | gold on the desaturated art | the client's yellow arrow |
+| Hover art: drawer head (D3), nav entry (N4) | `S.Drawer`'s and `S.NavItem`'s `hover`: desaturated and colored `list.hoverArt` | the client's art (`list.hoverArt` is `false`) | the client's art |
+| Hover art: id list entry (L7), suggestion row (I5) | `O.__hoverArt(tex, back)` (S9, internal): the same, read at each render or open; a released id list entry is handed back untinted | the client's art | the client's art |
+| Suggestion rows (I5) | Each label `S.Text(fs, "menu.text")`: the dropdown menu's rows' color, the body face | `menu.text`'s **0.9** where the template drew white (D-14), Oxanium | `GameFontHighlightSmall`, white |
+| Suggestion "+N more" line (I5) | `S.Text(fs, "disabled")` | 0.5 gray, the template's, in Oxanium | `GameFontDisableSmall` |
+| The id's gray, in the suggestion rows, the id list's labels, suffixes and notes (I5, L7) | the owner's `text.disabled` as a color code, built with the label | `\|cff808080`, exact | `\|cff808080` (`ID_GRAY`) |
+
+Every dress of a pooled drawer head or nav entry puts the faces, the chevron and the hover art back
+on the client's before the skin paints, so a head drawn for no owner never keeps another owner's.
+`lib.__chromeAway(owner)` and `O.__chromeAway()` keep their names and say what they do (D-07): since
+`LibKa0s-Skin-1.0`'s SkinPaint minor 6 no skin is special, so they answer the facade wherever
+`__chromeSkin` does, Ka0s Default included; the help mark, the keybind rows, the Skin tab's muted
+labels and the page backdrop that ask them draw under Ka0s Default too, as the retired stock look
+(R-2) asks. Nothing is owed by a consumer.
 
 **The skin picker's title and the addon's name** (P2): the window's title is `TITLE`, "Choose a
 skin", where minor 1's `TITLE_FOR` ("Choose a skin for %s") put the addon's label in a one-line title

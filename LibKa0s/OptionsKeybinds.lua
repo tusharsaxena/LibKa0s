@@ -656,7 +656,8 @@ function lib.__AttachKeybinds(O, d) -- luacheck: no unused args
     }
   end
 
-  --- Color one AceGUI label in the page owner's text role `token`, away from Ka0s Default only.
+  --- Color one AceGUI label in the page owner's text role `token` while the chrome is skinned
+  --- (O.__chromeAway: every skin, Ka0s Default included, since SkinPaint minor 6).
   local function skinLabel(w, token)
     local S = O.__chromeAway and O.__chromeAway()
     if not (S and w and type(w.SetColor) == "function") then return end

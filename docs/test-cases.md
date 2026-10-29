@@ -2568,6 +2568,24 @@ Total.
 - tooltip skin: lines that named no color stay the client's
 - tooltip skin: a skin switch reaches the next hover with no rebuild
 
+### test_options_chrome_skin.lua (15)
+
+- chrome skin: an owned drawer's label and summary wear the skin's body face
+- chrome skin: Ignore fonts gives the drawer's label and summary their template faces, live
+- chrome skin: an owned drawer's chevron is desaturated and colored icon.arrow
+- chrome skin: an owner-less drawer keeps the client's chevron, faces and hover art
+- chrome skin: the drawer's and the nav entry's hover art take list.hoverArt
+- chrome skin: Ignore settings panel gives the drawer and the rail their client look back, live
+- chrome skin: a pooled drawer head drawn for no owner takes the client's look back
+- chrome skin: an id list entry's highlight takes list.hoverArt and its gray text.disabled
+- chrome skin: Ka0s Default and an owner-less list keep the client's highlight and |cff808080
+- chrome skin: a released id list entry gives its highlight art back to the pool
+- chrome skin: Ignore settings panel draws the id list's next render in the client's look
+- chrome skin: an owned suggestion popup's rows, more line and id gray wear the skin
+- chrome skin: Ka0s Default's suggestion rows keep the client's gray and highlight art
+- chrome skin: an owner-less popup and an ignored panel draw the client's suggestion rows
+- chrome skin: list.hoverArt is the client's art in Ka0s Default and WoW Default, the accent elsewhere
+
 ### test_options_compose_skin.lua (16)
 
 - compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
@@ -3801,6 +3819,7 @@ Total.
 | test_options_reset_tooltip.lua | 7 |
 | test_options_skin.lua | 17 |
 | test_options_tooltip_skin.lua | 6 |
+| test_options_chrome_skin.lua | 15 |
 | test_options_compose_skin.lua | 16 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
@@ -3851,4 +3870,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3281** |
+| **Total** | **3296** |

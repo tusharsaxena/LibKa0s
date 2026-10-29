@@ -595,6 +595,7 @@ eight skins*, below.
 | `icon.hot` | color | no | `1, 1, 1, 1` |
 | `icon.arrow` | color | no | `1, 0.82, 0, 1` |
 | `icon.grip` | color | yes | none (`false`: the client's art as drawn; SkinDefs minor 16) |
+| `list.hoverArt` | color | yes | none (`false`: the client's art as drawn; SkinDefs minor 16) |
 | `handle.bg` | color | no | `0, 0, 0, 0.75` |
 | `handle.edge` | color | no | `1, 0.82, 0, 0.6 |`
 | `handle.rest` | color | no | `0.7, 0.7, 0.7, 1 |`
@@ -733,7 +734,13 @@ own color for qualities 6 to 8.
 | `sem.warbandAlt` | color | no | `0.4, 0.78, 1, 1` |
 | `sem.unknown` | color | no | `0.6, 0.6, 0.6, 1` |
 
-**237 tokens.** `icon.grip` joined at SkinDefs minor 16 (LK-06b of Ka0sAddonsCommonTasks
+**238 tokens.** `list.hoverArt` joined at SkinDefs minor 16 (LK-06c of Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, ruling R-5, decision D-14): the settings chrome's hover
+art color (`LibKa0s-Options-1.0` 34.4.36.5.7.11.3.13.9.4.3.6.3.2: the drawer head and the nav entry
+through `Drawer`'s and `NavItem`'s `opts.hover`, the id list entry and the id suggestion row), `false`
+in Ka0s Default and WoW Default, so the client's ADD highlight art is drawn as the client draws it,
+and every other skin's `text.accent` (`FOLLOW`; WoW Default's `extra` stops it). A color desaturates
+the art and tints it. The `eui` source derives it from Ka0s Default. `icon.grip` joined at SkinDefs minor 16 (LK-06b of Ka0sAddonsCommonTasks
 `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, ruling R-5, decision D-14): the resize grip's art color
 (`LibKa0s-Core-1.0` 14's `MakeResizable` `opts.owner`, which every library window passes), `false`
 in Ka0s Default and WoW Default, so the client's size-grabber art is drawn as the client draws it,
@@ -748,7 +755,7 @@ title and body take the existing `gtip.title` and `gtip.value`, whose Ka0s Defau
 gold and white. The library's other tooltip lines read the same tokens (LK-06d, D-14, no new token): the settings
 chrome's titles and the reorder handle's line `gtip.value`, the id list help mark's notes `gtip.body`
 (Ka0s Default's 0.9 where they drew 0.8), and the sim panel's key column `gtip.title` and its other
-lines `gtip.value` (`LibKa0s-Options-1.0` 34.4.36.4.7.11.3.13.9.4.3.6.3.2, `LibKa0s-Sim-1.0` 2.3.8). `icon.arrow` joined at SkinDefs minor 12: the in-client arrow art's color (the paging, dropdown and sort arrows), Ka0s Default's gold and every other skin's accent, which it follows. `scroll.thumbFill` (SkinDefs minor 9) and `scroll.thumbTexture` (minor 2) left at SkinDefs minor 10, never released: the scroll bar's knob is one flat `scroll.thumb` over the faded thumb art in every skin. The four art tokens (`check.texture`, `check.markTexture`,
+lines `gtip.value` (`LibKa0s-Options-1.0` 34.4.36.5.7.11.3.13.9.4.3.6.3.2, `LibKa0s-Sim-1.0` 2.3.8). `icon.arrow` joined at SkinDefs minor 12: the in-client arrow art's color (the paging, dropdown and sort arrows), Ka0s Default's gold and every other skin's accent, which it follows. `scroll.thumbFill` (SkinDefs minor 9) and `scroll.thumbTexture` (minor 2) left at SkinDefs minor 10, never released: the scroll bar's knob is one flat `scroll.thumb` over the faded thumb art in every skin. The four art tokens (`check.texture`, `check.markTexture`,
 `tab.texture`, `tab.onTexture`) joined at SkinDefs minor 2, for WoW Default's Blizzard art. The
 eight **Widgets tokens** (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg`, `list.box`,
 `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`) joined at SkinDefs minor 3, so the drag handle and
@@ -985,8 +992,8 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 | `IconBorder(frame, opts)` | An icon edge on the holder. Without `opts.fromSkin`, flat and `opts.size` pixels (1 by default), as it always was. With `opts.fromSkin = true` (SkinPaintControls minor 9, LK-04), the skin's icon border: `icon.borderStyle` (`"Solid"` flat, `"None"` none, another LibSharedMedia border key a nine-slice of that art, an unknown key flat 1px) at `icon.borderSize` pixels, and `opts.size` is not read; recorded, so a skin switch repaints style and size. Ka0s Default's is Solid 2px black, Drop Watcher's Window › Icons border. A Ka0s extra: under `eui` the library paints it from the EllesmereUI-derived tokens, where the family is Ka0s Default's. | `icon.border`; with `fromSkin`, `icon.borderStyle`, `icon.borderSize` |
 | `SortHeaderBar(bar, opts)` | A list header: the fill, each of `opts.texts`, each of `opts.arrows` (desaturated, since minor 8). | `list.header.bg`, `list.header.text`, `icon.arrow` |
 | `ApplyBarFill(target)` | The accent on a status bar (`SetStatusBarColor`) or a texture. | `text.accent` |
-| `NavItem(item, opts)` | A nav-rail entry: `opts.label` selected or not, `opts.sel` (the selection texture), a selection bar on the holder while `opts.selected`. | `nav.text`, `nav.selText`, `nav.selBg`, `nav.selBar` |
-| `Drawer(head, opts)` | A settings drawer: `opts.label` and `opts.summary` set or not (`opts.set`), then the edge set (`opts.edges`, OptionsDrawer's `{ fill, left, right, bottom, top }`) open or not (`opts.open`), and the box's (`opts.box`). A header with no edge set is boxed on its holders (the fill under its text, the edge over it). | `drawer.*` |
+| `NavItem(item, opts)` | A nav-rail entry: `opts.label` selected or not, `opts.sel` (the selection texture), a selection bar on the holder while `opts.selected`; `opts.hover` (SkinPaintControls minor 10, LK-06c), the hover art, desaturated and colored `list.hoverArt`, left as the client draws it where that is `false`. | `nav.text`, `nav.selText`, `nav.selBg`, `nav.selBar`, `list.hoverArt` |
+| `Drawer(head, opts)` | A settings drawer: `opts.label` and `opts.summary` set or not (`opts.set`), in the body face since SkinPaintControls minor 10 (LK-06c: `P.label`, so *Ignore fonts* reaches them, the summary's smaller stock size scaled); `opts.chevron` desaturated and colored `icon.arrow` and `opts.hover` colored `list.hoverArt` (minor 10); then the edge set (`opts.edges`, OptionsDrawer's `{ fill, left, right, bottom, top }`) open or not (`opts.open`), and the box's (`opts.box`). A header with no edge set is boxed on its holders (the fill under its text, the edge over it). | `drawer.*`, `icon.arrow`, `list.hoverArt` |
 | `ListRow(row, state)` | A list row's washes as regions of the row, under its text (stripe, hover, selection), and the selection outline on its holder. `state` is a table or `"stripe"`, `"hover"`, `"selected"`, `"normal"`. | `list.stripe`, `list.hover`, `list.sel`, `list.selOutline` |
 
 **The getters** (record nothing):
@@ -1378,6 +1385,7 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 | `icon.hot` | `#4DB8FF` | `#E2B659` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#C9A07A` |
 | `icon.arrow` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#FFD100` | `#B48CFF` | `#C9A07A` |
 | `icon.grip` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | · | `#B4AFC8` | `#A39E97` |
+| `list.hoverArt` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FF7A33` | · | `#B48CFF` | `#C9A07A` |
 | `handle.edge` | `#4DB8FF .6` | `#E2B659 .6` | `#B69CFF .6` | `#FFE600 .6` | `#FF7A33 .6` | `#FFD100 .6` | `#B48CFF .6` | `#C9A07A .6` |
 | `handle.rest` | `#9B9BA4` | `#B8A07A` | `#C9CFDB` | `#E0E0E0` | `#C7A993` | `#B8B8B8` | `#B4AFC8` | `#A39E97` |
 | `list.dropLine` | `#4DB8FF .9` | `#E2B659 .9` | `#B69CFF .9` | `#FFE600 .9` | `#FF7A33 .9` | `#FFD100 .9` | `#B48CFF .9` | `#C9A07A .9` |
