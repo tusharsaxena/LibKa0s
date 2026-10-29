@@ -17,14 +17,15 @@ follow-ups (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, M1)
 to `LK-11` that meet the owner's rulings `R-1` to `R-11` on the nine follow-ups v1.80.0's run
 listed. Not tagged.
 
-Versions in this release: **SkinDefs minor 16** (`LibKa0s-Skin-1.0` key **7.16.11.5.9.2.4**); every
-other file still at its v1.80.0 minor, and **test kit revision 44**, until an entry below moves one.
+Versions in this release: **Skin minor 8** and **SkinDefs minor 16** (`LibKa0s-Skin-1.0` key
+**8.16.11.5.9.2.4**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
+until an entry below moves one.
 Still **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
 
 ### SkinDefs minor 16: the quality colors are the client's exactly
 
-`LibKa0s-Skin-1.0` key 7.16.11.5.9.2.4, documented in
-[docs/api/Skin/version-7.16.11.5.9.2.4-docs.md](docs/api/Skin/version-7.16.11.5.9.2.4-docs.md)
+`LibKa0s-Skin-1.0` key 8.16.11.5.9.2.4, documented in
+[docs/api/Skin/version-8.16.11.5.9.2.4-docs.md](docs/api/Skin/version-8.16.11.5.9.2.4-docs.md)
 (*Semantic*; LK-09, ruling R-8). Ka0s Default's `q.*` tokens were the client's
 `ITEM_QUALITY_COLORS` rounded to two places, so a library-drawn epic was `#a336ed` beside the
 client's `#a335ee`. Each is now the client's hex divided by 255, written out in SkinDefs (never read
@@ -35,12 +36,28 @@ Forever; Glass and High Contrast for `q.poor`, `q.common` and `q.legendary`) and
 inherit them. No other token moves. Two cases in `tests/test_skin.lua` pin all six against the mock's
 real hex, byte for byte.
 
+### Skin minor 8: `ResetToSkin` sets an absent companion, never the sentinel
+
+`LibKa0s-Skin-1.0` key 8.16.11.5.9.2.4, the same document (*FROM_SKIN*; LK-07, ruling R-6, decision
+D-19). A raw profile holds only what differs from the AceDB defaults, so a `<key>FromSkin` companion
+new in a release, or equal to its default `false`, is absent. Minor 7 recognized a companion only
+when it was stored: one named directly and absent took `"@skin"`, which `Resolve` reads as not
+following while the settings checkbox shows it ticked, and a pick named with its companion absent
+took `"@skin"` in the pick. Now a listed key ending in `FromSkin` is set to `true` stored or not (a
+stray `"@skin"` in one is repaired), and `ResetToSkin(profile, keys, { companions = true })` sets
+every listed pick's companion, stored or not, and leaves the pick alone. Without `opts` a plain key
+still takes the sentinel, as before. Two cases in `tests/test_skin.lua` pin both.
+
 ### What a consumer owes
 
 - **LK-09:** nothing to call. `q.*` under Ka0s Default, every skin that does not override them, and
   eui now equal the client's colors byte for byte. A test that pins the rounded values (for example
   LootHistory `tests/test_skin_table.lua`) moves, and a "token equals the rounded default, so use the
   client's" workaround (Drop Watcher `core/SkinSetup.lua`'s `defaultQuality`) may go.
+- **LK-07:** nothing to call. A migration may now name an absent companion directly, or name its
+  picks with `{ companions = true }`, instead of seeding the companion `false` or naming only stored
+  ones. A guard inside a schema step that already shipped stays (D-19): the step must produce the
+  same result for a profile that migrates late. A new step needs no guard.
 
 ## v1.80.0 — 2026-10-29
 

@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 7.16.11.5.9.2.4
+# `LibKa0s-Skin-1.0` — version 8.16.11.5.9.2.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,13 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **7** · `SkinDefs.lua` minor **16** · `SkinPaint.lua` minor **11** · `SkinPaintExtras.lua` minor **5** · `SkinPaintControls.lua` minor **9** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
+| Files and minors | `Skin.lua` minor **8** · `SkinDefs.lua` minor **16** · `SkinPaint.lua` minor **11** · `SkinPaintExtras.lua` minor **5** · `SkinPaintControls.lua` minor **9** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
 | Shipped in | unreleased (v1.81.0) |
 | Status | **Current** |
-| Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places (SkinDefs minor 15) |
+| Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places (SkinDefs minor 15), and with a `ResetToSkin` that wrote `FROM_SKIN` into a companion it could not see stored and took no `opts` (Skin minor 7) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 7, SkinDefs = 16, SkinPaint = 11, SkinPaintExtras = 5, SkinPaintControls = 9, SkinEUI = 2, SkinAce = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 8, SkinDefs = 16, SkinPaint = 11, SkinPaintExtras = 5, SkinPaintControls = 9, SkinEUI = 2, SkinAce = 4 }` |
 
 ## What this major is
 
@@ -81,7 +81,7 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `Skin:Token(owner, name)` | value | The owner's resolved token: from its skin resolved (`ResolveSkin`), or, while EllesmereUI paints the owner, from Ka0s Default with EllesmereUI's accent, panel color and font over it (*The EllesmereUI provider*); with the owner's font and texture overrides over either (Skin minor 6, `SetOverride`), and the owner's own tokens over that (Skin minor 7, *Owner tokens*). An unregistered owner reads Ka0s Default. A color is `{ r, g, b, a }`, a shared table: never write to it. nil for a token the skin leaves alone. |
 | `Skin:Color(owner, name)` | r, g, b, a | A color token's components, alpha 1 when it has three; nil otherwise. |
 | `Skin:Resolve(owner, kind, value, fromSkin)` | value | `value`, or the owner's token `kind` when `value` is `FROM_SKIN` or `fromSkin` is true. |
-| `Skin.ResetToSkin(profile, keys)` | count | Puts each listed key back on the skin (R3). A key holding a color (a table), or one with a `<key>FromSkin` companion beside it (an `OptionsCompose` `fromSkin` picker), keeps its value and gets the companion set to `true` (Skin minor 3); a bool key (a companion named directly) is set to `true`; any other key takes `FROM_SKIN`. Keys may be dotted paths (`"font.face"`); a path through a missing table is skipped and no table is created. The colon form works too. |
+| `Skin.ResetToSkin(profile, keys[, opts])` | count | Puts each listed key back on the skin (R3). A key whose name ends in `FromSkin` (a companion named directly) is set to `true` whether it is stored or not, and whatever it held, a stray `FROM_SKIN` included (Skin minor 8; until then an absent one took `FROM_SKIN`, which `Resolve` reads as not following). A key holding a color (a table), or one with a `<key>FromSkin` companion stored beside it (an `OptionsCompose` `fromSkin` picker), keeps its value and gets the companion set to `true` (Skin minor 3); with `opts.companions = true` every listed key does, stored or not, and an absent pick stays absent (Skin minor 8); any other bool key is set to `true`; any other key takes `FROM_SKIN`. **To turn a picker's companion on whatever AceDB stored, name the companion, or pass `{ companions = true }`.** Keys may be dotted paths (`"font.face"`); a path through a missing table is skipped and no table is created. The colon form works too. |
 | `Skin.IsFromSkin(value)` | boolean | `value == FROM_SKIN`. |
 | `Skin:RegisterSkin(def)` | def | Registers `{ key, label, desc, swatches = { 4 hex }, tokens }`. `key` and `tokens` are required; `label` defaults to the key, `desc` to `""`, `swatches` to `{}`. Re-registering a key replaces it in place (a newer `SkinDefs.lua`). Empties the resolve cache. |
 | `Skin:GetSkin(key)` | def or nil | The registered definition. |
@@ -168,9 +168,23 @@ label and uses the list's value as the media path, and that list is the CLI's al
 sentinel stored in a font, border or bar-texture key would draw no preview and be a value nothing can
 render. `O.FontGroup` / `O.BorderGroup` / `O.BarGroup` with `fromSkin = true` emit a bool
 `<key>FromSkin` beside the picker instead, and `ResetToSkin` sets that companion to `true` whether
-the list names the pick (`"hud.font"`, when `"hud.fontFromSkin"` exists beside it) or the companion
-itself; the pick keeps its value for when the player turns the companion off. The host draws with
-`S.Resolve(token, pick, fromSkin)`.
+the list names the pick (`"hud.font"`, when `"hud.fontFromSkin"` is stored beside it) or the
+companion itself; the pick keeps its value for when the player turns the companion off. The host
+draws with `S.Resolve(token, pick, fromSkin)`.
+
+**An absent companion is set too** (Skin minor 8; LK-07 of Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, ruling R-6). A raw profile out of `db.sv.profiles` holds
+only what differs from the AceDB defaults, so a companion new in a release, or one equal to its
+default `false`, is not stored, and neither is a pick equal to its default. `ResetToSkin` recognizes
+a companion **by its name**: a listed key ending in `FromSkin` is set to `true` stored or not, and a
+`"@skin"` an older copy wrote into one is repaired. A pick can be named instead with
+`ResetToSkin(profile, keys, { companions = true })`, which sets every listed key's `<key>FromSkin`
+to `true` stored or not and never writes the pick. Without `opts` a pick is recognized only by a
+companion stored beside it, because an absent key and a plain setting that takes the sentinel look
+alike; so a host either names the companions or passes `{ companions = true }`, and seeds nothing.
+Until minor 8 an absent companion named directly took `"@skin"`, which `Resolve` reads as not
+following while the settings checkbox shows it ticked, and an absent companion beside a named pick
+put `"@skin"` in the pick.
 
 ### Owner tokens
 

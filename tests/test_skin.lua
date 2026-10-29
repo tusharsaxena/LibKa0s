@@ -691,3 +691,48 @@ test("skin: ResetToSkin puts listed keys back on the skin", function()
   assertEqual(Skin:ResetToSkin({ a = 1 }, { "a" }), 1, "the colon form works too")
   assertEqual(Skin.ResetToSkin(nil, { "a" }), 0, "no profile, nothing set")
 end)
+
+test("skin: ResetToSkin sets a companion named directly to true, stored or not", function()
+  -- Skin minor 8 (LK-07 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, ruling R-6).
+  -- red under: Skin minor 7, where an absent `<leaf>FromSkin` took the "@skin" sentinel, which
+  -- Resolve reads as not following while the settings checkbox shows it ticked.
+  local _, Skin = env()
+  local p = {
+    b = {}, c = { barTexture = "Smooth", barTextureFromSkin = "@skin" }, d = { fontFromSkin = false },
+  }
+  local n = Skin.ResetToSkin(p, { "b.fooFromSkin", "c.barTextureFromSkin", "d.fontFromSkin", "e.xFromSkin" })
+  assertEqual(n, 3, "three companions set; a path through a missing table is skipped")
+  assertEqual(p.b.fooFromSkin, true, "an absent companion becomes true, never the sentinel")
+  assertEqual(p.c.barTextureFromSkin, true, "a stored sentinel in a companion is repaired to true")
+  assertEqual(p.c.barTexture, "Smooth", "the pick beside it is kept")
+  assertEqual(p.d.fontFromSkin, true, "a stored companion is set to true as before")
+  assertNil(p.e, "no table is created")
+  local k = { k = {} }
+  assertEqual(Skin:ResetToSkin(k, { "k.zFromSkin" }), 1, "the colon form works too")
+  assertEqual(k.k.zFromSkin, true, "through the colon form too")
+end)
+
+test("skin: ResetToSkin with opts.companions sets every listed pick's companion, stored or not", function()
+  -- Skin minor 8 (LK-07, decision D-19: picker keys included). AceDB strips a pick equal to its
+  -- default and a companion equal to false, so a host naming its picks cannot rely on either being
+  -- stored. red under: Skin minor 7, which ignored opts and wrote "@skin" into the pick.
+  local _, Skin = env()
+  local p = { icons = { borderStyle = "Ka0s Solid" }, hud = {}, keep = { size = 12 } }
+  local n = Skin.ResetToSkin(p, { "icons.borderStyle", "hud.font", "keep.sizeFromSkin", "gone.font" },
+    { companions = true })
+  assertEqual(n, 3, "three keys set; a path through a missing table is skipped")
+  assertEqual(p.icons.borderStyle, "Ka0s Solid", "a stored pick is kept")
+  assertEqual(p.icons.borderStyleFromSkin, true, "its absent companion is set")
+  assertNil(p.hud.font, "an absent pick stays absent, never the sentinel")
+  assertEqual(p.hud.fontFromSkin, true, "its absent companion is set")
+  assertEqual(p.keep.sizeFromSkin, true, "a companion named directly is still set")
+  assertEqual(p.keep.size, 12, "and the value beside it is untouched")
+  assertNil(p.gone, "no table is created")
+  local q = { bar = {} }
+  assertEqual(Skin:ResetToSkin(q, { "bar.texture" }, { companions = true }), 1, "the colon form takes opts")
+  assertEqual(q.bar.textureFromSkin, true, "through the colon form too")
+  assertNil(q.bar.texture, "and no sentinel")
+  local r = { pick = "Smooth" }
+  Skin.ResetToSkin(r, { "pick" }, {})
+  assertEqual(r.pick, "@skin", "without companions = true a plain key still takes the sentinel")
+end)

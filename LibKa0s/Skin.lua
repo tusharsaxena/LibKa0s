@@ -62,7 +62,8 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 
 -- Minor 3: ResetToSkin sets a setting's `<key>FromSkin` companion where it has one, and a bool key
 -- (a companion named directly) to true, so the sentinel never lands in a media pick or a bool
--- (OptionsCompose minor 12's companions; LK-07 of the skinning run).
+-- (OptionsCompose minor 12's companions; LK-07 of the skinning run). Only a STORED companion was
+-- seen until minor 8, which recognizes one by its name.
 -- Minor 4: OwnerLabel and WriteChoice, the read and the write of a registration the Appearance tab's copy to
 -- every Ka0s addon needs (OptionsAppearance.lua; LK-10 of the skinning run).
 -- Minor 5: each owner's two exceptions, the Appearance tab's "Ignore settings panel" and "Ignore
@@ -85,7 +86,12 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- name with no dot, a schema name or a malformed definition is refused and logged once. And
 -- `__RemapName`, the check a primitive's `opts.tokens` slot remap makes of each name (LK-02).
 -- And `__DrawsKey`, the key an owner draws by, which a primitive's `opts.stockDefault` asks (LK-05).
-local MAJOR, MINOR = "LibKa0s-Skin-1.0", 7
+-- Minor 8: ResetToSkin sets a companion named directly (a key ending in `FromSkin`) to true whether
+-- it is stored or not, where minor 3 recognized one only when it already held a bool and wrote the
+-- sentinel into an absent one, which Resolve reads as not following (AceDB strips a companion equal
+-- to its default). `opts.companions` sets every listed pick's companion, stored or not, for a host
+-- that names its picks (LK-07 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, R-6).
+local MAJOR, MINOR = "LibKa0s-Skin-1.0", 8
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -883,21 +889,26 @@ local function walk(t, path)
   return parent, segs[#segs]
 end
 
---- Put every listed key of `profile` back on the skin (the owner's ruling R3). A key holding a
---- color (a table), or one with a `<key>FromSkin` companion beside it (OptionsCompose's `fromSkin`
---- pickers, minor 3), keeps its value and gets the companion set to true; a bool key (a companion
---- named directly) is set to true; any other key takes the FROM_SKIN sentinel. Keys may be dotted
---- paths into nested tables; a path whose table does not exist is skipped. Answers how many keys it
---- set. Called as `Skin.ResetToSkin(p, keys)`.
-function lib.ResetToSkin(profile, keys, extra)
-  if profile == lib then profile, keys = keys, extra end
+--- Put every listed key of `profile` back on the skin (the owner's ruling R3). A key whose name
+--- ends in `FromSkin` is a companion named directly and is set to true, stored or not and whatever
+--- it held (minor 8). A key holding a color (a table), or one with a `<key>FromSkin` companion
+--- beside it (OptionsCompose's `fromSkin` pickers, minor 3), keeps its value and gets the companion
+--- set to true; with `opts.companions` every listed key does, stored or not (minor 8); any other
+--- bool key is set to true; any other key takes the FROM_SKIN sentinel. Keys may be dotted paths
+--- into nested tables; a path whose table does not exist is skipped. Answers how many keys it set.
+--- Called as `Skin.ResetToSkin(p, keys[, opts])`.
+function lib.ResetToSkin(profile, keys, opts, extra)
+  if profile == lib then profile, keys, opts = keys, opts, extra end
   if type(profile) ~= "table" or type(keys) ~= "table" then return 0 end
+  local companions = type(opts) == "table" and opts.companions == true
   local n = 0
   for _, path in ipairs(keys) do
     local parent, leaf = walk(profile, tostring(path))
     if type(parent) == "table" then
       local v = parent[leaf]
-      if type(v) == "table" or parent[leaf .. "FromSkin"] ~= nil then
+      if leaf:match("FromSkin$") then
+        parent[leaf] = true
+      elseif companions or type(v) == "table" or parent[leaf .. "FromSkin"] ~= nil then
         parent[leaf .. "FromSkin"] = true
       elseif type(v) == "boolean" then
         parent[leaf] = true
