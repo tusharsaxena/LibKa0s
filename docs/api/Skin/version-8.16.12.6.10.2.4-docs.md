@@ -880,7 +880,9 @@ answers nil.
   so a skin switch needs no new hook and a pooled control that moved to another owner hovers in that
   owner's skin. Call a primitive **after** the host sets its own scripts: a later `SetScript`
   replaces the hook. `S.CloseButton(btn, { own = true })` is the one primitive that SetScripts, for
-  a close button the library built and that has no host script, as Core's does today.
+  a close button the library built, as Core's does today. It keeps the host's `OnEnter` / `OnLeave`
+  (Core's rest and hover colors) from before its first paint and falls back to them once the button
+  is no longer painted, so a close button unpainted and untracked hovers as it did before (minor 10).
 
 ### Ka0s Default is a skin like the others
 
@@ -960,7 +962,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 | `Slider(slider, opts)` | A slider's track (a 4px bar centered in the slider since SkinPaintControls minor 3, Ka0s Default's host-drawn shape; its edge on the holder, none in every shipped skin), fill (`opts.fill`) and thumb (`opts.thumb`, else its own). Every slider token is nil in Ka0s Default. | `slider.*` |
 | `Tab(tab, opts)` | A tab: its stock art (and `opts.stock`) faded, the backing (`opts.fill`, else a region: the tab art, else the color and gradient), an underline on the holder while selected, the label (`opts.text`, else its own). `opts.selected` is the first state. | `tab.*` |
 | `SetTabSelection(tab, selected)` | Moves a painted tab's state and repaints it; the state lives in the tab's record, so a skin switch keeps it. | as `Tab` |
-| `CloseButton(btn, opts)` | A close control: its art (`btn.icon`, a texture, or `btn.glyph`) at rest and under the pointer. A stock close button has its art faded and an ASCII `x` drawn, under every skin. `opts.own` SetScripts the hover pair. | `close.rest`, `close.hot` |
+| `CloseButton(btn, opts)` | A close control: its art (`btn.icon`, a texture, or `btn.glyph`) at rest and under the pointer. The art's own tint is recorded on the first paint and given back when the button is unpainted (minor 10). A stock close button has its art faded and an ASCII `x` drawn, under every skin. `opts.own` SetScripts the hover pair, falling back to the host's pair once the button is no longer painted (minor 10). | `close.rest`, `close.hot` |
 | `PageButton(btn, dir, opts)` | A paging arrow (`prev`, `next`, `up`, `down`, `left`, `right`): the button look and the in-client arrow, turned, desaturated and colored `icon.arrow` (`btn.icon` until SkinPaintControls minor 8). `opts` (SkinPaintControls minor 10) is the box's: `stock` (more art to fade), `noBg`, `noBorder`, replayed on a repaint. | `btn.*`, `icon.arrow` |
 | `SquareIcon(frame, opts)` | An icon button: `opts.crop` trims the icon art (`opts.icon`, else `frame.icon` / `frame.Icon`) to .08-.92; an edge on the holder. | `icon.border` |
 | `IconBorder(frame, opts)` | An icon edge on the holder. Without `opts.fromSkin`, flat and `opts.size` pixels (1 by default), as it always was. With `opts.fromSkin = true` (SkinPaintControls minor 9, LK-04), the skin's icon border: `icon.borderStyle` (`"Solid"` flat, `"None"` none, another LibSharedMedia border key a nine-slice of that art, an unknown key flat 1px) at `icon.borderSize` pixels, and `opts.size` is not read; recorded, so a skin switch repaints style and size. Ka0s Default's is Solid 2px black, Drop Watcher's Window › Icons border. A Ka0s extra: under `eui` the library paints it from the EllesmereUI-derived tokens, where the family is Ka0s Default's. | `icon.border`; with `fromSkin`, `icon.borderStyle`, `icon.borderSize` |

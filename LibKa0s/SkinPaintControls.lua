@@ -52,6 +52,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- stock look is retired. Button, EditBox, Dropdown, Slider, Tab, CloseButton and PageButton ignore a
 -- stale `opts.stockDefault` and paint under Ka0s Default as under every skin, their hooks live
 -- (SkinPaint minor 12's P.markStock); and PageButton takes `opts` (`stock`, `noBg`, `noBorder`).
+-- Still minor 10 (LK-03, ruling R-3): CloseButton tints its art through P.tint, so the art's own
+-- color is recorded on the first paint and given back by P.unpaint; and an `own` button keeps the
+-- host's OnEnter / OnLeave (Core's) and falls back to them once it is no longer painted.
 local CONTROLS_MINOR = 10
 if lib.__controlsMinor and lib.__controlsMinor >= CONTROLS_MINOR
   and lib.__controlsShellMinor == lib.MINOR then return end
@@ -541,11 +544,25 @@ local function closeGlyph(rec, btn)
   fs:Show()
 end
 
+--- An `own` button's hover script: the skin's color while the button is painted, else the script
+--- the host set before the first paint (Core's CLOSE_REST / CLOSE_HOT), so a button handed back
+--- (unpainted and untracked) hovers as it did before (minor 10, LK-03).
+local function ownHover(host, on)
+  return function(self, ...)
+    local r = live(self)
+    if r then return closeHover(self, r, on) end
+    if host then return host(self, ...) end
+  end
+end
+
 --- S.CloseButton(btn, opts): a window's close control. Its art (`btn.icon`, a texture, or
---- `btn.glyph`, a font string) in `close.rest`, `close.hot` under the pointer. A stock close button
---- (the client's template) has its art faded and an "x" glyph drawn, under every skin. `opts.own` (a
---- button the library built, Core.MakeCloseButton's) SetScripts the hover pair as Core does;
---- otherwise it is HookScript'd. Draws no Media icon (Core's `close` icon is the caller's).
+--- `btn.glyph`, a font string) in `close.rest`, `close.hot` under the pointer, under every skin,
+--- Ka0s Default included. The art's own tint is recorded on the first paint (P.tint) and given back
+--- when the button is unpainted (minor 10). A stock close button (the client's template) has its
+--- art faded and an "x" glyph drawn, under every skin. `opts.own` (a button the library built,
+--- Core.MakeCloseButton's) SetScripts the hover pair as Core does, keeping the host's pair to fall
+--- back to once the button is no longer painted; otherwise it is HookScript'd. Draws no Media icon
+--- (Core's `close` icon is the caller's).
 prim.CloseButton = function(owner, btn, opts)
   if not P.isFrame(btn) then return end
   local rec = P.track(owner, btn, "CloseButton", opts)
@@ -556,11 +573,17 @@ prim.CloseButton = function(owner, btn, opts)
     closeGlyph(rec, btn)
   end
   local art, method = closeArt(btn, rec)
-  local c = P.T(owner)["close.rest"]
-  if art and c then art[method](art, rgb(c)) end
+  if art then P.tint(rec, art, P.T(owner), "close.rest", method) end
   if opts.own then
-    btn:SetScript("OnEnter", function(self) local r = live(self); if r then closeHover(self, r, true) end end)
-    btn:SetScript("OnLeave", function(self) local r = live(self); if r then closeHover(self, r, false) end end)
+    -- The host's pair, kept once per button (a repaint, or a new record after an Untrack, must
+    -- never keep the library's own closures as the host's).
+    local host = lib.__closeHost
+    if not host then host = setmetatable({}, { __mode = "k" }); lib.__closeHost = host end
+    if not host[btn] then
+      host[btn] = { enter = btn:GetScript("OnEnter"), leave = btn:GetScript("OnLeave") }
+      btn:SetScript("OnEnter", ownHover(host[btn].enter, true))
+      btn:SetScript("OnLeave", ownHover(host[btn].leave, false))
+    end
     return
   end
   P.hook(rec, btn, "OnEnter", function(self, r) closeHover(self, r, true) end)

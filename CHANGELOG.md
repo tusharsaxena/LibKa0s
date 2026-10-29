@@ -133,6 +133,19 @@ to another owner or given back keeps its own alignment (TitleBar's private `unju
 the code has done since SkinPaint minor 6. `tests/test_skin_stock_default.lua` is rewritten to pin
 the retirement: nine cases.
 
+### SkinPaintControls minor 10: a close button gets its own tint back
+
+The same key and document (*The primitives*, *Hover and focus*; LK-03, ruling R-3). `S.CloseButton`
+wrote `close.rest` straight onto its art, so nothing recorded the art's own color and an unpainted
+close button (handed to another owner, given back on entering EllesmereUI, or under a scope that
+leaves it stock) kept the skin's color. The rest tint now goes through `P.tint`, which records the
+art's own vertex or text color on the first paint, and `P.unpaint` gives it back. An `own` button
+(Core's `MakeCloseButton`) SetScripted its hover pair over Core's and saved nothing, so once its
+record was gone the hover did nothing; it now keeps Core's pair from before its first paint and
+falls back to it whenever the button is not painted, so an unpainted, untracked close button reddens
+under the pointer as Core drew it. Ka0s Default's look does not move. Three cases in
+`tests/test_skin_paint_controls.lua` pin the icon and the glyph give-back and the `own` hover.
+
 ### What a consumer owes
 
 - **LK-01:** nothing to call. A host's own "while Ignore fonts is on, the stored pick wins" patch

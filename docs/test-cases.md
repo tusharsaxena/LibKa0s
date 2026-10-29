@@ -696,7 +696,7 @@ Total.
 - skin paint: the getters answer the owner's skin
 - skin paint: a skin's size scales each string from its own, one font object per size
 
-### test_skin_paint_controls.lua (28)
+### test_skin_paint_controls.lua (31)
 
 - skin controls: Button on Ka0s Default is LootHistory's flat button's paint
 - skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
@@ -717,6 +717,9 @@ Total.
 - skin controls: WoW Default's tabs are the client's tab art; a stock tab is faded under every skin
 - skin controls: CloseButton on Ka0s Default is Core's close button, call for call
 - skin controls: a stock close button gets a glyph under every skin, Ka0s Default too
+- skin controls: an unpainted CloseButton's icon gets its own tint back
+- skin controls: an unpainted CloseButton's glyph gets its own text color back
+- skin controls: an own CloseButton handed back hovers in Core's colors again
 - skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and ApplyBarFill
 - skin controls: NavItem on Ka0s Default is OptionsNav's entry paint
 - skin controls: Drawer on Ka0s Default is OptionsDrawer's header paint
@@ -3684,7 +3687,7 @@ Total.
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 30 |
 | test_skin_paint.lua | 36 |
-| test_skin_paint_controls.lua | 28 |
+| test_skin_paint_controls.lua | 31 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 22 |
 | test_skin_ace_tree.lua | 14 |
@@ -3797,4 +3800,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3239** |
+| **Total** | **3242** |
