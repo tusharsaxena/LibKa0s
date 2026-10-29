@@ -736,3 +736,33 @@ test("skin: ResetToSkin with opts.companions sets every listed pick's companion,
   Skin.ResetToSkin(r, { "pick" }, {})
   assertEqual(r.pick, "@skin", "without companions = true a plain key still takes the sentinel")
 end)
+
+test("skin: DrawsKey answers the key an owner draws by", function()
+  -- Skin minor 8 (LK-10, ruling R-9, decision D-16): public, lib-level and never a facade member,
+  -- so a host asks it instead of rebuilding the answer from GetChoice and GetSkin.
+  -- red under: Skin minor 7, which had only the internal __DrawsKey.
+  local _, Skin = env()
+  redSkin(Skin)
+  assertEqual(type(Skin.DrawsKey), "function", "a public member")
+  assertEqual(Skin:DrawsKey("Nobody"), Skin.DEFAULT, "an unregistered owner draws Ka0s Default")
+  Skin:RegisterOwner("A", { get = function() return "ka0s", "red" end })
+  assertEqual(Skin:DrawsKey("A"), "red", "the skin the owner wears")
+  Skin:RegisterOwner("B", { get = function() return "ka0s", "nope" end })
+  assertEqual(Skin:DrawsKey("B"), Skin.DEFAULT, "an unknown key draws Ka0s Default")
+  Skin:SetChoice("A", "ka0s", "ka0s")
+  assertEqual(Skin:DrawsKey("A"), "ka0s", "a live switch moves it")
+  assertNil(Skin:For("A").DrawsKey, "never a facade member")
+  assertEqual(Skin.__DrawsKey, Skin.DrawsKey, "the internal name is kept one release as an alias")
+end)
+
+test("skin: DrawsKey answers eui once EllesmereUI paints the owner, Ka0s Default before", function()
+  local E = dofile("tests/fixture_skin_eui.lua")
+  local _, Skin, eui = E.env()
+  Skin:RegisterOwner(E.OWNER, { get = function() return "eui", "ka0s" end })
+  assertEqual(Skin:DrawsKey(E.OWNER), Skin.DEFAULT, "before EllesmereUI paints: the live fallback")
+  eui.login()
+  assertTrue(Skin.euiPainted[E.OWNER], "EllesmereUI paints the owner")
+  assertEqual(Skin:DrawsKey(E.OWNER), "eui", "its derived tokens")
+  Skin.euiRefused[E.OWNER] = "test: refused"
+  assertEqual(Skin:DrawsKey(E.OWNER), "eui", "a refused EllesmereUI too: the library paints from them")
+end)

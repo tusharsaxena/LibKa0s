@@ -71,6 +71,11 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.81.0, not in the census (unreleased).** The release adds Skin's `Skin:DrawsKey` (Skin minor 8),
+the public form of v1.80.0's internal `__DrawsKey`. It gets no row here yet, and the v1.75.0 stamp
+and its numbers stand: Ka0s Premade Groups Filter Extension adopts it in Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`'s M2, and the next census re-run measures it.
+
 **v1.80.0, not in the census (2026-10-29).** The release adds Skin's `Skin:AliasAceType` (SkinAce
 minor 4) and three opt-in surfaces with no member of their own: `RegisterOwner`'s `tokens` (owner
 tokens, Skin minor 7, with `S.Text` given a token name, SkinPaintExtras minor 5), the primitives'

@@ -502,7 +502,7 @@ Total.
 - media: every skin's own bar is in TEXTURES, opaque and gray, and tiles along the bar
 - media: RegisterLSM registers the Glass border and background, and counts them
 
-### test_skin.lua (31)
+### test_skin.lua (33)
 
 - skin: the major registers both files and the sentinel
 - skin: the shell refuses without Core, and SkinDefs then attaches to nothing
@@ -535,6 +535,8 @@ Total.
 - skin: ResetToSkin puts listed keys back on the skin
 - skin: ResetToSkin sets a companion named directly to true, stored or not
 - skin: ResetToSkin with opts.companions sets every listed pick's companion, stored or not
+- skin: DrawsKey answers the key an owner draws by
+- skin: DrawsKey answers eui once EllesmereUI paints the owner, Ka0s Default before
 
 ### test_skin_override.lua (21)
 
@@ -3661,7 +3663,7 @@ Total.
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
 | test_media.lua | 39 |
-| test_skin.lua | 31 |
+| test_skin.lua | 33 |
 | test_skin_override.lua | 21 |
 | test_skin_owner_tokens.lua | 16 |
 | test_skin_remap.lua | 12 |
@@ -3782,4 +3784,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3224** |
+| **Total** | **3226** |

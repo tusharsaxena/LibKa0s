@@ -48,6 +48,18 @@ stray `"@skin"` in one is repaired), and `ResetToSkin(profile, keys, { companion
 every listed pick's companion, stored or not, and leaves the pick alone. Without `opts` a plain key
 still takes the sentinel, as before. Two cases in `tests/test_skin.lua` pin both.
 
+### Skin minor 8: `Skin:DrawsKey(owner)` is public
+
+`LibKa0s-Skin-1.0` key 8.16.11.5.9.2.4, the same document (*Members*; LK-10, ruling R-9, decision
+D-16). The key an owner draws by was the internal `Skin:__DrawsKey`, so a host that keeps its own
+look stock under Ka0s Default (Premade Groups Filter Extension's `NS.SkinDrawsDefault`) rebuilt the
+answer from `GetChoice`, its own EllesmereUI check and `GetSkin`. `Skin:DrawsKey(owner)` now answers
+it: `"eui"` while EllesmereUI paints the owner, else the skin key it wears, `"ka0s"` for Ka0s
+Default, an unknown key, an `eui` owner before EllesmereUI paints and an unregistered owner. It is
+lib-level, never a facade member, so no addon's facade parity test moves. `__DrawsKey` stays one
+release as an alias of the same function (Premade Groups Filter Extension's tests call it until it
+moves). Two cases in `tests/test_skin.lua` pin it; the Skin manifest gains `DrawsKey`.
+
 ### What a consumer owes
 
 - **LK-09:** nothing to call. `q.*` under Ka0s Default, every skin that does not override them, and
@@ -58,6 +70,9 @@ still takes the sentinel, as before. Two cases in `tests/test_skin.lua` pin both
   picks with `{ companions = true }`, instead of seeding the companion `false` or naming only stored
   ones. A guard inside a schema step that already shipped stays (D-19): the step must produce the
   same result for a profile that migrates late. A new step needs no guard.
+- **LK-10:** a host that rebuilds "does this owner draw Ka0s Default" asks
+  `Skin:DrawsKey(owner) == Skin.DEFAULT` instead, guarded by `type(Skin.DrawsKey) == "function"`
+  where an older copy may load first. A call to `__DrawsKey` keeps working this release; move it.
 
 ## v1.80.0 — 2026-10-29
 

@@ -15,6 +15,7 @@
     { "name": "AliasAceType", "kind": "function" },
     { "name": "Color", "kind": "function" },
     { "name": "DEFAULT", "kind": "string" },
+    { "name": "DrawsKey", "kind": "function" },
     { "name": "FROM_SKIN", "kind": "string" },
     { "name": "For", "kind": "function" },
     { "name": "GetChoice", "kind": "function" },

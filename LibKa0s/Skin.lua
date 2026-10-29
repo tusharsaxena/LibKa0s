@@ -91,6 +91,8 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- sentinel into an absent one, which Resolve reads as not following (AceDB strips a companion equal
 -- to its default). `opts.companions` sets every listed pick's companion, stored or not, for a host
 -- that names its picks (LK-07 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, R-6).
+-- And `DrawsKey`, minor 7's `__DrawsKey` made public (lib-level, not a facade member; LK-10, R-9):
+-- `__DrawsKey` stays one release as its alias.
 local MAJOR, MINOR = "LibKa0s-Skin-1.0", 8
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -757,12 +759,16 @@ end
 
 --- The key `owner` draws by: "eui" while EllesmereUI paints it (its derived tokens, the library's
 --- technique when EllesmereUI is refused included), else the skin key it wears (`lib.DEFAULT` for
---- Ka0s Default, and for an owner on `eui` before EllesmereUI paints it: the live fallback). What a
---- primitive's `opts.stockDefault` asks (minor 7, LK-05 of the skinning rollout). Internal.
-function lib:__DrawsKey(owner)
+--- Ka0s Default, for a key no skin registers, and for an owner on `eui` before EllesmereUI paints
+--- it: the live fallback). An unregistered owner answers `lib.DEFAULT`. What a primitive's
+--- `opts.stockDefault` asks (minor 7, LK-05 of the skinning rollout); public since minor 8 (R-9),
+--- lib-level and never a facade member.
+function lib:DrawsKey(owner)
   local _, key = baseOf(owner)
   return key
 end
+--- Minor 7's internal name, kept one release as an alias for a copy or test that still names it.
+lib.__DrawsKey = lib.DrawsKey
 
 --- One owner token's value under `key` (a skin key, or "eui"), reading the follow token from `t`.
 --- Ka0s Default answers the default, unless the owner's font or texture override moved the follow
