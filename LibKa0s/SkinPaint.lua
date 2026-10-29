@@ -113,6 +113,8 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- a TitleBar set (D-08). And (LK-06a of the same run, ruling R-5, D-02, still minor 12): a hook laid
 -- by P.hook does nothing while its record is given back on a settings panel (`rec.panelOff`,
 -- SkinPaintExtras' P.panelIgnored), so a panel-scoped search box's focus line stays its own.
+-- And (LK-A1, still minor 12): P.fontSize reads a stock size of 0 or below as none, and P.unfont
+-- gives no such size back, so SetFont never gets an invalid font height.
 local PAINT_MINOR = 12
 if lib.__paintMinor and lib.__paintMinor >= PAINT_MINOR
   and lib.__paintShellMinor == lib.MINOR then return end
@@ -501,7 +503,7 @@ function P.unfont(rec, fs)
   local obj = namedFont(fs, s.obj)
   if obj then
     fs:SetFontObject(obj)
-  elseif s.path then
+  elseif s.path and type(s.size) == "number" and s.size > 0 then   -- never a height SetFont refuses
     fs:SetFont(s.path, s.size, s.flags)
     if s.shadowOffset and type(fs.SetShadowOffset) == "function" then
       fs:SetShadowOffset(unpack(s.shadowOffset))
@@ -522,11 +524,14 @@ end
 
 --- The size a target of stock size `stock` takes under the owner's skin: `stock` scaled by the
 --- skin's size token over Ka0s Default's (minor 4). A target with no stock size reads the reference
---- itself; a skin or a reference without the token leaves the stock size alone.
+--- itself; a skin or a reference without the token leaves the stock size alone. A stock size that is
+--- not a number above 0 (a string with no font yet reports 0) counts as none, so the answer is never
+--- a height SetFont refuses (minor 12, LK-A1).
 function P.fontSize(owner, token, stock)
   local want = P.T(owner)[token]
   local ref = lib:ResolveSkin(lib.DEFAULT)[token]
   stock = tonumber(stock)
+  if stock and stock <= 0 then stock = nil end
   if type(want) ~= "number" then return stock or ref or 12 end
   if not stock or type(ref) ~= "number" or ref <= 0 then return want end
   return stock * want / ref

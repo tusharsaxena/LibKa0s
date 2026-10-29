@@ -658,7 +658,7 @@ Total.
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 
-### test_skin_paint.lua (36)
+### test_skin_paint.lua (37)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
@@ -696,6 +696,7 @@ Total.
 - skin paint: Font and White put the body font and color on a string
 - skin paint: the getters answer the owner's skin
 - skin paint: a skin's size scales each string from its own, one font object per size
+- skin paint: a string reporting no usable size is painted at the token size, never at 0
 
 ### test_skin_paint_controls.lua (31)
 
@@ -3752,7 +3753,7 @@ Total.
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 31 |
-| test_skin_paint.lua | 36 |
+| test_skin_paint.lua | 37 |
 | test_skin_paint_controls.lua | 31 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 22 |
@@ -3870,4 +3871,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3296** |
+| **Total** | **3297** |

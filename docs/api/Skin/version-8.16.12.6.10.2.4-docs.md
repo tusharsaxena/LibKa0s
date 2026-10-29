@@ -883,7 +883,10 @@ answers nil.
   its face by path, size and flags. An EditBox in the client answers `GetFontObject` with an
   anonymous font object rather than the one it was given, and handing that back through
   `SetFontObject` overflows the client's stack (SkinPaint minor 3). Faces resolve through
-  LibSharedMedia.
+  LibSharedMedia. A string whose `GetFont` reports a size that is not a number above 0 (one with no
+  font yet reports 0) is drawn at the skin's size token itself, and such a size is never handed back,
+  so `SetFont` never gets an invalid font height (SkinPaint minor 12, LK-A1 of Ka0sAddonsCommonTasks
+  `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`).
 - **Labels.** Every string a primitive colors also takes the skin's face (`P.label`, SkinPaint minor 5):
   an EditBox's hint, a sort header's texts, a footer, a card, a cover, a nav item, a tab and a state
   label no longer keep the client's font and its shadow under a skin that sets a face. A dark label

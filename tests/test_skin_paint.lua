@@ -655,3 +655,42 @@ test("skin paint: a skin's size scales each string from its own, one font object
   assertTrue(math.abs(big:GetFontObject().font[2] - 12 * k) < 0.06, "the body scales from 12")
   assertTrue(small:GetFontObject() ~= big:GetFontObject(), "two sizes, two font objects")
 end)
+
+test("skin paint: a string reporting no usable size is painted at the token size, never at 0", function()
+  -- red under: P.fontSize scaling a stock size of 0 (truthy in Lua) to 0, so SetFont(path, 0) raised
+  -- in the client (LK-A1, the owner's invalid font height error, MultiMeters' meter title in MM-H1).
+  local m, Skin = F.env({ lsm = LSM })
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local want = Skin:ResolveSkin("obsidian")["font.bodySize"]
+  local sizes = {}
+  local function spy(obj)
+    local set = obj.SetFont
+    obj.SetFont = function(self, path, size, flags)
+      sizes[#sizes + 1] = size
+      return set(self, path, size, flags)
+    end
+  end
+  local made = m.CreateFont
+  m.CreateFont = function(name) local o = made(name); spy(o); return o end
+  local strings = {}
+  for _, bad in ipairs({ 0, -4, "x", false }) do
+    local fs = m.CreateFrame("Frame"):CreateFontString()
+    fs:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
+    fs.__font[2] = bad or nil
+    spy(fs)
+    strings[#strings + 1] = fs
+    S.Font(fs)
+    assertEqual(fs:GetFontObject().font[2], want, "stock size " .. tostring(bad) .. " paints the token size")
+  end
+  local none = m.CreateFrame("Frame"):CreateFontString()
+  spy(none)
+  strings[#strings + 1] = none
+  S.Font(none)
+  assertEqual(none:GetFontObject().font[2], want, "a string with no font yet paints the token size")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  for _, size in ipairs(sizes) do
+    assertTrue(type(size) == "number" and size > 0, "SetFont got size " .. tostring(size))
+  end
+  assertTrue(#sizes > 0, "SetFont was reached")
+  local _ = strings
+end)
