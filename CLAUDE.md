@@ -219,7 +219,11 @@ below is current. Re-measured 2026-10-27 after the skin-feedback rounds (`SF-*` 
 Ka0sAddonsCommonTasks `docs/2026-10-26-SKIN_FEEDBACK/`): still eight, none of them touched. Re-measured at v1.79.0's close
 (2026-10-28, `SO-05` of Ka0sAddonsCommonTasks `docs/2026-10-28-SKIN_OVERRIDES_AND_PICKER/`): still eight, nothing over
 1500, every figure below current; the release's new files, `LibKa0s/OptionsSkinPicker.lua` (765),
-`LibKa0s/Toast.lua` (460) and `tests/test_options_skin_picker.lua` (966), are out of the band. Largest first:
+`LibKa0s/Toast.lua` (460) and `tests/test_options_skin_picker.lua` (966), are out of the band. Re-measured at v1.80.0's
+close (2026-10-29, the release close of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`): **nine**, nothing over
+1500. `LibKa0s/Skin.lua` came in (below); the other eight are untouched since v1.79.0, so their figures stand. The
+release's other grown files are out of the band: `LibKa0s/SkinPaint.lua` 994, `LibKa0s/SkinAce.lua` 917,
+`LibKa0s/OptionsCompose.lua` 848, `LibKa0s/SkinPaintControls.lua` 752. Largest first:
 
 - `testkit/mock_base.lua` (1465 with kit revision 43's one comment line pointing at `testkit/mock_paint.lua`, measured 2026-10-25, under its 1490 re-check trigger; 1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
@@ -257,6 +261,13 @@ Ka0sAddonsCommonTasks `docs/2026-10-26-SKIN_FEEDBACK/`): still eight, none of th
   SimPanel minor 7 (the skin owner, `LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`)
   added none either: its cases are the new `tests/test_tool_windows_skin.lua`'s, and only the two
   pins moved, to "at least" (re-measured 2026-10-25, still 1056).
+- `LibKa0s/Skin.lua` (1044, new to the band at v1.80.0, measured 2026-10-29: 802 → 1044 with minor 7's owner
+  tokens, the slot remap's resolution (`__Remap`, `__RemapName`) and `__DrawsKey` (the owner-token, slot-remap and
+  stock-under-Default items of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`)) — **accepted.** The engine is still one piece of
+  state with one cache discipline, and the owner-token block is the part with the clearest boundary. The seam
+  is that block (`isSchemaName` through `takeTokens`, `__RemapName`, `ownValue`, `withOwnTokens` and `__Remap`),
+  to a secondary file of its own with its own minor, paired on the Skin shell. **Re-check trigger: 1150 lines, or
+  the next Skin minor that adds to the owner-token block.**
 - `tests/test_options_compose.lua` (1012, new to the band at v1.77.0, measured 2026-10-24: 944 →
   1012 with OptionsCompose minor 8's six `O.StrataTooltip` cases, `LK-20` of Ka0sAddonsCommonTasks
   `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) — **accepted.** The seam is the record-backed arm

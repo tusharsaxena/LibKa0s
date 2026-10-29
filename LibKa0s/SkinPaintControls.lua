@@ -42,7 +42,13 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Minor 8 (the owner's round-5 showroom audit): the paging arrow, a dropdown's arrow and a sort
 -- header's arrows take `icon.arrow` through P.glyph, desaturated first, so they wear the skin's color
 -- and not the art's yellow.
-local CONTROLS_MINOR = 8
+-- Minor 9 (LK-02 of Ka0sAddonsCommonTasks docs/2026-10-29-SKINNING_ROLLOUT): Button's `opts.tokens`
+-- slot remap (`bg`, `border`, `text`, `hover`, `icon`, `disabled`; SkinPaint minor 11's P.remap),
+-- kept on the button's regions so its hover and enable hooks paint the remapped label (a danger
+-- button). Then, still minor 9: IconBorder's `opts.fromSkin` draws the skin's icon border family
+-- (`icon.borderStyle`, `icon.borderSize`; LK-04), and a target kept stock by `opts.stockDefault`
+-- (SkinPaint minor 11's P.keepStock; LK-05) is not live to its hover pair.
+local CONTROLS_MINOR = 9
 if lib.__controlsMinor and lib.__controlsMinor >= CONTROLS_MINOR
   and lib.__controlsShellMinor == lib.MINOR then return end
 lib.__controlsMinor      = CONTROLS_MINOR
@@ -67,7 +73,12 @@ local INPUT = { fill = "input.bg", border = "input.border", style = "input.borde
                 size = "input.borderSize" }
 
 --- The live record of `frame`, for a hook: nil once the frame was released.
-local function live(frame) return lib.painted[frame] end
+-- A painted target's record, or nil while it is kept stock (`opts.stockDefault`, SkinPaint minor 11).
+local function live(frame)
+  local r = lib.painted[frame]
+  if r and r.regions.stockKept then return nil end
+  return r
+end
 
 --- Recolor a box's edge: the backdrop's, or the holder's flat edges.
 local function edgeColor(rec, frame, c)
@@ -98,6 +109,28 @@ end
 
 local function buttonBase(rec) return rec.regions.primary and "btnPrimary" or "btn" end
 
+-- The slots Button's `opts.tokens` remaps, per base (minor 9), and its one fill slot.
+local BUTTON_SLOTS = {}
+for _, base in ipairs({ "btn", "btnPrimary" }) do
+  BUTTON_SLOTS[base] = { bg = base .. ".bg", border = base .. ".border", text = base .. ".text",
+                         hover = base .. ".hover", icon = base .. ".icon", disabled = "text.disabled" }
+end
+local BUTTON_FILLS = { bg = true }
+
+--- The owner's tokens as the button's record remaps them (minor 9): its `opts.tokens`, kept on its
+--- regions by its last Button call. The view is cached on the regions, keyed by the token table,
+--- the remap and the base, so a hover or enable hook builds nothing while none of them moves.
+local function buttonTokens(owner, rec)
+  local T = P.T(owner)
+  local tokens, base, r = rec.regions.btnTokens, buttonBase(rec), rec.regions
+  if not P.remap or tokens == nil then return T end
+  local c = r.btnView
+  if c and c.T == T and c.tokens == tokens and c.base == base then return c.view end
+  local view = P.remap(owner, T, tokens, BUTTON_SLOTS[base], BUTTON_FILLS, "Button")
+  r.btnView = { T = T, tokens = tokens, base = base, view = view }
+  return view
+end
+
 local function enabled(btn)
   return type(btn.IsEnabled) ~= "function" or btn:IsEnabled() ~= false
 end
@@ -105,7 +138,7 @@ end
 --- The label's color for the button's state: `text.disabled` while disabled, else the hover or
 --- rest color.
 local function buttonLabel(btn, rec, hot)
-  local T = P.T(rec.owner)
+  local T = buttonTokens(rec.owner, rec)
   local base = buttonBase(rec)
   local fs = labelOf(btn)
   local c
@@ -123,14 +156,17 @@ local function buttonHover(btn, rec, on) buttonLabel(btn, rec, on) end
 --- `btnPrimary.*` with `opts.primary`): backdrop, gradient, non-flat edge on the holder; the stock
 --- textures faded unless kept (`keepKeys == true` or `opts.keep`); the label in `btn.text` and the
 --- body font, `btn.hover` under the pointer; `btn.icon` (a texture) in `btn.icon`. Ka0s Default
---- leaves a stock-template button stock. Draws no Media icon.
+--- leaves a stock-template button stock. `opts.tokens` (minor 9) remaps `bg`, `border`, `text`,
+--- `hover`, `icon` and `disabled` to a library or owner token by NAME (a danger button), for the
+--- first paint, every repaint and the hover and enable hooks. Draws no Media icon.
 prim.Button = function(owner, btn, a)
   if not P.isFrame(btn) then return end
   local rec = P.track(owner, btn, "Button", a)
   local opts = buttonOpts(a)
   if P.stockDefault(owner, rec, btn, opts) then return end
-  local T = P.T(owner)
   rec.regions.primary = opts.primary == true
+  rec.regions.btnTokens = type(opts.tokens) == "table" and opts.tokens or nil
+  local T = buttonTokens(owner, rec)
   if not opts.keep then
     P.fadeAll(rec, P.stockRegions(btn, opts))
     P.box(rec, btn, T, opts.primary and BTN_PRIMARY or BTN, opts)
@@ -510,8 +546,9 @@ end
 --- `btn.glyph`, a font string) in `close.rest`, `close.hot` under the pointer. A stock close button
 --- (the client's template) is left stock in Ka0s Default; elsewhere its art is faded and an "x"
 --- glyph drawn. `opts.own` (a button the library built, Core.MakeCloseButton's) SetScripts the hover pair
---- as Core does; otherwise it is HookScript'd. Draws no Media icon (Core's `close` icon is the
---- caller's).
+--- as Core does; otherwise it is HookScript'd. `opts.stockDefault` (minor 9, LK-05) leaves a stock
+--- close button the client's while the owner draws Ka0s Default, its hover inert. Draws no Media
+--- icon (Core's `close` icon is the caller's).
 prim.CloseButton = function(owner, btn, opts)
   if not P.isFrame(btn) then return end
   local rec = P.track(owner, btn, "CloseButton", opts)
@@ -570,13 +607,29 @@ prim.SquareIcon = function(owner, frame, opts)
   P.edges(rec, frame, P.T(owner)["icon.border"], "flat", 1)
 end
 
---- S.IconBorder(frame, opts): an `icon.border` edge, `opts.size` pixels, on the frame's holder
---- (nil in Ka0s Default: none). Draws no Media icon.
+-- The edge style an `icon.borderStyle` names (minor 9, LK-04): "Solid" is the flat WHITE8X8 edge,
+-- "None" draws none (nil), any other LibSharedMedia border key a nine-slice of that art.
+local function iconEdgeStyle(style)
+  if style == "None" then return nil end
+  if style == nil or style == "Solid" then return "flat" end
+  return "nine:" .. tostring(style)
+end
+
+--- S.IconBorder(frame, opts): an `icon.border` edge on the frame's holder. Without `opts.fromSkin` it
+--- is flat, `opts.size` pixels (1 by default), as it always was. With `opts.fromSkin = true` (minor 9,
+--- LK-04) it is the skin's icon border: `icon.borderStyle` ("Solid" flat, "None" none, another
+--- LibSharedMedia border key a nine-slice) at `icon.borderSize` pixels, and `opts.size` is not read.
+--- Ka0s Default's is Solid 2px black. Draws no Media icon.
 prim.IconBorder = function(owner, frame, opts)
   if not P.isFrame(frame) then return end
   local rec = P.track(owner, frame, "IconBorder", opts)
+  local T = P.T(owner)
+  if type(opts) == "table" and opts.fromSkin == true then
+    local style = iconEdgeStyle(T["icon.borderStyle"])
+    return P.edges(rec, frame, style and T["icon.border"] or nil, style, T["icon.borderSize"] or 1)
+  end
   local size = type(opts) == "table" and opts.size or 1
-  P.edges(rec, frame, P.T(owner)["icon.border"], "flat", size)
+  P.edges(rec, frame, T["icon.border"], "flat", size)
 end
 
 --- S.SortHeaderBar(bar, opts): a list's header row. `list.header.bg` behind it (nil in Ka0s

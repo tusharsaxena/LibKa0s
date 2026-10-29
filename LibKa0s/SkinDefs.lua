@@ -85,7 +85,13 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- `barTex` in its mockup entry (Media minor 9 ships them): Obsidian Ka0s Matte, Azeroth Ka0s
 -- Parchment, Glass Ka0s Glass Bar, High Contrast Ka0s Solid, Ember Ka0s Forge, WoW Midnight Ka0s
 -- Satin and WoW Forever Ka0s Classic. WoW Default sets none and keeps the Blizzard bar through KEEP.
-local DEFS_MINOR = 14
+-- Minor 15 (LK-04 of Ka0sAddonsCommonTasks docs/2026-10-29-SKINNING_ROLLOUT, gap DW-G14): the icon
+-- border family, `icon.borderStyle` (a LibSharedMedia border key, as `bar.borderStyle` is; "Solid" is
+-- the flat WHITE8X8 edge and "None" draws none) and `icon.borderSize` beside `icon.border`, so an item
+-- icon's border can follow the skin (S.IconBorder's `opts.fromSkin`, OptionsCompose's
+-- `BorderGroup{ fromSkin = "icon" }`). Ka0s Default's is Drop Watcher's Window › Icons border today,
+-- Solid 2px; every other skin sets its own (ICON_EDGE below). No existing token moves.
+local DEFS_MINOR = 15
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -147,7 +153,8 @@ local GROUPS = {
     .. "strip.test:color strip.sim:color cover.dim:color cover.text:color" },
   { "HUD", "bar.texture:string bar.gloss:bool bar.bg:color? bar.border:color? "
     .. "bar.borderStyle:string bar.borderSize:number icon.border:color? glow.color:color? "
-    .. "hud.font:string hud.fontSize:number hud.outline:string" },
+    .. "hud.font:string hud.fontSize:number hud.outline:string icon.borderStyle:string "
+    .. "icon.borderSize:number" },
   { "Charts", "chart.axis:color chart.axisAlt:color chart.grid:color chart.crosshair:color "
     .. "chart.marker:color chart.line:color chart.bar:color chart.track:color chart.total:color "
     .. "chart.other:color chart.otherLine:color chart.series:colors" },
@@ -299,6 +306,10 @@ local KA0S = {
   ["bar.texture"] = "Ka0s Default", ["bar.gloss"] = false, ["bar.borderStyle"] = "None",
   ["bar.borderSize"] = 1, ["hud.font"] = "Ka0s Oxanium SemiBold", ["hud.fontSize"] = 12,
   ["hud.outline"] = "OUTLINE",
+  -- The icon border (minor 15): Drop Watcher's Window › Icons border, the one item-icon border a Ka0s
+  -- addon draws today (its defaults/Profile.lua icons.borderStyle "Solid", icons.borderSize 2; the
+  -- color is `icon.border`'s black, below).
+  ["icon.borderStyle"] = "Solid", ["icon.borderSize"] = 2,
   -- Charts: Widgets LINE_CHART, LootHistory AnalyticsCharts / AnalyticsLedger / C.TIMELINE.
   ["chart.axis"] = { 0.45, 0.45, 0.5, 0.8 }, ["chart.axisAlt"] = { 0.55, 0.55, 0.60, 0.9 },
   ["chart.grid"] = { 1, 1, 1, 0.07 }, ["chart.crosshair"] = { 1, 1, 1, 0.35 },
@@ -534,9 +545,21 @@ local function translate(mock, extra)
   return out
 end
 
+-- Each skin's icon border (minor 15), a style and a size of its own: a flat edge as thin as the
+-- skin's own control edges (1px where its edges are hairlines, 2px where they are heavier), and WoW
+-- Default the client's tooltip edge, its one Blizzard-art skin. The mockups draw no icon border, so
+-- none comes through MOCK_MAP; a skin's `extra` may still override.
+local ICON_EDGE = {
+  obsidian = { "Solid", 1 }, azeroth = { "Solid", 2 }, glass = { "Solid", 1 }, contrast = { "Solid", 2 },
+  ember = { "Solid", 2 }, wow = { "Blizzard Tooltip", 2 }, midnight = { "Solid", 2 }, forever = { "Solid", 1 },
+}
+
 local function register(key, label, desc, swatches, mock, extra)
-  lib:RegisterSkin({ key = key, label = label, desc = desc, swatches = swatches,
-    tokens = translate(mock, extra) })
+  local tokens = translate(mock, extra)
+  local icon = ICON_EDGE[key]
+  if icon and tokens["icon.borderStyle"] == nil then tokens["icon.borderStyle"] = icon[1] end
+  if icon and tokens["icon.borderSize"] == nil then tokens["icon.borderSize"] = icon[2] end
+  lib:RegisterSkin({ key = key, label = label, desc = desc, swatches = swatches, tokens = tokens })
 end
 
 -- ── Obsidian ── mockup `obsidian`. Inter, the mockup's own face (Barlow until minor 11).

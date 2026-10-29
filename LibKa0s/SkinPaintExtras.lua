@@ -1,7 +1,8 @@
 -- LibKa0s-Skin-1.0 — the Ka0s paint primitives, part two: the window family's Ka0s extras
--- (TitleBar, Divider, Footer, Card, Strip, Cover, Tooltip, MenuFrame), the text and font
--- primitives (Text, Font, White), the bar texture (BarTexture) and the getters (GetAccentColor,
--- GetPanelColor, GetFont, GlowColor, ChartStyle, BarStyle).
+-- (TitleBar, Divider, Footer, Card, Strip, Cover, Tooltip, MenuFrame), the stock-art faders of
+-- EllesmereUI's vocabulary (FadeRegions, FadeNineSlice, from SkinPaint.lua since its minor 11), the
+-- text and font primitives (Text, Font, White), the bar texture (BarTexture) and the getters
+-- (GetAccentColor, GetPanelColor, GetFont, GlowColor, ChartStyle, BarStyle).
 --
 -- A file of its own so no primitive file reaches layout-§1's 1000-line band: it is part of the same
 -- major, paired on the shell's minor (`__extrasMinor` / `__extrasShellMinor`), and it paints with
@@ -24,7 +25,14 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Minor 4: BarTexture, the owner's bar texture (`bar.texture`, its texture override when it sets
 -- one, Skin minor 6) on a Texture or a StatusBar, tinted and recorded (LibKa0s#63). A repaint and a
 -- nil color keep the bar's live color (a host's own recolor included), never a first-paint snapshot.
-local EXTRAS_MINOR = 4
+-- Minor 5 (LK-02 of Ka0sAddonsCommonTasks docs/2026-10-29-SKINNING_ROLLOUT): Card's `opts.tokens`
+-- slot remap (`bg`, `border`, `title`, `text`; SkinPaint minor 11's P.remap), and the two faders,
+-- moved here unchanged from SkinPaint.lua, which they would have taken into layout-§1's band.
+-- Then (LK-05 of the same run, still minor 5): TitleBar's and FadeNineSlice's `opts.stockDefault`
+-- (SkinPaint minor 11's P.keepStock), and Panel and Inset, moved here unchanged from SkinPaint.lua
+-- for the same reason. And (LK-01's review, still minor 5): S.Text takes an owner or library token
+-- NAME as well as a role, so an owner token is drawn through a tracked, replayed primitive.
+local EXTRAS_MINOR = 5
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
 lib.__extrasMinor      = EXTRAS_MINOR
@@ -63,14 +71,25 @@ local function justify(rec, fs, align)
   end
 end
 
+-- Give back every alignment `justify` set (a TitleBar kept stock, minor 5).
+local function unjustify(rec)
+  local priors = P.saved(rec, "justify")
+  for fs, align in pairs(priors) do
+    fs:SetJustifyH(align)
+    priors[fs] = nil
+  end
+end
+
 --- S.TitleBar(bar, opts): a title bar. Its fill is `title.bg` (or the `title.bgTop` / `bgBottom`
 --- gradient), the bar's backdrop when it has one, else a region of the bar under its text; its text (`opts.text`, else
---- `bar.title` / `bar.text`) takes `title.text`, the title font and `title.align`. Draws no Media
---- icon.
+--- `bar.title` / `bar.text`) takes `title.text`, the title font and `title.align`. `opts.stockDefault`
+--- (minor 5, LK-05) leaves a template's title bar as the client draws it while the owner draws Ka0s
+--- Default, the text's color, font and alignment given back. Draws no Media icon.
 prim.TitleBar = function(owner, bar, opts)
   if type(bar) ~= "table" then return end
   local rec = P.track(owner, bar, "TitleBar", opts)
   opts = type(opts) == "table" and opts or {}
+  if P.keepStock(owner, rec, bar, opts) then return unjustify(rec) end
   local T = P.T(owner)
   P.box(rec, bar, T, TITLE, opts)
   local fs = textOf(bar, opts, "text", { "title", "text" })
@@ -112,14 +131,19 @@ prim.Footer = function(owner, frame, opts)
   if fs then P.label(owner, rec, fs, T, "text.muted") end
 end
 
+local CARD_SLOTS = { bg = "card.bg", border = "card.border", title = "text.heading", text = "text.body" }
+local CARD_FILLS = { bg = true }
+
 --- S.Card(frame, opts): a card (LootHistory's KPI cards), `card.bg` under `card.border` as the
---- flat-control backdrop; `opts.title` takes `text.heading`, `opts.text` `text.body`. Draws no
---- Media icon.
+--- flat-control backdrop; `opts.title` takes `text.heading`, `opts.text` `text.body`. `opts.tokens`
+--- (minor 5) remaps `bg`, `border`, `title` and `text` to a library or owner token by NAME (an
+--- alternate card fill, a callout). Draws no Media icon.
 prim.Card = function(owner, frame, opts)
   if type(frame) ~= "table" then return end
   local rec = P.track(owner, frame, "Card", opts)
   opts = type(opts) == "table" and opts or {}
   local T = P.T(owner)
+  if P.remap then T = P.remap(owner, T, opts.tokens, CARD_SLOTS, CARD_FILLS, "Card") end
   P.box(rec, frame, T, CARD, opts)
   if P.isFS(opts.title) then P.label(owner, rec, opts.title, T, "text.heading", "title") end
   if P.isFS(opts.text) then P.label(owner, rec, opts.text, T, "text.body") end
@@ -206,6 +230,74 @@ prim.MenuFrame = function(owner, frame, opts)
   P.box(rec, frame, T, opts.alt and MENU_ALT or MENU, opts)
 end
 
+-- ── the panels (SkinPaint.lua's until its minor 11, LK-05; moved unchanged) ────────────────────
+
+local PANEL = { fill = "panel.bg", border = "panel.border" }
+local NAV_SLOTS = { bg = "nav.bg", border = "nav.border" }
+local INSET = { fill = "input.bg", border = "input.border", style = "input.borderStyle",
+                size = "input.borderSize" }
+
+local function panel(owner, frame, opts, name, spec)
+  if type(frame) ~= "table" then return end
+  local rec = P.track(owner, frame, name, opts)
+  opts = type(opts) == "table" and opts or {}
+  if P.stockDefault(owner, rec, frame, opts) then return end
+  local T = P.T(owner)
+  if opts.nav then
+    -- The settings nav rail keeps its own backdrop art and is recolored (OptionsNav's pane); its
+    -- colors are saved first, so P.unpaint can put them back (minor 8: the panel exception, live).
+    if P.hasBackdrop(frame) then P.saveBackdrop(rec, frame) end
+    T = P.remap(owner, T, opts.tokens, NAV_SLOTS, nil, name)
+    return P.recolor(frame, T["nav.bg"], T["nav.border"])
+  end
+  if opts.inset then spec = INSET end
+  T = P.remap(owner, T, opts.tokens, { bg = spec.fill, border = spec.border }, P.FILL_SLOTS, name)
+  P.box(rec, frame, T, spec, opts)
+end
+
+--- S.Panel(frame, opts): a flat panel, `panel.bg` under a `panel.border` edge (LootHistory's list
+--- panels). `opts.inset` paints it as an inset (`input.*`); `opts.noBg`, `opts.noBorder` leave out
+--- either half; `opts.nav` recolors the backdrop the frame already wears with `nav.bg` /
+--- `nav.border` (the settings nav rail). `opts.tokens` (SkinPaint minor 11) remaps `bg` and `border` (the
+--- panel's, the inset's or the nav rail's) to a library or owner token by NAME (a caution callout).
+--- Draws no Media icon.
+prim.Panel = function(owner, frame, opts) return panel(owner, frame, opts, "Panel", PANEL) end
+
+--- S.Inset(frame, opts): a recessed area, the input colors (`input.bg`, `input.border`, its style
+--- and size). `opts.tokens` remaps `bg` and `border` as Panel's does. Draws no Media icon.
+prim.Inset = function(owner, frame, opts) return panel(owner, frame, opts, "Inset", INSET) end
+
+-- ── the stock-art faders (SkinPaint.lua's until its minor 11) ───────────────────────────────
+
+--- S.FadeRegions(frame, ...): fade every texture region of `frame` (and of each further frame) that
+--- no primitive made, prior alphas recorded, under every skin (Ka0s Default too since minor 6).
+prim.FadeRegions = function(owner, frame, ...)
+  if not P.isFrame(frame) then return end
+  local rec = P.track(owner, frame, "FadeRegions", ...)
+  rec.regions.stock = true
+  local frames = { frame, ... }
+  for _, f in ipairs(frames) do
+    if P.isFrame(f) and type(f.GetRegions) == "function" then
+      for _, r in ipairs({ f:GetRegions() }) do
+        if P.isTexture(r) and not lib.__ours[r] then P.fade(rec, r) end
+      end
+    end
+  end
+end
+
+--- S.FadeNineSlice(frame, opts): fade the nine pieces of `frame.NineSlice`, under every skin;
+--- `opts.stockDefault` (minor 5, LK-05) leaves them, and gives them back, while the owner draws Ka0s
+--- Default.
+prim.FadeNineSlice = function(owner, frame, opts)
+  if not P.isFrame(frame) then return end
+  local rec = P.track(owner, frame, "FadeNineSlice", opts)
+  if P.keepStock(owner, rec, frame, opts) then return end
+  rec.regions.stock = true
+  local ns = rawget(frame, "NineSlice")
+  if not P.isFrame(ns) then return end
+  for _, k in ipairs(P.NINE_KEYS or {}) do P.fade(rec, P.field(ns, k, "Texture")) end
+end
+
 -- ── text and fonts ───────────────────────────────────────────────────────────────────────────
 
 local TEXT_ROLE = {
@@ -217,12 +309,20 @@ local TEXT_FONT = { title = "title", heading = "title", headingAlt = "title" }
 
 --- S.Text(fs, role): a text role, "body", "muted", "heading", "headingAlt", "accent", "disabled",
 --- "link", "linkHot" or "title": its color and its font (the title font for the title and heading
---- roles, the body font for the rest). Draws no Media icon.
+--- roles, the body font for the rest). Or (minor 5) a token NAME, library or owner ("dw.note",
+--- "sem.good"): the color from that token, in the body font, replayed on a skin switch like a role.
+--- A name the owner cannot read (logged once) or a token that is not a color draws as "body". Draws
+--- no Media icon.
 prim.Text = function(owner, fs, role)
   if not P.isFS(fs) then return end
   local rec = P.track(owner, fs, "Text", role)
-  role = TEXT_ROLE[role] and role or "body"
-  P.tint(rec, fs, P.T(owner), TEXT_ROLE[role])
+  local T, token = P.T(owner), TEXT_ROLE[role]
+  if not token and type(role) == "string" and role:find(".", 1, true)
+    and type(lib.__RemapName) == "function" and lib:__RemapName(owner, role, "Text")
+    and (T[role] == nil or type(T[role]) == "table") then   -- a color token; never a face or a size
+    token = role
+  end
+  P.tint(rec, fs, T, token or "text.body")
   P.font(owner, rec, fs, TEXT_FONT[role] or "body")
 end
 

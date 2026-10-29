@@ -556,6 +556,63 @@ Total.
 - skin override: a texture Untrack handed back starts from its own color
 - skin override: BarTexture leaves a frame that is neither a Texture nor a StatusBar alone
 
+### test_skin_owner_tokens.lua (16)
+
+- skin owner tokens: Ka0s Default answers each token's default, exactly
+- skin owner tokens: a skin answers its own entry, else the follow token's value in that skin
+- skin owner tokens: false in a skin's entry is that skin's none
+- skin owner tokens: the library's tokens never move, and an owner with none reads the resolved table
+- skin owner tokens: a name with no dot, a schema name and a malformed definition are refused, logged once
+- skin owner tokens: with no log hook a refusal reaches the error handler, once
+- skin owner tokens: a second registration adds tokens and replaces a name it repeats
+- skin owner tokens: one owner's tokens never reach another owner
+- skin owner tokens: Divider's token name resolves an owner token and repaints on a skin switch
+- skin owner tokens: the owner's font and texture overrides still apply beside them
+- skin owner tokens: under Ka0s Default an override still reaches a token that follows it
+- skin owner tokens: a name inside a library token family is refused, schema name or not
+- skin owner tokens: a follow of another kind is refused; a mistyped skins entry is dropped or flagged
+- skin owner tokens: S.Text draws a token name and repaints it on a skin switch
+- skin owner tokens: under eui a token answers its follow token's EllesmereUI value
+- skin owner tokens: an owner token is no vocabulary entry and needs no SkinDefs change
+
+### test_skin_remap.lua (12)
+
+- skin remap: no opts.tokens, or an empty one, paints exactly what the primitive painted
+- skin remap: a danger button paints its fill, edge, label and hover from owner tokens
+- skin remap: a skin switch replays the remap, and a fill slot drops the gradient it replaces
+- skin remap: a disabled remapped button reads its disabled slot, else text.disabled
+- skin remap: an opaque modal Shell paints its window fill flat from the named token
+- skin remap: Shell's border, inner rule, top bar and title text slots
+- skin remap: a caution callout Panel and Card, an Inset and the nav rail's recolor
+- skin remap: a name no token carries, or a value, is ignored for its slot and logged once
+- skin remap: a slot named to a token that is not a color is ignored and logged once
+- skin remap: a button's hooks reuse its remapped view until the tokens move
+- skin remap: the record keeps the caller's remap, so a repaint replays it
+- skin remap: under eui a remapped call is the library's, from EllesmereUI's colors
+
+### test_skin_icon_border.lua (8)
+
+- skin icon border: SkinDefs is at minor 15 and the schema's HUD group carries the family
+- skin icon border: Ka0s Default's is Drop Watcher's Window › Icons border, Solid 2px black
+- skin icon border: every skin sets both tokens itself, each a style the library draws
+- skin icon border: without fromSkin IconBorder paints exactly what it did, flat at opts.size or 1
+- skin icon border: fromSkin draws Ka0s Default's Solid 2px in icon.border
+- skin icon border: fromSkin wins over opts.size, and a skin switch repaints style and size
+- skin icon border: a skin whose icon.borderStyle is None draws no border
+- skin icon border: under eui fromSkin is the library's, from the EllesmereUI-derived tokens
+
+### test_skin_stock_default.lua (9)
+
+- skin stock default: under Ka0s Default a SettingsFrameTemplate window stays the client's
+- skin stock default: another skin paints it, and a switch back gives the stock window back
+- skin stock default: TitleBar gives back the title's justification with its color
+- skin stock default: a stock target's hover and enable hooks do nothing under Ka0s Default
+- skin stock default: the stock mark leaves with the record: an Untrack or another owner clears it
+- skin stock default: Slider, EditBox and Tab take the option through the same mechanism
+- skin stock default: without the option Ka0s Default paints exactly as before
+- skin stock default: under eui the window goes to EllesmereUI; its fallback is stock
+- skin stock default: a refused EllesmereUI (fail closed) is the library's paint, never stock
+
 ### test_skin_defs.lua (29)
 
 - skin defs: the nine skins register in order with their labels
@@ -710,6 +767,23 @@ Total.
 - skin ace: a widget another skinning addon skinned is left to it
 - skin ace: PaintAceTree paints a host container's widgets
 - skin ace: Skin:OnRelease chains once and answers its function
+
+### test_skin_ace_tree.lua (14)
+
+- skin ace tree: a host widget type has no painter until it is aliased
+- skin ace tree: an aliased host type is painted by its base type's painter
+- skin ace tree: an aliased widget keeps the skin through its base type's durability hooks
+- skin ace tree: a released aliased widget is stock for the next acquirer, pull-out included
+- skin ace tree: AliasAceType refuses a bad alias, logs it once and changes nothing
+- skin ace tree: a second alias to another base is refused; the same alias again is fine
+- skin ace tree: a TreeGroup's panes, rows, selection and scroll bar wear the owner's skin
+- skin ace tree: Ka0s Default draws the TreeGroup's stock colors exactly
+- skin ace tree: RefreshTree, a later row and the pointer keep the skin
+- skin ace tree: a released TreeGroup is stock for the next acquirer, a re-leveled row included
+- skin ace tree: a row hook that rides the pooled TreeGroup elsewhere is inert
+- skin ace tree: another owner's TreeGroup wears its own skin
+- skin ace tree: PaintAceTree paints a host's TreeGroup and the widgets in it
+- skin ace tree: an eui owner's TreeGroup and aliased rows never reach EllesmereUI
 
 ### test_widgets.lua (58)
 
@@ -2425,7 +2499,7 @@ Total.
 - options skin: Ka0s Default colors the keybind rows in its own text roles
 - options skin: the id-suggestion popup takes the skin, Ka0s Default's edge included
 
-### test_options_compose_skin.lua (10)
+### test_options_compose_skin.lua (15)
 
 - compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
 - compose skin: without fromSkin the three groups emit exactly the rows they did
@@ -2437,6 +2511,11 @@ Total.
 - compose skin: a record-backed group reads its companion from the record
 - compose skin: ResetToSkin sets companions to true and never writes the sentinel into a pick
 - compose skin: Skin is at minor 3 or later
+- compose skin: OptionsCompose is at minor 13 or later
+- compose skin: BorderGroup fromSkin = 'icon' emits the same rows as fromSkin = true
+- compose skin: the bar family is unchanged; the icon family also governs the thickness
+- compose skin: the icon family's pickers show the skin's icon border while the companion is set
+- compose skin: a rendered icon-family thickness slider is disabled with the style picker
 
 ### test_options_throttle.lua (4)
 
@@ -3580,11 +3659,16 @@ Total.
 | test_media.lua | 39 |
 | test_skin.lua | 27 |
 | test_skin_override.lua | 21 |
+| test_skin_owner_tokens.lua | 16 |
+| test_skin_remap.lua | 12 |
+| test_skin_icon_border.lua | 8 |
+| test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 29 |
 | test_skin_paint.lua | 32 |
 | test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 22 |
+| test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 46 |
@@ -3644,7 +3728,7 @@ Total.
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
 | test_options_skin.lua | 17 |
-| test_options_compose_skin.lua | 10 |
+| test_options_compose_skin.lua | 15 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3694,4 +3778,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3156** |
+| **Total** | **3220** |

@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` minor **6** · `SkinDefs.lua` minor **14** · `SkinPaint.lua` minor **10** · `SkinPaintExtras.lua` minor **4** · `SkinPaintControls.lua` minor **8** · `SkinEUI.lua` minor **1** · `SkinAce.lua` minor **3** |
 | Shipped in | v1.79.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 6.13.10.4.8.1.3](./version-6.13.10.4.8.1.3-docs.md) (unreleased) — the same surface with Ka0s Default drawing Friz Quadrata and the Blizzard bar (SkinDefs minor 13); and [version 5.13.10.3.8.1.3](./version-5.13.10.3.8.1.3-docs.md) (shipped in v1.78.0), without an owner's font and texture overrides (`GetOverride`, `SetOverride`, `WriteChoice`'s `media`) and the `BarTexture` primitive |
-| Superseded by | — |
+| Superseded by | [version 7.14.10.4.8.1.3](./version-7.14.10.4.8.1.3-docs.md) (unreleased), shipped as [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) in v1.80.0 |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 6, SkinDefs = 14, SkinPaint = 10, SkinPaintExtras = 4, SkinPaintControls = 8, SkinEUI = 1, SkinAce = 3 }` |
 
@@ -1382,3 +1382,29 @@ token resolves to nil, and every primitive paints only what it has a token for (
 `SkinAce.lua` (which needs `SkinPaint.lua`'s helpers from the same copy) no AceGUI row is painted and
 no Options instance's `O.AceGUI` is wrapped. The engine's state is written `lib.x = lib.x or {}`, so a newer copy that wins
 the LibStub race later keeps every owner, record and facade; the resolve cache alone is rebuilt.
+
+## Moving to version 7.15.11.5.9.2.4
+
+**Take it; no member moves or changes its signature.** Version 7.15.11.5.9.2.4, shipped in v1.80.0
+(7.14.10.4.8.1.3, 7.14.11.5.9.2.3 and 7.14.11.5.9.2.4 were its unshipped steps), is this surface plus
+five additions, each opt-in:
+
+- **Owner tokens** (Skin minor 7): `Skin:RegisterOwner(owner, { tokens = { ["<ns>.<name>"] = { default,
+  follow, skins } } })` names an addon's own colors, read through `Token`, `Color`, `Resolve`, the
+  facade and every primitive that takes a token name, and `S.Text(fs, "<token name>")`
+  (SkinPaintExtras minor 5). An owner that passes no `tokens` reads exactly the table this version
+  answers.
+- **The slot remap**: `opts.tokens = { [slot] = <token name> }` on `Shell`, `Panel`, `Inset`, `Card`
+  and `Button` (SkinPaint minor 11, SkinPaintExtras minor 5, SkinPaintControls minor 9; SkinEUI minor 2
+  paints a remapped call from the derived tokens). Without it every primitive paints as here.
+- **AceGUI** (SkinAce minor 4): `Skin:AliasAceType(hostType, baseType)` and a `TreeGroup` painter. A
+  `TreeGroup` acquired through an Options instance's `O.AceGUI`, or handed to `PaintAce`, is painted
+  from that version on.
+- **The icon border family** (SkinDefs minor 15): `icon.borderStyle` and `icon.borderSize` in every
+  skin, drawn by `S.IconBorder(frame, { fromSkin = true })`; no existing token moves.
+- **`opts.stockDefault`** on `Shell`, `TitleBar`, `FadeNineSlice`, `CloseButton` and the stock-marking
+  controls, so a window built to match Blizzard's settings window keeps its stock art under Ka0s
+  Default.
+
+A stub of the lib-level table gains `AliasAceType`. See
+[version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md).

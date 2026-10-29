@@ -10,6 +10,237 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.80.0 — 2026-10-29
+
+Opened 2026-10-29, on `feat/2026-10-29-skinning-rollout`: the library half of the skinning rollout to
+the fourteen remaining Ka0s addons (Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`, M1).
+Its M0 inventory found 39 gaps no existing primitive or token covers; this release carries the
+rung-2 items that meet them (`LK-01` to `LK-05`), each adding a surface and none changing what an
+existing call draws. The release closes on the same branch (`LK-90`); the tag is the lead's, local
+until the owner's go-ahead.
+
+Versions in this release: **Skin minor 7**, **SkinDefs minor 15**, **SkinPaint minor 11**,
+**SkinPaintExtras minor 5**, **SkinPaintControls minor 9**, **SkinEUI minor 2** and **SkinAce minor 4**
+(`LibKa0s-Skin-1.0` key **7.15.11.5.9.2.4**), and **OptionsCompose minor 13** (`LibKa0s-Options-1.0` key
+**34.4.35.4.6.10.3.13.8.3.2.5.3.1**);
+every other file still at its v1.79.0 minor, and **test kit revision 44**, until an entry below moves one. Still
+**nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
+
+### Skin minor 7: owner tokens
+
+`LibKa0s-Skin-1.0` key 7.14.10.4.8.1.3 (7.14.11.5.9.2.3 since the slot remap, below), documented in
+[docs/api/Skin/version-7.14.11.5.9.2.3-docs.md](docs/api/Skin/version-7.14.11.5.9.2.3-docs.md)
+(*Owner tokens*; LK-01 of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`). Thirty of the
+rollout's gaps are one kind: a color an addon draws under Ka0s Default whose exact value no library
+token holds. An addon now names them as its own tokens:
+
+- `Skin:RegisterOwner(owner, { tokens = { ["<ns>.<name>"] = { default = <Ka0s Default's value>,
+  follow = "<library token>", skins = { [<skin key>] = <value>|false } } } })`. Ka0s Default answers
+  `default`, so the addon's look under it is today's pixels; another skin answers its own entry, else
+  the `follow` token's value in that skin (no `follow`: the default); the eui source answers the
+  follow token's EllesmereUI value. `false` in a skin's entry is that skin's none.
+- They resolve where every token does: `__Tokens` lays them over the owner's table after its font and
+  texture overrides, so `Token`, `Color`, `Resolve`, the facade and every primitive that takes a token
+  name (`S.Divider`'s `opts.token`, and `S.Text` given a token name) read them, and a token that
+  follows `font.body` follows the font override, under Ka0s Default too, where the override wins over
+  `default`. A skin switch repaints a primitive that named one. `ResolveSkin` and `__BaseTokens` never
+  carry them; one owner's never reach another's.
+- A name with no dot, one that starts or ends with a dot, one inside a library token family (its
+  first dotted segment is any `lib.SCHEMA` name's, `text`, `sem`, `gtip` and the rest, so a later
+  SkinDefs minor can never take it), or a malformed definition (not a table, no `default`, a `follow`
+  that is not a library token or whose kind disagrees with the default's type, a `skins` that is not
+  a table) is refused and logged once per owner and name, through the owner's `opts.log`, else to
+  the client's error handler; the good names beside it still land. A `skins` entry whose value's type
+  is not the default's is refused, and a key no registered skin carries is kept but logged.
+- **`S.Text(fs, "<token name>")`** (SkinPaintExtras minor 5): a library or owner color token's name
+  where a role goes, drawn in the body font and replayed on a skin switch, so an owner token's text
+  needs no host repaint. A second
+  `RegisterOwner` adds its tokens and replaces a name it repeats; registering repaints nothing.
+- An owner with no owner tokens reads the resolved table itself, and every library token is
+  unchanged for one with them, so Ka0s Default is pixel-identical for every existing caller.
+
+New suite: `tests/test_skin_owner_tokens.lua`.
+
+### SkinPaint minor 11, SkinPaintExtras minor 5, SkinPaintControls minor 9, SkinEUI minor 2: the slot remap
+
+`LibKa0s-Skin-1.0` key 7.14.11.5.9.2.3, documented in
+[docs/api/Skin/version-7.14.11.5.9.2.3-docs.md](docs/api/Skin/version-7.14.11.5.9.2.3-docs.md)
+(*The slot remap*; LK-02 of the same run). A danger button, a caution callout, an opaque modal and an
+alternate card fill are stock primitives with a slot or two in another color (DR-G1, DR-G2, DR-G3,
+DW-G10, DW-G13). `opts.tokens = { [slot] = <token name> }` names the library or owner token a slot
+paints from:
+
+- **`Shell`**: `bg`, `border`, `inner`, `top`, `bottom`, `text`, `divider`. **`Panel`** and **`Inset`**:
+  `bg`, `border` (the panel's, the inset's or the nav rail's). **`Card`**: `bg`, `border`, `title`,
+  `text`. **`Button`**: `bg`, `border`, `text`, `hover`, `icon` (each the `btnPrimary.*` one with
+  `opts.primary`), `disabled`.
+- Token **names**, never values (anti-pattern #107). A name the owner cannot read, a value, or a non-color token leaves
+  that slot as the primitive paints it and is logged once; the other slots land. A fill slot takes the
+  named token's gradient pair or none, so no skin gradient shows over a remapped fill.
+- The options are recorded as given, so every repaint replays the remap; a button keeps it on its
+  regions for its hover and enable hooks. No `opts.tokens`, or an empty one, paints exactly what the
+  primitive painted before.
+- Under the eui source a remapped call is painted by the library from the EllesmereUI-derived tokens
+  and never handed to EllesmereUI (`SkinEUI.lua` minor 2); a plain call goes to EllesmereUI as before.
+- The resolution is `Skin.lua`'s (`__Remap`, `__RemapName`, internal), added to minor 7 in place.
+- `FadeRegions` and `FadeNineSlice` moved, unchanged, from `SkinPaint.lua` to `SkinPaintExtras.lua`,
+  which kept `SkinPaint.lua` at 997 lines then, out of layout-§1's 1000-line band; `P.NINE_KEYS` is
+  the shared list.
+
+New suite: `tests/test_skin_remap.lua`.
+
+### SkinAce minor 4: a host's own AceGUI type, and the TreeGroup
+
+`LibKa0s-Skin-1.0` key 7.14.11.5.9.2.4, documented in
+[docs/api/Skin/version-7.14.11.5.9.2.4-docs.md](docs/api/Skin/version-7.14.11.5.9.2.4-docs.md)
+(*AceGUI rows*; LK-03 of the same run). Two AceGUI surfaces stayed stock under every skin (AM-G1,
+PC-G1):
+
+- **`Skin:AliasAceType(hostType, baseType)`.** A host that registers its own AceGUI widget type built
+  from a stock one (AuraMaster's `AuraMasterDropdown`, AceGUI's Dropdown under a second pool name so
+  its LEFT justification never leaks into the stock pool) names the base once. `PaintAce`, the
+  proxy, the durability hooks and the release restore then treat the type as its base, pull-out
+  included; the host's own dressing is never touched. One alias per host type, shared by every
+  copy; saying it again answers true. A name that is not a string, a base with no painter, a host
+  type the library paints itself, or a second base for the same host type is refused, logged once,
+  and changes nothing.
+- **A `TreeGroup` painter.** Both panes flattened into `nav.bg` / `nav.border`, the row labels in
+  `nav.text` (a first-level row) or `nav.selText` (a deeper, selected or hovered row) in the body
+  font, the selection highlight tinted `nav.selBg`, and the tree scroll bar's track in
+  `scroll.track`. `RefreshTree` is a durability hook, so rows AceGUI makes or re-dresses later are
+  painted too, and a row AceGUI re-dressed while owned goes back with what AceGUI last set. The
+  release gives the whole widget back stock (options-ui-§19). The toggles, row icons and dragger
+  stay stock. Under Ka0s Default the panes' and rows' colors are the TreeGroup's own, but not their
+  shape: the panes' tooltip edge becomes the flat `nav.borderSize` edge and the rows take the body
+  face, as every v1.79.0 Ka0s Default surface does; the track and the selection tint are the
+  library's (`scroll.track`, OptionsNav's `nav.selBg`), as PrettyChat's D5 asked.
+- `PAINT.ScrollFrame`'s track moved, unchanged, to a shared local the TreeGroup's bar uses too.
+- Under the eui source both are painted by the library from the EllesmereUI-derived tokens and never
+  handed to EllesmereUI, which takes any AceGUI widget, frame or region as shared.
+
+New suite: `tests/test_skin_ace_tree.lua`; `tests/fixture_skin_ace.lua` gains the TreeGroup's
+anatomy and a host Dropdown type.
+
+### SkinDefs minor 15, SkinPaintControls minor 9, OptionsCompose minor 13: icon borders follow the skin
+
+`LibKa0s-Skin-1.0` key 7.15.11.5.9.2.4, documented in
+[docs/api/Skin/version-7.15.11.5.9.2.4-docs.md](docs/api/Skin/version-7.15.11.5.9.2.4-docs.md) (*HUD*,
+*IconBorder*), and `LibKa0s-Options-1.0` key 34.4.35.4.6.10.3.13.8.3.2.5.3.1, documented in
+[docs/api/Options/version-34.4.35.4.6.10.3.13.8.3.2.5.3.1-docs.md](docs/api/Options/version-34.4.35.4.6.10.3.13.8.3.2.5.3.1-docs.md)
+(LK-04 of the same run). An item icon's border had a color token (`icon.border`) and nothing else, so
+Drop Watcher's Window › Icons border could not follow the skin (DW-G14):
+
+- **Two tokens in the HUD group**, `icon.borderStyle` (a LibSharedMedia border key, as `bar.borderStyle`
+  is: `"Solid"` the flat `WHITE8X8` edge, `"None"` none) and `icon.borderSize`. Ka0s Default's are Drop
+  Watcher's border today, Solid 2px (black, `icon.border`). Every other skin sets both itself: a flat
+  edge 1px in Obsidian, Glass and WoW Forever, 2px in Azeroth, High Contrast, Ember and WoW Midnight,
+  and the client's `Blizzard Tooltip` edge at 2px in WoW Default. No existing token moves.
+- **`S.IconBorder(frame, { fromSkin = true })`** draws that family: the style at `icon.borderSize`
+  pixels in `icon.border`, a nine-slice for a border key other than Solid and None, repainted on a
+  skin switch. Without `fromSkin` it paints exactly what it did, flat at `opts.size` or 1. Under the
+  eui source it stays the library's, from the EllesmereUI-derived tokens (Ka0s Default's family).
+- **`O.BorderGroup{ fromSkin = "icon" }`**: the same `borderStyleFromSkin` companion as
+  `fromSkin = true`, following `icon.borderStyle` and also governing the thickness slider, which is
+  disabled and shows `icon.borderSize` while the companion is set. `fromSkin = true` is unchanged.
+- `tests/test_skin_defs.lua` reads `icon.borderStyle` as the LibSharedMedia key it is, as it reads
+  `bar.borderStyle`, rather than as a primitive's edge shape.
+
+New suite: `tests/test_skin_icon_border.lua`; five cases in `tests/test_options_compose_skin.lua`.
+
+### SkinPaint minor 11, SkinPaintExtras minor 5, SkinPaintControls minor 9, Skin minor 7: stock under Ka0s Default
+
+Still `LibKa0s-Skin-1.0` key 7.15.11.5.9.2.4 (every file already moved in this release), documented in
+[docs/api/Skin/version-7.15.11.5.9.2.4-docs.md](docs/api/Skin/version-7.15.11.5.9.2.4-docs.md) (*Stock
+under Ka0s Default*; LK-05 of the same run). Quick Comms' callout popup and icon browser are built on
+`SettingsFrameTemplate` and were ratified as matching the settings window, but since SkinPaint minor 6
+every skin, Ka0s Default included, fades a template's art, and a host that skipped the call could not
+give the window back on a live switch (QC-G4):
+
+- **`opts.stockDefault = true`** on `Shell`, `TitleBar`, `FadeNineSlice`, `CloseButton` and every
+  control that marks stock art (`Panel`, `Inset`, `Button`, `EditBox`, `Dropdown`, `Slider`, `Tab`):
+  while the owner draws Ka0s Default the call paints nothing and gives back whatever the library
+  painted on the target (faded art, fonts, text and vertex colors, a saved backdrop, a title's
+  alignment), so a live switch back is the stock window again; its hover and enable hooks do nothing
+  meanwhile. The stock mark is the target's, shared by every call on it, so a host passes the option
+  on every call on that target; an owner change, an Untrack and a give-back clear it. Under every other skin it paints as before. The mechanism is `P.stockDefault`, which
+  `Slider` and the other controls already called and which answered false since SkinPaint minor 6;
+  `P.keepStock` is its half that `TitleBar` and `FadeNineSlice` call.
+- **eui:** a call goes to EllesmereUI as any does, `stockDefault` stripped; before EllesmereUI paints,
+  a Ka0s Default fallback stays stock; a refused EllesmereUI (fail closed) is painted by the library
+  from the derived tokens, never left stock. `Skin:__DrawsKey(owner)` (internal) answers which.
+- Without the option, or with `false`, every primitive paints exactly as before.
+- `Panel` and `Inset` moved, unchanged, from `SkinPaint.lua` to `SkinPaintExtras.lua`, which keeps
+  `SkinPaint.lua` at 989 lines then, out of layout-§1's 1000-line band; `P.FILL_SLOTS` is shared.
+
+New suite: `tests/test_skin_stock_default.lua`.
+
+### Docs and process
+
+- **Released 2026-10-29 with no minor of its own.** Every minor above is the one its change moved;
+  the close (`LK-90`) bumps none. The versions paragraph rechecks against every major's live
+  `lib.MODULES` (`tests/test_versioning.lua` green), and the counts against the tree:
+  `grep -c 'major = "LibKa0s-' tests/majors.lua` answers 19 and
+  `grep -c '<Script' LibKa0s/LibKa0s.xml` 53. `docs/test-cases.md` and the members manifests
+  regenerate from the same tree with no diff.
+- **Built to standard v2.91.0** (was v2.90.0): the README's standards pointer moves after a read of
+  v2.91.0's one ruling, `WS-01` of the same run, which is on WowAddonStandards'
+  `feat/2026-10-29-skinning-rollout` and merges with this release. skinning-§1 gains the three
+  surfaces this release ships: an addon's own colors are owner tokens (a name in the addon's
+  namespace, a `default` that is the Ka0s Default pixel, a `follow` library role token, optional
+  per-skin values), a box or button that needs other tokens names them in `opts.tokens` (names, never
+  values, anti-pattern #107), and a window built to match Blizzard's settings window MAY keep its
+  stock art under Ka0s Default through `opts.stockDefault`. The rule binds an adopted addon from its
+  re-vendor of this tag. The library's refusals already match it: a name with no dot, one inside a
+  library family and a malformed definition are refused and logged. v2.90.0's *Resizing* item stays
+  open, as v1.79.0 recorded it: this release touches no resizable window.
+- **Hosts affected by the preview and simulation re-look (step 5): none.** No minor of `Sim.lua`,
+  `SimTimeline.lua`, `SimPanel.lua` or `Widgets.lua` (the file that defines `W.TestStrip`) moved
+  since v1.79.0 (`git diff --stat v1.79.0 -- LibKa0s/Sim*.lua LibKa0s/Widgets.lua` prints nothing).
+- **Step 8 is the rollout's M2.** The fourteen remaining addons re-vendor this tag in their `<PFX>-RV`
+  items of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/` and adopt skins there; Ka0s
+  Skin Tester carries the showroom samples (`ST-01`). LootHistory stays on v1.79.0 until its own next
+  re-vendor. In a client where any re-vendored addon is installed, its v1.80.0 copy wins the Skin
+  and Options majors, and every addon that uses none of the new surfaces draws what it drew on
+  v1.79.0.
+- **`LibKa0s/Skin.lua` enters layout-§1's 1000-line notice band**, 802 → 1044 with minor 7's owner
+  tokens, slot-remap resolution and `__DrawsKey`. Accepted, with a named seam: the owner-token block
+  (`isSchemaName` through `takeTokens`, `__RemapName`, `ownValue`, `withOwnTokens` and `__Remap`) to a
+  secondary file of its own at the next Skin minor that adds to it. The ruling is in `CLAUDE.md`'s
+  band and in `docs/automated-tests/RESULTS.md`'s disposition. Nine band files now; nothing over
+  1500.
+- **Consumers.** `docs/releasing.md`'s Skin row says what v1.80.0 adds and where the rollout adopts
+  it; `docs/api/CONSUMERS.md` keeps its v1.75.0 stamp and records the release's new exports as not
+  measured until the rollout's census.
+- **The tag is local, and a re-cut is the lead's.** While `v1.80.0` is unpushed, a LibKa0s defect an
+  M2 adoption finds (`LK-A<n>` of the run) bumps the minors it touches and extends this block; the
+  lead then deletes and re-creates the local tag after a clean-tree
+  `tests/_kit/run-automated-tests.sh --release 1.80.0` with a new bundle, `ANALYSIS.md` and
+  release-gate line.
+
+### What a consumer owes
+
+- **Nothing until an addon uses the new surfaces.** An addon that passes no `tokens` to
+  `RegisterOwner` and no `opts.tokens` to a primitive draws exactly what it drew on v1.79.0, under
+  every skin and under EllesmereUI. No member is removed from a stub's surface; `AliasAceType` is
+  added, so an addon that calls it either guards the call or gives its degradation stub the member.
+  A TreeGroup an addon acquires through its Options instance's `O.AceGUI`, or hands to
+  `PaintAce` / `PaintAceTree`, is painted from this release on; no Ka0s addon acquired one on
+  v1.79.0, so no existing page changes.
+- An `S.IconBorder` call without `opts.fromSkin` and a `BorderGroup` without `fromSkin = "icon"` are
+  unchanged. A host that draws an item icon's border itself and follows the skin's (`fromSkin = "icon"`
+  plus `S.Resolve("icon.borderStyle", ...)`) owes the `"Solid"` key in LibSharedMedia (the `WHITE8X8`
+  edge, as Drop Watcher registers it) or draws through `S.IconBorder(frame, { fromSkin = true })`,
+  which draws Solid itself.
+- `opts.stockDefault` is opt-in: a window whose calls do not pass it looks as it did on v1.79.0. A
+  host that passes it to a `FadeNineSlice` or `TitleBar` call either guards on a v1.80.0 payload or
+  accepts that an older copy ignores the option and paints.
+
+Release gate (`docs/automated-tests/20261029-032426/`): lint pass, 0/0 in 233 files;
+tests pass, 3222 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — the release moved no minor of `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` or `Widgets.lua` (`git diff --stat v1.79.0 -- LibKa0s/Sim.lua LibKa0s/SimTimeline.lua LibKa0s/SimPanel.lua LibKa0s/Widgets.lua` prints nothing), so no host's scenarios or test-mode strips change.
+
 ## v1.79.0 — 2026-10-28
 
 Opened 2026-10-28, on `feat/2026-10-28-toast-1.0` (a worktree off `master`, beside the skin work
