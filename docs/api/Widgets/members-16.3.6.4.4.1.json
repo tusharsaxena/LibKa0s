@@ -1,0 +1,30 @@
+{
+  "major": "LibKa0s-Widgets-1.0",
+  "versionKey": "16.3.6.4.4.1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Widgets", "minor": 16 },
+    { "file": "WidgetsReorder", "minor": 3 },
+    { "file": "WidgetsDragHandle", "minor": 6 },
+    { "file": "WidgetsLineChart", "minor": 4 },
+    { "file": "WidgetsAutocomplete", "minor": 4 },
+    { "file": "WidgetsCopyWindow", "minor": 1 }
+  ],
+  "members": [
+    { "name": "AUTOCOMPLETE", "kind": "table" },
+    { "name": "Autocomplete", "kind": "function" },
+    { "name": "ChartMath", "kind": "table" },
+    { "name": "CloseMenu", "kind": "function" },
+    { "name": "CopyWindow", "kind": "function" },
+    { "name": "DRAG_HANDLE", "kind": "table" },
+    { "name": "DragHandle", "kind": "function" },
+    { "name": "Dropdown", "kind": "function" },
+    { "name": "LINE_CHART", "kind": "table" },
+    { "name": "LineChart", "kind": "function" },
+    { "name": "ROW_BOX", "kind": "table" },
+    { "name": "ReorderList", "kind": "function" },
+    { "name": "SearchBox", "kind": "function" },
+    { "name": "TEST_STRIP", "kind": "table" },
+    { "name": "TestStrip", "kind": "function" }
+  ]
+}

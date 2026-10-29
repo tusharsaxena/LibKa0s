@@ -657,7 +657,7 @@ Total.
 - skin defs: in every skin a primary button differs from a normal one
 - skin defs: no skin draws a box round a slider's bar
 
-### test_skin_paint.lua (32)
+### test_skin_paint.lua (36)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
@@ -688,6 +688,10 @@ Total.
 - skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for call
 - skin paint: Tooltip colors a library tooltip in every skin, its art kept
 - skin paint: Text colors a role, and a skin's font reaches it through the owner's font object
+- skin paint: a panel-scoped Text is given back while its owner ignores the panel, live
+- skin paint: a Text with no panel scope keeps the skin while the panel is ignored
+- skin paint: a panel-scoped Text for an unregistered owner paints Ka0s Default
+- skin paint: a panel-scoped Text under Ignore fonts alone keeps the color, not the face
 - skin paint: Font and White put the body font and color on a string
 - skin paint: the getters answer the owner's skin
 - skin paint: a skin's size scales each string from its own, one font object per size
@@ -1095,7 +1099,7 @@ Total.
 - reorder: ReorderList lives in WidgetsReorder.lua at minor 1, paired on the live shell
 - reorder: a payload without WidgetsReorder.lua loads whole, with no ReorderList
 
-### test_widgets_skin.lua (24)
+### test_widgets_skin.lua (26)
 
 - skin owner: Core.ApplySkin and MakeCloseButton without a registered owner are minor 12's
 - skin owner: Core.ApplySkin paints a registered owner's window from its skin and repaints it
@@ -1118,6 +1122,8 @@ Total.
 - skin owner: ReorderList without a registered owner is minor 1's, ghost included
 - skin owner: an owned ReorderList draws boxes, handle, line and ghost from the skin
 - skin owner: Ka0s Default draws the reorder list exactly as minor 1 did
+- skin owner: a ReorderList is minor 1's while its owner ignores the settings panel
+- skin owner: a ReorderList with panel = false keeps the skin while the panel is ignored
 - skin owner: LineChart without a registered owner reads lib.LINE_CHART as minor 3 did
 - skin owner: an owned LineChart takes its chrome and series from ChartStyle and re-renders
 - skin owner: Ka0s Default's eight Widgets tokens are the constants they replace
@@ -3677,7 +3683,7 @@ Total.
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 30 |
-| test_skin_paint.lua | 32 |
+| test_skin_paint.lua | 36 |
 | test_skin_paint_controls.lua | 28 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 22 |
@@ -3693,7 +3699,7 @@ Total.
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
-| test_widgets_skin.lua | 24 |
+| test_widgets_skin.lua | 26 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -3791,4 +3797,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3233** |
+| **Total** | **3239** |

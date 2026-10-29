@@ -23,6 +23,16 @@
 -- skin, or back to the defaults once a skinned list has painted it. Without an owner, or for an
 -- unregistered name, every color is minor 1's.
 --
+-- ── THE SETTINGS-PANEL SCOPE (minor 3) ───────────────────────────────────────────────────────
+--
+-- A reorder list is on a settings page: every consumer puts it on one. So it obeys its owner's
+-- "Ignore settings panel" by default, as an AceGUI row does: while the owner ignores its panel
+-- (`Skin:GetIgnore(owner)`'s panel half) every color is minor 1's, the ghost included. `opts.panel =
+-- false` opts out, for a list on a window, which wears the skin whatever that switch says. The
+-- switch is live the way a skin switch is: the settings page re-renders on it, and the next
+-- controller reads the new answer. The ghost's text has no skin face, so Ignore fonts has nothing
+-- to give back here. LK-05 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS.
+--
 -- Depends on LibStub and on the Widgets shell, and on no addon framework. A payload without this
 -- file loads whole and simply has no `lib.ReorderList` and no `lib.ROW_BOX`.
 
@@ -30,7 +40,8 @@ local lib = LibStub and LibStub("LibKa0s-Widgets-1.0", true)
 if not lib then return end
 
 -- Minor 2: the skin owner (the header's THE SKIN OWNER).
-local REORDER_MINOR = 2
+-- Minor 3: the settings-panel scope (the header's THE SETTINGS-PANEL SCOPE), with `opts.panel`.
+local REORDER_MINOR = 3
 -- Paired on the SHELL's minor as well as this file's own, as WidgetsDragHandle.lua is: a list that
 -- attached to an older shell would publish `lib.ReorderList` beside a `lib.MODULES` the shell owns,
 -- and nothing would say the two came from different vendored copies.
@@ -53,10 +64,14 @@ local LINE_COLOR = { 1, 0.82, 0, 0.9 }
 
 --- A list's colors from its skin owner (minor 2), or nil for a list with none (or an unregistered
 --- name, or a shell that predates the check): every reader then falls back to minor 1's values.
-local function skinPalette(owner)
+--- Nil too while a panel-scoped list's owner ignores its settings panel (minor 3).
+local function skinPalette(owner, panel)
   local skinOf = lib.__skinOf
   local Skin = type(skinOf) == "function" and skinOf(owner) or nil
   if not Skin then return nil end
+  if panel ~= false and type(Skin.GetIgnore) == "function" and Skin:GetIgnore(owner) == true then
+    return nil
+  end
   local R = lib.ROW_BOX
   local function tok(name, fallback) return Skin:Token(owner, name) or fallback end
   return {
@@ -533,10 +548,13 @@ end
 ---   owner      string|nil        minor 2. A registered skin owner (the addon folder name): the
 ---                                defaults above come from that owner's skin (the header's THE SKIN
 ---                                OWNER). An explicit color option still wins.
+---   panel      boolean|nil       minor 3. false: the list is on a window, so it keeps the skin
+---                                while the owner ignores its settings panel. Default: a settings
+---                                page, drawn as minor 1 did while that switch is on.
 --- @return table controller
 function lib.ReorderList(opts)
   opts = opts or {}
-  local pal = skinPalette(opts.owner)
+  local pal = skinPalette(opts.owner, opts.panel)
 
   local list = {
     stride     = opts.stride or 30,

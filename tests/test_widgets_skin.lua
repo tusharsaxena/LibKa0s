@@ -335,8 +335,8 @@ end)
 
 -- ── the reorder list and its ghost ───────────────────────────────────────────────────────────
 
-local function reorder(m, W, owner)
-  local list = W.ReorderList({ stride = 20, owner = owner })
+local function reorder(m, W, owner, panel)
+  local list = W.ReorderList({ stride = 20, owner = owner, panel = panel })
   local row = m.CreateFrame("Frame", nil, m.UIParent)
   local h = list:AddRow(row, { ghostText = "Row" })
   list:AddRow(m.CreateFrame("Frame", nil, m.UIParent), { dimmed = true, draggable = false })
@@ -385,6 +385,38 @@ test("skin owner: Ka0s Default draws the reorder list exactly as minor 1 did", f
   assertEqual(F.rgba(list.color), "1,0.820,0,0.900")
   local g = drag(W, h)
   assertEqual(rgba(survey(m, g.bg).color), "0.120,0.120,0.120,0.950")
+end)
+
+-- WidgetsReorder minor 3 (LK-05, ruling R-5, decision D-02): a reorder list is on a settings page,
+-- so its owner's "Ignore settings panel" draws it as minor 1 did; `panel = false` opts out.
+test("skin owner: a ReorderList is minor 1's while its owner ignores the settings panel", function()
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "obsidian")
+  local _, skinned = reorder(m, W, OWNER)
+  local g = drag(W, skinned)
+  assertEqual(rgba(survey(m, g.bg).color), tok(Skin, "obsidian", "list.ghostBg"), "a skinned drag")
+  Skin:SetIgnore(OWNER, true, nil)
+  local list, h = reorder(m, W, OWNER)
+  assertNil(list.skin, "no palette while the panel is ignored")
+  assertEqual(rgba(survey(m, list.boxes[1].fill).color), "1,1,1,0.060")
+  assertEqual(rgba(survey(m, list.boxes[2].edges[1]).color), "1,1,1,0.060")
+  assertEqual(rgba(survey(m, h.art).vertex), "0.700,0.700,0.700,1")
+  assertEqual(F.rgba(list.color), "1,0.820,0,0.900")
+  drag(W, h)
+  assertEqual(rgba(survey(m, g.bg).color), "0.120,0.120,0.120,0.950", "the skinned ghost is put back")
+  Skin:SetIgnore(OWNER, false, nil)
+  local again = reorder(m, W, OWNER)
+  assertEqual(rgba(survey(m, again.boxes[1].fill).color), tok(Skin, "obsidian", "list.box"),
+    "the next render after the switch is skinned again")
+end)
+
+test("skin owner: a ReorderList with panel = false keeps the skin while the panel is ignored", function()
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "obsidian")
+  Skin:SetIgnore(OWNER, true, nil)
+  local list = reorder(m, W, OWNER, false)
+  assertEqual(rgba(survey(m, list.boxes[1].fill).color), tok(Skin, "obsidian", "list.box"))
+  assertEqual(F.rgba(list.color), tok(Skin, "obsidian", "list.dropLine"))
 end)
 
 -- ── the line chart ───────────────────────────────────────────────────────────────────────────

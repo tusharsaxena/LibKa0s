@@ -35,6 +35,10 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Minor 6 (LK-01 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, ruling R-1):
 -- BarStyle's `font`, `fontKey` and `outline` are nil while the owner ignores fonts, read through
 -- `Skin:Token` like every host read, so the host's own setting stands.
+-- Then (LK-05 of the same run, ruling R-5, decision D-02, still minor 6): P.panelIgnored, the
+-- settings-panel scope every primitive and widget can share, and S.Text's `opts.panel`. It lives here
+-- rather than beside SkinPaint.lua's P.keepStock, which LK-02 retires and which it never calls, so
+-- SkinPaint.lua stays out of layout-§1's 1000-line band and keeps its minor.
 local EXTRAS_MINOR = 6
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
@@ -46,6 +50,20 @@ lib.MODULES.SkinPaintExtras = EXTRAS_MINOR
 
 local prim, P = lib.prim, lib.__P
 local rgba = P.rgba
+
+--- The settings-panel scope (minor 6, LK-05, decision D-02): true when `opts.panel == true` puts the
+--- target on its owner's settings panel and that owner ignores its panel (the public
+--- `Skin:GetIgnore(owner)` panel half, which is false for an unregistered owner, so an owner-less
+--- facade keeps reading Ka0s Default). Then everything the target wears from the library is given
+--- back (P.unpaint) and the caller paints nothing. The call stays recorded, so `SetIgnore`'s repaint
+--- replays it and the switch is live both ways. Without `opts.panel` it answers false: a window wears
+--- the skin whatever that switch says (D-01). Independent of P.keepStock.
+function P.panelIgnored(owner, rec, frame, opts)
+  if not (rec and type(opts) == "table" and opts.panel == true) then return false end
+  if type(lib.GetIgnore) ~= "function" or lib:GetIgnore(owner) ~= true then return false end
+  P.unpaint(rec, frame)
+  return true
+end
 
 -- ── the Ka0s extras of the window family ─────────────────────────────────────────────────────
 
@@ -314,11 +332,15 @@ local TEXT_FONT = { title = "title", heading = "title", headingAlt = "title" }
 --- "link", "linkHot" or "title": its color and its font (the title font for the title and heading
 --- roles, the body font for the rest). Or (minor 5) a token NAME, library or owner ("dw.note",
 --- "sem.good"): the color from that token, in the body font, replayed on a skin switch like a role.
---- A name the owner cannot read (logged once) or a token that is not a color draws as "body". Draws
---- no Media icon.
-prim.Text = function(owner, fs, role)
+--- A name the owner cannot read (logged once) or a token that is not a color draws as "body".
+--- S.Text(fs, role, { panel = true }) (minor 6, LK-05): the string is on the owner's settings panel,
+--- so it is given back, its own color and font, while the owner ignores its panel (P.panelIgnored),
+--- live both ways. Without it Text paints whatever that switch says, as a window string must; Ignore
+--- fonts reaches it either way, through P.font. Draws no Media icon.
+prim.Text = function(owner, fs, role, opts)
   if not P.isFS(fs) then return end
-  local rec = P.track(owner, fs, "Text", role)
+  local rec = P.track(owner, fs, "Text", role, opts)
+  if P.panelIgnored(owner, rec, fs, opts) then return end
   local T, token = P.T(owner), TEXT_ROLE[role]
   if not token and type(role) == "string" and role:find(".", 1, true)
     and type(lib.__RemapName) == "function" and lib:__RemapName(owner, role, "Text")

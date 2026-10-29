@@ -19,7 +19,7 @@ listed. Not tagged.
 
 Versions in this release: **Skin minor 8**, **SkinDefs minor 16** and **SkinPaintExtras minor 6**
 (`LibKa0s-Skin-1.0` key
-**8.16.11.6.9.2.4**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
+**8.16.11.6.9.2.4**) and **WidgetsReorder minor 3** (`LibKa0s-Widgets-1.0` key **16.3.6.4.4.1**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
 until an entry below moves one.
 Still **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
 
@@ -92,6 +92,27 @@ stays disabled while its companion is set. Turning the exception off gives the s
 live. Five cases in `tests/test_skin_override.lua` and one in `tests/test_options_compose_skin.lua`
 pin it.
 
+### SkinPaintExtras minor 6, WidgetsReorder minor 3: `S.Text` and the reorder list obey the panel scope
+
+`LibKa0s-Skin-1.0` key 8.16.11.6.9.2.4, the same document (*Members*, `SetIgnore`; *The primitives*,
+`Text`), and `LibKa0s-Widgets-1.0` key 16.3.6.4.4.1, documented in
+[docs/api/Widgets/version-16.3.6.4.4.1-docs.md](docs/api/Widgets/version-16.3.6.4.4.1-docs.md)
+(LK-05, ruling R-5, decisions D-01 and D-02). "Ignore settings panel" reached the AceGUI rows and
+the Options chrome only, so a string a host colored with `S.Text` on its settings page, and every
+reorder list, kept the skin while it was on. `S.Text(fs, role, { panel = true })` now puts a string
+on the owner's settings panel: while the owner ignores its panel the string is given back its own
+color and font and nothing is painted, and since the call stays recorded `SetIgnore`'s repaint
+turns it live both ways. Without `opts.panel` Text paints as before, because it also draws window
+strings, which wear the skin whatever that switch says (D-01). The test is the public
+`Skin:GetIgnore(owner)` panel half, so an unregistered owner keeps reading Ka0s Default. It is one
+helper, `P.panelIgnored` (in SkinPaintExtras, independent of `P.keepStock`), that the other custom
+widgets can share. `ReorderList` is panel-scoped **by default**, because every consumer puts it on
+a settings page: while its owner ignores its panel every color is minor 1's, the ghost included, and
+the page's re-render on the switch builds a controller that reads the new answer.
+`opts.panel = false` opts a list on a window out. *Ignore fonts* already reached `S.Text` through
+`P.font`, and the reorder ghost's text has no skin face. Four cases in `tests/test_skin_paint.lua`
+and two in `tests/test_widgets_skin.lua` pin it.
+
 ### What a consumer owes
 
 - **LK-01:** nothing to call. A host's own "while Ignore fonts is on, the stored pick wins" patch
@@ -106,6 +127,11 @@ pin it.
   picks with `{ companions = true }`, instead of seeding the companion `false` or naming only stored
   ones. A guard inside a schema step that already shipped stays (D-19): the step must produce the
   same result for a profile that migrates late. A new step needs no guard.
+- **LK-05:** a host that colors a settings-page string with `S.Text` passes `{ panel = true }`
+  and deletes its own give-back (ConsumableMaster's `KCM.SkinPanelText`); a host that hid its
+  reorder list's owner while the panel was ignored (`KCM.SkinPanelOwner()`) passes the owner
+  plainly. MultiMeters' and LootHistory's reorder lists now draw as minor 1 did under "Ignore
+  settings panel" with no change of their own, so their smoke checks move with it.
 - **LK-10:** a host that rebuilds "does this owner draw Ka0s Default" asks
   `Skin:DrawsKey(owner) == Skin.DEFAULT` instead, guarded by `type(Skin.DrawsKey) == "function"`
   where an older copy may load first. A call to `__DrawsKey` keeps working this release; move it.
