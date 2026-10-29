@@ -32,7 +32,10 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- (SkinPaint minor 11's P.keepStock), and Panel and Inset, moved here unchanged from SkinPaint.lua
 -- for the same reason. And (LK-01's review, still minor 5): S.Text takes an owner or library token
 -- NAME as well as a role, so an owner token is drawn through a tracked, replayed primitive.
-local EXTRAS_MINOR = 5
+-- Minor 6 (LK-01 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, ruling R-1):
+-- BarStyle's `font`, `fontKey` and `outline` are nil while the owner ignores fonts, read through
+-- `Skin:Token` like every host read, so the host's own setting stands.
+local EXTRAS_MINOR = 6
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
 lib.__extrasMinor      = EXTRAS_MINOR
@@ -436,14 +439,16 @@ end
 
 --- S.BarStyle(): a fresh table of the HUD tokens: `texture` (the LSM path, or nil), `textureKey`,
 --- `gloss`, `bg`, `border`, `borderStyle`, `borderSize`, `font` (path or nil), `fontKey`, `fontSize`,
---- `outline`, `iconBorder`.
+--- `outline`, `iconBorder`. `font`, `fontKey` and `outline` are nil while the owner ignores fonts
+--- (minor 6, R-1): they read through `Skin:Token`, which leaves the HUD's face and outline alone then.
 prim.BarStyle = function(owner)
   local T = P.T(owner)
+  local face, outline = lib:Token(owner, "hud.font"), lib:Token(owner, "hud.outline")
   return {
     texture = P.media("statusbar", T["bar.texture"]), textureKey = T["bar.texture"],
     gloss = T["bar.gloss"] == true, bg = T["bar.bg"], border = T["bar.border"],
     borderStyle = T["bar.borderStyle"], borderSize = T["bar.borderSize"],
-    font = P.media("font", T["hud.font"]), fontKey = T["hud.font"], fontSize = T["hud.fontSize"],
-    outline = T["hud.outline"], iconBorder = T["icon.border"],
+    font = P.media("font", face), fontKey = face, fontSize = T["hud.fontSize"],
+    outline = outline, iconBorder = T["icon.border"],
   }
 end

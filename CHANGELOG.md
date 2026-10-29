@@ -17,15 +17,16 @@ follow-ups (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, M1)
 to `LK-11` that meet the owner's rulings `R-1` to `R-11` on the nine follow-ups v1.80.0's run
 listed. Not tagged.
 
-Versions in this release: **Skin minor 8** and **SkinDefs minor 16** (`LibKa0s-Skin-1.0` key
-**8.16.11.5.9.2.4**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
+Versions in this release: **Skin minor 8**, **SkinDefs minor 16** and **SkinPaintExtras minor 6**
+(`LibKa0s-Skin-1.0` key
+**8.16.11.6.9.2.4**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
 until an entry below moves one.
 Still **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
 
 ### SkinDefs minor 16: the quality colors are the client's exactly
 
-`LibKa0s-Skin-1.0` key 8.16.11.5.9.2.4, documented in
-[docs/api/Skin/version-8.16.11.5.9.2.4-docs.md](docs/api/Skin/version-8.16.11.5.9.2.4-docs.md)
+`LibKa0s-Skin-1.0` key 8.16.11.6.9.2.4, documented in
+[docs/api/Skin/version-8.16.11.6.9.2.4-docs.md](docs/api/Skin/version-8.16.11.6.9.2.4-docs.md)
 (*Semantic*; LK-09, ruling R-8). Ka0s Default's `q.*` tokens were the client's
 `ITEM_QUALITY_COLORS` rounded to two places, so a library-drawn epic was `#a336ed` beside the
 client's `#a335ee`. Each is now the client's hex divided by 255, written out in SkinDefs (never read
@@ -55,7 +56,7 @@ pins every skin's face and its family, the shipped-file check now covers `hud.fo
 
 ### Skin minor 8: `ResetToSkin` sets an absent companion, never the sentinel
 
-`LibKa0s-Skin-1.0` key 8.16.11.5.9.2.4, the same document (*FROM_SKIN*; LK-07, ruling R-6, decision
+`LibKa0s-Skin-1.0` key 8.16.11.6.9.2.4, the same document (*FROM_SKIN*; LK-07, ruling R-6, decision
 D-19). A raw profile holds only what differs from the AceDB defaults, so a `<key>FromSkin` companion
 new in a release, or equal to its default `false`, is absent. Minor 7 recognized a companion only
 when it was stored: one named directly and absent took `"@skin"`, which `Resolve` reads as not
@@ -67,7 +68,7 @@ still takes the sentinel, as before. Two cases in `tests/test_skin.lua` pin both
 
 ### Skin minor 8: `Skin:DrawsKey(owner)` is public
 
-`LibKa0s-Skin-1.0` key 8.16.11.5.9.2.4, the same document (*Members*; LK-10, ruling R-9, decision
+`LibKa0s-Skin-1.0` key 8.16.11.6.9.2.4, the same document (*Members*; LK-10, ruling R-9, decision
 D-16). The key an owner draws by was the internal `Skin:__DrawsKey`, so a host that keeps its own
 look stock under Ka0s Default (Premade Groups Filter Extension's `NS.SkinDrawsDefault`) rebuilt the
 answer from `GetChoice`, its own EllesmereUI check and `GetSkin`. `Skin:DrawsKey(owner)` now answers
@@ -77,7 +78,25 @@ lib-level, never a facade member, so no addon's facade parity test moves. `__Dra
 release as an alias of the same function (Premade Groups Filter Extension's tests call it until it
 moves). Two cases in `tests/test_skin.lua` pin it; the Skin manifest gains `DrawsKey`.
 
+### Skin minor 8, SkinPaintExtras minor 6: Ignore fonts reaches the HUD
+
+`LibKa0s-Skin-1.0` key 8.16.11.6.9.2.4, the same document (*Members*, *HUD*, *FROM_SKIN*; LK-01,
+ruling R-1, decision D-09). "Ignore fonts" was asked only by `P.font`, so a HUD element set to follow
+the skin's font still drew the skin's face and outline. Now, while the owner ignores fonts,
+`Resolve` answers the stored value for `hud.font` and `hud.outline` whatever the companion says (nil
+for a stored `"@skin"`, which names no face of its own), and `Token` answers nil for them, its
+documented "a token the skin leaves alone". `S.BarStyle()`'s `font`, `fontKey` and `outline` are nil
+then. `hud.fontSize`, every other token and `__Tokens` are unchanged. The composer's font picker
+follows with no edit of its own: its preview reads `Resolve`, so it shows the stored face, and it
+stays disabled while its companion is set. Turning the exception off gives the skin's face back,
+live. Five cases in `tests/test_skin_override.lua` and one in `tests/test_options_compose_skin.lua`
+pin it.
+
 ### What a consumer owes
+
+- **LK-01:** nothing to call. A host's own "while Ignore fonts is on, the stored pick wins" patch
+  (AbsorbTracker, AuraMaster, ConsumableMaster, PartyFrameEnhanced and the like) implements the same
+  rule and may go; one that reads `Token("hud.font")` handles its nil by keeping its own face.
 
 - **LK-09:** nothing to call. `q.*` under Ka0s Default, every skin that does not override them, and
   eui now equal the client's colors byte for byte. A test that pins the rounded values (for example

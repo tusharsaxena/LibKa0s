@@ -92,7 +92,9 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- to its default). `opts.companions` sets every listed pick's companion, stored or not, for a host
 -- that names its picks (LK-07 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, R-6).
 -- And `DrawsKey`, minor 7's `__DrawsKey` made public (lib-level, not a facade member; LK-10, R-9):
--- `__DrawsKey` stays one release as its alias.
+-- `__DrawsKey` stays one release as its alias. And Ignore fonts reaches the HUD (LK-01, R-1, D-09):
+-- while the owner ignores fonts, `Token` answers nil for `hud.font` and `hud.outline` and `Resolve`
+-- answers the stored value for them (nil for a stored FROM_SKIN), whatever the companion says.
 local MAJOR, MINOR = "LibKa0s-Skin-1.0", 8
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -644,6 +646,15 @@ function lib:__FontsIgnored(owner)
   return o ~= nil and o.ignoreFonts == true
 end
 
+-- The HUD's two font tokens: while the owner ignores fonts, the stored value wins for them in
+-- `Resolve` and `Token` (minor 8, R-1). `hud.fontSize` is out of scope; `__Tokens` is unchanged,
+-- since P.font already hands every painted string back through `__FontsIgnored`.
+local HUD_FONT = { ["hud.font"] = true, ["hud.outline"] = true }
+
+local function hudFontIgnored(self, owner, name)
+  return HUD_FONT[name] == true and self:__FontsIgnored(owner)
+end
+
 -- ── the owner's font and texture ─────────────────────────────────────────────────────────────
 
 --- The owner's overrides: font, texture, each an LSM key (a `font` and a `statusbar` key), or nil
@@ -819,8 +830,10 @@ function lib:__Tokens(owner)
 end
 
 --- The owner's resolved token `name` (from `__Tokens`): a color is `{ r, g, b, a }`, shared, never
---- written to. An unregistered owner reads Ka0s Default. nil for a token the skin leaves alone.
+--- written to. An unregistered owner reads Ka0s Default. nil for a token the skin leaves alone,
+--- which `hud.font` and `hud.outline` are while the owner ignores fonts (minor 8, R-1).
 function lib:Token(owner, name)
+  if hudFontIgnored(self, owner, name) then return nil end
   return self:__Tokens(owner)[name]
 end
 
@@ -876,8 +889,14 @@ function lib.IsFromSkin(value)
 end
 
 --- `value`, or the owner's token `kind` when `value` is the FROM_SKIN sentinel or `fromSkin` (a
---- setting's companion "follow the skin" bool) is true.
+--- setting's companion "follow the skin" bool) is true. While the owner ignores fonts, `hud.font`
+--- and `hud.outline` answer the stored `value` whatever the companion says, and nil for a stored
+--- FROM_SKIN, which names no face of its own (minor 8, R-1): the host's own setting stands.
 function lib:Resolve(owner, kind, value, fromSkin)
+  if hudFontIgnored(self, owner, kind) then
+    if value == self.FROM_SKIN then return nil end
+    return value
+  end
   if value == self.FROM_SKIN or fromSkin == true then return self:Token(owner, kind) end
   return value
 end

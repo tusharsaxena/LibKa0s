@@ -538,7 +538,7 @@ Total.
 - skin: DrawsKey answers the key an owner draws by
 - skin: DrawsKey answers eui once EllesmereUI paints the owner, Ka0s Default before
 
-### test_skin_override.lua (21)
+### test_skin_override.lua (26)
 
 - skin override: an unregistered owner has none and cannot set one
 - skin override: a font and a texture reach every token read, and nothing else moves
@@ -561,6 +561,11 @@ Total.
 - skin override: a flat bar keeps its tint through a texture and back
 - skin override: a texture Untrack handed back starts from its own color
 - skin override: BarTexture leaves a frame that is neither a Texture nor a StatusBar alone
+- skin ignore fonts: the stored HUD face and outline win over a set companion
+- skin ignore fonts: Token leaves the HUD face and outline alone, and nothing else
+- skin ignore fonts: the stored face wins over a font override, and switching back is live
+- skin ignore fonts: BarStyle's font fields are nil, every other field unchanged
+- skin ignore fonts: an unregistered owner reads Ka0s Default's HUD face as before
 
 ### test_skin_owner_tokens.lua (16)
 
@@ -2506,7 +2511,7 @@ Total.
 - options skin: Ka0s Default colors the keybind rows in its own text roles
 - options skin: the id-suggestion popup takes the skin, Ka0s Default's edge included
 
-### test_options_compose_skin.lua (15)
+### test_options_compose_skin.lua (16)
 
 - compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
 - compose skin: without fromSkin the three groups emit exactly the rows they did
@@ -2514,6 +2519,7 @@ Total.
 - compose skin: the canonical rows are unchanged beside the companion, and so is every list
 - compose skin: omit and keys reach the companion like any canonical leaf
 - compose skin: the picker shows the skin's value while its companion is set, its own otherwise
+- compose skin: while the owner ignores fonts the font picker shows the stored face (R-1)
 - compose skin: a rendered picker is disabled while the companion is set and the companion writes
 - compose skin: a record-backed group reads its companion from the record
 - compose skin: ResetToSkin sets companions to true and never writes the sentinel into a pick
@@ -3665,7 +3671,7 @@ Total.
 | test_toast.lua | 50 |
 | test_media.lua | 39 |
 | test_skin.lua | 33 |
-| test_skin_override.lua | 21 |
+| test_skin_override.lua | 26 |
 | test_skin_owner_tokens.lua | 16 |
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
@@ -3735,7 +3741,7 @@ Total.
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
 | test_options_skin.lua | 17 |
-| test_options_compose_skin.lua | 15 |
+| test_options_compose_skin.lua | 16 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3785,4 +3791,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3227** |
+| **Total** | **3233** |

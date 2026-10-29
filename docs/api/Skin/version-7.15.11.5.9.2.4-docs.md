@@ -12,7 +12,7 @@
 | Shipped in | v1.80.0 |
 | Status | Superseded |
 | Supersedes | [version 7.14.11.5.9.2.4](./version-7.14.11.5.9.2.4-docs.md) (unreleased) — the same surface without the icon border family (`icon.borderStyle`, `icon.borderSize`, `IconBorder`'s `opts.fromSkin`) and without `opts.stockDefault`; [version 7.14.11.5.9.2.3](./version-7.14.11.5.9.2.3-docs.md) (unreleased), without `AliasAceType` and the `TreeGroup` painter either; [version 7.14.10.4.8.1.3](./version-7.14.10.4.8.1.3-docs.md) (unreleased), without the slot remap either (`opts.tokens` on `Shell`, `Panel`, `Inset`, `Card` and `Button`); and [version 6.14.10.4.8.1.3](./version-6.14.10.4.8.1.3-docs.md) (shipped in v1.79.0), without owner tokens either |
-| Superseded by | [version 8.16.11.5.9.2.4](./version-8.16.11.5.9.2.4-docs.md) |
+| Superseded by | [version 8.16.11.6.9.2.4](./version-8.16.11.6.9.2.4-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 7, SkinDefs = 15, SkinPaint = 11, SkinPaintExtras = 5, SkinPaintControls = 9, SkinEUI = 2, SkinAce = 4 }` |
 
