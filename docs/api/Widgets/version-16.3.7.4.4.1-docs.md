@@ -1056,7 +1056,7 @@ Every field is optional except the ones a working list needs.
 | `handleInset` | Pixels from the parent's left edge. | `0` |
 | `handleColor` | `{ r, g, b }` for the handle at rest. | a neutral gray, `{ 0.7, 0.7, 0.7 }` |
 | `handleHoverColor` | `{ r, g, b }` under the pointer. A host whose list has its own palette says so; one that says nothing matches every other list in the collection. | gold, `{ 1, 0.82, 0 }` |
-| `handleTooltip` | One line shown on hover, e.g. "Drag to reorder". | no tooltip at all |
+| `handleTooltip` | One line shown on hover, e.g. "Drag to reorder". From Reorder 3 a skinned list draws it in its owner's `gtip.value` (white in all nine skins), read from the list's palette; an unskinned one in white, as before. | no tooltip at all |
 | `iconSize` | The art drawn inside the handle. | `16` |
 | `rowBox` | **New at 9.** `false` suppresses the bounded box behind every row. Defaults **ON**: the box is half of what makes a list read as blocks you can pick up, and a host that draws its own has to say so — and should instead delete its own, or the two fills stack. | `true` |
 | `rowBoxInset` | **New at 9.** Pixels the box is inset from the row frame's edges. | `0` |

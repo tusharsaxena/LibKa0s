@@ -1103,7 +1103,7 @@ Total.
 - reorder: ReorderList lives in WidgetsReorder.lua at minor 1, paired on the live shell
 - reorder: a payload without WidgetsReorder.lua loads whole, with no ReorderList
 
-### test_widgets_skin.lua (28)
+### test_widgets_skin.lua (29)
 
 - skin owner: Core.ApplySkin and MakeCloseButton without a registered owner are minor 12's
 - skin owner: Core.ApplySkin paints a registered owner's window from its skin and repaints it
@@ -1128,6 +1128,7 @@ Total.
 - skin owner: Ka0s Default draws the reorder list exactly as minor 1 did
 - skin owner: a ReorderList is minor 1's while its owner ignores the settings panel
 - skin owner: a ReorderList with panel = false keeps the skin while the panel is ignored
+- skin owner: a ReorderList's handle tooltip takes gtip.value only while the list is skinned
 - skin owner: LineChart without a registered owner reads lib.LINE_CHART as minor 3 did
 - skin owner: an owned LineChart takes its chrome and series from ChartStyle and re-renders
 - skin owner: Ka0s Default's eight Widgets tokens are the constants they replace
@@ -1345,7 +1346,7 @@ Total.
 - core: RaiseStaticPopups never shows, hides or re-stratas a popup
 - tool windows: with no RaiseStaticPopups in Core the three windows build and show
 
-### test_tool_windows_skin.lua (14)
+### test_tool_windows_skin.lua (17)
 
 - tool windows skin: without a registered owner each window is the previous minors' paint
 - tool windows skin: an unregistered console logs Ka0s Default's colored line, as before
@@ -1359,6 +1360,9 @@ Total.
 - tool windows skin: an owned perf panel on Ka0s Default draws the constants
 - tool windows skin: a registered owner's sim panel paints its window, rows and buttons
 - tool windows skin: an owned sim panel on Ka0s Default draws the constants
+- tool windows skin: an owner-less sim panel's tooltip keeps its literals
+- tool windows skin: an owned sim panel's tooltip takes gtip.title and gtip.value, Ignore panel or not
+- tool windows skin: under Ka0s Default the sim key column is gtip.title's gold, the rest white
 - tool windows skin: Ka0s Default's tool-window tokens are the constants the windows drew
 - tool windows skin: every skin's tool-window text reads on its own window
 
@@ -2525,6 +2529,15 @@ Total.
 - options skin: the keybind rows take the skin's text roles away from Ka0s Default
 - options skin: Ka0s Default colors the keybind rows in its own text roles
 - options skin: the id-suggestion popup takes the skin, Ka0s Default's edge included
+
+### test_options_tooltip_skin.lua (6)
+
+- tooltip skin: an owner-less page writes the previous minors' tooltip literals
+- tooltip skin: an owner ignoring its settings panel gets the literals back
+- tooltip skin: Ka0s Default's titles are white and the help mark's lines gtip.body
+- tooltip skin: an owned page's titles take gtip.value and the help lines gtip.body
+- tooltip skin: lines that named no color stay the client's
+- tooltip skin: a skin switch reaches the next hover with no rebuild
 
 ### test_options_compose_skin.lua (16)
 
@@ -3708,7 +3721,7 @@ Total.
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
-| test_widgets_skin.lua | 28 |
+| test_widgets_skin.lua | 29 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -3716,7 +3729,7 @@ Total.
 | test_debuglog_descriptor.lua | 7 |
 | test_resize_windows.lua | 23 |
 | test_tool_windows_layering.lua | 8 |
-| test_tool_windows_skin.lua | 14 |
+| test_tool_windows_skin.lua | 17 |
 | test_slash.lua | 74 |
 | test_slash_parse.lua | 33 |
 | test_slash_disabled.lua | 16 |
@@ -3756,6 +3769,7 @@ Total.
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
 | test_options_skin.lua | 17 |
+| test_options_tooltip_skin.lua | 6 |
 | test_options_compose_skin.lua | 16 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
@@ -3806,4 +3820,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3248** |
+| **Total** | **3258** |

@@ -419,6 +419,31 @@ test("skin owner: a ReorderList with panel = false keeps the skin while the pane
   assertEqual(F.rgba(list.color), tok(Skin, "obsidian", "list.dropLine"))
 end)
 
+-- LK-06d (ruling R-5, decision D-14): the handle's tooltip line takes `gtip.value` from a skinned
+-- list's palette, and the literal white while the owner ignores its settings panel.
+test("skin owner: a ReorderList's handle tooltip takes gtip.value only while the list is skinned", function()
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "obsidian")
+  Skin:ResolveSkin("obsidian")["gtip.value"] = { 0.2, 0.4, 0.6, 1 }
+  local function tipOf(list)
+    local h = list:AddRow(m.CreateFrame("Frame", nil, m.UIParent), {})
+    local tip, seen = m.GameTooltip, {}
+    local savedOwner, savedLine = rawget(tip, "SetOwner"), rawget(tip, "AddLine")
+    rawset(tip, "SetOwner", function() end)
+    rawset(tip, "AddLine", function(_, _, r, g, b) seen[#seen + 1] = F.rgba({ r, g, b }) end)
+    h:__fire("OnEnter")
+    rawset(tip, "SetOwner", savedOwner); rawset(tip, "AddLine", savedLine)
+    return seen[1]
+  end
+  assertEqual(tipOf(W.ReorderList({ stride = 20, owner = OWNER, handleTooltip = "Drag" })), "0.200,0.400,0.600,1")
+  assertEqual(tipOf(W.ReorderList({ stride = 20, handleTooltip = "Drag" })), "1,1,1,1", "owner-less")
+  Skin:SetIgnore(OWNER, true, nil)
+  assertEqual(tipOf(W.ReorderList({ stride = 20, owner = OWNER, handleTooltip = "Drag" })), "1,1,1,1",
+    "Ignore settings panel")
+  assertEqual(tipOf(W.ReorderList({ stride = 20, owner = OWNER, panel = false, handleTooltip = "Drag" })),
+    "0.200,0.400,0.600,1", "a list on a window keeps it")
+end)
+
 -- ── the line chart ───────────────────────────────────────────────────────────────────────────
 
 local function chartColors(c)

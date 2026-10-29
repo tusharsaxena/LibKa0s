@@ -738,7 +738,10 @@ footer (`LibKa0s-Widgets-1.0` 16.3.7.4.4.1, *Skin owners*), Ka0s Default's 0.6 g
 that footer drew, where no token held it (`gtip.muted` is 0.5, `gtip.subtle` 0.7); every other skin
 follows its `gtip.muted` (`FOLLOW`), and the `eui` source derives it from Ka0s Default. The handle's
 title and body take the existing `gtip.title` and `gtip.value`, whose Ka0s Default values are its
-gold and white. `icon.arrow` joined at SkinDefs minor 12: the in-client arrow art's color (the paging, dropdown and sort arrows), Ka0s Default's gold and every other skin's accent, which it follows. `scroll.thumbFill` (SkinDefs minor 9) and `scroll.thumbTexture` (minor 2) left at SkinDefs minor 10, never released: the scroll bar's knob is one flat `scroll.thumb` over the faded thumb art in every skin. The four art tokens (`check.texture`, `check.markTexture`,
+gold and white. The library's other tooltip lines read the same tokens (LK-06d, D-14, no new token): the settings
+chrome's titles and the reorder handle's line `gtip.value`, the id list help mark's notes `gtip.body`
+(Ka0s Default's 0.9 where they drew 0.8), and the sim panel's key column `gtip.title` and its other
+lines `gtip.value` (`LibKa0s-Options-1.0` 34.4.36.4.7.11.3.13.9.4.3.6.3.2, `LibKa0s-Sim-1.0` 2.3.8). `icon.arrow` joined at SkinDefs minor 12: the in-client arrow art's color (the paging, dropdown and sort arrows), Ka0s Default's gold and every other skin's accent, which it follows. `scroll.thumbFill` (SkinDefs minor 9) and `scroll.thumbTexture` (minor 2) left at SkinDefs minor 10, never released: the scroll bar's knob is one flat `scroll.thumb` over the faded thumb art in every skin. The four art tokens (`check.texture`, `check.markTexture`,
 `tab.texture`, `tab.onTexture`) joined at SkinDefs minor 2, for WoW Default's Blizzard art. The
 eight **Widgets tokens** (`handle.edge`, `handle.rest`, `list.dropLine`, `list.ghostBg`, `list.box`,
 `list.boxDim`, `list.boxEdge`, `list.boxEdgeDim`) joined at SkinDefs minor 3, so the drag handle and

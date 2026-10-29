@@ -89,7 +89,7 @@ Kit.run{
     "test_options_ids", "test_options_idlist", "test_options_idlist_layout",
     "test_options_tabs", "test_options_tabbed",
     "test_options_nav", "test_options_drawer", "test_options_keybinds_model", "test_options_keybinds", "test_options_keybinds_sync", "test_options_appearance", "test_options_skin_picker",
-    "test_options_idsuggest", "test_options_idsuggest_frames", "test_options_idlist_remove", "test_options_switched", "test_options_combat", "test_options_combat_debug", "test_options_compose", "test_options_compose_master", "test_options_compose_tooltips", "test_options_reset_tooltip", "test_options_skin", "test_options_compose_skin",
+    "test_options_idsuggest", "test_options_idsuggest_frames", "test_options_idlist_remove", "test_options_switched", "test_options_combat", "test_options_combat_debug", "test_options_compose", "test_options_compose_master", "test_options_compose_tooltips", "test_options_reset_tooltip", "test_options_skin", "test_options_tooltip_skin", "test_options_compose_skin",
     "test_options_throttle",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_budget", "test_perf_toplevel", "test_perf_isolation",
     "test_sim_seam", "test_sim_session", "test_sim_timeline", "test_sim_verbs", "test_sim_autoplay", "test_sim_panel", "test_sim_panel_render",

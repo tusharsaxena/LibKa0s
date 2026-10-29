@@ -30,7 +30,9 @@ if not lib then return end
 -- box's padding (lib.__drawerPad).
 -- Minor 2: a registered skin owner's drawer paints through its facade after its own paint (S.Drawer:
 -- the label, the summary, the head's edge set open or closed, the box's) (LK-07 of the skinning run).
-local DRAWER_MINOR = 2
+-- Minor 3: the head's tooltip title through O.__tipColor (`gtip.value`; OptionsScroll minor 9)
+-- (LK-06d of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS).
+local DRAWER_MINOR = 3
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__drawerMinor and lib.__drawerMinor >= DRAWER_MINOR
   and lib.__drawerShellMinor == lib.MINOR then return end
@@ -281,7 +283,7 @@ function lib.__AttachDrawer(O)
     head:SetScript("OnEnter", function()
       if not (GameTooltip and spec.tooltip) then return end
       GameTooltip:SetOwner(head, "ANCHOR_RIGHT")
-      GameTooltip:SetText(spec.label or "", 1, 1, 1)
+      GameTooltip:SetText(spec.label or "", O.__tipColor("gtip.value", 1, 1, 1))
       GameTooltip:AddLine(spec.tooltip, nil, nil, nil, true)
       GameTooltip:Show()
     end)

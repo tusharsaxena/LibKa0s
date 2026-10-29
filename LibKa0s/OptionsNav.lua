@@ -26,7 +26,10 @@ if not Pool or (Pool.MINOR or 0) < NEEDS_POOL then return end
 -- Minor 2: a refused rail click names its entry, for the shell's Cfg line (gap G3, 2026-09-30).
 -- Minor 3: a registered skin owner's rail paints through its facade after its own paint: the pane
 -- (S.Panel, `nav`) and each entry (S.NavItem: label, selection, bar) (LK-07 of the skinning run).
-local NAV_MINOR = 3
+-- Minor 4: an entry's tooltip title through the page's O.__tipColor (`gtip.value`; OptionsScroll
+-- minor 9), the instance read off the entry's last dress (LK-06d of Ka0sAddonsCommonTasks
+-- docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS).
+local NAV_MINOR = 4
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__navMinor and lib.__navMinor >= NAV_MINOR
   and lib.__navShellMinor == lib.MINOR then return end
@@ -150,7 +153,7 @@ local function attachEntryTooltip(b)
   b:SetScript("OnEnter", function()
     if not (GameTooltip and b.__ka0sNavTip) then return end
     GameTooltip:SetOwner(b, "ANCHOR_RIGHT")
-    GameTooltip:SetText(b.__ka0sNavText or "", 1, 1, 1)
+    GameTooltip:SetText(b.__ka0sNavText or "", b.__ka0sNavO.__tipColor("gtip.value", 1, 1, 1))
     GameTooltip:AddLine(b.__ka0sNavTip, nil, nil, nil, true)
     GameTooltip:Show()
   end)
@@ -186,6 +189,7 @@ end
 --- The selected entry is the DISABLED one, as the active tab is: it neither highlights nor fires.
 local function dressEntry(O, b, entry, selected, onSelect)
   b.__ka0sNavKey, b.__ka0sNavText, b.__ka0sNavTip = entry.key, entry.label, entry.tooltip
+  b.__ka0sNavO = O   -- whose tooltip colors the next hover reads (minor 4): a pooled entry's last page
   b.__ka0sNavSelected = selected
   local label = b.__ka0sNavLabel
   local rgb = selected and LABEL_WHITE or LABEL_GOLD

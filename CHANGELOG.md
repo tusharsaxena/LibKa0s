@@ -19,10 +19,45 @@ listed. Not tagged.
 
 Versions in this release: **Skin minor 8**, **SkinDefs minor 16**, **SkinPaint minor 12**,
 **SkinPaintExtras minor 6** and **SkinPaintControls minor 10** (`LibKa0s-Skin-1.0` key
-**8.16.12.6.10.2.4**), **WidgetsReorder minor 3** and **WidgetsDragHandle minor 7** (`LibKa0s-Widgets-1.0` key **16.3.7.4.4.1**) and
-**OptionsSkinPicker minor 2** (`LibKa0s-Options-1.0` key **34.4.35.4.6.10.3.13.8.3.2.5.3.2**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
+**8.16.12.6.10.2.4**), **WidgetsReorder minor 3** and **WidgetsDragHandle minor 7** (`LibKa0s-Widgets-1.0` key **16.3.7.4.4.1**),
+**OptionsWidgets minor 36**, **OptionsIdList minor 7**, **OptionsTabs minor 11**, **OptionsScroll minor 9**,
+**OptionsNav minor 4**, **OptionsDrawer minor 3**, **OptionsKeybinds minor 6** and
+**OptionsSkinPicker minor 2** (`LibKa0s-Options-1.0` key **34.4.36.4.7.11.3.13.9.4.3.6.3.2**) and
+**SimPanel minor 8** (`LibKa0s-Sim-1.0` key **2.3.8**); every other file still at its v1.80.0 minor, and **test kit revision 44**,
 until an entry below moves one.
 Still **nineteen majors across fifty-three files**, and no `NEEDS_*` floor rises.
+
+### The tooltip lines the library writes take the skin's tooltip colors
+
+`LibKa0s-Options-1.0` key 34.4.36.4.7.11.3.13.9.4.3.6.3.2, documented in
+[docs/api/Options/version-34.4.36.4.7.11.3.13.9.4.3.6.3.2-docs.md](docs/api/Options/version-34.4.36.4.7.11.3.13.9.4.3.6.3.2-docs.md)
+(*What changed at this version*), `LibKa0s-Sim-1.0` key 2.3.8, documented in
+[docs/api/Sim/version-2.3.8-docs.md](docs/api/Sim/version-2.3.8-docs.md), and WidgetsReorder minor 3
+(already bumped on this branch; the Widgets document's *ReorderList*). LK-06d, ruling R-5, decision
+D-14. Every explicit color the library wrote into `GameTooltip` was a literal whatever the skin.
+
+- **The settings chrome** (OptionsScroll minor 9): one helper, `O.__tipColor(token, r, g, b)`,
+  answers the page owner's tooltip token while the chrome is skinned and the literal otherwise (an
+  owner-less page, and an owner that ignores its settings panel, draw what they drew). Six sites
+  take it, read at hover so a skin switch reaches the next one: `O.AttachTooltip`'s title
+  (OptionsWidgets minor 36, so every settings row and control), the drawer head (OptionsDrawer
+  minor 3), the nav entry (OptionsNav minor 4), the tab (OptionsTabs minor 11; a pooled entry or tab
+  reads the instance that dressed it last), the key button (OptionsKeybinds minor 6) and the id
+  list's help mark (OptionsIdList minor 7). The titles take `gtip.value`, white in all nine skins, so
+  Ka0s Default draws exactly what it drew; the help mark's note lines take `gtip.body`, Ka0s
+  Default's 0.9 where minor 6 drew 0.8 (the recorded shift D-14 accepts for one tooltip palette).
+- **The reorder list's handle** (WidgetsReorder minor 3): its tooltip line takes the list's palette
+  `gtip.value`, and the literal white while the list is unskinned (no owner, or the owner ignoring
+  its settings panel with `panel` left on).
+- **The sim panel** (SimPanel minor 8): its row and button tooltips take the panel's palette, the
+  key column `gtip.title` (Ka0s Default's tooltip gold where minor 7 drew `0.9, 0.82, 0.5`: D-14's
+  recorded shift) and every white line `gtip.value`. A window, so Ignore settings panel leaves it
+  skinned (D-01); an owner-less panel keeps the literals.
+
+A line that named no color (every tooltip body here, the sim panel's title) stays the client's. No
+member is added, no token is new, and nothing is owed by a consumer. `tests/test_options_tooltip_skin.lua`
+(new, six cases), three cases in `tests/test_tool_windows_skin.lua` and one in
+`tests/test_widgets_skin.lua` pin it.
 
 ### WidgetsDragHandle minor 7, SkinDefs minor 16: the drag handle's tooltip in its skin's colors
 
@@ -45,8 +80,8 @@ and one in `tests/test_skin_defs.lua` pin it. The Widgets document LK-05 opened 
 
 ### OptionsSkinPicker minor 2: "Choose a skin", the addon's name on its own line
 
-`LibKa0s-Options-1.0` key 34.4.35.4.6.10.3.13.8.3.2.5.3.2, documented in
-[docs/api/Options/version-34.4.35.4.6.10.3.13.8.3.2.5.3.2-docs.md](docs/api/Options/version-34.4.35.4.6.10.3.13.8.3.2.5.3.2-docs.md)
+`LibKa0s-Options-1.0` key 34.4.36.4.7.11.3.13.9.4.3.6.3.2, documented in
+[docs/api/Options/version-34.4.36.4.7.11.3.13.9.4.3.6.3.2-docs.md](docs/api/Options/version-34.4.36.4.7.11.3.13.9.4.3.6.3.2-docs.md)
 (*The skin picker*; LK-11, ruling R-11, decision D-17). The first-run picker's one-line title,
 "Choose a skin for <the addon's label>", had 224 px, and the client cut a long label off in every
 addon. The title is now `TITLE`, "Choose a skin" (`TITLE_FOR` is gone; a stale translation of it is

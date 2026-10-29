@@ -40,7 +40,8 @@ local lib = LibStub and LibStub("LibKa0s-Widgets-1.0", true)
 if not lib then return end
 
 -- Minor 2: the skin owner (the header's THE SKIN OWNER).
--- Minor 3: the settings-panel scope (the header's THE SETTINGS-PANEL SCOPE), with `opts.panel`.
+-- Minor 3: the settings-panel scope (the header's THE SETTINGS-PANEL SCOPE), with `opts.panel`, and
+-- the handle's tooltip line in the palette's `gtip.value` (white while unskinned; LK-06d).
 local REORDER_MINOR = 3
 -- Paired on the SHELL's minor as well as this file's own, as WidgetsDragHandle.lua is: a list that
 -- attached to an older shell would publish `lib.ReorderList` beside a `lib.MODULES` the shell owns,
@@ -61,6 +62,8 @@ local GHOST_BG   = { 0.12, 0.12, 0.12, 0.95 }
 local GHOST_TEXT = { 1, 0.82, 0 }
 local HANDLE_REST, HANDLE_HOVER = { 0.7, 0.7, 0.7 }, { 1, 0.82, 0 }
 local LINE_COLOR = { 1, 0.82, 0, 0.9 }
+-- The handle's tooltip line (minor 3): the white it always drew; a skinned list's is `gtip.value`.
+local TIP_TEXT = { 1, 1, 1 }
 
 --- A list's colors from its skin owner (minor 2), or nil for a list with none (or an unregistered
 --- name, or a shell that predates the check): every reader then falls back to minor 1's values.
@@ -79,7 +82,7 @@ local function skinPalette(owner, panel)
             EDGE = tok("list.boxEdge", R.EDGE), EDGE_DIM = tok("list.boxEdgeDim", R.EDGE_DIM) },
     rest = tok("handle.rest", HANDLE_REST), hover = tok("text.accent", HANDLE_HOVER),
     line = tok("list.dropLine", LINE_COLOR), ghostBg = tok("list.ghostBg", GHOST_BG),
-    ghostText = tok("text.accent", GHOST_TEXT),
+    ghostText = tok("text.accent", GHOST_TEXT), tip = tok("gtip.value", TIP_TEXT),
   }
 end
 
@@ -567,6 +570,7 @@ function lib.ReorderList(opts)
     handleRest = opts.handleColor or (pal and pal.rest) or HANDLE_REST,
     handleHover = opts.handleHoverColor or (pal and pal.hover) or HANDLE_HOVER,
     ghostText  = (pal and pal.ghostText) or GHOST_TEXT,
+    tipText    = (pal and pal.tip) or TIP_TEXT,
     rowBox     = opts.rowBox ~= false,
     rows       = {},
     handles    = {},
@@ -641,7 +645,8 @@ function lib.ReorderList(opts)
       local tip = self.__tooltip
       if tip and GameTooltip then
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:AddLine(tip, 1, 1, 1)
+        local c = self.__tipColor or TIP_TEXT
+        GameTooltip:AddLine(tip, c[1], c[2], c[3])
         GameTooltip:Show()
       end
     end)
@@ -723,6 +728,7 @@ function lib.ReorderList(opts)
     handle.__restColor  = list.handleRest
     handle.__hoverColor = list.handleHover
     handle.__tooltip    = opts.handleTooltip
+    handle.__tipColor   = list.tipText
 
     handle:SetParent(parent)
     handle:SetSize(opts.handleSize or lib.ROW_BOX.HANDLE_W, spec.height or self.stride)

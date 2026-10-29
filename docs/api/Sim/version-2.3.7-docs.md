@@ -11,9 +11,9 @@
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **7** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
 | Shipped in | v1.78.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [2.3.6](./version-2.3.6-docs.md) (shipped in v1.77.0) — the same surface; its panel wore Core's skin whatever its owner |
-| Superseded by | — |
+| Superseded by | [2.3.8](./version-2.3.8-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 7 }` |
 

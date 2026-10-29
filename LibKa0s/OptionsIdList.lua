@@ -22,7 +22,11 @@ if not lib then return end
 -- Minor 6: on a registered skin owner's page wearing a skin other than Ka0s Default, the help mark's
 -- tints come from the skin (`text.accent`, `sem.bad`, `text.disabled`, `icon.hot`), read at draw;
 -- Ka0s Default and an owner-less page keep minor 5's constants (LK-07 of the skinning run).
-local IDLIST_MINOR = 6
+-- Minor 7: the help mark's tooltip through O.__tipColor (OptionsScroll minor 9): the name
+-- `gtip.value`, the note lines `gtip.body` (Ka0s Default's 0.9 where minor 6 drew 0.8, DECISIONS
+-- D-14); an owner-less page keeps the literals (LK-06d of Ka0sAddonsCommonTasks
+-- docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS).
+local IDLIST_MINOR = 7
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__idListMinor and lib.__idListMinor >= IDLIST_MINOR
@@ -610,9 +614,10 @@ function lib.__AttachIdList(O, d, ids)
         end
         if not GameTooltip then return end
         GameTooltip:SetOwner(h.frame or h, "ANCHOR_RIGHT")
-        GameTooltip:SetText(name or tostring(entry.id), 1, 1, 1)
+        GameTooltip:SetText(name or tostring(entry.id), O.__tipColor("gtip.value", 1, 1, 1))
+        local lr, lg, lb = O.__tipColor("gtip.body", 0.8, 0.8, 0.8)
         for i = 1, #lines do
-          GameTooltip:AddLine(lines[i], 0.8, 0.8, 0.8, true)
+          GameTooltip:AddLine(lines[i], lr, lg, lb, true)
         end
         GameTooltip:Show()
       end)

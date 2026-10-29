@@ -30,7 +30,10 @@ if not lib then return end
 -- Minor 8: a released bar is handed back through lib.__chromeUnpaint, not only untracked: the skin's
 -- ScrollBar fades the bar's own knob art (SkinPaintControls minor 7), and the pooled widget must get
 -- it back.
-local SCROLL_MINOR = 8
+-- Minor 9: `O.__tipColor`, the one color every tooltip line the chrome writes takes (the owner's
+-- tooltip token while the chrome is skinned, else the literal it replaces; LK-06d of
+-- Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, ruling R-5, DECISIONS D-14).
+local SCROLL_MINOR = 9
 -- Paired on the SHELL's minor as well as this file's own. The scroll counter alone is not enough:
 -- two vendored copies can ship the same scroll minor over different Options.lua minors, and then
 -- the higher shell wins the LibStub race while the first-loaded copy's patch stays attached to it.
@@ -463,6 +466,18 @@ function lib.__AttachScroll(O, d)
   function O.__chromeAway()
     if not O.__chromeSkin() then return nil end
     return lib.__chromeAway(owner)
+  end
+
+  --- A tooltip line's color (minor 9): the owner's color token `token` while the chrome is
+  --- skinned, read at hover so a switch reaches the next one; else `r, g, b`, the literal the line
+  --- drew before, which is what an owner-less page and an owner ignoring its settings panel get. One
+  --- helper for every line the chrome writes (O.AttachTooltip, the drawer head, the nav entry, the
+  --- tab, the key button, the id list's help mark); a line that names no color stays the client's.
+  function O.__tipColor(token, r, g, b)
+    local S = O.__chromeSkin()
+    local c = S and type(S.Token) == "function" and S.Token(token) or nil
+    if type(c) == "table" and c[1] and c[2] and c[3] then return c[1], c[2], c[3] end
+    return r, g, b
   end
 
   --- lib.__chromePaint for this instance's owner.
