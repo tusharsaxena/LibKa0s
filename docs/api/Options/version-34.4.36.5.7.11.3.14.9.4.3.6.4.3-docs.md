@@ -109,7 +109,9 @@ skin-change path the player drives goes through it:
   with the overrides cleared (`SetOverride`, no write), a pick back to it restores them; Apply, the
   gear and *Apply to all* then write the cleared overrides after the skin
   (`spec.set(nil, nil, nil, { font = false, texture = false, outline })`); the close control and
-  Escape put back the overrides the window opened with.
+  Escape put back the overrides the window opened with, but only while the look drawn is again the
+  opened one and the overrides are still the cleared pair the preview left: a Skin-tab write made
+  while the picker was up (another skin's reset, or an override) stays live, as the profile holds it.
 
 **The Skin tab's layout** (A4, still; `LK-08`, the owner's item 6 and ruling D-11):
 

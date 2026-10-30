@@ -434,10 +434,18 @@ function lib.__AttachSkinPicker(O, d)
     return select(2, p.Skin:GetChoice(p.owner))
   end
 
-  --- `p`'s overrides as the window opened with them, put back (no write) when a preview cleared them.
+  --- `p`'s overrides as the window opened with them, put back (no write) when a preview cleared them,
+  --- and only while nothing else moved them since: the look drawn now is the opened one, and the
+  --- overrides are still the cleared pair the preview left. A Skin-tab write made while the window
+  --- was up (another skin's reset, or an override) stays live, as the profile holds it.
   local function restoreMedia(p)
     if not p.cleared then return end
     p.cleared = false
+    if drawsNow(p) ~= p.openedDraws then return end
+    if type(p.Skin.GetOverride) == "function" then
+      local font, texture = p.Skin:GetOverride(p.owner)
+      if font or texture then return end
+    end
     local m = p.openedMedia or {}
     p.Skin:SetOverride(p.owner, m.font or false, m.texture or false)
   end

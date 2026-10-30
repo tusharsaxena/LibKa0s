@@ -107,11 +107,12 @@ setting with three values.
 - **SkinPaint minor 13: the mono role is never outlined**, so the debug console's and the perf
   tables' digits stay clean under `"all"`.
 - **OptionsAppearance minor 4: the Skin tab's *Font outline* dropdown**, *All text*, *HUD text only*
-  and *Off*, under the Scope's check boxes, grayed while *Ignore fonts* is on; every media write the
+  and *Off*, under the Scope's check boxes (`LK-08` then moved it under the reset buttons), grayed while *Ignore fonts* is on; every media write the
   tab makes carries `{ font, texture, outline }`; *Copy to every Ka0s addon…* carries the outline;
   `lib.__copySkinTo` keeps a target's own half for a `media` half left out.
-- **The skin picker is unchanged here** (OptionsSkinPicker stayed at minor 2 for it): *Apply to all Ka0s addons*
-  gives the other owners the source and skin alone. The picker never shows the outline, and an owner
+- **The skin picker leaves the outline alone** (at `LK-03` OptionsSkinPicker stayed at minor 2; `LK-07`
+  then made *Apply to all* reset the overrides, minor 3): *Apply to all Ka0s addons* never carries
+  the outline to the other owners. The picker never shows the outline, and an owner
   that never set one answers `"all"`, so carrying it could silently undo another addon's *Off* (the
   review of `LK-03`; D-06 gives the outline to the Skin tab's copy alone).
 
@@ -142,13 +143,16 @@ override picked, choosing another skin gives both back to that skin's own.
   with the target's own outline. Its tooltip (`APPLY_ALL_TIP`) says so.
 - **The skin picker (minor 3)**: a pick to another look previews with the overrides cleared, a pick
   back restores them, Apply and the gear write the reset, the close control and Escape restore what
-  the window opened with.
+  the window opened with, unless something else moved the look or the overrides while it was up
+  (a Skin-tab write then stays live, as the profile holds it).
 - **Never inside `Skin:SetChoice`**, which re-applies a stored skin at load: a new guard case in
   `tests/test_skin_override.lua` pins it. A profile change and `/xx set skin.skin` reset nothing.
 
 Tests: eight Appearance cases (and the two that pinned the old persistence, the sync case and the
 library-level copy case, plus the copy helper's partial-media case, moved to the new behavior), four
-picker cases (and *Apply to all*'s), and the guard.
+picker cases (and *Apply to all*'s), and the guard; the review added four more picker cases (a
+fallback preview under a painting EllesmereUI, the gear's media write, two clearing previews, and a
+close after a Skin-tab write).
 
 **What a consumer owes** (M2): nothing in code; the write seam already stores `media`. A suite that
 pins an override surviving a skin pick moves with it, and an Options degradation stub owes nothing
@@ -176,7 +180,9 @@ Tests: eight Appearance cases; the Font outline's place case moves with it.
 
 **What a consumer owes** (M2): nothing in code and no stub member (the Skin tab is the library's). A
 suite that pins the tab's draw order, the Scope's widths, the note's place or the count of
-`APPEARANCE_STRINGS` keys moves with it; a host that translates the tab adds the five keys.
+`APPEARANCE_STRINGS` keys moves with it; a suite that counts or lists the Skin tab's headings gains
+*Other Ka0s addons*, fifth, after *Scope* (LootHistory's `tests/test_panel.lua` pins four); a host
+that translates the tab adds the five keys.
 
 ### Every element's font flags follow the Font outline by default (`LK-04`)
 
