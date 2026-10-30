@@ -1,15 +1,15 @@
--- tests/test_skin_stock_default.lua — LibKa0s-Skin-1.0's `opts.stockDefault` (LK-05 of
--- Ka0sAddonsCommonTasks docs/2026-10-29-SKINNING_ROLLOUT, gap QC-G4): a window that deliberately
--- matches Blizzard's settings window (Quick Comms' callout popup and icon browser, built on
--- SettingsFrameTemplate: its NineSlice with the title on it, its Bg, its ClosePanelButton) keeps the
--- client's art under Ka0s Default and is skinned under every other skin and under EllesmereUI.
+-- tests/test_skin_stock_default.lua — LibKa0s-Skin-1.0's retired `opts.stockDefault` (LK-02 of
+-- Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, ruling R-2, decisions D-04 and D-08).
+-- The option once kept a template-built window (Quick Comms' callout popup, built on
+-- SettingsFrameTemplate: its NineSlice with the title on it, its Bg, its ClosePanelButton) as the
+-- client drew it while its owner drew Ka0s Default. R-2 retires that: Ka0s Default looks like Ka0s
+-- Default everywhere, and a player who wants the client's look picks WoW Default.
 --
--- What it pins: under Ka0s Default a primitive given `opts.stockDefault` paints nothing and gives
--- back anything it painted before, so a live switch back to Ka0s Default is the stock window again;
--- under another skin it paints as it always did; its hover and enable hooks do nothing while the
--- target is stock; without the option Ka0s Default paints exactly as before; under the eui source a
--- call goes to EllesmereUI as before, the live fallback before EllesmereUI paints is Ka0s Default's
--- stock, and a refused EllesmereUI (fail closed) is the library's paint from the derived tokens.
+-- What it pins: a stale `stockDefault = true` is ignored without error by every primitive that once
+-- read it, so the target paints exactly as one painted without it; its hover and enable hooks run
+-- under Ka0s Default; `opts.stock` stays the fade list it is under every skin (D-04); PageButton
+-- forwards its opts (`stock`, `noBorder`, `noBg`) and a repaint replays them; P.unpaint gives a
+-- TitleBar's text alignment back (D-08); the eui route is unchanged, its fallback now painted.
 --
 -- Every case runs on a fresh environment (tests/fixture_skin_paint.lua, tests/fixture_skin_eui.lua).
 
@@ -39,78 +39,116 @@ local function settingsWindow(m)
   return f
 end
 
---- Paint the window the way QC-G4 asks: every part with `stockDefault`.
-local function paint(S, f)
-  local opts = { stockDefault = true, stock = { f.Bg } }
-  S.Shell(f, opts)
-  S.FadeNineSlice(f, { stockDefault = true })
-  S.TitleBar(f.NineSlice, { stockDefault = true, text = f.NineSlice.Text, noBg = true })
-  S.CloseButton(f.ClosePanelButton, { stockDefault = true })
+--- Paint the window the way Quick Comms' popup did, `stockDefault` on every part (`stale`), or
+--- the same calls without it.
+local function paint(S, f, stale)
+  local function o(t) if stale then t.stockDefault = true end return t end
+  S.Shell(f, o({ stock = { f.Bg } }))
+  S.FadeNineSlice(f, o({}))
+  S.TitleBar(f.NineSlice, o({ text = f.NineSlice.Text, noBg = true }))
+  S.CloseButton(f.ClosePanelButton, o({}))
 end
 
---- True when the window shows exactly the client's art and nothing of the library's.
-local function isStock(m, Skin, f)
+--- Assert the window wears `skin`'s look: the template art faded, the "x" drawn, the title recolored.
+local function assertPainted(m, Skin, f, skin, label)
   for _, k in ipairs(m.__nineSliceKeys) do
-    if survey(m, f.NineSlice[k]).alpha ~= 1 then return false, "NineSlice." .. k .. " faded" end
+    assertEqual(survey(m, f.NineSlice[k]).alpha, 0, label .. ": NineSlice." .. k .. " faded")
   end
-  if survey(m, f.Bg).alpha ~= 1 then return false, "Bg faded" end
-  if survey(m, f.closeArt).alpha ~= 1 then return false, "the close art faded" end
-  if F.rgba(survey(m, f.NineSlice.Text).textColor) ~= "1,0.820,0,1" then return false, "the title recolored" end
-  for _, target in ipairs({ f, f.NineSlice, f.ClosePanelButton }) do
-    local rec = Skin.painted[target]
-    for key, r in pairs(rec and rec.regions or {}) do
-      if Skin.__ours[r] and type(r.IsShown) == "function" and r:IsShown() then
-        return false, "a library region shown: " .. tostring(key)
-      end
-    end
-  end
-  return true
+  assertEqual(survey(m, f.Bg).alpha, 0, label .. ": the Bg faded (opts.stock, the fade list)")
+  assertEqual(survey(m, f.closeArt).alpha, 0, label .. ": the close art faded")
+  local glyph = F.region(Skin, f.ClosePanelButton, "glyph")
+  assertEqual(glyph and survey(m, glyph).text, "x", label .. ": the close glyph drawn")
+  assertEqual(F.rgba(survey(m, f.NineSlice.Text).textColor), F.tok(Skin, skin, "title.text"),
+    label .. ": the title recolored")
 end
 
--- ── Ka0s Default and the other skins ─────────────────────────────────────────────────────────
+--- A stock control of `kind` (template Left/Middle/Right pieces, no backdrop).
+local function stockControl(m, kind)
+  local f = m.CreateFrame(kind, nil, m.UIParent)
+  rawset(f, "SetBackdrop", nil)
+  f.Left, f.Middle, f.Right = f:CreateTexture(), f:CreateTexture(), f:CreateTexture()
+  return f
+end
 
-test("skin stock default: under Ka0s Default a SettingsFrameTemplate window stays the client's", function()
+-- ── Ka0s Default paints the Ka0s look ────────────────────────────────────────────────────────
+
+test("skin stock retired: under Ka0s Default a stale stockDefault window is painted the Ka0s look", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local f = settingsWindow(m)
-  paint(S, f)
-  local ok, why = isStock(m, Skin, f)
-  assertTrue(ok, why)
-  assertTrue(Skin.painted[f] ~= nil, "still recorded, so a skin switch repaints it")
-end)
-
-test("skin stock default: another skin paints it, and a switch back gives the stock window back", function()
-  local m, Skin = F.env()
-  local S = F.owner(Skin, OWNER, "obsidian")
-  local f = settingsWindow(m)
-  paint(S, f)
-  assertEqual(survey(m, f.NineSlice.TopEdge).alpha, 0, "Obsidian fades the NineSlice")
-  assertEqual(survey(m, f.Bg).alpha, 0, "and the Bg")
-  assertEqual(survey(m, f.closeArt).alpha, 0, "and the close art")
-  assertEqual(survey(m, F.region(Skin, f.ClosePanelButton, "glyph")).text, "x", "the close glyph drawn")
-  assertEqual(F.rgba(survey(m, f.NineSlice.Text).textColor), F.tok(Skin, "obsidian", "title.text"))
-  Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  local ok, why = isStock(m, Skin, f)
-  assertTrue(ok, "back on Ka0s Default: " .. tostring(why))
+  paint(S, f, true)
+  assertPainted(m, Skin, f, "ka0s", "Ka0s Default")
+  assertNil(Skin.__regions[f.ClosePanelButton].stockKept, "no stock-kept mark")
   Skin:SetChoice(OWNER, "ka0s", "ember")
-  assertEqual(survey(m, f.NineSlice.TopEdge).alpha, 0, "Ember paints it again")
-  assertEqual(F.rgba(survey(m, f.NineSlice.Text).textColor), F.tok(Skin, "ember", "title.text"))
-end)
-
-test("skin stock default: TitleBar gives back the title's justification with its color", function()
-  local m, Skin = F.env()
-  local S = F.owner(Skin, OWNER, "forever")
-  local f = settingsWindow(m)
-  f.NineSlice.Text:SetJustifyH("LEFT")
-  paint(S, f)
-  assertEqual(f.NineSlice.Text:GetJustifyH(), Skin:ResolveSkin("forever")["title.align"], "WoW Forever centers it")
+  assertPainted(m, Skin, f, "ember", "Ember")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertEqual(f.NineSlice.Text:GetJustifyH(), "LEFT", "the template's own alignment")
+  assertPainted(m, Skin, f, "ka0s", "a switch back to Ka0s Default")
 end)
 
-test("skin stock default: a stock target's hover and enable hooks do nothing under Ka0s Default", function()
+test("skin stock retired: a stale stockDefault paints exactly as the same calls without it", function()
   local m, Skin = F.env()
-  local S = F.owner(Skin, OWNER, "obsidian")
+  local S = F.owner(Skin, OWNER)
+  local function traced(stale)
+    local f = settingsWindow(m)
+    local tr = F.tracer(m)
+    for _, o in ipairs({ f, f.NineSlice, f.Bg, f.NineSlice.Text, f.ClosePanelButton, f.closeArt }) do
+      tr.watch(o)
+    end
+    for _, k in ipairs(m.__nineSliceKeys) do tr.watch(f.NineSlice[k]) end
+    tr.start()
+    paint(S, f, stale)
+    tr.stop(); tr.restore()
+    return tr.text()
+  end
+  local plain, stale = traced(false), traced(true)
+  assertTrue(#plain > 0, "the window was painted")
+  assertEqual(stale, plain, "stockDefault = true is no option any more")
+end)
+
+test("skin stock retired: every primitive that once read stockDefault ignores it without error", function()
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local build = {
+    Shell = function() return settingsWindow(m) end,
+    Panel = function() return m.CreateFrame("Frame", nil, m.UIParent, "BackdropTemplate") end,
+    Inset = function() return m.CreateFrame("Frame", nil, m.UIParent, "BackdropTemplate") end,
+    TitleBar = function()
+      local f = m.CreateFrame("Frame", nil, m.UIParent)
+      f.title = f:CreateFontString(); return f
+    end,
+    FadeNineSlice = function() return settingsWindow(m) end,
+    Button = function() local b = stockControl(m, "Button"); b.text = b:CreateFontString(); return b end,
+    EditBox = function() return stockControl(m, "EditBox") end,
+    Dropdown = function() return stockControl(m, "Button") end,
+    Slider = function() return stockControl(m, "Slider") end,
+    Tab = function() local b = stockControl(m, "Button"); b.text = b:CreateFontString(); return b end,
+    CloseButton = function() return settingsWindow(m).ClosePanelButton end,
+  }
+  local names = {}
+  for name in pairs(build) do names[#names + 1] = name end
+  table.sort(names)
+  for _, name in ipairs(names) do
+    local a, b = build[name](), build[name]()
+    local ok, err = pcall(S[name], a, { stockDefault = true })
+    assertTrue(ok, name .. " raised: " .. tostring(err))
+    S[name](b, {})
+    assertNil(Skin.__regions[a].stockKept, name .. ": no stock-kept mark")
+    local ra, rb = Skin.painted[a].regions, Skin.painted[b].regions
+    for key, r in pairs(rb) do
+      if Skin.__ours[r] and type(r.IsShown) == "function" then
+        local mine = ra[key]
+        assertEqual(mine ~= nil and mine:IsShown(), r:IsShown(), name .. ": region " .. tostring(key))
+      end
+    end
+    if rawget(a, "Left") then
+      assertEqual(survey(m, a.Left).alpha, survey(m, b.Left).alpha, name .. ": the template piece")
+    end
+  end
+end)
+
+test("skin stock retired: a stale stockDefault target's hover and enable hooks run under Ka0s Default", function()
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
   local b = m.CreateFrame("Button", nil, m.UIParent)
   rawset(b, "SetBackdrop", nil)
   local normal = b:CreateTexture()
@@ -118,121 +156,100 @@ test("skin stock default: a stock target's hover and enable hooks do nothing und
   b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   b.text:SetTextColor(1, 0.82, 0, 1)
   S.Button(b, { stockDefault = true })
+  assertEqual(survey(m, normal).alpha, 0, "the stock art faded under Ka0s Default")
+  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "ka0s", "btn.text"), "the label painted")
   b:__fire("OnEnter")
-  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "obsidian", "btn.hover"), "hooked under Obsidian")
+  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "ka0s", "btn.hover"), "the hover hook runs")
   b:__fire("OnLeave")
-  Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertEqual(F.rgba(survey(m, b.text).textColor), "1,0.820,0,1", "the stock label color back")
-  assertEqual(survey(m, normal).alpha, 1, "the stock art back")
-  b:__fire("OnEnter")
-  assertEqual(F.rgba(survey(m, b.text).textColor), "1,0.820,0,1", "the hover hook is inert while stock")
-  b:__fire("OnDisable")
-  assertEqual(F.rgba(survey(m, b.text).textColor), "1,0.820,0,1", "and so is the enable hook")
+  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "ka0s", "btn.text"), "and gives the rest back")
   local c = settingsWindow(m).ClosePanelButton
-  Skin:SetChoice(OWNER, "ka0s", "obsidian")
   S.CloseButton(c, { stockDefault = true })
   local glyph = F.region(Skin, c, "glyph")
-  Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  local before = F.rgba(survey(m, glyph).textColor)
+  assertTrue(glyph ~= nil and survey(m, glyph).shown, "the close glyph shown under Ka0s Default")
   c:__fire("OnEnter")
-  assertEqual(F.rgba(survey(m, glyph).textColor), before, "the close button's hover too")
-  assertTrue(not survey(m, glyph).shown, "and its glyph hidden")
+  assertEqual(F.rgba(survey(m, glyph).textColor), F.tok(Skin, "ka0s", "close.hot"), "the close hover runs")
 end)
 
-test("skin stock default: the stock mark leaves with the record: an Untrack or another owner clears it", function()
+test("skin stock retired: opts.stock stays the fade list under Ka0s Default", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
-  local b = m.CreateFrame("Button", nil, m.UIParent)
-  rawset(b, "SetBackdrop", nil)
-  b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  S.Button(b, { stockDefault = true })
-  assertTrue(Skin.__regions[b].stockKept == true, "kept stock under Ka0s Default")
-  Skin:Untrack(b)
-  S.WhiteButtonLabel(b)
-  assertNil(Skin.__regions[b].stockKept, "a primitive that never asks for stock, after an Untrack: no mark")
-  assertEqual(F.rgba(survey(m, b.text).textColor), F.tok(Skin, "ka0s", "btn.text"), "and it paints")
-  S.Button(b, { stockDefault = true })
-  assertTrue(Skin.__regions[b].stockKept == true, "kept stock again")
-  F.owner(Skin, "PrettyChat").WhiteButtonLabel(b)
-  assertNil(Skin.__regions[b].stockKept, "another owner's paint clears it")
+  local tab = m.CreateFrame("Button", nil, m.UIParent)
+  rawset(tab, "SetBackdrop", nil)
+  local art = tab:CreateTexture()
+  S.Tab(tab, { stock = { art }, stockDefault = true })
+  assertEqual(survey(m, art).alpha, 0, "the caller's art faded under Ka0s Default")
 end)
 
-test("skin stock default: Slider, EditBox and Tab take the option through the same mechanism", function()
+-- ── PageButton forwards its opts ─────────────────────────────────────────────────────────────
+
+test("skin stock retired: PageButton forwards stock, noBorder and noBg, and a repaint replays them", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
-  local function stock(kind)
-    local f = m.CreateFrame(kind, nil, m.UIParent)
-    rawset(f, "SetBackdrop", nil)
-    f.Left, f.Middle, f.Right = f:CreateTexture(), f:CreateTexture(), f:CreateTexture()
-    return f
-  end
-  local slider, eb, tab = stock("Slider"), stock("EditBox"), stock("Button")
-  tab.text = tab:CreateFontString()
-  S.Slider(slider, { stockDefault = true })
-  S.EditBox(eb, { stockDefault = true })
-  S.Tab(tab, { stockDefault = true })
-  for name, f in pairs({ Slider = slider, EditBox = eb, Tab = tab }) do
-    assertEqual(survey(m, f.Left).alpha, 1, name .. ": stock under Ka0s Default")
-  end
-  Skin:SetChoice(OWNER, "ka0s", "glass")
-  for name, f in pairs({ Slider = slider, EditBox = eb, Tab = tab }) do
-    assertEqual(survey(m, f.Left).alpha, 0, name .. ": painted under Glass")
-  end
-  Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  for name, f in pairs({ Slider = slider, EditBox = eb, Tab = tab }) do
-    assertEqual(survey(m, f.Left).alpha, 1, name .. ": stock again")
-  end
+  local pb = m.CreateFrame("Button", nil, m.UIParent)
+  rawset(pb, "SetBackdrop", nil)
+  local art = pb:CreateTexture()
+  S.PageButton(pb, "up", { stock = { art }, noBorder = true })
+  assertEqual(survey(m, art).alpha, 0, "opts.stock faded")
+  local top = F.region(Skin, pb, "edgeTop")
+  assertTrue(top == nil or not survey(m, top).shown, "noBorder: no edge")
+  assertEqual(F.region(Skin, pb, "arrow"):GetRotation(), math.pi / 2, "the arrow still turned to dir")
+  local plain = m.CreateFrame("Button", nil, m.UIParent)
+  rawset(plain, "SetBackdrop", nil)
+  S.PageButton(plain, "up")
+  assertTrue(survey(m, F.region(Skin, plain, "edgeTop")).shown, "without opts the edge is drawn")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  top = F.region(Skin, pb, "edgeTop")
+  assertTrue(top == nil or not survey(m, top).shown, "the repaint replays noBorder")
+  assertEqual(survey(m, art).alpha, 0, "and the fade list")
+  local hb = m.CreateFrame("Button", nil, m.UIParent, "BackdropTemplate")
+  S.PageButton(hb, "next", { noBg = true })
+  assertEqual(F.rgba(survey(m, hb).backdropColor), "0,0,0,0", "noBg: a clear fill")
 end)
 
-test("skin stock default: without the option Ka0s Default paints exactly as before", function()
+-- ── P.unpaint gives a TitleBar's alignment back (D-08) ───────────────────────────────────────
+
+test("skin stock retired: P.unpaint gives a TitleBar's text alignment back", function()
   local m, Skin = F.env()
-  local S = F.owner(Skin, OWNER)
-  local f, g = settingsWindow(m), settingsWindow(m)
-  local tr = F.tracer(m)
-  tr.watch(f); tr.watch(f.NineSlice); tr.watch(f.Bg); tr.watch(f.NineSlice.Text)
-  tr.start()
-  S.Shell(f, { stock = { f.Bg } }); S.FadeNineSlice(f); S.TitleBar(f.NineSlice, { text = f.NineSlice.Text, noBg = true })
-  tr.stop(); tr.restore()
-  local tr2 = F.tracer(m)
-  tr2.watch(g); tr2.watch(g.NineSlice); tr2.watch(g.Bg); tr2.watch(g.NineSlice.Text)
-  tr2.start()
-  S.Shell(g, { stock = { g.Bg }, stockDefault = false })
-  S.FadeNineSlice(g, { stockDefault = false })
-  S.TitleBar(g.NineSlice, { text = g.NineSlice.Text, noBg = true, stockDefault = false })
-  tr2.stop(); tr2.restore()
-  assertEqual(tr2.text(), tr.text(), "stockDefault = false is no option")
-  assertEqual(survey(m, f.NineSlice.TopEdge).alpha, 0, "Ka0s Default fades the template, as since SkinPaint minor 6")
-  assertEqual(survey(m, f.Bg).alpha, 0)
+  local S = F.owner(Skin, OWNER, "forever")
+  local bar = m.CreateFrame("Frame", nil, m.UIParent)
+  bar.title = bar:CreateFontString()
+  bar.title:SetJustifyH("LEFT")
+  S.TitleBar(bar)
+  assertEqual(bar.title:GetJustifyH(), Skin:ResolveSkin("forever")["title.align"], "WoW Forever aligns it")
+  Skin.__P.unpaint(Skin.painted[bar], bar)
+  assertEqual(bar.title:GetJustifyH(), "LEFT", "the title's own alignment back")
+  S.TitleBar(bar)
+  F.owner(Skin, "PrettyChat").FadeRegions(bar)
+  assertEqual(bar.title:GetJustifyH(), "LEFT", "another owner's paint gives it back too")
 end)
 
 -- ── EllesmereUI ──────────────────────────────────────────────────────────────────────────────
 
-test("skin stock default: under eui the window goes to EllesmereUI; its fallback is stock", function()
+test("skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted", function()
   local m, Skin, eui = E.env()
   local S = Skin:RegisterOwner(OWNER, { get = function() return "eui", "ka0s" end })
   local f = settingsWindow(m)
-  paint(S, f)
-  local ok, why = isStock(m, Skin, f)
-  assertTrue(ok, "before EllesmereUI paints, the owner wears Ka0s Default: stock (" .. tostring(why) .. ")")
+  paint(S, f, true)
+  assertEqual(survey(m, f.NineSlice.TopEdge).alpha, 0, "before EllesmereUI paints, Ka0s Default's look")
   eui.login()
   assertTrue(Skin.euiPainted[OWNER], "EllesmereUI paints the owner")
   assertEqual(#eui.callsFor("Shell", f), 1, "the window goes to EllesmereUI")
   assertEqual(#eui.callsFor("CloseButton", f.ClosePanelButton), 1, "and its close button")
   local call = eui.callsFor("Shell", f)[1]
   local opts = call and call.args[1]
-  assertTrue(opts == nil or opts.stockDefault == nil, "stockDefault is the library's: stripped")
+  assertTrue(opts == nil or opts.stockDefault == nil, "stockDefault is never handed on: stripped")
   assertNil(Skin.euiRefused[OWNER], "nothing refused")
 end)
 
-test("skin stock default: a refused EllesmereUI (fail closed) is the library's paint, never stock", function()
+test("skin stock retired: a refused EllesmereUI (fail closed) is the library's paint", function()
   local m, Skin, eui = E.env()
   local S = Skin:RegisterOwner(OWNER, { get = function() return "eui", "ka0s" end })
   local f = settingsWindow(m)
   eui.login()
   assertTrue(Skin.euiPainted[OWNER])
   Skin.euiRefused[OWNER] = "test: refused"
-  paint(S, f)
+  paint(S, f, true)
   assertEqual(#eui.callsFor("Shell", f), 0, "never handed to a refused EllesmereUI")
   assertEqual(survey(m, f.NineSlice.TopEdge).alpha, 0, "the library paints it from the derived tokens")
-  assertEqual(Skin:__DrawsKey(OWNER), "eui", "the owner draws EllesmereUI's tokens")
+  assertEqual(Skin:DrawsKey(OWNER), "eui", "the owner draws EllesmereUI's tokens")
 end)

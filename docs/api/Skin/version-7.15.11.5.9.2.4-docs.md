@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` minor **7** · `SkinDefs.lua` minor **15** · `SkinPaint.lua` minor **11** · `SkinPaintExtras.lua` minor **5** · `SkinPaintControls.lua` minor **9** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
 | Shipped in | v1.80.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 7.14.11.5.9.2.4](./version-7.14.11.5.9.2.4-docs.md) (unreleased) — the same surface without the icon border family (`icon.borderStyle`, `icon.borderSize`, `IconBorder`'s `opts.fromSkin`) and without `opts.stockDefault`; [version 7.14.11.5.9.2.3](./version-7.14.11.5.9.2.3-docs.md) (unreleased), without `AliasAceType` and the `TreeGroup` painter either; [version 7.14.10.4.8.1.3](./version-7.14.10.4.8.1.3-docs.md) (unreleased), without the slot remap either (`opts.tokens` on `Shell`, `Panel`, `Inset`, `Card` and `Button`); and [version 6.14.10.4.8.1.3](./version-6.14.10.4.8.1.3-docs.md) (shipped in v1.79.0), without owner tokens either |
-| Superseded by | — |
+| Superseded by | [version 8.16.12.6.10.2.4](./version-8.16.12.6.10.2.4-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 7, SkinDefs = 15, SkinPaint = 11, SkinPaintExtras = 5, SkinPaintControls = 9, SkinEUI = 2, SkinAce = 4 }` |
 
@@ -1589,3 +1589,26 @@ token resolves to nil, and every primitive paints only what it has a token for (
 `SkinAce.lua` (which needs `SkinPaint.lua`'s helpers from the same copy) no AceGUI row is painted and
 no Options instance's `O.AceGUI` is wrapped. The engine's state is written `lib.x = lib.x or {}`, so a newer copy that wins
 the LibStub race later keeps every owner, record and facade; the resolve cache alone is rebuilt.
+
+## Moving to version 8.16.12.6.10.2.4
+
+**Take it, and act on its *What a consumer owes*.** Version 8.16.12.6.10.2.4, shipped in v1.81.0,
+moves five files (`Skin.lua` 8, `SkinDefs.lua` 16, `SkinPaint.lua` 12, `SkinPaintExtras.lua` 6,
+`SkinPaintControls.lua` 10) and adds one member, `Skin:DrawsKey(owner)` (`__DrawsKey` stays one
+release as its alias). What moves under a host:
+
+- **`opts.stockDefault` is retired**: the key is ignored, so a target kept stock under Ka0s Default
+  wears the Ka0s look there; drop the key. `opts.stock` stays.
+- **Ignore fonts reaches the HUD**: while the owner ignores fonts, `Token` answers nil for
+  `hud.font` and `hud.outline`, `Resolve` the stored value and `BarStyle()`'s font fields nil; a host
+  that feeds them to `SetFont` falls back to its own face on nil.
+- **Every skin has a HUD face of its own** (Friz Quadrata only under WoW Default); **`q.*` are the
+  client's quality colors exactly**; new tokens `gtip.footer`, `list.hoverArt` and `icon.grip`.
+- **`ResetToSkin`** sets an absent `<key>FromSkin` companion named directly, or every listed pick's
+  with `{ companions = true }`, to `true`; a plain pick with its companion absent still takes the
+  sentinel.
+- **`S.Text(fs, role, { panel = true })`** and `opts.panel` on `Dropdown`, `EditBox` and `Strip` put
+  a target on the owner's settings panel; `S.CloseButton` gives its art's own tint back when it
+  unpaints; `S.PageButton` takes a third `opts`.
+
+See [version 8.16.12.6.10.2.4](./version-8.16.12.6.10.2.4-docs.md) (*What a consumer owes*).

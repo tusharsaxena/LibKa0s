@@ -148,6 +148,27 @@ test("compose skin: the picker shows the skin's value while its companion is set
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
 end)
 
+test("compose skin: while the owner ignores fonts the font picker shows the stored face (R-1)",
+  function()
+  if not Skin:IsOwner(OWNER) then Skin:RegisterOwner(OWNER) end
+  local O, rec = host(OWNER)
+  local store = rec.store
+  local rows = O.FontGroup({ prefix = "i.", fromSkin = true, page = "general", group = "Text" })
+  local picker = rowAt(rows, "i.font")
+  store["i.font"], store["i.fontFromSkin"] = "Ka0s Inter", true
+  Skin:SetIgnore(OWNER, nil, true)
+  assertNil(picker.skinValue(picker), "ignored: no skin value, so the stored pick shows")
+  seq = seq + 1
+  local ctx = O.CreatePanel("ComposeSkin" .. seq, "Compose skin", {})
+  O.RenderRows(ctx, rows)
+  local w = widget(ctx.scroll, picker.label)
+  assertTrue(w ~= nil, "rendered")
+  assertEqual(w.value, "Ka0s Inter", "showing the stored face")
+  assertTrue(w.disabled, "still disabled while the companion is set (D-09)")
+  Skin:SetIgnore(OWNER, nil, false)
+  assertEqual(picker.skinValue(picker), Skin:Token(OWNER, "hud.font"), "off again: the skin's face")
+end)
+
 test("compose skin: a rendered picker is disabled while the companion is set and the companion writes",
   function()
   local O, rec = host(OWNER)

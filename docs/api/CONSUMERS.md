@@ -71,6 +71,22 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.81.0, not in the census (2026-10-30).** The release adds Skin's `Skin:DrawsKey` (Skin minor 8),
+the public form of v1.80.0's internal `__DrawsKey`, and `S.PageButton`'s `opts` (SkinPaintControls
+minor 10). It retires v1.80.0's `opts.stockDefault` (SkinPaint minor 12): the key is ignored, so a
+consumer that passes it (Ka0s Quick Comms, DpsRace's custom box in `modules/Hud_States.lua`, Ka0s Skin
+Tester) paints the Ka0s look under Ka0s Default until it drops the key. What each host owes on
+re-vendor is the Skin and Widgets documents' *What a consumer owes*: drop `stockDefault`, handle a nil
+`hud.font` / `hud.outline` while fonts are ignored (Skin minor 8), name a `ResetToSkin` companion or
+pass `{ companions = true }` before dropping a seeding workaround, and give a reorder list on a
+window `panel = false` (WidgetsReorder minor 3). The skin picker (OptionsSkinPicker minor 2) titles its window
+`SKIN_PICKER_STRINGS.TITLE`, "Choose a skin", where `TITLE_FOR` named the addon, and puts the
+addon's label on its own line, `frame.ownerLabel`. `Core.MakeResizable` takes `opts.owner` (Core
+minor 14), a registered skin owner whose `icon.grip` tints the grip; the library's own windows pass
+theirs, and a host's own resizable window may. None gets a row here yet, and the v1.75.0 stamp and its numbers stand: the
+addons adopt them in Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`'s M2, and the
+next census re-run measures them.
+
 **v1.80.0, not in the census (2026-10-29).** The release adds Skin's `Skin:AliasAceType` (SkinAce
 minor 4) and three opt-in surfaces with no member of their own: `RegisterOwner`'s `tokens` (owner
 tokens, Skin minor 7, with `S.Text` given a token name, SkinPaintExtras minor 5), the primitives'

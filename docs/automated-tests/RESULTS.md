@@ -32,6 +32,8 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261030-055012`](20261030-055012/) | `a7e04c1` | clean | 1.80.0 → 1.81.0 | 0/0 | 237 | 3297/2/3299 | skip | 73030 | 10721 | 6.7 | 2.1 | 15 | 0 | **green** |
+| [`20261030-054311`](20261030-054311/) | `aa6365f` | clean | 1.80.0 → 1.81.0 | 0/0 | 237 | 3297/2/3299 | skip | 73023 | 10719 | 6.7 | 2.1 | 17 | 2 | **green** |
 | [`20261029-032426`](20261029-032426/) | `663b0fb` | clean | 1.79.0 → 1.80.0 | 0/0 | 233 | 3220/2/3222 | skip | 71129 | 10458 | 6.7 | 2.1 | 15 | 0 | **green** |
 | [`20261028-223958`](20261028-223958/) | `3c9225f` | clean | 1.78.0 → 1.79.0 | 0/0 | 228 | 3156/2/3158 | skip | 69595 | 10291 | 6.7 | 2.1 | 15 | 0 | **green** |
 | [`20261028-120744`](20261028-120744/) | `2224a8c` | clean | 1.78.0 → 1.78.0 | 0/0 | 223 | 3031/2/3033 | skip | 66184 | 9856 | 6.6 | 2.0 | 15 | 0 | **green** |
@@ -164,18 +166,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**3222 cases** — 3220 passed, 0 failed, 2 skipped. The generated inventory
-[`20261029-032426/test-cases.md`](20261029-032426/test-cases.md) is the authority on which cases existed at this run;
+**3299 cases** — 3297 passed, 0 failed, 2 skipped. The generated inventory
+[`20261030-055012/test-cases.md`](20261030-055012/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **3158 → 3222** since the previous run.
+Unchanged from the previous run at 3299 cases.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 233 files** (`luacheck .`).
+**0 warnings / 0 errors over 237 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -192,8 +194,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261029-032426`](20261029-032426/) — **this run's measurement, not its diff.** Max CCN **15** across 10458
-functions, **0** of them warned on; 9 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261030-055012`](20261030-055012/) — **this run's measurement, not its diff.** Max CCN **15** across 10721
+functions, **0** of them warned on; 12 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -213,13 +215,16 @@ None.
 | Band | File | LOC | Disposition |
 |---|---|---|---|
 | 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1335 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-04`) to `LibKa0s/OptionsRegistry.lua`, then accepted at 1261 and re-ruled at v1.65.0; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. Seam: the reset walk. **Re-check trigger: the next member added to `Options.lua`, or 1400 lines.** |
-| 1000–1500 (on notice) | `LibKa0s/OptionsIdList.lua` | 1268 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: `O.IdList` and its entry-line layout, one piece of machinery, so a seam is named before the append at the trigger. **Re-check trigger: 1350 lines.** |
-| 1000–1500 (on notice) | `LibKa0s/OptionsIds.lua` | 1378 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: id resolution, suggestions and the input. Seam: the suggestion half (the module-scope suggestions-while-typing block and the dropdown members), to a file of its own. **Re-check trigger: 1450 lines.** |
-| 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1380 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-03`) to `LibKa0s/OptionsCombat.lua`, then accepted at 1293; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. Seam: the tabbed page. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1400 lines.** |
+| 1000–1500 (on notice) | `LibKa0s/OptionsIdList.lua` | 1290 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: `O.IdList` and its entry-line layout, one piece of machinery, so a seam is named before the append at the trigger. **Re-check trigger: 1350 lines.** |
+| 1000–1500 (on notice) | `LibKa0s/OptionsIds.lua` | 1412 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: id resolution, suggestions and the input. Seam: the suggestion half (the module-scope suggestions-while-typing block and the dropdown members), to a file of its own. **Re-check trigger: 1450 lines.** |
+| 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1382 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-03`) to `LibKa0s/OptionsCombat.lua`, then accepted at 1293; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. Seam: the tabbed page. **Re-check trigger: the next member added to `OptionsTabs.lua`, or 1400 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsWidgets.lua` | 1447 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Came off the census (3852) when the id surface moved out; what is left is the makers, the choice grid, the landing page and the flow engine. Seam: the flow engine (`flowRows`, the switched sections). **Re-check trigger: 1450 lines, or the next maker added.** |
-| 1000–1500 (on notice) | `LibKa0s/Skin.lua` | 1044 | accepted — seam: the owner-token block (`isSchemaName` through `takeTokens`, `__RemapName`, `ownValue`, `withOwnTokens` and `__Remap`) to a secondary file of its own, paired on the Skin shell; re-check 1150 lines, or the next Skin minor that adds to that block (`CLAUDE.md`; new at v1.80.0, 2026-10-29: 802 → 1044 with Skin minor 7's owner tokens, slot-remap resolution and `__DrawsKey`) |
+| 1000–1500 (on notice) | `LibKa0s/SimPanel.lua` | 1018 | accepted — seam: the renderer section, to a file of its own, when the next SimPanel minor grows it (`CLAUDE.md`; new at v1.81.0, 2026-10-30: 997 → 1018 with SimPanel minor 8's tooltip palette, skinned labels, owned dropdowns and grip owner) |
+| 1000–1500 (on notice) | `LibKa0s/Skin.lua` | 1081 | accepted — seam: the owner-token block (`isSchemaName` through `takeTokens`, `__RemapName`, `ownValue`, `withOwnTokens` and `__Remap`) to a secondary file of its own, paired on the Skin shell; re-check 1150 lines, or the next Skin minor that adds to that block (`CLAUDE.md`; new at v1.80.0, 2026-10-29: 802 → 1044 with Skin minor 7's owner tokens, slot-remap resolution and `__DrawsKey`) |
+| 1000–1500 (on notice) | `LibKa0s/SkinDefs.lua` | 1005 | accepted — seam: the eight other skins (`FOLLOW`, `ICON_EDGE`, `HUD_FACE`, `register` and the eight `register(...)` blocks) to a secondary file paired on the Skin shell; re-check 1100 lines, or a release that adds more than 40 lines here (`CLAUDE.md`; new at v1.81.0, 2026-10-30: 959 → 1005 with SkinDefs minor 16's tokens) |
 | 1000–1500 (on notice) | `testkit/mock_base.lua` | 1465 | **On notice, re-read 2026-09-30 (`DL-LIB-01`).** 1446 → 1454 at kit revision 26 (`testkit/mock_events.lua`'s load, hook and install lines, and the shown-by-default flip's comment), 1454 → 1456 at kit revision 33 (`testkit/mock_resize.lua`'s load and decorate lines; the recorders themselves went to that file, following the rule below), 1456 → 1458 at kit revision 37 (`testkit/mock_lines.lua`'s load and decorate lines, the same shape). Kit revisions 20, 22, 26, 33 and 37 each put a family of fakes in its own file (`mock_ids.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`, `mock_lines.lua`) rather than appending, and that is the rule for the next one. The peel seam is the Ace fakes, the CallbackHandler registry through AceGUI. **Re-check trigger: 1490 lines, or any kit change that adds more than 30 lines here**; either peels first or opens an issue naming that seam before it crosses. |
 | 1000–1500 (on notice) | `tests/test_options_compose.lua` | 1012 | accepted — seam: the record-backed arm (the compose minor 4 section and PanelMaster's three hand-written groups) to `tests/test_options_compose_arm.lua`; re-check 1200 lines, or the next OptionsCompose minor that adds cases here (`CLAUDE.md`; new at v1.77.0, `LK-90`, 2026-10-24: 944 → 1012 with OptionsCompose minor 8's six `O.StrataTooltip` cases, `LK-20`). |
+| 1000–1500 (on notice) | `tests/test_options_skin_picker.lua` | 1064 | accepted — seam: the *one window across addons* section to `tests/test_options_skin_picker_shared.lua`; re-check 1200 lines, or the next OptionsSkinPicker minor that adds cases here (`CLAUDE.md`; new at v1.81.0, 2026-10-30: 966 → 1064 with OptionsSkinPicker minor 2's cases) |
 | 1000–1500 (on notice) | `tests/test_sim_panel.lua` | 1056 | **On notice, new at v1.76.0 (`LK-90`, 2026-10-23).** 933 → 1039 with SimPanel minor 5's controls cases (`LK-01`: Run all removed, Pause/Resume, Restart and Stop, the click that holds the run). Seam: the *frame, the picker and the controls* section (about 280 lines) to its own `tests/test_sim_panel_controls.lua`, beside `tests/test_sim_panel_render.lua`. **Re-check trigger: 1200 lines, or the next SimPanel minor that adds cases here**; either peels first. |
 
 `lizard` counts every `and`/`or` short-circuit as a decision, so in Lua a run of

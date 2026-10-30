@@ -145,7 +145,49 @@ test("skin: Ka0s Default sets every token, faces and sizes included", function()
   assertEqual(wow["font.title"], "Friz Quadrata TT", "and for its titles")
   assertEqual(tokens["font.bodySize"], 12, "the body reference")
   assertEqual(tokens["font.titleSize"], 14, "the title reference")
-  sameColor(tokens["q.epic"], { 0.64, 0.21, 0.93, 1 }, "the client's epic purple, written out")
+  sameColor(tokens["q.epic"], { 163 / 255, 53 / 255, 238 / 255, 1 }, "the client's epic purple, written out")
+end)
+
+-- LK-09 (R-8 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS): the q.* tokens are
+-- the client's ITEM_QUALITY_COLORS exactly, hex / 255, not rounded to two places. The mock's palette
+-- carries the live client's hex, so the token and the mock cannot drift apart.
+local QUALITY_TOKENS = { [0] = "q.poor", "q.common", "q.uncommon", "q.rare", "q.epic", "q.legendary" }
+
+--- The client's color for quality `q`, out of the mock's `|cffRRGGBB` hex, as 0-1 floats.
+local function clientQuality(q)
+  local hex = T.mocks.ITEM_QUALITY_COLORS[q].hex
+  local rr, gg, bb = hex:match("^|cff(%x%x)(%x%x)(%x%x)$")
+  return { tonumber(rr, 16) / 255, tonumber(gg, 16) / 255, tonumber(bb, 16) / 255, 1 }
+end
+
+test("skin: Ka0s Default's q.* tokens are the client's quality colors exactly", function()
+  -- red under: a q.* token rounded (0.64, 0.21, 0.93 is a3/36/ed, not the client's a335ee).
+  local Skin = T.mocks.LibStub(MAJOR)
+  local tokens = Skin:ResolveSkin("ka0s")
+  for q = 0, 5 do
+    local name = QUALITY_TOKENS[q]
+    local want = clientQuality(q)
+    sameColor(tokens[name], want, name)
+    for i = 1, 3 do
+      assertEqual(math.floor(tokens[name][i] * 255 + 0.5), math.floor(want[i] * 255 + 0.5),
+        name .. " byte " .. i)
+    end
+  end
+end)
+
+test("skin: a skin that sets no q.* token draws the client's quality colors", function()
+  -- Every skin derives from Ka0s Default; Glass and High Contrast retune uncommon, rare and epic
+  -- for their own panels and inherit the rest. red under: a rounded Ka0s Default reaching them.
+  local Skin = T.mocks.LibStub(MAJOR)
+  local own = { glass = { ["q.uncommon"] = true, ["q.rare"] = true, ["q.epic"] = true },
+    contrast = { ["q.uncommon"] = true, ["q.rare"] = true, ["q.epic"] = true } }
+  for _, key in ipairs({ "obsidian", "azeroth", "glass", "contrast", "ember", "wow", "midnight", "forever" }) do
+    local tokens = Skin:ResolveSkin(key)
+    for q = 0, 5 do
+      local name = QUALITY_TOKENS[q]
+      if not (own[key] and own[key][name]) then sameColor(tokens[name], clientQuality(q), key .. " " .. name) end
+    end
+  end
 end)
 
 test("skin: Ka0s Default equals the published constants", function()
@@ -648,4 +690,79 @@ test("skin: ResetToSkin puts listed keys back on the skin", function()
   assertNil(p.missing, "no table is created")
   assertEqual(Skin:ResetToSkin({ a = 1 }, { "a" }), 1, "the colon form works too")
   assertEqual(Skin.ResetToSkin(nil, { "a" }), 0, "no profile, nothing set")
+end)
+
+test("skin: ResetToSkin sets a companion named directly to true, stored or not", function()
+  -- Skin minor 8 (LK-07 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, ruling R-6).
+  -- red under: Skin minor 7, where an absent `<leaf>FromSkin` took the "@skin" sentinel, which
+  -- Resolve reads as not following while the settings checkbox shows it ticked.
+  local _, Skin = env()
+  local p = {
+    b = {}, c = { barTexture = "Smooth", barTextureFromSkin = "@skin" }, d = { fontFromSkin = false },
+  }
+  local n = Skin.ResetToSkin(p, { "b.fooFromSkin", "c.barTextureFromSkin", "d.fontFromSkin", "e.xFromSkin" })
+  assertEqual(n, 3, "three companions set; a path through a missing table is skipped")
+  assertEqual(p.b.fooFromSkin, true, "an absent companion becomes true, never the sentinel")
+  assertEqual(p.c.barTextureFromSkin, true, "a stored sentinel in a companion is repaired to true")
+  assertEqual(p.c.barTexture, "Smooth", "the pick beside it is kept")
+  assertEqual(p.d.fontFromSkin, true, "a stored companion is set to true as before")
+  assertNil(p.e, "no table is created")
+  local k = { k = {} }
+  assertEqual(Skin:ResetToSkin(k, { "k.zFromSkin" }), 1, "the colon form works too")
+  assertEqual(k.k.zFromSkin, true, "through the colon form too")
+end)
+
+test("skin: ResetToSkin with opts.companions sets every listed pick's companion, stored or not", function()
+  -- Skin minor 8 (LK-07, decision D-19: picker keys included). AceDB strips a pick equal to its
+  -- default and a companion equal to false, so a host naming its picks cannot rely on either being
+  -- stored. red under: Skin minor 7, which ignored opts and wrote "@skin" into the pick.
+  local _, Skin = env()
+  local p = { icons = { borderStyle = "Ka0s Solid" }, hud = {}, keep = { size = 12 } }
+  local n = Skin.ResetToSkin(p, { "icons.borderStyle", "hud.font", "keep.sizeFromSkin", "gone.font" },
+    { companions = true })
+  assertEqual(n, 3, "three keys set; a path through a missing table is skipped")
+  assertEqual(p.icons.borderStyle, "Ka0s Solid", "a stored pick is kept")
+  assertEqual(p.icons.borderStyleFromSkin, true, "its absent companion is set")
+  assertNil(p.hud.font, "an absent pick stays absent, never the sentinel")
+  assertEqual(p.hud.fontFromSkin, true, "its absent companion is set")
+  assertEqual(p.keep.sizeFromSkin, true, "a companion named directly is still set")
+  assertEqual(p.keep.size, 12, "and the value beside it is untouched")
+  assertNil(p.gone, "no table is created")
+  local q = { bar = {} }
+  assertEqual(Skin:ResetToSkin(q, { "bar.texture" }, { companions = true }), 1, "the colon form takes opts")
+  assertEqual(q.bar.textureFromSkin, true, "through the colon form too")
+  assertNil(q.bar.texture, "and no sentinel")
+  local r = { pick = "Smooth" }
+  Skin.ResetToSkin(r, { "pick" }, {})
+  assertEqual(r.pick, "@skin", "without companions = true a plain key still takes the sentinel")
+end)
+
+test("skin: DrawsKey answers the key an owner draws by", function()
+  -- Skin minor 8 (LK-10, ruling R-9, decision D-16): public, lib-level and never a facade member,
+  -- so a host asks it instead of rebuilding the answer from GetChoice and GetSkin.
+  -- red under: Skin minor 7, which had only the internal __DrawsKey.
+  local _, Skin = env()
+  redSkin(Skin)
+  assertEqual(type(Skin.DrawsKey), "function", "a public member")
+  assertEqual(Skin:DrawsKey("Nobody"), Skin.DEFAULT, "an unregistered owner draws Ka0s Default")
+  Skin:RegisterOwner("A", { get = function() return "ka0s", "red" end })
+  assertEqual(Skin:DrawsKey("A"), "red", "the skin the owner wears")
+  Skin:RegisterOwner("B", { get = function() return "ka0s", "nope" end })
+  assertEqual(Skin:DrawsKey("B"), Skin.DEFAULT, "an unknown key draws Ka0s Default")
+  Skin:SetChoice("A", "ka0s", "ka0s")
+  assertEqual(Skin:DrawsKey("A"), "ka0s", "a live switch moves it")
+  assertNil(Skin:For("A").DrawsKey, "never a facade member")
+  assertEqual(Skin.__DrawsKey, Skin.DrawsKey, "the internal name is kept one release as an alias")
+end)
+
+test("skin: DrawsKey answers eui once EllesmereUI paints the owner, Ka0s Default before", function()
+  local E = dofile("tests/fixture_skin_eui.lua")
+  local _, Skin, eui = E.env()
+  Skin:RegisterOwner(E.OWNER, { get = function() return "eui", "ka0s" end })
+  assertEqual(Skin:DrawsKey(E.OWNER), Skin.DEFAULT, "before EllesmereUI paints: the live fallback")
+  eui.login()
+  assertTrue(Skin.euiPainted[E.OWNER], "EllesmereUI paints the owner")
+  assertEqual(Skin:DrawsKey(E.OWNER), "eui", "its derived tokens")
+  Skin.euiRefused[E.OWNER] = "test: refused"
+  assertEqual(Skin:DrawsKey(E.OWNER), "eui", "a refused EllesmereUI too: the library paints from them")
 end)

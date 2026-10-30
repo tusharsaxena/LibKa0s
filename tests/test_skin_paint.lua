@@ -543,6 +543,64 @@ test("skin paint: Text colors a role, and a skin's font reaches it through the o
   assertTrue(fs:GetFontObject() == stock, "the stock font object comes back")
 end)
 
+-- SkinPaintExtras minor 6 (LK-05, ruling R-5, decision D-02): `{ panel = true }` puts a string on
+-- its owner's settings panel, so the owner's "Ignore settings panel" gives it back, live both ways.
+local function stockString(m)
+  local fs = m.CreateFrame("Frame"):CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  local stock = { name = "GameFontNormal", GetName = function(self) return self.name end }
+  fs:SetFontObject(stock)
+  fs:SetTextColor(0.1, 0.2, 0.3)
+  return fs, stock
+end
+
+test("skin paint: a panel-scoped Text is given back while its owner ignores the panel, live", function()
+  local m, Skin = F.env({ lsm = LSM })
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local fs, stock = stockString(m)
+  Skin:SetIgnore(OWNER, true, nil)
+  S.Text(fs, "heading", { panel = true })
+  assertEqual(F.rgba(survey(m, fs).textColor), "0.100,0.200,0.300,1", "the string keeps its own color")
+  assertTrue(fs:GetFontObject() == stock, "and its own font")
+  assertTrue(Skin.painted[fs] ~= nil, "the call is recorded, so the switch can replay it")
+  Skin:SetIgnore(OWNER, false, nil)
+  assertEqual(F.rgba(survey(m, fs).textColor), F.tok(Skin, "obsidian", "text.heading"), "skinned, live")
+  assertTrue(fs:GetFontObject() ~= stock, "the skin's face, live")
+  Skin:SetIgnore(OWNER, true, nil)
+  assertEqual(F.rgba(survey(m, fs).textColor), "0.100,0.200,0.300,1", "given back, live")
+  assertTrue(fs:GetFontObject() == stock, "its own font back, live")
+end)
+
+test("skin paint: a Text with no panel scope keeps the skin while the panel is ignored", function()
+  local m, Skin = F.env({ lsm = LSM })
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local fs, stock = stockString(m)
+  Skin:SetIgnore(OWNER, true, nil)
+  S.Text(fs, "heading")
+  assertEqual(F.rgba(survey(m, fs).textColor), F.tok(Skin, "obsidian", "text.heading"), "a window string")
+  assertTrue(fs:GetFontObject() ~= stock)
+  local w = stockString(m)
+  S.Text(w, "heading", { panel = false })
+  assertEqual(F.rgba(survey(m, w).textColor), F.tok(Skin, "obsidian", "text.heading"), "panel = false")
+end)
+
+test("skin paint: a panel-scoped Text for an unregistered owner paints Ka0s Default", function()
+  local m, Skin = F.env({ lsm = LSM })
+  local fs = stockString(m)
+  Skin:For("NotRegistered").Text(fs, "heading", { panel = true })
+  assertEqual(F.rgba(survey(m, fs).textColor), F.tok(Skin, "ka0s", "text.heading"),
+    "GetIgnore's panel half is false for an unregistered owner, unlike not __PanelSkinned")
+end)
+
+test("skin paint: a panel-scoped Text under Ignore fonts alone keeps the color, not the face", function()
+  local m, Skin = F.env({ lsm = LSM })
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local fs, stock = stockString(m)
+  Skin:SetIgnore(OWNER, false, true)
+  S.Text(fs, "heading", { panel = true })
+  assertEqual(F.rgba(survey(m, fs).textColor), F.tok(Skin, "obsidian", "text.heading"))
+  assertTrue(fs:GetFontObject() == stock, "the string's own face")
+end)
+
 test("skin paint: Font and White put the body font and color on a string", function()
   local m, Skin = F.env({ lsm = LSM })
   local S = F.owner(Skin, OWNER, "glass")
@@ -576,6 +634,8 @@ test("skin paint: the getters answer the owner's skin", function()
   assertEqual(wow.textureKey, "Blizzard", "WoW Default keeps the client's bar")
   assertEqual(wow.texture, "Interface\\TargetingFrame\\UI-StatusBar")
   assertEqual(wow.fontKey, "Friz Quadrata TT", "and the client's face")
+  assertEqual(F.owner(Skin, "Modern", "obsidian").BarStyle().fontKey, "Ka0s Inter SemiBold",
+    "Obsidian's own HUD face (SkinDefs minor 16)")
   assertNil(Skin.painted[S], "a getter records nothing")
 end)
 
@@ -594,4 +654,43 @@ test("skin paint: a skin's size scales each string from its own, one font object
   assertTrue(math.abs(small:GetFontObject().font[2] - 10 * k) < 0.06, "the caption scales from 10")
   assertTrue(math.abs(big:GetFontObject().font[2] - 12 * k) < 0.06, "the body scales from 12")
   assertTrue(small:GetFontObject() ~= big:GetFontObject(), "two sizes, two font objects")
+end)
+
+test("skin paint: a string reporting no usable size is painted at the token size, never at 0", function()
+  -- red under: P.fontSize scaling a stock size of 0 (truthy in Lua) to 0, so SetFont(path, 0) raised
+  -- in the client (LK-A1, the owner's invalid font height error, MultiMeters' meter title in MM-H1).
+  local m, Skin = F.env({ lsm = LSM })
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local want = Skin:ResolveSkin("obsidian")["font.bodySize"]
+  local sizes = {}
+  local function spy(obj)
+    local set = obj.SetFont
+    obj.SetFont = function(self, path, size, flags)
+      sizes[#sizes + 1] = size
+      return set(self, path, size, flags)
+    end
+  end
+  local made = m.CreateFont
+  m.CreateFont = function(name) local o = made(name); spy(o); return o end
+  local strings = {}
+  for _, bad in ipairs({ 0, -4, "x", false }) do
+    local fs = m.CreateFrame("Frame"):CreateFontString()
+    fs:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
+    fs.__font[2] = bad or nil
+    spy(fs)
+    strings[#strings + 1] = fs
+    S.Font(fs)
+    assertEqual(fs:GetFontObject().font[2], want, "stock size " .. tostring(bad) .. " paints the token size")
+  end
+  local none = m.CreateFrame("Frame"):CreateFontString()
+  spy(none)
+  strings[#strings + 1] = none
+  S.Font(none)
+  assertEqual(none:GetFontObject().font[2], want, "a string with no font yet paints the token size")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  for _, size in ipairs(sizes) do
+    assertTrue(type(size) == "number" and size > 0, "SetFont got size " .. tostring(size))
+  end
+  assertTrue(#sizes > 0, "SetFont was reached")
+  local _ = strings
 end)

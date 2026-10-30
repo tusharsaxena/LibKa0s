@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **13** |
 | Shipped in | v1.78.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 12](./version-12-docs.md) — the same members; `ApplySkin` took no `owner` and `MakeCloseButton`'s `addonName` named no skin owner |
-| Superseded by | — |
+| Superseded by | [version 14](./version-14-docs.md) |
 | Requires | nothing new: `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 13 }` |
 
@@ -544,3 +544,12 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
+
+## Moving to version 14
+
+**Take it; nothing is owed.** Version 14, shipped in v1.81.0, moves `Core.lua` 13 -> 14 and adds and
+removes no member. `MakeResizable` takes `opts.owner`: when it names a registered skin owner, the
+owner's `icon.grip` tints the grip's art, again after each skin switch; Ka0s Default and WoW Default
+carry `false`, so the client's art is drawn as here. A grip with no owner, an unregistered one or no
+Skin major is this version's, call for call. A host suite that pins `Core 13` re-pins it. See
+[version 14](./version-14-docs.md).

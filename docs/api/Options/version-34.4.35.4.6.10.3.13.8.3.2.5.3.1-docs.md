@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **35** · `OptionsIds.lua` **4** · `OptionsIdList.lua` **6** · `OptionsTabs.lua` **10** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **13** · `OptionsScroll.lua` **8** · `OptionsNav.lua` **3** · `OptionsDrawer.lua` **2** · `OptionsKeybinds.lua` **5** · `OptionsAppearance.lua` **3** · `OptionsSkinPicker.lua` **1** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>`, in load order — the same fourteen numbers `lib.MODULES` reports. |
 | Shipped in | v1.80.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 34.4.35.4.6.10.3.12.8.3.2.5.3.1](./version-34.4.35.4.6.10.3.12.8.3.2.5.3.1-docs.md) (shipped in v1.79.0) — whose `BorderGroup` followed only the bar's border (`fromSkin = true`), with no icon family; and [version 33.3.35.4.6.10.3.12.8.3.2.5.2](./version-33.3.35.4.6.10.3.12.8.3.2.5.2-docs.md) (shipped in v1.78.0), whose Appearance tab was labeled "Appearance" and had no font or texture override, and which had no skin picker |
-| Superseded by | — |
+| Superseded by | [version 34.4.36.5.7.11.3.13.9.4.3.6.3.2](./version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 35, OptionsIds = 4, OptionsIdList = 6, OptionsTabs = 10, OptionsCombat = 3, OptionsCompose = 13, OptionsScroll = 8, OptionsNav = 3, OptionsDrawer = 2, OptionsKeybinds = 5, OptionsAppearance = 3, OptionsSkinPicker = 1 }` |
 
@@ -3571,3 +3571,17 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 34.4.36.5.7.11.3.13.9.4.3.6.3.2
+
+**Take it; nothing is owed but a picker check.** Version 34.4.36.5.7.11.3.13.9.4.3.6.3.2, shipped in
+v1.81.0, moves nine files (`OptionsWidgets.lua` 36, `OptionsIds.lua` 5, `OptionsIdList.lua` 7,
+`OptionsTabs.lua` 11, `OptionsScroll.lua` 9, `OptionsNav.lua` 4, `OptionsDrawer.lua` 3,
+`OptionsKeybinds.lua` 6, `OptionsSkinPicker.lua` 2) and adds and removes no member. The settings
+chrome's last pieces (the drawer head, the id suggestion popup and the id gray, the hover art) wear
+the page owner's skin and stand down with *Ignore settings panel*; the tooltip titles and notes the
+library writes take the skin's tooltip colors. The skin picker's title is "Choose a skin"
+(`SKIN_PICKER_STRINGS.TITLE`; `TITLE_FOR` is gone) and the addon's label has its own line above the
+dropdown, `frame.ownerLabel`: a test or smoke check that read the addon's name from `frame.title`
+reads `frame.ownerLabel`. See
+[version 34.4.36.5.7.11.3.13.9.4.3.6.3.2](./version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md).

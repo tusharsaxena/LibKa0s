@@ -335,8 +335,8 @@ end)
 
 -- ── the reorder list and its ghost ───────────────────────────────────────────────────────────
 
-local function reorder(m, W, owner)
-  local list = W.ReorderList({ stride = 20, owner = owner })
+local function reorder(m, W, owner, panel)
+  local list = W.ReorderList({ stride = 20, owner = owner, panel = panel })
   local row = m.CreateFrame("Frame", nil, m.UIParent)
   local h = list:AddRow(row, { ghostText = "Row" })
   list:AddRow(m.CreateFrame("Frame", nil, m.UIParent), { dimmed = true, draggable = false })
@@ -385,6 +385,63 @@ test("skin owner: Ka0s Default draws the reorder list exactly as minor 1 did", f
   assertEqual(F.rgba(list.color), "1,0.820,0,0.900")
   local g = drag(W, h)
   assertEqual(rgba(survey(m, g.bg).color), "0.120,0.120,0.120,0.950")
+end)
+
+-- WidgetsReorder minor 3 (LK-05, ruling R-5, decision D-02): a reorder list is on a settings page,
+-- so its owner's "Ignore settings panel" draws it as minor 1 did; `panel = false` opts out.
+test("skin owner: a ReorderList is minor 1's while its owner ignores the settings panel", function()
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "obsidian")
+  local _, skinned = reorder(m, W, OWNER)
+  local g = drag(W, skinned)
+  assertEqual(rgba(survey(m, g.bg).color), tok(Skin, "obsidian", "list.ghostBg"), "a skinned drag")
+  Skin:SetIgnore(OWNER, true, nil)
+  local list, h = reorder(m, W, OWNER)
+  assertNil(list.skin, "no palette while the panel is ignored")
+  assertEqual(rgba(survey(m, list.boxes[1].fill).color), "1,1,1,0.060")
+  assertEqual(rgba(survey(m, list.boxes[2].edges[1]).color), "1,1,1,0.060")
+  assertEqual(rgba(survey(m, h.art).vertex), "0.700,0.700,0.700,1")
+  assertEqual(F.rgba(list.color), "1,0.820,0,0.900")
+  drag(W, h)
+  assertEqual(rgba(survey(m, g.bg).color), "0.120,0.120,0.120,0.950", "the skinned ghost is put back")
+  Skin:SetIgnore(OWNER, false, nil)
+  local again = reorder(m, W, OWNER)
+  assertEqual(rgba(survey(m, again.boxes[1].fill).color), tok(Skin, "obsidian", "list.box"),
+    "the next render after the switch is skinned again")
+end)
+
+test("skin owner: a ReorderList with panel = false keeps the skin while the panel is ignored", function()
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "obsidian")
+  Skin:SetIgnore(OWNER, true, nil)
+  local list = reorder(m, W, OWNER, false)
+  assertEqual(rgba(survey(m, list.boxes[1].fill).color), tok(Skin, "obsidian", "list.box"))
+  assertEqual(F.rgba(list.color), tok(Skin, "obsidian", "list.dropLine"))
+end)
+
+-- LK-06d (ruling R-5, decision D-14): the handle's tooltip line takes `gtip.value` from a skinned
+-- list's palette, and the literal white while the owner ignores its settings panel.
+test("skin owner: a ReorderList's handle tooltip takes gtip.value only while the list is skinned", function()
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "obsidian")
+  Skin:ResolveSkin("obsidian")["gtip.value"] = { 0.2, 0.4, 0.6, 1 }
+  local function tipOf(list)
+    local h = list:AddRow(m.CreateFrame("Frame", nil, m.UIParent), {})
+    local tip, seen = m.GameTooltip, {}
+    local savedOwner, savedLine = rawget(tip, "SetOwner"), rawget(tip, "AddLine")
+    rawset(tip, "SetOwner", function() end)
+    rawset(tip, "AddLine", function(_, _, r, g, b) seen[#seen + 1] = F.rgba({ r, g, b }) end)
+    h:__fire("OnEnter")
+    rawset(tip, "SetOwner", savedOwner); rawset(tip, "AddLine", savedLine)
+    return seen[1]
+  end
+  assertEqual(tipOf(W.ReorderList({ stride = 20, owner = OWNER, handleTooltip = "Drag" })), "0.200,0.400,0.600,1")
+  assertEqual(tipOf(W.ReorderList({ stride = 20, handleTooltip = "Drag" })), "1,1,1,1", "owner-less")
+  Skin:SetIgnore(OWNER, true, nil)
+  assertEqual(tipOf(W.ReorderList({ stride = 20, owner = OWNER, handleTooltip = "Drag" })), "1,1,1,1",
+    "Ignore settings panel")
+  assertEqual(tipOf(W.ReorderList({ stride = 20, owner = OWNER, panel = false, handleTooltip = "Drag" })),
+    "0.200,0.400,0.600,1", "a list on a window keeps it")
 end)
 
 -- ── the line chart ───────────────────────────────────────────────────────────────────────────
@@ -451,4 +508,71 @@ test("skin owner: Ka0s Default's eight Widgets tokens are the constants they rep
     "another skin derives the edge from its accent")
   assertEqual(F.rgba(O["list.box"]), F.rgba({ O["text.body"][1], O["text.body"][2], O["text.body"][3], 0.06 }),
     "and the boxes from its body text")
+end)
+
+-- ── the drag handle's tooltip (WidgetsDragHandle minor 7) ────────────────────────────────────
+
+--- Hover `frame` with the client's GameTooltip recorded: every line's text and color, in order.
+local function hoverLines(m, frame)
+  local tip, seen = m.GameTooltip, {}
+  local savedOwner, savedText, savedLine = rawget(tip, "SetOwner"), rawget(tip, "SetText"), rawget(tip, "AddLine")
+  local function rec(_, text, r, g, b) seen[#seen + 1] = { text = text, color = F.rgba({ r, g, b }) } end
+  rawset(tip, "SetOwner", function() end)
+  rawset(tip, "SetText", rec)
+  rawset(tip, "AddLine", rec)
+  local ok, err = pcall(function() frame:__fire("OnEnter") end)
+  rawset(tip, "SetOwner", savedOwner); rawset(tip, "SetText", savedText); rawset(tip, "AddLine", savedLine)
+  assertTrue(ok, tostring(err))
+  return seen
+end
+
+local TIP = { title = "Bar", body = { "Drag to move.", { "Attached.", 1, 0.82, 0 } }, footer = { "Locked." } }
+
+local function tipHandle(m, W, owner)
+  return W.DragHandle(m.UIParent, { label = "Move", moveFrame = m.CreateFrame("Frame"), owner = owner,
+                                    onClose = function() end, tooltip = TIP })
+end
+
+local function rgb(Skin, skin, name)
+  local c = Skin:ResolveSkin(skin)[name]
+  return F.rgba({ c[1], c[2], c[3] })
+end
+
+test("skin owner: an owned DragHandle's tooltip is minor 6's gold, white and gray under Ka0s Default", function()
+  -- LK-08 (R-7, D-14). red under: a band reading a token whose Ka0s Default is not the literal it
+  -- replaces (`gtip.body` for the body, `gtip.muted` for the footer).
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER)
+  local h = tipHandle(m, W, OWNER)
+  for _, frame in ipairs({ h, h.help, h.close }) do
+    local seen = hoverLines(m, frame)
+    assertEqual(#seen, 5)
+    assertEqual(seen[1].color, "1,0.820,0,1", "the title")
+    assertEqual(seen[2].color, "1,1,1,1", "the body")
+    assertEqual(seen[3].color, "1,0.820,0,1", "a band entry's own color")
+    assertEqual(seen[4].text, " ")
+    assertEqual(seen[5].color, "0.600,0.600,0.600,1", "the footer")
+  end
+end)
+
+test("skin owner: an owned DragHandle's tooltip takes its skin's gtip colors and follows a switch", function()
+  -- LK-08 (R-7, D-14). red under: the tooltip's literals (every skin's tooltip gold, white and gray),
+  -- a palette captured at build (the switch would not reach the next hover), or a skin color laid
+  -- over an entry's own.
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "azeroth")
+  local h, o = tipHandle(m, W, OWNER), tipHandle(m, W, nil)
+  local seen = hoverLines(m, h.help)
+  assertEqual(seen[1].color, rgb(Skin, "azeroth", "gtip.title"), "Azeroth's tooltip title")
+  assertTrue(seen[1].color ~= "1,0.820,0,1", "not Ka0s Default's gold")
+  assertEqual(seen[2].color, rgb(Skin, "azeroth", "gtip.value"), "Azeroth's tooltip value")
+  assertEqual(seen[3].color, "1,0.820,0,1", "a band entry's own color still wins")
+  assertEqual(seen[5].color, rgb(Skin, "azeroth", "gtip.muted"), "Azeroth's tooltip gray")
+  Skin:SetChoice(OWNER, "ka0s", "contrast")
+  seen = hoverLines(m, h)
+  assertEqual(seen[1].color, rgb(Skin, "contrast", "gtip.title"), "the next hover after a switch")
+  assertEqual(seen[5].color, rgb(Skin, "contrast", "gtip.footer"))
+  seen = hoverLines(m, o.close)
+  assertEqual(seen[1].color, "1,0.820,0,1", "an owner-less handle keeps minor 6's tooltip")
+  assertEqual(seen[5].color, "0.600,0.600,0.600,1")
 end)

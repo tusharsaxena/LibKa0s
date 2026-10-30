@@ -502,7 +502,7 @@ Total.
 - media: every skin's own bar is in TEXTURES, opaque and gray, and tiles along the bar
 - media: RegisterLSM registers the Glass border and background, and counts them
 
-### test_skin.lua (27)
+### test_skin.lua (33)
 
 - skin: the major registers both files and the sentinel
 - skin: the shell refuses without Core, and SkinDefs then attaches to nothing
@@ -510,6 +510,8 @@ Total.
 - skin: the schema names each token once, with a known kind
 - skin: every registered skin resolves every schema token to its kind
 - skin: Ka0s Default sets every token, faces and sizes included
+- skin: Ka0s Default's q.* tokens are the client's quality colors exactly
+- skin: a skin that sets no q.* token draws the client's quality colors
 - skin: Ka0s Default equals the published constants
 - skin: Ka0s Default equals the file-local constants it replaces
 - skin: Ka0s Default equals LootHistory's constants
@@ -531,8 +533,12 @@ Total.
 - skin: a newer minor keeps every facade table and re-fills it
 - skin: Resolve answers the skin's value for the sentinel or a fromSkin companion
 - skin: ResetToSkin puts listed keys back on the skin
+- skin: ResetToSkin sets a companion named directly to true, stored or not
+- skin: ResetToSkin with opts.companions sets every listed pick's companion, stored or not
+- skin: DrawsKey answers the key an owner draws by
+- skin: DrawsKey answers eui once EllesmereUI paints the owner, Ka0s Default before
 
-### test_skin_override.lua (21)
+### test_skin_override.lua (26)
 
 - skin override: an unregistered owner has none and cannot set one
 - skin override: a font and a texture reach every token read, and nothing else moves
@@ -555,6 +561,11 @@ Total.
 - skin override: a flat bar keeps its tint through a texture and back
 - skin override: a texture Untrack handed back starts from its own color
 - skin override: BarTexture leaves a frame that is neither a Texture nor a StatusBar alone
+- skin ignore fonts: the stored HUD face and outline win over a set companion
+- skin ignore fonts: Token leaves the HUD face and outline alone, and nothing else
+- skin ignore fonts: the stored face wins over a font override, and switching back is live
+- skin ignore fonts: BarStyle's font fields are nil, every other field unchanged
+- skin ignore fonts: an unregistered owner reads Ka0s Default's HUD face as before
 
 ### test_skin_owner_tokens.lua (16)
 
@@ -603,17 +614,17 @@ Total.
 
 ### test_skin_stock_default.lua (9)
 
-- skin stock default: under Ka0s Default a SettingsFrameTemplate window stays the client's
-- skin stock default: another skin paints it, and a switch back gives the stock window back
-- skin stock default: TitleBar gives back the title's justification with its color
-- skin stock default: a stock target's hover and enable hooks do nothing under Ka0s Default
-- skin stock default: the stock mark leaves with the record: an Untrack or another owner clears it
-- skin stock default: Slider, EditBox and Tab take the option through the same mechanism
-- skin stock default: without the option Ka0s Default paints exactly as before
-- skin stock default: under eui the window goes to EllesmereUI; its fallback is stock
-- skin stock default: a refused EllesmereUI (fail closed) is the library's paint, never stock
+- skin stock retired: under Ka0s Default a stale stockDefault window is painted the Ka0s look
+- skin stock retired: a stale stockDefault paints exactly as the same calls without it
+- skin stock retired: every primitive that once read stockDefault ignores it without error
+- skin stock retired: a stale stockDefault target's hover and enable hooks run under Ka0s Default
+- skin stock retired: opts.stock stays the fade list under Ka0s Default
+- skin stock retired: PageButton forwards stock, noBorder and noBg, and a repaint replays them
+- skin stock retired: P.unpaint gives a TitleBar's text alignment back
+- skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
+- skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (29)
+### test_skin_defs.lua (31)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -637,6 +648,7 @@ Total.
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
 - skin defs: every font, bar texture and border a skin names is shipped or an LSM default
 - skin defs: every skin draws one family of its own, for body and titles alike
+- skin defs: every skin names a HUD face of its own, its text's family; only WoW Default draws Friz
 - skin defs: Ka0s Default's Oxanium and its own bar stay its own; a skin naming neither keeps Friz and Blizzard
 - skin defs: every skin draws its own bar texture, and WoW Default the client's
 - skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's
@@ -644,8 +656,9 @@ Total.
 - skin defs: WoW Default's checkbox art is its only box
 - skin defs: in every skin a primary button differs from a normal one
 - skin defs: no skin draws a box round a slider's bar
+- skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 
-### test_skin_paint.lua (32)
+### test_skin_paint.lua (37)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
@@ -676,11 +689,16 @@ Total.
 - skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for call
 - skin paint: Tooltip colors a library tooltip in every skin, its art kept
 - skin paint: Text colors a role, and a skin's font reaches it through the owner's font object
+- skin paint: a panel-scoped Text is given back while its owner ignores the panel, live
+- skin paint: a Text with no panel scope keeps the skin while the panel is ignored
+- skin paint: a panel-scoped Text for an unregistered owner paints Ka0s Default
+- skin paint: a panel-scoped Text under Ignore fonts alone keeps the color, not the face
 - skin paint: Font and White put the body font and color on a string
 - skin paint: the getters answer the owner's skin
 - skin paint: a skin's size scales each string from its own, one font object per size
+- skin paint: a string reporting no usable size is painted at the token size, never at 0
 
-### test_skin_paint_controls.lua (28)
+### test_skin_paint_controls.lua (31)
 
 - skin controls: Button on Ka0s Default is LootHistory's flat button's paint
 - skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
@@ -701,6 +719,9 @@ Total.
 - skin controls: WoW Default's tabs are the client's tab art; a stock tab is faded under every skin
 - skin controls: CloseButton on Ka0s Default is Core's close button, call for call
 - skin controls: a stock close button gets a glyph under every skin, Ka0s Default too
+- skin controls: an unpainted CloseButton's icon gets its own tint back
+- skin controls: an unpainted CloseButton's glyph gets its own text color back
+- skin controls: an own CloseButton handed back hovers in Core's colors again
 - skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and ApplyBarFill
 - skin controls: NavItem on Ka0s Default is OptionsNav's entry paint
 - skin controls: Drawer on Ka0s Default is OptionsDrawer's header paint
@@ -1083,7 +1104,7 @@ Total.
 - reorder: ReorderList lives in WidgetsReorder.lua at minor 1, paired on the live shell
 - reorder: a payload without WidgetsReorder.lua loads whole, with no ReorderList
 
-### test_widgets_skin.lua (24)
+### test_widgets_skin.lua (29)
 
 - skin owner: Core.ApplySkin and MakeCloseButton without a registered owner are minor 12's
 - skin owner: Core.ApplySkin paints a registered owner's window from its skin and repaints it
@@ -1106,9 +1127,30 @@ Total.
 - skin owner: ReorderList without a registered owner is minor 1's, ghost included
 - skin owner: an owned ReorderList draws boxes, handle, line and ghost from the skin
 - skin owner: Ka0s Default draws the reorder list exactly as minor 1 did
+- skin owner: a ReorderList is minor 1's while its owner ignores the settings panel
+- skin owner: a ReorderList with panel = false keeps the skin while the panel is ignored
+- skin owner: a ReorderList's handle tooltip takes gtip.value only while the list is skinned
 - skin owner: LineChart without a registered owner reads lib.LINE_CHART as minor 3 did
 - skin owner: an owned LineChart takes its chrome and series from ChartStyle and re-renders
 - skin owner: Ka0s Default's eight Widgets tokens are the constants they replace
+- skin owner: an owned DragHandle's tooltip is minor 6's gold, white and gray under Ka0s Default
+- skin owner: an owned DragHandle's tooltip takes its skin's gtip colors and follows a switch
+
+### test_widgets_skin_scope.lua (13)
+
+- skin scope: an owned dropdown's menu rows and measure take the skin's body face
+- skin scope: an owner-less open after an owned one gives the rows their template back
+- skin scope: a panel-scoped dropdown is owner-less while its owner ignores the panel, live
+- skin scope: a dropdown with no panel scope keeps the skin while the panel is ignored
+- skin scope: a panel-scoped search box is owner-less while the panel is ignored, focus included
+- skin scope: an owned strip's line is text.accent in the body face, and Ignore fonts gives it back
+- skin scope: a panel-scoped strip is owner-less while the panel is ignored, live
+- skin scope: an owned autocomplete's rows take the body face unless the host named one
+- skin scope: a panel-scoped autocomplete is owner-less while the panel is ignored
+- skin scope: an owned chart's labels take the body face unless the host named one
+- skin scope: a panel-scoped chart reads lib.LINE_CHART while the panel is ignored, live
+- skin scope: an owned drag handle's label takes the body face, and is measured in it
+- skin scope: a panel-scoped drag handle is owner-less while the panel is ignored, live
 
 ### test_debuglog.lua (75)
 
@@ -1321,7 +1363,7 @@ Total.
 - core: RaiseStaticPopups never shows, hides or re-stratas a popup
 - tool windows: with no RaiseStaticPopups in Core the three windows build and show
 
-### test_tool_windows_skin.lua (14)
+### test_tool_windows_skin.lua (17)
 
 - tool windows skin: without a registered owner each window is the previous minors' paint
 - tool windows skin: an unregistered console logs Ka0s Default's colored line, as before
@@ -1335,8 +1377,24 @@ Total.
 - tool windows skin: an owned perf panel on Ka0s Default draws the constants
 - tool windows skin: a registered owner's sim panel paints its window, rows and buttons
 - tool windows skin: an owned sim panel on Ka0s Default draws the constants
+- tool windows skin: an owner-less sim panel's tooltip keeps its literals
+- tool windows skin: an owned sim panel's tooltip takes gtip.title and gtip.value, Ignore panel or not
+- tool windows skin: under Ka0s Default the sim key column is gtip.title's gold, the rest white
 - tool windows skin: Ka0s Default's tool-window tokens are the constants the windows drew
 - tool windows skin: every skin's tool-window text reads on its own window
+
+### test_tool_windows_scope.lua (10)
+
+- tool windows scope: an owned console's labels take the skin's face and obey Ignore fonts
+- tool windows scope: an owned perf panel's step and command columns take the skin's face
+- tool windows scope: an owned sim panel's rows and button labels take the skin's face
+- tool windows scope: the console's Diagnostics link is measured in the face it wears
+- tool windows scope: an owned sim panel's dropdowns wear its skin
+- tool windows scope: an owner-less sim panel's dropdowns are built as before
+- tool windows scope: MakeResizable's owner tints the grip with icon.grip, live
+- tool windows scope: a grip without a registered owner is drawn as before
+- tool windows scope: every library window passes its owner to its grip
+- tool windows scope: icon.grip is the client's art in Ka0s Default and WoW Default, icon.tint elsewhere
 
 ### test_slash.lua (74)
 
@@ -2215,13 +2273,16 @@ Total.
 - appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
 - appearance: the other owners and one owner's skin copy are library-level, for the skin picker
 
-### test_options_skin_picker.lua (36)
+### test_options_skin_picker.lua (39)
 
-- skin picker: OptionsSkinPicker is minor 1, paired on the shell, and attaches two members
+- skin picker: OptionsSkinPicker is minor 2, paired on the shell, and attaches two members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
 - skin picker: the list holds every skin, three swatches each and its name in its own face
+- skin picker: the addon's label sits on its own line above the dropdown, as a heading
+- skin picker: a long label widens the window to its unbounded width, never cutting it off
+- skin picker: a skin change that moves the label's width refits the window
 - skin picker: a pick previews: the Skin major moves live, nothing is written, the window stays
 - skin picker: Apply saves the pending pick through the owner's seam, then closes
 - skin picker: a pick that asks for a reload raises the one popup at Apply, not at the pick
@@ -2499,7 +2560,34 @@ Total.
 - options skin: Ka0s Default colors the keybind rows in its own text roles
 - options skin: the id-suggestion popup takes the skin, Ka0s Default's edge included
 
-### test_options_compose_skin.lua (15)
+### test_options_tooltip_skin.lua (6)
+
+- tooltip skin: an owner-less page writes the previous minors' tooltip literals
+- tooltip skin: an owner ignoring its settings panel gets the literals back
+- tooltip skin: Ka0s Default's titles are white and the help mark's lines gtip.body
+- tooltip skin: an owned page's titles take gtip.value and the help lines gtip.body
+- tooltip skin: lines that named no color stay the client's
+- tooltip skin: a skin switch reaches the next hover with no rebuild
+
+### test_options_chrome_skin.lua (15)
+
+- chrome skin: an owned drawer's label and summary wear the skin's body face
+- chrome skin: Ignore fonts gives the drawer's label and summary their template faces, live
+- chrome skin: an owned drawer's chevron is desaturated and colored icon.arrow
+- chrome skin: an owner-less drawer keeps the client's chevron, faces and hover art
+- chrome skin: the drawer's and the nav entry's hover art take list.hoverArt
+- chrome skin: Ignore settings panel gives the drawer and the rail their client look back, live
+- chrome skin: a pooled drawer head drawn for no owner takes the client's look back
+- chrome skin: an id list entry's highlight takes list.hoverArt and its gray text.disabled
+- chrome skin: Ka0s Default and an owner-less list keep the client's highlight and |cff808080
+- chrome skin: a released id list entry gives its highlight art back to the pool
+- chrome skin: Ignore settings panel draws the id list's next render in the client's look
+- chrome skin: an owned suggestion popup's rows, more line and id gray wear the skin
+- chrome skin: Ka0s Default's suggestion rows keep the client's gray and highlight art
+- chrome skin: an owner-less popup and an ignored panel draw the client's suggestion rows
+- chrome skin: list.hoverArt is the client's art in Ka0s Default and WoW Default, the accent elsewhere
+
+### test_options_compose_skin.lua (16)
 
 - compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
 - compose skin: without fromSkin the three groups emit exactly the rows they did
@@ -2507,6 +2595,7 @@ Total.
 - compose skin: the canonical rows are unchanged beside the companion, and so is every list
 - compose skin: omit and keys reach the companion like any canonical leaf
 - compose skin: the picker shows the skin's value while its companion is set, its own otherwise
+- compose skin: while the owner ignores fonts the font picker shows the stored face (R-1)
 - compose skin: a rendered picker is disabled while the companion is set and the companion writes
 - compose skin: a record-backed group reads its companion from the record
 - compose skin: ResetToSkin sets companions to true and never writes the sentinel into a pick
@@ -3657,15 +3746,15 @@ Total.
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
 | test_media.lua | 39 |
-| test_skin.lua | 27 |
-| test_skin_override.lua | 21 |
+| test_skin.lua | 33 |
+| test_skin_override.lua | 26 |
 | test_skin_owner_tokens.lua | 16 |
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 29 |
-| test_skin_paint.lua | 32 |
-| test_skin_paint_controls.lua | 28 |
+| test_skin_defs.lua | 31 |
+| test_skin_paint.lua | 37 |
+| test_skin_paint_controls.lua | 31 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 22 |
 | test_skin_ace_tree.lua | 14 |
@@ -3680,7 +3769,8 @@ Total.
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
-| test_widgets_skin.lua | 24 |
+| test_widgets_skin.lua | 29 |
+| test_widgets_skin_scope.lua | 13 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -3688,7 +3778,8 @@ Total.
 | test_debuglog_descriptor.lua | 7 |
 | test_resize_windows.lua | 23 |
 | test_tool_windows_layering.lua | 8 |
-| test_tool_windows_skin.lua | 14 |
+| test_tool_windows_skin.lua | 17 |
+| test_tool_windows_scope.lua | 10 |
 | test_slash.lua | 74 |
 | test_slash_parse.lua | 33 |
 | test_slash_disabled.lua | 16 |
@@ -3716,7 +3807,7 @@ Total.
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 36 |
-| test_options_skin_picker.lua | 36 |
+| test_options_skin_picker.lua | 39 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3728,7 +3819,9 @@ Total.
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
 | test_options_skin.lua | 17 |
-| test_options_compose_skin.lua | 15 |
+| test_options_tooltip_skin.lua | 6 |
+| test_options_chrome_skin.lua | 15 |
+| test_options_compose_skin.lua | 16 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3778,4 +3871,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3220** |
+| **Total** | **3297** |

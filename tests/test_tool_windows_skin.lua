@@ -78,8 +78,9 @@ local function perf(m, owner)
   return P, P.__panel()
 end
 
---- A sim for `name` (its owner), panel shown; answers the instance and the panel frame.
-local function sim(m, name)
+--- A sim for `name` (its owner), panel shown; answers the instance and the panel frame. `panel` is
+--- the descriptor's panel table (default empty).
+local function sim(m, name, panel)
   local Sim = m.LibStub("LibKa0s-Sim-1.0")
   local seam = Sim:NewSeam({ Probe = function() return "live" end }, { name = name })
   local s = Sim:New{
@@ -92,7 +93,7 @@ local function sim(m, name)
     prepare = function(_, _, _, ready) ready() end,
     play = function() return "did" end,
     print = function() end,
-    panel = {},
+    panel = panel or {},
   }
   assertTrue(s:ShowPanel(), "ShowPanel")
   return s, m.__named[name .. "SimPanel"]
@@ -326,6 +327,77 @@ test("tool windows skin: an owned sim panel on Ka0s Default draws the constants"
     "the Start button")
   assertEqual(rgba(survey(m, f.picker.start.label).textColor), rgba(survey(m2, g.picker.start.label).textColor),
     "its label")
+end)
+
+-- ── the sim panel's tooltip (SimPanel minor 8) ───────────────────────────────────────────────
+
+-- LK-06d (ruling R-5, decision D-14): the row and button tooltips take the owner's tooltip tokens,
+-- the key column `gtip.title` and every white line `gtip.value`. The panel is a window (D-01), so
+-- Ignore settings panel leaves them skinned. The title line names no color and stays the client's.
+
+local TIP_PANEL = { startTip = { { "Injects", "a bag" }, "Plain line." } }
+
+--- Hover `fire` with GameTooltip's SetText, AddLine and AddDoubleLine recorded: one string per line,
+--- "text=r,g,b,1" (a double line "left|right=left color|right color"; "nil" for no color).
+local function simTip(m, frame)
+  local tip, seen = m.GameTooltip, {}
+  local names = { "SetOwner", "SetText", "AddLine", "AddDoubleLine", "Show" }
+  local saved = {}
+  for _, n in ipairs(names) do saved[n] = rawget(tip, n) end
+  local function c(r, g, b) return r == nil and "nil" or F.rgba({ r, g, b }) end
+  rawset(tip, "SetOwner", function() end)
+  rawset(tip, "Show", function() end)
+  rawset(tip, "SetText", function(_, t, r, g, b) seen[#seen + 1] = tostring(t) .. "=" .. c(r, g, b) end)
+  rawset(tip, "AddLine", function(_, t, r, g, b) seen[#seen + 1] = tostring(t) .. "=" .. c(r, g, b) end)
+  rawset(tip, "AddDoubleLine", function(_, l, rt, r, g, b, r2, g2, b2)
+    seen[#seen + 1] = tostring(l) .. "|" .. tostring(rt) .. "=" .. c(r, g, b) .. "|" .. c(r2, g2, b2)
+  end)
+  local ok, err = pcall(frame.__fire, frame, "OnEnter")
+  for _, n in ipairs(names) do rawset(tip, n, saved[n]) end
+  assertTrue(ok, tostring(err))
+  return seen
+end
+
+test("tool windows skin: an owner-less sim panel's tooltip keeps its literals", function()
+  local m = env()
+  local _, f = sim(m, OTHER, TIP_PANEL)
+  local seen = simTip(m, f.__rowButtons[1])
+  assertEqual(seen[2], "Injects|a bag=0.900,0.820,0.500,1|1,1,1,1", "the key column's own gold")
+  assertEqual(seen[3], "Plain line.=1,1,1,1")
+  local typed = simTip(m, f.picker.start)
+  assertEqual(typed[2]:match("=(.*)$"), "1,1,1,1", "a button's command line")
+end)
+
+test("tool windows skin: an owned sim panel's tooltip takes gtip.title and gtip.value, Ignore panel or not",
+  function()
+  -- red under: the literals (every skin's tooltip the same), or a sim panel that stands down with
+  -- the settings panel (it is a window).
+  local m, Skin = env()
+  F.owner(Skin, OWNER, "azeroth")
+  Skin:ResolveSkin("azeroth")["gtip.value"] = { 0.2, 0.4, 0.6, 1 }
+  local _, f = sim(m, OWNER, TIP_PANEL)
+  local seen = simTip(m, f.__rowButtons[1])
+  assertEqual(seen[1]:match("=(.*)$"), "nil", "the title names no color")
+  assertEqual(seen[2], "Injects|a bag=" .. tok3(Skin, "azeroth", "gtip.title") .. "|0.200,0.400,0.600,1")
+  assertEqual(seen[3], "Plain line.=0.200,0.400,0.600,1")
+  assertEqual(simTip(m, f.picker.start)[2]:match("=(.*)$"), "0.200,0.400,0.600,1", "a button's command line")
+  Skin:SetIgnore(OWNER, true, nil)
+  assertEqual(simTip(m, f.__rowButtons[1])[3], "Plain line.=0.200,0.400,0.600,1", "a window keeps its skin")
+  Skin:SetIgnore(OWNER, false, nil)
+  Skin:SetChoice(OWNER, "ka0s", "ember")
+  seen = simTip(m, f.__rowButtons[1])
+  assertEqual(seen[2], "Injects|a bag=" .. tok3(Skin, "ember", "gtip.title") .. "|" .. tok3(Skin, "ember", "gtip.value"),
+    "the next hover after a switch")
+end)
+
+test("tool windows skin: under Ka0s Default the sim key column is gtip.title's gold, the rest white", function()
+  -- D-14's recorded shift: 0.9, 0.82, 0.5 becomes Ka0s Default's tooltip gold.
+  local m, Skin = env()
+  F.owner(Skin, OWNER)
+  local _, f = sim(m, OWNER, TIP_PANEL)
+  local seen = simTip(m, f.__rowButtons[1])
+  assertEqual(seen[2], "Injects|a bag=1,0.820,0,1|1,1,1,1")
+  assertEqual(seen[3], "Plain line.=1,1,1,1")
 end)
 
 -- ── the tokens ───────────────────────────────────────────────────────────────────────────────

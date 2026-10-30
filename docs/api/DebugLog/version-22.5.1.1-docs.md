@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **5** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **1** |
 | Shipped in | v1.79.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 22.4.1.1](./version-22.4.1.1-docs.md) (shipped in v1.78.0) — the same surface; its report's identity header did not name Toast |
-| Superseded by | — |
+| Superseded by | [version 22.5.1.2](./version-22.5.1.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 22, DebugLogDiagnostics = 5, DebugLogGates = 1, DebugLogWindow = 1 }` |
 
@@ -965,3 +965,12 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
+
+## Moving to version 22.5.1.2
+
+**Take it; nothing is owed.** Version 22.5.1.2, shipped in v1.81.0, moves `DebugLogWindow.lua` 1 -> 2
+and adds and removes no member. An owned console's title-bar labels are painted in its skin's body
+face, so the owner's *Ignore fonts* gives each its template back (under Ka0s Default that face is
+Oxanium where the template drew Friz Quadrata), and its resize grip wears its skin. A console without
+a registered owner, or whose host passed `skin` or `applySkin`, is this version's. A host suite that
+pins `DebugLogWindow 1` re-pins it. See [version 22.5.1.2](./version-22.5.1.2-docs.md).
