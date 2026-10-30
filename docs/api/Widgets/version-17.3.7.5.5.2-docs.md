@@ -1890,3 +1890,14 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
+
+## Moving to 17.3.8.5.5.2
+
+**Take it; re-pin strip widths.** Version 17.3.8.5.5.2, released in v1.82.0, moves one file,
+`WidgetsDragHandle.lua` to minor 8, and adds and removes no lib-level member. A fitted drag handle
+measures its title with 2 px of slack (`DRAG_HANDLE.FIT_SLACK`), unbounded, on a shown host in the
+label's own font, and re-fits it after every repaint of its owner's skin; a host's own `SetWidth` or
+`SetSize` after an `ApplyWidth` ends that re-fit until the next `ApplyWidth`. A host suite pinning a
+natural strip width moves it by 2; a host that sizes or shortens the strip itself passes
+`spec.onRefit`. See [version 17.3.8.5.5.2](./version-17.3.8.5.5.2-docs.md) (*What a consumer owes at
+17.3.8.5.5.2*).

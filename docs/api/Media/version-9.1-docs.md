@@ -484,10 +484,13 @@ and normalized line endings on everything, which is right for Lua and wrong for 
 
 ## Moving to version 10.1
 
-**Take it; three keys leave.** Version 10.1 moves no signature. What arrives in `FONTS`: `Ka0s
-Prototype` (Ka0s Default's face, western only, under its author's terms in `Prototype.txt`, not the
-OFL) and `Ka0s Fira Sans Medium` (WoW Forever's body face, SIL OFL 1.1 in `FiraSans-OFL.txt`). What
-leaves, with its files: `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold` and `Ka0s Fira Sans`, which no
-skin names from `LibKa0s-Skin-1.0`'s SkinDefs minor 17. A host that names one of them in code or in
-a degradation copy of Ka0s Default's face moves to the new one; `RegisterLSM` counts sixteen fonts.
-See [version 10.1](./version-10.1-docs.md).
+**Take it; five keys leave.** Version 10.1, released in v1.82.0, moves `Media.lua` to minor 10 and
+no signature. What arrives in `FONTS`: `Ka0s Prototype` (Ka0s Default's face, western only, under its
+author's terms in `Prototype.txt`, not the OFL), `Ka0s Fira Sans Medium` (WoW Forever's body face,
+SIL OFL 1.1 in `FiraSans-OFL.txt`) and `Ka0s Expressway` (Obsidian's face, western and ruRU, not
+under the OFL: shipped on the owner's ruling of 2026-10-30, with the Typodermic EULA beside it). What
+leaves, with its files: `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold`, `Ka0s Fira Sans`, `Ka0s Inter`
+and `Ka0s Inter SemiBold`, which no skin names from `LibKa0s-Skin-1.0`'s SkinDefs minor 17. A host
+that names one of them in code or in a degradation copy of Ka0s Default's face moves to the new one;
+`RegisterLSM` counts fifteen fonts, twelve of them on ruRU; a README's font credits drop Inter and
+Oxanium and add Prototype and Expressway with their terms. See [version 10.1](./version-10.1-docs.md).

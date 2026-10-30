@@ -22,6 +22,7 @@ Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**),
 **9.17.13.7.11.2.4**), and **OptionsCompose minor 14**, **OptionsAppearance minor 4** and
 **OptionsSkinPicker minor 3**, **OptionsWidgets minor 37** and **OptionsSwitch minor 1** (new) (`LibKa0s-Options-1.0` key **34.4.37.5.7.11.3.14.9.4.3.6.4.3.1**), and
 **WidgetsDragHandle minor 8** (`LibKa0s-Widgets-1.0` key **17.3.8.5.5.2**); every other file still at its v1.81.0 minor, and **test kit revision 45**, until an entry below moves one.
+Still **nineteen majors**, now across **fifty-four files** (`OptionsSwitch.lua` is new), and no `NEEDS_*` floor rises.
 
 ### The payload ships Prototype, Fira Sans Medium and Expressway (`LK-01`, `LK-A1`)
 
@@ -424,6 +425,101 @@ holds at least 3:1 on its fill and 1.5 times the disabled label's contrast), and
 **What a consumer owes** (M2): nothing in code beyond the re-vendor. DpsRace's Arm Race reads as
 enabled once it carries this tag; its own `dr.*.offText` tokens stay as they are. A suite that
 asserts an opaque text color after a translucent one under the paint recorder passes the alpha.
+
+### Docs and process
+
+- **The docs pass (`LK-13`).** Every surface this branch adds or changes is documented in the five
+  new documents, Media 10.1, Skin 9.17.13.7.11.2.4, Widgets 17.3.8.5.5.2, Options
+  34.4.37.5.7.11.3.14.9.4.3.6.4.3.1 and test kit 45, each with its *What a consumer owes*; the
+  member manifests regenerate from the tree with no diff. The four documents they supersede carry
+  their closing *Moving to* sections: Widgets 17.3.7.5.5.2 gains one, and Media 9.1's, Skin
+  8.16.12.6.10.2.4's and Options 34.4.36.5.7.11.3.13.9.4.3.6.3.2's are rewritten, since each was
+  written before later items moved more files (Expressway and the Inter pair in Media; `HudFontSize`
+  and SkinPaintControls minor 11 in Skin; `OptionsSwitch.lua`, the skin reset and `O.SkinVerb` in
+  Options).
+- **README.** The majors table links every major's current document, where seven still named a
+  superseded one and the Skin row a document that was renamed with its key (8.17.12.6.10.2.4);
+  the Skin row names the outline mode, `FontFlags` and `HudFontSize`, the Options row `O.SkinVerb`,
+  `shownWhen` and `OptionsSwitch.lua`. The font credits name each face's terms: SIL OFL 1.1 but two,
+  Prototype under its author's personal-use terms in `Prototype.txt`, and Expressway under the
+  Typodermic Desktop EULA, shipped on the owner's ruling with the EULA and its guide beside it.
+- **Built to standard v2.93.0** (was v2.92.0): the README's standards pointer moves after a read of
+  v2.93.0, `WS-01` of the same run, on WowAddonStandards' `feat/2026-10-30-skin-fonts-feedback`,
+  which merges with this release. library-stack-§7 lets a face off the OFL only on an owner ruling
+  that names it, with its terms file beside it and the media test naming those terms, and this
+  release is what meets it for Prototype and Expressway; the rest of v2.93.0 binds the addons (the
+  font outline, the minimum font setting, the `skin` verb, the HUD marker, the switched sections,
+  the safe display characters) from their re-vendor of this tag.
+- **Counts.** `grep -c 'major = "LibKa0s-' tests/majors.lua` answers 19 and
+  `grep -c '<Script' LibKa0s/LibKa0s.xml` 54; `docs/releasing.md` says fifty-four files in its two
+  places and names `SWITCH_MINOR`, its Skin consumers row says what v1.82.0 adds, and step 8 has a
+  v1.82.0 paragraph. `DEPENDENCIES.md` names `tools/glyph_safe_set.py` under fontTools.
+- **The 1000-1500 band**, re-measured on the branch: fourteen files, nothing over 1500.
+  `LibKa0s/SkinPaint.lua` (1002) and `tests/test_options_appearance.lua` (1231) came in, each
+  accepted in `CLAUDE.md` with its seam and trigger; `LibKa0s/OptionsWidgets.lua` peeled at its
+  trigger (`LK-10`) and stays at 1370.
+- **Consumers.** `docs/api/CONSUMERS.md` keeps its v1.75.0 stamp; this release's new surfaces
+  (`GetOutline`, `SetOutline`, `OUTLINE_MODES`, `OUTLINE_DEFAULT`, `S.FontFlags`, `S.HudFontSize`,
+  `O.SkinVerb`, `shownWhen.any`, `DRAG_HANDLE.FIT_SLACK`, `spec.onRefit`, the kit's glyph guard) are
+  not measured until the next census.
+- **The close is `LK-90`**: the release battery, the dates in the version block and in the five
+  documents' *Shipped in*, and the local tag. While `v1.82.0` is unpushed, a LibKa0s defect an M2
+  adoption finds (`LK-A<n>`) extends this block, and a file this release already bumped is not
+  bumped again.
+
+### What a consumer owes
+
+Each addon meets these in M2 of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`:
+its `<PFX>-01` re-vendors the tag and carries, **in that one commit**, every stub, facade member and
+schema row below (decision D-23), so no suite is red between commits; its own items follow. The
+entries above and each document's *What a consumer owes* are the same list per item and per major.
+
+- **Re-vendor the whole folder and the kit.** One file is new (`OptionsSwitch.lua`, which
+  `LibKa0s.xml` loads), eleven move (`Media.lua`, `Skin.lua`, `SkinDefs.lua`, `SkinPaint.lua`,
+  `SkinPaintExtras.lua`, `SkinPaintControls.lua`, `OptionsWidgets.lua`, `OptionsCompose.lua`,
+  `OptionsAppearance.lua`, `OptionsSkinPicker.lua`, `WidgetsDragHandle.lua`), `media/fonts/` gains
+  three faces and loses five, and `tests/_kit/` takes revision 45 (`glyphs.lua`). Re-pin any test
+  that pins a moved minor or key.
+- **Stubs and facades.** Every Skin degradation facade gains `FontFlags` (a picked string as is,
+  `"OUTLINE"` for `"@skin"` or nil, never nil) and `HudFontSize` (a positive stored size as is, else
+  12, never nil); a SkinSetup no-op facade list a test pins key for key gains both. Every Options
+  degradation stub gains `SkinVerb = function() return nil, "absent" end`; ConsumableMaster's
+  `tests/test_surface_parity.lua` member list gains `"SkinVerb"`. Each Slash degraded stub's set of
+  verbs not offered without the library gains `skin`. Facade and surface parity are red until
+  they are carried.
+- **The skin block's `outline` key** (`LK-03`): default `"all"`, a schema row with `all`, `hud` and
+  `off`; the write seam stores `media.outline` when it is not nil (it already stores `font = false`
+  and `texture = false`, which the skin reset writes); the stored mode is applied with
+  `Skin:SetOutline` beside the stored scope and overrides, through a host seam its degradation arm
+  answers with a no-op. A test counting the skin block's keys gains one.
+- **Every font setting is the minimum set** (`LK-04`, D-07): compose `O.FontGroup{ fromSkin = true,
+  flagsFromSkin = true }`, default the flags to `"@skin"`, draw with `S.FontFlags(stored, where)`;
+  MultiMeters' and DpsRace's hand-written flags rows take the composed one or offer the same value.
+- **HUD sizes** (`LK-06`): a HUD element that follows the skin's face draws at
+  `S.HudFontSize(stored, fromSkin)`; the stored value is never rewritten.
+- **`/xx skin`** (`LK-11`, D-16): a `skin` row after `config` calling
+  `O.SkinVerb(NS.SkinPickerSpec())` through `NS.RunSkinVerb()`, refused while the addon is disabled,
+  printing the library-absent line on `nil, "absent"`; the help, landing and verb-count pins move
+  by one row, and `test_disabled`'s dispatch of every row covers it.
+- **The glyph guard** (`LK-12`, D-19): one case, `T.assertDisplayGlyphs{ label = "<Addon>", ... }`,
+  once the addon's hits are fixed or marked (`glyph: mono`, `glyph: data`, `skip`, `debugNames`; the
+  hit counts per addon are in the `LK-12` entry above).
+- **Test pins that move.** A painted string's flags `""` -> `"OUTLINE"`; a natural drag-strip width
+  +2 px; `RegisterLSM`'s fonts fifteen (twelve on ruRU) and any retired key (`Ka0s Inter`, `Ka0s
+  Inter SemiBold`, the Oxanium pair, `Ka0s Fira Sans`); Ka0s Default's, WoW Forever's body and
+  Obsidian's faces; any skin's body, title or HUD size and High Contrast's description; an override
+  surviving a skin pick; the Skin tab's headings (fifth, *Other Ka0s addons*; LootHistory's
+  `tests/test_panel.lua` pins four), its draw order, the Scope's widths and the count of
+  `APPEARANCE_STRINGS` keys (five more). Better: read `Skin:ResolveSkin(key)` than pin a value.
+- **Per addon.** Quick Comms' `NS.SKIN_FALLBACK["hud.font"]` becomes `Ka0s Prototype`. AuraMaster
+  passes `onRefit` to re-place its capped strips and adds the face to its shortened-name cache key.
+  KickCD drops `Castbar_Handle.lua`'s "measured once, never hooked into Reskin" rationale.
+  DropWatcher adopts `shownWhen = { any = ... }` on its glow knob rows. DpsRace owes nothing for the
+  Arm Race label: the tag fixes it. A README that credits the library's fonts drops Inter and
+  Oxanium and adds Prototype and Expressway with their terms.
+- **What the player sees changes**, so smoke checks move: Prototype under Ka0s Default, Expressway
+  under Obsidian, outlined text by default, equal widths across skins, the Skin tab's new layout and
+  its reset on a skin change, re-fitted anchor titles. The run never marks a smoke check passed.
 
 ## v1.81.0 — 2026-10-30
 

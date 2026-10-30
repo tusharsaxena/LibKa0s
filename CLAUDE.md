@@ -232,7 +232,12 @@ and `LibKa0s/SimPanel.lua` (1018, recorded with SimPanel's history further down)
 `LibKa0s/Options.lua` is untouched (1335). The run's other grown payload files are out of the band:
 `LibKa0s/SkinPaint.lua` 979 at minor 12. Re-measured at v1.81.0's close (2026-10-30, the release close of the same run): still
 **twelve**, nothing over 1500, no re-check trigger fired, every figure below current (the font-height fix and the
-consumer notes moved no band file). Largest first:
+consumer notes moved no band file). Re-measured 2026-10-30 on the branch of Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/` (the run that releases v1.82.0, `LK-13`): **fourteen**, nothing over 1500.
+Two came in, `LibKa0s/SkinPaint.lua` (1002) and `tests/test_options_appearance.lua` (1231), both below;
+`LibKa0s/OptionsWidgets.lua` peeled on its named seam to the new `LibKa0s/OptionsSwitch.lua` (163) at its trigger and
+stays in the band at 1370; `LibKa0s/Skin.lua`, `LibKa0s/SkinDefs.lua` and `tests/test_options_skin_picker.lua` grew under
+their triggers, re-measured below; the other band files are untouched. Largest first:
 
 - `testkit/mock_base.lua` (1465 with kit revision 43's one comment line pointing at `testkit/mock_paint.lua`, measured 2026-10-25, under its 1490 re-check trigger; 1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
@@ -302,6 +307,19 @@ consumer notes moved no band file). Largest first:
   `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`)) — **accepted.** The seam is the *one window across addons* section, to
   its own `tests/test_options_skin_picker_shared.lua`. **Re-check trigger: 1200 lines, or the next OptionsSkinPicker
   minor that adds cases here.**
+- `tests/test_options_appearance.lua` (1231, new to the band, measured 2026-10-30: 797 → 1231 with OptionsAppearance
+  minor 4's cases, the font outline (`LK-03`), a skin change resetting the overrides (`LK-07`) and the tab's layout
+  (`LK-08`) of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`) — **accepted.** Each section pins one
+  part of one tab, and the minor-4 sections are the part with the clearest boundary. The seam is those three
+  sections (*the font outline*, *a skin change resets the overrides*, *the Skin tab's layout*), to their own
+  `tests/test_options_appearance_v4.lua` on the same fresh-client bench. **Re-check trigger: 1300 lines, or the next
+  OptionsAppearance minor that adds cases here.**
+- `LibKa0s/SkinPaint.lua` (1002, new to the band, measured 2026-10-30: 979 → 1002 with minor 13's mono-role
+  outline (`LK-03`) and `P.color` (`LK-14`) of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`) —
+  **accepted.** Two lines over the band's floor, and about seventy of its lines are the minor-by-minor header notes
+  the Skin document already records. The seam is the window block (the table `Shell` hands `Core.ApplySkin`, the
+  inner rule and the edge holder), to `LibKa0s/SkinPaintExtras.lua` as Panel and Inset went at minor 11.
+  **Re-check trigger: 1050 lines, or the next SkinPaint minor.**
 - `tests/test_options_compose.lua` (1012, new to the band at v1.77.0, measured 2026-10-24: 944 →
   1012 with OptionsCompose minor 8's six `O.StrataTooltip` cases, `LK-20` of Ka0sAddonsCommonTasks
   `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) — **accepted.** The seam is the record-backed arm

@@ -3654,12 +3654,18 @@ it got.
 
 ## Moving to version 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1
 
-**Take it; nothing is owed in code, one seam to widen.** Version 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1, released in v1.82.0, moves
-two files (`OptionsAppearance.lua` 4, `OptionsCompose.lua` 14) and adds and
-removes no member. `O.FontGroup` takes `flagsFromSkin = true`, a *From skin* Font flags default the
-host draws with `S.FontFlags`. The
-Skin tab gains the *Font outline* dropdown (`LibKa0s-Skin-1.0` minor 9's `SetOutline`), and every
-media write it makes carries `{ font, texture, outline }`; the copy carries the outline (the picker's
-*Apply to all* does not). A host whose write seam stores the overrides also stores `media.outline` when it
-is not nil, and applies its stored mode with `Skin:SetOutline` where it applies its stored scope; a
-test pinning the copy confirmation's words moves with them. See [version 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1](./version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md).
+**Take it; one stub member owed, one seam to widen.** Version 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1,
+released in v1.82.0, moves four files (`OptionsWidgets.lua` 37, `OptionsCompose.lua` 14,
+`OptionsAppearance.lua` 4, `OptionsSkinPicker.lua` 3) and adds a fifteenth, `OptionsSwitch.lua`
+minor 1, which takes the switched sections out of `OptionsWidgets.lua` and gives `shownWhen` its
+OR form, `{ any = { ... } }`. The lib-level surface adds and removes no member; the instance gains
+`O.SkinVerb(spec)`, the act behind every addon's `/xx skin`, so every Options degradation stub owes
+`SkinVerb` (answering `nil, "absent"`). `O.FontGroup` takes `flagsFromSkin = true`, a *From skin*
+Font flags default the host draws with `S.FontFlags`. The Skin tab gains the *Font outline* dropdown
+(`LibKa0s-Skin-1.0` minor 9's `SetOutline`), *Reset font* and *Reset texture*, and an *Other Ka0s
+addons* heading; every media write it makes carries `{ font, texture, outline }`, and choosing
+another skin resets both overrides. A host whose write seam stores the overrides also stores
+`media.outline` when it is not nil, and applies its stored mode with `Skin:SetOutline` where it
+applies its stored scope; a test pinning the copy confirmation's words, the tab's headings or an
+override surviving a skin pick moves with them. See
+[version 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1](./version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md).

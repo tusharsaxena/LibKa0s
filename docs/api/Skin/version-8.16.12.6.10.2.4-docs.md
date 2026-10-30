@@ -1696,13 +1696,19 @@ the LibStub race later keeps every owner, record and facade; the resolve cache a
 
 ## Moving to version 9.17.13.7.11.2.4
 
-**Take it; one seam to wire.** Version 9.17.13.7.11.2.4 moves three files, `SkinDefs.lua` to minor
-17, `Skin.lua` to minor 9, `SkinPaint.lua` to minor 13 and `SkinPaintExtras.lua` to minor 7, and
-removes no member and changes no signature. Ka0s Default draws `Ka0s Prototype` for body, titles and HUD text, where it drew Oxanium,
-WoW Forever's body text is `Ka0s Fira Sans Medium`, and Obsidian draws `Ka0s Expressway`. A host test
-that pins those faces moves with them; better, it reads `Skin:ResolveSkin("ka0s")["font.body"]`. A
-degradation copy of Ka0s Default's HUD face moves too. Every skin now outlines window text by
-default, and each owner has a font outline mode (`GetOutline`, `SetOutline`, `media.outline`) its
-host stores, writes and applies, and the facade gains `FontFlags`, which a degradation facade owes. See [version 9.17.13.7.11.2.4](./version-9.17.13.7.11.2.4-docs.md),
-*What a consumer owes*. (A version 8.17.12.6.10.2.4 was documented on the release branch and never
-shipped; its document became this one.)
+**Take it; one seam to wire and two facade members to carry.** Version 9.17.13.7.11.2.4, released in
+v1.82.0, moves five files, `Skin.lua` to minor 9, `SkinDefs.lua` to minor 17, `SkinPaint.lua` to
+minor 13, `SkinPaintExtras.lua` to minor 7 and `SkinPaintControls.lua` to minor 11, and removes no
+member and changes no signature. Ka0s Default draws `Ka0s Prototype` for body, titles and HUD text,
+where it drew Oxanium, WoW Forever's body text is `Ka0s Fira Sans Medium`, and Obsidian draws `Ka0s
+Expressway`. A host test that pins those faces moves with them; better, it reads
+`Skin:ResolveSkin("ka0s")["font.body"]`. A degradation copy of Ka0s Default's HUD face moves too.
+Every skin's body, title and HUD sizes now give Ka0s Default's width, so a test pinning a skin's size
+moves. Every skin outlines window text by default, and each owner has a font outline mode
+(`OUTLINE_MODES`, `OUTLINE_DEFAULT`, `GetOutline`, `SetOutline`, `media.outline`) its host stores,
+writes and applies. The facade gains `FontFlags` (an element's stored flags, *From skin* by default)
+and `HudFontSize` (a HUD element's size scaled to the skin), and every degradation facade owes both,
+answering a usable value rather than nil. A button's label is drawn opaque once it is enabled. See
+[version 9.17.13.7.11.2.4](./version-9.17.13.7.11.2.4-docs.md), *What a consumer owes*. (A version
+8.17.12.6.10.2.4 was documented on the release branch and never shipped; its document became this
+one.)
