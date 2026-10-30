@@ -930,7 +930,7 @@ Total.
 - widgets: the handle owns the collection's 30px gutter unless the host says otherwise
 - widgets: a box frame that cannot make textures is skipped rather than raising
 
-### test_widgets_draghandle.lua (46)
+### test_widgets_draghandle.lua (49)
 
 - draghandle: it builds a named strip of the published height, hidden, with a label and a mark
 - draghandle: with no parent, and in a process with no CreateFrame, it answers nil
@@ -949,6 +949,9 @@ Total.
 - draghandle: ApplyWidth floors the natural width at the host's minimum and returns it
 - draghandle: SetLabel re-texts and re-measures, and touches no geometry of its own
 - draghandle: a measurer the client cannot build is a width of 0, not a raise
+- draghandle: the label's width is ceiled and Measure adds FIT_SLACK's 2 px
+- draghandle: the label is measured unbounded where the client answers it
+- draghandle: an owner-less strip is never re-sized by the widget after the host's fit
 - draghandle: the host's numeric guard is what reads every measurement
 - draghandle: dragging the strip moves the host's frame and reports both ends
 - draghandle: canDrag refuses, and a refused drag stops nothing either
@@ -1172,7 +1175,7 @@ Total.
 - skin owner: an owned DragHandle's tooltip is minor 6's gold, white and gray under Ka0s Default
 - skin owner: an owned DragHandle's tooltip takes its skin's gtip colors and follows a switch
 
-### test_widgets_skin_scope.lua (13)
+### test_widgets_skin_scope.lua (17)
 
 - skin scope: an owned dropdown's menu rows and measure take the skin's body face
 - skin scope: an owner-less open after an owned one gives the rows their template back
@@ -1187,6 +1190,10 @@ Total.
 - skin scope: a panel-scoped chart reads lib.LINE_CHART while the panel is ignored, live
 - skin scope: an owned drag handle's label takes the body face, and is measured in it
 - skin scope: a panel-scoped drag handle is owner-less while the panel is ignored, live
+- skin scope: a fitted drag handle re-fits its title in the new face on a skin switch
+- skin scope: the re-fit keeps the host's last floor, and a strip never fitted is not sized
+- skin scope: onRefit replaces the default re-fit, and a raise in it costs nothing else
+- skin scope: the measurer hangs off a shown host parked off screen, and wears the label's face
 
 ### test_debuglog.lua (75)
 
@@ -2331,7 +2338,7 @@ Total.
 - appearance: the copy has its own heading, Other Ka0s addons, after the Scope, the tab ending on it
 - appearance: the note leads the Look section, ahead of the first skin
 
-### test_options_skin_picker.lua (43)
+### test_options_skin_picker.lua (47)
 
 - skin picker: OptionsSkinPicker is minor 3, paired on the shell, and attaches two members
 - skin picker: a newer attach of the file adopts the queue already on the library table
@@ -2376,6 +2383,10 @@ Total.
 - skin picker: a close or Escape puts back the overrides the window opened with
 - skin picker: Apply writes the cleared overrides only when the saved skin's look changed
 - skin picker: with no overrides a pick and Apply write no media half
+- skin picker: a close keeps overrides something else set while a clearing preview was up
+- skin picker: a fallback preview under a painting EllesmereUI keeps the overrides
+- skin picker: the gear after a clearing preview writes the skin, then every media half
+- skin picker: two clearing previews, then Apply, write the media once
 
 ### test_options_idsuggest.lua (29)
 
@@ -3832,7 +3843,7 @@ Total.
 | test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
-| test_widgets_draghandle.lua | 46 |
+| test_widgets_draghandle.lua | 49 |
 | test_widgets_draghandle_place.lua | 10 |
 | test_widgets_draghandle_layers.lua | 10 |
 | test_widgets_linechart_math.lua | 21 |
@@ -3842,7 +3853,7 @@ Total.
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
-| test_widgets_skin_scope.lua | 13 |
+| test_widgets_skin_scope.lua | 17 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -3879,7 +3890,7 @@ Total.
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 58 |
-| test_options_skin_picker.lua | 43 |
+| test_options_skin_picker.lua | 47 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3944,4 +3955,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3358** |
+| **Total** | **3369** |

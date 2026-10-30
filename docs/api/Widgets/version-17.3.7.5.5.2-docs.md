@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **17** · `WidgetsReorder.lua` minor **3** · `WidgetsDragHandle.lua` minor **7** · `WidgetsLineChart.lua` minor **5** · `WidgetsAutocomplete.lua` minor **5** · `WidgetsCopyWindow.lua` minor **2** |
 | Shipped in | v1.81.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 16.2.6.4.4.1](./version-16.2.6.4.4.1-docs.md) (shipped in v1.78.0) — the same members, with a `ReorderList` that keeps its owner's skin while the owner ignores its settings panel, an owned `DragHandle` whose tooltip draws the fixed gold, white and gray whatever its owner's skin, owned controls whose strings keep their template's face (so *Ignore fonts* has nothing to give back), a copy window whose resize grip is the client's art whatever its owner's skin, and no `panel` scope on the other constructors; and [version 15.1.5.3.3](./version-15.1.5.3.3-docs.md) (shipped in v1.77.0), none taking a skin owner, and the copy window inside `Widgets.lua` |
-| Superseded by | — |
+| Superseded by | [version 17.3.8.5.5.2](./version-17.3.8.5.5.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 17, WidgetsReorder = 3, WidgetsDragHandle = 7, WidgetsLineChart = 5, WidgetsAutocomplete = 5, WidgetsCopyWindow = 2 }` |
 

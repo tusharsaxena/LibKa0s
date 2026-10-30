@@ -20,7 +20,8 @@ go-ahead.
 Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**), **Skin minor 9**,
 **SkinDefs minor 17**, **SkinPaint minor 13** and **SkinPaintExtras minor 7** (`LibKa0s-Skin-1.0` key
 **9.17.13.7.10.2.4**), and **OptionsCompose minor 14**, **OptionsAppearance minor 4** and
-**OptionsSkinPicker minor 3** (`LibKa0s-Options-1.0` key **34.4.36.5.7.11.3.14.9.4.3.6.4.3**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
+**OptionsSkinPicker minor 3** (`LibKa0s-Options-1.0` key **34.4.36.5.7.11.3.14.9.4.3.6.4.3**), and
+**WidgetsDragHandle minor 8** (`LibKa0s-Widgets-1.0` key **17.3.8.5.5.2**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
 
 ### The payload ships Prototype, Fira Sans Medium and Expressway (`LK-01`, `LK-A1`)
 
@@ -250,6 +251,39 @@ turns red until it does; a no-op answers nil, which `SetFont` refuses: answer a 
 as is, else 12), every SkinSetup noop facade list that a test pins key for key gains it; each HUD
 element that follows the skin's face draws at `S.HudFontSize(stored, fromSkin)`; a test pinning a
 HUD element's drawn size under a skin other than Ka0s Default, WoW Default or WoW Midnight moves.
+
+### A fitted drag handle re-fits its title after every repaint of its skin (`LK-09`)
+
+`LibKa0s-Widgets-1.0` key 17.3.8.5.5.2, documented in
+[docs/api/Widgets/version-17.3.8.5.5.2-docs.md](docs/api/Widgets/version-17.3.8.5.5.2-docs.md)
+(*What changed at 17.3.8.5.5.2*). The owner's item 11 and ruling D-12: in nearly every addon an
+anchor's title was cut off in almost every skin (image-43..45), because the width a host measured in
+one face stayed put when a skin switch, *Ignore fonts* or the outline setting redrew the label in
+another.
+
+- **WidgetsDragHandle minor 8: `DRAG_HANDLE.FIT_SLACK = 2`.** `Measure()` is
+  `ceil(labelWidth) + FIT_SLACK + Reserve() * 2`, the label read with `GetUnboundedStringWidth`
+  where the client answers a number. Every natural width is 2 px wider (88 → 90 for a 30 px label).
+- **The measurer sits on a shown host**, parked off screen as the font preload parks its own (a
+  hidden host may never load the face it measures), and wears the label's own font: its font
+  object, or its path, size and flags where the skin set it by path. `lib.__DragHandleMeasurer`
+  answers the FontString and its host.
+- **The re-fit.** Once the host has fitted an owned strip, each repaint of its skin re-runs the
+  host's own last `ApplyWidth`, with the same floor, in the new face. A strip the host never fitted
+  is never sized; an owner-less strip has no repaint.
+- **`spec.onRefit(handle)`**, under pcall, replaces that re-fit for a host that sizes or shortens the
+  strip itself.
+
+Tests: three fit cases in `tests/test_widgets_draghandle.lua` (ceil and slack, unbounded, an
+owner-less strip never re-sized) and four re-fit cases in `tests/test_widgets_skin_scope.lua` (a
+switch and Ignore fonts re-fit in the new face, the floor kept and an unfitted strip untouched,
+`onRefit` replacing the re-fit and its raise isolated, the shown host and the lent path font); the
+pinned widths move by 2.
+
+**What a consumer owes** (M2): a test pinning a natural strip width moves by 2; AuraMaster passes
+`onRefit` to re-place its capped strips and adds the face to its shortened-name cache key; KickCD
+drops `Castbar_Handle.lua`'s "measured once, never hooked into Reskin" rationale. No stub or facade
+changes: no lib-level member moved.
 
 ## v1.81.0 — 2026-10-30
 
