@@ -96,6 +96,25 @@ three skins (the bundle's image-55..57, measured to the pixel: Obsidian's white 
 **Fidelity note.** Only the recorder's FontString changes. `SetVertexColor`, `SetShadowColor` and the
 base mock's own frames are as revision 44 left them: nothing has measured the client's rule for them.
 
+### `vendor_sync.lua`: every binary pin is compared byte for byte (`LK-A2`)
+
+The vendor-sync gate strips CR from the working-tree side of a text file before comparing it with the
+tag's blob, and leaves a binary alone. Which files count as binary is the extension table
+`BINARY_EXT`, which said it matched `.gitattributes`' binary pins and stopped at `zip`: `tar`, `gz`,
+`7z`, `pdf`, `bin` and `param` were missing. v1.82.0 is the first payload to ship a PDF
+(`media/fonts/Expressway-EULA.pdf`), and a byte-identical vendored copy failed *libs/LibKa0s is the
+LibKa0s release CLAUDE.md says this addon bundles* with `media/fonts/Expressway-EULA.pdf matches the
+library repo at v1.82.0`, because its CR LF pairs had been rewritten before the comparison. The
+table now carries all twenty extensions `.gitattributes` pins, and the module publishes the
+predicate as `VendorSync.isBinary(path)` (case-insensitive on the extension).
+
+The table stays pinned rather than read at run time: the bytes compared are the library's, and the
+only `.gitattributes` the gate could reach is the consumer's. `tests/test_kit_vendor_sync.lua` keeps
+the two in step instead. One case reads this repo's `.gitattributes` and fails naming any `*.<ext>
+binary` line the table lacks; another vendors a fixture PDF holding CR LF pairs and a NUL, passes the
+byte-identical copy and fails one that lost its CRs. Every fixture library in that suite now carries
+the PDF beside its face.
+
 No documented member is renamed or removed and no case name changes.
 
 ## What a consumer owes

@@ -426,6 +426,30 @@ holds at least 3:1 on its fill and 1.5 times the disabled label's contrast), and
 enabled once it carries this tag; its own `dr.*.offText` tokens stay as they are. A suite that
 asserts an opaque text color after a translucent one under the paint recorder passes the alpha.
 
+### The vendor-sync gate compares a PDF byte for byte (`LK-A2`)
+
+Test kit revision 45, still, documented in
+[docs/api/testkit/version-45-docs.md](docs/api/testkit/version-45-docs.md) (*`vendor_sync.lua`:
+every binary pin is compared byte for byte*). Addendum 05 of the run: ST-01's trial re-vendor of the
+first v1.82.0 tag went red in its first consumer. `vendor_sync.lua`'s `BINARY_EXT` said it matched
+`.gitattributes`' binary pins but stopped at `zip`, so the gate stripped CR from the shipped
+`media/fonts/Expressway-EULA.pdf` and a byte-identical copy failed *matches the library repo at
+v1.82.0*.
+
+- `BINARY_EXT` now carries every extension `.gitattributes` pins `binary`, in its order: the
+  missing `tar`, `gz`, `7z`, `pdf`, `bin` and `param` join the fourteen it had.
+- The predicate is published as `VendorSync.isBinary(path)`, so the suite reads the table through
+  the gate's own code.
+
+Tests: two new `tests/test_kit_vendor_sync.lua` cases. One reads `.gitattributes` and fails naming any
+`*.<ext> binary` line the table lacks, so a pin added there without the table reddens here. The
+other vendors a fixture PDF holding CR LF pairs and a NUL into a consumer, passes the byte-identical
+copy and fails one that lost its CRs. Every fixture library in the suite carries the PDF, so before
+the fix eight of its other cases went red with the consumer's exact message.
+
+**What a consumer owes** (M2): nothing beyond the re-vendor. Without this, re-vendoring v1.82.0's
+payload fails the vendor-sync case in every consumer.
+
 ### Docs and process
 
 - **The docs pass (`LK-13`).** Every surface this branch adds or changes is documented in the five
