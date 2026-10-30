@@ -1,0 +1,13 @@
+Review of LK-14 (510640b) and LK-12 (84b7ef6): no blocking defect; 1 medium, 5 low, 1 info.
+FIXED (f52ac19):
+- medium: P.color forced alpha 1 on SetVertexColor via P.tint. It is now limited to SetTextColor, and vertex colors go through P.rgb as before. Direct P.color cases were added (translucent gives 4 numbers, an opaque target gives 3, faded text gets the 1, a host's 0.5 vertex alpha is kept).
+- low: the UTF-8 decoder now follows RFC 3629 (no lead past 0xF4, no surrogate, no overlong form, nothing past U+10FFFF). A decoder test was added and fixture lines were added to the 'comments, debug calls' case.
+- low: debug exemption uses exact sink names (Debug, Debugf, DebugOnce, DebugErrorOnce, DebugSteady, DebugChanged, DebugAtEnable, DebugMessage, AddDebugMessage, DebugTable, DebugStack, debug, dbg, Dbg) plus opts.debugNames. A sink's string call NS.Debug "..." is exempt. DebugLabel(...) is scanned. Every roster addon's hit count is unchanged (checked on all 16).
+- low: a glyph: begin with no end, or an end with no begin, now fails and names the line. Test added.
+- low: step() hands literals to a stringAt helper, and its CCN fell from 14 to 11 on the sighted shadow. markedLines is 13.
+- low: the contrast suite header is corrected and a CloseButton faded-glyph hover case was added.
+Docs updated: CHANGELOG, Skin 9.17.13.7.11.2.4 docs, testkit version-45 docs, test-cases.md (3409).
+DECLINED / DEFERRED:
+- info (WS-01 should cite testkit/glyphs.lua's generated block and the glyph: mono/data markers and not copy the ranges): this belongs to the WowAddonStandards item WS-01, not to LibKa0s. It is passed on for WS-01.
+No minor bump: SkinPaint stays at 13, SkinPaintControls at 11 and kit revision at 45, as on this branch already.
+Gate: ka0s-bounded lua tests/run.lua 3409 passed/0 failed/2 skipped; ka0s-bounded luacheck . 0/0 in 246 files; glyph_safe_set.py --check current.
