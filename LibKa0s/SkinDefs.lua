@@ -127,7 +127,13 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- here. Then (LK-03, the owner's ruling D-06, still minor 17): Ka0s Default's `font.outline` is
 -- OUTLINE, where it was "", so every skin and the eui source state OUTLINE for window text as they do
 -- for the HUD; an owner's Skin-tab "Font outline" takes it away (Skin minor 9), and the mono role is
--- never outlined (SkinPaint minor 13).
+-- never outlined (SkinPaint minor 13). Then (LK-05, the owner's item 5 and ruling D-08, still minor
+-- 17): every skin's body and title sizes give its text Ka0s Default's width (Prototype at 12 / 14),
+-- measured on the shipped bytes with OUTLINE on by the bundle's plan-data/font_metrics_shipped.py:
+-- Obsidian 12.5 / 14.5, Azeroth 12 / 12.5, Glass 11.5 / 13, High Contrast 12 / 13 (it no longer
+-- reads larger), Ember 11.5 / 12.5, WoW Midnight 12.5 / 13.5 and WoW Forever 12 / 13.5; Ka0s Default
+-- and WoW Default (real Friz Quadrata unmeasured, D-05) keep 12 / 14. tests/test_skin_width_parity.lua
+-- pins the measured widths.
 local DEFS_MINOR = 17
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
@@ -627,7 +633,7 @@ end
 -- mockup's own face, from minor 11, Barlow before).
 register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool blue accent.",
   { "#0a0a0b", "#202024", "#141416", "#4db8ff" }, {
-    font = "Ka0s Expressway", tfont = "Ka0s Expressway", fs = 12, titleSize = 14,
+    font = "Ka0s Expressway", tfont = "Ka0s Expressway", fs = 12.5, titleSize = 14.5,
     barTex = "Ka0s Matte",
     win = hex("#0A0A0B"), winBorder = edge(1, "flat", hex("#202024")), winInner = false, radius = 0,
     titleBg = hex("#050506"), titleColor = hex("#F2F2F4"), divider = hex("#1c1c20"),
@@ -675,7 +681,7 @@ local AZ_LEATHER, AZ_EDGE, AZ_GOLD = hex("#2B1D12"), hex("#6b4a22"), hex("#E2B65
 local AZ_TEXT, AZ_WAX = hex("#E9DDBC"), grad(hex("#a3241a"), hex("#5e1009"))
 register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a red wax seal, Vollkorn type.",
   { "#2b1d12", "#6b4a22", "#e2b659", "#8e1b10" }, {
-    font = "Ka0s Vollkorn", fs = 13, tfont = "Ka0s Vollkorn Bold", titleSize = 14,
+    font = "Ka0s Vollkorn", fs = 12, tfont = "Ka0s Vollkorn Bold", titleSize = 12.5,
     barTex = "Ka0s Parchment",
     win = AZ_LEATHER, winBorder = edge(1, "flat", AZ_EDGE), winInner = hex("#8a6a36"), radius = 0,
     titleBg = hex("#1a110a"), titleColor = hex("#F5C542"), divider = AZ_EDGE,
@@ -721,7 +727,7 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
 local GLASS_EDGE = rgba(255, 255, 255, 0.18)
 register("glass", "Glass", "Translucent frosted panels with rounded corners and a lilac accent.",
   { "#121622", "#ffffff", "#b69cff", "#5aa9ff" }, {
-    font = "Ka0s Nunito", tfont = "Ka0s Nunito SemiBold", fs = 12.5, titleSize = 14,
+    font = "Ka0s Nunito", tfont = "Ka0s Nunito SemiBold", fs = 11.5, titleSize = 13,
     barTex = "Ka0s Glass Bar",
     win = rgba(18, 22, 34, 0.88), winBorder = edge(8, "nine:Ka0s Glass", GLASS_EDGE),
     winInner = false, radius = 8,
@@ -767,13 +773,14 @@ register("glass", "Glass", "Translucent frosted panels with rounded corners and 
   })
 
 -- ── High Contrast ── mockup `contrast`: black, white 2px edges, yellow focus, Atkinson
--- Hyperlegible a point and a half above Ka0s Default's body size. Minor 7 (the owner's 2026-10-26 notes:
+-- Hyperlegible, as wide as Ka0s Default's text (minor 17, LK-05; a point and a half larger until
+-- then). Minor 7 (the owner's 2026-10-26 notes:
 -- "borders are too thick"): every control edge is 1px; the window keeps its 2px edge and the popups
 -- drop from 3px to 2px.
 local HC_WHITE, HC_YELLOW = hex("#FFFFFF"), hex("#FFE600")
-register("contrast", "High Contrast", "Black and white with yellow focus, crisp 1px edges, larger type.",
+register("contrast", "High Contrast", "Black and white with yellow focus, crisp 1px edges.",
   { "#000000", "#ffffff", "#1a1a1a", "#ffe600" }, {
-    font = "Ka0s Atkinson", tfont = "Ka0s Atkinson Bold", fs = 13.5, titleSize = 15,
+    font = "Ka0s Atkinson", tfont = "Ka0s Atkinson Bold", fs = 12, titleSize = 13,
     barTex = "Ka0s Solid",
     win = hex("#000000"), winBorder = edge(2, "flat", HC_WHITE), winInner = false, radius = 0,
     titleBg = hex("#000000"), titleColor = HC_YELLOW, divider = HC_WHITE,
@@ -822,7 +829,7 @@ register("contrast", "High Contrast", "Black and white with yellow focus, crisp 
 -- titles alike (minor 11; Cinzel titles over the client body until then).
 register("ember", "Ember", "Charred browns lit by an orange accent, Bitter type.",
   { "#1a0e0a", "#6a2e17", "#c98a3a", "#ff7a33" }, {
-    font = "Ka0s Bitter", fs = 12, tfont = "Ka0s Bitter Bold", titleSize = 13.5,
+    font = "Ka0s Bitter", fs = 11.5, tfont = "Ka0s Bitter Bold", titleSize = 12.5,
     barTex = "Ka0s Forge",
     win = rgba(26, 14, 10, 0.95), winBorder = edge(1, "flat", hex("#6a2e17")),
     winInner = rgba(201, 138, 58, 0.45), radius = 0,
@@ -934,7 +941,7 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
 local MN_GOLD, MN_BG = hex("#b08a3e"), grad(hex("#171a2e"), hex("#0f1020"))
 register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, centered Philosopher titles.",
   { "#171a2e", "#b08a3e", "#2a2347", "#b48cff" }, {
-    font = "Ka0s Philosopher", fs = 12.5, tfont = "Ka0s Philosopher Bold", titleSize = 14,
+    font = "Ka0s Philosopher", fs = 12.5, tfont = "Ka0s Philosopher Bold", titleSize = 13.5,
     barTex = "Ka0s Satin",
     win = MN_BG, winBorder = edge(2, "flat", MN_GOLD), winInner = hex("#3d2f12"), radius = 0,
     titleBg = grad(hex("#2a2347"), hex("#17142b")), titleColor = hex("#F6D27A"),
@@ -986,7 +993,7 @@ local FV_TAN, FV_EDGE = hex("#C9A07A"), hex("#3a3530")
 local FV_BG = grad(hex("#2e251c"), hex("#18120d"))
 register("forever", "WoW Forever", "Warm charcoal, black title bars with centered white titles, tan accent.",
   { "#231c15", "#3a3530", "#050505", "#c9a07a" }, {
-    font = "Ka0s Fira Sans Medium", tfont = "Ka0s Fira Sans SemiBold", fs = 12, titleSize = 14,
+    font = "Ka0s Fira Sans Medium", tfont = "Ka0s Fira Sans SemiBold", fs = 12, titleSize = 13.5,
     barTex = "Ka0s Classic",
     win = FV_BG, winBorder = edge(1, "flat", FV_EDGE), winInner = false, radius = 0,
     titleBg = hex("#050505"), titleColor = hex("#FFFFFF"), titleAlign = "CENTER",

@@ -43,6 +43,32 @@ shown that, ruled on 2026-10-30 "Ship it anyways." (see `LibKa0s-Media-1.0` vers
 one weight, the Bold, so Obsidian's titles differ by size too and its HUD face is its body face; the
 heavier-HUD rule is met by the Bold itself. Sizes do not move here.
 
+### Every skin's text is as wide as Ka0s Default's (SkinDefs minor 17)
+
+The owner's item 5 and ruling D-08 (`LK-05` of the same bundle): each skin's body and title sizes
+give its text the width of Ka0s Default's, Prototype at 12 and 14. They were measured on the shipped
+bytes with OUTLINE on (the bundle's `plan-data/font_metrics_shipped.py` and its output): HarfBuzz
+advances over each role's corpus, each snapped to a whole pixel under six layout models, each with
+and without an outline's extra pixel per glyph, taking the 0.5 step with the smallest worst-case
+error and stepping it down 0.5 when it ran more than 2% wide under any model (wide truncates first).
+
+| Skin | `font.bodySize` | `font.titleSize` | Until then |
+|---|---|---|---|
+| Ka0s Default | `12` | `14` | unchanged, the reference |
+| Obsidian | `12.5` | `14.5` | `12` / `14` |
+| Azeroth | `12` | `12.5` | `13` / `14` |
+| Glass | `11.5` | `13` | `12.5` / `14` |
+| High Contrast | `12` | `13` | `13.5` / `15` |
+| Ember | `11.5` | `12.5` | `12` / `13.5` |
+| WoW Default | `12` | `14` | unchanged: real Friz Quadrata is unmeasured (D-05) |
+| WoW Midnight | `12.5` | `13.5` | `12.5` / `14` |
+| WoW Forever | `12` | `13.5` | `12` / `14` |
+
+High Contrast no longer reads larger, and its description drops "larger type". Equal width trades
+away equal height: narrow faces (Expressway) read a little taller and wide ones (Vollkorn, Nunito)
+a little smaller. `tests/test_skin_width_parity.lua` pins the sizes and a `WIDTH` table of each face's
+measured advance, so a face or a size changed without a re-measure turns it red.
+
 ### Text is outlined by default, and each owner says where (Skin minor 9, SkinDefs minor 17, SkinPaint minor 13)
 
 The owner's item 13 and ruling D-06 (`LK-03` of the same bundle): outline by default, as a setting.
@@ -987,9 +1013,10 @@ answers nil.
   size times the skin's size over the reference, so a 10pt caption under a skin at 12.5 is about
   10.4pt and every layout measured against the stock fonts holds. The skins sit within a point and a
   half of the reference (`tests/test_skin_defs.lua`), each tuned to its face's measure (SkinDefs
-  minor 11): Inter, Bitter and Fira Sans 12, Nunito and Philosopher 12.5, Vollkorn 13 (a small
-  x-height), titles 14 (Bitter's 13.5, a wide face), and High Contrast 13.5 and 15 (which still
-  reads larger).
+  minor 17, `LK-05`: each skin's text as wide as Ka0s Default's, *Every skin's text is as wide as
+  Ka0s Default's* above): Obsidian 12.5 / 14.5, Azeroth 12 / 12.5, Glass 11.5 / 13, High Contrast
+  12 / 13 (it no longer reads larger), Ember 11.5 / 12.5, WoW Midnight 12.5 / 13.5, WoW Forever
+  12 / 13.5, and WoW Default Ka0s Default's 12 / 14.
 - **Colors.** A text or vertex color whose alpha is 1 is passed as three components, as every call
   site writes them; fills and backdrop colors as four. A color from a nilable token, or any color on
   a stock target, records the prior color first and puts it back when the token resolves to nil.
@@ -1254,7 +1281,7 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
   Obsidian Expressway (the owner's pick since SkinDefs minor 17; Inter, its mockup's own face, until then), Glass Nunito (rounded, as its corners are; the mockup's
   Manrope), Azeroth Vollkorn (a dark old-style book face for the parchment), Ember Bitter (a sturdy
   slab), WoW Midnight Philosopher, WoW Forever Fira Sans (crisp at small sizes; Medium for body text since SkinDefs minor 17, SemiBold titles) and High Contrast
-  Atkinson Hyperlegible, a step larger than the rest (*Sizes are relative*, above). WoW Default
+  Atkinson Hyperlegible, as wide as the rest since SkinDefs minor 17 and a step larger until then (*Sizes are relative*, above). WoW Default
   draws Friz Quadrata, the client's own face, set by name (its body and titles through `KEEP`, its
   HUD text explicitly since SkinDefs minor 16); Ka0s Default drew it too
   until SkinDefs minor 14 gave it Oxanium (the owner's choice), and Prototype since minor 17 (the
@@ -1277,7 +1304,7 @@ Default and Midnight, and WoW Forever's window texture).
 | **WoW Midnight** | Flat `WHITE8x8` everywhere, **no Blizzard art**: a 2px `#B08A3E` window and popup edge over a `#3D2F12` inner rule, the window gradient `#171A2E` to `#0F1020`, the title bar gradient `#2A2347` to `#17142B` with a centered `#F6D27A` Philosopher title, violet `#B48CFF` accent, night-violet gradient buttons (`#3A2F6B` to `#1D1838`) under a 1px `#B08A3E` gold edge with gold `#F6D27A` text, and a brighter violet primary (`#7A5AD6` to `#3F2C86`, `#F6D27A` edge, white text) since SkinDefs minor 7. |
 | **WoW Forever** | Warm brown charcoal `#2E251C` to `#18120D` (a step browner since SkinDefs minor 8) (the mockup's radial fill as a vertical gradient, **no window texture**), black `#050505` title bars with centered white titles, a tan `#C9A07A` accent, gold `#F2B33D` headings, thin 1px edges on every control, a `#9C7A58` primary with white text under its tan edge, Fira Sans (SkinDefs minor 11; Barlow until minor 8, which read blurry, then Atkinson Hyperlegible; OWNER_SCOPE R4). |
 | **Glass** | A `#121622` window at .88 on `nine:Ka0s Glass` at radius 8 (above), popups the same; flat 1px frosted control edges and boxless tabs underlined in the lilac `#B69CFF` accent; translucent white washes, `bar.gloss = true`. |
-| **High Contrast** | Black, a white 2px window edge and white 1px edges on every control (2px yellow on popups and menus; controls were 2px and popups 3px until SkinDefs minor 7), yellow `#FFE600` titles, accent, selection outline and focus; the primary button and the selected tab yellow on black (since SkinDefs minor 7; black on yellow before); Atkinson Hyperlegible 13.5 / 15. |
+| **High Contrast** | Black, a white 2px window edge and white 1px edges on every control (2px yellow on popups and menus; controls were 2px and popups 3px until SkinDefs minor 7), yellow `#FFE600` titles, accent, selection outline and focus; the primary button and the selected tab yellow on black (since SkinDefs minor 7; black on yellow before); Atkinson Hyperlegible 12 / 13 (13.5 / 15 until SkinDefs minor 17). |
 | **Obsidian** | True-black flat panels (a `#0A0A0B` window and a `#050506` title bar since SkinDefs minor 7, darker than Ka0s Default's navy), hairline `#202024` edges, no inner rule, a cool blue `#4DB8FF` accent, a deeper `#2A86D1` primary button with white text, Expressway (SkinDefs minor 17, LK-A1; Inter from minor 11, Barlow before). |
 | **Azeroth** | Dark tooled leather `#2B1D12` (SkinDefs minor 8; light parchment until then, which did not read in Loot History) under a 1px leather `#6B4A22` edge and a `#8A6A36` inner rule (a 3px edge until SkinDefs minor 13, which read much thicker than every other skin's frame), a `#1A110A` title bar with a gold title, parchment `#E9DDBC` text, Vollkorn throughout, gold `#E2B659` headings and accent, leather buttons with cream text, and the red wax seal for the primary button and the selected tab. As a dark skin it inherits Ka0s Default's semantic, quality, tooltip and chart colors. |
 | **Ember** | Charred brown, a `#6A2E17` edge over an amber inner rule, orange `#FF7A33` accent, gradient title bar and buttons, the primary's text white, Bitter. |
@@ -1301,8 +1328,8 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 |---|---|---|---|---|---|---|---|---|
 | `font.body` | `Ka0s Expressway` | `Ka0s Vollkorn` | `Ka0s Nunito` | `Ka0s Atkinson` | `Ka0s Bitter` | `Friz Quadrata TT` | `Ka0s Philosopher` | `Ka0s Fira Sans Medium` |
 | `font.title` | `Ka0s Expressway` | `Ka0s Vollkorn Bold` | `Ka0s Nunito SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Bitter Bold` | `Friz Quadrata TT` | `Ka0s Philosopher Bold` | `Ka0s Fira Sans SemiBold` |
-| `font.bodySize` | `12` | `13` | `12.5` | `13.5` | `12` | `12` | `12.5` | `12` |
-| `font.titleSize` | `14` | `14` | `14` | `15` | `13.5` | `14` | `14` | `14` |
+| `font.bodySize` | `12.5` | `12` | `11.5` | `12` | `11.5` | `12` | `12.5` | `12` |
+| `font.titleSize` | `14.5` | `12.5` | `13` | `13` | `12.5` | `14` | `13.5` | `13.5` |
 
 #### Window
 

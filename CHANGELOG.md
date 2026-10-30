@@ -144,6 +144,23 @@ picked string as is and `"OUTLINE"` for `"@skin"` or nil); each font setting com
 `flagsFromSkin = true`, defaults its flags to `"@skin"` and draws with `S.FontFlags(stored)`; a
 hand-written flags row (MultiMeters, DpsRace) takes the composed one or offers the same value.
 
+### Every skin's text is as wide as Ka0s Default's (`LK-05`)
+
+`LibKa0s-Skin-1.0` key 9.17.13.7.10.2.4 (SkinDefs minor 17, still), documented in
+[docs/api/Skin/version-9.17.13.7.10.2.4-docs.md](docs/api/Skin/version-9.17.13.7.10.2.4-docs.md)
+(*Every skin's text is as wide as Ka0s Default's*). The owner's item 5 and ruling D-08: each skin's
+`font.bodySize` and `font.titleSize` give its text Ka0s Default's width (Prototype at 12 / 14),
+measured on the shipped bytes with OUTLINE on (Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/plan-data/font_metrics_shipped.py`): Obsidian 12.5 / 14.5,
+Azeroth 12 / 12.5, Glass 11.5 / 13, High Contrast 12 / 13, Ember 11.5 / 12.5, WoW Midnight
+12.5 / 13.5, WoW Forever 12 / 13.5. Ka0s Default and WoW Default keep 12 / 14 (real Friz Quadrata is
+unmeasured, D-05). High Contrast's description drops "larger type". `tests/test_skin_width_parity.lua`
+(new, 4 cases) pins the sizes and each face's measured width.
+
+**What a consumer owes:** nothing in code. A test that pins a skin's body or title size, or High
+Contrast's description, moves with it (better: read `Skin:ResolveSkin(key)`), and a layout tuned in
+one skin is re-checked in the others (the owner's smoke check: Loot History in every skin).
+
 ## v1.81.0 — 2026-10-30
 
 Opened 2026-10-30, on `feat/2026-10-30-skin-library-followups`: the skinning rollout's library

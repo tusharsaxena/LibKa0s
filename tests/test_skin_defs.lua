@@ -496,8 +496,8 @@ test("skin defs: every skin draws one family of its own, for body and titles ali
   for key in pairs(want) do
     assertEqual(Skin:ResolveSkin(key)["font.shadow"], true, key .. " draws the shadow")
   end
-  local base, hc = Skin:ResolveSkin("obsidian"), Skin:ResolveSkin("contrast")
-  assertTrue(hc["font.bodySize"] > base["font.bodySize"], "High Contrast reads larger")
+  -- High Contrast no longer reads larger: every skin's sizes give Ka0s Default's text width
+  -- (SkinDefs minor 17, LK-05), pinned in tests/test_skin_width_parity.lua.
 end)
 
 -- Each skin's HUD face (SkinDefs minor 16, the owner's ruling R-4, DECISIONS D-11): the skin's own

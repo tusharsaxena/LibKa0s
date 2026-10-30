@@ -679,6 +679,13 @@ Total.
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 
+### test_skin_width_parity.lua (4)
+
+- skin width parity: every skin's body and title sizes are the measured ones
+- skin width parity: every skin's text is as wide as Ka0s Default's, never more than 2% wider
+- skin width parity: WoW Default keeps Ka0s Default's sizes until real Friz Quadrata is measured
+- skin width parity: High Contrast no longer promises larger type
+
 ### test_skin_paint.lua (37)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
@@ -3790,6 +3797,7 @@ Total.
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 31 |
+| test_skin_width_parity.lua | 4 |
 | test_skin_paint.lua | 37 |
 | test_skin_paint_controls.lua | 31 |
 | test_skin_eui.lua | 29 |
@@ -3909,4 +3917,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3327** |
+| **Total** | **3331** |
