@@ -20,7 +20,7 @@ go-ahead.
 Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**), **Skin minor 9**,
 **SkinDefs minor 17**, **SkinPaint minor 13** and **SkinPaintExtras minor 7** (`LibKa0s-Skin-1.0` key
 **9.17.13.7.10.2.4**), and **OptionsCompose minor 14**, **OptionsAppearance minor 4** and
-**OptionsSkinPicker minor 3** (`LibKa0s-Options-1.0` key **34.4.36.5.7.11.3.14.9.4.3.6.4.3**), and
+**OptionsSkinPicker minor 3**, **OptionsWidgets minor 37** and **OptionsSwitch minor 1** (new) (`LibKa0s-Options-1.0` key **34.4.37.5.7.11.3.14.9.4.3.6.4.3.1**), and
 **WidgetsDragHandle minor 8** (`LibKa0s-Widgets-1.0` key **17.3.8.5.5.2**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
 
 ### The payload ships Prototype, Fira Sans Medium and Expressway (`LK-01`, `LK-A1`)
@@ -87,12 +87,12 @@ HUD face (Quick Comms' `NS.SKIN_FALLBACK["hud.font"]`) becomes `Ka0s Prototype`.
 ### Text is outlined by default, and the Skin tab says where (`LK-03`)
 
 `LibKa0s-Skin-1.0` key 9.17.13.7.10.2.4 and `LibKa0s-Options-1.0` key
-34.4.36.5.7.11.3.14.9.4.3.6.4.3 (9.17.13.6.10.2.4 and 34.4.36.5.7.11.3.13.9.4.3.6.4.3 when this entry
+34.4.37.5.7.11.3.14.9.4.3.6.4.3.1 (9.17.13.6.10.2.4 and 34.4.36.5.7.11.3.13.9.4.3.6.4.3 when this entry
 was written, 34.4.36.5.7.11.3.14.9.4.3.6.4.3 until the review took the outline back out of the
 picker, and 34.4.36.5.7.11.3.14.9.4.3.6.4.2 until `LK-07` moved the picker to minor 3; the documents
-renamed with the keys), documented in
+renamed with the keys; 34.4.36.5.7.11.3.14.9.4.3.6.4.3 until `LK-10` added `OptionsSwitch.lua`), documented in
 [docs/api/Skin/version-9.17.13.7.10.2.4-docs.md](docs/api/Skin/version-9.17.13.7.10.2.4-docs.md) and
-[docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md)
+[docs/api/Options/version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md](docs/api/Options/version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md)
 (*What changed at this version*). The owner's item 13 and ruling D-06: outline by default, as a
 setting with three values.
 
@@ -126,9 +126,9 @@ owed: the four new members are lib-level, and the Options instance gains none.
 
 ### Choosing another skin resets the font and texture overrides (`LK-07`)
 
-`LibKa0s-Options-1.0` key 34.4.36.5.7.11.3.14.9.4.3.6.4.3 (OptionsAppearance minor 4, still, and
+`LibKa0s-Options-1.0` key 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1 (34.4.36.5.7.11.3.14.9.4.3.6.4.3 when this entry was written; OptionsAppearance minor 4, still, and
 **OptionsSkinPicker minor 3**), documented in
-[docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md)
+[docs/api/Options/version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md](docs/api/Options/version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md)
 (*What changed at this version*). The owner's item 1 and ruling D-10: with a Font and a Texture
 override picked, choosing another skin gives both back to that skin's own.
 
@@ -284,6 +284,33 @@ pinned widths move by 2.
 `onRefit` to re-place its capped strips and adds the face to its shortened-name cache key; KickCD
 drops `Castbar_Handle.lua`'s "measured once, never hooked into Reskin" rationale. No stub or facade
 changes: no lib-level member moved.
+
+### `shownWhen` takes an OR across selectors, in a file of its own (`LK-10`)
+
+`LibKa0s-Options-1.0` key 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1 (fifteen numbers), documented in
+[docs/api/Options/version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md](docs/api/Options/version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md)
+(*What changed at this version: `shownWhen.any`*). The owner's item 10 and ruling D-17: DropWatcher's
+Upgrade glow tab hides the sections neither style dropdown selects, and shows both when the two
+glows pick two styles.
+
+- **OptionsSwitch minor 1 (new file): `shownWhen = { any = { { path, equals }, ... } }`.** The row is
+  drawn while any clause holds; each clause is the single form, read the same way (a raising read
+  reads as shown). Every clause's path is watched, so a change to either selector re-renders the
+  page once, on the next frame, coalesced. A malformed clause holds for nothing; an `any` with no
+  well-formed clause switches nothing. The single form is unchanged.
+- **OptionsWidgets minor 37: the switched sections moved out to `OptionsSwitch.lua`**, on the seam
+  CLAUDE.md's band census named, because the OR form would have fired the file's 1450-line trigger
+  (1447 -> 1370). `lib.__AttachWidgets` calls `lib.__AttachSwitch(O, { read, readKey })`; a copy
+  without the file draws every row. The new file loads last in `LibKa0s.xml` and is a row of
+  `tests/majors.lua`.
+
+Tests: five cases in `tests/test_options_switched.lua` (either selector shows a section and both
+show both, a change to either re-renders once, a raising clause shows and a malformed one is skipped,
+the single form beside it, and the file's pairing).
+
+**What a consumer owes** (M2): nothing for a host that does not switch on two selectors: the file
+arrives with the re-vendor (whole folder, and `LibKa0s.xml` loads it). DropWatcher adopts `any` on its
+glow knob rows (DW-04). No stub or facade changes: no member moved.
 
 ## v1.81.0 — 2026-10-30
 

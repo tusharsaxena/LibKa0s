@@ -1,11 +1,11 @@
 {
   "major": "LibKa0s-Options-1.0",
-  "versionKey": "34.4.36.5.7.11.3.14.9.4.3.6.4.3",
+  "versionKey": "34.4.37.5.7.11.3.14.9.4.3.6.4.3.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Options", "minor": 34 },
     { "file": "OptionsRegistry", "minor": 4 },
-    { "file": "OptionsWidgets", "minor": 36 },
+    { "file": "OptionsWidgets", "minor": 37 },
     { "file": "OptionsIds", "minor": 5 },
     { "file": "OptionsIdList", "minor": 7 },
     { "file": "OptionsTabs", "minor": 11 },
@@ -16,7 +16,8 @@
     { "file": "OptionsDrawer", "minor": 3 },
     { "file": "OptionsKeybinds", "minor": 6 },
     { "file": "OptionsAppearance", "minor": 4 },
-    { "file": "OptionsSkinPicker", "minor": 3 }
+    { "file": "OptionsSkinPicker", "minor": 3 },
+    { "file": "OptionsSwitch", "minor": 1 }
   ],
   "members": [
     { "name": "APPEARANCE_STRINGS", "kind": "table" },

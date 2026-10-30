@@ -2449,7 +2449,7 @@ Total.
 - IdList removeStyle icon: the highlight goes back onto the art when AceGUI takes the X back
 - IdList removeStyle icon: an AceGUI whose Icon has no textures still draws the X
 
-### test_options_switched.lua (9)
+### test_options_switched.lua (14)
 
 - switched: only the subsection the selector names is drawn, its heading with it
 - switched: equals may list several values; the row shows for any of them
@@ -2460,6 +2460,11 @@ Total.
 - switched: rows without shownWhen render as before, and no selector watcher is added
 - switched: a bound (path-less) selector reads and is watched through its record
 - switched: two selectors changing in one frame cost one re-render
+- switched any: a section shows while either selector chooses it, both when both differ
+- switched any: a change to either selector re-renders once, on the next frame
+- switched any: a clause whose read raises reads as shown; a malformed clause is skipped
+- switched any: the single-path form is unchanged beside it
+- switched: OptionsSwitch.lua is its own file of the major, paired on the shell's minor
 
 ### test_options_combat.lua (33)
 
@@ -3894,7 +3899,7 @@ Total.
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
-| test_options_switched.lua | 9 |
+| test_options_switched.lua | 14 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 51 |
@@ -3955,4 +3960,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3369** |
+| **Total** | **3374** |

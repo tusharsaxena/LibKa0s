@@ -86,7 +86,7 @@ modules and points you there. It does not restate them.
    registering anything when `Core.lua` is missing or older than the minor it needs. If `Options.lua`
    bails that way, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`,
    `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua`,
-   `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua` and `OptionsSkinPicker.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole fourteen-file module
+   `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua`, `OptionsSkinPicker.lua` and `OptionsSwitch.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole fifteen-file module
    is absent instead of half-attached. `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua` and `WidgetsCopyWindow.lua` do the same
    behind `Widgets.lua`, `SkinDefs.lua`, `SkinPaint.lua`, `SkinPaintExtras.lua`, `SkinPaintControls.lua`, `SkinEUI.lua` and `SkinAce.lua` behind `Skin.lua` (the extras, the controls and the AceGUI rows also behind `SkinPaint.lua`, whose painter helpers they use), `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
    `PerfPanel.lua` behind `Perf.lua`, and `SimTimeline.lua` and `SimPanel.lua` behind `Sim.lua`.
@@ -363,6 +363,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   OptionsKeybinds.lua -- the Keybindings tab and its binding model, same module, KEYBINDS_MINOR
   OptionsAppearance.lua -- the Skin tab: skin source, skin, font and texture, copy to every addon, APPEARANCE_MINOR
   OptionsSkinPicker.lua -- the first-run skin picker, same module, PICKER_MINOR of its own
+  OptionsSwitch.lua  -- the switched sections (shownWhen, its any form), same module, SWITCH_MINOR
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
   PerfSampler.lua    -- the capture: brackets, combat-gated windows, the FPS sampler, same module, SAMPLER_MINOR of its own
   PerfCommands.lua   -- the perf command surface a host wires in, same module, COMMANDS_MINOR of its own

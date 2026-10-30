@@ -1,7 +1,10 @@
 -- tests/test_options_switched.lua — LibKa0s-Options-1.0's switched sections (OptionsWidgets minor
 -- 22): a row carrying `shownWhen = { path, equals }` is drawn only while its selector holds that
 -- value (or one of a list), its subsection heading with it, and the page re-renders once, on the next
--- frame, when the selector changes; a row list with no `shownWhen` renders exactly as before.
+-- frame, when the selector changes; a row list with no `shownWhen` renders exactly as before. From
+-- OptionsSwitch minor 1 (the switched sections peeled out of OptionsWidgets.lua at its minor 37, LK-10
+-- of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK, decision D-17), the OR form:
+-- `shownWhen = { any = { { path, equals }, ... } }`, drawn while any clause holds.
 --
 -- Its own suite rather than more cases in tests/test_options_widgets.lua, which was over layout-§1's
 -- cap when this was written (issue #33, since split): new cases on a seam of their own go to a file
@@ -220,4 +223,118 @@ test("switched: two selectors changing in one frame cost one re-render", functio
   -- red under: requestSwitch not coalescing per ctx (each watcher queues its own re-render: 3)
   assertEqual(renders, 2, "both changes, one re-render")
   assertEqual(drawn(O, ctx), "Anchor,Attach to,Section B,B one,Section C,C one,Side,Section R,R one")
+end)
+
+-- ── the OR form: shownWhen = { any = { ... } } (OptionsSwitch minor 1) ─────────────────────────
+
+--- DropWatcher's Upgrade glow shape: two style dropdowns (main, off-spec) and one section per style,
+--- each row of a main | off-spec pair carrying the same OR across both selectors.
+local function glowRows()
+  local function either(style)
+    return { any = { { path = "main", equals = style }, { path = "off", equals = { style } } } }
+  end
+  local styles = { values = { pixel = "Pixel", proc = "Proc", button = "Button" },
+                   sorting = { "pixel", "proc", "button" } }
+  return {
+    { path = "main", group = "Glow", type = "string", label = "Main style",
+      values = styles.values, sorting = styles.sorting },
+    { path = "off", group = "Glow", type = "string", label = "Off-spec style",
+      values = styles.values, sorting = styles.sorting },
+    { path = "px.main", group = "Glow", subgroup = "Pixel border", type = "bool", label = "Pixel main",
+      shownWhen = either("pixel") },
+    { path = "px.off", group = "Glow", subgroup = "Pixel border", type = "bool", label = "Pixel off",
+      shownWhen = either("pixel") },
+    { path = "pr.main", group = "Glow", subgroup = "Proc", type = "bool", label = "Proc main",
+      shownWhen = either("proc") },
+    { path = "pr.off", group = "Glow", subgroup = "Proc", type = "bool", label = "Proc off",
+      shownWhen = either("proc") },
+  }
+end
+
+local function glowBench(main, off)
+  local O, rec, ctx = bench("a")
+  rec.store.main, rec.store.off = main, off
+  return O, rec, ctx
+end
+
+local HEAD = "Glow,Main style,Off-spec style"
+
+test("switched any: a section shows while either selector chooses it, both when both differ", function()
+  -- red under: shownNow reading `path` alone (an `any` row has none, so it always shows) or only
+  -- the first clause (Proc/Pixel would lose the Pixel section)
+  local O, _, ctx = glowBench("proc", "proc")
+  O.RenderRows(ctx, glowRows())
+  assertEqual(drawn(O, ctx), HEAD .. ",Proc,Proc main,Proc off", "Proc/Proc: Pixel border dropped")
+  O, _, ctx = glowBench("proc", "pixel")
+  O.RenderRows(ctx, glowRows())
+  assertEqual(drawn(O, ctx), HEAD .. ",Pixel border,Pixel main,Pixel off,Proc,Proc main,Proc off",
+    "one style each: both sections, both columns")
+  O, _, ctx = glowBench("button", "button")
+  O.RenderRows(ctx, glowRows())
+  assertEqual(drawn(O, ctx), HEAD, "neither chosen: neither section, nor its heading")
+end)
+
+test("switched any: a change to either selector re-renders once, on the next frame", function()
+  -- red under: switchedRows registering no selector for an `any` row (no watcher, no re-render)
+  local O, rec, ctx = glowBench("proc", "proc")
+  local rows = glowRows()
+  local renders = 0
+  O.SetRenderer(ctx, function(c)
+    renders = renders + 1
+    O.ClearScroll(c)
+    O.RenderRows(c, rows)
+  end)
+  ctx.panel:Show(); ctx.panel:__fire("OnShow")
+  rec.store.off = "pixel"
+  O.RefreshScalars()
+  assertEqual(renders, 1, "not inside the sweep")
+  mocks.__fireTimers()
+  assertEqual(renders, 2, "the second clause's selector is watched")
+  assertEqual(drawn(O, ctx), HEAD .. ",Pixel border,Pixel main,Pixel off,Proc,Proc main,Proc off")
+  rec.store.main, rec.store.off = "pixel", "button"
+  O.RefreshScalars()
+  mocks.__fireTimers()
+  assertEqual(renders, 3, "both selectors in one frame: one re-render")
+  assertEqual(drawn(O, ctx), HEAD .. ",Pixel border,Pixel main,Pixel off")
+end)
+
+test("switched any: a clause whose read raises reads as shown; a malformed clause is skipped", function()
+  local O, rec, ctx = glowBench("button", "button")
+  local get = rec.d.get
+  rec.d.get = function(path)
+    if path == "off" then error("selector unreadable") end
+    return get(path)
+  end
+  local ok = pcall(O.RenderRows, ctx, glowRows())
+  rec.d.get = get
+  assertTrue(ok, "the render survived")
+  assertTrue(drawn(O, ctx):find("Pixel main", 1, true) ~= nil, "a raising clause reads as shown")
+  -- A clause that is not a table, or names no path, holds for nothing and is never watched.
+  local O2, _, ctx2 = glowBench("proc", "proc")
+  O2.RenderRows(ctx2, {
+    { path = "main", group = "Glow", type = "string", label = "Main style",
+      values = { proc = "Proc" }, sorting = { "proc" } },
+    { path = "x", group = "Glow", subgroup = "Odd", type = "bool", label = "Odd one",
+      shownWhen = { any = { "main", { equals = "proc" }, { path = "main", equals = "pixel" } } } },
+  })
+  assertEqual(drawn(O2, ctx2), "Glow,Main style", "no clause holds: dropped")
+end)
+
+test("switched any: the single-path form is unchanged beside it", function()
+  local O, _, ctx = bench("b")
+  O.RenderRows(ctx, anchorRows({
+    { path = "z1", group = "Anchor", subgroup = "Section Z", type = "bool", label = "Z one",
+      shownWhen = { any = { { path = "mode", equals = "a" }, { path = "mode", equals = "c" } } } },
+  }))
+  assertEqual(drawn(O, ctx), "Anchor,Attach to,Section B,B one,Section C,C one", "b: Z is dropped")
+end)
+
+test("switched: OptionsSwitch.lua is its own file of the major, paired on the shell's minor", function()
+  -- red under: the switched sections left in OptionsWidgets.lua (no OptionsSwitch minor), which
+  -- took that file past its 1450-line re-check trigger (CLAUDE.md's band census)
+  local lib = T.options
+  assertEqual(lib.MODULES.OptionsSwitch, lib.__switchMinor)
+  assertTrue(lib.__switchMinor >= 1)
+  assertEqual(lib.__switchShellMinor, lib.MINOR, "attached to the shell that is live")
+  assertEqual(type(lib.__AttachSwitch), "function")
 end)
