@@ -19,8 +19,8 @@ go-ahead.
 
 Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**), **Skin minor 9**,
 **SkinDefs minor 17**, **SkinPaint minor 13** and **SkinPaintExtras minor 7** (`LibKa0s-Skin-1.0` key
-**9.17.13.7.10.2.4**), and **OptionsCompose minor 14** and **OptionsAppearance minor 4**
-(`LibKa0s-Options-1.0` key **34.4.36.5.7.11.3.14.9.4.3.6.4.2**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
+**9.17.13.7.10.2.4**), and **OptionsCompose minor 14**, **OptionsAppearance minor 4** and
+**OptionsSkinPicker minor 3** (`LibKa0s-Options-1.0` key **34.4.36.5.7.11.3.14.9.4.3.6.4.3**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
 
 ### The payload ships Prototype, Fira Sans Medium and Expressway (`LK-01`, `LK-A1`)
 
@@ -86,11 +86,12 @@ HUD face (Quick Comms' `NS.SKIN_FALLBACK["hud.font"]`) becomes `Ka0s Prototype`.
 ### Text is outlined by default, and the Skin tab says where (`LK-03`)
 
 `LibKa0s-Skin-1.0` key 9.17.13.7.10.2.4 and `LibKa0s-Options-1.0` key
-34.4.36.5.7.11.3.14.9.4.3.6.4.2 (9.17.13.6.10.2.4 and 34.4.36.5.7.11.3.13.9.4.3.6.4.3 when this entry
-was written, and 34.4.36.5.7.11.3.14.9.4.3.6.4.3 until the review took the outline back out of the
-picker; the documents renamed with the keys), documented in
+34.4.36.5.7.11.3.14.9.4.3.6.4.3 (9.17.13.6.10.2.4 and 34.4.36.5.7.11.3.13.9.4.3.6.4.3 when this entry
+was written, 34.4.36.5.7.11.3.14.9.4.3.6.4.3 until the review took the outline back out of the
+picker, and 34.4.36.5.7.11.3.14.9.4.3.6.4.2 until `LK-07` moved the picker to minor 3; the documents
+renamed with the keys), documented in
 [docs/api/Skin/version-9.17.13.7.10.2.4-docs.md](docs/api/Skin/version-9.17.13.7.10.2.4-docs.md) and
-[docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.2-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.2-docs.md)
+[docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md)
 (*What changed at this version*). The owner's item 13 and ruling D-06: outline by default, as a
 setting with three values.
 
@@ -109,7 +110,7 @@ setting with three values.
   and *Off*, under the Scope's check boxes, grayed while *Ignore fonts* is on; every media write the
   tab makes carries `{ font, texture, outline }`; *Copy to every Ka0s addon…* carries the outline;
   `lib.__copySkinTo` keeps a target's own half for a `media` half left out.
-- **The skin picker is unchanged** (OptionsSkinPicker stays at minor 2): *Apply to all Ka0s addons*
+- **The skin picker is unchanged here** (OptionsSkinPicker stayed at minor 2 for it): *Apply to all Ka0s addons*
   gives the other owners the source and skin alone. The picker never shows the outline, and an owner
   that never set one answers `"all"`, so carrying it could silently undo another addon's *Off* (the
   review of `LK-03`; D-06 gives the outline to the Skin tab's copy alone).
@@ -120,6 +121,38 @@ stored mode is applied with `Skin:SetOutline` beside the stored scope and overri
 seam its degradation arm answers with a no-op; a test that pins a painted string's flags as `""`
 moves to `"OUTLINE"`, and one counting the skin block's keys gains one. No stub or facade member is
 owed: the four new members are lib-level, and the Options instance gains none.
+
+### Choosing another skin resets the font and texture overrides (`LK-07`)
+
+`LibKa0s-Options-1.0` key 34.4.36.5.7.11.3.14.9.4.3.6.4.3 (OptionsAppearance minor 4, still, and
+**OptionsSkinPicker minor 3**), documented in
+[docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md)
+(*What changed at this version*). The owner's item 1 and ruling D-10: with a Font and a Texture
+override picked, choosing another skin gives both back to that skin's own.
+
+- **`lib.__chooseSkin(Skin, name, source, skin)`** (internal, next to `lib.__copySkinTo`): `SetChoice`,
+  then, when the look drawn changed (`Skin:DrawsKey` before against after) and an override was set,
+  `SetOverride(name, false, false)`. Answers `changed, reload, cleared`; writes no profile. A Ka0s
+  skin to another resets, onto an EllesmereUI that paints resets, a fallback skin picked under a
+  painting EllesmereUI and a re-click of the checked skin keep them.
+- **The Skin tab's pick** goes through it and, when it reset an override, writes
+  `spec.set(nil, nil, nil, { font = false, texture = false, outline })` after the skin.
+- **`lib.__copySkinTo`** goes through it: the tab's copy lays this owner's overrides over a target's
+  reset, as before; the picker's *Apply to all* (no `media`) writes the reset through `WriteChoice`
+  with the target's own outline. Its tooltip (`APPLY_ALL_TIP`) says so.
+- **The skin picker (minor 3)**: a pick to another look previews with the overrides cleared, a pick
+  back restores them, Apply and the gear write the reset, the close control and Escape restore what
+  the window opened with.
+- **Never inside `Skin:SetChoice`**, which re-applies a stored skin at load: a new guard case in
+  `tests/test_skin_override.lua` pins it. A profile change and `/xx set skin.skin` reset nothing.
+
+Tests: eight Appearance cases (and the two that pinned the old persistence, the sync case and the
+library-level copy case, plus the copy helper's partial-media case, moved to the new behavior), four
+picker cases (and *Apply to all*'s), and the guard.
+
+**What a consumer owes** (M2): nothing in code; the write seam already stores `media`. A suite that
+pins an override surviving a skin pick moves with it, and an Options degradation stub owes nothing
+(no instance member is added).
 
 ### Every element's font flags follow the Font outline by default (`LK-04`)
 

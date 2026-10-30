@@ -539,11 +539,12 @@ Total.
 - skin: DrawsKey answers the key an owner draws by
 - skin: DrawsKey answers eui once EllesmereUI paints the owner, Ka0s Default before
 
-### test_skin_override.lua (26)
+### test_skin_override.lua (27)
 
 - skin override: an unregistered owner has none and cannot set one
 - skin override: a font and a texture reach every token read, and nothing else moves
 - skin override: the override follows a skin switch, over the new skin's table
+- skin override: SetChoice itself never clears an override, so the load path keeps the stored pair
 - skin override: nil keeps a half, false and the empty string clear it, a repeat changes nothing
 - skin override: a painted string takes the override's face on the repaint, and the skin's back on a clear
 - skin override: Ignore fonts wins over a font override
@@ -679,7 +680,7 @@ Total.
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 
-### test_skin_width_parity.lua (8)
+### test_skin_width_parity.lua (11)
 
 - skin width parity: every skin's body, title and HUD sizes are the measured ones
 - skin width parity: every skin's text is as wide as Ka0s Default's, never more than 2% wider
@@ -689,6 +690,9 @@ Total.
 - skin hud size: a stored size scales by the skin's HUD size over Ka0s Default's
 - skin hud size: its own face, Ignore fonts and a bad size leave the stored size alone
 - skin hud size: the stored value is never rewritten, and the scale follows a live skin change
+- skin hud size: a font override keeps the skin's sizes, HUD and body alike
+- skin hud size: BarStyle's fontSize is each skin's own, Ka0s Default's under Ignore fonts
+- skin hud size: an EllesmereUI owner reads Ka0s Default's HUD size, unscaled
 
 ### test_skin_paint.lua (37)
 
@@ -2266,7 +2270,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (43)
+### test_options_appearance.lua (50)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2311,10 +2315,17 @@ Total.
 - appearance: copy gives every other owner this owner's font outline
 - appearance: the copy helper keeps a target's own half for a media half left out
 - appearance: the other owners and one owner's skin copy are library-level, for the skin picker
+- appearance: a skin pick with both overrides set resets both, live and through the seam
+- appearance: re-clicking the checked skin, or a pick with no overrides, writes no media
+- appearance: an override picked after a switch sticks until the next switch
+- appearance: in combat a skin pick resets nothing
+- appearance: a pick keeps the overrides while the look drawn does not change (Skin:DrawsKey)
+- appearance: onto an EllesmereUI that paints resets the overrides; a fallback pick under it does not
+- appearance: copy gives an other owner whose skin changes this owner's overrides, none for none
 
-### test_options_skin_picker.lua (39)
+### test_options_skin_picker.lua (43)
 
-- skin picker: OptionsSkinPicker is minor 2, paired on the shell, and attaches two members
+- skin picker: OptionsSkinPicker is minor 3, paired on the shell, and attaches two members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -2353,6 +2364,10 @@ Total.
 - skin picker: the eye shows only with onPreview, and calls it
 - skin picker: spec.strings translates the title, the buttons, the tips and a skin's name
 - skin picker: nil with no Skin major, or for an owner that never registered
+- skin picker: a pick to another skin previews with the overrides cleared, and writes nothing
+- skin picker: a close or Escape puts back the overrides the window opened with
+- skin picker: Apply writes the cleared overrides only when the saved skin's look changed
+- skin picker: with no overrides a pick and Apply write no media half
 
 ### test_options_idsuggest.lua (29)
 
@@ -3794,14 +3809,14 @@ Total.
 | test_toast.lua | 50 |
 | test_media.lua | 40 |
 | test_skin.lua | 33 |
-| test_skin_override.lua | 26 |
+| test_skin_override.lua | 27 |
 | test_skin_outline.lua | 17 |
 | test_skin_owner_tokens.lua | 16 |
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 31 |
-| test_skin_width_parity.lua | 8 |
+| test_skin_width_parity.lua | 11 |
 | test_skin_paint.lua | 37 |
 | test_skin_paint_controls.lua | 31 |
 | test_skin_eui.lua | 29 |
@@ -3855,8 +3870,8 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 43 |
-| test_options_skin_picker.lua | 39 |
+| test_options_appearance.lua | 50 |
+| test_options_skin_picker.lua | 43 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3921,4 +3936,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3335** |
+| **Total** | **3350** |

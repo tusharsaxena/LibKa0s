@@ -83,6 +83,25 @@ test("skin override: the override follows a skin switch, over the new skin's tab
   assertEqual(after["font.body"], Skin:ResolveSkin("obsidian")["font.body"], "the nil half is the new skin's")
 end)
 
+test("skin override: SetChoice itself never clears an override, so the load path keeps the stored pair",
+function()
+  -- The guard of LK-07 (D-10): the Skin tab's and the picker's reset on a skin change live in
+  -- OptionsAppearance's lib.__chooseSkin. A host re-applies its stored skin with SetChoice at load,
+  -- after its stored overrides, from Ka0s Default; a reset in SetChoice would wipe them every login.
+  local _, Skin = F.env({ lsm = LSM })
+  local store = register(Skin, OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
+  for _, key in ipairs({ "obsidian", "glass", "ka0s" }) do
+    assertTrue(Skin:SetChoice(OWNER, "ka0s", key), key .. ": a change")
+    local font, texture = Skin:GetOverride(OWNER)
+    assertEqual(font, "Ka0s Expressway", key .. ": the font kept")
+    assertEqual(texture, "Ka0s Flat", key .. ": the texture kept")
+  end
+  Skin:SetChoice(OWNER, "eui", nil)
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Expressway", "a source switch keeps them too")
+  assertEqual(store.calls, 0, "and SetChoice writes no profile")
+end)
+
 test("skin override: nil keeps a half, false and the empty string clear it, a repeat changes nothing", function()
   local _, Skin = F.env()
   register(Skin, OWNER)

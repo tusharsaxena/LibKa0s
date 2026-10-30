@@ -118,10 +118,12 @@ end
 local function specFor(store, extra)
   local spec = {
     get = function() return { source = store.source, skin = store.skin } end,
-    set = function(src, sk)
+    set = function(src, sk, ig, media)
       store.calls = store.calls or {}
-      store.calls[#store.calls + 1] = { src, sk }
-      store.source, store.skin = src, sk
+      store.calls[#store.calls + 1] = { src, sk, ig, media }
+      if src ~= nil then store.source = src end
+      if sk ~= nil then store.skin = sk end
+      if media ~= nil then store.media = media end
     end,
     onClose = function() store.closed = (store.closed or 0) + 1 end,
   }
@@ -171,10 +173,10 @@ end
 
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
-test("skin picker: OptionsSkinPicker is minor 2, paired on the shell, and attaches two members", function()
+test("skin picker: OptionsSkinPicker is minor 3, paired on the shell, and attaches two members", function()
   local _, _, lib = env()
-  assertEqual(lib.MODULES.OptionsSkinPicker, 2)
-  assertEqual(lib.__pickerMinor, 2)
+  assertEqual(lib.MODULES.OptionsSkinPicker, 3)
+  assertEqual(lib.__pickerMinor, 3)
   assertEqual(lib.__pickerShellMinor, lib.MINOR, "paired on the shell's minor")
   assertTrue(lib.MINOR >= 34, "Options minor 34 attaches it")
   assertEqual(type(lib.SKIN_PICKER_STRINGS), "table")
@@ -642,6 +644,8 @@ end)
 test("skin picker: Apply to all saves here and gives every other owner the source and skin alone", function()
   -- red under: applyAll handing lib.__copySkinTo this owner's font outline (the picker never shows it,
   -- and an owner that never set one answers "all"; D-06 gives the outline to the Skin tab's copy alone).
+  -- And red under minor 2, which left an other owner's font alone across the skin change (LK-07,
+  -- D-10): its overrides now reset, written back with its own outline.
   local _, Skin, lib = env()
   local store = register(Skin, OWNER)
   local other = register(Skin, OTHER)
@@ -661,12 +665,16 @@ test("skin picker: Apply to all saves here and gives every other owner the sourc
     assertEqual(w[1], "ka0s", name .. ": the source")
     assertEqual(w[2], "ember", name .. ": the skin, through its own registered setter")
     assertNil(w[3], name .. ": no scope half")
-    assertNil(w[4], name .. ": no font, texture or outline half")
   end
+  local w = other.writes[#other.writes]
+  assertEqual(w[4].font, false, "the other owner's font reset to the new skin's own")
+  assertEqual(w[4].texture, false)
+  assertEqual(w[4].outline, "off", "its own outline written back as it is")
+  assertNil(third.writes[#third.writes][4], "an owner with no overrides: no media half")
   assertEqual(Skin:GetOutline(OWNER), "all", "this owner never set an outline")
   assertEqual(Skin:GetOutline(OTHER), "off", "the other owner's Off left alone")
   assertEqual(select(1, Skin:GetIgnore(OTHER)), true, "the other owner's scope left alone")
-  assertEqual(select(1, Skin:GetOverride(OTHER)), "Ka0s Expressway", "and its font")
+  assertNil((Skin:GetOverride(OTHER)), "and its font is the new skin's own")
   assertFalse(f:IsShown(), "the window closes")
   assertEqual(store.closed, 1)
 end)
@@ -1066,4 +1074,76 @@ test("skin picker: nil with no Skin major, or for an owner that never registered
   assertTrue(instance(lib2, OWNER).SkinPicker({ owner = "Other" }) ~= nil, "spec.owner names the owner")
   instance(lib2, OWNER).HideSkinPicker()   -- nothing shown on this instance: a no-op
   assertEqual(lib2.__pickerQueue.current.owner, "Other", "the other instance's window stays up")
+end)
+
+-- ── a skin change resets the overrides (minor 3: LK-07, the owner's item 1, D-10) ─────────────
+
+test("skin picker: a pick to another skin previews with the overrides cleared, and writes nothing", function()
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
+  local O = instance(lib, OWNER)
+  local f = O.SkinPicker(specFor(store))
+  pickRow(f, "ember")
+  local font, texture = Skin:GetOverride(OWNER)
+  assertNil(font); assertNil(texture, "the preview wears the new skin's own font and texture")
+  assertNil(store.calls, "no write")
+  pickRow(f, "ka0s")
+  font, texture = Skin:GetOverride(OWNER)
+  assertEqual(font, "Ka0s Expressway", "back to the skin the window opened with: its overrides back")
+  assertEqual(texture, "Ka0s Flat")
+  assertNil(store.calls, "still no write")
+end)
+
+test("skin picker: a close or Escape puts back the overrides the window opened with", function()
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Expressway", nil)
+  local O = instance(lib, OWNER)
+  local f = O.SkinPicker(specFor(store))
+  pickRow(f, "glass")
+  f.close:__fire("OnClick")
+  assertEqual(applied(Skin, OWNER), "ka0s")
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Expressway", "the close restores the font")
+  O.SkinPicker(specFor(store))
+  pickRow(f, "ember")
+  f:Hide(); f:__fire("OnHide")
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Expressway", "Escape too")
+  assertNil(store.calls, "no write")
+end)
+
+test("skin picker: Apply writes the cleared overrides only when the saved skin's look changed", function()
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
+  Skin:SetOutline(OWNER, "hud")
+  local O = instance(lib, OWNER)
+  local f = O.SkinPicker(specFor(store))
+  pickRow(f, "ember")
+  pickRow(f, "ka0s")
+  f.apply:__fire("OnClick")
+  assertEqual(#store.calls, 1, "back on the opened skin: the skin write alone")
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Expressway", "and the overrides stay")
+  store.calls = nil
+  local g = O.SkinPicker(specFor(store))
+  pickRow(g, "obsidian")
+  g.apply:__fire("OnClick")
+  assertEqual(#store.calls, 2, "the skin write, then the media write")
+  assertEqual(store.calls[1][2], "obsidian")
+  local media = store.calls[2][4]
+  assertNil(store.calls[2][1]); assertNil(store.calls[2][2])
+  assertEqual(media.font, false); assertEqual(media.texture, false, "both the skin's own")
+  assertEqual(media.outline, "hud", "every media half, the outline as it is")
+  assertNil((Skin:GetOverride(OWNER)), "and the Skin major keeps them cleared after the close")
+end)
+
+test("skin picker: with no overrides a pick and Apply write no media half", function()
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O = instance(lib, OWNER)
+  local f = O.SkinPicker(specFor(store))
+  pickRow(f, "ember")
+  f.apply:__fire("OnClick")
+  assertEqual(#store.calls, 1, "the skin write alone")
+  assertNil(store.calls[1][4])
 end)

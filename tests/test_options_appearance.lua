@@ -689,16 +689,19 @@ test("appearance: in combat a font or texture pick writes nothing and snaps back
 end)
 
 test("appearance: sync re-reads the overrides, and the skin's own entry follows a skin switch", function()
+  -- red under: minor 3's persistence, where an override kept across the switch read back "Ka0s Flat"
+  -- (LK-07, D-10: the switch resets it, so the override is set after it here).
   local _, Skin, lib = mediaEnv()
   local store = register(Skin, OWNER)
   local O, ctx = page(lib, OWNER)
   ctx.refreshers = {}
   local view = O.AppearanceRows(ctx, specFor(store))
-  Skin:SetOverride(OWNER, nil, "Ka0s Flat")
   view.skins.obsidian:__fire("OnValueChanged", true)
-  assertEqual(view.media.texture.value, "Ka0s Flat", "the override set elsewhere is read back")
   assertEqual(view.media.font.list["@skin"], "Skin's own (" .. Skin:ResolveSkin("obsidian")["font.body"] .. ")",
     "the first entry names the skin worn now")
+  Skin:SetOverride(OWNER, nil, "Ka0s Flat")
+  view.sync()
+  assertEqual(view.media.texture.value, "Ka0s Flat", "the override set elsewhere is read back")
   Skin:SetOverride(OWNER, nil, false)
   for _, fn in ipairs(ctx.refreshers) do fn() end
   assertEqual(view.media.texture.value, "@skin", "the refresher re-reads it too")
@@ -879,13 +882,20 @@ test("appearance: the copy helper keeps a target's own half for a media half lef
   register(Skin, OWNER)
   local other = register(Skin, OTHER)
   Skin:SetOverride(OTHER, "Ka0s Expressway", "Ka0s Flat")
-  lib.__copySkinTo(Skin, OTHER, "ka0s", "ember", nil, { outline = "hud" })
+  lib.__copySkinTo(Skin, OTHER, "ka0s", "ka0s", nil, { outline = "hud" })
   assertEqual(Skin:GetOutline(OTHER), "hud", "the outline moved")
   local font, texture = Skin:GetOverride(OTHER)
   assertEqual(font, "Ka0s Expressway", "the font kept"); assertEqual(texture, "Ka0s Flat", "and the texture")
   assertEqual(other.media.font, "Ka0s Expressway", "and written back as it is")
   assertEqual(other.media.texture, "Ka0s Flat")
   assertEqual(other.media.outline, "hud")
+  -- LK-07: a half left out is the target's own after the move, and a move to another look reset it.
+  lib.__copySkinTo(Skin, OTHER, "ka0s", "ember", nil, { outline = "off" })
+  font, texture = Skin:GetOverride(OTHER)
+  assertNil(font); assertNil(texture, "another skin: the new skin's own font and texture")
+  assertEqual(other.media.font, false, "written back as the skin's own")
+  assertEqual(other.media.texture, false)
+  assertEqual(other.media.outline, "off")
 end)
 
 test("appearance: the other owners and one owner's skin copy are library-level, for the skin picker", function()
@@ -898,7 +908,6 @@ test("appearance: the other owners and one owner's skin copy are library-level, 
   assertEqual(table.concat(lib.__skinOthers(Skin, OWNER), "|"), OTHER .. "|" .. THIRD, "sorted, the owner left out")
   assertEqual(#lib.__skinOthers(Skin, "NotAnOwner"), 3, "every owner for a name that is none")
   Skin:SetIgnore(OTHER, true, false)
-  Skin:SetOverride(OTHER, "Ka0s Expressway", nil)
   local before = other.writes
   local reload = lib.__copySkinTo(Skin, OTHER, "ka0s", "ember")
   assertFalse(reload, "no reload for a Ka0s skin switch")
@@ -906,7 +915,136 @@ test("appearance: the other owners and one owner's skin copy are library-level, 
   assertEqual(other.skin, "ember", "and its profile, through its own setter")
   assertEqual(other.writes, before + 1, "one write")
   assertNil(other.ignore, "no scope half written")
-  assertNil(other.media, "no font or texture half written")
+  assertNil(other.media, "no overrides to reset: no font or texture half written")
   assertEqual(select(1, Skin:GetIgnore(OTHER)), true, "its scope left alone")
-  assertEqual(select(1, Skin:GetOverride(OTHER)), "Ka0s Expressway", "its font left alone")
+  -- red under: minor 3's copy, which left a target's font alone across a skin change (LK-07, D-10).
+  Skin:SetOverride(OTHER, "Ka0s Expressway", nil)
+  Skin:SetOutline(OTHER, "hud")
+  lib.__copySkinTo(Skin, OTHER, "ka0s", "glass")
+  assertNil((Skin:GetOverride(OTHER)), "another skin: its font back to the skin's own")
+  assertEqual(other.media.font, false, "and its profile written to match")
+  assertEqual(other.media.texture, false)
+  assertEqual(other.media.outline, "hud", "its own outline written back as it is")
+  assertEqual(select(1, Skin:GetIgnore(OTHER)), true, "its scope still left alone")
+end)
+
+-- ── a skin change resets the overrides (still minor 4: LK-07, the owner's item 1, D-10) ───────
+
+--- A view on mediaEnv with both overrides set, its seam recording every call's four arguments.
+local function resetEnv(extra)
+  local m, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
+  local O, ctx = page(lib, OWNER)
+  local spec = specFor(store, extra)
+  local seam = spec.set
+  store.calls = {}
+  spec.set = function(...)
+    store.calls[#store.calls + 1] = { n = select("#", ...), ... }
+    seam(...)
+  end
+  return m, Skin, lib, store, O.AppearanceRows(ctx, spec)
+end
+
+test("appearance: a skin pick with both overrides set resets both, live and through the seam", function()
+  local _, Skin, _, store, view = resetEnv()
+  assertEqual(view.media.font.value, "Ka0s Expressway", "the override shows first")
+  view.skins.obsidian:__fire("OnValueChanged", true)
+  local font, texture = Skin:GetOverride(OWNER)
+  assertNil(font); assertNil(texture, "the Skin major wears the new skin's own font and texture")
+  assertEqual(#store.calls, 2, "the skin write, then the media write")
+  assertEqual(store.calls[1][1], "ka0s"); assertEqual(store.calls[1][2], "obsidian")
+  assertNil(store.calls[1][4], "the skin write carries no media")
+  local media = store.calls[2][4]
+  assertNil(store.calls[2][1]); assertNil(store.calls[2][2]); assertNil(store.calls[2][3])
+  assertEqual(media.font, false, "the font: the skin's own")
+  assertEqual(media.texture, false, "the texture: the skin's own")
+  assertEqual(media.outline, "all", "with the outline as it is: every media write carries all three")
+  assertEqual(view.media.font.value, "@skin", "both dropdowns read the skin's own")
+  assertEqual(view.media.texture.value, "@skin")
+end)
+
+test("appearance: re-clicking the checked skin, or a pick with no overrides, writes no media", function()
+  local _, Skin, _, store, view = resetEnv()
+  view.skins.ka0s:__fire("OnValueChanged", true)
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Expressway", "the same skin keeps its overrides")
+  assertNil(store.calls[2], "and writes no media half")
+  Skin:SetOverride(OWNER, false, false)
+  store.calls = {}
+  view.skins.ember:__fire("OnValueChanged", true)
+  assertEqual(#store.calls, 1, "no override to reset: the skin write alone")
+end)
+
+test("appearance: an override picked after a switch sticks until the next switch", function()
+  local _, Skin, _, store, view = resetEnv()
+  view.skins.obsidian:__fire("OnValueChanged", true)
+  view.media.texture:__fire("OnValueChanged", "Blizzard")
+  view.sync()
+  assertEqual(select(2, Skin:GetOverride(OWNER)), "Blizzard", "the new pick lands")
+  assertEqual(view.media.texture.value, "Blizzard", "and stays after a sync")
+  assertEqual(store.media.texture, "Blizzard")
+  view.skins.glass:__fire("OnValueChanged", true)
+  assertNil(select(2, Skin:GetOverride(OWNER)), "the next switch resets it")
+  assertEqual(store.media.texture, false)
+end)
+
+test("appearance: in combat a skin pick resets nothing", function()
+  local _, Skin, lib, store, view = resetEnv()
+  lib.__combatLocked = true
+  view.skins.obsidian:__fire("OnValueChanged", true)
+  lib.__combatLocked = false
+  local font, texture = Skin:GetOverride(OWNER)
+  assertEqual(font, "Ka0s Expressway"); assertEqual(texture, "Ka0s Flat", "both overrides kept")
+  assertEqual(#store.calls, 0, "nothing written")
+end)
+
+test("appearance: a pick keeps the overrides while the look drawn does not change (Skin:DrawsKey)", function()
+  local _, Skin, lib = mediaEnv()
+  register(Skin, OWNER)
+  local draws = "eui"
+  Skin.DrawsKey = function() return draws end
+  Skin:SetOverride(OWNER, "Ka0s Expressway", nil)
+  local changed, _, cleared = lib.__chooseSkin(Skin, OWNER, "eui", "ember")
+  assertTrue(changed, "the choice moved")
+  assertFalse(cleared, "EllesmereUI still paints: the fallback pick is not seen, the overrides stay")
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Expressway")
+  Skin.DrawsKey = function() local d = draws; draws = "glass"; return d end
+  changed, _, cleared = lib.__chooseSkin(Skin, OWNER, "ka0s", "glass")
+  assertTrue(changed); assertTrue(cleared, "the look drawn changed: reset")
+  assertNil((Skin:GetOverride(OWNER)))
+  changed, _, cleared = lib.__chooseSkin(Skin, OWNER, "ka0s", "glass")
+  assertFalse(changed); assertFalse(cleared, "an unchanged choice answers false, false")
+end)
+
+test("appearance: onto an EllesmereUI that paints resets the overrides; a fallback pick under it does not",
+function()
+  local _, Skin, lib, eui = env({ eui = {} })
+  local store = register(Skin, OWNER)
+  eui.login()
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  Skin:SetOverride(OWNER, "Ka0s Expressway", nil)
+  view.source.eui:__fire("OnValueChanged", true)
+  assertEqual(Skin:DrawsKey(OWNER), "eui", "EllesmereUI paints the owner")
+  assertNil((Skin:GetOverride(OWNER)), "its face replaced the skin's: the override reset")
+  Skin:SetOverride(OWNER, "Ka0s Expressway", nil)
+  view.skins.ember:__fire("OnValueChanged", true)
+  assertEqual(select(2, Skin:GetChoice(OWNER)), "ember", "the fallback skin moved")
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Expressway", "the look did not: the override stays")
+end)
+
+test("appearance: copy gives an other owner whose skin changes this owner's overrides, none for none", function()
+  local m, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER, "ka0s", "ember")
+  local other = register(Skin, OTHER)
+  Skin:SetChoice(OWNER, "ka0s", "ember")
+  Skin:SetOverride(OTHER, "Ka0s Expressway", "Ka0s Flat")
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  view.copy:__fire("OnClick")
+  m.popups[1].dialog.OnAccept(nil, m.popups[1].data)
+  local font, texture = Skin:GetOverride(OTHER)
+  assertNil(font); assertNil(texture, "this owner has none, so the other owner has none")
+  assertEqual(other.media.font, false); assertEqual(other.media.texture, false)
+  assertEqual(other.skin, "ember")
 end)
