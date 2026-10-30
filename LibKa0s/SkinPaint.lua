@@ -547,6 +547,13 @@ local function darkColor(c)
     and (0.2126 * c[1] + 0.7152 * c[2] + 0.0722 * c[3]) < 0.3
 end
 
+--- The flags a role draws with: the owner's `font.outline`, or "" for a role never outlined (the
+--- mono role, minor 13). Its own function so P.font stays inside the CCN 15 budget.
+local function roleFlags(T, spec)
+  if spec.outline == false then return "" end
+  return T["font.outline"] or ""
+end
+
 --- Give `fs` (a FontString, or an EditBox) the skin's font for `role` ("body", "title", "mono"),
 --- through the owner's font object for that role. A nil face token puts the stock font back.
 function P.font(owner, rec, fs, role, color)
@@ -564,7 +571,7 @@ function P.font(owner, rec, fs, role, color)
                   shadowColor = not obj and priorOf(fs, "GetShadowColor") or nil }
   end
   local size = P.fontSize(owner, spec.size, fonts[fs].size)
-  local flags = spec.outline ~= false and T["font.outline"] or ""
+  local flags = roleFlags(T, spec)
   local obj = ownerFont(owner, role, path, size, flags, T["font.shadow"] ~= false and not darkColor(color))
   if obj then
     fs:SetFontObject(obj)
