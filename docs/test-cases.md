@@ -3791,7 +3791,7 @@ Total.
 - runner complexity: a raise no single file reproduces is a whole-tree crash
 - runner complexity: the real 1.24.0 for-header crash is crashed, not blind
 
-### test_kit_vendor_sync.lua (21)
+### test_kit_vendor_sync.lua (22)
 
 - parseIconLine: the three forms
 - parseIconLine: `all` without a parenthesized reason is refused
@@ -3802,6 +3802,7 @@ Total.
 - requiredIcons: attribution travels with its set, unknown names come back
 - cappedList: ten names, then a count
 - vendor sync: a byte-identical PDF holding CR LF pairs passes, and one edited byte fails
+- vendor sync: a CR LF copy of an LF text blob passes, and one edited byte under it fails
 - vendor sync: every extension .gitattributes pins binary is one the gate compares raw
 - vendor sync: no `LibKa0s icons:` line is the whole-folder gate
 - vendor sync: `none.` ships no icon and no icon license
@@ -4003,10 +4004,10 @@ Total.
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 20 |
-| test_kit_vendor_sync.lua | 21 |
+| test_kit_vendor_sync.lua | 22 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3411** |
+| **Total** | **3412** |

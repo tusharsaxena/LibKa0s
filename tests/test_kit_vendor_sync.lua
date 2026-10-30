@@ -163,6 +163,9 @@ local LIB_FILES = {
   -- Shipped beside a face as its license (Expressway-EULA.pdf, LK-A2 of the 2026-10-30 run): a
   -- binary the gate once normalized, because its extension was missing from BINARY_EXT.
   ["LibKa0s/media/fonts/EULA.pdf"] = "%PDF-1.4\r\n%\0\226\r\nendobj\r\n",
+  -- Its text sibling (Expressway-EULA-Guide.html): an LF blob that a CRLF working tree checks
+  -- out as CR LF, so the gate must normalize it where it compares the PDF raw.
+  ["LibKa0s/media/fonts/Guide.html"] = "<p>terms</p>\n<p>more</p>\n",
   ["LibKa0s/media/icons/close.tga"] = ART .. "close",
   ["LibKa0s/media/icons/settings.tga"] = ART .. "settings",
   ["LibKa0s/media/icons/LICENSE-open-iconic.txt"] = "MIT\n",
@@ -234,6 +237,19 @@ test("vendor sync: a byte-identical PDF holding CR LF pairs passes, and one edit
     ok, err = gate(addon)
     assertTrue(not ok and err:find("EULA.pdf matches", 1, true) ~= nil,
       "a PDF that lost its CRs is a different file: " .. err)
+  end)
+end)
+
+test("vendor sync: a CR LF copy of an LF text blob passes, and one edited byte under it fails", function()
+  withFixture(nil, function(addon)
+    local path = addon .. "/libs/LibKa0s/media/fonts/Guide.html"
+    write(path, "<p>terms</p>\r\n<p>more</p>\r\n")
+    local ok, err = gate(addon)
+    assertTrue(ok, "a CR LF checkout of an LF text blob is the same file: " .. err)
+    write(path, "<p>terms</p>\r\n<p>mare</p>\r\n")
+    ok, err = gate(addon)
+    assertTrue(not ok and err:find("Guide.html matches", 1, true) ~= nil,
+      "a CR LF copy with one changed content byte is a different file: " .. err)
   end)
 end)
 

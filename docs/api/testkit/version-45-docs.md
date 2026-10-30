@@ -113,7 +113,10 @@ only `.gitattributes` the gate could reach is the consumer's. `tests/test_kit_ve
 the two in step instead. One case reads this repo's `.gitattributes` and fails naming any `*.<ext>
 binary` line the table lacks; another vendors a fixture PDF holding CR LF pairs and a NUL, passes the
 byte-identical copy and fails one that lost its CRs. Every fixture library in that suite now carries
-the PDF beside its face.
+the PDF beside its face, and beside it a text file (`Guide.html`, standing in for
+`Expressway-EULA-Guide.html`) whose blob is LF: a third case writes the consumer's copy CR LF, as a
+CRLF working tree checks it out, passes it, and fails a CR LF copy with one changed content byte, so
+the normalization the text side still needs is pinned too.
 
 No documented member is renamed or removed and no case name changes.
 

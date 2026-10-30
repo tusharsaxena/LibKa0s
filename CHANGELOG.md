@@ -441,11 +441,13 @@ v1.82.0*.
 - The predicate is published as `VendorSync.isBinary(path)`, so the suite reads the table through
   the gate's own code.
 
-Tests: two new `tests/test_kit_vendor_sync.lua` cases. One reads `.gitattributes` and fails naming any
+Tests: three new `tests/test_kit_vendor_sync.lua` cases. One reads `.gitattributes` and fails naming any
 `*.<ext> binary` line the table lacks, so a pin added there without the table reddens here. The
 other vendors a fixture PDF holding CR LF pairs and a NUL into a consumer, passes the byte-identical
 copy and fails one that lost its CRs. Every fixture library in the suite carries the PDF, so before
-the fix eight of its other cases went red with the consumer's exact message.
+the fix eight of its other cases went red with the consumer's exact message. The third keeps the
+text side honest: a fixture `Guide.html` whose blob is LF, copied CR LF into the consumer as a CRLF
+working tree checks it out, passes, and a CR LF copy with one changed content byte fails.
 
 **What a consumer owes** (M2): nothing beyond the re-vendor. Without this, re-vendoring v1.82.0's
 payload fails the vendor-sync case in every consumer.
