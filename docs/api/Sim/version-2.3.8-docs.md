@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Sim-1.0` |
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **8** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
-| Shipped in | unreleased (v1.81.0) |
+| Shipped in | v1.81.0 |
 | Status | **Current** |
 | Supersedes | [2.3.7](./version-2.3.7-docs.md) (shipped in v1.78.0 – v1.80.0) — the same surface; its tooltips wrote their colors as literals whatever the owner's skin, its labels kept their template's face, its picker's dropdowns had no owner and its resize grip was the client's art |
 | Superseded by | — |

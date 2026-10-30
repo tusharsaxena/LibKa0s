@@ -1782,3 +1782,14 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
+
+## Moving to 17.3.7.5.5.2
+
+**Take it; check each reorder list's scope.** Version 17.3.7.5.5.2, shipped in v1.81.0, moves all six
+files and adds and removes no member. Every owned control paints its strings in its skin's body face,
+so *Ignore fonts* reaches them; every owned constructor takes `panel = true` for a control on its
+owner's settings page, drawn owner-less while the owner ignores its settings panel; an owned drag
+handle's tooltip takes its skin's `gtip.title`, `gtip.value` and `gtip.footer`; the copy window's
+grip wears its skin. `ReorderList` is panel-scoped **by default**: a list on a settings page needs
+nothing, and a list on a window passes `panel = false` to keep its skin. See
+[version 17.3.7.5.5.2](./version-17.3.7.5.5.2-docs.md) (*What a consumer owes at 17.3.7.5.5.2*).

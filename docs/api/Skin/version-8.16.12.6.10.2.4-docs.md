@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` minor **8** · `SkinDefs.lua` minor **16** · `SkinPaint.lua` minor **12** · `SkinPaintExtras.lua` minor **6** · `SkinPaintControls.lua` minor **10** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
-| Shipped in | unreleased (v1.81.0) |
+| Shipped in | v1.81.0 |
 | Status | **Current** |
 | Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places and every skin but Ka0s Default drawing HUD text in Friz Quadrata through `KEEP` (SkinDefs minor 15), with a `ResetToSkin` that wrote `FROM_SKIN` into a companion it could not see stored and took no `opts`, with the key an owner draws by only as the internal `__DrawsKey` (Skin minor 7), and with *Ignore fonts* stopping at `P.font`, so `Token`, `Resolve` and `BarStyle` still answered the skin's HUD face and outline while it was on (Skin minor 7, SkinPaintExtras minor 5), with no settings-panel scope on `S.Text`, with no `gtip.footer` and no `icon.grip` (SkinDefs minor 15), and with `opts.stockDefault` keeping a template-built target the client's under Ka0s Default (SkinPaint minor 11, SkinPaintControls minor 9), `PageButton` taking no options and `P.unpaint` leaving a title's alignment as the skin set it |
 | Superseded by | — |

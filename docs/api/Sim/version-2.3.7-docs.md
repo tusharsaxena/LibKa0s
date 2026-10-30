@@ -964,3 +964,14 @@ bodies only define functions; no frame, timer or event registration exists until
 host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
 into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
 parse time only.
+
+## Moving to version 2.3.8
+
+**Take it; nothing is owed.** Version 2.3.8, shipped in v1.81.0, moves `SimPanel.lua` 7 -> 8 and adds
+and removes no member. An owned panel's row and button tooltips take its skin's `gtip.title` (the key
+column; Ka0s Default's tooltip gold `1, 0.82, 0` where this version drew `0.9, 0.82, 0.5`) and
+`gtip.value`; its row, command and button labels are painted in its skin's body face, so *Ignore
+fonts* reaches them; its scenario and size dropdowns are built with its owner; and its resize grip
+wears its skin. An owner-less panel is this version's. No scenario or step changes, so a host's
+scenarios need nothing; its smoke checks of the panel's look move. See
+[version 2.3.8](./version-2.3.8-docs.md).

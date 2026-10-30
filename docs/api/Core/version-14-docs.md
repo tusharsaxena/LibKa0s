@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **14** |
-| Shipped in | unreleased (v1.81.0) |
+| Shipped in | v1.81.0 |
 | Status | **Current** |
 | Supersedes | [version 13](./version-13-docs.md) (shipped in v1.78.0 – v1.80.0) — the same members; `MakeResizable`'s grip was the client's art whatever the window's skin |
 | Superseded by | — |

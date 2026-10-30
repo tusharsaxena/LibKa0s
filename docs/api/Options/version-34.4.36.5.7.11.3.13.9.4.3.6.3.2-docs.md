@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **36** · `OptionsIds.lua` **5** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **13** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **3** · `OptionsSkinPicker.lua` **2** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>`, in load order — the same fourteen numbers `lib.MODULES` reports. |
-| Shipped in | unreleased (v1.81.0) |
+| Shipped in | v1.81.0 |
 | Status | **Current** |
 | Supersedes | [version 34.4.35.4.6.10.3.13.8.3.2.5.3.1](./version-34.4.35.4.6.10.3.13.8.3.2.5.3.1-docs.md) (shipped in v1.80.0) — whose skin picker titled its window "Choose a skin for <the addon's label>" (`TITLE_FOR`) in a fixed 280-wide window, where a long label was cut off, and whose settings tooltips wrote their colors as literals whatever the skin |
 | Superseded by | — |

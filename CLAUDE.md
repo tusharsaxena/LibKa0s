@@ -230,7 +230,9 @@ and `LibKa0s/SimPanel.lua` (1018, recorded with SimPanel's history further down)
 `LibKa0s/OptionsIdList.lua` and `LibKa0s/Skin.lua` grew and their figures below are re-measured; `LibKa0s/OptionsTabs.lua`
 (1382, two comment lines of `LK-06c`) and `LibKa0s/OptionsWidgets.lua` (1447, unchanged) added no member or maker, and
 `LibKa0s/Options.lua` is untouched (1335). The run's other grown payload files are out of the band:
-`LibKa0s/SkinPaint.lua` 979 at minor 12. Largest first:
+`LibKa0s/SkinPaint.lua` 979 at minor 12. Re-measured at v1.81.0's close (2026-10-30, the release close of the same run): still
+**twelve**, nothing over 1500, no re-check trigger fired, every figure below current (the font-height fix and the
+consumer notes moved no band file). Largest first:
 
 - `testkit/mock_base.lua` (1465 with kit revision 43's one comment line pointing at `testkit/mock_paint.lua`, measured 2026-10-25, under its 1490 re-check trigger; 1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,

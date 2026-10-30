@@ -544,3 +544,12 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
+
+## Moving to version 14
+
+**Take it; nothing is owed.** Version 14, shipped in v1.81.0, moves `Core.lua` 13 -> 14 and adds and
+removes no member. `MakeResizable` takes `opts.owner`: when it names a registered skin owner, the
+owner's `icon.grip` tints the grip's art, again after each skin switch; Ka0s Default and WoW Default
+carry `false`, so the client's art is drawn as here. A grip with no owner, an unregistered one or no
+Skin major is this version's, call for call. A host suite that pins `Core 13` re-pins it. See
+[version 14](./version-14-docs.md).

@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **5** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **2** |
-| Shipped in | unreleased (v1.81.0) |
+| Shipped in | v1.81.0 |
 | Status | **Current** |
 | Supersedes | [version 22.5.1.1](./version-22.5.1.1-docs.md) (shipped in v1.79.0 – v1.80.0) — the same surface; an owned console's labels kept their template's face, so *Ignore fonts* had nothing to give back, and its resize grip was the client's art whatever its skin |
 | Superseded by | — |

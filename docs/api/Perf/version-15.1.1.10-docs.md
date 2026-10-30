@@ -841,3 +841,11 @@ The four files move as one. A consumer holding `Perf.lua` from one vendored copy
 `PerfSampler.lua`, `PerfCommands.lua` or `PerfPanel.lua` from another is not a supported state; each secondary file is
 paired on the probe's minor so a mismatch re-attaches rather than persisting silently, which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
+
+## Moving to version 15.1.1.11
+
+**Take it; nothing is owed.** Version 15.1.1.11, shipped in v1.81.0, moves `PerfPanel.lua` 10 -> 11
+and adds and removes no member or descriptor field. An owned panel's step and command columns are
+painted in its skin's body face, so the owner's *Ignore fonts* reaches them (Oxanium under Ka0s
+Default, where the template drew Friz Quadrata), and its resize grip wears its skin. A panel without
+a registered owner is this version's. See [version 15.1.1.11](./version-15.1.1.11-docs.md).

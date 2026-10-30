@@ -10,12 +10,14 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.81.0 — unreleased
+## v1.81.0 — 2026-10-30
 
 Opened 2026-10-30, on `feat/2026-10-30-skin-library-followups`: the skinning rollout's library
 follow-ups (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, M1), the items `LK-01`
-to `LK-11` that meet the owner's rulings `R-1` to `R-11` on the nine follow-ups v1.80.0's run
-listed. Not tagged.
+to `LK-11` (`LK-06` split as `LK-06a` to `LK-06d`) that meet the owner's rulings `R-1` to `R-11` on
+the nine follow-ups v1.80.0's run listed, and `LK-A1`, the invalid font height the owner hit in
+game. The release closes on the same branch (`LK-90`); the tag is local until the owner's
+go-ahead.
 
 Versions in this release: **Skin minor 8**, **SkinDefs minor 16**, **SkinPaint minor 12**,
 **SkinPaintExtras minor 6** and **SkinPaintControls minor 10** (`LibKa0s-Skin-1.0` key
@@ -335,34 +337,146 @@ falls back to it whenever the button is not painted, so an unpainted, untracked 
 under the pointer as Core drew it. Ka0s Default's look does not move. Three cases in
 `tests/test_skin_paint_controls.lua` pin the icon and the glyph give-back and the `own` hover.
 
+### SkinPaint minor 12: a font height of 0 never reaches `SetFont`
+
+The same key and document (*Fonts*; `LK-A1` of the run, from MultiMeters' `MM-H1`). The owner hit an
+invalid font height error in game on MultiMeters' meter title. A FontString with no font yet reports
+size 0 from `GetFont`, and `P.fontSize` scaled that stock size (0 is truthy in Lua) to 0, which
+`SetFont` refuses; a negative size got through the same way. A stock size that is not a number above
+0 now reads as none, so the string is drawn at the skin's size token itself, and `P.unfont` never
+hands such a size back. This release routes about fifteen more strings through `P.font`, so more of
+them could have reached it. Nothing is owed by a consumer. One case in `tests/test_skin_paint.lua`
+pins a size of 0, a negative, a non-number and no font at all.
+
+### Docs and process
+
+- **Released 2026-10-30 with no minor of its own.** Every minor above is the one its change moved;
+  the close (`LK-90`) bumps none (one bump per file per release, decision D-20: each file moved once
+  on the branch, however many items touched it). The versions paragraph rechecks against every
+  major's live `lib.MODULES` (`tests/test_versioning.lua` green), and the counts against the tree:
+  `grep -c 'major = "LibKa0s-' tests/majors.lua` answers 19 and `grep -c '<Script' LibKa0s/LibKa0s.xml`
+  53. `docs/test-cases.md` and the members manifests regenerate from the same tree with no diff. The
+  seven documents this release supersedes (Core 13, DebugLog 22.5.1.1, Options
+  34.4.35.4.6.10.3.13.8.3.2.5.3.1, Perf 15.1.1.10, Sim 2.3.7, Skin 7.15.11.5.9.2.4, Widgets
+  16.2.6.4.4.1) gain their closing *Moving to* sections, and the seven new ones read "Shipped in
+  v1.81.0".
+- **Built to standard v2.92.0** (was v2.91.0): the README's standards pointer moves after a read of
+  v2.92.0's one ruling, `WS-01` of the same run, which is on WowAddonStandards'
+  `feat/2026-10-30-skin-library-followups` and merges with this release. skinning-§3 names the tab
+  "Skin" (the library has drawn it so since v1.79.0; its key stays Appearance); `opts.stockDefault` is
+  retired and the stock look is the WoW Default skin, while *Ignore settings panel* stays, on by
+  default; the Scope is defined (the panel half covers the settings panel and nothing else, windows
+  always wear the skin, the fonts half reaches every string the library paints, the HUD included,
+  and every custom library widget obeys both, a settings-page widget saying so with its `panel`
+  flag); and every skin names its own HUD face. This release is what ships each of those rules; they
+  bind an addon from its re-vendor of this tag.
+- **Hosts affected by the preview and simulation re-look (step 5).** `Widgets.lua` minor 17 (which
+  defines `W.TestStrip`) and `SimPanel.lua` minor 8 moved; `Sim.lua` and `SimTimeline.lua` did not.
+  Re-read against the change: `tests/fixture_sim_panel.lua`, every `tests/test_sim_*.lua` and
+  `tests/test_widgets_teststrip.lua` are untouched by the release and green, because they pin the
+  scenarios, steps, controls and an owner-less strip, none of which moved; what moved is look only,
+  pinned in `tests/test_tool_windows_scope.lua`, `tests/test_tool_windows_skin.lua` and
+  `tests/test_widgets_skin_scope.lua`, and described in the new Sim and Widgets documents. An owned
+  sim panel (BankLedger, Drop Watcher, LootHistory) draws its labels in the skin's body face, its
+  dropdowns in the skin and its tooltips in the skin's tooltip colors; an owned test-mode or sim
+  strip (BankLedger, DpsRace, Drop Watcher, KickCD, LootHistory, MultiMeters, Ka0s Skin Tester)
+  draws its line in `text.accent` (the template's gold under Ka0s Default) and the body face, and
+  takes `panel = true` on a settings page. No host's scenario or test-mode data changes; each re-looks
+  at its smoke checks of the look, and Quick Comms' preview window, which mirrors the sim panel's
+  step buttons, at its mirror.
+- **Step 8 is the follow-ups' M2.** Every addon that vendors the Skin major (the rollout's fourteen and
+  LootHistory, v1.79.0 -> v1.81.0, meeting v1.80.0's obligations too) re-vendors this tag in its
+  `<PFX>-RV` item of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/` and deletes the
+  workarounds it makes unnecessary in `<PFX>-01`; Ka0s Skin Tester carries the showroom samples
+  (`ST-01`). In a client where any re-vendored addon is installed, its v1.81.0 copy wins the Skin,
+  Widgets, Options, Sim, Core, DebugLog and Perf majors for every addon, so the looks below reach an
+  addon that has not re-vendored yet: a stale `stockDefault` caller draws the Ka0s look with no error.
+- **The 1000-1500 band**, re-measured at the close: twelve files, nothing over 1500, no re-check
+  trigger fired. Three came in on this branch (`LibKa0s/SkinDefs.lua` 1005, `LibKa0s/SimPanel.lua`
+  1018, `tests/test_options_skin_picker.lua` 1064), each accepted with its seam and trigger in
+  `CLAUDE.md`; `LibKa0s/Skin.lua` is 1081 against its 1150 trigger, its growth outside the
+  owner-token block the trigger watches.
+- **Consumers.** `docs/releasing.md`'s Skin row says what v1.81.0 adds and where it is adopted, and
+  step 8 has a v1.81.0 paragraph; `docs/api/CONSUMERS.md` keeps its v1.75.0 stamp and records the
+  release's new and retired surfaces as not measured until the next census.
+- **The tag is local, and a re-cut is the lead's.** While `v1.81.0` is unpushed, a LibKa0s defect an
+  M2 adoption finds (`LK-A<n>` of the run) extends this block (a file this release already bumped is
+  not bumped again); the lead then re-creates the local tag after a clean-tree
+  `tests/_kit/run-automated-tests.sh --release 1.81.0` with a new bundle, `ANALYSIS.md` and
+  release-gate line.
+
 ### What a consumer owes
 
-- **LK-01:** nothing to call. A host's own "while Ignore fonts is on, the stored pick wins" patch
-  (AbsorbTracker, AuraMaster, ConsumableMaster, PartyFrameEnhanced and the like) implements the same
-  rule and may go; one that reads `Token("hud.font")` handles its nil by keeping its own face.
+Each addon meets these in its `<PFX>-RV` and `<PFX>-01` items of Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`; the Skin and Widgets documents' *What a consumer owes*
+sections are the same list per major. Nothing raises if a host does none of it: each point is what the
+player sees until it does. Re-vendor the whole folder (no file is new, but twenty-four move), and
+re-pin any host test that pins a moved minor or key.
 
-- **LK-09:** nothing to call. `q.*` under Ka0s Default, every skin that does not override them, and
-  eui now equal the client's colors byte for byte. A test that pins the rounded values (for example
-  LootHistory `tests/test_skin_table.lua`) moves, and a "token equals the rounded default, so use the
-  client's" workaround (Drop Watcher `core/SkinSetup.lua`'s `defaultQuality`) may go.
-- **LK-07:** nothing to call. A migration may now name an absent companion directly, or name its
-  picks with `{ companions = true }`, instead of seeding the companion `false` or naming only stored
-  ones. A guard inside a schema step that already shipped stays (D-19): the step must produce the
-  same result for a profile that migrates late. A new step needs no guard.
-- **LK-05:** a host that colors a settings-page string with `S.Text` passes `{ panel = true }`
-  and deletes its own give-back (ConsumableMaster's `KCM.SkinPanelText`); a host that hid its
-  reorder list's owner while the panel was ignored (`KCM.SkinPanelOwner()`) passes the owner
-  plainly. MultiMeters' and LootHistory's reorder lists now draw as minor 1 did under "Ignore
-  settings panel" with no change of their own, so their smoke checks move with it.
-- **LK-02:** a host that passes `opts.stockDefault` (Ka0s Quick Comms' popup and browser, Ka0s
-  Skin Tester's showroom) drops the key; until it does, the target paints the Ka0s look under Ka0s
-  Default with no error. A host that put a Frame in `opts.stock` fades it with
-  `S.FadeRegions(frame)` instead. A paging arrow that wants `noBorder` or more art faded passes it
-  as `PageButton`'s third argument. Smoke checks that expected the client's art under Ka0s Default
-  move to the Ka0s look.
-- **LK-10:** a host that rebuilds "does this owner draw Ka0s Default" asks
-  `Skin:DrawsKey(owner) == Skin.DEFAULT` instead, guarded by `type(Skin.DrawsKey) == "function"`
-  where an older copy may load first. A call to `__DrawsKey` keeps working this release; move it.
+- **LK-02 (R-2), drop `opts.stockDefault`.** The key is ignored, so a target a host kept as the client
+  drew it under Ka0s Default now wears the Ka0s look there, with no error. Callers at this release:
+  Ka0s Quick Comms (`settings/ModalWindow.lua`, `S.Shell`, its popup and browser, decision D-06),
+  DpsRace (`modules/Hud_States.lua`, `S.EditBox` on the custom box, which gains the Ka0s input box) and
+  Ka0s Skin Tester (`modules/ShowroomOwner.lua`'s stock-window sample). Delete the key, and every
+  comment, test and smoke check that pins the stock look under Ka0s Default; a player who wants the
+  client's look picks WoW Default. Premade Groups Filter Extension's metal panel, its stand-in for a
+  working `stockDefault`, retires with it (D-05). A host that put a Frame in `opts.stock` fades it
+  with `S.FadeRegions(frame)` instead; a paging arrow that wants `noBorder` or more art faded passes
+  it as `PageButton`'s third argument. *Ignore settings panel* is a different switch and stays.
+- **LK-01 (R-1), the HUD under Ignore fonts.** Nothing to call. While the owner ignores fonts,
+  `Token("hud.font")` and `Token("hud.outline")` answer nil, `Resolve` answers the stored value (nil
+  for a stored `FROM_SKIN`) and `BarStyle()`'s `font`, `fontKey` and `outline` are nil. A host that
+  feeds any of them to `SetFont`, `LSM:Fetch` or a font-object builder falls back to its own face and
+  outline (its stored pick, else its default) on nil. A host's own "while Ignore fonts is on, the
+  stored pick wins" patch (AbsorbTracker, AuraMaster, ConsumableMaster, PartyFrameEnhanced and the
+  like) implements the same rule and may go.
+- **LK-04 (R-4), a HUD face per skin.** Nothing to call. HUD text that follows the skin draws the
+  skin's own face: Obsidian Inter SemiBold, Azeroth Vollkorn Bold, Glass Nunito SemiBold, High
+  Contrast Atkinson Bold, Ember Bitter Bold, WoW Midnight Philosopher Bold, WoW Forever Fira Sans
+  SemiBold; WoW Default keeps Friz Quadrata, and Ka0s Default and eui Oxanium SemiBold. A test or smoke
+  check that pins Friz Quadrata on the HUD under another skin moves to that skin's face.
+- **LK-05 and LK-06a to LK-06d (R-5), the `panel` flag.** A host that colors a settings-page string
+  with `S.Text` passes `{ panel = true }` and deletes its own give-back (ConsumableMaster's
+  `KCM.SkinPanelText`); a host that hid its reorder list's owner while the panel was ignored
+  (`KCM.SkinPanelOwner()`) passes the owner plainly. `ReorderList` is panel-scoped by default: a list
+  on a settings page needs nothing, a list on a window passes `panel = false`. A host that places an
+  owned `Dropdown`, `SearchBox`, `TestStrip`, `Autocomplete`, `LineChart` or `DragHandle` on its
+  settings page passes `panel = true`; without it the control is a window's and keeps its skin
+  whatever *Ignore settings panel* says (D-01). A host that paints a settings-page surface from tokens
+  itself gates on `Skin:GetIgnore(owner)` (D-03; LootHistory's AH price table, MultiMeters' reorder
+  ghost colors). A host that builds its own resizable window may pass `MakeResizable`'s
+  `opts.owner`. Every string the library newly paints in the skin's face (menus, strips, the
+  autocomplete, chart ticks, the drag handle's label, the tool windows' labels, the drawer head) draws
+  Oxanium under Ka0s Default where the template drew Friz Quadrata (D-13), and MultiMeters' and
+  LootHistory's reorder lists draw as minor 1 did under *Ignore settings panel*: smoke checks of
+  either move.
+- **LK-03 (R-3), the close button's tint.** Nothing; a host that saved and restored its close art's
+  color around a skin switch may drop that.
+- **LK-07 (R-6), `ResetToSkin`'s absent companion.** The fix is opt-in: `ResetToSkin(p, { "font" })`
+  with `fontFromSkin` absent still writes `FROM_SKIN` into `font`. A host that seeds
+  `<key>FromSkin = false` before its reset (ConsumableMaster's `D.MigrateHudSkinV4`, and AuraMaster's,
+  AbsorbTracker's and DpsRace's migrations) may drop the seeding only if it names the companions
+  (`"fontFromSkin"`) or passes `{ companions = true }`. A guard inside a schema step that already
+  shipped stays (D-19): the step must produce the same result for a profile that migrates late.
+- **LK-08 (R-7), the drag handle's tooltip.** Nothing; AuraMaster may drop the `gtip.title` /
+  `gtip.value` colors it puts on its handle's title and body entries. The sim panel's key column is
+  Ka0s Default's tooltip gold, and the id list help mark's notes `gtip.body` (0.9 where 0.8 was drawn):
+  D-14's recorded shift, so a smoke check of either moves.
+- **LK-09 (R-8), the quality colors.** Nothing to call. `q.*` under Ka0s Default, every skin that does
+  not override them, and eui now equal the client's colors byte for byte. A test that pins the rounded
+  values (for example LootHistory `tests/test_skin_table.lua`) moves, and a "token equals the rounded
+  default, so use the client's" workaround (Drop Watcher `core/SkinSetup.lua`'s `defaultQuality`) may
+  go.
+- **LK-10 (R-9), `Skin:DrawsKey`.** Optional. A host that rebuilds "which skin does this owner draw"
+  from `GetChoice`, its own EllesmereUI check and `GetSkin` asks `Skin:DrawsKey(owner)` instead
+  (`== Skin.DEFAULT` for Ka0s Default), guarded by `type(Skin.DrawsKey) == "function"` where an older
+  copy may load first. It is lib-level, so no facade stub owes a member. A call to `__DrawsKey` keeps
+  working this release; move it (Premade Groups Filter Extension's tests).
+- **LK-11 (R-11), the picker.** Nothing to call; the first-run picker reads "Choose a skin" in every
+  addon, with the addon's name on its own line above the dropdown. A test or smoke check that read the
+  addon's name from `frame.title` reads `frame.ownerLabel`. No host translates the retired
+  `TITLE_FOR`.
+- **LK-A1, the font height.** Nothing.
 
 ## v1.80.0 — 2026-10-29
 

@@ -3571,3 +3571,17 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 34.4.36.5.7.11.3.13.9.4.3.6.3.2
+
+**Take it; nothing is owed but a picker check.** Version 34.4.36.5.7.11.3.13.9.4.3.6.3.2, shipped in
+v1.81.0, moves nine files (`OptionsWidgets.lua` 36, `OptionsIds.lua` 5, `OptionsIdList.lua` 7,
+`OptionsTabs.lua` 11, `OptionsScroll.lua` 9, `OptionsNav.lua` 4, `OptionsDrawer.lua` 3,
+`OptionsKeybinds.lua` 6, `OptionsSkinPicker.lua` 2) and adds and removes no member. The settings
+chrome's last pieces (the drawer head, the id suggestion popup and the id gray, the hover art) wear
+the page owner's skin and stand down with *Ignore settings panel*; the tooltip titles and notes the
+library writes take the skin's tooltip colors. The skin picker's title is "Choose a skin"
+(`SKIN_PICKER_STRINGS.TITLE`; `TITLE_FOR` is gone) and the addon's label has its own line above the
+dropdown, `frame.ownerLabel`: a test or smoke check that read the addon's name from `frame.title`
+reads `frame.ownerLabel`. See
+[version 34.4.36.5.7.11.3.13.9.4.3.6.3.2](./version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md).

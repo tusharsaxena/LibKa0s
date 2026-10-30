@@ -1589,3 +1589,26 @@ token resolves to nil, and every primitive paints only what it has a token for (
 `SkinAce.lua` (which needs `SkinPaint.lua`'s helpers from the same copy) no AceGUI row is painted and
 no Options instance's `O.AceGUI` is wrapped. The engine's state is written `lib.x = lib.x or {}`, so a newer copy that wins
 the LibStub race later keeps every owner, record and facade; the resolve cache alone is rebuilt.
+
+## Moving to version 8.16.12.6.10.2.4
+
+**Take it, and act on its *What a consumer owes*.** Version 8.16.12.6.10.2.4, shipped in v1.81.0,
+moves five files (`Skin.lua` 8, `SkinDefs.lua` 16, `SkinPaint.lua` 12, `SkinPaintExtras.lua` 6,
+`SkinPaintControls.lua` 10) and adds one member, `Skin:DrawsKey(owner)` (`__DrawsKey` stays one
+release as its alias). What moves under a host:
+
+- **`opts.stockDefault` is retired**: the key is ignored, so a target kept stock under Ka0s Default
+  wears the Ka0s look there; drop the key. `opts.stock` stays.
+- **Ignore fonts reaches the HUD**: while the owner ignores fonts, `Token` answers nil for
+  `hud.font` and `hud.outline`, `Resolve` the stored value and `BarStyle()`'s font fields nil; a host
+  that feeds them to `SetFont` falls back to its own face on nil.
+- **Every skin has a HUD face of its own** (Friz Quadrata only under WoW Default); **`q.*` are the
+  client's quality colors exactly**; new tokens `gtip.footer`, `list.hoverArt` and `icon.grip`.
+- **`ResetToSkin`** sets an absent `<key>FromSkin` companion named directly, or every listed pick's
+  with `{ companions = true }`, to `true`; a plain pick with its companion absent still takes the
+  sentinel.
+- **`S.Text(fs, role, { panel = true })`** and `opts.panel` on `Dropdown`, `EditBox` and `Strip` put
+  a target on the owner's settings panel; `S.CloseButton` gives its art's own tint back when it
+  unpaints; `S.PageButton` takes a third `opts`.
+
+See [version 8.16.12.6.10.2.4](./version-8.16.12.6.10.2.4-docs.md) (*What a consumer owes*).
