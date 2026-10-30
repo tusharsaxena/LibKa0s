@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.82.0 — unreleased
+## v1.82.0 — 2026-10-30
 
 Opened 2026-10-30, on `feat/2026-10-30-skin-fonts-feedback`: the owner's skin fonts and feedback
 batch (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, M1), the items `LK-01` to
@@ -466,6 +466,12 @@ asserts an opaque text color after a translucent one under the paint recorder pa
   documents' *Shipped in*, and the local tag. While `v1.82.0` is unpushed, a LibKa0s defect an M2
   adoption finds (`LK-A<n>`) extends this block, and a file this release already bumped is not
   bumped again.
+- **One function split at the close (`LK-90`).** The pre-release complexity run found `dhLendFont` in
+  `LibKa0s/WidgetsDragHandle.lua` at CCN 17 (`LK-09`'s path-or-object comparison took it over): the
+  comparison of a font object's path, size and flags with the label's moves, unchanged, into a
+  file-local `dhObjectDraws(obj, path, size, flags)`. No behavior change (the drag-handle and
+  skin-scope suites pin both arms); WidgetsDragHandle minor 8 is this release's own, so no minor moves
+  (D-23).
 
 ### What a consumer owes
 

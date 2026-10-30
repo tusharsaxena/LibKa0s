@@ -297,6 +297,14 @@ end
 -- Measurers wearing a skin face a label lent them (minor 7), so the next plain measure resets them.
 local lent = setmetatable({}, { __mode = "k" })
 
+--- Whether a font object still draws the path, size and flags a label answers (an object that
+--- answers no path draws whatever it draws, and counts as the same).
+local function dhObjectDraws(obj, path, size, flags)
+  if type(obj.GetFont) ~= "function" then return true end
+  local oPath, oSize, oFlags = obj:GetFont()
+  return oPath == nil or (oPath == path and oSize == size and (oFlags or "") == (flags or ""))
+end
+
 --- Lend the measurer the label's own skin font (minor 7): its font object, or (minor 8) its path,
 --- size and flags where the skin set it by path. Answers true when it lent one.
 ---
@@ -309,10 +317,7 @@ local function dhLendFont(fs, label)
   if label.GetFont then path, size, flags = label:GetFont() end
   local byPath = type(path) == "string" and type(size) == "number" and size > 0 and fs.SetFont
   if type(obj) == "table" and fs.SetFontObject then
-    local oPath, oSize, oFlags
-    if type(obj.GetFont) == "function" then oPath, oSize, oFlags = obj:GetFont() end
-    local same = oPath == nil or (oPath == path and oSize == size and (oFlags or "") == (flags or ""))
-    if same or not byPath then
+    if not byPath or dhObjectDraws(obj, path, size, flags) then
       fs:SetFontObject(obj)
       return true
     end

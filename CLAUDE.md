@@ -237,7 +237,9 @@ consumer notes moved no band file). Re-measured 2026-10-30 on the branch of Ka0s
 Two came in, `LibKa0s/SkinPaint.lua` (1002) and `tests/test_options_appearance.lua` (1231), both below;
 `LibKa0s/OptionsWidgets.lua` peeled on its named seam to the new `LibKa0s/OptionsSwitch.lua` (163) at its trigger and
 stays in the band at 1370; `LibKa0s/Skin.lua`, `LibKa0s/SkinDefs.lua` and `tests/test_options_skin_picker.lua` grew under
-their triggers, re-measured below; the other band files are untouched. Largest first:
+their triggers, re-measured below; the other band files are untouched. Re-measured at v1.82.0's close (2026-10-30,
+the release close of the same run): still **fourteen**, nothing over 1500, no re-check trigger fired, every figure below current (the close's one
+CCN split is in `LibKa0s/WidgetsDragHandle.lua`, 951, out of the band). Largest first:
 
 - `testkit/mock_base.lua` (1465 with kit revision 43's one comment line pointing at `testkit/mock_paint.lua`, measured 2026-10-25, under its 1490 re-check trigger; 1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,

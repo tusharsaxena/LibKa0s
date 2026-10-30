@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **10** · `MediaIcons.lua` minor **1** |
-| Shipped in | v1.82.0 (unreleased) |
+| Shipped in | v1.82.0 |
 | Status | **Current** |
 | Supersedes | [version 9.1](./version-9.1-docs.md) (shipped in v1.79.0) — the same surface with Oxanium SemiBold and Bold, Fira Sans Regular and Inter Regular and SemiBold in `FONTS`, and without Prototype, Fira Sans Medium and Expressway |
 | Superseded by | — |

@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **17** · `WidgetsReorder.lua` minor **3** · `WidgetsDragHandle.lua` minor **8** · `WidgetsLineChart.lua` minor **5** · `WidgetsAutocomplete.lua` minor **5** · `WidgetsCopyWindow.lua` minor **2** |
-| Shipped in | v1.82.0 (unreleased) |
+| Shipped in | v1.82.0 |
 | Status | **Current** |
 | Supersedes | [version 17.3.7.5.5.2](./version-17.3.7.5.5.2-docs.md) (shipped in v1.81.0) — the same members, with a drag handle whose width is measured exactly (no slack, `GetStringWidth` only) on a hidden host, and never re-fitted after a skin repaint; and the versions that one supersedes |
 | Superseded by | — |

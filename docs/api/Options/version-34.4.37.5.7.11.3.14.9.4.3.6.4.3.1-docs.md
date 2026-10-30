@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **37** · `OptionsIds.lua` **5** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **14** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **4** · `OptionsSkinPicker.lua` **3** · `OptionsSwitch.lua` **1** (new) |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSwitch>`, in load order — the same fifteen numbers `lib.MODULES` reports. |
-| Shipped in | v1.82.0 (unreleased) |
+| Shipped in | v1.82.0 |
 | Status | **Current** |
 | Supersedes | [version 34.4.36.5.7.11.3.13.9.4.3.6.3.2](./version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md) (shipped in v1.81.0) — whose Skin tab had no *Font outline* and wrote `media` as `{ font, texture }`; and whose `O.FontGroup` had no *From skin* Font flags |
 | Superseded by | — |

@@ -71,6 +71,16 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.82.0, not in the census (2026-10-30).** The release adds Skin's font outline mode
+(`Skin:GetOutline`, `Skin:SetOutline`, `OUTLINE_MODES`, `OUTLINE_DEFAULT`; Skin minor 9) and the paint
+helpers `S.FontFlags` and `S.HudFontSize` (SkinPaintExtras minor 7), Options' `O.SkinVerb` and `shownWhen`'s
+`any` form (`OptionsSwitch.lua`, new at minor 1), Widgets' `DRAG_HANDLE.FIT_SLACK` and the drag
+handle's `spec.onRefit` (WidgetsDragHandle minor 8), and the test kit's display-glyph guard
+(`Kit.assertDisplayGlyphs`, revision 45). What each host owes on re-vendor is the CHANGELOG's
+v1.82.0 *What a consumer owes* and each document's. None gets a row here yet, and the v1.75.0 stamp
+and its numbers stand: the addons adopt them in Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`'s M2, and the next census re-run measures them.
+
 **v1.81.0, not in the census (2026-10-30).** The release adds Skin's `Skin:DrawsKey` (Skin minor 8),
 the public form of v1.80.0's internal `__DrawsKey`, and `S.PageButton`'s `opts` (SkinPaintControls
 minor 10). It retires v1.80.0's `opts.stockDefault` (SkinPaint minor 12): the key is ignored, so a
