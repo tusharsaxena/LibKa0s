@@ -104,6 +104,13 @@ if not lib then return end
 -- gear, and Apply to all) then writes the cleared overrides through spec.set's fourth argument; a
 -- dismissal puts back the overrides the window opened with. Apply to all resets them for every other
 -- owner whose look changes (lib.__copySkinTo, through lib.__chooseSkin, OptionsAppearance minor 4).
+-- Still minor 3 (LK-11 of the same run, the owner's item 12 and ruling D-16): O.SkinVerb(spec), the
+-- act behind every addon's `/<slash> skin` verb. The host hands it the spec its first-run start
+-- builds, so it shows the same picker a new profile shows, whatever the profile's seen flag says. In
+-- combat it shows nothing and prints VERB_COMBAT on every call (never through O.__combatRefused,
+-- which prints once per combat), with one Cfg line through the descriptor's `debug`; queued, it
+-- prints VERB_QUEUED; with no picker to show, VERB_UNAVAILABLE. The row and the disabled refusal are
+-- the host's (slash-commands-§3: the verb table lives in the addon).
 local PICKER_MINOR = 3
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__pickerMinor and lib.__pickerMinor >= PICKER_MINOR
@@ -135,6 +142,11 @@ lib.SKIN_PICKER_STRINGS = {
   SETTINGS_TIP   = "Keep this skin and open the Skin settings",
   PREVIEW_GLYPH  = "o",
   SETTINGS_GLYPH = "*",
+  -- O.SkinVerb's words (LK-11). VERB_HELP is the `skin` row's help text, one wording for every host.
+  VERB_HELP        = "Choose a skin: open the skin picker",
+  VERB_COMBAT      = "|cffaaaaaacannot open the skin picker during combat|r",
+  VERB_QUEUED      = "Another Ka0s addon's skin picker is open; this one opens when it closes.",
+  VERB_UNAVAILABLE = "Skins are unavailable: LibKa0s-Skin-1.0 did not load.",
 }
 
 local WIDTH, PAD, TOP = 280, 12, 40
@@ -851,5 +863,31 @@ function lib.__AttachSkinPicker(O, d)
   function O.HideSkinPicker()
     dropWaiting(O)
     hide()
+  end
+
+  --- The `/<slash> skin` verb's act (LK-11): O.SkinPicker(spec) on demand, saying why when nothing
+  --- shows. The host passes the spec its first-run start builds. In combat: nothing shows, one gray
+  --- VERB_COMBAT line on every call and one Cfg line, answering nil, "combat". Queued behind another
+  --- owner's picker: VERB_QUEUED, nil, "queued". No picker to show (no Skin major, no client, an
+  --- unregistered owner): VERB_UNAVAILABLE, nil, "unavailable". Otherwise the picker's frame.
+  function O.SkinVerb(spec)
+    spec = type(spec) == "table" and spec or {}
+    local S = mergeStrings(spec.strings)
+    local say = O.__print or function() end
+    if inLockdown() then
+      say(S.VERB_COMBAT)
+      if type(d) == "table" and type(d.debug) == "function" then
+        d.debug("Cfg", "skin picker " .. tostring(spec.owner or defaultOwner) .. " refused (in combat)")
+      end
+      return nil, "combat"
+    end
+    local f, why = O.SkinPicker(spec)
+    if f then return f end
+    if why == "queued" then
+      say(S.VERB_QUEUED)
+      return nil, "queued"
+    end
+    say(S.VERB_UNAVAILABLE)
+    return nil, "unavailable"
   end
 end

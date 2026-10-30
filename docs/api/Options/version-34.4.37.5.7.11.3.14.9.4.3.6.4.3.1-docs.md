@@ -38,6 +38,23 @@ citations still name the `Options.lua` minors that introduced them. The minor th
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
+## What changed at this version: `O.SkinVerb` (`LK-11`)
+
+`LK-11` of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/` (the owner's item 12,
+decision D-16): `/<slash> skin` in every addon opens the skin picker a new profile shows.
+`OptionsSkinPicker.lua` is already at minor **3** this release (`LK-07`), so it does not move again
+and the key is unchanged. **One instance member is added**, `O.SkinVerb(spec)` (see
+[`O.SkinVerb(spec)`](#oskinverbspec)), and `lib.SKIN_PICKER_STRINGS` gains four keys (`VERB_HELP`,
+`VERB_COMBAT`, `VERB_QUEUED`, `VERB_UNAVAILABLE`). The manifest lists the lib-level table only, so it
+does not name the member.
+
+**What a consumer owes** (M2, the re-vendor commit): every Options degradation stub gains
+`SkinVerb = function() return nil, "absent" end` (`Kit.assertSurfaceParity` turns red until it does);
+each addon adds a `skin` row after `config` (help `Choose a skin: open the skin picker`, the
+`VERB_HELP` wording) whose handler calls `O.SkinVerb(NS.SkinPickerSpec())` and prints the
+library-absent line on `nil, "absent"`; `skin` joins each Slash degraded stub's set of verbs not
+offered without the library; help, landing and verb-count pins move by one row.
+
 ## What changed at this version: `shownWhen.any` and `OptionsSwitch.lua` (`LK-10`)
 
 `LK-10` of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/` (the owner's item 10,
@@ -2009,6 +2026,7 @@ Everything `lib:New(descriptor)` returns on the instance.
 | `AppearanceRows(ctx, spec, parent)` | **A1** | Draws the Appearance rows into `parent` (default the page's scroll) and returns the view, or nil when degraded. For a host-built strip's body. |
 | `SkinPicker(spec)` | **P1** | Shows the skin picker (one up at a time across every Ka0s addon, a window per owner) and answers its frame; `nil, "queued"` while another owner's picker is up or the queue waits out combat (it shows when that one closes, or when combat ends); nil when degraded. See [The skin picker](#the-skin-picker-optionsskinpickerlua-minor-2). |
 | `HideSkinPicker()` | **P1** | Takes this instance's owners out of the picker queue (no `onClose`) and dismisses its window when it is the one up (`spec.onClose` runs, a pending preview is put back). |
+| `SkinVerb(spec)` | **P3** | The `/<slash> skin` verb's act (`LK-11`): `SkinPicker(spec)` on demand, whatever the profile's seen flag says (the host passes its first-run spec), saying why when nothing shows. In combat nothing shows and `VERB_COMBAT` prints on every call (`nil, "combat"`); queued, `VERB_QUEUED` (`nil, "queued"`); no picker to show, `VERB_UNAVAILABLE` (`nil, "unavailable"`). See [`O.SkinVerb(spec)`](#oskinverbspec). |
 | `Drawer(ctx, spec)` | **D1** | A header bar (chevron, name gold while set, one-line summary) that opens a bordered box joined under it, filled by `spec.body(ctx, box)` with ordinary rows. See [The drawer](#the-drawer). |
 | `NavRail(ctx, spec)` | **N1** | The pinned nav rail, the first level of a page that edits one instance out of many (options-ui-§13): `spec = { entries = { { key, label, tooltip } }, value, onSelect, width }`, `width` 120 by default. Draw after `PageBanner`, before `TabStrip`. Records `ctx.railWidth`, which `lib.__railInset` turns into the inset the strip, the content panel and the scroll start at. Entries pooled per page, released on every call; the selected entry disabled; a click refused in combat by the library; `onSelect` pcall'd. The selection is the host's, as `SubTabStrip`'s is. Returns the entry buttons in rail order, or nil having drawn nothing (an empty list releases the rail, `railWidth` 0). |
 | `PageBanner(ctx, spec)` | **W9** | The page's picker, pinned above the strip and the scroll (options-ui-§14) — the only picker a page may have. `spec = { label, list, order, value, onSelect, tooltip, action }`; `action = { text, tooltip, onClick }` (**T4**) draws a `Button` in the band's right half for the picker+create band, pcall'd, refused in combat, and Released like the dropdown. Draws one AceGUI `Dropdown` into `ctx.chrome`, plus the gap / hairline / gap that separate it from the strip (options-ui-§14); records the whole band in `ctx.__bannerHeight` via `__bannerBand` and reserves it with `SetChromeHeight`. Measures the dropdown and **floors** at `L.BANNER_H` rather than forcing that height (**W10**). From **T4** the previous render's dropdown is Released to AceGUI once the new one exists, rather than hidden and kept. **Draw it before `TabStrip`.** Returns the dropdown, or nil having drawn nothing, and the action's `Button` as a second value when there is one. |
@@ -2640,6 +2658,25 @@ control (a pending preview put back, `spec.onClose` run), and the next owner wai
 combat ends, in combat). Nothing
 of this instance's up or queued, it does nothing.
 
+### `O.SkinVerb(spec)`
+
+**Since P3** (`OptionsSkinPicker.lua` minor 3, `LK-11` of Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, the owner's item 12 and ruling D-16). The act behind every
+addon's `/<slash> skin` verb: the row lives in the host's `COMMANDS` table (slash-commands-§3), and its
+handler calls this with the spec its first-run start builds (`NS.SkinPickerSpec()`), so the verb shows
+**the same picker a new profile shows**, whatever the profile's seen flag says. A close still runs
+`spec.onClose`, so the profile is still marked seen. It takes no argument of its own.
+
+| Case | What happens | Answer |
+|---|---|---|
+| In combat (`InCombatLockdown()`, the queue's own predicate) | Nothing shows. `VERB_COMBAT` prints through the instance's sink **on every call**, never through `O.__combatRefused` (which prints once per combat, so a second `/xx skin` in one fight would answer nothing), and one `Cfg` line, `skin picker <owner> refused (in combat)`, goes to the descriptor's `debug` per call | `nil, "combat"` |
+| Another owner's picker is up, or the queue waits out combat | Queued as `SkinPicker` queues it; `VERB_QUEUED` prints once; it shows when the one up closes | `nil, "queued"` |
+| No picker to show: no Skin major, no client, an owner that never registered | `VERB_UNAVAILABLE` prints | `nil, "unavailable"` |
+| Otherwise | The picker shows; a repeat while it is up refreshes the one window, keeping the preview | the frame |
+
+The disabled refusal is the host's: `skin` is a feature verb, not one of `lib.LIVE_VERBS`, so a
+disabled addon's dispatch answers it with its one refusal line before this is called.
+
 ### `lib.SKIN_PICKER_STRINGS`
 
 The picker's US English words, a literal table like `lib.APPEARANCE_STRINGS`: `TITLE` ("Choose a
@@ -2647,7 +2684,10 @@ skin", shown as it is; **P2**, where minor 1 had `TITLE_FOR`, "Choose a skin for
 is never a word of this table, it is the owner's, on its own line),
 `CHOOSE_TIP` (the dropdown button's tooltip), `APPLY` ("Apply"), `APPLY_TIP`, `APPLY_ALL` ("Apply to
 all Ka0s addons"), `APPLY_ALL_TIP`, `PREVIEW_TIP` ("Preview: open test mode"), `SETTINGS_TIP` ("Keep
-this skin and open the Skin settings"), `PREVIEW_GLYPH` and `SETTINGS_GLYPH`. ASCII throughout.
+this skin and open the Skin settings"), `PREVIEW_GLYPH` and `SETTINGS_GLYPH`; **since P3**, `O.SkinVerb`'s four:
+`VERB_HELP` ("Choose a skin: open the skin picker", the `skin` row's help text, one wording for every
+host), `VERB_COMBAT` (gray, "cannot open the skin picker during combat"), `VERB_QUEUED` and
+`VERB_UNAVAILABLE`. ASCII throughout.
 Read, never written through: `spec.strings` builds a fresh table per show.
 
 ### Declaring it
@@ -3712,14 +3752,14 @@ defaultsTooltip = H.ResetAllTooltip(H.KEYBINDS_UNCHANGED),
 
 ## Compatibility
 
-**At 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1 no member is added or removed**: `shownWhen` takes an `any` form (`LK-10`), and a row without one renders as it did; and: `O.FontGroup` takes one more optional spec field, `flagsFromSkin`, and a host that passes none emits what it emitted; the Skin tab draws one more
+**At 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1 one instance member is added, `O.SkinVerb` (`LK-11`), which every Options degradation stub owes (`SkinVerb = function() return nil, "absent" end`), and no member is removed**: `shownWhen` takes an `any` form (`LK-10`), and a row without one renders as it did; and: `O.FontGroup` takes one more optional spec field, `flagsFromSkin`, and a host that passes none emits what it emitted; the Skin tab draws one more
 control and its `media` writes gain `outline`, which a setter written for A3 ignores (it stores the
 font and texture it always stored, and every write carries the applied ones). One behavior changes
 on purpose (`LK-07`): a skin pick in the tab or the picker, and *Apply to all*, now reset the font and
 texture overrides when the look changes, and write the reset through the seam's fourth argument; a
 host suite that pinned an override surviving a skin pick (the copy helper keeping a target's font
 across a skin change included) moves with it. An Options degradation
-stub owes nothing new. `lib.APPEARANCE_STRINGS` gains ten keys, which a host's `spec.strings` may
+stub owes `SkinVerb` and nothing else new. `lib.APPEARANCE_STRINGS` gains ten keys, which a host's `spec.strings` may
 translate.
 
 **At 30.2.34.3.5.9.2.11.4.2.1.4 five instance members are added and nothing is removed**: `O.StrataTooltip` (C8), `O.KeybindingsTab`, `O.KeybindRows` and `O.KEYBINDS_UNCHANGED` (K2), and `O.ResetAllTooltip` (C11).

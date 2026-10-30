@@ -312,6 +312,38 @@ the single form beside it, and the file's pairing).
 arrives with the re-vendor (whole folder, and `LibKa0s.xml` loads it). DropWatcher adopts `any` on its
 glow knob rows (DW-04). No stub or facade changes: no member moved.
 
+### `O.SkinVerb`: the act behind every addon's `/xx skin` (`LK-11`)
+
+The same Options document (*What changed at this version: `O.SkinVerb`*); OptionsSkinPicker minor 3,
+still (`LK-07` moved it this release), so the key does not move. The owner's item 12 and ruling D-16:
+`/xx skin` in every addon opens the skin picker a new profile shows.
+
+- **`O.SkinVerb(spec)`**, a new instance member. The host passes the spec its first-run start builds,
+  so the verb shows the same picker whatever the profile's seen flag says; a close still runs
+  `spec.onClose`. In combat it shows nothing and prints `VERB_COMBAT` (gray) on every call, never
+  through `O.__combatRefused`, which prints once per combat, with one `Cfg` line through the
+  descriptor's `debug`: `nil, "combat"`. Queued behind another owner's picker it prints `VERB_QUEUED`:
+  `nil, "queued"`. With no picker to show (no Skin major, an unregistered owner) it prints
+  `VERB_UNAVAILABLE`: `nil, "unavailable"`. Otherwise the frame; a repeat refreshes the one window.
+- **`lib.SKIN_PICKER_STRINGS` gains `VERB_HELP`** ("Choose a skin: open the skin picker", the row's
+  help text, one wording for every host), **`VERB_COMBAT`, `VERB_QUEUED` and `VERB_UNAVAILABLE`**,
+  ASCII, `spec.strings` over them.
+- The row, the disabled refusal and the library-absent line stay the host's (slash-commands-§3): the
+  library never registers a verb. `skin` is a feature verb, not one of `lib.LIVE_VERBS`.
+
+Tests: a new suite, `tests/test_options_skin_verb.lua` (seven cases: the member and its words, a seen
+profile, combat on every call with its Cfg line, queued, a repeat, unavailable, `spec.strings`), on a
+bench moved unchanged out of `tests/test_options_skin_picker.lua` to `tests/fixture_skin_picker.lua`
+(1220 -> 1131 lines); the picker's attach case names the third member.
+
+**What a consumer owes** (M2, in the re-vendor commit): every Options degradation stub gains
+`SkinVerb = function() return nil, "absent" end` (surface parity is red until it does), and
+ConsumableMaster's `tests/test_surface_parity.lua` member list gains `"SkinVerb"`; a `skin` row after
+`config` calling `O.SkinVerb(NS.SkinPickerSpec())` through `NS.RunSkinVerb()`, printing the
+library-absent line on `nil, "absent"`; `skin` in each Slash degraded stub's set of verbs not offered
+without the library; the help, landing and verb-count pins move by one row, and `test_disabled`'s
+dispatch of every row covers the new one.
+
 ## v1.81.0 — 2026-10-30
 
 Opened 2026-10-30, on `feat/2026-10-30-skin-library-followups`: the skinning rollout's library

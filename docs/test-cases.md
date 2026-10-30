@@ -2340,7 +2340,7 @@ Total.
 
 ### test_options_skin_picker.lua (47)
 
-- skin picker: OptionsSkinPicker is minor 3, paired on the shell, and attaches two members
+- skin picker: OptionsSkinPicker is minor 3, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -2387,6 +2387,16 @@ Total.
 - skin picker: a fallback preview under a painting EllesmereUI keeps the overrides
 - skin picker: the gear after a clearing preview writes the skin, then every media half
 - skin picker: two clearing previews, then Apply, write the media once
+
+### test_options_skin_verb.lua (7)
+
+- skin verb: SkinVerb is a member, and its four words are ASCII
+- skin verb: shows the picker on a profile that has already seen it, with the same spec
+- skin verb: in combat it shows nothing and prints the gray line on every call
+- skin verb: with another owner's picker up it queues, says so, and shows when that one closes
+- skin verb: a repeat while its own picker is up refreshes the one window
+- skin verb: without the Skin major, or for an unregistered owner, skins are unavailable
+- skin verb: spec.strings translate the verb's words
 
 ### test_options_idsuggest.lua (29)
 
@@ -3896,6 +3906,7 @@ Total.
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 58 |
 | test_options_skin_picker.lua | 47 |
+| test_options_skin_verb.lua | 7 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -3960,4 +3971,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3374** |
+| **Total** | **3381** |

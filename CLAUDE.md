@@ -293,7 +293,11 @@ consumer notes moved no band file). Largest first:
   logic. The seam is the eight other skins (*the eight other skins* section: `FOLLOW`, `ICON_EDGE`, `HUD_FACE`,
   `register` and the eight `register(...)` blocks), to a secondary file of its own with its own minor, paired on the
   Skin shell as this file is. **Re-check trigger: 1100 lines, or a release that adds more than 40 lines here.**
-- `tests/test_options_skin_picker.lua` (1064, new to the band, measured 2026-10-30: 966 → 1064 with the picker's
+- `tests/test_options_skin_picker.lua` (1131, measured 2026-10-30 after `LK-11` of Ka0sAddonsCommonTasks
+  `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/` moved its bench, unchanged, to `tests/fixture_skin_picker.lua` (116), shared
+  with the new `tests/test_options_skin_verb.lua`; 1220 before that, after `LK-07` and `LK-08` of the same run added the
+  override-reset cases at OptionsSkinPicker minor 3, which fired the trigger below and named no peel; 1064, new to the
+  band, measured 2026-10-30: 966 → 1064 with the picker's
   "Choose a skin" title and addon-name line (`LK-11` of Ka0sAddonsCommonTasks
   `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`)) — **accepted.** The seam is the *one window across addons* section, to
   its own `tests/test_options_skin_picker_shared.lua`. **Re-check trigger: 1200 lines, or the next OptionsSkinPicker
