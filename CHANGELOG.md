@@ -273,12 +273,19 @@ another.
   is never sized; an owner-less strip has no repaint.
 - **`spec.onRefit(handle)`**, under pcall, replaces that re-fit for a host that sizes or shortens the
   strip itself.
+- **The host's own width wins** (review). `SetWidth` and `SetSize` on the instance clear the fit, so
+  a host that sizes the strip itself after an `ApplyWidth` (AuraMaster's capped path) is not
+  re-fitted over until its next `ApplyWidth`; an AuraMaster without `onRefit` keeps its caps.
+- **The font object is lent only while it draws what the label draws** (review): in the client a
+  template-built FontString keeps answering its template object after `SetFont(path)`, so the
+  label's `GetFont()` is compared with the object's and a mismatch lends the path.
 
 Tests: three fit cases in `tests/test_widgets_draghandle.lua` (ceil and slack, unbounded, an
 owner-less strip never re-sized) and four re-fit cases in `tests/test_widgets_skin_scope.lua` (a
 switch and Ignore fonts re-fit in the new face, the floor kept and an unfitted strip untouched,
-`onRefit` replacing the re-fit and its raise isolated, the shown host and the lent path font); the
-pinned widths move by 2.
+`onRefit` replacing the re-fit and its raise isolated, the shown host and the lent path font), and
+three from the review (a host `SetWidth` ending the re-fit, the outline setting re-fitting, a
+template object that no longer matches lending the path); the pinned widths move by 2.
 
 **What a consumer owes** (M2): a test pinning a natural strip width moves by 2; AuraMaster passes
 `onRefit` to re-place its capped strips and adds the face to its shortened-name cache key; KickCD
@@ -306,7 +313,8 @@ glows pick two styles.
 
 Tests: five cases in `tests/test_options_switched.lua` (either selector shows a section and both
 show both, a change to either re-renders once, a raising clause shows and a malformed one is skipped,
-the single form beside it, and the file's pairing).
+the single form beside it, and the file's pairing), and two from the review (an empty or
+all-malformed `any` draws its row; a copy without the file draws every row and adds no watcher).
 
 **What a consumer owes** (M2): nothing for a host that does not switch on two selectors: the file
 arrives with the re-vendor (whole folder, and `LibKa0s.xml` loads it). DropWatcher adopts `any` on its
@@ -324,7 +332,8 @@ still (`LK-07` moved it this release), so the key does not move. The owner's ite
   through `O.__combatRefused`, which prints once per combat, with one `Cfg` line through the
   descriptor's `debug`: `nil, "combat"`. Queued behind another owner's picker it prints `VERB_QUEUED`:
   `nil, "queued"`. With no picker to show (no Skin major, an unregistered owner) it prints
-  `VERB_UNAVAILABLE`: `nil, "unavailable"`. Otherwise the frame; a repeat refreshes the one window.
+  `VERB_UNAVAILABLE`, with a `Cfg` line naming the cause (`skin picker <owner> unavailable (no Skin
+  major | owner not registered | no client)`): `nil, "unavailable"`. Otherwise the frame; a repeat refreshes the one window.
 - **`lib.SKIN_PICKER_STRINGS` gains `VERB_HELP`** ("Choose a skin: open the skin picker", the row's
   help text, one wording for every host), **`VERB_COMBAT`, `VERB_QUEUED` and `VERB_UNAVAILABLE`**,
   ASCII, `spec.strings` over them.

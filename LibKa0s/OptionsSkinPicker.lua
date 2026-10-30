@@ -109,8 +109,9 @@ if not lib then return end
 -- builds, so it shows the same picker a new profile shows, whatever the profile's seen flag says. In
 -- combat it shows nothing and prints VERB_COMBAT on every call (never through O.__combatRefused,
 -- which prints once per combat), with one Cfg line through the descriptor's `debug`; queued, it
--- prints VERB_QUEUED; with no picker to show, VERB_UNAVAILABLE. The row and the disabled refusal are
--- the host's (slash-commands-§3: the verb table lives in the addon).
+-- prints VERB_QUEUED; with no picker to show, VERB_UNAVAILABLE and a Cfg line naming the cause.
+-- The row and the disabled refusal are the host's (slash-commands-§3: the verb table lives in the
+-- addon).
 local PICKER_MINOR = 3
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__pickerMinor and lib.__pickerMinor >= PICKER_MINOR
@@ -865,20 +866,32 @@ function lib.__AttachSkinPicker(O, d)
     hide()
   end
 
+  --- Why pickerTarget answered nil, for the verb's Cfg line: the one printed wording covers all three.
+  local function unavailableCause(spec)
+    local Skin = skinMajor()
+    if not (Skin and type(Skin.IsOwner) == "function") then return "no Skin major" end
+    if not Skin:IsOwner(spec.owner or defaultOwner or (P and P.owner)) then return "owner not registered" end
+    return "no client"
+  end
+
   --- The `/<slash> skin` verb's act (LK-11): O.SkinPicker(spec) on demand, saying why when nothing
   --- shows. The host passes the spec its first-run start builds. In combat: nothing shows, one gray
   --- VERB_COMBAT line on every call and one Cfg line, answering nil, "combat". Queued behind another
   --- owner's picker: VERB_QUEUED, nil, "queued". No picker to show (no Skin major, no client, an
-  --- unregistered owner): VERB_UNAVAILABLE, nil, "unavailable". Otherwise the picker's frame.
+  --- unregistered owner): VERB_UNAVAILABLE, nil, "unavailable", with a Cfg line naming which.
+  --- Otherwise the picker's frame.
   function O.SkinVerb(spec)
     spec = type(spec) == "table" and spec or {}
     local S = mergeStrings(spec.strings)
     local say = O.__print or function() end
+    local function cfg(what)
+      if type(d) == "table" and type(d.debug) == "function" then
+        d.debug("Cfg", "skin picker " .. tostring(spec.owner or defaultOwner) .. " " .. what)
+      end
+    end
     if inLockdown() then
       say(S.VERB_COMBAT)
-      if type(d) == "table" and type(d.debug) == "function" then
-        d.debug("Cfg", "skin picker " .. tostring(spec.owner or defaultOwner) .. " refused (in combat)")
-      end
+      cfg("refused (in combat)")
       return nil, "combat"
     end
     local f, why = O.SkinPicker(spec)
@@ -888,6 +901,7 @@ function lib.__AttachSkinPicker(O, d)
       return nil, "queued"
     end
     say(S.VERB_UNAVAILABLE)
+    cfg("unavailable (" .. unavailableCause(spec) .. ")")
     return nil, "unavailable"
   end
 end

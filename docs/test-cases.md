@@ -1175,7 +1175,7 @@ Total.
 - skin owner: an owned DragHandle's tooltip is minor 6's gold, white and gray under Ka0s Default
 - skin owner: an owned DragHandle's tooltip takes its skin's gtip colors and follows a switch
 
-### test_widgets_skin_scope.lua (17)
+### test_widgets_skin_scope.lua (20)
 
 - skin scope: an owned dropdown's menu rows and measure take the skin's body face
 - skin scope: an owner-less open after an owned one gives the rows their template back
@@ -1194,6 +1194,9 @@ Total.
 - skin scope: the re-fit keeps the host's last floor, and a strip never fitted is not sized
 - skin scope: onRefit replaces the default re-fit, and a raise in it costs nothing else
 - skin scope: the measurer hangs off a shown host parked off screen, and wears the label's face
+- skin scope: a host's own SetWidth after an ApplyWidth ends the default re-fit until its next fit
+- skin scope: the outline setting re-fits a fitted strip as a skin switch does
+- skin scope: a label set by path that still answers its template object lends the path
 
 ### test_debuglog.lua (75)
 
@@ -2459,7 +2462,7 @@ Total.
 - IdList removeStyle icon: the highlight goes back onto the art when AceGUI takes the X back
 - IdList removeStyle icon: an AceGUI whose Icon has no textures still draws the X
 
-### test_options_switched.lua (14)
+### test_options_switched.lua (16)
 
 - switched: only the subsection the selector names is drawn, its heading with it
 - switched: equals may list several values; the row shows for any of them
@@ -2473,6 +2476,8 @@ Total.
 - switched any: a section shows while either selector chooses it, both when both differ
 - switched any: a change to either selector re-renders once, on the next frame
 - switched any: a clause whose read raises reads as shown; a malformed clause is skipped
+- switched any: an any with no well-formed clause, or an empty any, switches nothing
+- switched: a copy without OptionsSwitch.lua draws every row and adds no watcher
 - switched any: the single-path form is unchanged beside it
 - switched: OptionsSwitch.lua is its own file of the major, paired on the shell's minor
 
@@ -3868,7 +3873,7 @@ Total.
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
-| test_widgets_skin_scope.lua | 17 |
+| test_widgets_skin_scope.lua | 20 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -3910,7 +3915,7 @@ Total.
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
-| test_options_switched.lua | 14 |
+| test_options_switched.lua | 16 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 51 |
@@ -3971,4 +3976,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3381** |
+| **Total** | **3386** |

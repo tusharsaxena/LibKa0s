@@ -2671,7 +2671,7 @@ handler calls this with the spec its first-run start builds (`NS.SkinPickerSpec(
 |---|---|---|
 | In combat (`InCombatLockdown()`, the queue's own predicate) | Nothing shows. `VERB_COMBAT` prints through the instance's sink **on every call**, never through `O.__combatRefused` (which prints once per combat, so a second `/xx skin` in one fight would answer nothing), and one `Cfg` line, `skin picker <owner> refused (in combat)`, goes to the descriptor's `debug` per call | `nil, "combat"` |
 | Another owner's picker is up, or the queue waits out combat | Queued as `SkinPicker` queues it; `VERB_QUEUED` prints once; it shows when the one up closes | `nil, "queued"` |
-| No picker to show: no Skin major, no client, an owner that never registered | `VERB_UNAVAILABLE` prints | `nil, "unavailable"` |
+| No picker to show: no Skin major, no client, an owner that never registered | `VERB_UNAVAILABLE` prints, and one `Cfg` line names the cause: `skin picker <owner> unavailable (no Skin major)`, `(owner not registered)` or `(no client)` | `nil, "unavailable"` |
 | Otherwise | The picker shows; a repeat while it is up refreshes the one window, keeping the preview | the frame |
 
 The disabled refusal is the host's: `skin` is a feature verb, not one of `lib.LIVE_VERBS`, so a

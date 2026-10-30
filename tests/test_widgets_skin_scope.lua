@@ -19,7 +19,7 @@
 -- does, so "given back" is observable: the kit's base answers none.
 
 local T = _G.LK_TEST
-local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
+local test, assertEqual, assertTrue, assertNil = T.test, T.assertEqual, T.assertTrue, T.assertNil
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER = "LootHistory"
@@ -469,4 +469,65 @@ test("skin scope: the measurer hangs off a shown host parked off screen, and wea
   rawset(fs, "SetFont", function(_, ...) lentFont = { ... } end)
   h:Measure()
   assertEqual(table.concat(lentFont or {}, ","), "Fonts\\ByPath,13,OUTLINE")
+end)
+
+-- ── review of LK-09 ──────────────────────────────────────────────────────────────────────────
+
+test("skin scope: a host's own SetWidth after an ApplyWidth ends the default re-fit until its next fit", function()
+  -- AuraMaster's placeHandle: SetWidth(cap) when capped, ApplyWidth(w) otherwise. A strip once
+  -- placed uncapped and later capped must keep its cap on the next repaint.
+  -- red under: dhRefit re-running ApplyWidth on __fitted alone (the repaint widens the capped strip)
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER)
+  local h = handle(m, W, { owner = OWNER, label = "A long anchor title" })
+  local _, widths = faceMeasurer(W, Skin, h)
+  h:ApplyWidth(0)
+  h:SetWidth(40)
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(widths[#widths], 40, "the cap the host set is kept")
+  assertEqual(#widths, 2, "and the repaint set no width")
+  h:SetSize(41, W.DRAG_HANDLE.HEIGHT)
+  h:ApplyWidth(0)
+  local fitted = #widths
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertEqual(#widths, fitted + 1, "a later ApplyWidth fits again, and the repaint re-fits it")
+  W.__DragHandleMeasurer = REAL_MEASURER
+end)
+
+test("skin scope: the outline setting re-fits a fitted strip as a skin switch does", function()
+  -- D-12 names the outline setting as a re-fit trigger beside a switch and Ignore fonts.
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER)
+  local h = handle(m, W, { owner = OWNER, label = "Focus" })
+  local _, widths = faceMeasurer(W, Skin, h)
+  h:ApplyWidth(7)
+  assertTrue(Skin:SetOutline(OWNER, "off"), "a change")
+  assertEqual(#widths, 2, "one host fit, one re-fit")
+  assertEqual(widths[2], 5 * 6 + W.DRAG_HANDLE.FIT_SLACK + h:Reserve() * 2)
+  W.__DragHandleMeasurer = REAL_MEASURER
+end)
+
+test("skin scope: a label set by path that still answers its template object lends the path", function()
+  -- In the client a template-built FontString keeps answering its template as its font object
+  -- after SetFont(path), so lending the object first measured the skin's label in the template.
+  -- red under: dhLendFont trying GetFontObject before comparing it with the label's GetFont
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "obsidian")
+  local h = handle(m, W, { owner = OWNER })
+  local fs = W.__DragHandleMeasurer()
+  local label = h.label
+  rawset(label, "GetFontObject", function() return templateObject("GameFontNormalSmall") end)
+  rawset(label, "GetFont", function() return "Fonts\\ByPath", 13, "OUTLINE" end)
+  local lentFont, lentObj
+  rawset(fs, "SetFont", function(_, ...) lentFont = { ... } end)
+  rawset(fs, "SetFontObject", function(_, obj) lentObj = obj end)
+  h:Measure()
+  assertEqual(table.concat(lentFont or {}, ","), "Fonts\\ByPath,13,OUTLINE", "the path the label draws")
+  assertNil(lentObj, "not the template object")
+  -- An object that draws what the label draws is lent as the object.
+  lentFont = nil
+  rawset(label, "GetFont", function() return "Fonts\\FRIZQT__.TTF", 10, "" end)
+  h:Measure()
+  assertNil(lentFont)
+  assertEqual(type(lentObj), "table", "the label's own object")
 end)

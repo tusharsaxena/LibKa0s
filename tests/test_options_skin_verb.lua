@@ -117,6 +117,11 @@ test("skin verb: without the Skin major, or for an unregistered owner, skins are
   local _, why2 = r2.O.SkinVerb(specFor({}))
   assertEqual(why2, "unavailable")
   assertEqual(#r2.lines, 1)
+  -- One printed wording for both, so the Cfg line names the cause (review of LK-11): a host that
+  -- forgot to register its owner must not read it as a library that did not load.
+  -- red under: SkinVerb printing VERB_UNAVAILABLE with no debug line
+  assertEqual(count(r.debug, "Cfg: skin picker " .. OWNER .. " unavailable (no Skin major)"), 1)
+  assertEqual(count(r2.debug, "Cfg: skin picker NeverRegistered unavailable (owner not registered)"), 1)
 end)
 
 test("skin verb: spec.strings translate the verb's words", function()

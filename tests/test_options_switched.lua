@@ -320,6 +320,44 @@ test("switched any: a clause whose read raises reads as shown; a malformed claus
   assertEqual(drawn(O2, ctx2), "Glow,Main style", "no clause holds: dropped")
 end)
 
+test("switched any: an any with no well-formed clause, or an empty any, switches nothing", function()
+  -- red under: shownNow reading an `any` with no usable clause as "no clause holds" (the row is lost)
+  local O, _, ctx = glowBench("proc", "proc")
+  O.RenderRows(ctx, {
+    { path = "main", group = "Glow", type = "string", label = "Main style",
+      values = { proc = "Proc" }, sorting = { "proc" } },
+    { path = "e", group = "Glow", subgroup = "Empty", type = "bool", label = "Empty any",
+      shownWhen = { any = {} } },
+    { path = "m", group = "Glow", subgroup = "Odd", type = "bool", label = "All malformed",
+      shownWhen = { any = { "main", { equals = "proc" }, 7 } } },
+  })
+  assertEqual(drawn(O, ctx), "Glow,Main style,Empty,Empty any,Odd,All malformed", "both drawn")
+  assertNil(ctx.__switchQueued)
+end)
+
+test("switched: a copy without OptionsSwitch.lua draws every row and adds no watcher", function()
+  -- OptionsWidgets.lua's fallback when lib.__AttachSwitch is absent (an older vendored copy).
+  -- red under: flowRows calling switchedRows unguarded, or a fallback that drops switched rows
+  local lib = T.options
+  local attach = lib.__AttachSwitch
+  lib.__AttachSwitch = nil
+  local ok, O, rec, ctx = pcall(bench, "a")
+  lib.__AttachSwitch = attach
+  assertTrue(ok, "an instance without the file")
+  O.RenderRows(ctx, anchorRows())
+  assertEqual(drawn(O, ctx), "Anchor,Attach to,Section A,A one,A two,Section B,B one,Section C,C one",
+    "every row, the ones the selector would hide included")
+  local widgets = 0
+  for _, w in ipairs(Fixture.flatten(O.EnsureScroll(ctx))) do
+    if w.labelText and w.type ~= "SimpleGroup" then widgets = widgets + 1 end
+  end
+  assertEqual(#ctx.refreshers, widgets, "one refresher per drawn widget, no selector watcher")
+  rec.store.mode = "b"
+  O.RefreshScalars()
+  mocks.__fireTimers()
+  assertNil(ctx.__switchQueued, "nothing re-renders")
+end)
+
 test("switched any: the single-path form is unchanged beside it", function()
   local O, _, ctx = bench("b")
   O.RenderRows(ctx, anchorRows({

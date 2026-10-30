@@ -37,14 +37,17 @@ label in another.
 - **Measured on a shown host, in the label's own font** (**Since DragHandle 8**). The measuring
   FontStrings hang off one host frame parked the way the font preload parks its own (1x1, alpha 1,
   shown, `TOPRIGHT` of `UIParent`'s `TOPLEFT`, -64): a hidden host may never load the face it is
-  asked to measure. A skinned label lends the measurer its font object, or, where the skin set it by
-  path, its path, size and flags. `lib.__DragHandleMeasurer(face)` answers the FontString **and its
+  asked to measure. A skinned label lends the measurer its font object while that object still
+  draws what the label draws, and its path, size and flags otherwise (the skin set it by path: in the
+  client a template-built FontString keeps answering its template object after `SetFont`). `lib.__DragHandleMeasurer(face)` answers the FontString **and its
   host**.
 - **The re-fit** (**Since DragHandle 8**). Once the host has fitted an owned strip (its first
   `ApplyWidth`), each repaint of the owner's skin (a skin switch, *Ignore fonts*, the outline
   setting, a font override) re-runs `ApplyWidth` with the floor the host last passed, in the new
   face. A strip the host never fitted is never sized, and an owner-less strip has no repaint, so
-  nothing changes for it.
+  nothing changes for it. **The host's own width wins:** a `SetWidth` or `SetSize` on the strip
+  after an `ApplyWidth` ends the default re-fit until the host's next `ApplyWidth`, so a host that
+  mixes the two (AuraMaster's capped and uncapped paths) is never re-fitted over its own width.
 - **`spec.onRefit`** (**Since DragHandle 8**). `function(handle)`, called under `pcall` after every
   repaint **instead of** the default re-fit, for a host that sizes or shortens the strip itself
   (AuraMaster caps the strip at the element and shortens the name). A raise reaches the error
@@ -55,8 +58,12 @@ label in another.
 - **Re-pin exact strip widths.** A host suite that pinned a natural width (`Measure()`,
   `ApplyWidth()`) moves it by `FIT_SLACK` (2 px).
 - **A host that sizes its strip itself passes `onRefit`** and re-places the strip there: AuraMaster's
-  capped strips (`modules/Anchors.lua`'s `placeHandle`), whose shortened-name cache also needs the
-  face in its key. KickCD's cast-bar strip, measured once at build, is re-fitted by the library now,
+  capped strips (`modules/Anchors.lua`'s `placeHandle`, `SetWidth` when capped and `ApplyWidth`
+  otherwise), whose shortened-name cache also needs the face in its key. Without `onRefit` such a
+  strip is safe but stale: its own `SetWidth` stops the default re-fit, so a capped strip keeps its
+  cap and is not re-fitted in the new face. A host that anchors a protected frame to the strip
+  **MUST** pass `onRefit` and defer its own work to `PLAYER_REGEN_ENABLED`, because a repaint, and so
+  the re-fit, can run in combat. KickCD's cast-bar strip, measured once at build, is re-fitted by the library now,
   so its "measured once, never hooked into Reskin" rationale goes.
 - **Nothing else is owed.** Every other host calls `ApplyWidth` already and is re-fitted for free.
 
@@ -1426,8 +1433,9 @@ both defer layout work to `PLAYER_REGEN_ENABLED`. **After the constructor return
 calls `SetPoint`, `SetShown`, `Show`, `Hide`, `SetWidth` or `SetFrameLevel` of its own accord, and nothing here
 listens to an event or runs an `OnUpdate`. **Since 8, one exception:** after the host has fitted an
 owned strip, a repaint of its skin repeats the host's own last `ApplyWidth`, with the same floor
-(or calls `spec.onRefit` instead). The strip is not protected and the measure reads through
-`number`, so this is as combat-safe as the host's own call. A widget that re-measured itself on either would poke a
+(or calls `spec.onRefit` instead). That can run in combat, since a repaint can. It is safe because
+the strip is not protected, the measure reads through `number`, and no consumer anchors a protected
+frame to the strip (ConsumableMaster's bar sits beside it); a host that did would owe `onRefit`. A widget that re-measured itself on either would poke a
 protected frame mid-fight from inside the library, where neither host's combat contract can see it.
 
 The one exception is birth: **the constructor ends on `handle:Hide()`**, and the handle comes back

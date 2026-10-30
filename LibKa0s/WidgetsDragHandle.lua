@@ -46,9 +46,15 @@
 -- re-applies that same fit, with the floor the host last passed, in the new face. The width is
 -- still the host's call: the widget only repeats the host's own last one, and a strip the host
 -- never fitted is never sized. A host that sizes its strip itself (AuraMaster caps it and shortens
--- the name) passes `spec.onRefit`, which is called instead, under pcall, after every repaint. The
--- strip is not protected and the measure reads through `spec.number`, so this is as combat-safe
--- as the hosts' own calls.
+-- the name) passes `spec.onRefit`, which is called instead, under pcall, after every repaint. A
+-- host that sizes the strip itself with SetWidth or SetSize after an ApplyWidth ends the default
+-- re-fit until its next ApplyWidth: its own width is never overridden by a fit it no longer made
+-- (AuraMaster's capped strips, which call SetWidth on one path and ApplyWidth on the other).
+-- COMBAT: the re-fit can run in combat, because a repaint can (a skin pick is refused there, but an
+-- external restyle is not). That is safe for the strip itself, which is not a protected frame, and
+-- the measure reads through `spec.number`; it rests on no consumer anchoring a protected frame to
+-- the strip (ConsumableMaster's bar sits beside its strip, not on it). A host that ever does MUST
+-- pass `spec.onRefit` and defer the work to PLAYER_REGEN_ENABLED itself.
 --
 -- THE ONE EXCEPTION IS BIRTH, and it is deliberate rather than an oversight: the constructor ends
 -- on handle:Hide(). A strip is born with no width and no anchor point, because placing and sizing
@@ -293,15 +299,25 @@ local lent = setmetatable({}, { __mode = "k" })
 
 --- Lend the measurer the label's own skin font (minor 7): its font object, or (minor 8) its path,
 --- size and flags where the skin set it by path. Answers true when it lent one.
+---
+--- The object is lent only while it still draws what the label draws. In the client a FontString
+--- built from a template keeps answering that template as its font object after SetFont(path),
+--- so the label's own GetFont() is compared with the object's, and a mismatch lends the path.
 local function dhLendFont(fs, label)
   local obj = label.GetFontObject and label:GetFontObject()
-  if type(obj) == "table" and fs.SetFontObject then
-    fs:SetFontObject(obj)
-    return true
-  end
   local path, size, flags
   if label.GetFont then path, size, flags = label:GetFont() end
-  if type(path) ~= "string" or type(size) ~= "number" or size <= 0 or not fs.SetFont then return false end
+  local byPath = type(path) == "string" and type(size) == "number" and size > 0 and fs.SetFont
+  if type(obj) == "table" and fs.SetFontObject then
+    local oPath, oSize, oFlags
+    if type(obj.GetFont) == "function" then oPath, oSize, oFlags = obj:GetFont() end
+    local same = oPath == nil or (oPath == path and oSize == size and (oFlags or "") == (flags or ""))
+    if same or not byPath then
+      fs:SetFontObject(obj)
+      return true
+    end
+  end
+  if not byPath then return false end
   fs:SetFont(path, size, flags)
   return true
 end
@@ -755,8 +771,24 @@ local function dhParentAlpha(handle, spec)
   if type(handle.SetIgnoreParentAlpha) == "function" then handle:SetIgnoreParentAlpha(true) end
 end
 
+--- THE HOST'S OWN WIDTH (minor 8). SetWidth and SetSize on the instance clear the fit, so a host
+--- that sizes the strip itself after an ApplyWidth is not re-fitted over (THE RE-FIT at the top).
+--- Each calls the frame's own method; ApplyWidth goes through SetWidth and then re-marks the fit.
+local function dhShadowSizing(handle)
+  for _, name in ipairs({ "SetWidth", "SetSize" }) do
+    local raw = handle[name]
+    if type(raw) == "function" then
+      handle[name] = function(self, ...)
+        self.__fitted = nil
+        return raw(self, ...)
+      end
+    end
+  end
+end
+
 --- The methods a host calls. Attached per instance, because every field of the spec is.
 local function dhAttachMethods(handle, spec)
+  dhShadowSizing(handle)
   --- Re-text the strip. The width is NOT applied here: a host decides when it may touch geometry.
   function handle:SetLabel(text)
     self.__label = text or ""
@@ -783,10 +815,12 @@ local function dhAttachMethods(handle, spec)
   --- Set the width to the natural one, floored by `minWidth` -- ConsumableMaster's bar width,
   --- AuraMaster's element size. Called by the host; from minor 8 the widget repeats the host's
   --- last call, with the same floor, after each repaint of its skin (THE RE-FIT at the top).
+  --- The flags are written after the SetWidth below, because the host's own SetWidth (the shadow
+  --- dhShadowSizing puts on the instance) clears them.
   function handle:ApplyWidth(minWidth)
-    self.__fitted, self.__fitFloor = true, minWidth
     local w = math.max(self:Measure(), dhNumber(spec, minWidth, 0))
     self:SetWidth(w)
+    self.__fitted, self.__fitFloor = true, minWidth
     return w
   end
 
