@@ -44,7 +44,11 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Then (LK-06a of the same run, ruling R-5, decision D-02, still minor 6): S.Strip takes
 -- `opts.panel` as S.Text does, for `W.TestStrip`'s `opts.panel`; P.panelIgnored records its answer
 -- as `rec.panelOff` for P.hook.
-local EXTRAS_MINOR = 6
+-- Minor 7 (LK-04 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK, the owner's ruling
+-- D-07): S.FontFlags(value, where), the flags an element draws with from its stored Font flags: a
+-- picked flag wins, and "From skin" (FROM_SKIN; nil too) resolves through the owner's Font outline
+-- (Skin minor 9). OptionsCompose minor 14's `flagsFromSkin` offers the value.
+local EXTRAS_MINOR = 7
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
 lib.__extrasMinor      = EXTRAS_MINOR
@@ -460,6 +464,20 @@ prim.ChartStyle = function(owner)
   local T, out = P.T(owner), {}
   for _, k in ipairs(CHART_KEYS) do out[k] = T["chart." .. k] end
   return out
+end
+
+--- S.FontFlags(value, where) (minor 7): the font flags an element draws with, from its stored Font
+--- flags `value`. A picked flag (any string but FROM_SKIN: "", "OUTLINE", "THICKOUTLINE",
+--- "MONOCHROME", "OUTLINE, MONOCHROME") wins, answered as stored. FROM_SKIN, the setting's "From skin"
+--- (and nil or a non-string: nothing stored), resolves through the owner's Font outline: the HUD's
+--- `hud.outline` ("OUTLINE" under "all" and "hud", "" under "off"), or with `where == "window"` the
+--- window text's `font.outline` ("" under "hud" too). While the owner ignores fonts the Font outline
+--- is not read, and FROM_SKIN answers "OUTLINE", what it answers by default. Never nil.
+prim.FontFlags = function(owner, value, where)
+  if type(value) == "string" and value ~= lib.FROM_SKIN then return value end
+  if lib:__FontsIgnored(owner) then return "OUTLINE" end
+  local v = P.T(owner)[where == "window" and "font.outline" or "hud.outline"]
+  return type(v) == "string" and v or ""
 end
 
 --- S.BarStyle(): a fresh table of the HUD tokens: `texture` (the LSM path, or nil), `textureKey`,

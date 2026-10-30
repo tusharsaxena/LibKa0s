@@ -18,9 +18,9 @@ batch (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, M1), th
 go-ahead.
 
 Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**), **Skin minor 9**,
-**SkinDefs minor 17** and **SkinPaint minor 13** (`LibKa0s-Skin-1.0` key **9.17.13.6.10.2.4**), and
-**OptionsAppearance minor 4** and **OptionsSkinPicker minor 3** (`LibKa0s-Options-1.0` key
-**34.4.36.5.7.11.3.13.9.4.3.6.4.3**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
+**SkinDefs minor 17**, **SkinPaint minor 13** and **SkinPaintExtras minor 7** (`LibKa0s-Skin-1.0` key
+**9.17.13.7.10.2.4**), and **OptionsCompose minor 14**, **OptionsAppearance minor 4** and
+**OptionsSkinPicker minor 3** (`LibKa0s-Options-1.0` key **34.4.36.5.7.11.3.14.9.4.3.6.4.3**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
 
 ### The payload ships Prototype, Fira Sans Medium and Expressway (`LK-01`, `LK-A1`)
 
@@ -68,9 +68,9 @@ drop Inter and Oxanium and add Prototype and Expressway with their terms.
 
 ### Ka0s Default draws Prototype, WoW Forever's body text Fira Sans Medium, Obsidian Expressway (`LK-02`, `LK-A1`)
 
-`LibKa0s-Skin-1.0` key 9.17.13.6.10.2.4 (8.17.12.6.10.2.4 when this entry was written; its document
+`LibKa0s-Skin-1.0` key 9.17.13.7.10.2.4 (8.17.12.6.10.2.4 when this entry was written; its document
 renamed with the key), documented in
-[docs/api/Skin/version-9.17.13.6.10.2.4-docs.md](docs/api/Skin/version-9.17.13.6.10.2.4-docs.md)
+[docs/api/Skin/version-9.17.13.7.10.2.4-docs.md](docs/api/Skin/version-9.17.13.7.10.2.4-docs.md)
 (*What changed at this version*). SkinDefs minor 17 (D-02): Ka0s Default's `font.body`,
 `font.title` and `hud.font` are `Ka0s Prototype` (one weight; its titles differ by size), where they
 were Oxanium SemiBold, Bold and SemiBold; the `eui` source inherits the HUD face. WoW Forever's
@@ -85,10 +85,11 @@ HUD face (Quick Comms' `NS.SKIN_FALLBACK["hud.font"]`) becomes `Ka0s Prototype`.
 
 ### Text is outlined by default, and the Skin tab says where (`LK-03`)
 
-`LibKa0s-Skin-1.0` key 9.17.13.6.10.2.4 and `LibKa0s-Options-1.0` key
-34.4.36.5.7.11.3.13.9.4.3.6.4.3, documented in
-[docs/api/Skin/version-9.17.13.6.10.2.4-docs.md](docs/api/Skin/version-9.17.13.6.10.2.4-docs.md) and
-[docs/api/Options/version-34.4.36.5.7.11.3.13.9.4.3.6.4.3-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.13.9.4.3.6.4.3-docs.md)
+`LibKa0s-Skin-1.0` key 9.17.13.7.10.2.4 and `LibKa0s-Options-1.0` key
+34.4.36.5.7.11.3.14.9.4.3.6.4.3 (9.17.13.6.10.2.4 and 34.4.36.5.7.11.3.13.9.4.3.6.4.3 when this entry
+was written; the documents renamed with the keys), documented in
+[docs/api/Skin/version-9.17.13.7.10.2.4-docs.md](docs/api/Skin/version-9.17.13.7.10.2.4-docs.md) and
+[docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md)
 (*What changed at this version*). The owner's item 13 and ruling D-06: outline by default, as a
 setting with three values.
 
@@ -116,6 +117,28 @@ stored mode is applied with `Skin:SetOutline` beside the stored scope and overri
 seam its degradation arm answers with a no-op; a test that pins a painted string's flags as `""`
 moves to `"OUTLINE"`, and one counting the skin block's keys gains one. No stub or facade member is
 owed: the four new members are lib-level, and the Options instance gains none.
+
+### Every element's font flags follow the Font outline by default (`LK-04`)
+
+The same two documents. The owner's ruling D-07: every font setting stores its flags, with a *From
+skin* value that is the new default.
+
+- **SkinPaintExtras minor 7: `S.FontFlags(value, where)`**, the flags an element draws with from its
+  stored Font flags: a picked flag wins as stored; *From skin* (`FROM_SKIN`, or nothing stored)
+  resolves through the owner's *Font outline* (`hud.outline`, or `font.outline` with
+  `where == "window"`); `"OUTLINE"` while the owner ignores fonts. Never nil. `FontFlags` joins the
+  Skin major's `VOCAB` (Skin minor 9, still), so the facade carries it.
+- **OptionsCompose minor 14: `O.FontGroup{ flagsFromSkin = true }`** leads the Font flags row with
+  *From skin* (`"@skin"`) and makes it the default. With `fromSkin = true` too it is the minimum font
+  setting D-07 asks of every element (face with *Use the skin's font*, size, color with *Use class
+  color*, flags with *From skin*, shadow): the existing composite, extended. Without the field the
+  block is minor 13's.
+
+**What a consumer owes** (M2): every degradation facade gains `FontFlags` (the facade parity case
+turns red until it does; a no-op is not enough, since nil reaches `SetFont` as no flags: answer a
+picked string as is and `"OUTLINE"` for `"@skin"` or nil); each font setting composes
+`flagsFromSkin = true`, defaults its flags to `"@skin"` and draws with `S.FontFlags(stored)`; a
+hand-written flags row (MultiMeters, DpsRace) takes the composed one or offers the same value.
 
 ## v1.81.0 — 2026-10-30
 

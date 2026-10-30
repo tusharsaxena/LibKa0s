@@ -103,6 +103,7 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- answering "" for `font.outline` under "hud" and for both `font.outline` and `hud.outline` under
 -- "off". "all" reads the skin as it states them, and every skin states OUTLINE for both (SkinDefs
 -- minor 17). The mode is applied here and nowhere else; P.font, BarStyle, Token and Resolve follow.
+-- And VOCAB gains FontFlags (LK-04, D-07; SkinPaintExtras minor 7), an element's stored flags resolved.
 local MAJOR, MINOR = "LibKa0s-Skin-1.0", 9
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -129,7 +130,7 @@ lib.VOCAB = {
   "GetAccentColor", "GetPanelColor", "GetFont",
   "TitleBar", "Divider", "Footer", "Card", "Slider", "NavItem", "Drawer", "ListRow", "MenuFrame",
   "Tooltip", "Strip", "Cover", "Text", "ChartStyle", "BarStyle", "IconBorder", "GlowColor",
-  "BarTexture",
+  "BarTexture", "FontFlags",
 }
 
 local WEAK_KEYS = { __mode = "k" }

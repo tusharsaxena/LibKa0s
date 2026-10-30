@@ -568,7 +568,7 @@ Total.
 - skin ignore fonts: BarStyle's font fields are nil, every other field unchanged
 - skin ignore fonts: an unregistered owner reads Ka0s Default's HUD face as before
 
-### test_skin_outline.lua (10)
+### test_skin_outline.lua (13)
 
 - skin outline: the three modes, in the tab's order, and all is the default
 - skin outline: every skin states OUTLINE for window and HUD text
@@ -580,6 +580,9 @@ Total.
 - skin outline: one owner's mode never reaches another, and a font override composes
 - skin outline: SetOutline while a reload is pending stores the mode and repaints nothing
 - skin outline: WriteChoice hands media.outline to the setter, normalized
+- skin font flags: FontFlags is in the vocabulary and the facade
+- skin font flags: a picked flag wins, From skin follows the Font outline
+- skin font flags: under Ignore fonts From skin answers OUTLINE whatever the mode
 
 ### test_skin_owner_tokens.lua (16)
 
@@ -2627,6 +2630,14 @@ Total.
 - compose skin: the icon family's pickers show the skin's icon border while the companion is set
 - compose skin: a rendered icon-family thickness slider is disabled with the style picker
 
+### test_options_compose_flags.lua (5)
+
+- compose flags: OptionsCompose is at minor 14 or later
+- compose flags: without flagsFromSkin the Font flags row is minor 13's
+- compose flags: flagsFromSkin leads with From skin and defaults to it
+- compose flags: fromSkin and flagsFromSkin together are the minimum font setting
+- compose flags: omit, keys, defaults and labels reach the From skin row
+
 ### test_options_throttle.lua (4)
 
 - throttle: a nil-returning scheduleTimer still gets ONE slider timer per window
@@ -3769,7 +3780,7 @@ Total.
 | test_media.lua | 40 |
 | test_skin.lua | 33 |
 | test_skin_override.lua | 26 |
-| test_skin_outline.lua | 10 |
+| test_skin_outline.lua | 13 |
 | test_skin_owner_tokens.lua | 16 |
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
@@ -3844,6 +3855,7 @@ Total.
 | test_options_tooltip_skin.lua | 6 |
 | test_options_chrome_skin.lua | 15 |
 | test_options_compose_skin.lua | 16 |
+| test_options_compose_flags.lua | 5 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3893,4 +3905,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3315** |
+| **Total** | **3323** |

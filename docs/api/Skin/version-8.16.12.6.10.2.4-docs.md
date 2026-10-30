@@ -12,7 +12,7 @@
 | Shipped in | v1.81.0 |
 | Status | Superseded |
 | Supersedes | [version 7.15.11.5.9.2.4](./version-7.15.11.5.9.2.4-docs.md) (shipped in v1.80.0) — the same surface with Ka0s Default's `q.*` tokens rounded to two places and every skin but Ka0s Default drawing HUD text in Friz Quadrata through `KEEP` (SkinDefs minor 15), with a `ResetToSkin` that wrote `FROM_SKIN` into a companion it could not see stored and took no `opts`, with the key an owner draws by only as the internal `__DrawsKey` (Skin minor 7), and with *Ignore fonts* stopping at `P.font`, so `Token`, `Resolve` and `BarStyle` still answered the skin's HUD face and outline while it was on (Skin minor 7, SkinPaintExtras minor 5), with no settings-panel scope on `S.Text`, with no `gtip.footer` and no `icon.grip` (SkinDefs minor 15), and with `opts.stockDefault` keeping a template-built target the client's under Ka0s Default (SkinPaint minor 11, SkinPaintControls minor 9), `PageButton` taking no options and `P.unpaint` leaving a title's alignment as the skin set it |
-| Superseded by | [version 9.17.13.6.10.2.4](./version-9.17.13.6.10.2.4-docs.md) |
+| Superseded by | [version 9.17.13.7.10.2.4](./version-9.17.13.7.10.2.4-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 8, SkinDefs = 16, SkinPaint = 12, SkinPaintExtras = 6, SkinPaintControls = 10, SkinEUI = 2, SkinAce = 4 }` |
 
@@ -1694,15 +1694,15 @@ token resolves to nil, and every primitive paints only what it has a token for (
 no Options instance's `O.AceGUI` is wrapped. The engine's state is written `lib.x = lib.x or {}`, so a newer copy that wins
 the LibStub race later keeps every owner, record and facade; the resolve cache alone is rebuilt.
 
-## Moving to version 9.17.13.6.10.2.4
+## Moving to version 9.17.13.7.10.2.4
 
-**Take it; one seam to wire.** Version 9.17.13.6.10.2.4 moves three files, `SkinDefs.lua` to minor
-17, `Skin.lua` to minor 9 and `SkinPaint.lua` to minor 13, and removes no member and changes no
-signature. Ka0s Default draws `Ka0s Prototype` for body, titles and HUD text, where it drew Oxanium,
+**Take it; one seam to wire.** Version 9.17.13.7.10.2.4 moves three files, `SkinDefs.lua` to minor
+17, `Skin.lua` to minor 9, `SkinPaint.lua` to minor 13 and `SkinPaintExtras.lua` to minor 7, and
+removes no member and changes no signature. Ka0s Default draws `Ka0s Prototype` for body, titles and HUD text, where it drew Oxanium,
 WoW Forever's body text is `Ka0s Fira Sans Medium`, and Obsidian draws `Ka0s Expressway`. A host test
 that pins those faces moves with them; better, it reads `Skin:ResolveSkin("ka0s")["font.body"]`. A
 degradation copy of Ka0s Default's HUD face moves too. Every skin now outlines window text by
 default, and each owner has a font outline mode (`GetOutline`, `SetOutline`, `media.outline`) its
-host stores, writes and applies. See [version 9.17.13.6.10.2.4](./version-9.17.13.6.10.2.4-docs.md),
+host stores, writes and applies, and the facade gains `FontFlags`, which a degradation facade owes. See [version 9.17.13.7.10.2.4](./version-9.17.13.7.10.2.4-docs.md),
 *What a consumer owes*. (A version 8.17.12.6.10.2.4 was documented on the release branch and never
 shipped; its document became this one.)

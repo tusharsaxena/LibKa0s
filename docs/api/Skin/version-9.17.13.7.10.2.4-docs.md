@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 9.17.13.6.10.2.4
+# `LibKa0s-Skin-1.0` — version 9.17.13.7.10.2.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,19 +8,20 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **9** · `SkinDefs.lua` minor **17** · `SkinPaint.lua` minor **13** · `SkinPaintExtras.lua` minor **6** · `SkinPaintControls.lua` minor **10** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
+| Files and minors | `Skin.lua` minor **9** · `SkinDefs.lua` minor **17** · `SkinPaint.lua` minor **13** · `SkinPaintExtras.lua` minor **7** · `SkinPaintControls.lua` minor **10** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
 | Shipped in | v1.82.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 8.16.12.6.10.2.4](./version-8.16.12.6.10.2.4-docs.md) (shipped in v1.81.0) — the same surface with Ka0s Default drawing Oxanium (SemiBold for body and HUD, Bold for titles) WoW Forever's body text in Fira Sans Regular, and Obsidian drawing Inter / Inter SemiBold, with `font.outline` `""` so no window text was outlined (SkinDefs minor 16), with no font outline mode per owner (Skin minor 8), and with the mono role taking `font.outline` like the other two (SkinPaint minor 12) |
+| Supersedes | [version 8.16.12.6.10.2.4](./version-8.16.12.6.10.2.4-docs.md) (shipped in v1.81.0) — the same surface with Ka0s Default drawing Oxanium (SemiBold for body and HUD, Bold for titles) WoW Forever's body text in Fira Sans Regular, and Obsidian drawing Inter / Inter SemiBold, with `font.outline` `""` so no window text was outlined (SkinDefs minor 16), with no font outline mode per owner (Skin minor 8), with the mono role taking `font.outline` like the other two (SkinPaint minor 12), and with no `FontFlags` in the vocabulary (SkinPaintExtras minor 6) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 9, SkinDefs = 17, SkinPaint = 13, SkinPaintExtras = 6, SkinPaintControls = 10, SkinEUI = 2, SkinAce = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 9, SkinDefs = 17, SkinPaint = 13, SkinPaintExtras = 7, SkinPaintControls = 10, SkinEUI = 2, SkinAce = 4 }` |
 
 ## What changed at this version
 
-**Three files move: `SkinDefs.lua` to minor 17, `Skin.lua` to minor 9 and `SkinPaint.lua` to minor
-13.** Four members are added (`GetOutline`, `SetOutline`, `OUTLINE_MODES`, `OUTLINE_DEFAULT`), and
-`WriteChoice`'s `media` gains a half; no signature changes and nothing is removed.
+**Four files move: `SkinDefs.lua` to minor 17, `Skin.lua` to minor 9, `SkinPaint.lua` to minor 13
+and `SkinPaintExtras.lua` to minor 7.** Four members are added (`GetOutline`, `SetOutline`,
+`OUTLINE_MODES`, `OUTLINE_DEFAULT`), `WriteChoice`'s `media` gains a half, and the facade gains one
+vocabulary name, `FontFlags`; no signature changes and nothing is removed.
 
 ### Three skins change face (SkinDefs minor 17)
 
@@ -75,6 +76,27 @@ The owner's item 13 and ruling D-06 (`LK-03` of the same bundle): outline by def
   `media.outline` does (the tab's write, its copy to every Ka0s addon and the picker's *Apply to
   all*), and a host applies its stored mode with `SetOutline` where it applies its stored scope and
   overrides (*What a consumer owes*, below).
+
+### An element's stored font flags, resolved (SkinPaintExtras minor 7, Skin minor 9's VOCAB)
+
+The owner's ruling D-07 (`LK-04` of the same bundle): every font setting stores its flags, and the
+flags setting's new default, **From skin**, follows the owner's *Font outline*.
+`S.FontFlags(value, where)` answers the flags an element draws with from its stored Font flags
+`value`:
+
+- a **picked flag** (any string but `FROM_SKIN`: `""`, `"OUTLINE"`, `"THICKOUTLINE"`, `"MONOCHROME"`,
+  `"OUTLINE, MONOCHROME"`) **wins**, answered as stored;
+- **From skin** (`FROM_SKIN`, `"@skin"`; and `nil` or a non-string, nothing stored) resolves through
+  the owner's mode: the HUD's `hud.outline` by default (`"OUTLINE"` under `"all"` and `"hud"`, `""`
+  under `"off"`), or with `where == "window"` the window text's `font.outline` (`""` under `"hud"`
+  too);
+- while the owner **ignores fonts** the mode is not read, and From skin answers `"OUTLINE"`, what it
+  answers by default.
+
+It never answers nil, so its answer goes straight to `SetFont`. `LibKa0s-Options-1.0`'s
+`O.FontGroup{ flagsFromSkin = true }` (OptionsCompose minor 14) offers the value and makes it the
+row's default. `FontFlags` is a vocabulary name (`VOCAB`), a trampoline like `BarStyle`, so a host's
+degradation facade owes it (*What a consumer owes*).
 
 ## What this major is
 
@@ -178,8 +200,8 @@ still runs the engine: no skin is registered and every token resolves to nil.
   `CloseButton`, `PageButton`, `SquareIcon`, `SortHeaderBar`, `Font`, `White`, `ApplyBarFill`,
   `GetAccentColor`, `GetPanelColor`, `GetFont`), then the Ka0s extras (`TitleBar`, `Divider`,
   `Footer`, `Card`, `Slider`, `NavItem`, `Drawer`, `ListRow`, `MenuFrame`, `Tooltip`, `Strip`,
-  `Cover`, `Text`, `ChartStyle`, `BarStyle`, `IconBorder`, `GlowColor`, and since Skin minor 6
-  `BarTexture`). A primitive no loaded file
+  `Cover`, `Text`, `ChartStyle`, `BarStyle`, `IconBorder`, `GlowColor`, since Skin minor 6
+  `BarTexture`, and since Skin minor 9 `FontFlags`). A primitive no loaded file
   provides answers nil and touches nothing. **At this version every one is provided** (*The
   primitives*, below).
 - **The engine, bound to the owner:** `S.Token(name)`, `S.Color(name)`, `S.Resolve(kind, value,
@@ -1074,6 +1096,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 | `GetFont()` | the body face's path, or the client's `STANDARD_TEXT_FONT` when the skin names none |
 | `GlowColor()` | r, g, b, a of `glow.color` (Ka0s Default's gold since SkinDefs minor 8) |
 | `ChartStyle()` | a fresh table of the `chart.*` tokens by short name (`axis`, `axisAlt`, `grid`, `crosshair`, `marker`, `line`, `bar`, `track`, `total`, `other`, `otherLine`, `series`); the colors are shared |
+| `FontFlags(value, where)` | the font flags an element draws with, never nil (SkinPaintExtras minor 7): a picked flag as stored; `FROM_SKIN` (or nil) through the owner's *Font outline*, `hud.outline`, or `font.outline` with `where == "window"`; `"OUTLINE"` while the owner ignores fonts. See *An element's stored font flags, resolved* |
 | `BarStyle()` | a fresh table: `texture` (the LSM path or nil), `textureKey`, `gloss`, `bg`, `border`, `borderStyle`, `borderSize`, `font` (path or nil), `fontKey`, `fontSize`, `outline`, `iconBorder`. `font`, `fontKey` and `outline` are nil while the owner ignores fonts (SkinPaintExtras minor 6) |
 
 ### The slot remap (`opts.tokens`)
@@ -1727,6 +1750,18 @@ point is what the player sees until it does.
   events), it applies the stored mode with `Skin:SetOutline(owner, mode)`, guarded on the member for
   an older copy; its degradation arm answers the same seam with a no-op. A test that counts the
   skin block's keys gains one.
+- **Give the degradation facade `FontFlags`** (Skin minor 9's VOCAB, SkinPaintExtras minor 7). The
+  live facade carries it, so a host suite that holds its degraded facade to the live one key for key
+  (`assertSurfaceParity(live.NS.Skin, degraded.NS.Skin, ...)`) turns red until the host table answers
+  it. A VOCAB loop of no-ops is not enough: a no-op answers nil, which `SetFont` reads as no flags.
+  The suggested stub is `S.FontFlags = function(v) if type(v) == "string" and v ~= S.FROM_SKIN then
+  return v end return "OUTLINE" end`.
+- **Store every element's flags, From skin by default** (D-07). Each font setting composes
+  `O.FontGroup{ fromSkin = true, flagsFromSkin = true }` (`LibKa0s-Options-1.0` OptionsCompose minor
+  14), its profile default for the flags is `"@skin"`, and the element draws with
+  `S.FontFlags(stored)` (`S.FontFlags(stored, "window")` for window text). A migration that moves a
+  stored default flag onto From skin can use `Skin.ResetToSkin(profile, { "<path>.fontFlags" })`,
+  which writes `FROM_SKIN` into a plain string key.
 - **Expect outlined window text.** Every string a primitive paints is outlined under the default
   `"all"`, so a host test that pins a painted string's flags as `""` moves to `"OUTLINE"`, and a
   layout measured on unoutlined text may need its widths re-checked (the strip re-fit and the size

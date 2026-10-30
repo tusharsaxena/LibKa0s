@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 34.4.36.5.7.11.3.13.9.4.3.6.4.3
+# `LibKa0s-Options-1.0` — version 34.4.36.5.7.11.3.14.9.4.3.6.4.3
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **36** · `OptionsIds.lua` **5** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **13** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **4** · `OptionsSkinPicker.lua` **3** |
+| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **36** · `OptionsIds.lua` **5** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **14** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **4** · `OptionsSkinPicker.lua` **3** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>`, in load order — the same fourteen numbers `lib.MODULES` reports. |
 | Shipped in | v1.82.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 34.4.36.5.7.11.3.13.9.4.3.6.3.2](./version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md) (shipped in v1.81.0) — whose Skin tab had no *Font outline* and wrote `media` as `{ font, texture }`, and whose skin picker's *Apply to all Ka0s addons* gave the other owners the source and skin alone |
+| Supersedes | [version 34.4.36.5.7.11.3.13.9.4.3.6.3.2](./version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md) (shipped in v1.81.0) — whose Skin tab had no *Font outline* and wrote `media` as `{ font, texture }`, and whose skin picker's *Apply to all Ka0s addons* gave the other owners the source and skin alone, and whose `O.FontGroup` had no *From skin* Font flags |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 36, OptionsIds = 5, OptionsIdList = 7, OptionsTabs = 11, OptionsCombat = 3, OptionsCompose = 13, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 4, OptionsSkinPicker = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 36, OptionsIds = 5, OptionsIdList = 7, OptionsTabs = 11, OptionsCombat = 3, OptionsCompose = 14, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 4, OptionsSkinPicker = 3 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `O32` for `Options.lua` minor 32, `O33` for `Options.lua` minor 33, `O34` for `Options.lua` minor 34, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
-minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `W35` for `OptionsWidgets.lua` minor 35, `W36` for `OptionsWidgets.lua` minor 36, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `T10` for `OptionsTabs.lua` minor 10, `T11` for `OptionsTabs.lua` minor 11, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `C9` for `OptionsCompose.lua` minor 9, `C10` for `OptionsCompose.lua` minor 10, `C11` for `OptionsCompose.lua` minor 11, `C12` for `OptionsCompose.lua` minor 12, `C13` for `OptionsCompose.lua` minor 13, `S1` for
+minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `W35` for `OptionsWidgets.lua` minor 35, `W36` for `OptionsWidgets.lua` minor 36, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `T10` for `OptionsTabs.lua` minor 10, `T11` for `OptionsTabs.lua` minor 11, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `C9` for `OptionsCompose.lua` minor 9, `C10` for `OptionsCompose.lua` minor 10, `C11` for `OptionsCompose.lua` minor 11, `C12` for `OptionsCompose.lua` minor 12, `C13` for `OptionsCompose.lua` minor 13, `C14` for `OptionsCompose.lua` minor 14, `S1` for
 `OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `S5` for `OptionsScroll.lua` minor 5, `S6` for `OptionsScroll.lua` minor 6, `S9` for `OptionsScroll.lua` minor 9, `N1` for `OptionsNav.lua` minor 1, `N3` for `OptionsNav.lua` minor 3, `N4` for `OptionsNav.lua` minor 4, `D1` for `OptionsDrawer.lua` minor 1, `D2` for `OptionsDrawer.lua` minor 2, `D3` for `OptionsDrawer.lua` minor 3, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `K4` for `OptionsKeybinds.lua` minor 4, `K5` for `OptionsKeybinds.lua` minor 5, `K6` for `OptionsKeybinds.lua` minor 6, `A1` for `OptionsAppearance.lua` minor 1, `A3` for `OptionsAppearance.lua` minor 3, `A4` for `OptionsAppearance.lua` minor 4, `P1` for `OptionsSkinPicker.lua` minor 1, `P2` for `OptionsSkinPicker.lua` minor 2, `P3` for `OptionsSkinPicker.lua` minor 3, `I1` for
 `OptionsIds.lua` minor 1, `I3` for `OptionsIds.lua` minor 3, `I4` for `OptionsIds.lua` minor 4, `I5` for `OptionsIds.lua` minor 5, `OC2` for `OptionsCombat.lua` minor 2, `OC3` for `OptionsCombat.lua` minor 3, `L1` for `OptionsIdList.lua` minor 1, `L3` for `OptionsIdList.lua` minor 3, `L4` for `OptionsIdList.lua` minor 4, `L6` for `OptionsIdList.lua` minor 6, `L7` for `OptionsIdList.lua` minor 7. **A `W`
 citation on a chrome member is not stale**: `O.TabStrip`, `O.PageBanner`, `O.PageHeader`,
@@ -40,10 +40,24 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 ## What changed at this version
 
-Two files move, for `LK-03` of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/` (the
-owner's item 13 and ruling D-06, with `LibKa0s-Skin-1.0` minor 9's font outline mode):
-`OptionsAppearance.lua` 3 -> **4** and `OptionsSkinPicker.lua` 2 -> **3**. No public member is added
-or removed; `lib.APPEARANCE_STRINGS` gains five keys.
+Three files move, for `LK-03` and `LK-04` of Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/` (the owner's item 13 and rulings D-06 and D-07, with
+`LibKa0s-Skin-1.0` minor 9's font outline mode and SkinPaintExtras minor 7's `S.FontFlags`):
+`OptionsAppearance.lua` 3 -> **4**, `OptionsSkinPicker.lua` 2 -> **3** and `OptionsCompose.lua` 13 ->
+**14**. No public member is added or removed; `lib.APPEARANCE_STRINGS` gains five keys.
+
+**`O.FontGroup{ flagsFromSkin = true }`: the Font flags row leads with *From skin*** (C14, `LK-04`).
+The row's values gain `"@skin"` (the Skin major's `FROM_SKIN`), labeled "From skin", first in its
+`sorting`, and it becomes the row's default (a host's `defaults.fontFlags` still wins); its tooltip
+says From skin follows the Skin tab's *Font outline* and any other choice is drawn as picked. The
+host draws with `S.FontFlags(stored)` (`S.FontFlags(stored, "window")` for window text), which lets a
+picked flag win and resolves From skin through the owner's mode. A flags value is a CLI value, not a
+media path, so the sentinel is honest here, unlike a media pick (C12's companions). The lists are
+private copies: `O.FONT_FLAGS` and `O.FONT_FLAGS_SORT` are unchanged, and a FontGroup without
+`flagsFromSkin` emits exactly C13's rows. **`O.FontGroup{ fromSkin = true, flagsFromSkin = true }` is
+the minimum font setting** the owner's ruling D-07 asks of every element: face with *Use the skin's
+font*, size, color with *Use class color*, flags with *From skin*, and shadow. The composite already
+existed (C1's six rows, C12's companion), so it is extended, not duplicated.
 
 **The Skin tab's *Font outline*** (A4). Under the Scope's two check boxes, a dropdown at
 `BUTTON_PAIR_REL`, *Font outline*, offers *All text* (`"all"`, the default), *HUD text only*
@@ -3422,6 +3436,13 @@ An even row count plus `startsLine` on rows 1 and 3 is what makes that layout pa
 than a property of how many rows happen to precede the block. **From C12** `fromSkin = true` appends
 `fontFromSkin` on a line of its own; see [Following the skin in the group composers](#following-the-skin-in-the-group-composers-c12-w35).
 
+**From C14** `flagsFromSkin = true` leads `fontFlags` with *From skin* (`"@skin"`, the Skin major's
+`FROM_SKIN`) and makes it the default; its tooltip says what it follows. The host draws with the Skin
+facade's `S.FontFlags(stored)` (`LibKa0s-Skin-1.0` SkinPaintExtras minor 7), which answers a picked
+flag as stored and resolves From skin through the owner's *Font outline*. With `fromSkin = true` as
+well, the block is the minimum font setting every element carries (ruling D-07 of Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`). Without `flagsFromSkin` the row is C13's, byte for byte.
+
 ### `O.BorderGroup(spec)` → rows
 
 `borderStyle` (`LSM30_Border`), `borderSize` (*Border thickness (px)*), `borderColor`,
@@ -3604,7 +3625,7 @@ defaultsTooltip = H.ResetAllTooltip(H.KEYBINDS_UNCHANGED),
 
 ## Compatibility
 
-**At 34.4.36.5.7.11.3.13.9.4.3.6.4.3 no member is added or removed**: the Skin tab draws one more
+**At 34.4.36.5.7.11.3.14.9.4.3.6.4.3 no member is added or removed**: `O.FontGroup` takes one more optional spec field, `flagsFromSkin`, and a host that passes none emits what it emitted; the Skin tab draws one more
 control and its `media` writes gain `outline`, which a setter written for A3 ignores (it stores the
 font and texture it always stored, and every write carries the applied ones). An Options degradation
 stub owes nothing new. `lib.APPEARANCE_STRINGS` gains five keys, which a host's `spec.strings` may

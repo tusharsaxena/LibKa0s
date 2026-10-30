@@ -195,3 +195,44 @@ test("skin outline: WriteChoice hands media.outline to the setter, normalized", 
   assertNil(store.media.outline, "no mode given: nil")
   assertEqual(Skin:GetOutline(OWNER), "all", "WriteChoice never moves the applied mode")
 end)
+
+-- ── S.FontFlags (SkinPaintExtras minor 7, LK-04 of the same bundle, D-07) ─────────────────────
+
+test("skin font flags: FontFlags is in the vocabulary and the facade", function()
+  local _, Skin = F.env()
+  local found = false
+  for _, name in ipairs(Skin.VOCAB) do if name == "FontFlags" then found = true end end
+  assertTrue(found, "VOCAB names it")
+  assertEqual(type(Skin:For(OWNER).FontFlags), "function", "the facade carries it")
+  assertTrue((Skin.MODULES.SkinPaintExtras or 0) >= 7, "SkinPaintExtras minor 7")
+end)
+
+test("skin font flags: a picked flag wins, From skin follows the Font outline", function()
+  -- red under: FontFlags answering the skin's outline for a picked flag (the player's pick is lost).
+  local _, Skin = F.env()
+  register(Skin, OWNER)
+  local S = Skin:For(OWNER)
+  for _, v in ipairs({ "", "OUTLINE", "THICKOUTLINE", "MONOCHROME", "OUTLINE, MONOCHROME" }) do
+    assertEqual(S.FontFlags(v), v, "picked: " .. v)
+  end
+  assertEqual(S.FontFlags(Skin.FROM_SKIN), "OUTLINE", "all: From skin is OUTLINE")
+  assertEqual(S.FontFlags(nil), "OUTLINE", "nothing stored is From skin")
+  assertEqual(S.FontFlags(Skin.FROM_SKIN, "window"), "OUTLINE", "window text too")
+  Skin:SetOutline(OWNER, "hud")
+  assertEqual(S.FontFlags(Skin.FROM_SKIN), "OUTLINE", "hud: a HUD element keeps it")
+  assertEqual(S.FontFlags(Skin.FROM_SKIN, "window"), "", "and window text loses it")
+  Skin:SetOutline(OWNER, "off")
+  assertEqual(S.FontFlags(Skin.FROM_SKIN), "", "off: none")
+  assertEqual(S.FontFlags("THICKOUTLINE"), "THICKOUTLINE", "a pick still wins under off")
+end)
+
+test("skin font flags: under Ignore fonts From skin answers OUTLINE whatever the mode", function()
+  local _, Skin = F.env()
+  register(Skin, OWNER)
+  local S = Skin:For(OWNER)
+  Skin:SetOutline(OWNER, "off")
+  Skin:SetIgnore(OWNER, nil, true)
+  assertEqual(S.FontFlags(Skin.FROM_SKIN), "OUTLINE", "the Font outline is not read")
+  assertEqual(S.FontFlags(""), "", "a pick still wins")
+  assertEqual(Skin:For("Nobody").FontFlags(Skin.FROM_SKIN), "OUTLINE", "an unregistered owner reads Ka0s Default")
+end)

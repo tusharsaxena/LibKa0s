@@ -13,7 +13,7 @@
 | Shipped in | v1.81.0 |
 | Status | Superseded |
 | Supersedes | [version 34.4.35.4.6.10.3.13.8.3.2.5.3.1](./version-34.4.35.4.6.10.3.13.8.3.2.5.3.1-docs.md) (shipped in v1.80.0) — whose skin picker titled its window "Choose a skin for <the addon's label>" (`TITLE_FOR`) in a fixed 280-wide window, where a long label was cut off, and whose settings tooltips wrote their colors as literals whatever the skin |
-| Superseded by | [version 34.4.36.5.7.11.3.13.9.4.3.6.4.3](./version-34.4.36.5.7.11.3.13.9.4.3.6.4.3-docs.md) |
+| Superseded by | [version 34.4.36.5.7.11.3.14.9.4.3.6.4.3](./version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 36, OptionsIds = 5, OptionsIdList = 7, OptionsTabs = 11, OptionsCombat = 3, OptionsCompose = 13, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 3, OptionsSkinPicker = 2 }` |
 
@@ -3652,12 +3652,14 @@ that can observe the difference is one passing **both** paths — which no host 
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
 
-## Moving to version 34.4.36.5.7.11.3.13.9.4.3.6.4.3
+## Moving to version 34.4.36.5.7.11.3.14.9.4.3.6.4.3
 
-**Take it; nothing is owed in code, one seam to widen.** Version 34.4.36.5.7.11.3.13.9.4.3.6.4.3, released in v1.82.0, moves
-two files (`OptionsAppearance.lua` 4, `OptionsSkinPicker.lua` 3) and adds and removes no member. The
+**Take it; nothing is owed in code, one seam to widen.** Version 34.4.36.5.7.11.3.14.9.4.3.6.4.3, released in v1.82.0, moves
+three files (`OptionsAppearance.lua` 4, `OptionsSkinPicker.lua` 3, `OptionsCompose.lua` 14) and adds and
+removes no member. `O.FontGroup` takes `flagsFromSkin = true`, a *From skin* Font flags default the
+host draws with `S.FontFlags`. The
 Skin tab gains the *Font outline* dropdown (`LibKa0s-Skin-1.0` minor 9's `SetOutline`), and every
 media write it makes carries `{ font, texture, outline }`; the copy and the picker's *Apply to all*
 carry the outline. A host whose write seam stores the overrides also stores `media.outline` when it
 is not nil, and applies its stored mode with `Skin:SetOutline` where it applies its stored scope; a
-test pinning the copy confirmation's words moves with them. See [version 34.4.36.5.7.11.3.13.9.4.3.6.4.3](./version-34.4.36.5.7.11.3.13.9.4.3.6.4.3-docs.md).
+test pinning the copy confirmation's words moves with them. See [version 34.4.36.5.7.11.3.14.9.4.3.6.4.3](./version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md).
