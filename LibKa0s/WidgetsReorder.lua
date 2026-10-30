@@ -517,6 +517,18 @@ local function beginDrag(row)
   list.say("grab %d at y=%.1f", row.index, row.startY)
 end
 
+-- The list's colors, resolved once per render: an explicit option, else the owner's palette, else
+-- the constants. The line, the handle's two tints and the ghost's text are minor 2's; the tooltip's is
+-- minor 3's. Split out of ReorderList so the constructor stays under CCN 15 (the v1.81.0 release run
+-- measured it at 17).
+local function listColors(list, opts, pal)
+  list.color       = opts.lineColor or (pal and pal.line) or LINE_COLOR
+  list.handleRest  = opts.handleColor or (pal and pal.rest) or HANDLE_REST
+  list.handleHover = opts.handleHoverColor or (pal and pal.hover) or HANDLE_HOVER
+  list.ghostText   = (pal and pal.ghostText) or GHOST_TEXT
+  list.tipText     = (pal and pal.tip) or TIP_TEXT
+end
+
 --- Build a reorderable list controller.
 ---
 --- One controller per RENDER, not one per list: it holds the rows of the pass that built it, and a
@@ -564,19 +576,14 @@ function lib.ReorderList(opts)
     boundary   = opts.boundary,
     onMove     = opts.onMove,
     handleIcon = opts.handleIcon,
-    color      = opts.lineColor or (pal and pal.line) or LINE_COLOR,
     skin       = pal,
-    -- The handle's two tints and the ghost's text, resolved once per render (minor 2).
-    handleRest = opts.handleColor or (pal and pal.rest) or HANDLE_REST,
-    handleHover = opts.handleHoverColor or (pal and pal.hover) or HANDLE_HOVER,
-    ghostText  = (pal and pal.ghostText) or GHOST_TEXT,
-    tipText    = (pal and pal.tip) or TIP_TEXT,
     rowBox     = opts.rowBox ~= false,
     rows       = {},
     handles    = {},
     boxes      = {},
     dead       = false,
   }
+  listColors(list, opts, pal)
 
   function list.say(fmt, ...)
     if opts.debug then opts.debug(fmt, ...) end

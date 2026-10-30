@@ -767,6 +767,32 @@ local STRIP_H, STRIP_ICON, STRIP_INSET = 18, 12, 6
 --- table moves nothing: the constructor reads the file-local.
 lib.TEST_STRIP = { HEIGHT = STRIP_H }
 
+-- The strip's icon (host-passed art, optional) and its line, laid out left to right; split out of
+-- TestStrip so the constructor stays under CCN 15 (the v1.81.0 release run measured it at 16).
+local function stripLine(s, opts)
+  local icon = opts.icon
+  if type(icon) == "string" or type(icon) == "number" then
+    local tex = s:CreateTexture(nil, "ARTWORK")
+    tex:SetSize(STRIP_ICON, STRIP_ICON)
+    tex:SetPoint("LEFT", s, "LEFT", STRIP_INSET, 0)
+    tex:SetTexture(icon)
+    s.__icon = tex
+  end
+
+  -- From a template, so it is never fontless when SetText arrives.
+  local text = s:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  if s.__icon then
+    text:SetPoint("LEFT", s.__icon, "RIGHT", STRIP_INSET, 0)
+  else
+    text:SetPoint("LEFT", s, "LEFT", STRIP_INSET, 0)
+  end
+  text:SetPoint("RIGHT", s, "RIGHT", -STRIP_INSET, 0)
+  text:SetJustifyH("LEFT")
+  text:SetWordWrap(false)   -- with both anchors, a long line truncates with an ellipsis
+  text:SetText(type(opts.text) == "string" and opts.text or "")
+  return text
+end
+
 --- Build the mode strip: a full-width band a window lays between its chrome and its data, saying
 --- the data under it is not real, in test mode (amber, the default) or a simulation
 --- (`kind = "sim"`, cyan). It draws itself and nothing else.
@@ -805,26 +831,7 @@ function lib.TestStrip(parent, opts)
   local panel = opts.panel == true
   if Skin then Skin:For(opts.owner).Strip(fill, { kind = kind, panel = panel or nil }) end
 
-  local icon = opts.icon
-  if type(icon) == "string" or type(icon) == "number" then
-    local tex = s:CreateTexture(nil, "ARTWORK")
-    tex:SetSize(STRIP_ICON, STRIP_ICON)
-    tex:SetPoint("LEFT", s, "LEFT", STRIP_INSET, 0)
-    tex:SetTexture(icon)
-    s.__icon = tex
-  end
-
-  -- From a template, so it is never fontless when SetText arrives.
-  local text = s:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-  if s.__icon then
-    text:SetPoint("LEFT", s.__icon, "RIGHT", STRIP_INSET, 0)
-  else
-    text:SetPoint("LEFT", s, "LEFT", STRIP_INSET, 0)
-  end
-  text:SetPoint("RIGHT", s, "RIGHT", -STRIP_INSET, 0)
-  text:SetJustifyH("LEFT")
-  text:SetWordWrap(false)   -- with both anchors, a long line truncates with an ellipsis
-  text:SetText(type(opts.text) == "string" and opts.text or "")
+  local text = stripLine(s, opts)
   s.text = text
   s.kind = kind
   -- Minor 17: an owned strip's line in `text.accent` and the body face; a panel-scoped strip's fill

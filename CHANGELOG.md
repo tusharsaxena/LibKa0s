@@ -391,6 +391,13 @@ pins a size of 0, a negative, a non-number and no font at all.
   (`ST-01`). In a client where any re-vendored addon is installed, its v1.81.0 copy wins the Skin,
   Widgets, Options, Sim, Core, DebugLog and Perf majors for every addon, so the looks below reach an
   addon that has not re-vendored yet: a stale `stockDefault` caller draws the Ka0s look with no error.
+- **Two functions over CCN 15, split before the tag.** The first v1.81.0 release run
+  (`docs/automated-tests/20261030-054311/`, committed as the record that found them) measured the
+  first close commit clean, lint 0/0 and 3297 passed, but complexity 2 warnings, max CCN 17, so the
+  tag precondition `complexity.warnings` 0 failed: `lib.ReorderList` (17, minor 3's tooltip color)
+  and `lib.TestStrip` (16, minor 17's panel scope). Their colors and their icon-and-line build move,
+  unchanged and in order, into file-local helpers (`listColors`, `stripLine`). No behavior change;
+  both minors are this release's own, so none moves.
 - **The 1000-1500 band**, re-measured at the close: twelve files, nothing over 1500, no re-check
   trigger fired. Three came in on this branch (`LibKa0s/SkinDefs.lua` 1005, `LibKa0s/SimPanel.lua`
   1018, `tests/test_options_skin_picker.lua` 1064), each accepted with its seam and trigger in
