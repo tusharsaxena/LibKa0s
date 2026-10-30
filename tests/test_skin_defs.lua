@@ -403,7 +403,8 @@ test("skin defs: WoW Forever is warm charcoal, black centered titles, tan accent
     end
     local bg = t["win.bg"]
     assertTrue(bg[1] > bg[3] and luminance(bg) < 0.03, "warm charcoal window")
-    assertEqual(t["font.body"], "Ka0s Fira Sans", "Fira Sans (minor 11: a face of its own; Barlow read blurry)")
+    assertEqual(t["font.body"], "Ka0s Fira Sans Medium",
+      "Fira Sans (minor 11: a face of its own; Barlow read blurry), Medium since minor 17")
   end)
 
 -- ── what a skin names exists ─────────────────────────────────────────────────────────────────
@@ -460,21 +461,22 @@ local FRIZ = "Friz Quadrata TT"
 
 --- A face's family: its LSM key without the weight.
 local function family(face)
-  return (face:gsub(" SemiBold$", ""):gsub(" Bold$", ""))
+  return (face:gsub(" SemiBold$", ""):gsub(" Medium$", ""):gsub(" Bold$", ""))
 end
 
 test("skin defs: every skin draws one family of its own, for body and titles alike", function()
   -- SkinDefs minor 11 (the owner's round-5 notes: titles that do not match the body, faces reused
   -- across skins). red under: a skin whose titles are another family than its body (Cinzel over a
   -- body face), or a face two skins share, but the client's Friz Quadrata, which WoW Default draws.
-  -- SkinDefs minor 14: Ka0s Default draws Oxanium, SemiBold body and Bold titles, the owner's choice.
+  -- SkinDefs minor 17: Ka0s Default draws Prototype for both, the owner's choice (it has one weight),
+  -- and WoW Forever's body is Fira Sans Medium under its SemiBold titles.
   local Skin = skinLib()
   local want = {
     obsidian = { "Ka0s Inter", "Ka0s Inter SemiBold" }, glass = { "Ka0s Nunito", "Ka0s Nunito SemiBold" },
     azeroth = { "Ka0s Vollkorn", "Ka0s Vollkorn Bold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
     ember = { "Ka0s Bitter", "Ka0s Bitter Bold" }, midnight = { "Ka0s Philosopher", "Ka0s Philosopher Bold" },
-    forever = { "Ka0s Fira Sans", "Ka0s Fira Sans SemiBold" }, wow = { FRIZ, FRIZ },
-    ka0s = { "Ka0s Oxanium SemiBold", "Ka0s Oxanium Bold" },
+    forever = { "Ka0s Fira Sans Medium", "Ka0s Fira Sans SemiBold" }, wow = { FRIZ, FRIZ },
+    ka0s = { "Ka0s Prototype", "Ka0s Prototype" },
   }
   local owner = {}
   for key, pair in pairs(want) do
@@ -500,7 +502,7 @@ end)
 -- Each skin's HUD face (SkinDefs minor 16, the owner's ruling R-4, DECISIONS D-11): the skin's own
 -- family at its heavier shipped weight; WoW Default the client's Friz Quadrata, set explicitly.
 local HUD_FACE = {
-  ka0s = "Ka0s Oxanium SemiBold", obsidian = "Ka0s Inter SemiBold", azeroth = "Ka0s Vollkorn Bold",
+  ka0s = "Ka0s Prototype", obsidian = "Ka0s Inter SemiBold", azeroth = "Ka0s Vollkorn Bold",
   glass = "Ka0s Nunito SemiBold", contrast = "Ka0s Atkinson Bold", ember = "Ka0s Bitter Bold",
   wow = FRIZ, midnight = "Ka0s Philosopher Bold", forever = "Ka0s Fira Sans SemiBold",
 }
@@ -521,21 +523,21 @@ test("skin defs: every skin names a HUD face of its own, its text's family; only
   end
 end)
 
-test("skin defs: Ka0s Default's Oxanium and its own bar stay its own; a skin naming neither keeps Friz and Blizzard", function()
-  -- SkinDefs minor 14. Every skin inherits Ka0s Default's tokens, so without KEEP minor 14's choice
-  -- would have moved every skin's faces and bar texture with it. red under: a skin naming no body
-  -- face or bar texture of its own that reads Oxanium or the Ka0s Default bar. (The HUD face left
-  -- KEEP in minor 16: every skin names its own, pinned above.)
+test("skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin naming neither keeps Friz and Blizzard", function()
+  -- SkinDefs minor 14 (Oxanium then; Prototype since minor 17). Every skin inherits Ka0s Default's
+  -- tokens, so without KEEP that choice would have moved every skin's faces and bar texture with it.
+  -- red under: a skin naming no body face or bar texture of its own that reads Prototype or the Ka0s
+  -- Default bar. (The HUD face left KEEP in minor 16: every skin names its own, pinned above.)
   local Skin = skinLib()
   local k = Skin:ResolveSkin("ka0s")
-  assertEqual(k["hud.font"], "Ka0s Oxanium SemiBold", "Ka0s Default's HUD face")
+  assertEqual(k["hud.font"], "Ka0s Prototype", "Ka0s Default's HUD face")
   assertEqual(k["bar.texture"], "Ka0s Default", "Ka0s Default's bar texture")
   for _, key in ipairs(KEYS) do
     if key ~= "ka0s" then
       local own, t = Skin.skins[key].tokens, Skin:ResolveSkin(key)
-      assertTrue(family(t["hud.font"]) ~= "Ka0s Oxanium", key .. " does not inherit Ka0s Default's HUD face")
+      assertTrue(t["hud.font"] ~= "Ka0s Prototype", key .. " does not inherit Ka0s Default's HUD face")
       assertEqual(t["bar.texture"], own["bar.texture"] or "Blizzard", key .. " draws its own bar or Blizzard")
-      assertTrue(family(t["font.body"]) ~= "Ka0s Oxanium" and family(t["font.title"]) ~= "Ka0s Oxanium",
+      assertTrue(t["font.body"] ~= "Ka0s Prototype" and t["font.title"] ~= "Ka0s Prototype",
         key .. " does not inherit Ka0s Default's face")
     end
   end

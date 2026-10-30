@@ -11,21 +11,25 @@
 | Files and minors | `Media.lua` minor **10** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.82.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 9.1](./version-9.1-docs.md) (shipped in v1.79.0) — the same surface without Prototype and Fira Sans Medium in `FONTS` |
+| Supersedes | [version 9.1](./version-9.1-docs.md) (shipped in v1.79.0) — the same surface with Oxanium SemiBold and Bold and Fira Sans Regular in `FONTS`, and without Prototype and Fira Sans Medium |
 | Superseded by | — |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 10, MediaIcons = 1 }` |
 
 ## What changed at this version
 
-**Additive.** Nothing version 9.1 had resolves differently and no signature moves. Two faces arrive
-in `FONTS`, the owner's 2026-10-30 picks (Ka0sAddonsCommonTasks
-`docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, D-01): Ka0s Default's Prototype and WoW Forever's Fira
-Sans Medium. `MediaIcons.lua` does not move.
+**Two faces arrive and three leave; no signature moves.** The arrivals are the owner's 2026-10-30
+picks (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, D-01): Ka0s Default's
+Prototype and WoW Forever's Fira Sans Medium. The faces no skin names after `LibKa0s-Skin-1.0`'s
+SkinDefs minor 17 leave the payload with their files (the owner's item 7, D-03): `Ka0s Oxanium
+SemiBold`, `Ka0s Oxanium Bold` (with `Oxanium-OFL.txt`) and `Ka0s Fira Sans` (Regular;
+`FiraSans-OFL.txt` stays). `FONTS` holds sixteen entries, thirteen of them reaching ruRU.
+`MediaIcons.lua` does not move.
 
 | | | Since |
 |---|---|---|
 | `Ka0s Prototype` in `FONTS` | `{ file = "Prototype-Regular.ttf", license = "Prototype.txt", langmask = { "western" } }`: Ka0s Default's face, the squared techno face the owner chose on 2026-10-28. **Not under the OFL**: its own name table reads "free for personal use, freely distributed with Prototype.txt", and the owner ruled on 2026-10-30 to ship it on those terms, so the author's `Prototype.txt` ships beside it byte for byte. From the archive dafont.com distributes, unchanged, pinned by SHA-256 in `tools/artwork/fonts.py`; byte-identical to the copy in the owner's SharedMedia pack, which registers the same key. One weight. No Cyrillic, so western. | **10** |
 | `Ka0s Fira Sans Medium` in `FONTS` | `{ file = "FiraSans-Medium.ttf", license = "FiraSans-OFL.txt", langmask = { "western", "ruRU" } }`: WoW Forever's body face, from google/fonts at the commit and build (4.203) the shipped SemiBold comes from, unchanged. SIL OFL 1.1. | **10** |
+| `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold` and `Ka0s Fira Sans` leave `FONTS` | Removed with `Oxanium-SemiBold.ttf`, `Oxanium-Bold.ttf`, `Oxanium-OFL.txt` and `FiraSans-Regular.ttf`. No release of any addon shipped them. `Font(addonName, name)` answers `nil` for them, as for any unknown name, and `RegisterLSM` no longer offers them. A profile still naming one as a font override falls back to its skin's face (`LibKa0s-Skin-1.0` drops an override key LibSharedMedia cannot resolve); a HUD element storing one draws LibSharedMedia's default face. | **10** |
 
 **Expressway does not ship.** The same ruling asked for it as Obsidian's face. The archive its
 author distributes carries the Typodermic Desktop EULA, whose guide lists embedding in "an app,
@@ -231,7 +235,7 @@ Read straight off the LibStub table. Every function is stateless.
 | `Font(addonName, name[, vendorPath])` | 1 | The font path for one registered face, or `nil` when `name` is not a key of `FONTS` or `addonName` is missing or empty. |
 | `RegisterLSM(addonName[, vendorPath])` | 1 (second return: 3; langmask and counted-only-if-held: 4; per-face mask, borders and backgrounds: **6**; a held key is never offered: **7**) | Register every shipped font, statusbar texture, border and background with LibSharedMedia under its catalog name, each font under the mask its `langmask` list builds. Returns `fonts, bars, borders, backgrounds`, each counting what LSM holds afterwards (`LSM:IsValid`); **`0, 0, 0, 0` when LSM is absent, which is not an error**. |
 | `ICONS` | 1 (three sets since **5**) | Array of every icon name: the set's prefix, then the file's own basename. The catalog — enumerate it rather than hard-coding a list. The 113 hand-written names come first, in version 4's order; `MediaIcons.lua` appends the rest at load. |
-| `FONTS` | 1 (six faces and `langmask`: **6**; Oxanium's two: **9**; Prototype and Fira Sans Medium: **10**) | Map of LSM name → `{ file, license, langmask }`: two basenames under `media/fonts/` and the array of LSM locale groups the face can draw (`"western"`, `"ruRU"`, ...). |
+| `FONTS` | 1 (six faces and `langmask`: **6**; Prototype and Fira Sans Medium in, Oxanium and Fira Sans Regular out: **10**) | Map of LSM name → `{ file, license, langmask }`: two basenames under `media/fonts/` and the array of LSM locale groups the face can draw (`"western"`, `"ruRU"`, ...). |
 | `VENDOR_PATH` | 1 | `"libs\\LibKa0s"` — where the collection vendors this library, and the default third argument above. |
 | `MODULES` | 1 | `{ Media = <minor>, MediaIcons = <minor> }` — the live minors, and the value that picks this document. |
 
@@ -354,23 +358,21 @@ is one row in its `GLYPHS` table plus a row in `ICONS` in `Media.lua`; every oth
 | `Ka0s Vollkorn` / `Ka0s Vollkorn Bold` | `Vollkorn-Regular.ttf` / `Vollkorn-Bold.ttf` | `Vollkorn-OFL.txt` | western, ruRU | Azeroth |
 | `Ka0s Bitter` / `Ka0s Bitter Bold` | `Bitter-Regular.ttf` / `Bitter-Bold.ttf` | `Bitter-OFL.txt` | western, ruRU | Ember |
 | `Ka0s Philosopher` / `Ka0s Philosopher Bold` | `Philosopher-Regular.ttf` / `Philosopher-Bold.ttf` | `Philosopher-OFL.txt` | western, ruRU | WoW Midnight |
-| `Ka0s Fira Sans` / `Ka0s Fira Sans SemiBold` | `FiraSans-Regular.ttf` / `FiraSans-SemiBold.ttf` | `FiraSans-OFL.txt` | western, ruRU | WoW Forever |
-| `Ka0s Fira Sans Medium` | `FiraSans-Medium.ttf` | `FiraSans-OFL.txt` | western, ruRU | WoW Forever's body text, since **10** |
+| `Ka0s Fira Sans Medium` / `Ka0s Fira Sans SemiBold` | `FiraSans-Medium.ttf` / `FiraSans-SemiBold.ttf` | `FiraSans-OFL.txt` | western, ruRU | WoW Forever (Medium since **10**; Regular until then) |
 | `Ka0s Atkinson` / `Ka0s Atkinson Bold` | `AtkinsonHyperlegible-Regular.ttf` / `-Bold.ttf` | `AtkinsonHyperlegible-OFL.txt` | western | High Contrast |
-| `Ka0s Oxanium SemiBold` / `Ka0s Oxanium Bold` | `Oxanium-SemiBold.ttf` / `Oxanium-Bold.ttf` | `Oxanium-OFL.txt` | western | Ka0s Default (SemiBold for body and HUD, Bold for titles), since **9** |
 | `Ka0s Prototype` | `Prototype-Regular.ttf` | `Prototype.txt` (the author's terms, not the OFL) | western | Ka0s Default (body, titles and HUD), since **10** |
 
 The first of each pair is the skin's body face, the second its titles: one family per skin, since
-minor 8. Ka0s Default draws Oxanium, SemiBold for body and HUD text and Bold for titles (since
+minor 8. Ka0s Default draws Prototype for body, titles and HUD text (since **10**; Oxanium at
 **9**); WoW Default draws the client's Friz Quadrata, which this library does not ship. Every face but
 Prototype is SIL OFL 1.1, and every face's terms ship beside it: Prototype's are its author's
 `Prototype.txt`, verbatim, which its own name table names as the condition of distributing it; Bitter reserves only the name
 "Bitter Pro", which nothing here uses. `tools/artwork/fonts.py` is the provenance record for the
-skin faces: it pins each to a google/fonts commit and a SHA-256, and builds the shipped files.
-Philosopher, Fira Sans and Atkinson Hyperlegible ship as upstream publishes them. Inter, Nunito,
-Vollkorn, Bitter and Oxanium are published only as variable fonts, and the client is not known to
-honor a variable axis, so the tool cuts static instances (weight 400 and the title weight, Oxanium
-at 600 and 700; Inter's optical size at 14) with fontTools and renames each for its weight; each family's `-OFL.txt` records that
+skin faces: it pins each to a google/fonts commit, or Prototype to the archive dafont.com
+distributes, and a SHA-256, and builds the shipped files. Philosopher, Fira Sans, Atkinson
+Hyperlegible and Prototype ship as their sources publish them. Inter, Nunito, Vollkorn and Bitter
+are published only as variable fonts, and the client is not known to honor a variable axis, so the
+tool cuts static instances (weight 400 and the title weight; Inter's optical size at 14) with fontTools and renames each for its weight; each family's `-OFL.txt` records that
 above the license text.
 
 **JetBrains Mono is the monospace.** A meter, a debug console and a perf table are all grids of digits

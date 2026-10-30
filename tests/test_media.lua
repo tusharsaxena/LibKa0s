@@ -16,8 +16,9 @@ local FONT_DIR = "LibKa0s/media/fonts"
 
 -- How many faces FONTS ships, and how many of them draw Cyrillic and so land on a ruRU client. Every
 -- count below reads these, so a payload change moves two numbers here rather than one per case.
--- Minor 10: JetBrains Mono, the skins' fourteen, Oxanium's two, Fira Sans Medium and Prototype.
-local FONT_COUNT, RU_COUNT = 19, 14
+-- Minor 10: JetBrains Mono, fifteen skin faces (Oxanium's two and Fira Sans Regular left; Fira Sans
+-- Medium and Prototype came), of which twelve and JetBrains Mono draw Cyrillic.
+local FONT_COUNT, RU_COUNT = 16, 13
 
 --- The basenames on disk under `dir`, as a set. Lua 5.1 has no directory API and this repo does not
 --- depend on LuaFileSystem, so the listing shells out — the same bargain tests/_kit/vendor_sync.lua
@@ -406,7 +407,7 @@ test("media: RegisterLSM flags the face western+ruRU, so a ruRU client keeps it"
   assertEqual(masks["JetBrains Mono"], 128 + 2, "the face must be flagged western + ruRU")
   assertEqual(store.font and store.font["JetBrains Mono"],
     media.Font("MythicMeters", "JetBrains Mono"), "the face did not land in LSM")
-  assertEqual(fonts, RU_COUNT, "JetBrains Mono and the Cyrillic skin faces; Atkinson, Oxanium and Prototype are western only")
+  assertEqual(fonts, RU_COUNT, "JetBrains Mono and the Cyrillic skin faces; Atkinson and Prototype are western only")
 end)
 
 test("media: RegisterLSM counts only what LibSharedMedia kept", function()
@@ -555,7 +556,6 @@ local SKIN_FACES = {
   ["Ka0s Bitter Bold"]        = { file = "Bitter-Bold.ttf", license = "Bitter-OFL.txt", ru = true },
   ["Ka0s Philosopher"]        = { file = "Philosopher-Regular.ttf", license = "Philosopher-OFL.txt", ru = true },
   ["Ka0s Philosopher Bold"]   = { file = "Philosopher-Bold.ttf", license = "Philosopher-OFL.txt", ru = true },
-  ["Ka0s Fira Sans"]          = { file = "FiraSans-Regular.ttf", license = "FiraSans-OFL.txt", ru = true },
   ["Ka0s Fira Sans SemiBold"] = { file = "FiraSans-SemiBold.ttf", license = "FiraSans-OFL.txt", ru = true },
   ["Ka0s Fira Sans Medium"]   = { file = "FiraSans-Medium.ttf", license = "FiraSans-OFL.txt", ru = true },
   ["Ka0s Atkinson"]           = { file = "AtkinsonHyperlegible-Regular.ttf",
@@ -565,12 +565,14 @@ local SKIN_FACES = {
 }
 
 -- The families cut from a variable font upstream, whose license records the instancing.
-local INSTANCED = { "Inter-OFL.txt", "Nunito-OFL.txt", "Vollkorn-OFL.txt", "Bitter-OFL.txt", "Oxanium-OFL.txt" }
+local INSTANCED = { "Inter-OFL.txt", "Nunito-OFL.txt", "Vollkorn-OFL.txt", "Bitter-OFL.txt" }
 
--- Ka0s Default's own faces (minor 9): Oxanium, SemiBold for body and HUD text, Bold for titles.
-local OXANIUM = {
+-- The faces minor 10 retired, no skin naming them any more (the owner's item 7), and their files:
+-- Oxanium, Ka0s Default's from minor 9, and Fira Sans Regular, WoW Forever's body until Medium.
+local RETIRED = {
   ["Ka0s Oxanium SemiBold"] = "Oxanium-SemiBold.ttf",
   ["Ka0s Oxanium Bold"]     = "Oxanium-Bold.ttf",
+  ["Ka0s Fira Sans"]        = "FiraSans-Regular.ttf",
 }
 
 -- The faces that ship under terms other than the OFL, each on a recorded owner ruling, by the file
@@ -586,8 +588,8 @@ local NON_OFL = {
 
 test("media: FONTS carries every skin face beside JetBrains Mono", function()
   -- red under: minor 5, whose catalog was one monospace face; and minor 6's five, Barlow and Cinzel
-  -- among them, which three skins shared. Minor 9 adds Oxanium SemiBold and Bold, Ka0s Default's faces;
-  -- minor 10 adds Fira Sans Medium and Prototype.
+  -- among them, which three skins shared. Minor 9 added Oxanium SemiBold and Bold, Ka0s Default's faces;
+  -- minor 10 adds Fira Sans Medium and Prototype, and retires Oxanium and Fira Sans Regular.
   local n = 0
   for _ in pairs(media.FONTS) do n = n + 1 end
   assertEqual(n, FONT_COUNT, "JetBrains Mono and every skin face")
@@ -600,14 +602,12 @@ test("media: FONTS carries every skin face beside JetBrains Mono", function()
       assertEqual(table.concat(entry.langmask or {}, ","), "western", want.face .. " has no Cyrillic")
     end
   end
-  for name, file in pairs(OXANIUM) do
-    local entry = media.FONTS[name]
-    assertTrue(entry ~= nil, "FONTS has no '" .. name .. "'")
-    if entry then
-      assertEqual(entry.file, file, name .. "'s file")
-      assertEqual(entry.license, "Oxanium-OFL.txt", name .. "'s license")
-    end
+  local files = listing(FONT_DIR) or {}
+  for name, file in pairs(RETIRED) do
+    assertTrue(media.FONTS[name] == nil, "FONTS still names the retired '" .. name .. "'")
+    assertTrue(files[file] == nil, file .. " still ships, and no skin names it")
   end
+  assertTrue(files["Oxanium-OFL.txt"] == nil, "Oxanium's license ships without its faces")
   for name, want in pairs(SKIN_FACES) do
     local entry = media.FONTS[name]
     assertTrue(entry ~= nil, "FONTS has no '" .. name .. "'")
@@ -626,9 +626,6 @@ test("media: each face names its own locales, and only a face with Cyrillic reac
       name .. " carries no langmask list")
   end
   assertEqual(table.concat(media.FONTS["JetBrains Mono"].langmask or {}, ","), "western,ruRU")
-  for name in pairs(OXANIUM) do
-    assertEqual(table.concat(media.FONTS[name].langmask or {}, ","), "western", name .. " is Latin only")
-  end
   for name, want in pairs(SKIN_FACES) do
     assertEqual(table.concat(media.FONTS[name].langmask or {}, ","), want.ru and "western,ruRU" or "western",
       name .. "'s locales")
@@ -690,10 +687,6 @@ test("media: RegisterLSM('X') registers 'Ka0s Inter' under X's own libs folder, 
     assertEqual(store.font[name], "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\fonts\\" .. want.file)
   end
   assertEqual(masks["JetBrains Mono"], 128 + 2, "JetBrains Mono keeps western + ruRU")
-  for name, file in pairs(OXANIUM) do
-    assertEqual(masks[name], 128, name .. " is western only")
-    assertEqual(store.font[name], "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\fonts\\" .. file)
-  end
   for _, want in pairs(NON_OFL) do
     assertEqual(masks[want.face], 128, want.face .. " is western only")
     assertEqual(store.font[want.face], "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\fonts\\" .. want.file)
@@ -708,9 +701,6 @@ test("media: a ruRU client keeps every Cyrillic face and is refused the western-
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
   assertEqual(fonts, RU_COUNT, "JetBrains Mono and the Cyrillic faces land on ruRU")
   assertTrue(store.font["Ka0s Atkinson"] == nil, "a western-only face landed on ruRU")
-  for name in pairs(OXANIUM) do
-    assertTrue(store.font[name] == nil, name .. ", western only, landed on ruRU")
-  end
   assertTrue(store.font["Ka0s Prototype"] == nil, "Prototype, western only, landed on ruRU")
   assertTrue(store.font["Ka0s Inter"] ~= nil, "a Cyrillic face was refused on ruRU")
 end)

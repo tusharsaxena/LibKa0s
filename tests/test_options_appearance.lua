@@ -627,7 +627,7 @@ test("appearance: the Font and texture section draws two dropdowns between the s
   local font, texture = view.media.font, view.media.texture
   assertEqual(font.labelText, "Font"); assertEqual(texture.labelText, "Texture")
   assertEqual(font.order[1], "@skin", "the skin's own entry first")
-  assertEqual(font.list["@skin"], "Skin's own (Ka0s Oxanium SemiBold)", "naming Ka0s Default's face")
+  assertEqual(font.list["@skin"], "Skin's own (Ka0s Prototype)", "naming Ka0s Default's face")
   assertEqual(texture.list["@skin"], "Skin's own (Ka0s Default)", "and its bar texture")
   assertEqual(table.concat(font.order, "|"), "@skin|Arial Narrow|Ka0s Inter", "then LSM's font keys, sorted")
   assertEqual(table.concat(texture.order, "|"), "@skin|Blizzard|Ka0s Flat", "and its statusbar keys")

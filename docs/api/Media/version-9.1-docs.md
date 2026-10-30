@@ -484,7 +484,10 @@ and normalized line endings on everything, which is right for Lua and wrong for 
 
 ## Moving to version 10.1
 
-**Take it; nothing moves.** Version 10.1 is additive: every name and path here resolves the same and
-no signature changes. What arrives in `FONTS`: `Ka0s Prototype` (Ka0s Default's face, western only,
-under its author's terms in `Prototype.txt`, not the OFL) and `Ka0s Fira Sans Medium` (WoW Forever's
-body face, SIL OFL 1.1 in `FiraSans-OFL.txt`). See [version 10.1](./version-10.1-docs.md).
+**Take it; three keys leave.** Version 10.1 moves no signature. What arrives in `FONTS`: `Ka0s
+Prototype` (Ka0s Default's face, western only, under its author's terms in `Prototype.txt`, not the
+OFL) and `Ka0s Fira Sans Medium` (WoW Forever's body face, SIL OFL 1.1 in `FiraSans-OFL.txt`). What
+leaves, with its files: `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold` and `Ka0s Fira Sans`, which no
+skin names from `LibKa0s-Skin-1.0`'s SkinDefs minor 17. A host that names one of them in code or in
+a degradation copy of Ka0s Default's face moves to the new one; `RegisterLSM` counts sixteen fonts.
+See [version 10.1](./version-10.1-docs.md).

@@ -14,8 +14,9 @@
 -- `lib.SCHEMA` lists every token a skin may set, in groups, each as `{ name, kind, nilable }`.
 -- Kinds: `color` ({ r, g, b, a }, 0-1), `colors` (an ordered list of colors), `number`, `string`
 -- (an LSM key, a texture path, an anchor word) and `bool`. A NILABLE token may resolve to nil, and
--- nil always means "leave the stock value alone": Ka0s Default leaves every font token nil, so a
--- FontString keeps its font object, its size and whatever a font-replacement addon did to it.
+-- nil always means "leave the stock value alone": a skin that sets a font token to nil leaves a
+-- FontString its font object, its size and whatever a font-replacement addon did to it. (Ka0s Default
+-- has set every font token since minor 8.)
 -- A skin derives from Ka0s Default (Skin:ResolveSkin): it names only the tokens it changes, and
 -- `false` is how it says "none" for a token Ka0s Default sets.
 --
@@ -113,7 +114,15 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- art color (the drawer head, the nav entry, the id list entry, the id suggestion row), `false` in
 -- Ka0s Default and WoW Default (the client's ADD highlight art as drawn) and every other skin's
 -- `text.accent` through FOLLOW. The eui source derives it from Ka0s Default.
-local DEFS_MINOR = 16
+--
+-- Minor 17 (LK-02 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK, the owner's
+-- 2026-10-30 picks, DECISIONS D-02): Ka0s Default draws Prototype (Media minor 10) for body, titles
+-- and HUD text, where minor 14 drew Oxanium SemiBold and Bold; Prototype has one weight, so its titles
+-- differ by size alone. The eui source inherits the HUD face. WoW Forever's body text is Fira Sans
+-- Medium; its titles and HUD stay Fira Sans SemiBold, the heavier-HUD rule above. Obsidian keeps
+-- Inter: Expressway, the face D-02 names for it, does not ship (its license forbids embedding it in
+-- software; tools/artwork/fonts.py), so its face waits for the owner's next ruling.
+local DEFS_MINOR = 17
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -228,10 +237,10 @@ local SERIES = {
 }
 
 local KA0S = {
-  -- Fonts (minor 8, the owner's ruling: Ka0s Default sets a font like every skin; minor 14, the
-  -- owner's choice of face): Oxanium, SemiBold for the body and Bold for titles; the mono face
-  -- DebugLog's console names; no outline, the client's 1, -1 shadow.
-  ["font.body"] = "Ka0s Oxanium SemiBold", ["font.title"] = "Ka0s Oxanium Bold",
+  -- Fonts (minor 8, the owner's ruling: Ka0s Default sets a font like every skin; minor 17, the
+  -- owner's choice of face): Prototype, for the body and titles alike (one weight; titles are larger);
+  -- the mono face DebugLog's console names; no outline, the client's 1, -1 shadow.
+  ["font.body"] = "Ka0s Prototype", ["font.title"] = "Ka0s Prototype",
   ["font.mono"] = "JetBrains Mono",
   ["font.outline"] = "", ["font.shadow"] = true,
   -- Window: Core.SKIN, the CopyWindow backdrop, LootHistory's title bar.
@@ -333,7 +342,7 @@ local KA0S = {
   ["cover.dim"] = { 0, 0, 0, 0.6 }, ["cover.text"] = { 0.667, 0.667, 0.667, 1 },
   -- HUD: OptionsCompose's FontGroup / BorderGroup / BarGroup defaults.
   ["bar.texture"] = "Ka0s Default", ["bar.gloss"] = false, ["bar.borderStyle"] = "None",
-  ["bar.borderSize"] = 1, ["hud.font"] = "Ka0s Oxanium SemiBold", ["hud.fontSize"] = 12,
+  ["bar.borderSize"] = 1, ["hud.font"] = "Ka0s Prototype", ["hud.fontSize"] = 12,
   ["hud.outline"] = "OUTLINE",
   -- The icon border (minor 15): Drop Watcher's Window › Icons border, the one item-icon border a Ka0s
   -- addon draws today (its defaults/Profile.lua icons.borderStyle "Solid", icons.borderSize 2; the
@@ -589,7 +598,8 @@ local ICON_EDGE = {
 
 -- Each skin's HUD face (minor 16, R-4): its own family at the heavier shipped weight, since HUD text
 -- is 12px under an OUTLINE and a Regular's thin strokes close up under it; WoW Default the client's
--- own face, named here rather than left to a fallback. A skin's `extra` may still override.
+-- own face, named here rather than left to a fallback. A skin's `extra` may still override. Ka0s
+-- Default's is its token above (Prototype, minor 17), which has no heavier weight.
 local HUD_FACE = {
   obsidian = "Ka0s Inter SemiBold", azeroth = "Ka0s Vollkorn Bold", glass = "Ka0s Nunito SemiBold",
   contrast = "Ka0s Atkinson Bold", ember = "Ka0s Bitter Bold", wow = FRIZ,
@@ -961,12 +971,13 @@ register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, c
 -- charcoal (the mockup's radial fill as a vertical gradient, no texture), black title bars with
 -- centered white titles, a tan accent, gold headings, thin 1px edges. SkinDefs minor 8 (the owner's
 -- notes): Atkinson Hyperlegible for the blurry Barlow, and the charcoal a step browner; minor 11
--- (round 5: a face of its own, High Contrast keeps Atkinson): Fira Sans, crisp at small sizes.
+-- (round 5: a face of its own, High Contrast keeps Atkinson): Fira Sans, crisp at small sizes; minor 17
+-- (the owner's 2026-10-30 pick): Medium for body text, SemiBold kept for titles and HUD.
 local FV_TAN, FV_EDGE = hex("#C9A07A"), hex("#3a3530")
 local FV_BG = grad(hex("#2e251c"), hex("#18120d"))
 register("forever", "WoW Forever", "Warm charcoal, black title bars with centered white titles, tan accent.",
   { "#231c15", "#3a3530", "#050505", "#c9a07a" }, {
-    font = "Ka0s Fira Sans", tfont = "Ka0s Fira Sans SemiBold", fs = 12, titleSize = 14,
+    font = "Ka0s Fira Sans Medium", tfont = "Ka0s Fira Sans SemiBold", fs = 12, titleSize = 14,
     barTex = "Ka0s Classic",
     win = FV_BG, winBorder = edge(1, "flat", FV_EDGE), winInner = false, radius = 0,
     titleBg = hex("#050505"), titleColor = hex("#FFFFFF"), titleAlign = "CENTER",

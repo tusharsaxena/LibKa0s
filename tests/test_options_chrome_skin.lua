@@ -7,7 +7,7 @@
 -- What the earlier minors left as the client drew it, on an owned page:
 --
 --   * the drawer head's label and summary were tinted only, so they kept their template face and
---     Ignore fonts had nothing to act on; they now take the skin's body face (D-13: Oxanium under Ka0s
+--     Ignore fonts had nothing to act on; they now take the skin's body face (D-13: Prototype under Ka0s
 --     Default, where the template drew Friz Quadrata);
 --   * the drawer's chevron, the client's yellow arrow art, now desaturated and colored `icon.arrow`
 --     as every other arrow the library draws;
@@ -30,7 +30,7 @@ local OWNER, OTHER = "LootHistory", "BankLedger"
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdList", "OptionsTabs",
                   "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
                   "OptionsKeybinds" }
-local OXANIUM = "Fonts\\Ka0s Oxanium SemiBold"
+local KA0S_FACE = "Fonts\\Ka0s Prototype"
 
 -- A font for every skin face, and FontStrings built from a template that answer it by name.
 local LSM = setmetatable({}, { __index = function(_, k)
@@ -156,8 +156,8 @@ test("chrome skin: an owned drawer's label and summary wear the skin's body face
   local _, Skin, lib = env()
   F.owner(Skin, OWNER)
   local _, head = page(instance(lib, OWNER), true)
-  assertEqual(face(head.__ka0sDrawerLabelFS), OXANIUM, "Ka0s Default's face (D-13)")
-  assertEqual(face(head.__ka0sDrawerSummaryFS), OXANIUM)
+  assertEqual(face(head.__ka0sDrawerLabelFS), KA0S_FACE, "Ka0s Default's face (D-13)")
+  assertEqual(face(head.__ka0sDrawerSummaryFS), KA0S_FACE)
   Skin:SetChoice(OWNER, "ka0s", "azeroth")
   assertEqual(face(head.__ka0sDrawerLabelFS), bodyFace(Skin, "azeroth"), "a switch reaches it")
   assertEqual(face(head.__ka0sDrawerSummaryFS), bodyFace(Skin, "azeroth"))
@@ -373,7 +373,7 @@ test("chrome skin: Ka0s Default's suggestion rows keep the client's gray and hig
   local D = Skin:ResolveSkin("ka0s")
   local row = popup.rows[1]
   assertEqual(F.rgba(m.__paint(row.label).textColor), rgb(D["menu.text"]))
-  assertEqual(face(row.label), OXANIUM)
+  assertEqual(face(row.label), KA0S_FACE)
   assertTrue(tostring(row.labelText):find("|cff808080(191395)", 1, true) ~= nil, tostring(row.labelText))
   assertTrue(not row.__ka0sHover:IsDesaturated(), "the client's highlight art")
   assertEqual(F.rgba(m.__paint(popup.more.label).textColor), "0.500,0.500,0.500,1", "the template's gray")

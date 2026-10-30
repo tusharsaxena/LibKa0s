@@ -170,6 +170,11 @@ lib.ICONS = {
 -- "Ka0s Prototype" keeps resolving, to the same bytes. Expressway, asked for Obsidian in the same
 -- ruling, does not ship: its distributed license forbids embedding it in software (fonts.py
 -- records why). Latin only, so western.
+--
+-- A FACE NO SKIN NAMES LEAVES THE PAYLOAD (minor 10, the owner's item 7): Oxanium SemiBold and Bold
+-- (Ka0s Default's until SkinDefs minor 17) and Fira Sans Regular (WoW Forever's body until then, now
+-- Medium) left. No release shipped them, and a profile still naming one falls back to its skin's
+-- face (Skin's override layer drops a key LSM cannot resolve).
 local WEST_RU = { "western", "ruRU" }
 lib.FONTS = {
   ["JetBrains Mono"]          = { file = "JetBrainsMono-Regular.ttf", license = "JetBrainsMono-OFL.txt",
@@ -186,7 +191,6 @@ lib.FONTS = {
                                   langmask = WEST_RU },
   ["Ka0s Philosopher Bold"]   = { file = "Philosopher-Bold.ttf", license = "Philosopher-OFL.txt",
                                   langmask = WEST_RU },
-  ["Ka0s Fira Sans"]          = { file = "FiraSans-Regular.ttf", license = "FiraSans-OFL.txt", langmask = WEST_RU },
   ["Ka0s Fira Sans Medium"]   = { file = "FiraSans-Medium.ttf", license = "FiraSans-OFL.txt", langmask = WEST_RU },
   ["Ka0s Fira Sans SemiBold"] = { file = "FiraSans-SemiBold.ttf", license = "FiraSans-OFL.txt",
                                   langmask = WEST_RU },
@@ -194,9 +198,6 @@ lib.FONTS = {
                                   license = "AtkinsonHyperlegible-OFL.txt", langmask = { "western" } },
   ["Ka0s Atkinson Bold"]      = { file = "AtkinsonHyperlegible-Bold.ttf",
                                   license = "AtkinsonHyperlegible-OFL.txt", langmask = { "western" } },
-  ["Ka0s Oxanium SemiBold"]   = { file = "Oxanium-SemiBold.ttf", license = "Oxanium-OFL.txt",
-                                  langmask = { "western" } },
-  ["Ka0s Oxanium Bold"]       = { file = "Oxanium-Bold.ttf", license = "Oxanium-OFL.txt", langmask = { "western" } },
   ["Ka0s Prototype"]          = { file = "Prototype-Regular.ttf", license = "Prototype.txt", langmask = { "western" } },
 }
 

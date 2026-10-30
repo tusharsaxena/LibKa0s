@@ -17,8 +17,8 @@ batch (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, M1), th
 `LK-14`. The release closes on the same branch (`LK-90`); the tag is local until the owner's
 go-ahead.
 
-Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**); every other file
-still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
+Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**) and **SkinDefs
+minor 17** (`LibKa0s-Skin-1.0` key **8.17.12.6.10.2.4**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
 
 ### The payload ships Prototype and Fira Sans Medium (`LK-01`)
 
@@ -43,9 +43,28 @@ and WoW Forever's body text.
   outside the free license and forbids sharing or converting the font; the file's embedding bits say
   the same. `fonts.py` records the archive and its hashes. Obsidian keeps its face until the owner
   rules again.
+- **Three faces leave, with their files** (`LK-02`, once no skin names them; the owner's item 7):
+  `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold` (and `Oxanium-OFL.txt`) and `Ka0s Fira Sans`
+  (`FiraSans-Regular.ttf`). `fonts.py` drops the Oxanium family and Fira Sans Regular. No release
+  shipped them, and a profile naming one falls back to its skin's face. Inter stays, Obsidian's face.
+  `FONTS` holds sixteen faces, thirteen of them on ruRU.
 
-**What a consumer owes:** nothing in code; the next re-vendor carries the two files. A test that
-counts `RegisterLSM`'s fonts moves with the catalog.
+**What a consumer owes:** nothing in code; the next re-vendor carries the files. A test that counts
+`RegisterLSM`'s fonts (sixteen) or names a retired key moves with the catalog.
+
+### Ka0s Default draws Prototype, and WoW Forever's body text Fira Sans Medium (`LK-02`)
+
+`LibKa0s-Skin-1.0` key 8.17.12.6.10.2.4, documented in
+[docs/api/Skin/version-8.17.12.6.10.2.4-docs.md](docs/api/Skin/version-8.17.12.6.10.2.4-docs.md)
+(*What changed at this version*). SkinDefs minor 17 (D-02): Ka0s Default's `font.body`,
+`font.title` and `hud.font` are `Ka0s Prototype` (one weight; its titles differ by size), where they
+were Oxanium SemiBold, Bold and SemiBold; the `eui` source inherits the HUD face. WoW Forever's
+`font.body` is `Ka0s Fira Sans Medium`; its titles and HUD stay `Ka0s Fira Sans SemiBold`.
+**Obsidian keeps Inter**, because Expressway does not ship (above). Sizes do not move here.
+
+**What a consumer owes:** a test pinning Ka0s Default's faces or WoW Forever's body face moves with
+it (better: read `Skin:ResolveSkin("ka0s")["font.body"]`), and a degradation copy of Ka0s Default's
+HUD face (Quick Comms' `NS.SKIN_FALLBACK["hud.font"]`) becomes `Ka0s Prototype`.
 
 ## v1.81.0 — 2026-10-30
 

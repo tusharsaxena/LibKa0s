@@ -63,7 +63,7 @@ test("skin override: a font and a texture reach every token read, and nothing el
   assertEqual(Skin:Token(OWNER, "font.mono"), base["font.mono"], "the mono face stays the skin's")
   assertEqual(Skin:Token(OWNER, "font.bodySize"), base["font.bodySize"], "sizes stay the skin's")
   assertEqual(F.rgba({ Skin:Color(OWNER, "win.bg") }), F.rgba(base["win.bg"]), "colors stay the skin's")
-  assertEqual(base["font.body"], "Ka0s Oxanium SemiBold", "ResolveSkin is override-free")
+  assertEqual(base["font.body"], "Ka0s Prototype", "ResolveSkin is override-free")
   assertEqual(Skin:ResolveSkin("ka0s")["bar.texture"], "Ka0s Default", "and keeps the skin's texture")
   assertTrue(Skin:__Tokens(OWNER) == Skin:__Tokens(OWNER), "the derived table is cached")
   local bar = S.BarStyle()
@@ -142,7 +142,7 @@ test("skin override: one owner's override never reaches another owner", function
   local fired = 0
   Skin:OnLooksChanged(OTHER, function() fired = fired + 1 end)
   Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
-  assertEqual(Skin:Token(OTHER, "font.body"), "Ka0s Oxanium SemiBold", "the other owner reads its skin's face")
+  assertEqual(Skin:Token(OTHER, "font.body"), "Ka0s Prototype", "the other owner reads its skin's face")
   assertEqual(Skin:Token(OTHER, "bar.texture"), "Ka0s Default")
   assertNil((Skin:GetOverride(OTHER)))
   assertEqual((fs:GetFont()), "Fonts\\FRIZQT__.TTF", "its string was not repainted")
@@ -186,7 +186,7 @@ test("skin override: FROM_SKIN stored as an override means the skin's own", func
   register(Skin, OWNER)
   assertFalse(Skin:SetOverride(OWNER, Skin.FROM_SKIN, Skin.FROM_SKIN), "no override, so no change")
   assertNil((Skin:GetOverride(OWNER)))
-  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Oxanium SemiBold")
+  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Prototype")
   Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
   assertTrue(Skin:SetOverride(OWNER, Skin.FROM_SKIN, nil), "FROM_SKIN clears a set override")
   assertNil((Skin:GetOverride(OWNER)))
@@ -213,7 +213,7 @@ end
 
 test("skin override: a key LibSharedMedia lacks leaves the skin's own, until a pack registers it", function()
   -- red under: withOverrides laying any string over the tokens (the stock font and the flat bar).
-  local media = { ["font:Ka0s Oxanium SemiBold"] = "Fonts\\Oxanium-SemiBold.ttf",
+  local media = { ["font:Ka0s Prototype"] = "Fonts\\Prototype-Regular.ttf",
                   ["statusbar:Ka0s Default"] = KA0S_BAR }
   local m, Skin = F.env({ lsm = {} })
   local L = lateLSM(m, media)
@@ -229,9 +229,9 @@ test("skin override: a key LibSharedMedia lacks leaves the skin's own, until a p
   assertTrue(Skin:SetOverride(OWNER, "Gone Font", "Gone Bar"), "stored")
   local font, texture = Skin:GetOverride(OWNER)
   assertEqual(font, "Gone Font"); assertEqual(texture, "Gone Bar", "GetOverride answers the stored keys")
-  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Oxanium SemiBold", "the skin's own face stands")
+  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Prototype", "the skin's own face stands")
   assertEqual(Skin:Token(OWNER, "bar.texture"), "Ka0s Default", "and its own texture")
-  assertEqual(fs:GetFontObject().font[1], "Fonts\\Oxanium-SemiBold.ttf", "the string wears the skin's face, not stock")
+  assertEqual(fs:GetFontObject().font[1], "Fonts\\Prototype-Regular.ttf", "the string wears the skin's face, not stock")
   assertEqual(m.__paint(tex).texture, KA0S_BAR, "the bar is not flat")
   fired = 0
   L:Register("statusbar", "Unrelated", "Interface\\X")
@@ -401,7 +401,7 @@ test("skin ignore fonts: the stored HUD face and outline win over a set companio
   local _, Skin = F.env({ lsm = LSM })
   register(Skin, OWNER)
   local S = Skin:For(OWNER)
-  assertEqual(S.Resolve("hud.font", "Ka0s Inter", true), "Ka0s Oxanium SemiBold", "fonts drawn: the skin's")
+  assertEqual(S.Resolve("hud.font", "Ka0s Inter", true), "Ka0s Prototype", "fonts drawn: the skin's")
   Skin:SetIgnore(OWNER, nil, true)
   assertEqual(S.Resolve("hud.font", "Ka0s Inter", true), "Ka0s Inter", "ignored: the stored face")
   assertEqual(S.Resolve("hud.outline", "THICKOUTLINE", true), "THICKOUTLINE", "and the stored outline")
@@ -419,7 +419,7 @@ test("skin ignore fonts: Token leaves the HUD face and outline alone, and nothin
   assertNil(S.Token("hud.font"), "the HUD face is left alone")
   assertNil(S.Token("hud.outline"), "and the outline")
   assertNil(Skin:Token(OWNER, "hud.font"), "lib-level too")
-  assertEqual(S.Token("font.body"), "Ka0s Oxanium SemiBold", "font.body is P.font's, unchanged")
+  assertEqual(S.Token("font.body"), "Ka0s Prototype", "font.body is P.font's, unchanged")
   assertEqual(S.Token("hud.fontSize"), 12, "the HUD size is out of R-1's scope")
   assertEqual(S.Resolve("bar.texture", "Smooth", true), "Ka0s Default", "a texture still follows the skin")
   assertEqual(S.Resolve("hud.fontSize", 9, true), 12, "and so does the size")
@@ -436,7 +436,7 @@ test("skin ignore fonts: the stored face wins over a font override, and switchin
   assertEqual(S.Resolve("hud.font", "Ka0s Inter", true), "Ka0s Nunito", "off again: the override")
   assertEqual(S.Token("hud.outline"), "OUTLINE", "and the skin's outline")
   Skin:SetOverride(OWNER, false, nil)
-  assertEqual(S.Token("hud.font"), "Ka0s Oxanium SemiBold", "and the skin's face, with no re-register")
+  assertEqual(S.Token("hud.font"), "Ka0s Prototype", "and the skin's face, with no re-register")
 end)
 
 test("skin ignore fonts: BarStyle's font fields are nil, every other field unchanged", function()
@@ -451,14 +451,14 @@ test("skin ignore fonts: BarStyle's font fields are nil, every other field uncha
   assertEqual(bar.texture, before.texture)
   assertEqual(bar.fontSize, before.fontSize, "and the size")
   Skin:SetIgnore(OWNER, nil, false)
-  assertEqual(S.BarStyle().fontKey, "Ka0s Oxanium SemiBold", "off again: the skin's face")
+  assertEqual(S.BarStyle().fontKey, "Ka0s Prototype", "off again: the skin's face")
 end)
 
 test("skin ignore fonts: an unregistered owner reads Ka0s Default's HUD face as before", function()
   local _, Skin = F.env({ lsm = LSM })
   local S = Skin:For("Nobody")
   assertFalse(Skin:__FontsIgnored("Nobody"))
-  assertEqual(S.Resolve("hud.font", "Ka0s Inter", true), "Ka0s Oxanium SemiBold")
+  assertEqual(S.Resolve("hud.font", "Ka0s Inter", true), "Ka0s Prototype")
   assertEqual(S.Token("hud.outline"), "OUTLINE")
-  assertEqual(S.BarStyle().fontKey, "Ka0s Oxanium SemiBold")
+  assertEqual(S.BarStyle().fontKey, "Ka0s Prototype")
 end)

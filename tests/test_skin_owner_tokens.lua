@@ -160,7 +160,7 @@ end)
 test("skin owner tokens: the owner's font and texture overrides still apply beside them", function()
   local LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat" }
   local _, Skin = F.env({ lsm = LSM })
-  local S = register(Skin, OWNER, { ["dw.face"] = { default = "Ka0s Oxanium SemiBold", follow = "font.body" } })
+  local S = register(Skin, OWNER, { ["dw.face"] = { default = "Ka0s Prototype", follow = "font.body" } })
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
   Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
   assertEqual(S.Token("font.body"), "Ka0s Inter", "the font override")
@@ -174,16 +174,16 @@ test("skin owner tokens: under Ka0s Default an override still reaches a token th
   local LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat" }
   local _, Skin = F.env({ lsm = LSM })
   local S = register(Skin, OWNER, {
-    ["dw.face"] = { default = "Ka0s Oxanium SemiBold", follow = "font.body" },
+    ["dw.face"] = { default = "Ka0s Prototype", follow = "font.body" },
     ["dw.bar"] = { default = "Interface\\Own\\Bar", follow = "bar.texture" },
   })
-  assertEqual(S.Token("dw.face"), "Ka0s Oxanium SemiBold", "no override: the default, exactly")
+  assertEqual(S.Token("dw.face"), "Ka0s Prototype", "no override: the default, exactly")
   assertEqual(S.Token("dw.bar"), "Interface\\Own\\Bar", "and the texture's default")
   Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
   assertEqual(S.Token("dw.face"), "Ka0s Inter", "the font override wins under Ka0s Default")
   assertEqual(S.Token("dw.bar"), "Ka0s Flat", "and the texture override")
   Skin:SetOverride(OWNER, false, false)
-  assertEqual(S.Token("dw.face"), "Ka0s Oxanium SemiBold", "cleared: the default again")
+  assertEqual(S.Token("dw.face"), "Ka0s Prototype", "cleared: the default again")
   assertEqual(S.Token("dw.bar"), "Interface\\Own\\Bar", "both halves")
 end)
 

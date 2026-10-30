@@ -185,7 +185,7 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   -- through SetFontObject overflowed the client's stack: Forever -> Midnight crashed the game.
   -- Every shipped skin sets a body face since SkinDefs minor 8, so the way back by path is reached
   -- here through a skin registered with none (`false`), as a face the client cannot resolve would.
-  local m, Skin = F.env({ lsm = { ["font:Ka0s Fira Sans"] = "Fonts\\FiraSans.ttf" } })
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Fira Sans Medium"] = "Fonts\\FiraSans-Medium.ttf" } })
   Skin:RegisterSkin({ key = "bare", tokens = { ["font.body"] = false } })
   local S = F.owner(Skin, OWNER)
   local eb = m.CreateFrame("EditBox", nil, m.UIParent)

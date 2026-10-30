@@ -17,8 +17,7 @@ WHAT SHIPS, AND FROM WHERE. From google/fonts' ofl/ folder, SIL Open Font Licens
     Vollkorn-Regular.ttf, Vollkorn-Bold.ttf            vollkorn, Vollkorn[wght].ttf, INSTANCED
     Bitter-Regular.ttf, Bitter-Bold.ttf                bitter, Bitter[wght].ttf, INSTANCED
     Philosopher-Regular.ttf, Philosopher-Bold.ttf      philosopher, static files, unchanged
-    FiraSans-Regular.ttf, FiraSans-Medium.ttf,
-    FiraSans-SemiBold.ttf                              firasans, static files, unchanged
+    FiraSans-Medium.ttf, FiraSans-SemiBold.ttf         firasans, static files, unchanged
     AtkinsonHyperlegible-Regular.ttf, -Bold.ttf        atkinsonhyperlegible, static files, unchanged
 
     and one license file per family beside them, `<Family>-OFL.txt`: upstream's OFL.txt verbatim,
@@ -66,7 +65,9 @@ corners are), Vollkorn Azeroth's (a dark old-style book face for the parchment),
 sturdy slab), Philosopher WoW Midnight's, Fira Sans WoW Forever's (Medium for body text since the
 owner's 2026-10-30 notes, SemiBold for titles and HUD) and Atkinson Hyperlegible High Contrast's.
 Ka0s Default draws Prototype (2026-10-30), WoW Default the client's Friz Quadrata. Barlow and Cinzel,
-the 2026-10-25 run's faces, left the payload in round 5. Atkinson and Prototype have no Cyrillic;
+the 2026-10-25 run's faces, left the payload in round 5; Oxanium, Ka0s Default's stand-in for
+Prototype from 2026-10-28, and Fira Sans Regular left on 2026-10-30 (Media minor 10), no skin naming
+them any more. Atkinson and Prototype have no Cyrillic;
 the other families cover it, so Media.lua registers them for ruRU too.
 
 Requires Python 3 and fontTools (`sudo apt install python3-fonttools`; see DEPENDENCIES.md), and
@@ -169,14 +170,13 @@ FAMILIES = [
         "dir": "firasans", "family": "Fira Sans",
         "sha": "e345593da2a4d596212542edbd28f2ed08fe6cbe",
         "files": {
-            "FiraSans-Regular.ttf": "c29556a2719bf613ef3d5e070e40d903a8965d9c081beca1375dc1e6e0f93c23",
             # WoW Forever's body face (2026-10-30), from the same commit and build (4.203) as SemiBold.
             "FiraSans-Medium.ttf": "cbc1842cbed8c1d1146ba7c9db97d8f28c9bedfd25f41c5b0e1259ca48622328",
             "FiraSans-SemiBold.ttf": "db0321f83eb3e9f527b8af384a1b3fefdc1039cf2b06fd39b3f61492bda9561c",
             "OFL.txt": "8f24842e9174beda18a556c2ae7d54f5dc444340c19a3a9ef77e23bca366adbd",
         },
         "license": "FiraSans-OFL.txt",
-        "ship": ["FiraSans-Regular.ttf", "FiraSans-Medium.ttf", "FiraSans-SemiBold.ttf"],
+        "ship": ["FiraSans-Medium.ttf", "FiraSans-SemiBold.ttf"],
         "instances": [],
     },
     {
@@ -192,23 +192,6 @@ FAMILIES = [
         "license": "AtkinsonHyperlegible-OFL.txt",
         "ship": ["AtkinsonHyperlegible-Regular.ttf", "AtkinsonHyperlegible-Bold.ttf"],
         "instances": [],
-    },
-    {
-        # Ka0s Default's face (2026-10-28): a squared techno sans, the free stand-in for the
-        # personal-use-only Prototype the owner first chose. SemiBold for body and HUD text, which is
-        # Prototype's weight; Bold for titles.
-        "dir": "oxanium", "family": "Oxanium",
-        "sha": "8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5",
-        "files": {
-            "Oxanium[wght].ttf": "2ce01d946e1e1ffc8d7eecfffbda8623bedd63eaf811a20488c4b69af45babb0",
-            "OFL.txt": "fe17c0f2581d71b4e1ea7e636e7f4877c29223e11bb1dd1a871e8c3f2a86336b",
-        },
-        "license": "Oxanium-OFL.txt",
-        "ship": [],
-        "instances": [
-            ("Oxanium[wght].ttf", "Oxanium-SemiBold.ttf", {"wght": 600}, "SemiBold"),
-            ("Oxanium[wght].ttf", "Oxanium-Bold.ttf", {"wght": 700}, "Bold"),
-        ],
     },
 ]
 

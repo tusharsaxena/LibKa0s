@@ -9,7 +9,7 @@
 --     menu is measured on), the mode strip's line, the autocomplete's rows, the chart's tick labels
 --     and the drag handle's label drew their template's face in every skin, so the switch had
 --     nothing to act on. An owned control now draws them in its skin's body face through the
---     facade (Oxanium under Ka0s Default, D-13), and Ignore fonts gives each its template back. A
+--     facade (Prototype under Ka0s Default, D-13), and Ignore fonts gives each its template back. A
 --     face the host named (`opts.font`, `spec.labelFont`) is the host's and is never touched.
 --   * `panel = true` PUTS A CONTROL ON A SETTINGS PAGE (D-02): while its owner ignores its settings
 --     panel the control is drawn as an owner-less one, live both ways; without it a control is a
@@ -74,7 +74,7 @@ local function face(fs)
   return nil
 end
 
-local OXANIUM = "Fonts\\Ka0s Oxanium SemiBold"
+local KA0S_FACE = "Fonts\\Ka0s Prototype"
 
 local function bodyFace(Skin, skin)
   return "Fonts\\" .. Skin:ResolveSkin(skin)["font.body"]
@@ -111,9 +111,9 @@ test("skin scope: an owned dropdown's menu rows and measure take the skin's body
   F.owner(Skin, OWNER)
   local state = {}
   local menu = open(m, options(W.Dropdown(m.UIParent, 120, { owner = OWNER })), state)
-  assertEqual(face(menu.buttons[1].fs), OXANIUM, "Ka0s Default's face (D-13)")
-  assertEqual(face(menu.buttons[2].fs), OXANIUM)
-  assertEqual(face(menu.measure), OXANIUM, "measured in the face the rows wear")
+  assertEqual(face(menu.buttons[1].fs), KA0S_FACE, "Ka0s Default's face (D-13)")
+  assertEqual(face(menu.buttons[2].fs), KA0S_FACE)
+  assertEqual(face(menu.measure), KA0S_FACE, "measured in the face the rows wear")
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
   assertEqual(face(menu.buttons[1].fs), bodyFace(Skin, "obsidian"), "a switch repaints an open row")
   Skin:SetIgnore(OWNER, nil, true)
@@ -202,7 +202,7 @@ test("skin scope: an owned strip's line is text.accent in the body face, and Ign
   F.owner(Skin, OWNER)
   local s = W.TestStrip(m.UIParent, { text = "Test", owner = OWNER })
   assertEqual(rgba(survey(m, s.text).textColor), "1,0.820,0,1", "Ka0s Default's accent is the template's gold")
-  assertEqual(face(s.text), OXANIUM)
+  assertEqual(face(s.text), KA0S_FACE)
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
   assertEqual(rgba(survey(m, s.text).textColor), F.tok(Skin, "obsidian", "text.accent"))
   assertEqual(face(s.text), bodyFace(Skin, "obsidian"))

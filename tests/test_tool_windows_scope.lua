@@ -8,7 +8,7 @@
 --   * IGNORE FONTS REACHES EVERY STRING A TOOL WINDOW DRAWS. The console's toggle, Diagnostics link
 --     and Copy / Clear labels, the perf panel's step and command columns, and the sim panel's rows
 --     and button labels drew their template's face in every skin, so the switch had nothing to act
---     on. An owned window now draws them in its skin's body face through the facade (Oxanium under
+--     on. An owned window now draws them in its skin's body face through the facade (Prototype under
 --     Ka0s Default, D-13), and Ignore fonts gives each its template back. The windows are windows,
 --     not the settings panel (D-01): Ignore settings panel leaves them skinned.
 --   * THE SIM PANEL'S DROPDOWNS HAVE AN OWNER (finding F-2): an owned panel's scenario and size
@@ -96,7 +96,7 @@ local function face(fs)
   return nil
 end
 
-local OXANIUM = "Fonts\\Ka0s Oxanium SemiBold"
+local KA0S_FACE = "Fonts\\Ka0s Prototype"
 local function bodyFace(Skin, skin) return "Fonts\\" .. Skin:ResolveSkin(skin)["font.body"] end
 local function rgba(c) return F.rgba(c) end
 
@@ -181,7 +181,7 @@ local function fontCycle(build, strings, what)
   F.owner(Skin, OWNER)
   local _, f = build(m, OWNER)
   local list = strings(f)
-  assertFaces(list, OXANIUM, what .. " under Ka0s Default (D-13)")
+  assertFaces(list, KA0S_FACE, what .. " under Ka0s Default (D-13)")
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
   assertFaces(list, bodyFace(Skin, "obsidian"), what .. " after a switch")
   Skin:SetIgnore(OWNER, nil, true)
@@ -222,7 +222,7 @@ test("tool windows scope: the console's Diagnostics link is measured in the face
   F.owner(Skin, OWNER)
   local _, f = console(m, OWNER)
   local fs, b = f.diagnosticsButton.label, f.diagnosticsButton
-  local widths = { [OXANIUM] = 90, [bodyFace(Skin, "obsidian")] = 70, GameFontNormalSmall = 60 }
+  local widths = { [KA0S_FACE] = 90, [bodyFace(Skin, "obsidian")] = 70, GameFontNormalSmall = 60 }
   rawset(fs, "GetStringWidth", function() return widths[face(fs)] end)
   local width
   rawset(b, "SetWidth", function(_, w) width = w end)   -- the kit records no width: spy on it
