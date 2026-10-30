@@ -527,6 +527,12 @@ entries above and each document's *What a consumer owes* are the same list per i
   under Obsidian, outlined text by default, equal widths across skins, the Skin tab's new layout and
   its reset on a skin change, re-fitted anchor titles. The run never marks a smoke check passed.
 
+Release gate (`docs/automated-tests/20261030-190625/`): lint pass, 0/0 in 246 files;
+tests pass, 3411 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no minor of `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` or `Widgets.lua` (the file that defines `W.TestStrip`) moved since v1.81.0 (`git diff v1.81.0` of the four is empty); the skin-wide face, outline and width changes reach owned sim panels and strips through Skin and SkinDefs, and each host's smoke checks of the look move with its skin checks in M2.
+
 ## v1.81.0 — 2026-10-30
 
 Opened 2026-10-30, on `feat/2026-10-30-skin-library-followups`: the skinning rollout's library
