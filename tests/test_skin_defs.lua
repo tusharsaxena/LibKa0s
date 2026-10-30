@@ -519,7 +519,7 @@ test("skin defs: every skin names a HUD face of its own, its text's family; only
     assertEqual(Skin.skins[key].tokens["hud.font"], HUD_FACE[key], key .. " names its HUD face itself")
     assertEqual(family(t["hud.font"]), family(t["font.body"]), key .. ": its HUD face is its text's family")
     assertEqual(t["hud.outline"], "OUTLINE", key .. " outlines HUD text")
-    assertEqual(t["hud.fontSize"], 12, key .. "'s HUD size stays 12")
+    assertEqual(t["hud.fontSize"], Skin.skins[key].tokens["hud.fontSize"], key .. " names its HUD size itself")
     if key ~= "wow" then assertTrue(t["hud.font"] ~= FRIZ, key .. " does not draw Friz on the HUD") end
   end
 end)

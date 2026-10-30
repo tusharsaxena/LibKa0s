@@ -47,7 +47,10 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Minor 7 (LK-04 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK, the owner's ruling
 -- D-07): S.FontFlags(value, where), the flags an element draws with from its stored Font flags: a
 -- picked flag wins, and "From skin" (FROM_SKIN; nil too) resolves through the owner's Font outline
--- (Skin minor 9). OptionsCompose minor 14's `flagsFromSkin` offers the value.
+-- (Skin minor 9). OptionsCompose minor 14's `flagsFromSkin` offers the value. Then (LK-06 of the same
+-- bundle, ruling D-09, still minor 7): S.HudFontSize(size, fromSkin), the size a HUD element stored at
+-- `size` draws at: scaled by the skin's `hud.fontSize` over Ka0s Default's while it uses the skin's
+-- face, the stored size while it draws its own (fromSkin false) or the owner ignores fonts.
 local EXTRAS_MINOR = 7
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
@@ -479,6 +482,19 @@ prim.FontFlags = function(owner, value, where)
   if lib:__FontsIgnored(owner) then return where == "window" and "" or "OUTLINE" end
   local v = P.T(owner)[where == "window" and "font.outline" or "hud.outline"]
   return type(v) == "string" and v or ""
+end
+
+--- S.HudFontSize(size, fromSkin) (minor 7, LK-06): the size a HUD element stored at `size` draws at.
+--- While it uses the skin's face (`fromSkin` true or nil) that is `size` times the owner's skin's
+--- `hud.fontSize` over Ka0s Default's (P.fontSize), so its text is as wide in every skin; with
+--- `fromSkin == false` (its own face) or while the owner ignores fonts, `size` as stored. The stored
+--- value is never written. A size that is not a number above 0 counts as none: the skin's HUD size,
+--- or 12 unscaled. Never nil, never a height SetFont refuses.
+prim.HudFontSize = function(owner, size, fromSkin)
+  local n = tonumber(size)
+  if n and n <= 0 then n = nil end
+  if fromSkin == false or lib:__FontsIgnored(owner) then return n or 12 end
+  return P.fontSize(owner, "hud.fontSize", n)
 end
 
 --- S.BarStyle(): a fresh table of the HUD tokens: `texture` (the LSM path, or nil), `textureKey`,

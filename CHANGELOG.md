@@ -161,6 +161,28 @@ unmeasured, D-05). High Contrast's description drops "larger type". `tests/test_
 Contrast's description, moves with it (better: read `Skin:ResolveSkin(key)`), and a layout tuned in
 one skin is re-checked in the others (the owner's smoke check: Loot History in every skin).
 
+### HUD text is as wide too, through `S.HudFontSize` (`LK-06`)
+
+The same document (*HUD text is as wide too*). The owner's ruling D-09.
+
+- **SkinDefs minor 17, still: every skin names a HUD size** (`HUD_SIZE`), from the same measurement:
+  Obsidian 13, Azeroth, Glass, High Contrast and Ember 11, WoW Forever 11.5, WoW Default and WoW
+  Midnight 12; Ka0s Default's 12 is the reference. `hud.fontSize` is now relative, like
+  `font.bodySize`.
+- **SkinPaintExtras minor 7, still: `S.HudFontSize(size, fromSkin)`**, the size a HUD element stored
+  at `size` draws at: scaled by the skin's `hud.fontSize` over Ka0s Default's while the element uses
+  the skin's face; as stored with `fromSkin == false` or while the owner ignores fonts; never nil. The
+  stored value is never written. `HudFontSize` joins the Skin major's `VOCAB` (Skin minor 9, still).
+
+Tests: four `HudFontSize` cases and the HUD column of `tests/test_skin_width_parity.lua`'s sizes and
+widths; `tests/test_skin_defs.lua` reads each skin's own HUD size where it pinned 12.
+
+**What a consumer owes** (M2): every degradation facade gains `HudFontSize` (the facade parity case
+turns red until it does; a no-op answers nil, which `SetFont` refuses: answer a positive stored size
+as is, else 12), every SkinSetup noop facade list that a test pins key for key gains it; each HUD
+element that follows the skin's face draws at `S.HudFontSize(stored, fromSkin)`; a test pinning a
+HUD element's drawn size under a skin other than Ka0s Default, WoW Default or WoW Midnight moves.
+
 ## v1.81.0 — 2026-10-30
 
 Opened 2026-10-30, on `feat/2026-10-30-skin-library-followups`: the skinning rollout's library

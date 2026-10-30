@@ -272,8 +272,8 @@ consumer notes moved no band file). Largest first:
   pins moved, to "at least" (re-measured 2026-10-25, still 1056).
 - `LibKa0s/Skin.lua` (1149 at minor 9, measured 2026-10-30 after the review of `LK-03` and `LK-04`: the per-owner font outline mode
   (`LK-03` of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`), outside the owner-token block and one
-  under the 1150 trigger, so it did not fire; `LK-05`'s `S.HudFontSize` will pass it and must re-rule it or pair a
-  secondary file on the Skin shell; 1081 at minor 8, measured 2026-10-30: `ResetToSkin`'s companion option (`LK-07`), the public
+  under the 1150 trigger, so it did not fire; re-measured after `LK-06`, still 1149: `S.HudFontSize` lives in
+  `SkinPaintExtras.lua` and only its `VOCAB` name reached this file, on an existing line; 1081 at minor 8, measured 2026-10-30: `ResetToSkin`'s companion option (`LK-07`), the public
   `DrawsKey` (`LK-10`), *Ignore fonts* reaching the HUD tokens (`LK-01`) and the retired stock look (`LK-02`) of
   Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, none of them in the owner-token block, so the trigger
   below did not fire; 1044, new to the band at v1.80.0, measured 2026-10-29: 802 → 1044 with minor 7's owner
@@ -283,7 +283,10 @@ consumer notes moved no band file). Largest first:
   is that block (`isSchemaName` through `takeTokens`, `__RemapName`, `ownValue`, `withOwnTokens` and `__Remap`),
   to a secondary file of its own with its own minor, paired on the Skin shell. **Re-check trigger: 1150 lines, or
   the next Skin minor that adds to the owner-token block.**
-- `LibKa0s/SkinDefs.lua` (1005, new to the band at minor 16, measured 2026-10-30: 959 → 1005 with the exact `q.*`
+- `LibKa0s/SkinDefs.lua` (1043 at minor 17, measured 2026-10-30 after `LK-06` of Ka0sAddonsCommonTasks
+  `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`: 1005 → 1043 with the faces, the outline, the width-parity sizes and
+  `HUD_SIZE`, 38 lines this release, so the 40-line trigger did not fire and the next line it adds fires it;
+  1005, new to the band at minor 16, measured 2026-10-30: 959 → 1005 with the exact `q.*`
   colors (`LK-09`), every skin's HUD face (`LK-04`), `gtip.*` and `icon.grip` (`LK-08`, `LK-06b`) and `list.hoverArt`
   (`LK-06c`) of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`) — **accepted.** A token lands as a
   Ka0s Default value, a value or `FOLLOW` per other skin and its docs, so the file grows with the vocabulary, not with

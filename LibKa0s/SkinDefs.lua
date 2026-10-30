@@ -133,7 +133,10 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- Obsidian 12.5 / 14.5, Azeroth 12 / 12.5, Glass 11.5 / 13, High Contrast 12 / 13 (it no longer
 -- reads larger), Ember 11.5 / 12.5, WoW Midnight 12.5 / 13.5 and WoW Forever 12 / 13.5; Ka0s Default
 -- and WoW Default (real Friz Quadrata unmeasured, D-05) keep 12 / 14. tests/test_skin_width_parity.lua
--- pins the measured widths.
+-- pins the measured widths. Then (LK-06, ruling D-09, still minor 17): every skin names a HUD size
+-- of its own (HUD_SIZE below), from the same measurement, and `hud.fontSize` becomes a relative
+-- reference like `font.bodySize`: S.HudFontSize scales a HUD element's stored size by it over Ka0s
+-- Default's 12 (SkinPaintExtras minor 7).
 local DEFS_MINOR = 17
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
@@ -620,9 +623,17 @@ local HUD_FACE = {
   midnight = "Ka0s Philosopher Bold", forever = "Ka0s Fira Sans SemiBold",
 }
 
+-- Each skin's HUD size (minor 17, LK-06, D-09): the `hud.fontSize` that gives its HUD face Ka0s
+-- Default's width at 12, measured as the body and title sizes are (tests/test_skin_width_parity.lua).
+-- A reference, not a size: S.HudFontSize draws a stored 24 at 24 * HUD_SIZE / 12.
+local HUD_SIZE = {
+  obsidian = 13, azeroth = 11, glass = 11, contrast = 11, ember = 11, wow = 12, midnight = 12, forever = 11.5,
+}
+
 local function register(key, label, desc, swatches, mock, extra)
   local tokens = translate(mock, extra)
   if tokens["hud.font"] == nil then tokens["hud.font"] = HUD_FACE[key] end
+  if tokens["hud.fontSize"] == nil then tokens["hud.fontSize"] = HUD_SIZE[key] end
   local icon = ICON_EDGE[key]
   if icon and tokens["icon.borderStyle"] == nil then tokens["icon.borderStyle"] = icon[1] end
   if icon and tokens["icon.borderSize"] == nil then tokens["icon.borderSize"] = icon[2] end

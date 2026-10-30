@@ -20,8 +20,8 @@
 
 **Four files move: `SkinDefs.lua` to minor 17, `Skin.lua` to minor 9, `SkinPaint.lua` to minor 13
 and `SkinPaintExtras.lua` to minor 7.** Four members are added (`GetOutline`, `SetOutline`,
-`OUTLINE_MODES`, `OUTLINE_DEFAULT`), `WriteChoice`'s `media` gains a half, and the facade gains one
-vocabulary name, `FontFlags`; no signature changes and nothing is removed.
+`OUTLINE_MODES`, `OUTLINE_DEFAULT`), `WriteChoice`'s `media` gains a half, and the facade gains two
+vocabulary names, `FontFlags` and `HudFontSize`; no signature changes and nothing is removed.
 
 ### Three skins change face (SkinDefs minor 17)
 
@@ -68,6 +68,28 @@ High Contrast no longer reads larger, and its description drops "larger type". E
 away equal height: narrow faces (Expressway) read a little taller and wide ones (Vollkorn, Nunito)
 a little smaller. `tests/test_skin_width_parity.lua` pins the sizes and a `WIDTH` table of each face's
 measured advance, so a face or a size changed without a re-measure turns it red.
+
+### HUD text is as wide too (SkinDefs minor 17, SkinPaintExtras minor 7)
+
+The owner's ruling D-09 (`LK-06` of the same bundle). Every skin names a HUD size of its own,
+`hud.fontSize`, from the same measurement: Obsidian `13`, Azeroth, Glass, High Contrast and Ember
+`11`, WoW Forever `11.5`, WoW Default and WoW Midnight `12`, Ka0s Default `12`, the reference (it was
+`12` in every skin). It is a **reference**, like `font.bodySize`, never a size an element draws at:
+
+- **`S.HudFontSize(size, fromSkin)`** (SkinPaintExtras minor 7, a `VOCAB` name since Skin minor 9)
+  answers the size a HUD element stored at `size` draws at: `size` times the owner's skin's
+  `hud.fontSize` over Ka0s Default's (`P.fontSize`, the window text's rule), so a stored 24 draws at
+  26 under Obsidian and 22 under Glass. With `fromSkin == false` (the element draws a face of its
+  own) or while the owner ignores fonts, it answers `size` as stored. The stored value is never
+  written. A size that is not a number above 0 counts as none: the skin's HUD size, or 12 unscaled.
+  Never nil.
+- A **font override** keeps the skin's HUD size, as it keeps its body and title sizes: the element
+  still follows the skin, and only its face changes.
+- `BarStyle().fontSize` is the token itself, so the Skin Tester's showroom draws each skin's own
+  12-reference size.
+
+`tests/test_skin_width_parity.lua` pins the sizes and the HUD faces' widths with the rest, and four
+cases pin `HudFontSize`.
 
 ### Text is outlined by default, and each owner says where (Skin minor 9, SkinDefs minor 17, SkinPaint minor 13)
 
@@ -229,7 +251,7 @@ still runs the engine: no skin is registered and every token resolves to nil.
   `GetAccentColor`, `GetPanelColor`, `GetFont`), then the Ka0s extras (`TitleBar`, `Divider`,
   `Footer`, `Card`, `Slider`, `NavItem`, `Drawer`, `ListRow`, `MenuFrame`, `Tooltip`, `Strip`,
   `Cover`, `Text`, `ChartStyle`, `BarStyle`, `IconBorder`, `GlowColor`, since Skin minor 6
-  `BarTexture`, and since Skin minor 9 `FontFlags`). A primitive no loaded file
+  `BarTexture`, and since Skin minor 9 `FontFlags` and `HudFontSize`). A primitive no loaded file
   provides answers nil and touches nothing. **At this version every one is provided** (*The
   primitives*, below).
 - **The engine, bound to the owner:** `S.Token(name)`, `S.Color(name)`, `S.Resolve(kind, value,
@@ -456,8 +478,9 @@ and a Regular's thin strokes close up under it: Obsidian `Ka0s Expressway` (a Bo
 `Ka0s Bitter Bold`, WoW Midnight `Ka0s Philosopher Bold` and WoW Forever `Ka0s Fira Sans SemiBold`,
 every one shipped by `LibKa0s-Media-1.0` and SIL OFL but Expressway; Ka0s Default's is its one face, `Ka0s
 Prototype` (SkinDefs minor 17). WoW Default names the client's own
-`Friz Quadrata TT` explicitly, its point being the client look. `hud.outline` (`OUTLINE`) and
-`hud.fontSize` (`12`) stay Ka0s Default's in every skin, and the `eui` source keeps Ka0s Default's
+`Friz Quadrata TT` explicitly, its point being the client look. `hud.outline` (`OUTLINE`) stays Ka0s
+Default's in every skin; `hud.fontSize` is every skin's own since SkinDefs minor 17 (*HUD text is as
+wide too*, above; `12` everywhere until then), and the `eui` source keeps Ka0s Default's 12 and
 `Ka0s Prototype`. A font override still replaces `hud.font`.
 
 **Every skin draws a bar of its own** (still SkinDefs minor 14; SO-04, the owner's approved
@@ -752,7 +775,7 @@ eight skins*, below.
 | `icon.border` | color | yes | `0, 0, 0, 1` |
 | `glow.color` | color | yes | `1, 0.82, 0, 1` |
 | `hud.font` | string | no | `"Ka0s Prototype"` (`"Ka0s Oxanium SemiBold"` from SkinDefs minor 14, `"Friz Quadrata TT"` until then) |
-| `hud.fontSize` | number | no | `12` |
+| `hud.fontSize` | number | no | `12` (the reference `S.HudFontSize` scales by, SkinDefs minor 17) |
 | `hud.outline` | string | no | `"OUTLINE"`. An owner's *Font outline* answers `""` for it under `"off"` (Skin minor 9) |
 | `icon.borderStyle` | string | no | `"Solid"` (SkinDefs minor 15) |
 | `icon.borderSize` | number | no | `2` (SkinDefs minor 15) |
@@ -1126,6 +1149,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 | `GlowColor()` | r, g, b, a of `glow.color` (Ka0s Default's gold since SkinDefs minor 8) |
 | `ChartStyle()` | a fresh table of the `chart.*` tokens by short name (`axis`, `axisAlt`, `grid`, `crosshair`, `marker`, `line`, `bar`, `track`, `total`, `other`, `otherLine`, `series`); the colors are shared |
 | `FontFlags(value, where)` | the font flags an element draws with, never nil (SkinPaintExtras minor 7): a picked flag as stored; `FROM_SKIN` (or nil) through the owner's *Font outline*, `hud.outline`, or `font.outline` with `where == "window"`; while the owner ignores fonts `"OUTLINE"` for the HUD and `""` for window text. See *An element's stored font flags, resolved* |
+| `HudFontSize(size, fromSkin)` | the size a HUD element stored at `size` draws at, never nil (SkinPaintExtras minor 7): `size` times the skin's `hud.fontSize` over Ka0s Default's while it uses the skin's face; `size` as stored with `fromSkin == false` or while the owner ignores fonts; the skin's HUD size (12 unscaled) for no size. See *HUD text is as wide too* |
 | `BarStyle()` | a fresh table: `texture` (the LSM path or nil), `textureKey`, `gloss`, `bg`, `border`, `borderStyle`, `borderSize`, `font` (path or nil), `fontKey`, `fontSize`, `outline`, `iconBorder`. `font`, `fontKey` and `outline` are nil while the owner ignores fonts (SkinPaintExtras minor 6) |
 
 ### The slot remap (`opts.tokens`)
@@ -1537,6 +1561,7 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 | `bar.texture` | `Ka0s Matte` | `Ka0s Parchment` | `Ka0s Glass Bar` | `Ka0s Solid` | `Ka0s Forge` | `Blizzard` | `Ka0s Satin` | `Ka0s Classic` |
 | `bar.gloss` | none | · | `true` | none | · | · | · | none |
 | `hud.font` | `Ka0s Expressway` | `Ka0s Vollkorn Bold` | `Ka0s Nunito SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Bitter Bold` | `Friz Quadrata TT` | `Ka0s Philosopher Bold` | `Ka0s Fira Sans SemiBold` |
+| `hud.fontSize` | `13` | `11` | `11` | `11` | `11` | `12` | `12` | `11.5` |
 | `icon.borderStyle` | `Solid` | `Solid` | `Solid` | `Solid` | `Solid` | `Blizzard Tooltip` | `Solid` | `Solid` |
 | `icon.borderSize` | `1` | `2` | `1` | `2` | `2` | `2` | `2` | `1` |
 
@@ -1785,6 +1810,17 @@ point is what the player sees until it does.
   it. A VOCAB loop of no-ops is not enough: a no-op answers nil, which `SetFont` reads as no flags.
   The suggested stub is `S.FontFlags = function(v) if type(v) == "string" and v ~= S.FROM_SKIN then
   return v end return "OUTLINE" end`.
+- **Give the degradation facade `HudFontSize`** (Skin minor 9's VOCAB, SkinPaintExtras minor 7), for
+  the same parity reason; a no-op answers nil, which `SetFont` refuses as a height. The suggested stub
+  is `S.HudFontSize = function(size) local n = tonumber(size) return (n and n > 0) and n or 12 end`.
+- **Scale every HUD size that follows the skin's face** (D-09). Where a HUD element resolves its face
+  through the skin (`fontFromSkin` on, or a face read from `hud.font`), it draws at
+  `S.HudFontSize(stored, fromSkin)` instead of its stored size: AbsorbTracker, AuraMaster,
+  ConsumableMaster, DpsRace, KickCD, MultiMeters, PartyFrameEnhanced and Quick Comms (report C of the
+  bundle names the sites). The stored size is never rewritten, a player's own face stays at its own
+  size, and a test that pinned a HUD element's drawn size under another skin moves (Obsidian draws a
+  stored 12 at 13). A host that reads `BarStyle().fontSize` as an absolute size reads the skin's own
+  12-reference size now (13 under Obsidian).
 - **Store every element's flags, From skin by default** (D-07). Each font setting composes
   `O.FontGroup{ fromSkin = true, flagsFromSkin = true }` (`LibKa0s-Options-1.0` OptionsCompose minor
   14), its profile default for the flags is `"@skin"`, and the element draws with

@@ -1,8 +1,9 @@
 -- tests/test_skin_width_parity.lua — LibKa0s-Skin-1.0's width parity: every skin's text is as wide as
 -- Ka0s Default's (SkinDefs minor 17; LK-05 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK,
--- the owner's item 5 and ruling D-08).
+-- the owner's item 5 and ruling D-08), its HUD text too (LK-06, ruling D-09), and S.HudFontSize, which
+-- scales a HUD element's stored size by its skin's factor (SkinPaintExtras minor 7).
 --
--- What it pins: each skin's body and title sizes, and that each one, times its face's measured
+-- What it pins: each skin's body, title and HUD sizes, and that each one, times its face's measured
 -- average advance per em, lands within the band below of Ka0s Default's Prototype at 12 / 14. The
 -- WIDTH table is the measurement of that bundle's plan-data/font_metrics_shipped.py, run on the
 -- shipped bytes (LibKa0s/media/fonts) with OUTLINE on (its section 9: HarfBuzz-shaped advances,
@@ -18,6 +19,7 @@
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
+local F = dofile("tests/fixture_skin_paint.lua")
 
 local MAJOR = "LibKa0s-Skin-1.0"
 local function skinLib() return T.mocks.LibStub(MAJOR) end
@@ -40,11 +42,11 @@ local WIDTH = {
   ["Ka0s Fira Sans SemiBold"] = { body = 0.4779, title = 0.4883, hud = 0.4975 },
 }
 
--- The sizes the measurement picked (its section 8): { font.bodySize, font.titleSize }.
+-- The sizes the measurement picked (its section 8): { font.bodySize, font.titleSize, hud.fontSize }.
 local SIZES = {
-  ka0s = { 12, 14 }, obsidian = { 12.5, 14.5 }, azeroth = { 12, 12.5 }, glass = { 11.5, 13 },
-  contrast = { 12, 13 }, ember = { 11.5, 12.5 }, wow = { 12, 14 }, midnight = { 12.5, 13.5 },
-  forever = { 12, 13.5 },
+  ka0s = { 12, 14, 12 }, obsidian = { 12.5, 14.5, 13 }, azeroth = { 12, 12.5, 11 }, glass = { 11.5, 13, 11 },
+  contrast = { 12, 13, 11 }, ember = { 11.5, 12.5, 11 }, wow = { 12, 14, 12 }, midnight = { 12.5, 13.5, 12 },
+  forever = { 12, 13.5, 11.5 },
 }
 local KEYS = { "ka0s", "obsidian", "azeroth", "glass", "contrast", "ember", "wow", "midnight", "forever" }
 
@@ -52,6 +54,7 @@ local KEYS = { "ka0s", "obsidian", "azeroth", "glass", "contrast", "ember", "wow
 local ROLES = {
   { "font.body", "font.bodySize", "body" },
   { "font.title", "font.titleSize", "title" },
+  { "hud.font", "hud.fontSize", "hud" },
 }
 local WIDER, NARROWER = 0.02, 0.05
 
@@ -63,12 +66,13 @@ local function widthError(t, ref, role)
   return t[sizeTok] * w[col] / (ref[sizeTok] * base[col]) - 1
 end
 
-test("skin width parity: every skin's body and title sizes are the measured ones", function()
+test("skin width parity: every skin's body, title and HUD sizes are the measured ones", function()
   local Skin = skinLib()
   for _, key in ipairs(KEYS) do
     local t = Skin:ResolveSkin(key)
     assertEqual(t["font.bodySize"], SIZES[key][1], key .. "'s body size")
     assertEqual(t["font.titleSize"], SIZES[key][2], key .. "'s title size")
+    assertEqual(t["hud.fontSize"], SIZES[key][3], key .. "'s HUD size")
   end
 end)
 
@@ -103,4 +107,59 @@ test("skin width parity: High Contrast no longer promises larger type", function
   local desc = Skin:GetSkin("contrast").desc
   assertTrue(not desc:lower():find("larger"), "High Contrast's description: " .. desc)
   assertEqual(desc, "Black and white with yellow focus, crisp 1px edges.", "High Contrast's description")
+end)
+
+-- ── S.HudFontSize (SkinPaintExtras minor 7, LK-06, D-09) ─────────────────────────────────────
+
+local OWNER = "LootHistory"
+
+local function hudOwner(skin)
+  local _, Skin = F.env()
+  Skin:RegisterOwner(OWNER, { set = function() end })
+  if skin then Skin:SetChoice(OWNER, "ka0s", skin) end
+  return Skin, Skin:For(OWNER)
+end
+
+test("skin hud size: HudFontSize is in the vocabulary and the facade", function()
+  local _, Skin = F.env()
+  local found = false
+  for _, name in ipairs(Skin.VOCAB) do if name == "HudFontSize" then found = true end end
+  assertTrue(found, "VOCAB names it")
+  assertEqual(type(Skin:For(OWNER).HudFontSize), "function", "the facade carries it")
+end)
+
+test("skin hud size: a stored size scales by the skin's HUD size over Ka0s Default's", function()
+  -- red under: HudFontSize answering the stored size under every skin (the HUD keeps its width in
+  -- none), or the skin's absolute hud.fontSize (a 36pt element drawn at 13).
+  local _, S = hudOwner("obsidian")
+  assertEqual(S.HudFontSize(12), 13, "Obsidian: 12 draws at 13")
+  assertEqual(S.HudFontSize(36), 39, "and 36 at 39")
+  assertEqual(S.HudFontSize(12, true), 13, "fromSkin true is the same")
+  local _, G = hudOwner("glass")
+  assertEqual(G.HudFontSize(24), 22, "Glass: 24 draws at 22")
+  local _, K = hudOwner()
+  assertEqual(K.HudFontSize(14), 14, "Ka0s Default: the stored size")
+end)
+
+test("skin hud size: its own face, Ignore fonts and a bad size leave the stored size alone", function()
+  -- red under: a player's own face scaled by the skin's factor (it was measured for the skin's face),
+  -- Ignore fonts scaled (the host's own setting stands), or an answer SetFont refuses.
+  local Skin, S = hudOwner("obsidian")
+  assertEqual(S.HudFontSize(12, false), 12, "fromSkin false: the stored size")
+  assertEqual(S.HudFontSize(0), 13, "no stored size: the skin's HUD size")
+  assertEqual(S.HudFontSize(nil), 13, "nothing stored either")
+  assertEqual(S.HudFontSize("x", false), 12, "never a height SetFont refuses")
+  Skin:SetIgnore(OWNER, nil, true)
+  assertEqual(S.HudFontSize(12), 12, "Ignore fonts: unscaled")
+  assertEqual(S.HudFontSize(nil), 12, "and never nil")
+  assertEqual(Skin:For("Nobody").HudFontSize(20), 20, "an unregistered owner reads Ka0s Default")
+end)
+
+test("skin hud size: the stored value is never rewritten, and the scale follows a live skin change", function()
+  local Skin, S = hudOwner("azeroth")
+  local profile = { size = 24 }
+  assertEqual(S.HudFontSize(profile.size), 22, "Azeroth: 24 draws at 22")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(S.HudFontSize(profile.size), 26, "Obsidian: 26, from the same stored 24")
+  assertEqual(profile.size, 24, "the stored size stands")
 end)
