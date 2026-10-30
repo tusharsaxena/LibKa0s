@@ -353,6 +353,43 @@ library-absent line on `nil, "absent"`; `skin` in each Slash degraded stub's set
 without the library; the help, landing and verb-count pins move by one row, and `test_disabled`'s
 dispatch of every row covers the new one.
 
+### The test kit guards display strings against characters a skin face cannot draw (`LK-12`)
+
+Test kit revision 45, documented in
+[docs/api/testkit/version-45-docs.md](docs/api/testkit/version-45-docs.md) (*`glyphs.lua`*). The
+owner's item 5b and ruling D-19: LootHistory's footer drew U+2248 as a box under Obsidian
+(Expressway has no such glyph). A new kit file, `glyphs.lua`, which `framework.lua` loads and
+`Kit.expose` publishes:
+
+- **`Kit.assertDisplayGlyphs(opts)`** reads every tracked `.lua` file outside `libs/`, `tests/` and
+  `tools/` and fails a string literal carrying a character outside the safe set, decoding `\ddd`,
+  `\xNN` and `\u{X}` escapes (the form a grep misses) and reading long strings and locale values.
+  It leaves out comments, debug-log calls (to their closing paren), lines marked `glyph: mono` or
+  `glyph: data` (and `begin` / `end` regions), `|T` / `|A` texture markup and stray non-UTF-8 bytes.
+  `opts.skip` takes a reason per prefix; `opts.debugNames` names a host's own logger.
+  **`Kit.assertGlyphSafe(s, label)`**, **`Kit.glyphUnsafe(s)`**, **`Kit.scanGlyphSource`** and
+  **`Kit.scanDisplayGlyphs`** are its parts.
+- **The safe set** is ASCII and the 118 code points every face in `LibKa0s/media/fonts` draws (the
+  Latin-1 letters and signs, `Œ œ Š š Ÿ Ž ž`, the dashes, curly quotes, `•`, `…`, `‹ ›`, `™`), read from
+  the faces' cmaps by the new **`tools/glyph_safe_set.py`** (fontTools; `--check` reports a stale
+  block). Not in it: `≈`, `≠`, the arrows, `▲ ▼`, `✓`, `€`. Real Friz Quadrata is not measured (D-05).
+
+Tests: a new suite, `tests/test_glyph_guard.lua` (ten cases: the members, the face list against the
+shipped folder byte for byte, the set, the lexer's reach and what it leaves out, `debugNames`, CRLF,
+the skip contract, and LibKa0s's own strings, which pass with no change); `tests/test_kitsync.lua`
+names `glyphs.lua` among the files the kit loads from beside `framework.lua`.
+
+**What a consumer owes** (M2): the re-vendor brings the helper and changes nothing else. Each
+addon's own item wires one case, `T.assertDisplayGlyphs{ label = "<Addon>", ... }`, once its hits
+are fixed or marked. Run on 2026-10-30 against every addon's master tree, the hits were LootHistory 6
+and BankLedger 6 (the D-19 sites, plus the mono direction glyphs in `core/Constants.lua`, which take
+a `glyph: mono` marker), DropWatcher 4 (its mono verdict glyphs: markers), AbsorbTracker 3 and
+PartyFrameEnhanced 2 (profile-trace arrows passed through a logger the guard does not know:
+`debugNames = { "adoptProfile" }`, and AbsorbTracker's and KickCD's (1) Bulk scope `player→unit`
+string, a debug-only value: ASCII or `glyph: data`), PremadeGroupsFilterExtension 200 (Russian realm
+names in `defaults/Realms.lua`, lookup keys: `skip`), PrettyChat 2 (Blizzard's `€` in
+`GlobalStrings/`: `skip`), and none in the other eight.
+
 ### A button's label is opaque again once it is enabled (`LK-14`)
 
 `LibKa0s-Skin-1.0` key 9.17.13.7.11.2.4 (SkinPaint minor 13, still; SkinPaintControls minor 11), documented

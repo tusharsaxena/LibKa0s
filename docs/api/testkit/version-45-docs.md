@@ -6,21 +6,76 @@
 
 | | |
 |---|---|
-| Payload | `testkit/` — `framework.lua`, `asserts.lua`, `inventory.lua`, `secrets.lua`, `latch.lua`, `bindings_xml.lua`, `loader.lua`, `mock_base.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`, `mock_lines.lua`, `mock_ids.lua`, `mock_bindings.lua`, `mock_layers.lua`, `mock_paint.lua`, `vendor_sync.lua`, `test_eol.lua`, `test_prose.lua`, `prose_lists.lua`, `prose_coverage.lua`, `prose_selftests.lua`, `test_layout_cap.lua`, `test_diagnostics_contract.lua`, `lizard_sighted.lua`, `test_lizard_sighted.lua`, `run-automated-tests.sh`, `README.md` |
+| Payload | `testkit/` — `framework.lua`, `asserts.lua`, `inventory.lua`, `secrets.lua`, `latch.lua`, `bindings_xml.lua`, `glyphs.lua`, `loader.lua`, `mock_base.lua`, `mock_record.lua`, `mock_events.lua`, `mock_resize.lua`, `mock_lines.lua`, `mock_ids.lua`, `mock_bindings.lua`, `mock_layers.lua`, `mock_paint.lua`, `vendor_sync.lua`, `test_eol.lua`, `test_prose.lua`, `prose_lists.lua`, `prose_coverage.lua`, `prose_selftests.lua`, `test_layout_cap.lua`, `test_diagnostics_contract.lua`, `lizard_sighted.lua`, `test_lizard_sighted.lua`, `run-automated-tests.sh`, `README.md` |
 | Version | **45** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.82.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 44](version-44-docs.md) — `mock_paint.lua`'s `SetTextColor` reset a string's alpha to 1 when given three numbers |
+| Supersedes | [version 44](version-44-docs.md) — no display-glyph guard, and `mock_paint.lua`'s `SetTextColor` reset a string's alpha to 1 when given three numbers |
 | Superseded by | — |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `45` |
 
-Everything revision 44 describes is unchanged here except what follows. Revision 45 is one
+Everything revision 44 describes is unchanged here except what follows. One file is added,
+`glyphs.lua`, which `framework.lua` loads beside `bindings_xml.lua`. Revision 45 is one
 release's kit (v1.82.0, Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`): a later
 kit change in that release extends this document rather than taking a revision of its own.
 
 ## What changed
+
+### `glyphs.lua`: the display-glyph guard (`LK-12`)
+
+The owner's item 5b and ruling D-19: LootHistory's footer read "Database [] 1.6 MB" under Obsidian,
+because its string carried U+2248 (written as the escape `"\226\137\136"`) and Expressway has no
+such glyph. The guard fails a display string carrying a character some shipped skin face cannot
+draw. Published on the kit table and by `Kit.expose`:
+
+| Member | Answer |
+|---|---|
+| `Kit.glyphUnsafe(s)` | every character of `s` outside the safe set, in order: `{ cp, char }`, or `{ byte }` for a byte that is not valid UTF-8; `\|T...\|t` and `\|A...\|a` markup left out. Empty when safe; a non-string is empty |
+| `Kit.assertGlyphSafe(s, label)` | fails naming each unsafe character as `U+XXXX` |
+| `Kit.scanGlyphSource(text, path, opts)` | the hits in one Lua chunk: `{ path, line, cp, char, text }`, `line` the line the literal starts on |
+| `Kit.scanDisplayGlyphs(opts)` | the hits and the files read, over `git ls-files '*.lua'` (or `opts.paths`) |
+| `Kit.assertDisplayGlyphs(opts)` | fails listing the first 20 hits and the count |
+
+`Kit.GLYPH_FACES` and `Kit.GLYPH_RANGES` (on the kit table, not exposed) are the generated block.
+
+**The safe set** is every byte under 0x80 (printable ASCII, tab, newline) and the non-ASCII code
+points every face in `LibKa0s/media/fonts` draws, read from their cmaps by LibKa0s's
+`tools/glyph_safe_set.py` (fontTools), which rewrites the block between `-- BEGIN GENERATED` and
+`-- END GENERATED`; `--check` reports a stale one. At this revision that is the fifteen shipped faces
+(the skins' body, title and HUD faces and JetBrains Mono, the mono role) and 118 code points:
+NBSP to U+00A3, U+00A5 to U+00AB, U+00AE to U+00BB, U+00BF to U+00FF (the Latin-1 letters, `°`,
+`±`, `·`, `×`, `§`), `Œ œ Š š Ÿ Ž ž`, four spacing accents, `– —`, the curly quotes and `‚ „`,
+`† ‡ •`, `…`, `‹ ›`, `⁄` and `™`. Not in it: `≈`, `≠`, the arrows `← ↑ → ↓ ↔ ⇄`, `▲ ▼ ▸ ▾`, `✓ ✗`,
+`€` and every non-Latin script. Real Friz Quadrata (WoW Default's face) is not measured (D-05,
+IS-07), and a font override guarantees nothing beyond ASCII. LibKa0s's
+`tests/test_glyph_guard.lua` is red while the face list (file name and byte size) disagrees with the
+folder.
+
+**What is scanned.** Every string literal: quoted (escapes decoded: `\ddd`, `\xNN`, `\u{X}`, `\z`
+and the letter escapes) and long (`[[...]]`, `[==[...]==]`), so a locale file's values are read too.
+Left out: comments; the arguments of a debug-log call, to its closing paren over any number of lines
+(a callee whose last name is `debug`, `dbg`, `Dbg`, starts `Debug` or ends `Debug`, plus
+`opts.debugNames`); a line carrying the comment marker `glyph: mono` (a string drawn in the mono
+role, or a glyph its own FontString pins to JetBrains Mono) or `glyph: data` (a string never drawn),
+and every line between a `glyph: mono begin` / `glyph: data begin` and its `end`; texture markup;
+and a stray byte that is not valid UTF-8 (byte data, a pattern's `[\128-\191]` class).
+
+**opts:** `paths` (read exactly these), `include` (path prefixes kept), `skip`
+(`{ [prefix] = "why" }`, a missing or empty reason fails), `debugNames` (a list or a set), `label`.
+`libs/`, `tests/` and `tools/` are never read. No `io.popen`, no git or no tracked `.lua` file fails
+rather than passing.
+
+It is a helper, not a kit suite: nothing goes red on a re-vendor before an addon has fixed its own
+strings. A consumer wires one case:
+
+```lua
+test("display strings use only characters every shipped skin face draws", function()
+  T.assertDisplayGlyphs{ label = "LootHistory" }
+end)
+```
+
 
 ### `mock_paint.lua`: `SetTextColor` keeps the alpha it is not given (`LK-14`)
 
@@ -39,7 +94,7 @@ No documented member is renamed or removed and no case name changes.
 
 ## What a consumer owes
 
-Re-vendor `tests/_kit/` whole:
+Re-vendor `tests/_kit/` whole (it now carries `glyphs.lua`):
 
 ```sh
 cp -r testkit/. tests/_kit/
@@ -49,5 +104,6 @@ lua tests/run.lua --list > docs/test-cases.md
 
 A suite that paints a string translucent under the recorder and then asserts an opaque color it set
 with three numbers now reads the kept alpha: that is the client's answer, and the code under test
-passes the alpha itself. A consumer's own prose that names the revision it holds moves to 45 in the
-same commit.
+passes the alpha itself. Wiring the glyph guard is the addon's own
+item, not the re-vendor's: run it once, fix or mark each hit, then add the case. A consumer's own
+prose that names the revision it holds moves to 45 in the same commit.

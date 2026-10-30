@@ -379,6 +379,10 @@ tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json 
 tools/prune-icons.lua -- after the cp -r re-vendor, deletes every icon under <Addon>/libs/LibKa0s/
                         media/icons/ that the addon's `LibKa0s icons:` line does not declare, with
                         the kit's own parser (testkit/vendor_sync.lua). Pure Lua 5.1
+tools/glyph_safe_set.py -- regenerates the kit's display-glyph safe set (testkit/glyphs.lua, kit
+                        revision 45) from the cmap of every face in LibKa0s/media/fonts; `--check`
+                        reports a stale block. Needs fontTools; tests/test_glyph_guard.lua is red
+                        while the block's face list disagrees with the folder. Not shipped
 tools/skin_gallery.py -- crops in-game screenshots of one addon window, one per skin, to the window,
                         and builds seven showcases of every skin (a grid and six overlapping
                         layouts) in PNG and JPEG, into media/screenshots/skins/; reads the skins,

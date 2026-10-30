@@ -3399,6 +3399,19 @@ Total.
 - kit bindings: keybindThroughTab slot 2 with a press that binds nothing answers the row's own line
 - kit bindings: keybindThroughTab fails naming options-ui-§20 without a row or a slot
 
+### test_glyph_guard.lua (10)
+
+- glyph guard: the helpers are on the kit table and published by Kit.expose
+- glyph guard: the safe set was generated from exactly the shipped faces, byte for byte
+- glyph guard: ASCII and the characters every shipped face draws are safe; the rest are named
+- glyph guard: assertGlyphSafe passes a safe string and names an unsafe one
+- glyph guard: the scanner reads every literal, escapes decoded, and long strings too
+- glyph guard: comments, debug calls, glyph: mono lines and markup are left out
+- glyph guard: opts.debugNames reads a host's own logger as a debug call
+- glyph guard: CRLF sources count lines the same
+- glyph guard: a skip needs its reason, and libs/, tests/ and tools/ are never read
+- glyph guard: every display string LibKa0s ships uses only characters every shipped face draws
+
 ### test_mock_base.lua (33)
 
 - mock: a frame that was never armed answers zero, dressed or not
@@ -3635,7 +3648,7 @@ Total.
 - kitsync: the kit revision is indexed in docs/api/README.md as the one Current revision
 - kitsync: the runner is mode 100755 in the git index, in BOTH copies
 - kitsync: testkit/ and tests/_kit/ hold the same set of files
-- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, latch.lua, bindings_xml.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
+- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, latch.lua, bindings_xml.lua, glyphs.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
 - kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
 - kitsync: vendor_sync checks the runner's recorded mode, and this repo's copy passes
 - kitsync: the runner-mode case fails on a path the index records 100644
@@ -3962,6 +3975,7 @@ Total.
 | test_kit_secrets.lua | 30 |
 | test_kit_latch.lua | 9 |
 | test_kit_bindings.lua | 17 |
+| test_glyph_guard.lua | 10 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 42 |
@@ -3986,4 +4000,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3392** |
+| **Total** | **3402** |

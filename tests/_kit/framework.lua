@@ -241,6 +241,7 @@ local asserts = dofile(kitFolder() .. "asserts.lua")(Kit)
 dofile(kitFolder() .. "secrets.lua")(Kit)   -- Kit.secret and its siblings (kit revision 38)
 dofile(kitFolder() .. "latch.lua")(Kit)     -- Kit.assertLatchHoldOrder (kit revision 39)
 dofile(kitFolder() .. "bindings_xml.lua")(Kit)   -- Kit.assertBindingsXml, Kit.keybindThroughTab (kit revision 42)
+dofile(kitFolder() .. "glyphs.lua")(Kit)   -- Kit.assertDisplayGlyphs and its siblings (kit revision 45)
 local fail = asserts.fail
 
 --- Merge the registry and assertions into the host's `_G.<X>_TEST` table and return it, so a repo
@@ -266,6 +267,11 @@ function Kit.expose(t)
   t.assertLatchHoldOrder = Kit.assertLatchHoldOrder
   t.assertBindingsXml    = Kit.assertBindingsXml
   t.keybindThroughTab    = Kit.keybindThroughTab
+  t.glyphUnsafe          = Kit.glyphUnsafe
+  t.assertGlyphSafe      = Kit.assertGlyphSafe
+  t.scanGlyphSource      = Kit.scanGlyphSource
+  t.scanDisplayGlyphs    = Kit.scanDisplayGlyphs
+  t.assertDisplayGlyphs  = Kit.assertDisplayGlyphs
 
   -- The by-name form needs somewhere to look, and every harness in this collection that stubs a
   -- LIBRARY TABLE already has it: the mock it just built. Wired here rather than demanded of the
