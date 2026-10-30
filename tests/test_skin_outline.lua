@@ -226,7 +226,7 @@ test("skin font flags: a picked flag wins, From skin follows the Font outline", 
   assertEqual(S.FontFlags("THICKOUTLINE"), "THICKOUTLINE", "a pick still wins under off")
 end)
 
-test("skin font flags: under Ignore fonts From skin answers OUTLINE whatever the mode", function()
+test("skin font flags: under Ignore fonts From skin answers OUTLINE for the HUD whatever the mode", function()
   local _, Skin = F.env()
   register(Skin, OWNER)
   local S = Skin:For(OWNER)
@@ -235,4 +235,77 @@ test("skin font flags: under Ignore fonts From skin answers OUTLINE whatever the
   assertEqual(S.FontFlags(Skin.FROM_SKIN), "OUTLINE", "the Font outline is not read")
   assertEqual(S.FontFlags(""), "", "a pick still wins")
   assertEqual(Skin:For("Nobody").FontFlags(Skin.FROM_SKIN), "OUTLINE", "an unregistered owner reads Ka0s Default")
+end)
+
+test("skin font flags: under Ignore fonts From skin window text answers none, as its stock text", function()
+  -- red under: FontFlags answering "OUTLINE" for where == "window" while the owner ignores fonts (P.font
+  -- gives window strings their stock flags then, so an element resolving through FontFlags would not match).
+  local _, Skin = F.env()
+  register(Skin, OWNER)
+  local S = Skin:For(OWNER)
+  Skin:SetIgnore(OWNER, nil, true)
+  assertEqual(S.FontFlags(Skin.FROM_SKIN, "window"), "", "window text: no skin outline")
+  assertEqual(S.FontFlags(nil, "window"), "", "nothing stored is From skin")
+  assertEqual(S.FontFlags("THICKOUTLINE", "window"), "THICKOUTLINE", "a pick still wins")
+  Skin:SetOutline(OWNER, "hud")
+  assertEqual(S.FontFlags(Skin.FROM_SKIN, "window"), "", "whatever the mode")
+  assertEqual(S.FontFlags(Skin.FROM_SKIN), "OUTLINE", "and the HUD's answer stands")
+end)
+
+-- ── the review of LK-03 and LK-04: the eui source, the cache, owner tokens ───────────────────
+
+test("skin outline: an owner on the eui source takes the mode over EllesmereUI's derived table", function()
+  -- red under: withOutline applied to the ResolveSkin branch only (an eui owner ignores its mode).
+  local _, Skin = F.env({ lsm = LSM })
+  register(Skin, OWNER)
+  local eui = { ["font.body"] = "Ka0s Nunito", ["font.outline"] = "OUTLINE", ["hud.outline"] = "OUTLINE" }
+  Skin.__euiTokens = function(owner) if owner == OWNER then return eui end end
+  local ok, err = pcall(function()
+    assertEqual(Skin:DrawsKey(OWNER), "eui", "the owner draws by eui")
+    assertTrue(Skin:__Tokens(OWNER) == eui, "all: EllesmereUI's table itself")
+    Skin:SetOutline(OWNER, "off")
+    assertEqual(Skin:Token(OWNER, "font.outline"), "", "off: no window outline")
+    assertEqual(Skin:Token(OWNER, "hud.outline"), "", "and no HUD outline")
+    assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Nunito", "EllesmereUI's face stands")
+    assertEqual(eui["font.outline"], "OUTLINE", "the derived table is never written")
+  end)
+  Skin.__euiTokens = nil
+  assertTrue(ok, tostring(err))
+end)
+
+test("skin outline: hud survives a later font override and a skin change, and the new face applies", function()
+  -- red under: withOutline's cache keyed on the owner alone (a new base table reads the old one).
+  local m, Skin = F.env({ lsm = LSM })
+  register(Skin, OWNER)
+  local fs, flags = bodyString(m, Skin, OWNER)
+  Skin:SetOutline(OWNER, "hud")
+  local before = Skin:__Tokens(OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Nunito", nil)
+  assertTrue(Skin:__Tokens(OWNER) ~= before, "a new derived table for the new base")
+  assertEqual(Skin:Token(OWNER, "font.outline"), "", "hud: window text still has no outline")
+  assertEqual(Skin:Token(OWNER, "hud.outline"), "OUTLINE", "and the HUD keeps it")
+  assertEqual(fs:GetFontObject().font[1], "Fonts\\Nunito.ttf", "the override's face, painted")
+  assertEqual(flags(), "", "with the mode's flags")
+  Skin:SetOverride(OWNER, false, nil)
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(Skin:Token(OWNER, "font.outline"), "", "after a skin change too")
+  assertEqual(Skin:Token(OWNER, "font.body"), Skin:ResolveSkin("obsidian")["font.body"], "the new skin's face")
+  assertEqual(flags(), "", "and the repaint keeps the mode's flags")
+end)
+
+test("skin outline: an owner token that follows font.outline follows the mode", function()
+  -- red under: the owner tokens laid under withOutline (the token would read the skin's OUTLINE under hud).
+  local _, Skin = F.env()
+  Skin:RegisterOwner(OWNER, {
+    set = function() end,
+    tokens = { ["lh.rowOutline"] = { default = "OUTLINE", follow = "font.outline" } },
+  })
+  assertEqual(Skin:Token(OWNER, "lh.rowOutline"), "OUTLINE", "all: Ka0s Default's default")
+  Skin:SetOutline(OWNER, "hud")
+  assertEqual(Skin:Token(OWNER, "lh.rowOutline"), "", "hud: the mode moved the follow token")
+  Skin:SetOutline(OWNER, "all")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(Skin:Token(OWNER, "lh.rowOutline"), "OUTLINE", "a skin under all: the follow token")
+  Skin:SetOutline(OWNER, "off")
+  assertEqual(Skin:Token(OWNER, "lh.rowOutline"), "", "off: the follow token, dropped")
 end)

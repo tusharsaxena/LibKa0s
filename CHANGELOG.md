@@ -19,8 +19,8 @@ go-ahead.
 
 Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**), **Skin minor 9**,
 **SkinDefs minor 17**, **SkinPaint minor 13** and **SkinPaintExtras minor 7** (`LibKa0s-Skin-1.0` key
-**9.17.13.7.10.2.4**), and **OptionsCompose minor 14**, **OptionsAppearance minor 4** and
-**OptionsSkinPicker minor 3** (`LibKa0s-Options-1.0` key **34.4.36.5.7.11.3.14.9.4.3.6.4.3**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
+**9.17.13.7.10.2.4**), and **OptionsCompose minor 14** and **OptionsAppearance minor 4**
+(`LibKa0s-Options-1.0` key **34.4.36.5.7.11.3.14.9.4.3.6.4.2**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
 
 ### The payload ships Prototype, Fira Sans Medium and Expressway (`LK-01`, `LK-A1`)
 
@@ -86,10 +86,11 @@ HUD face (Quick Comms' `NS.SKIN_FALLBACK["hud.font"]`) becomes `Ka0s Prototype`.
 ### Text is outlined by default, and the Skin tab says where (`LK-03`)
 
 `LibKa0s-Skin-1.0` key 9.17.13.7.10.2.4 and `LibKa0s-Options-1.0` key
-34.4.36.5.7.11.3.14.9.4.3.6.4.3 (9.17.13.6.10.2.4 and 34.4.36.5.7.11.3.13.9.4.3.6.4.3 when this entry
-was written; the documents renamed with the keys), documented in
+34.4.36.5.7.11.3.14.9.4.3.6.4.2 (9.17.13.6.10.2.4 and 34.4.36.5.7.11.3.13.9.4.3.6.4.3 when this entry
+was written, and 34.4.36.5.7.11.3.14.9.4.3.6.4.3 until the review took the outline back out of the
+picker; the documents renamed with the keys), documented in
 [docs/api/Skin/version-9.17.13.7.10.2.4-docs.md](docs/api/Skin/version-9.17.13.7.10.2.4-docs.md) and
-[docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.3-docs.md)
+[docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.2-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.14.9.4.3.6.4.2-docs.md)
 (*What changed at this version*). The owner's item 13 and ruling D-06: outline by default, as a
 setting with three values.
 
@@ -108,8 +109,10 @@ setting with three values.
   and *Off*, under the Scope's check boxes, grayed while *Ignore fonts* is on; every media write the
   tab makes carries `{ font, texture, outline }`; *Copy to every Ka0s addon…* carries the outline;
   `lib.__copySkinTo` keeps a target's own half for a `media` half left out.
-- **OptionsSkinPicker minor 3**: *Apply to all Ka0s addons* gives every other owner this owner's font
-  outline too.
+- **The skin picker is unchanged** (OptionsSkinPicker stays at minor 2): *Apply to all Ka0s addons*
+  gives the other owners the source and skin alone. The picker never shows the outline, and an owner
+  that never set one answers `"all"`, so carrying it could silently undo another addon's *Off* (the
+  review of `LK-03`; D-06 gives the outline to the Skin tab's copy alone).
 
 **What a consumer owes** (M2 of the same bundle): a skin-block key `outline` (default `"all"`) and its
 schema row (`all`, `hud`, `off`); the write seam stores `media.outline` when it is not nil; the
@@ -126,7 +129,8 @@ skin* value that is the new default.
 - **SkinPaintExtras minor 7: `S.FontFlags(value, where)`**, the flags an element draws with from its
   stored Font flags: a picked flag wins as stored; *From skin* (`FROM_SKIN`, or nothing stored)
   resolves through the owner's *Font outline* (`hud.outline`, or `font.outline` with
-  `where == "window"`); `"OUTLINE"` while the owner ignores fonts. Never nil. `FontFlags` joins the
+  `where == "window"`); while the owner ignores fonts `"OUTLINE"` for the HUD and `""` for window
+  text (its stock flags; the review of `LK-04`). Never nil. `FontFlags` joins the
   Skin major's `VOCAB` (Skin minor 9, still), so the facade carries it.
 - **OptionsCompose minor 14: `O.FontGroup{ flagsFromSkin = true }`** leads the Font flags row with
   *From skin* (`"@skin"`) and makes it the default. With `fromSkin = true` too it is the minimum font

@@ -420,12 +420,12 @@ end
 
 --- Register `owner` (the addon folder name) at the consumer's file load. `opts.get()` answers the
 --- profile's `{ source, skin }`; `opts.set(source, skin, ignore, media)` writes it (copy to every
---- Ka0s addon; `ignore` since minor 5, `{ panel, fonts }` or nil, and `media` since minor 6,
---- `{ font, texture }` or nil, see WriteChoice);
---- `opts.label` names the addon to the player; `opts.log(line)`, optional, takes the one line the
---- EllesmereUI provider writes when it refuses or stops (SkinEUI.lua). The choice is read once,
---- here; afterwards it moves only through `SetChoice`. A second call updates the hooks and keeps the
---- applied choice. Answers the owner's facade.
+--- Ka0s addon; `ignore` (minor 5) `{ panel, fonts }` or nil, `media` (minor 6) `{ font, texture,
+--- outline }` or nil, its `outline` (minor 9) a mode or nil the host stores and restores with
+--- `SetOutline`, see WriteChoice); `opts.label` names the addon to the player; `opts.log(line)`,
+--- optional, takes the one line the EllesmereUI provider writes when it refuses or stops
+--- (SkinEUI.lua). The choice is read once, here; afterwards it moves only through `SetChoice`. A
+--- second call updates the hooks and keeps the applied choice. Answers the owner's facade.
 --- `opts.tokens` (minor 7), optional, is the owner's own tokens, `{ ["<ns>.<name>"] = { default =
 --- <Ka0s Default's value>, follow = "<library token>", skins = { [<skin key>] = <value>|false } } }`:
 --- read through `Token`, `Color`, the facade and any primitive opt that names a token, like a library

@@ -30,9 +30,8 @@
 --   * "Apply" (a primary button): saves the pending pick (spec.set(source, key), then the one reload
 --     popup when any pick in this showing asked for one), then closes the window;
 --   * "Apply to all Ka0s addons", shown only while another skin owner is registered: Apply, then
---     every other owner gets the same source and skin, and this owner's font outline (minor 3)
---     (Skin:SetChoice and Skin:SetOutline, then Skin:WriteChoice: the skin half of the Skin tab's
---     copy; their scope and overrides are left alone), one reload popup
+--     every other owner gets the same source and skin (Skin:SetChoice, then Skin:WriteChoice: the
+--     skin half of the Skin tab's copy; their scope and overrides are left alone), one reload popup
 --     naming every addon that needs one, then this window closes and every queued picker is
 --     dismissed (its `spec.onClose` runs; it never shows).
 -- The close control and Escape dismiss WITHOUT saving: a pending preview is put back (Skin:SetChoice
@@ -94,10 +93,7 @@ if not lib then return end
 -- title is TITLE, "Choose a skin" (TITLE_FOR retired: a long label was cut off in a one-line title);
 -- the addon's label has its own line, frame.ownerLabel, above the dropdown, painted "heading"; the
 -- window widens to fit it on every show and skin change, never narrower than 280.
--- Minor 3 (LK-03 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK, D-06): Apply to all
--- gives every other owner this owner's font outline too (LibKa0s-Skin-1.0 minor 9's SetOutline, through
--- OptionsAppearance minor 4's lib.__copySkinTo with a `media` of the outline alone).
-local PICKER_MINOR = 3
+local PICKER_MINOR = 2
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__pickerMinor and lib.__pickerMinor >= PICKER_MINOR
   and lib.__pickerShellMinor == lib.MINOR then return end
@@ -122,7 +118,7 @@ lib.SKIN_PICKER_STRINGS = {
   APPLY_TIP      = "Keep this skin and close the window.",
   APPLY_ALL      = "Apply to all Ka0s addons",
   APPLY_ALL_TIP  = "Keep this skin, and give every other loaded Ka0s addon that uses skins the same " ..
-                   "skin source, skin and font outline. Their scope, font and texture stay as they are.",
+                   "skin source and skin. Their scope, font and texture stay as they are.",
   PREVIEW_TIP    = "Preview: open test mode",
   SETTINGS_TIP   = "Keep this skin and open the Skin settings",
   PREVIEW_GLYPH  = "o",
@@ -492,9 +488,8 @@ function lib.__AttachSkinPicker(O, d)
   end
 
   --- Apply to all: Apply for this owner, then every other owner gets the same source and skin (the
-  --- skin half of the Skin tab's copy) and this owner's font outline (minor 3), one reload popup
-  --- naming each that needs it, every queued picker dismissed, then the close. Refused in combat
-  --- with the window left up.
+  --- skin half of the Skin tab's copy), one reload popup naming each that needs it, every queued
+  --- picker dismissed, then the close. Refused in combat with the window left up.
   local function applyAll()
     if O.__combatRefused and O.__combatRefused("skin picker", "copy") then return end
     local Skin = P.Skin
@@ -502,12 +497,8 @@ function lib.__AttachSkinPicker(O, d)
     local key = P.pending or stored
     local reloads = {}
     if save() then reloads[1] = ownerLabel(P.owner) end
-    -- The outline alone: a media half left out keeps the target's own from OptionsAppearance minor 4,
-    -- whose copy helper writes the target's applied overrides back (an older one would clear them).
-    local media = type(Skin.GetOutline) == "function" and (lib.__appearanceMinor or 0) >= 4
-      and { outline = Skin:GetOutline(P.owner) } or nil
     for _, name in ipairs(others()) do
-      if lib.__copySkinTo(Skin, name, source, key, nil, media) then reloads[#reloads + 1] = ownerLabel(name) end
+      if lib.__copySkinTo(Skin, name, source, key) then reloads[#reloads + 1] = ownerLabel(name) end
     end
     if #reloads > 0 then reloadPopup(table.concat(reloads, ", ")) end
     dismissWaiting()

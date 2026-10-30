@@ -568,7 +568,7 @@ Total.
 - skin ignore fonts: BarStyle's font fields are nil, every other field unchanged
 - skin ignore fonts: an unregistered owner reads Ka0s Default's HUD face as before
 
-### test_skin_outline.lua (13)
+### test_skin_outline.lua (17)
 
 - skin outline: the three modes, in the tab's order, and all is the default
 - skin outline: every skin states OUTLINE for window and HUD text
@@ -582,7 +582,11 @@ Total.
 - skin outline: WriteChoice hands media.outline to the setter, normalized
 - skin font flags: FontFlags is in the vocabulary and the facade
 - skin font flags: a picked flag wins, From skin follows the Font outline
-- skin font flags: under Ignore fonts From skin answers OUTLINE whatever the mode
+- skin font flags: under Ignore fonts From skin answers OUTLINE for the HUD whatever the mode
+- skin font flags: under Ignore fonts From skin window text answers none, as its stock text
+- skin outline: an owner on the eui source takes the mode over EllesmereUI's derived table
+- skin outline: hud survives a later font override and a skin change, and the new face applies
+- skin outline: an owner token that follows font.outline follows the mode
 
 ### test_skin_owner_tokens.lua (16)
 
@@ -2299,7 +2303,7 @@ Total.
 
 ### test_options_skin_picker.lua (39)
 
-- skin picker: OptionsSkinPicker is minor 3, paired on the shell, and attaches two members
+- skin picker: OptionsSkinPicker is minor 2, paired on the shell, and attaches two members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -2319,7 +2323,7 @@ Total.
 - skin picker: in combat a pick, Apply and Apply to all write nothing and leave the window up
 - skin picker: in combat the close control still closes, putting a pending preview back unwritten
 - skin picker: Apply to all is hidden while no other skin owner is registered
-- skin picker: Apply to all saves here and gives every other owner the source, skin and outline alone
+- skin picker: Apply to all saves here and gives every other owner the source and skin alone
 - skin picker: Apply to all raises one reload popup naming every addon that needs it
 - skin picker: Apply to all dismisses every queued picker, each onClose run, none shown
 - skin picker: the gear saves, opens the page itself, then the Skin tab, then closes
@@ -3780,7 +3784,7 @@ Total.
 | test_media.lua | 40 |
 | test_skin.lua | 33 |
 | test_skin_override.lua | 26 |
-| test_skin_outline.lua | 13 |
+| test_skin_outline.lua | 17 |
 | test_skin_owner_tokens.lua | 16 |
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
@@ -3905,4 +3909,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3323** |
+| **Total** | **3327** |

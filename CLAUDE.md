@@ -270,9 +270,10 @@ consumer notes moved no band file). Largest first:
   SimPanel minor 7 (the skin owner, `LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`)
   added none either: its cases are the new `tests/test_tool_windows_skin.lua`'s, and only the two
   pins moved, to "at least" (re-measured 2026-10-25, still 1056).
-- `LibKa0s/Skin.lua` (1148 at minor 9, measured 2026-10-30: the per-owner font outline mode (`LK-03` of
-  Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`), outside the owner-token block and two under the
-  1150 trigger, so it did not fire; 1081 at minor 8, measured 2026-10-30: `ResetToSkin`'s companion option (`LK-07`), the public
+- `LibKa0s/Skin.lua` (1149 at minor 9, measured 2026-10-30 after the review of `LK-03` and `LK-04`: the per-owner font outline mode
+  (`LK-03` of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`), outside the owner-token block and one
+  under the 1150 trigger, so it did not fire; `LK-05`'s `S.HudFontSize` will pass it and must re-rule it or pair a
+  secondary file on the Skin shell; 1081 at minor 8, measured 2026-10-30: `ResetToSkin`'s companion option (`LK-07`), the public
   `DrawsKey` (`LK-10`), *Ignore fonts* reaching the HUD tokens (`LK-01`) and the retired stock look (`LK-02`) of
   Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`, none of them in the owner-token block, so the trigger
   below did not fire; 1044, new to the band at v1.80.0, measured 2026-10-29: 802 → 1044 with minor 7's owner

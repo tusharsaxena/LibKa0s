@@ -90,8 +90,10 @@ flags setting's new default, **From skin**, follows the owner's *Font outline*.
   the owner's mode: the HUD's `hud.outline` by default (`"OUTLINE"` under `"all"` and `"hud"`, `""`
   under `"off"`), or with `where == "window"` the window text's `font.outline` (`""` under `"hud"`
   too);
-- while the owner **ignores fonts** the mode is not read, and From skin answers `"OUTLINE"`, what it
-  answers by default.
+- while the owner **ignores fonts** the mode is not read: From skin answers `"OUTLINE"` for the HUD,
+  what it answers by default, and `""` for `where == "window"`, since `P.font` gives window strings
+  their stock flags then. The HUD answer differs from `Resolve`'s on purpose: `Resolve` answers nil
+  for a stored `FROM_SKIN` (the host's own value stands), and `FontFlags` never answers nil.
 
 It never answers nil, so its answer goes straight to `SetFont`. `LibKa0s-Options-1.0`'s
 `O.FontGroup{ flagsFromSkin = true }` (OptionsCompose minor 14) offers the value and makes it the
@@ -145,7 +147,7 @@ still runs the engine: no skin is registered and every token resolves to nil.
 
 | Member | Answers | What it does |
 |---|---|---|
-| `Skin:RegisterOwner(owner, opts)` | the owner's facade | Registers `owner` at the consumer's file load. `opts.get()` answers `{ source, skin }` (or two values) from the host's profile; `opts.set(source, skin, ignore, media)` writes it (the Appearance tab's copy to every Ka0s addon calls it, through `WriteChoice`; `ignore`, since Skin minor 5, is `{ panel, fonts }` or nil, `media`, since Skin minor 6, `{ font, texture }` or nil, and a setter written before either ignores it); `opts.label` names the addon; `opts.log(line)`, optional, takes the one line the EllesmereUI provider writes when it refuses a facade or stops painting (a host hands its debug console's writer). The choice is read **once**, here; an unknown source is cleaned to `"ka0s"`, a non-string skin to `"ka0s"`. A second call updates the hooks and keeps the applied choice. `opts.tokens`, optional (Skin minor 7), is the owner's own tokens (*Owner tokens*, below): a second call adds its tokens and replaces a name it repeats. With `SkinEUI.lua` loaded it also registers the owner with EllesmereUI (*The EllesmereUI provider*). |
+| `Skin:RegisterOwner(owner, opts)` | the owner's facade | Registers `owner` at the consumer's file load. `opts.get()` answers `{ source, skin }` (or two values) from the host's profile; `opts.set(source, skin, ignore, media)` writes it (the Appearance tab's copy to every Ka0s addon calls it, through `WriteChoice`; `ignore`, since Skin minor 5, is `{ panel, fonts }` or nil, `media`, since Skin minor 6, `{ font, texture }` or nil, and `{ font, texture, outline }` since Skin minor 9, `outline` one of `OUTLINE_MODES` or nil, and a setter written before any of them ignores it). **A host stores `media.outline` when it is not nil, and applies its stored mode with `SetOutline` after registering, beside its `SetIgnore` and `SetOverride` restore** (nothing in `opts` seeds it); `opts.label` names the addon; `opts.log(line)`, optional, takes the one line the EllesmereUI provider writes when it refuses a facade or stops painting (a host hands its debug console's writer). The choice is read **once**, here; an unknown source is cleaned to `"ka0s"`, a non-string skin to `"ka0s"`. A second call updates the hooks and keeps the applied choice. `opts.tokens`, optional (Skin minor 7), is the owner's own tokens (*Owner tokens*, below): a second call adds its tokens and replaces a name it repeats. With `SkinEUI.lua` loaded it also registers the owner with EllesmereUI (*The EllesmereUI provider*). |
 | `Skin:IsOwner(name)` | boolean | True only after `RegisterOwner`. Every factory that takes an owner paints today's way, verbatim, for a name that is not one. |
 | `Skin:Owners()` | sorted array | The registered owners. |
 | `Skin:OwnerLabel(owner)` | string or nil | The label the owner registered with (`opts.label`, else its folder name); nil for a name that never called `RegisterOwner`. What the Appearance tab's copy confirmation names each addon by (Skin minor 4). |
@@ -1096,7 +1098,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 | `GetFont()` | the body face's path, or the client's `STANDARD_TEXT_FONT` when the skin names none |
 | `GlowColor()` | r, g, b, a of `glow.color` (Ka0s Default's gold since SkinDefs minor 8) |
 | `ChartStyle()` | a fresh table of the `chart.*` tokens by short name (`axis`, `axisAlt`, `grid`, `crosshair`, `marker`, `line`, `bar`, `track`, `total`, `other`, `otherLine`, `series`); the colors are shared |
-| `FontFlags(value, where)` | the font flags an element draws with, never nil (SkinPaintExtras minor 7): a picked flag as stored; `FROM_SKIN` (or nil) through the owner's *Font outline*, `hud.outline`, or `font.outline` with `where == "window"`; `"OUTLINE"` while the owner ignores fonts. See *An element's stored font flags, resolved* |
+| `FontFlags(value, where)` | the font flags an element draws with, never nil (SkinPaintExtras minor 7): a picked flag as stored; `FROM_SKIN` (or nil) through the owner's *Font outline*, `hud.outline`, or `font.outline` with `where == "window"`; while the owner ignores fonts `"OUTLINE"` for the HUD and `""` for window text. See *An element's stored font flags, resolved* |
 | `BarStyle()` | a fresh table: `texture` (the LSM path or nil), `textureKey`, `gloss`, `bg`, `border`, `borderStyle`, `borderSize`, `font` (path or nil), `fontKey`, `fontSize`, `outline`, `iconBorder`. `font`, `fontKey` and `outline` are nil while the owner ignores fonts (SkinPaintExtras minor 6) |
 
 ### The slot remap (`opts.tokens`)

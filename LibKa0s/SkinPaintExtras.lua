@@ -472,10 +472,11 @@ end
 --- (and nil or a non-string: nothing stored), resolves through the owner's Font outline: the HUD's
 --- `hud.outline` ("OUTLINE" under "all" and "hud", "" under "off"), or with `where == "window"` the
 --- window text's `font.outline` ("" under "hud" too). While the owner ignores fonts the Font outline
---- is not read, and FROM_SKIN answers "OUTLINE", what it answers by default. Never nil.
+--- is not read: FROM_SKIN answers "OUTLINE" for the HUD (FontGroup's old default; on purpose unlike
+--- `Resolve`, whose nil hands the host its own) and "" for window text (its stock flags). Never nil.
 prim.FontFlags = function(owner, value, where)
   if type(value) == "string" and value ~= lib.FROM_SKIN then return value end
-  if lib:__FontsIgnored(owner) then return "OUTLINE" end
+  if lib:__FontsIgnored(owner) then return where == "window" and "" or "OUTLINE" end
   local v = P.T(owner)[where == "window" and "font.outline" or "hud.outline"]
   return type(v) == "string" and v or ""
 end
