@@ -1,0 +1,11 @@
+Review of LK-03 + LK-04 (7907657, 6ff5857, 3c65f43). The gate was 3323 passed, 0 failed; luacheck 0/0; CCN max 15. After bbfd8bd: 3327 passed, 0 failed, 2 skipped; luacheck 0 warnings / 0 errors in 239 files; complexity green, max CCN 15.
+FIXED:
+- (medium) The picker's Apply to all pushed this owner's outline to every other owner. Taken out: OptionsSkinPicker.lua is reverted to master (minor 2), so the Options key is 34.4.36.5.7.11.3.14.9.4.3.6.4.2, with docs and manifest renamed. A test pins that another owner's 'off' survives Apply to all.
+- (low) Under Ignore fonts, FontFlags(FROM_SKIN, 'window') now answers ''. The HUD keeps 'OUTLINE', and the docs say why it differs from Resolve. New test added.
+- (low) The RegisterOwner docblock and docs row now give media as { font, texture, outline } and state the SetOutline restore obligation. Docs only; Skin.lua stays at 1149 lines.
+- (low) The CLAUDE.md band figure is now 1149, and it notes that LK-05 will hit the 1150 trigger.
+- (low) New tests for the eui source, cache invalidation after an override or skin change, an owner token that follows font.outline, and window FontFlags under Ignore fonts.
+NOTED, no code change:
+- (low) P.font is at CCN 15 with no headroom. LK-05 and D-08 must add logic in helpers.
+- (info) This finding is now moot: the picker is back at minor 2, so LK-11's O.SkinVerb takes OptionsSkinPicker minor 3 as D-16 planned. Skin 9, SkinDefs 17, SkinPaint 13, SkinPaintExtras 7, OptionsAppearance 4 and OptionsCompose 14 are already bumped on this branch; later items must not bump them again.
+DECLINED: none. The RESUME.md notes for these two items are left to the orchestrator, because the bundle lives outside this repo's commit.
