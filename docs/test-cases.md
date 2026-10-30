@@ -460,7 +460,7 @@ Total.
 - toast: a close mark Core cannot build (no frame) leaves the toast without one
 - toast: two instances keep separate queues and frames
 
-### test_media.lua (39)
+### test_media.lua (40)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -491,9 +491,10 @@ Total.
 - media: an LSM without the locale bits gets a plain Register
 - media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
-- media: FONTS carries the fourteen skin faces beside JetBrains Mono and Ka0s Default's Oxanium
+- media: FONTS carries every skin face beside JetBrains Mono
 - media: each face names its own locales, and only a face with Cyrillic reaches ruRU
 - media: every OFL face ships with its license text beside it
+- media: a face off the OFL ships its author's terms verbatim, and the face says the same
 - media: RegisterLSM('X') registers 'Ka0s Inter' under X's own libs folder, each face with its mask
 - media: a ruRU client keeps every Cyrillic face and is refused the western-only ones
 - media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
@@ -3745,7 +3746,7 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
-| test_media.lua | 39 |
+| test_media.lua | 40 |
 | test_skin.lua | 33 |
 | test_skin_override.lua | 26 |
 | test_skin_owner_tokens.lua | 16 |
@@ -3871,4 +3872,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3297** |
+| **Total** | **3298** |

@@ -10,6 +10,43 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.82.0 — unreleased
+
+Opened 2026-10-30, on `feat/2026-10-30-skin-fonts-feedback`: the owner's skin fonts and feedback
+batch (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, M1), the items `LK-01` to
+`LK-14`. The release closes on the same branch (`LK-90`); the tag is local until the owner's
+go-ahead.
+
+Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**); every other file
+still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
+
+### The payload ships Prototype and Fira Sans Medium (`LK-01`)
+
+`LibKa0s-Media-1.0` key 10.1, documented in
+[docs/api/Media/version-10.1-docs.md](docs/api/Media/version-10.1-docs.md) (*What changed at this
+version*). `FONTS` gains `Ka0s Prototype` (`Prototype-Regular.ttf`, western only) and `Ka0s Fira
+Sans Medium` (`FiraSans-Medium.ttf`, western and ruRU), the owner's 2026-10-30 picks for Ka0s Default
+and WoW Forever's body text.
+
+- **Prototype is the first face here that is not under the OFL.** Its name table reads "free for
+  personal use, freely distributed with Prototype.txt", and the owner ruled to ship it on those
+  terms, so the author's `Prototype.txt` ships beside it byte for byte. Both come unchanged from the
+  archive dafont.com distributes, pinned by SHA-256 in `tools/artwork/fonts.py` (a new `ARCHIVES`
+  source kind); the face is byte-identical to the owner's SharedMedia copy, which registers the same
+  key. `tests/test_media.lua` lets a face off the OFL through its license check only by the license
+  file's name (`NON_OFL`), and checks that the text carries the author's terms and the face its
+  notice.
+- **Fira Sans Medium** comes from google/fonts at the commit and build (4.203) the shipped SemiBold
+  already comes from.
+- **Expressway does not ship**, although the same ruling asked for it as Obsidian's face. The archive
+  its author distributes carries the Typodermic Desktop EULA, whose guide puts embedding in software
+  outside the free license and forbids sharing or converting the font; the file's embedding bits say
+  the same. `fonts.py` records the archive and its hashes. Obsidian keeps its face until the owner
+  rules again.
+
+**What a consumer owes:** nothing in code; the next re-vendor carries the two files. A test that
+counts `RegisterLSM`'s fonts moves with the catalog.
+
 ## v1.81.0 — 2026-10-30
 
 Opened 2026-10-30, on `feat/2026-10-30-skin-library-followups`: the skinning rollout's library

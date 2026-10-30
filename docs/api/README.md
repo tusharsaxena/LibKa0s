@@ -186,7 +186,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [9.1](./Media/version-9.1-docs.md) | **`Media.lua` 9** (`FONTS` gains `Ka0s Oxanium SemiBold` and `Ka0s Oxanium Bold`, Ka0s Default's faces: western only, SIL OFL 1.1, static instances of upstream's variable Oxanium; `TEXTURES` gains `Ka0s Default`, Ka0s Default's generated bar texture, and a generated bar for each of seven more skins: `Ka0s Matte`, `Ka0s Parchment`, `Ka0s Glass Bar`, `Ka0s Solid`, `Ka0s Forge`, `Ka0s Satin`, `Ka0s Classic`) · `MediaIcons.lua` 1 | v1.79.0 | **Current** |
+| [10.1](./Media/version-10.1-docs.md) | **`Media.lua` 10** (`FONTS` gains `Ka0s Prototype`, Ka0s Default's face: western only, under its author's terms in `Prototype.txt`, not the OFL; and `Ka0s Fira Sans Medium`, WoW Forever's body face, SIL OFL 1.1) · `MediaIcons.lua` 1 | v1.82.0 (unreleased) | **Current** |
+| [9.1](./Media/version-9.1-docs.md) | **`Media.lua` 9** (`FONTS` gains `Ka0s Oxanium SemiBold` and `Ka0s Oxanium Bold`, Ka0s Default's faces: western only, SIL OFL 1.1, static instances of upstream's variable Oxanium; `TEXTURES` gains `Ka0s Default`, Ka0s Default's generated bar texture, and a generated bar for each of seven more skins: `Ka0s Matte`, `Ka0s Parchment`, `Ka0s Glass Bar`, `Ka0s Solid`, `Ka0s Forge`, `Ka0s Satin`, `Ka0s Classic`) · `MediaIcons.lua` 1 | v1.79.0 – v1.81.0 | Superseded |
 | [8.1](./Media/version-8.1-docs.md) | **`Media.lua` 8** (fourteen OFL skin faces, a family per skin, with per-face masks; `BORDERS` / `BACKGROUNDS` and the Glass art; `RegisterLSM` never offers a key LSM already holds; 6.1 never shipped) · `MediaIcons.lua` 1 | v1.78.0 | Superseded |
 | [5.1](./Media/version-5.1-docs.md) | `Media.lua` 5 · `MediaIcons.lua` 1 | v1.74.0 – v1.77.0 | Superseded |
 | [4](./Media/version-4-docs.md) | `Media.lua` 4 | v1.56.0 – v1.73.0 | Superseded |

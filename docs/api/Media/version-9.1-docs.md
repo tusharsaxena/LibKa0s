@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **9** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.79.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 8.1](./version-8.1-docs.md) (shipped in v1.78.0) — the same surface without Oxanium in `FONTS`, and without `Ka0s Default` and the seven skins' own bars in `TEXTURES` |
-| Superseded by | — |
+| Superseded by | [version 10.1](./version-10.1-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 9, MediaIcons = 1 }` |
 
 ## What changed at this version
@@ -481,3 +481,10 @@ The consumer-side gate compares the vendored payload against the tag byte for by
 and normalized line endings on everything, which is right for Lua and wrong for a TGA. **Kit revision
 11 or newer is required** to vendor a payload with `media/` in it — see
 [`../testkit/version-11-docs.md`](../testkit/version-11-docs.md).
+
+## Moving to version 10.1
+
+**Take it; nothing moves.** Version 10.1 is additive: every name and path here resolves the same and
+no signature changes. What arrives in `FONTS`: `Ka0s Prototype` (Ka0s Default's face, western only,
+under its author's terms in `Prototype.txt`, not the OFL) and `Ka0s Fira Sans Medium` (WoW Forever's
+body face, SIL OFL 1.1 in `FiraSans-OFL.txt`). See [version 10.1](./version-10.1-docs.md).
