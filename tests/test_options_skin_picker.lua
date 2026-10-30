@@ -171,10 +171,10 @@ end
 
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
-test("skin picker: OptionsSkinPicker is minor 2, paired on the shell, and attaches two members", function()
+test("skin picker: OptionsSkinPicker is minor 3, paired on the shell, and attaches two members", function()
   local _, _, lib = env()
-  assertEqual(lib.MODULES.OptionsSkinPicker, 2)
-  assertEqual(lib.__pickerMinor, 2)
+  assertEqual(lib.MODULES.OptionsSkinPicker, 3)
+  assertEqual(lib.__pickerMinor, 3)
   assertEqual(lib.__pickerShellMinor, lib.MINOR, "paired on the shell's minor")
   assertTrue(lib.MINOR >= 34, "Options minor 34 attaches it")
   assertEqual(type(lib.SKIN_PICKER_STRINGS), "table")
@@ -639,13 +639,16 @@ test("skin picker: Apply to all is hidden while no other skin owner is registere
   assertEqual(f.applyAll.text:GetText(), "Apply to all Ka0s addons")
 end)
 
-test("skin picker: Apply to all saves here and gives every other owner the source and skin alone", function()
+test("skin picker: Apply to all saves here and gives every other owner the source, skin and outline alone",
+function()
+  -- red under: applyAll calling lib.__copySkinTo with no media (the other owners keep their outline).
   local _, Skin, lib = env()
   local store = register(Skin, OWNER)
   local other = register(Skin, OTHER)
   local third = register(Skin, THIRD, "glass")
   Skin:SetIgnore(OTHER, true, false)
   Skin:SetOverride(OTHER, "Ka0s Expressway", nil)
+  Skin:SetOutline(OWNER, "hud")
   local O = instance(lib, OWNER)
   local f = O.SkinPicker(specFor(store))
   pickRow(f, "ember")
@@ -658,8 +661,12 @@ test("skin picker: Apply to all saves here and gives every other owner the sourc
     assertEqual(w[1], "ka0s", name .. ": the source")
     assertEqual(w[2], "ember", name .. ": the skin, through its own registered setter")
     assertNil(w[3], name .. ": no scope half")
-    assertNil(w[4], name .. ": no font or texture half")
+    assertEqual(Skin:GetOutline(name), "hud", name .. ": this owner's font outline, applied")
+    assertEqual(w[4] and w[4].outline, "hud", name .. ": and written through its media")
   end
+  local w = other.writes[#other.writes][4]
+  assertEqual(w.font, "Ka0s Expressway", "the write carries the other owner's own font back")
+  assertEqual(w.texture, false, "and its own texture")
   assertEqual(select(1, Skin:GetIgnore(OTHER)), true, "the other owner's scope left alone")
   assertEqual(select(1, Skin:GetOverride(OTHER)), "Ka0s Expressway", "and its font")
   assertFalse(f:IsShown(), "the window closes")

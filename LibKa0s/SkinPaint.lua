@@ -115,7 +115,11 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- SkinPaintExtras' P.panelIgnored), so a panel-scoped search box's focus line stays its own.
 -- And (LK-A1, still minor 12): P.fontSize reads a stock size of 0 or below as none, and P.unfont
 -- gives no such size back, so SetFont never gets an invalid font height.
-local PAINT_MINOR = 12
+-- Minor 13 (LK-03 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK, D-06): P.font never
+-- outlines the mono role: every skin now states OUTLINE for `font.outline` (SkinDefs minor 17), which
+-- the body and title roles take as the owner's "Font outline" leaves it (Skin minor 9), and the mono
+-- face's small digits (the debug console, the perf tables) stay unoutlined.
+local PAINT_MINOR = 13
 if lib.__paintMinor and lib.__paintMinor >= PAINT_MINOR
   and lib.__paintShellMinor == lib.MINOR then return end
 lib.__paintMinor      = PAINT_MINOR
@@ -457,7 +461,7 @@ end
 local FONT_ROLE = {
   body  = { face = "font.body",  size = "font.bodySize" },
   title = { face = "font.title", size = "font.titleSize" },
-  mono  = { face = "font.mono",  size = "font.bodySize" },
+  mono  = { face = "font.mono",  size = "font.bodySize", outline = false },   -- never outlined (minor 13)
 }
 
 local function ownerFont(owner, role, path, size, flags, shadow)
@@ -560,7 +564,7 @@ function P.font(owner, rec, fs, role, color)
                   shadowColor = not obj and priorOf(fs, "GetShadowColor") or nil }
   end
   local size = P.fontSize(owner, spec.size, fonts[fs].size)
-  local flags = T["font.outline"] or ""
+  local flags = spec.outline ~= false and T["font.outline"] or ""
   local obj = ownerFont(owner, role, path, size, flags, T["font.shadow"] ~= false and not darkColor(color))
   if obj then
     fs:SetFontObject(obj)

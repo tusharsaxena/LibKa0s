@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 8.17.12.6.10.2.4
+# `LibKa0s-Skin-1.0` — version 9.17.13.6.10.2.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,18 +8,23 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **8** · `SkinDefs.lua` minor **17** · `SkinPaint.lua` minor **12** · `SkinPaintExtras.lua` minor **6** · `SkinPaintControls.lua` minor **10** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
+| Files and minors | `Skin.lua` minor **9** · `SkinDefs.lua` minor **17** · `SkinPaint.lua` minor **13** · `SkinPaintExtras.lua` minor **6** · `SkinPaintControls.lua` minor **10** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
 | Shipped in | v1.82.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 8.16.12.6.10.2.4](./version-8.16.12.6.10.2.4-docs.md) (shipped in v1.81.0) — the same surface with Ka0s Default drawing Oxanium (SemiBold for body and HUD, Bold for titles) WoW Forever's body text in Fira Sans Regular, and Obsidian drawing Inter / Inter SemiBold (SkinDefs minor 16) |
+| Supersedes | [version 8.16.12.6.10.2.4](./version-8.16.12.6.10.2.4-docs.md) (shipped in v1.81.0) — the same surface with Ka0s Default drawing Oxanium (SemiBold for body and HUD, Bold for titles) WoW Forever's body text in Fira Sans Regular, and Obsidian drawing Inter / Inter SemiBold, with `font.outline` `""` so no window text was outlined (SkinDefs minor 16), with no font outline mode per owner (Skin minor 8), and with the mono role taking `font.outline` like the other two (SkinPaint minor 12) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 8, SkinDefs = 17, SkinPaint = 12, SkinPaintExtras = 6, SkinPaintControls = 10, SkinEUI = 2, SkinAce = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 9, SkinDefs = 17, SkinPaint = 13, SkinPaintExtras = 6, SkinPaintControls = 10, SkinEUI = 2, SkinAce = 4 }` |
 
 ## What changed at this version
 
-**One file moves, `SkinDefs.lua` to minor 17, and no member or signature changes.** Three skins
-change face, the owner's 2026-10-30 picks (Ka0sAddonsCommonTasks
+**Three files move: `SkinDefs.lua` to minor 17, `Skin.lua` to minor 9 and `SkinPaint.lua` to minor
+13.** Four members are added (`GetOutline`, `SetOutline`, `OUTLINE_MODES`, `OUTLINE_DEFAULT`), and
+`WriteChoice`'s `media` gains a half; no signature changes and nothing is removed.
+
+### Three skins change face (SkinDefs minor 17)
+
+Three skins change face, the owner's 2026-10-30 picks (Ka0sAddonsCommonTasks
 `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, D-02 and Addendum 01), all shipped by
 `LibKa0s-Media-1.0` minor 10:
 
@@ -36,6 +41,40 @@ WoW Forever keeps SemiBold for titles and HUD under the heavier-HUD rule (SkinDe
 shown that, ruled on 2026-10-30 "Ship it anyways." (see `LibKa0s-Media-1.0` version 10.1). It ships
 one weight, the Bold, so Obsidian's titles differ by size too and its HUD face is its body face; the
 heavier-HUD rule is met by the Bold itself. Sizes do not move here.
+
+### Text is outlined by default, and each owner says where (Skin minor 9, SkinDefs minor 17, SkinPaint minor 13)
+
+The owner's item 13 and ruling D-06 (`LK-03` of the same bundle): outline by default, as a setting.
+
+- **Every skin states OUTLINE for window text** (SkinDefs minor 17): Ka0s Default's `font.outline` is
+  `"OUTLINE"`, where it was `""`, and every skin and the `eui` source inherit it, as they already
+  inherited `hud.outline = "OUTLINE"`. `ResolveSkin` answers both as stated.
+- **Each owner's font outline mode** (Skin minor 9), the Skin tab's *Font outline*
+  (`LibKa0s-Options-1.0`'s `OptionsAppearance.lua` minor 4): one of `OUTLINE_MODES`,
+  `{ "all", "hud", "off" }`, `"all"` the default (`OUTLINE_DEFAULT`). It is applied in **one place**,
+  `__Tokens`, between the overrides and the owner tokens:
+
+  | Mode | `font.outline` | `hud.outline` |
+  |---|---|---|
+  | `"all"` (*All text*) | the skin's (`"OUTLINE"`) | the skin's (`"OUTLINE"`) |
+  | `"hud"` (*HUD text only*) | `""` | the skin's |
+  | `"off"` (*Off*) | `""` | `""` |
+
+  So `P.font` (every string a primitive paints), `Token`, `Color`, `Resolve` (a HUD value following
+  the skin, `S.Resolve("hud.outline", v, true)`, or a stored `FROM_SKIN`) and `BarStyle().outline`
+  follow it with no code of their own; a stored pick (`S.Resolve("hud.outline", "THICKOUTLINE")`)
+  stands. Under `"all"` and for an unregistered owner `__Tokens` answers the table it answered
+  before (the resolved one when nothing else is laid over it); under the other two a derived copy,
+  cached on (table, mode). `ResolveSkin` never carries the mode.
+- **The mono role is never outlined** (SkinPaint minor 13): `P.font` hands the `mono` role `""`
+  whatever `font.outline` says, so the debug console's and the perf tables' small digits stay clean.
+- **Ignore fonts wins.** `P.font` gives every string its own font, and `Token` answers nil for
+  `hud.outline` (Skin minor 8), whatever the mode. A font override is independent of the mode, and so
+  is a skin change: the mode is a preference, not an override.
+- **Stored by the host, as the Scope is.** `SetOutline` never writes the profile; `WriteChoice`'s
+  `media.outline` does (the tab's write, its copy to every Ka0s addon and the picker's *Apply to
+  all*), and a host applies its stored mode with `SetOutline` where it applies its stored scope and
+  overrides (*What a consumer owes*, below).
 
 ## What this major is
 
@@ -90,9 +129,11 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `Skin:OwnerLabel(owner)` | string or nil | The label the owner registered with (`opts.label`, else its folder name); nil for a name that never called `RegisterOwner`. What the Appearance tab's copy confirmation names each addon by (Skin minor 4). |
 | `Skin:GetIgnore(owner)` | ignorePanel, ignoreFonts | The owner's two exceptions, the Appearance tab's *Ignore settings panel* and *Ignore fonts* (Skin minor 5). `false, false` for an unregistered owner. |
 | `Skin:SetIgnore(owner, panel, fonts)` | changed, reload | Sets the exceptions; nil keeps that half, any value but `true` is false. A change repaints every frame recorded for the owner and fires its `OnLooksChanged` listeners: with fonts ignored, `P.font` hands every string back its own face, size and shadow (the skin still colors it), and with the panel ignored the Options chrome (`LibKa0s-Options-1.0`'s `__chromeSkin`), the AceGUI rows (`PaintAce`), every `S.Text(fs, role, { panel = true })` (SkinPaintExtras minor 6) and `LibKa0s-Widgets-1.0`'s `ReorderList` (panel-scoped by default from WidgetsReorder minor 3) paint nothing for the owner, and what they painted is handed back as it was, live. A window, and `S.Text` without `opts.panel`, keeps the skin whatever this half says. With fonts ignored, `Token` also answers nil for `hud.font` and `hud.outline`, `Resolve` answers the stored value for them, and `BarStyle`'s font fields are nil (Skin minor 8, *HUD*). `reload` is always false (kept so a two-value read holds). Never writes the host's profile (Skin minor 5). |
-| `Skin:WriteChoice(owner, source, skin, ignore, media)` | boolean | Writes `(source, skin)`, cleaned as `RegisterOwner` cleans a read, into the owner's profile through the `opts.set` it registered, under pcall: the write of the Appearance tab's copy to every Ka0s addon (`LibKa0s-Options-1.0`'s `OptionsAppearance.lua`), which reaches each addon only through its own write seam. `ignore`, optional (Skin minor 5), `{ panel, fonts }`, reaches the setter as its third argument, each half `true` or false; without it the setter gets nil. `media`, optional (Skin minor 6), `{ font = key|false, texture = key|false }`, reaches the setter as its fourth argument, each half a non-empty LSM key or `false` for "the skin's own" (a missing half, an empty string or a non-string is `false`); without it the setter gets nil, and it never moves the applied overrides (`SetOverride` does). **Never moves the applied choice**: the tab calls `SetChoice` first (the live repaint), then this. Answers true when a setter ran and did not raise; false for an unregistered owner, one with no setter, or a raise, which goes to the client's error handler (Skin minor 4). |
+| `Skin:WriteChoice(owner, source, skin, ignore, media)` | boolean | Writes `(source, skin)`, cleaned as `RegisterOwner` cleans a read, into the owner's profile through the `opts.set` it registered, under pcall: the write of the Appearance tab's copy to every Ka0s addon (`LibKa0s-Options-1.0`'s `OptionsAppearance.lua`), which reaches each addon only through its own write seam. `ignore`, optional (Skin minor 5), `{ panel, fonts }`, reaches the setter as its third argument, each half `true` or false; without it the setter gets nil. `media`, optional (Skin minor 6), `{ font = key|false, texture = key|false }`, reaches the setter as its fourth argument, each half a non-empty LSM key or `false` for "the skin's own" (a missing half, an empty string or a non-string is `false`); without it the setter gets nil, and it never moves the applied overrides (`SetOverride` does). `media.outline` (Skin minor 9), one of `OUTLINE_MODES` or nil (an unknown value is nil: "left alone"), reaches the setter in the same table and never moves the applied mode (`SetOutline` does); a setter written before minor 9 ignores it. A setter written for minor 6 stores both overrides of every `media` it is given, so a caller that writes the outline passes both overrides as well (the Appearance tab always does). **Never moves the applied choice**: the tab calls `SetChoice` first (the live repaint), then this. Answers true when a setter ran and did not raise; false for an unregistered owner, one with no setter, or a raise, which goes to the client's error handler (Skin minor 4). |
 | `Skin:GetOverride(owner)` | font, texture | The owner's overrides, the Appearance tab's *Font and texture* (Skin minor 6, LibKa0s#63): each an LSM key (a `font` key, a `statusbar` key), or nil for "the skin's own". `nil, nil` for an unregistered owner. |
 | `Skin:SetOverride(owner, font, texture)` | changed | Sets the overrides; nil keeps that half, `false`, `""` or `FROM_SKIN` (`"@skin"`) clears it. Idempotent: the same pair answers false and does nothing. A font override replaces `font.body`, `font.title` and `hud.font` in every token read (`Token`, `Color`, the facade, every primitive: `__Tokens` lays the overrides over the owner's table); `font.mono` stays the skin's (the console and the tables need a monospace face) and so does every size. A texture override replaces `bar.texture` (`BarStyle`, and every bar drawn through it). *Ignore fonts* wins: with it on, `P.font` gives every string its own face, `Token` / `Resolve` / `BarStyle` give the HUD its own face and outline (Skin minor 8), and the font override is kept with no effect. A change repaints every frame recorded for the owner and fires its `OnLooksChanged` listeners, unless a reload is pending (then it is stored and the reload applies it). Never writes the host's profile (`WriteChoice`'s `media` does). A host applies its stored overrides with one `SetOverride` after `RegisterOwner`. `ResolveSkin` stays override-free. **An override that does not resolve** (a key no loaded LibSharedMedia pack registers, and not a file path) is stored, and `GetOverride` answers it, but every token read keeps the skin's own face or texture, so the strings never drop to the client's stock font nor the bars to flat. The first time an override is checked against LibSharedMedia the engine subscribes once to its `LibSharedMedia_Registered` callback; a key registered later repaints and notifies every owner whose override names it (unless a reload is pending). |
+| `Skin:GetOutline(owner)` | mode | The owner's font outline mode, the Skin tab's *Font outline* (Skin minor 9): one of `OUTLINE_MODES`, `"all"` for an owner that never set one and for an unregistered owner. |
+| `Skin:SetOutline(owner, mode)` | changed | Sets the mode; a value not in `OUTLINE_MODES` (nil included) is `"all"`. Idempotent. `"hud"` makes `font.outline` answer `""` in every token read, `"off"` both `font.outline` and `hud.outline` (*Text is outlined by default*, above). A change repaints every frame recorded for the owner and fires its `OnLooksChanged` listeners, unless a reload is pending (then it is stored and the reload applies it). Never writes the host's profile (`WriteChoice`'s `media.outline` does). *Ignore fonts* wins. |
 | `Skin:For(owner)` | facade `S` | The owner's facade, `lib.facades[owner]`: one table per owner, kept for the session and across minors. Does not register the owner; an unregistered owner's facade reads Ka0s Default. |
 | `Skin:GetChoice(owner)` | source, skin | The applied choice. An unregistered owner answers `"ka0s", "ka0s"`. |
 | `Skin:DrawsKey(owner)` | key | The key the owner draws by (Skin minor 8): `"eui"` while EllesmereUI paints it (its derived tokens; a refused EllesmereUI included, since the library then paints from them), else the skin key it wears. `DEFAULT` (`"ka0s"`) for Ka0s Default, for a key no skin registers, for an owner on `eui` before EllesmereUI paints it (the live fallback) and for an unregistered owner. Derived on every call, never stored. Lib-level only: no facade member answers it. Minor 7's internal `__DrawsKey` stays one release as an alias of the same function. What a host that asks which skin an owner draws calls instead of rebuilding the answer from `GetChoice` and `GetSkin`; no primitive asks it since `opts.stockDefault` retired (SkinPaint minor 12). |
@@ -115,6 +156,8 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `FROM_SKIN` | `"@skin"` | The stored value meaning "take this setting from the skin". |
 | `DEFAULT` | `"ka0s"` | The skin every owner wears until it picks another, and the one an unknown key resolves as. |
 | `SOURCES` | `{ "ka0s", "eui" }` | The two skin sources. |
+| `OUTLINE_MODES` | `{ "all", "hud", "off" }` | The font outline modes, in the Skin tab's order (Skin minor 9). Read-only. |
+| `OUTLINE_DEFAULT` | `"all"` | The mode an owner wears until it sets another (Skin minor 9). |
 | `SCHEMA` | array | Every token, as `{ name, kind, nilable, group }` (the reference below). Read-only. |
 | `VOCAB` | array | The names the facade carries as trampolines. |
 | `Skin:PaintAce(owner, widget)` | boolean | `SkinAce.lua`. Paints an AceGUI widget a host acquired for `owner`'s page and wraps its release so the widget goes back to the pool stock; see *AceGUI rows*. Answers false, painting nothing, for an owner that is not registered or that ignores its settings panel, a type with no painter (its own or an aliased base's, `AliasAceType`), or a widget another skinning addon skinned. |
@@ -432,7 +475,7 @@ eight skins*, below.
 | `font.mono` | string | yes | `"JetBrains Mono"` |
 | `font.bodySize` | number | yes | `12` (the reference) |
 | `font.titleSize` | number | yes | `14` (the reference) |
-| `font.outline` | string | yes | `""` |
+| `font.outline` | string | yes | `"OUTLINE"` (SkinDefs minor 17, `LK-03`; `""` until then). An owner's *Font outline* answers `""` for it under `"hud"` and `"off"` (Skin minor 9), and the mono role never takes it (SkinPaint minor 13) |
 | `font.shadow` | bool | yes | `true` |
 
 ### Window
@@ -660,7 +703,7 @@ eight skins*, below.
 | `glow.color` | color | yes | `1, 0.82, 0, 1` |
 | `hud.font` | string | no | `"Ka0s Prototype"` (`"Ka0s Oxanium SemiBold"` from SkinDefs minor 14, `"Friz Quadrata TT"` until then) |
 | `hud.fontSize` | number | no | `12` |
-| `hud.outline` | string | no | `"OUTLINE"` |
+| `hud.outline` | string | no | `"OUTLINE"`. An owner's *Font outline* answers `""` for it under `"off"` (Skin minor 9) |
 | `icon.borderStyle` | string | no | `"Solid"` (SkinDefs minor 15) |
 | `icon.borderSize` | number | no | `2` (SkinDefs minor 15) |
 
@@ -1672,8 +1715,24 @@ fake with AceGUI's anatomy (`tests/fixture_skin_ace.lua`).
 ## What a consumer owes
 
 What a host acts on when it re-vendors this version (Ka0sAddonsCommonTasks
-`docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`'s M2 items). Nothing raises if a host does none of it; each
+`docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`'s M2 items). Nothing raises if a host does none of it; each
 point is what the player sees until it does.
+
+- **Store, write and apply the font outline** (Skin minor 9). Add `outline = "all"` to the skin
+  block of the profile defaults (beside the source, skin, scope and overrides), with a schema row of
+  values `all`, `hud`, `off` (so `/<slash> set <path> hud` works; its `onChange` applies its own half
+  only, as the scope rows do). The host's write seam (`opts.set`, the tab's `spec.set`) stores
+  `media.outline` when it is not nil, beside the font and texture it already stores. Where the host
+  applies its stored scope and overrides (an `ApplySkinChoice()` with no argument, the profile
+  events), it applies the stored mode with `Skin:SetOutline(owner, mode)`, guarded on the member for
+  an older copy; its degradation arm answers the same seam with a no-op. A test that counts the
+  skin block's keys gains one.
+- **Expect outlined window text.** Every string a primitive paints is outlined under the default
+  `"all"`, so a host test that pins a painted string's flags as `""` moves to `"OUTLINE"`, and a
+  layout measured on unoutlined text may need its widths re-checked (the strip re-fit and the size
+  parity of the same bundle). A host's own `SetFont` calls are not touched.
+
+From version 8.16.12.6.10.2.4, still owed by a host that has not re-vendored it:
 
 - **Drop `opts.stockDefault`** (SkinPaint minor 12, *The stock look, retired*). The key is ignored,
   so a target a host kept the client's under Ka0s Default now wears the Ka0s look there. Callers at

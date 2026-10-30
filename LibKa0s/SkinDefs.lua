@@ -124,7 +124,10 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- on; Media minor 10 ships it): Obsidian draws Expressway for body, titles and HUD text, where it drew
 -- Inter and Inter SemiBold. Expressway ships one weight, the pack's Bold, so its titles differ by size
 -- and its HUD face is its body face; the heavier-HUD rule is met by the Bold itself. Sizes do not move
--- here.
+-- here. Then (LK-03, the owner's ruling D-06, still minor 17): Ka0s Default's `font.outline` is
+-- OUTLINE, where it was "", so every skin and the eui source state OUTLINE for window text as they do
+-- for the HUD; an owner's Skin-tab "Font outline" takes it away (Skin minor 9), and the mono role is
+-- never outlined (SkinPaint minor 13).
 local DEFS_MINOR = 17
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
@@ -242,10 +245,11 @@ local SERIES = {
 local KA0S = {
   -- Fonts (minor 8, the owner's ruling: Ka0s Default sets a font like every skin; minor 17, the
   -- owner's choice of face): Prototype, for the body and titles alike (one weight; titles are larger);
-  -- the mono face DebugLog's console names; no outline, the client's 1, -1 shadow.
+  -- the mono face DebugLog's console names; OUTLINE (minor 17, D-06: the owner's "Font outline"
+  -- removes it, and the mono role never takes it), the client's 1, -1 shadow.
   ["font.body"] = "Ka0s Prototype", ["font.title"] = "Ka0s Prototype",
   ["font.mono"] = "JetBrains Mono",
-  ["font.outline"] = "", ["font.shadow"] = true,
+  ["font.outline"] = "OUTLINE", ["font.shadow"] = true,
   -- Window: Core.SKIN, the CopyWindow backdrop, LootHistory's title bar.
   ["win.bg"] = { 0.06, 0.06, 0.08, 0.92 }, ["win.bgDense"] = { 0.06, 0.06, 0.08, 0.95 },
   ["win.border"] = { 0, 0, 0, 1 }, ["win.borderSize"] = 1, ["win.borderStyle"] = "flat",

@@ -577,8 +577,8 @@ test("appearance: copy gives every other owner this owner's scope as well as its
   local O, ctx = page(lib, OWNER)
   local view = O.AppearanceRows(ctx, specFor(store))
   view.copy:__fire("OnClick")
-  assertTrue(m.popups[1].dialog.text:find("skin source, skin, scope, font and texture", 1, true) ~= nil,
-    "says scope, font and texture")
+  assertTrue(m.popups[1].dialog.text:find("skin source, skin, scope, font, texture and font outline", 1, true)
+    ~= nil, "says scope, font, texture and font outline")
   m.popups[1].dialog.OnAccept(nil, m.popups[1].data)
   local panel, fonts = Skin:GetIgnore(OTHER)
   assertEqual(panel, false); assertEqual(fonts, true, "the other owner ignores fonts now")
@@ -771,6 +771,121 @@ test("appearance: the skins' heading does not repeat the tab's name (options-ui-
   for _, t in ipairs(texts(ctx)) do
     assertTrue(t ~= S.TAB_LABEL, "no line reads the tab's name alone")
   end
+end)
+
+-- ── the font outline (minor 4, LK-03 of docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK) ─────────────
+
+test("appearance: the Font outline dropdown sits under the Scope's check boxes, All text first", function()
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  local S = lib.APPEARANCE_STRINGS
+  local dd = view.outline
+  assertEqual(dd.labelText, "Font outline")
+  assertEqual(table.concat(dd.order, "|"), "all|hud|off", "the three modes in the tab's order")
+  assertEqual(dd.list.all, "All text"); assertEqual(dd.list.hud, "HUD text only"); assertEqual(dd.list.off, "Off")
+  assertEqual(dd.value, "all", "the default")
+  assertFalse(dd.disabled == true, "live while Ignore fonts is off")
+  assertTrue(S.OUTLINE_TIP:find("Ignore fonts", 1, true) ~= nil, "the tooltip says Ignore fonts wins")
+  local all = flatten(ctx.scroll)
+  assertTrue(indexOf(all, view.ignore.fonts) < indexOf(all, dd) and indexOf(all, dd) < indexOf(all, view.copy),
+    "under the check boxes, above the copy")
+end)
+
+test("appearance: an outline pick moves the Skin major first, then writes every media half", function()
+  -- red under: setOutline writing { outline } alone (a minor-6 setter clears both overrides).
+  local m, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Expressway", nil)
+  local frame = F.window(m)
+  frame.title:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
+  Skin:For(OWNER).Shell(frame)
+  local O, ctx = page(lib, OWNER)
+  local spec = specFor(store)
+  local seam, seen = spec.set, nil
+  spec.set = function(...)
+    seen = { mode = Skin:GetOutline(OWNER), ... }
+    seam(...)
+  end
+  local view = O.AppearanceRows(ctx, spec)
+  assertEqual(frame.title:GetFontObject().font[3], "OUTLINE", "all: the title is outlined")
+  view.outline:__fire("OnValueChanged", "hud")
+  assertEqual(seen.mode, "hud", "SetOutline ran before the owner's write seam")
+  assertNil(seen[1]); assertNil(seen[2]); assertNil(seen[3], "no source, skin or scope")
+  assertEqual(store.media.outline, "hud", "written through the fourth argument")
+  assertEqual(store.media.font, "Ka0s Expressway", "with the font override as it is")
+  assertEqual(store.media.texture, false, "and the texture")
+  assertEqual(frame.title:GetFontObject().font[3], "", "the title repainted unoutlined, live")
+  assertEqual(view.outline.value, "hud")
+  view.media.texture:__fire("OnValueChanged", "Ka0s Flat")
+  assertEqual(store.media.outline, "hud", "a texture pick carries the outline too")
+end)
+
+test("appearance: Ignore fonts grays the Font outline out, and it comes back live", function()
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  view.ignore.fonts:__fire("OnValueChanged", true)
+  assertTrue(view.outline.disabled, "grayed while Ignore fonts is on")
+  view.ignore.fonts:__fire("OnValueChanged", false)
+  assertFalse(view.outline.disabled, "live again")
+  Skin:SetIgnore(OWNER, nil, true)
+  view.sync()
+  assertTrue(view.outline.disabled, "an Ignore fonts set elsewhere is read back")
+end)
+
+test("appearance: in combat an outline pick writes nothing and snaps back", function()
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  lib.__combatLocked = true
+  view.outline:__fire("OnValueChanged", "off")
+  assertEqual(Skin:GetOutline(OWNER), "all", "the Skin major did not move")
+  assertNil(store.seamCalls, "the seam was not called")
+  assertEqual(view.outline.value, "all", "the refused pick snaps back")
+  lib.__combatLocked = false
+end)
+
+test("appearance: a page drawn disabled keeps the Font outline disabled after a sync", function()
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  ctx.__renderDisabled = true
+  local view = O.AppearanceRows(ctx, specFor(store))
+  ctx.__renderDisabled = nil
+  view.sync()
+  assertTrue(view.outline.disabled)
+end)
+
+test("appearance: copy gives every other owner this owner's font outline", function()
+  local m, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  local other = register(Skin, OTHER)
+  Skin:SetOutline(OWNER, "off")
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  view.copy:__fire("OnClick")
+  m.popups[1].dialog.OnAccept(nil, m.popups[1].data)
+  assertEqual(Skin:GetOutline(OTHER), "off", "the other owner's applied mode moved")
+  assertEqual(other.media.outline, "off", "and its profile, through WriteChoice's media")
+end)
+
+test("appearance: the copy helper keeps a target's own half for a media half left out", function()
+  -- red under: lib.__copySkinTo handing a partial media to WriteChoice (the target's overrides cleared).
+  local _, Skin, lib = env()
+  register(Skin, OWNER)
+  local other = register(Skin, OTHER)
+  Skin:SetOverride(OTHER, "Ka0s Expressway", "Ka0s Flat")
+  lib.__copySkinTo(Skin, OTHER, "ka0s", "ember", nil, { outline = "hud" })
+  assertEqual(Skin:GetOutline(OTHER), "hud", "the outline moved")
+  local font, texture = Skin:GetOverride(OTHER)
+  assertEqual(font, "Ka0s Expressway", "the font kept"); assertEqual(texture, "Ka0s Flat", "and the texture")
+  assertEqual(other.media.font, "Ka0s Expressway", "and written back as it is")
+  assertEqual(other.media.texture, "Ka0s Flat")
+  assertEqual(other.media.outline, "hud")
 end)
 
 test("appearance: the other owners and one owner's skin copy are library-level, for the skin picker", function()

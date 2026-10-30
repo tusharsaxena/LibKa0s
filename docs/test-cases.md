@@ -568,6 +568,19 @@ Total.
 - skin ignore fonts: BarStyle's font fields are nil, every other field unchanged
 - skin ignore fonts: an unregistered owner reads Ka0s Default's HUD face as before
 
+### test_skin_outline.lua (10)
+
+- skin outline: the three modes, in the tab's order, and all is the default
+- skin outline: every skin states OUTLINE for window and HUD text
+- skin outline: all reads the skin, hud drops window text, off drops both
+- skin outline: an unknown mode is all, a repeat changes nothing, listeners fire per change
+- skin outline: a painted string takes the mode's flags on the repaint
+- skin outline: the mono role is never outlined
+- skin outline: Ignore fonts wins whatever the mode
+- skin outline: one owner's mode never reaches another, and a font override composes
+- skin outline: SetOutline while a reload is pending stores the mode and repaints nothing
+- skin outline: WriteChoice hands media.outline to the setter, normalized
+
 ### test_skin_owner_tokens.lua (16)
 
 - skin owner tokens: Ka0s Default answers each token's default, exactly
@@ -2235,7 +2248,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (36)
+### test_options_appearance.lua (43)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2272,11 +2285,18 @@ Total.
 - appearance: with a Skin copy before minor 6 the section is absent
 - appearance: a stored key LibSharedMedia lacks stays listed, and the skin's own names the worn face
 - appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
+- appearance: the Font outline dropdown sits under the Scope's check boxes, All text first
+- appearance: an outline pick moves the Skin major first, then writes every media half
+- appearance: Ignore fonts grays the Font outline out, and it comes back live
+- appearance: in combat an outline pick writes nothing and snaps back
+- appearance: a page drawn disabled keeps the Font outline disabled after a sync
+- appearance: copy gives every other owner this owner's font outline
+- appearance: the copy helper keeps a target's own half for a media half left out
 - appearance: the other owners and one owner's skin copy are library-level, for the skin picker
 
 ### test_options_skin_picker.lua (39)
 
-- skin picker: OptionsSkinPicker is minor 2, paired on the shell, and attaches two members
+- skin picker: OptionsSkinPicker is minor 3, paired on the shell, and attaches two members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -2296,7 +2316,7 @@ Total.
 - skin picker: in combat a pick, Apply and Apply to all write nothing and leave the window up
 - skin picker: in combat the close control still closes, putting a pending preview back unwritten
 - skin picker: Apply to all is hidden while no other skin owner is registered
-- skin picker: Apply to all saves here and gives every other owner the source and skin alone
+- skin picker: Apply to all saves here and gives every other owner the source, skin and outline alone
 - skin picker: Apply to all raises one reload popup naming every addon that needs it
 - skin picker: Apply to all dismisses every queued picker, each onClose run, none shown
 - skin picker: the gear saves, opens the page itself, then the Skin tab, then closes
@@ -3749,6 +3769,7 @@ Total.
 | test_media.lua | 40 |
 | test_skin.lua | 33 |
 | test_skin_override.lua | 26 |
+| test_skin_outline.lua | 10 |
 | test_skin_owner_tokens.lua | 16 |
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
@@ -3807,7 +3828,7 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 36 |
+| test_options_appearance.lua | 43 |
 | test_options_skin_picker.lua | 39 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
@@ -3872,4 +3893,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3298** |
+| **Total** | **3315** |

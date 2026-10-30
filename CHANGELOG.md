@@ -17,8 +17,10 @@ batch (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, M1), th
 `LK-14` and `LK-A1` (its Addendum 01). The release closes on the same branch (`LK-90`); the tag is local until the owner's
 go-ahead.
 
-Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**) and **SkinDefs
-minor 17** (`LibKa0s-Skin-1.0` key **8.17.12.6.10.2.4**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
+Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**), **Skin minor 9**,
+**SkinDefs minor 17** and **SkinPaint minor 13** (`LibKa0s-Skin-1.0` key **9.17.13.6.10.2.4**), and
+**OptionsAppearance minor 4** and **OptionsSkinPicker minor 3** (`LibKa0s-Options-1.0` key
+**34.4.36.5.7.11.3.13.9.4.3.6.4.3**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
 
 ### The payload ships Prototype, Fira Sans Medium and Expressway (`LK-01`, `LK-A1`)
 
@@ -66,8 +68,9 @@ drop Inter and Oxanium and add Prototype and Expressway with their terms.
 
 ### Ka0s Default draws Prototype, WoW Forever's body text Fira Sans Medium, Obsidian Expressway (`LK-02`, `LK-A1`)
 
-`LibKa0s-Skin-1.0` key 8.17.12.6.10.2.4, documented in
-[docs/api/Skin/version-8.17.12.6.10.2.4-docs.md](docs/api/Skin/version-8.17.12.6.10.2.4-docs.md)
+`LibKa0s-Skin-1.0` key 9.17.13.6.10.2.4 (8.17.12.6.10.2.4 when this entry was written; its document
+renamed with the key), documented in
+[docs/api/Skin/version-9.17.13.6.10.2.4-docs.md](docs/api/Skin/version-9.17.13.6.10.2.4-docs.md)
 (*What changed at this version*). SkinDefs minor 17 (D-02): Ka0s Default's `font.body`,
 `font.title` and `hud.font` are `Ka0s Prototype` (one weight; its titles differ by size), where they
 were Oxanium SemiBold, Bold and SemiBold; the `eui` source inherits the HUD face. WoW Forever's
@@ -79,6 +82,40 @@ size. Sizes do not move here.
 **What a consumer owes:** a test pinning Ka0s Default's faces, WoW Forever's body face or Obsidian's
 faces (`Ka0s Inter SemiBold` as its HUD face, for one) moves with it (better: read `Skin:ResolveSkin("ka0s")["font.body"]`), and a degradation copy of Ka0s Default's
 HUD face (Quick Comms' `NS.SKIN_FALLBACK["hud.font"]`) becomes `Ka0s Prototype`.
+
+### Text is outlined by default, and the Skin tab says where (`LK-03`)
+
+`LibKa0s-Skin-1.0` key 9.17.13.6.10.2.4 and `LibKa0s-Options-1.0` key
+34.4.36.5.7.11.3.13.9.4.3.6.4.3, documented in
+[docs/api/Skin/version-9.17.13.6.10.2.4-docs.md](docs/api/Skin/version-9.17.13.6.10.2.4-docs.md) and
+[docs/api/Options/version-34.4.36.5.7.11.3.13.9.4.3.6.4.3-docs.md](docs/api/Options/version-34.4.36.5.7.11.3.13.9.4.3.6.4.3-docs.md)
+(*What changed at this version*). The owner's item 13 and ruling D-06: outline by default, as a
+setting with three values.
+
+- **Every skin outlines window text** (SkinDefs minor 17, still): Ka0s Default's `font.outline` is
+  `"OUTLINE"`, where it was `""`, and every skin and the `eui` source inherit it, as they did
+  `hud.outline`.
+- **Skin minor 9: each owner's font outline mode**, `OUTLINE_MODES` `{ "all", "hud", "off" }`
+  (`OUTLINE_DEFAULT` `"all"`), `GetOutline`, `SetOutline` (a live repaint and `OnLooksChanged`, like
+  `SetIgnore`) and `WriteChoice`'s `media.outline`. It is applied in one place, `__Tokens`: `"hud"`
+  answers `""` for `font.outline`, `"off"` for it and `hud.outline`; `"all"` reads the skin as
+  stated. `P.font`, `BarStyle`, `Token` and `Resolve` follow with no code of their own; `ResolveSkin`
+  never carries it. *Ignore fonts* wins, as before.
+- **SkinPaint minor 13: the mono role is never outlined**, so the debug console's and the perf
+  tables' digits stay clean under `"all"`.
+- **OptionsAppearance minor 4: the Skin tab's *Font outline* dropdown**, *All text*, *HUD text only*
+  and *Off*, under the Scope's check boxes, grayed while *Ignore fonts* is on; every media write the
+  tab makes carries `{ font, texture, outline }`; *Copy to every Ka0s addon…* carries the outline;
+  `lib.__copySkinTo` keeps a target's own half for a `media` half left out.
+- **OptionsSkinPicker minor 3**: *Apply to all Ka0s addons* gives every other owner this owner's font
+  outline too.
+
+**What a consumer owes** (M2 of the same bundle): a skin-block key `outline` (default `"all"`) and its
+schema row (`all`, `hud`, `off`); the write seam stores `media.outline` when it is not nil; the
+stored mode is applied with `Skin:SetOutline` beside the stored scope and overrides, through a host
+seam its degradation arm answers with a no-op; a test that pins a painted string's flags as `""`
+moves to `"OUTLINE"`, and one counting the skin block's keys gains one. No stub or facade member is
+owed: the four new members are lib-level, and the Options instance gains none.
 
 ## v1.81.0 — 2026-10-30
 
