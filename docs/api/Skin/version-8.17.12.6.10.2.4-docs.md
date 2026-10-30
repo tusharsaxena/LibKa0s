@@ -18,21 +18,24 @@
 
 ## What changed at this version
 
-**One file moves, `SkinDefs.lua` to minor 17, and no member or signature changes.** Two skins change
-face, the owner's 2026-10-30 picks (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`,
-D-02), both shipped by `LibKa0s-Media-1.0` minor 10:
+**One file moves, `SkinDefs.lua` to minor 17, and no member or signature changes.** Three skins
+change face, the owner's 2026-10-30 picks (Ka0sAddonsCommonTasks
+`docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, D-02 and Addendum 01), all shipped by
+`LibKa0s-Media-1.0` minor 10:
 
 | Skin | `font.body` | `font.title` | `hud.font` | Until minor 17 |
 |---|---|---|---|---|
 | Ka0s Default | `Ka0s Prototype` | `Ka0s Prototype` | `Ka0s Prototype` | `Ka0s Oxanium SemiBold` / `Ka0s Oxanium Bold` / `Ka0s Oxanium SemiBold` |
+| Obsidian | `Ka0s Expressway` | `Ka0s Expressway` | `Ka0s Expressway` | `Ka0s Inter` / `Ka0s Inter SemiBold` / `Ka0s Inter SemiBold` |
 | WoW Forever | `Ka0s Fira Sans Medium` | `Ka0s Fira Sans SemiBold` (kept) | `Ka0s Fira Sans SemiBold` (kept) | `Ka0s Fira Sans` for the body |
 
 Prototype has one weight, so Ka0s Default's titles differ from its body by size alone (14 against
 12). The `eui` source derives from Ka0s Default and inherits its HUD face, so it draws Prototype too.
 WoW Forever keeps SemiBold for titles and HUD under the heavier-HUD rule (SkinDefs minor 16).
-**Obsidian keeps Inter**: the same ruling named Expressway for it, which does not ship (its license
-forbids embedding it in software; see `LibKa0s-Media-1.0` version 10.1), so its face waits for the
-owner's next ruling. Sizes do not move here.
+**Obsidian draws Expressway** (`LK-A1`): its license forbids embedding it in software, and the owner,
+shown that, ruled on 2026-10-30 "Ship it anyways." (see `LibKa0s-Media-1.0` version 10.1). It ships
+one weight, the Bold, so Obsidian's titles differ by size too and its HUD face is its body face; the
+heavier-HUD rule is met by the Bold itself. Sizes do not move here.
 
 ## What this major is
 
@@ -355,10 +358,10 @@ Default drew HUD text in Friz Quadrata.
 
 **Every skin names a HUD face of its own** (SkinDefs minor 16; LK-04, the owner's ruling R-4). It is
 the skin's own text family at the heavier shipped weight, since HUD text is 12px under an OUTLINE
-and a Regular's thin strokes close up under it: Obsidian `Ka0s Inter SemiBold`, Azeroth
+and a Regular's thin strokes close up under it: Obsidian `Ka0s Expressway` (a Bold, its one weight, since SkinDefs minor 17; `Ka0s Inter SemiBold` until then), Azeroth
 `Ka0s Vollkorn Bold`, Glass `Ka0s Nunito SemiBold`, High Contrast `Ka0s Atkinson Bold`, Ember
 `Ka0s Bitter Bold`, WoW Midnight `Ka0s Philosopher Bold` and WoW Forever `Ka0s Fira Sans SemiBold`,
-every one shipped by `LibKa0s-Media-1.0` and SIL OFL; Ka0s Default's is its one face, `Ka0s
+every one shipped by `LibKa0s-Media-1.0` and SIL OFL but Expressway; Ka0s Default's is its one face, `Ka0s
 Prototype` (SkinDefs minor 17). WoW Default names the client's own
 `Friz Quadrata TT` explicitly, its point being the client look. `hud.outline` (`OUTLINE`) and
 `hud.fontSize` (`12`) stay Ka0s Default's in every skin, and the `eui` source keeps Ka0s Default's
@@ -1180,7 +1183,7 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
   `scroll.width`, `scroll.gutter` and `win.inset` are Ka0s Default's in all nine skins.
 - **Fonts.** Every skin draws one family of its own, for body and titles alike (SkinDefs minor 11,
   the owner's round-5 notes: titles that did not match the body, and faces three skins shared):
-  Obsidian Inter (its mockup's own face), Glass Nunito (rounded, as its corners are; the mockup's
+  Obsidian Expressway (the owner's pick since SkinDefs minor 17; Inter, its mockup's own face, until then), Glass Nunito (rounded, as its corners are; the mockup's
   Manrope), Azeroth Vollkorn (a dark old-style book face for the parchment), Ember Bitter (a sturdy
   slab), WoW Midnight Philosopher, WoW Forever Fira Sans (crisp at small sizes; Medium for body text since SkinDefs minor 17, SemiBold titles) and High Contrast
   Atkinson Hyperlegible, a step larger than the rest (*Sizes are relative*, above). WoW Default
@@ -1228,8 +1231,8 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `font.body` | `Ka0s Inter` | `Ka0s Vollkorn` | `Ka0s Nunito` | `Ka0s Atkinson` | `Ka0s Bitter` | `Friz Quadrata TT` | `Ka0s Philosopher` | `Ka0s Fira Sans Medium` |
-| `font.title` | `Ka0s Inter SemiBold` | `Ka0s Vollkorn Bold` | `Ka0s Nunito SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Bitter Bold` | `Friz Quadrata TT` | `Ka0s Philosopher Bold` | `Ka0s Fira Sans SemiBold` |
+| `font.body` | `Ka0s Expressway` | `Ka0s Vollkorn` | `Ka0s Nunito` | `Ka0s Atkinson` | `Ka0s Bitter` | `Friz Quadrata TT` | `Ka0s Philosopher` | `Ka0s Fira Sans Medium` |
+| `font.title` | `Ka0s Expressway` | `Ka0s Vollkorn Bold` | `Ka0s Nunito SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Bitter Bold` | `Friz Quadrata TT` | `Ka0s Philosopher Bold` | `Ka0s Fira Sans SemiBold` |
 | `font.bodySize` | `12` | `13` | `12.5` | `13.5` | `12` | `12` | `12.5` | `12` |
 | `font.titleSize` | `14` | `14` | `14` | `15` | `13.5` | `14` | `14` | `14` |
 
@@ -1438,7 +1441,7 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 |---|---|---|---|---|---|---|---|---|
 | `bar.texture` | `Ka0s Matte` | `Ka0s Parchment` | `Ka0s Glass Bar` | `Ka0s Solid` | `Ka0s Forge` | `Blizzard` | `Ka0s Satin` | `Ka0s Classic` |
 | `bar.gloss` | none | · | `true` | none | · | · | · | none |
-| `hud.font` | `Ka0s Inter SemiBold` | `Ka0s Vollkorn Bold` | `Ka0s Nunito SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Bitter Bold` | `Friz Quadrata TT` | `Ka0s Philosopher Bold` | `Ka0s Fira Sans SemiBold` |
+| `hud.font` | `Ka0s Expressway` | `Ka0s Vollkorn Bold` | `Ka0s Nunito SemiBold` | `Ka0s Atkinson Bold` | `Ka0s Bitter Bold` | `Friz Quadrata TT` | `Ka0s Philosopher Bold` | `Ka0s Fira Sans SemiBold` |
 | `icon.borderStyle` | `Solid` | `Solid` | `Solid` | `Solid` | `Solid` | `Blizzard Tooltip` | `Solid` | `Solid` |
 | `icon.borderSize` | `1` | `2` | `1` | `2` | `2` | `2` | `2` | `1` |
 

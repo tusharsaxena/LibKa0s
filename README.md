@@ -325,8 +325,9 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
                         phosphor/ 1,434 Phosphor Fill, MIT; game-icons/ 4,178 Game-icons.net,
                         CC BY 3.0, with AUTHORS.txt), textures/ (15 generated statusbar bars and
                         the Glass skin's generated border and fill) and fonts/ (JetBrains Mono,
-                        Inter, Nunito, Vollkorn, Bitter, Philosopher, Fira Sans and Atkinson
-                        Hyperlegible, SIL OFL, and Prototype, under its author's terms); every
+                        Nunito, Vollkorn, Bitter, Philosopher, Fira Sans and Atkinson
+                        Hyperlegible, SIL OFL; Prototype, under its author's terms; Expressway,
+                        on the owner's ruling, with Typodermic's EULA); every
                         third-party set carries its license beside it
   Skin.lua           -- LibKa0s-Skin-1.0, MINOR at the top of the file; needs Core
   SkinDefs.lua       -- the token schema and the skins, same module, DEFS_MINOR of its own
@@ -441,13 +442,11 @@ The icon art in `LibKa0s/media/icons/` comes from three sets, each license shipp
   `media/icons/game-icons/AUTHORS.txt`. Changed from the originals: rasterized to 64×64 TGA,
   background removed, recolored white, some names suffixed or respelled.
 
-The fonts in `LibKa0s/media/fonts/` are SIL OFL 1.1 but one, Prototype, each face's terms shipped
-beside it:
+The fonts in `LibKa0s/media/fonts/` are SIL OFL 1.1 but two, Prototype and Expressway, each face's
+terms shipped beside it:
 
 - **[JetBrains Mono](https://github.com/JetBrains/JetBrainsMono)** by JetBrains
   (`media/fonts/JetBrainsMono-OFL.txt`).
-- **[Inter](https://github.com/rsms/inter)** by The Inter Project Authors, Regular and SemiBold
-  (`media/fonts/Inter-OFL.txt`).
 - **[Nunito](https://github.com/googlefonts/nunito)** by The Nunito Project Authors, Regular and
   SemiBold (`media/fonts/Nunito-OFL.txt`).
 - **[Vollkorn](https://github.com/FAlthausen/Vollkorn-Typeface)** by The Vollkorn Project Authors,
@@ -459,16 +458,22 @@ beside it:
 - **[Fira Sans](https://github.com/mozilla/Fira)** by The Mozilla Foundation and Telefonica S.A.,
   Medium and SemiBold (`media/fonts/FiraSans-OFL.txt`).
 
-  Inter, Nunito, Vollkorn and Bitter are changed from the originals: static instances cut
-  from upstream's variable fonts at the weights named (Inter's optical size at 14), each renamed for
-  its weight; no glyph edited.
+  Nunito, Vollkorn and Bitter are changed from the originals: static instances cut from
+  upstream's variable fonts at the weights named, each renamed for its weight; no glyph edited.
 - **[Atkinson Hyperlegible](https://www.brailleinstitute.org/freefont/)** by the Braille Institute
   of America, Regular and Bold (`media/fonts/AtkinsonHyperlegible-OFL.txt`).
 - **[Prototype](https://www.dafont.com/prototype.font)** v2.0 (2001), Ka0s Default's face. **Not
   under the OFL**: "free for personal use, freely distributed with Prototype.txt", so the author's
   `media/fonts/Prototype.txt` ships beside it unchanged. Shipped on the owner's ruling of
   2026-10-30.
+- **[Expressway](https://www.dafont.com/expressway.font)** Rg Bold 2.100 (2005) by Ray Larabie,
+  Typodermic, Obsidian's face. **Not under the OFL, and shipped against its terms**: its name table
+  reads "Do not distribute", and the Typodermic Desktop EULA 2026 puts embedding in software
+  outside the free license. Shipped on the owner's ruling of 2026-10-30, "Ship it anyways.", with
+  the EULA (`media/fonts/Expressway-EULA.pdf`) and its quick guide
+  (`media/fonts/Expressway-EULA-Guide.html`) beside it as the record of the terms that ruling
+  overrode. Expressway is a trademark of Typodermic.
 
-`tools/artwork/fonts.py` records where each face came from (google/fonts, pinned by commit, or the
-author's archive, and
+`tools/artwork/fonts.py` records where each face came from (google/fonts, pinned by commit, the
+author's archive, or for Expressway the owner's SharedMedia pack, and
 SHA-256).

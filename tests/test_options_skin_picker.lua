@@ -39,7 +39,7 @@ local SKIN_FILES = { "Skin", "SkinDefs", "SkinPaint", "SkinPaintExtras", "SkinPa
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdList", "OptionsTabs",
                   "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
                   "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker" }
-local LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf" }
+local LSM = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf", ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf" }
 
 --- Arm every frame's geometry (the kit answers 0 until a test asks): its size setters record
 --- what they are told, so the window's width and its growth read back, and its anchors are
@@ -645,7 +645,7 @@ test("skin picker: Apply to all saves here and gives every other owner the sourc
   local other = register(Skin, OTHER)
   local third = register(Skin, THIRD, "glass")
   Skin:SetIgnore(OTHER, true, false)
-  Skin:SetOverride(OTHER, "Ka0s Inter", nil)
+  Skin:SetOverride(OTHER, "Ka0s Expressway", nil)
   local O = instance(lib, OWNER)
   local f = O.SkinPicker(specFor(store))
   pickRow(f, "ember")
@@ -661,7 +661,7 @@ test("skin picker: Apply to all saves here and gives every other owner the sourc
     assertNil(w[4], name .. ": no font or texture half")
   end
   assertEqual(select(1, Skin:GetIgnore(OTHER)), true, "the other owner's scope left alone")
-  assertEqual(select(1, Skin:GetOverride(OTHER)), "Ka0s Inter", "and its font")
+  assertEqual(select(1, Skin:GetOverride(OTHER)), "Ka0s Expressway", "and its font")
   assertFalse(f:IsShown(), "the window closes")
   assertEqual(store.closed, 1)
 end)

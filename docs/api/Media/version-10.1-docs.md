@@ -11,31 +11,38 @@
 | Files and minors | `Media.lua` minor **10** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.82.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 9.1](./version-9.1-docs.md) (shipped in v1.79.0) — the same surface with Oxanium SemiBold and Bold and Fira Sans Regular in `FONTS`, and without Prototype and Fira Sans Medium |
+| Supersedes | [version 9.1](./version-9.1-docs.md) (shipped in v1.79.0) — the same surface with Oxanium SemiBold and Bold, Fira Sans Regular and Inter Regular and SemiBold in `FONTS`, and without Prototype, Fira Sans Medium and Expressway |
 | Superseded by | — |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 10, MediaIcons = 1 }` |
 
 ## What changed at this version
 
-**Two faces arrive and three leave; no signature moves.** The arrivals are the owner's 2026-10-30
-picks (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, D-01): Ka0s Default's
-Prototype and WoW Forever's Fira Sans Medium. The faces no skin names after `LibKa0s-Skin-1.0`'s
-SkinDefs minor 17 leave the payload with their files (the owner's item 7, D-03): `Ka0s Oxanium
-SemiBold`, `Ka0s Oxanium Bold` (with `Oxanium-OFL.txt`) and `Ka0s Fira Sans` (Regular;
-`FiraSans-OFL.txt` stays). `FONTS` holds sixteen entries, thirteen of them reaching ruRU.
+**Three faces arrive and five leave; no signature moves.** The arrivals are the owner's 2026-10-30
+picks (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, D-01 and Addendum 01):
+Ka0s Default's Prototype, WoW Forever's Fira Sans Medium and Obsidian's Expressway. The faces no
+skin names after `LibKa0s-Skin-1.0`'s SkinDefs minor 17 leave the payload with their files (the
+owner's item 7, D-03): `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold` (with `Oxanium-OFL.txt`),
+`Ka0s Fira Sans` (Regular; `FiraSans-OFL.txt` stays), and `Ka0s Inter` and `Ka0s Inter SemiBold`
+(with `Inter-OFL.txt`). `FONTS` holds fifteen entries, twelve of them reaching ruRU.
 `MediaIcons.lua` does not move.
 
 | | | Since |
 |---|---|---|
 | `Ka0s Prototype` in `FONTS` | `{ file = "Prototype-Regular.ttf", license = "Prototype.txt", langmask = { "western" } }`: Ka0s Default's face, the squared techno face the owner chose on 2026-10-28. **Not under the OFL**: its own name table reads "free for personal use, freely distributed with Prototype.txt", and the owner ruled on 2026-10-30 to ship it on those terms, so the author's `Prototype.txt` ships beside it byte for byte. From the archive dafont.com distributes, unchanged, pinned by SHA-256 in `tools/artwork/fonts.py`; byte-identical to the copy in the owner's SharedMedia pack, which registers the same key. One weight. No Cyrillic, so western. | **10** |
 | `Ka0s Fira Sans Medium` in `FONTS` | `{ file = "FiraSans-Medium.ttf", license = "FiraSans-OFL.txt", langmask = { "western", "ruRU" } }`: WoW Forever's body face, from google/fonts at the commit and build (4.203) the shipped SemiBold comes from, unchanged. SIL OFL 1.1. | **10** |
-| `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold` and `Ka0s Fira Sans` leave `FONTS` | Removed with `Oxanium-SemiBold.ttf`, `Oxanium-Bold.ttf`, `Oxanium-OFL.txt` and `FiraSans-Regular.ttf`. No release of any addon shipped them. `Font(addonName, name)` answers `nil` for them, as for any unknown name, and `RegisterLSM` no longer offers them. A profile still naming one as a font override falls back to its skin's face (`LibKa0s-Skin-1.0` drops an override key LibSharedMedia cannot resolve); a HUD element storing one draws LibSharedMedia's default face. | **10** |
+| `Ka0s Expressway` in `FONTS` | `{ file = "Expressway-Bold.ttf", license = "Expressway-EULA.pdf", langmask = { "western", "ruRU" } }`: Obsidian's face for body, titles and HUD, Expressway Rg Bold 2.100 by Ray Larabie (Typodermic), the owner's SharedMedia pack copy byte for byte, under the key that pack registers. **Not under the OFL, and shipped against its terms, on the owner's ruling** (below). One weight. Its cmap has the whole Russian alphabet, so western and ruRU. | **10** |
+| `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold`, `Ka0s Fira Sans`, `Ka0s Inter` and `Ka0s Inter SemiBold` leave `FONTS` | Removed with `Oxanium-SemiBold.ttf`, `Oxanium-Bold.ttf`, `Oxanium-OFL.txt`, `FiraSans-Regular.ttf`, `Inter-Regular.ttf`, `Inter-SemiBold.ttf` and `Inter-OFL.txt`. No released addon shipped them. `Font(addonName, name)` answers `nil` for them, as for any unknown name, and `RegisterLSM` no longer offers them. A profile still naming one as a font override falls back to its skin's face (`LibKa0s-Skin-1.0` drops an override key LibSharedMedia cannot resolve); a HUD element storing one draws LibSharedMedia's default face. | **10** |
 
-**Expressway does not ship.** The same ruling asked for it as Obsidian's face. The archive its
-author distributes carries the Typodermic Desktop EULA, whose guide lists embedding in "an app,
-game, plug-in, program, or software product" as needing another license and forbids sharing or
-converting the font software; the file's embedding bits (OS/2 `fsType` 4) say the same.
-`tools/artwork/fonts.py` records the archive and its hashes.
+**Expressway ships on the owner's ruling of 2026-10-30, "Ship it anyways."** That ruling overrides
+a finding: the archive its author distributes carries the Typodermic Desktop EULA 2026, whose guide
+lists embedding in "an app, game, plug-in, program, or software product" as needing another license
+and forbids sharing or converting the font software, the archive's own file says the same in its
+embedding bits (OS/2 `fsType` 4), and the pack copy that ships reads "(c) 2005 Typodermic. Do not
+distribute." in its name table. LK-01 withheld it on that evidence; the owner saw it and ruled. The
+EULA ships beside the face as `Expressway-EULA.pdf`, unchanged, with its quick guide as
+`Expressway-EULA-Guide.html` (CRLF line endings, otherwise unchanged): the record of the terms the
+ruling overrode. `tools/artwork/fonts.py` pins the archive and its members, and the face by path and
+SHA-256 (`LOCALS`).
 
 ## What version 9.1 changed
 
@@ -235,7 +242,7 @@ Read straight off the LibStub table. Every function is stateless.
 | `Font(addonName, name[, vendorPath])` | 1 | The font path for one registered face, or `nil` when `name` is not a key of `FONTS` or `addonName` is missing or empty. |
 | `RegisterLSM(addonName[, vendorPath])` | 1 (second return: 3; langmask and counted-only-if-held: 4; per-face mask, borders and backgrounds: **6**; a held key is never offered: **7**) | Register every shipped font, statusbar texture, border and background with LibSharedMedia under its catalog name, each font under the mask its `langmask` list builds. Returns `fonts, bars, borders, backgrounds`, each counting what LSM holds afterwards (`LSM:IsValid`); **`0, 0, 0, 0` when LSM is absent, which is not an error**. |
 | `ICONS` | 1 (three sets since **5**) | Array of every icon name: the set's prefix, then the file's own basename. The catalog — enumerate it rather than hard-coding a list. The 113 hand-written names come first, in version 4's order; `MediaIcons.lua` appends the rest at load. |
-| `FONTS` | 1 (six faces and `langmask`: **6**; Prototype and Fira Sans Medium in, Oxanium and Fira Sans Regular out: **10**) | Map of LSM name → `{ file, license, langmask }`: two basenames under `media/fonts/` and the array of LSM locale groups the face can draw (`"western"`, `"ruRU"`, ...). |
+| `FONTS` | 1 (six faces and `langmask`: **6**; Prototype, Fira Sans Medium and Expressway in, Oxanium, Fira Sans Regular and Inter out: **10**) | Map of LSM name → `{ file, license, langmask }`: two basenames under `media/fonts/` and the array of LSM locale groups the face can draw (`"western"`, `"ruRU"`, ...). |
 | `VENDOR_PATH` | 1 | `"libs\\LibKa0s"` — where the collection vendors this library, and the default third argument above. |
 | `MODULES` | 1 | `{ Media = <minor>, MediaIcons = <minor> }` — the live minors, and the value that picks this document. |
 
@@ -353,7 +360,6 @@ is one row in its `GLYPHS` table plus a row in `ICONS` in `Media.lua`; every oth
 | LSM name | File | License | Locales | Used by |
 |---|---|---|---|---|
 | `JetBrains Mono` | `JetBrainsMono-Regular.ttf` | `JetBrainsMono-OFL.txt` | western, ruRU | the debug console, meters, perf tables |
-| `Ka0s Inter` / `Ka0s Inter SemiBold` | `Inter-Regular.ttf` / `Inter-SemiBold.ttf` | `Inter-OFL.txt` | western, ruRU | Obsidian |
 | `Ka0s Nunito` / `Ka0s Nunito SemiBold` | `Nunito-Regular.ttf` / `Nunito-SemiBold.ttf` | `Nunito-OFL.txt` | western, ruRU | Glass |
 | `Ka0s Vollkorn` / `Ka0s Vollkorn Bold` | `Vollkorn-Regular.ttf` / `Vollkorn-Bold.ttf` | `Vollkorn-OFL.txt` | western, ruRU | Azeroth |
 | `Ka0s Bitter` / `Ka0s Bitter Bold` | `Bitter-Regular.ttf` / `Bitter-Bold.ttf` | `Bitter-OFL.txt` | western, ruRU | Ember |
@@ -361,18 +367,22 @@ is one row in its `GLYPHS` table plus a row in `ICONS` in `Media.lua`; every oth
 | `Ka0s Fira Sans Medium` / `Ka0s Fira Sans SemiBold` | `FiraSans-Medium.ttf` / `FiraSans-SemiBold.ttf` | `FiraSans-OFL.txt` | western, ruRU | WoW Forever (Medium since **10**; Regular until then) |
 | `Ka0s Atkinson` / `Ka0s Atkinson Bold` | `AtkinsonHyperlegible-Regular.ttf` / `-Bold.ttf` | `AtkinsonHyperlegible-OFL.txt` | western | High Contrast |
 | `Ka0s Prototype` | `Prototype-Regular.ttf` | `Prototype.txt` (the author's terms, not the OFL) | western | Ka0s Default (body, titles and HUD), since **10** |
+| `Ka0s Expressway` | `Expressway-Bold.ttf` | `Expressway-EULA.pdf` and `Expressway-EULA-Guide.html` (Typodermic's EULA, overridden by the owner's ruling) | western, ruRU | Obsidian (body, titles and HUD), since **10**; Inter until then |
 
 The first of each pair is the skin's body face, the second its titles: one family per skin, since
 minor 8. Ka0s Default draws Prototype for body, titles and HUD text (since **10**; Oxanium at
-**9**); WoW Default draws the client's Friz Quadrata, which this library does not ship. Every face but
-Prototype is SIL OFL 1.1, and every face's terms ship beside it: Prototype's are its author's
-`Prototype.txt`, verbatim, which its own name table names as the condition of distributing it; Bitter reserves only the name
+**9**), and Obsidian Expressway (since **10**; Inter until then); WoW Default draws the client's
+Friz Quadrata, which this library does not ship. Every face but Prototype and Expressway is SIL OFL
+1.1, and every face's terms ship beside it: Prototype's are its author's `Prototype.txt`, verbatim,
+which its own name table names as the condition of distributing it; Expressway's are Typodermic's
+EULA, which forbids what shipping it does, and it ships on the owner's ruling alone; Bitter reserves only the name
 "Bitter Pro", which nothing here uses. `tools/artwork/fonts.py` is the provenance record for the
-skin faces: it pins each to a google/fonts commit, or Prototype to the archive dafont.com
-distributes, and a SHA-256, and builds the shipped files. Philosopher, Fira Sans, Atkinson
-Hyperlegible and Prototype ship as their sources publish them. Inter, Nunito, Vollkorn and Bitter
-are published only as variable fonts, and the client is not known to honor a variable axis, so the
-tool cuts static instances (weight 400 and the title weight; Inter's optical size at 14) with fontTools and renames each for its weight; each family's `-OFL.txt` records that
+skin faces: it pins each to a google/fonts commit, Prototype and Expressway's EULA to the archives
+dafont.com distributes, or Expressway to the owner's pack file, and a SHA-256, and builds the shipped
+files. Philosopher, Fira Sans, Atkinson Hyperlegible, Prototype and Expressway ship as their sources
+publish them. Nunito, Vollkorn and Bitter are published only as variable fonts, and the client is
+not known to honor a variable axis, so the tool cuts static instances (weight 400 and the title
+weight) with fontTools and renames each for its weight; each family's `-OFL.txt` records that
 above the license text.
 
 **JetBrains Mono is the monospace.** A meter, a debug console and a perf table are all grids of digits
@@ -416,8 +426,8 @@ files.
 client LSM refuses a font with no langmask, and one whose mask lacks the client's locale bit.
 JetBrains Mono covers Latin and Cyrillic, so western and ruRU clients get it in the dropdown and
 koKR, zhCN and zhTW clients do not: the face has no glyphs for their text. The six families minor 8
-added cover Cyrillic as well and are western + ruRU; Atkinson Hyperlegible has no Cyrillic and is
-western only. A skin that names a face the client refused falls back to the client's own font.
+added cover Cyrillic as well and are western + ruRU, as Fira Sans Medium and Expressway are (**10**);
+Atkinson Hyperlegible and Prototype have no Cyrillic and are western only. A skin that names a face the client refused falls back to the client's own font.
 
 ## The Glass border and background
 

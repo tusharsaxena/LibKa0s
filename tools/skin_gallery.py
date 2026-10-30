@@ -49,8 +49,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 SKINDEFS = os.path.join(ROOT, "LibKa0s", "SkinDefs.lua")
 FONTS = os.path.join(ROOT, "LibKa0s", "media", "fonts")
-LABEL_FONT = os.path.join(FONTS, "Inter-SemiBold.ttf")
-TITLE_FONT = os.path.join(FONTS, "Inter-SemiBold.ttf")
+LABEL_FONT = os.path.join(FONTS, "FiraSans-SemiBold.ttf")   # Inter until it left the payload (LK-A1)
+TITLE_FONT = os.path.join(FONTS, "FiraSans-SemiBold.ttf")
 
 EDGE_DIFF = 40        # summed RGB step between neighbors that counts as an edge
 EDGE_SHARE = 0.55     # share of a line's span that must step at once for it to be the window's edge

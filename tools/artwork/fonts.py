@@ -12,7 +12,6 @@ ship and check them against the source rather than take them on trust.
 
 WHAT SHIPS, AND FROM WHERE. From google/fonts' ofl/ folder, SIL Open Font License 1.1:
 
-    Inter-Regular.ttf, Inter-SemiBold.ttf              inter, Inter[opsz,wght].ttf, INSTANCED
     Nunito-Regular.ttf, Nunito-SemiBold.ttf            nunito, Nunito[wght].ttf, INSTANCED
     Vollkorn-Regular.ttf, Vollkorn-Bold.ttf            vollkorn, Vollkorn[wght].ttf, INSTANCED
     Bitter-Regular.ttf, Bitter-Bold.ttf                bitter, Bitter[wght].ttf, INSTANCED
@@ -35,8 +34,16 @@ From an archive the author distributes (ARCHIVES below), under the terms the arc
     is freely distributed with its text. The file is byte-identical to the copy in the owner's
     SharedMedia pack (SHA-256 ce7f544c...).
 
-WHAT DOES NOT SHIP, AND WHY: Expressway (Typodermic), which D-01 also asked for. The archive
-dafont.com serves (https://dl.dafont.com/dl/?f=expressway, fetched 2026-10-30, SHA-256
+    Expressway-EULA.pdf, Expressway-EULA-Guide.html    dafont.com/expressway.font, the PDF unchanged,
+                                                       the guide with CRLF line endings
+
+From the owner's own SharedMedia pack (LOCALS below), on an owner ruling:
+
+    Expressway-Bold.ttf                                SharedMedia_MyMedia/font/Ka0s Expressway.ttf,
+                                                       unchanged
+
+EXPRESSWAY SHIPS ON THE OWNER'S RULING, AGAINST ITS TERMS. LK-01 withheld it. The archive dafont.com
+serves (https://dl.dafont.com/dl/?f=expressway, fetched 2026-10-30, SHA-256
 56574302a007ef70c3e28c1e9b25135e37d85ea6c5245c6c49afdcfc4938db93) holds `expressway rg.otf` (6.100,
 SHA-256 4e93119560e815cb27eb3099f824470346163f474ac6344110443f2ffab20bf2, OS/2 fsType 4: preview and
 print embedding only) with the Typodermic Desktop EULA 2026 and its quick guide. The guide lists
@@ -45,35 +52,44 @@ forbids "Do not give, sell, upload, sublicense, or otherwise share the font soft
 modify, rename, convert ..." and "Do not include the font in open-source or publicly available
 software where the font could be redistributed". The free desktop license covers static artwork
 only, so a vendored copy in every addon on CurseForge is outside it; the owner's pack copy (Bold,
-2.100) says "Do not distribute" in its own name table. It stays out until the owner holds a license
-that allows redistribution or picks another face.
+2.100, Ray Larabie) says "(c) 2005 Typodermic. Do not distribute." in its own name table.
 
-WHY INSTANCED. Upstream publishes four families as variable fonts only, and the WoW client is
+The owner was shown that evidence and ruled on 2026-10-30: "Ship it anyways." (Ka0sAddonsCommonTasks
+docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/plan-data/ADDENDUM-01.md, item LK-A1.) That ruling
+overrides the EULA finding above, and it is the only ground the face ships on. What ships is the
+pack's Bold 2.100, the face the owner's client already draws (SHA-256 06a21061...), not the archive's
+Regular 6.100: it is the cut the owner chose from, and the sizes are measured on it. The archive's
+EULA and its quick guide ship beside it as the record of the terms the ruling overrode; the font
+file itself is not taken from the archive. The pack's key, "Ka0s Expressway", is the LSM key, so a
+stored pick keeps resolving to the same bytes. Its cmap has the whole Russian alphabet.
+
+WHY INSTANCED. Upstream publishes three of the families as variable fonts only, and the WoW client is
 not known to honor a variable axis, so a variable file would draw its default instance whatever
 weight was asked for (Bitter's and Nunito's default is their thinnest). `fontTools.varLib.instancer`
-pins each axis (weight, and Inter's optical size at its text end, 14) and drops the variation
+pins each axis (weight) and drops the variation
 tables, which gives a static face; the name table is then rewritten to name the weight, so the file
 does not claim to be the instance it was cut from. The OFL allows a modified version under the same
-license. None of the four reserves its family name (Bitter reserves only "Bitter Pro"), so the
-names stay. Fira Sans, Philosopher, Atkinson and Prototype are copied unchanged: Fira reserves its
+license. None of the three reserves its family name (Bitter reserves only "Bitter Pro"), so the
+names stay. Fira Sans, Philosopher, Atkinson, Prototype and Expressway are copied unchanged: Fira reserves its
 name, so its bytes are never instanced or renamed.
 
 WHY THESE: the owner's round-5 notes of 2026-10-28 (Ka0sAddonsCommonTasks
 docs/2026-10-28-SKIN_ROUND5/): every skin has a face of its own, its titles in the same family as
-its body. Inter is Obsidian's (the modern face its mockup named), Nunito Glass's (rounded, as its
+its body. Nunito is Glass's (rounded, as its
 corners are), Vollkorn Azeroth's (a dark old-style book face for the parchment), Bitter Ember's (a
 sturdy slab), Philosopher WoW Midnight's, Fira Sans WoW Forever's (Medium for body text since the
 owner's 2026-10-30 notes, SemiBold for titles and HUD) and Atkinson Hyperlegible High Contrast's.
-Ka0s Default draws Prototype (2026-10-30), WoW Default the client's Friz Quadrata. Barlow and Cinzel,
-the 2026-10-25 run's faces, left the payload in round 5; Oxanium, Ka0s Default's stand-in for
-Prototype from 2026-10-28, and Fira Sans Regular left on 2026-10-30 (Media minor 10), no skin naming
-them any more. Atkinson and Prototype have no Cyrillic;
-the other families cover it, so Media.lua registers them for ruRU too.
+Ka0s Default draws Prototype and Obsidian Expressway (2026-10-30), WoW Default the client's Friz
+Quadrata. Barlow and Cinzel, the 2026-10-25 run's faces, left the payload in round 5; Oxanium, Ka0s
+Default's stand-in for Prototype from 2026-10-28, Fira Sans Regular, and Inter, Obsidian's from round
+5 until Expressway, left on 2026-10-30 (Media minor 10), no skin naming them any more. Atkinson and
+Prototype have no Cyrillic; the other families cover it, so Media.lua registers them for ruRU too.
 
 Requires Python 3 and fontTools (`sudo apt install python3-fonttools`; see DEPENDENCIES.md), and
-network access for --fetch. Run it with `-I`: the cache holds other people's files. An archive is
-read with `zipfile` and only the members named below are taken out, by name, so nothing in it runs
-and no path inside it is written.
+network access for --fetch, and for Expressway the owner's pack at the path LOCALS records (on any
+other machine, place that file in the cache by hand; its SHA-256 is checked either way). Run it with
+`-I`: the cache holds other people's files. An archive is read with `zipfile` and only the members
+named below are taken out, by name, so nothing in it runs and no path inside it is written.
 """
 
 import argparse
@@ -98,20 +114,6 @@ RAW = "https://raw.githubusercontent.com/google/fonts/%s/ofl/%s/%s"
 # `ship` copies a static file unchanged. `instances` cuts a static face from a variable one: the
 # source file, the output file, the axis values, and the style name it is given.
 FAMILIES = [
-    {
-        "dir": "inter", "family": "Inter",
-        "sha": "0b58fb370093f9a9f4ff785d94405710b79de67c",
-        "files": {
-            "Inter[opsz,wght].ttf": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
-            "OFL.txt": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
-        },
-        "license": "Inter-OFL.txt",
-        "ship": [],
-        "instances": [
-            ("Inter[opsz,wght].ttf", "Inter-Regular.ttf", {"opsz": 14, "wght": 400}, "Regular"),
-            ("Inter[opsz,wght].ttf", "Inter-SemiBold.ttf", {"opsz": 14, "wght": 600}, "SemiBold"),
-        ],
-    },
     {
         "dir": "nunito", "family": "Nunito",
         "sha": "8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5",
@@ -199,7 +201,9 @@ FAMILIES = [
 # archive's SHA-256 as fetched on the day it was added; `members` pins every file taken out of it;
 # `ship` maps a member to the name it ships under, unchanged. `license` is the member that records
 # the face's terms, shipped beside it verbatim. A changed archive whose members still match is only
-# reported (dafont repacks archives); a changed member stops the fetch.
+# reported (dafont repacks archives); a changed member stops the fetch. `crlf` names the text
+# members written with CRLF endings (the repo's .gitattributes pins text CRLF, so git would convert
+# them anyway); every other member ships byte for byte.
 ARCHIVES = [
     {
         # Ka0s Default's face (owner, 2026-10-30, D-01): the squared techno face the owner chose
@@ -215,6 +219,43 @@ ARCHIVES = [
         "ship": {"Prototype.ttf": "Prototype-Regular.ttf", "Prototype.txt": "Prototype.txt"},
         "license": "Prototype.txt",
         "terms": "free for personal use, freely distributed with Prototype.txt",
+    },
+    {
+        # Obsidian's face's terms (LK-A1): only the EULA and its guide are taken out. The archive's
+        # `expressway rg.otf` (6.100, 4e931195...) is pinned so a changed archive is noticed, and
+        # does NOT ship; the face is the owner's pack Bold (LOCALS).
+        "dir": "expressway", "family": "Expressway",
+        "page": "https://www.dafont.com/expressway.font",
+        "url": "https://dl.dafont.com/dl/?f=expressway",
+        "zip": "56574302a007ef70c3e28c1e9b25135e37d85ea6c5245c6c49afdcfc4938db93",
+        "members": {
+            "expressway rg.otf": "4e93119560e815cb27eb3099f824470346163f474ac6344110443f2ffab20bf2",
+            "Typodermic Desktop EULA 2026.pdf":
+                "e8d2e3e891a3454740e3dd9e75825878640a6cee8016f4d4ef71ab5c97774f08",
+            "read-this.html": "646f854d98505f98d4b1691a6e6a95fc165db85d1e100bcc7fd2987fb9ab3424",
+        },
+        "ship": {"Typodermic Desktop EULA 2026.pdf": "Expressway-EULA.pdf",
+                 "read-this.html": "Expressway-EULA-Guide.html"},
+        "crlf": ["read-this.html"],
+        "license": "Expressway-EULA.pdf",
+        "terms": "the owner's ruling of 2026-10-30, \"Ship it anyways.\", over the Typodermic Desktop EULA",
+    },
+]
+
+# FACES FROM THE OWNER'S OWN FILES, on a recorded owner ruling: `path` is where the owner's copy sits,
+# `sha` pins its bytes, and `ship` is the name it ships under, unchanged. --fetch copies it into the
+# cache when the path exists; --build reads only the cache, so the pin is checked either way.
+LOCALS = [
+    {
+        # Obsidian's face (owner, 2026-10-30, "Ship it anyways."; LK-A1): Expressway Rg Bold 2.100,
+        # Ray Larabie, the file the owner's SharedMedia pack registers as "Ka0s Expressway".
+        "dir": "expressway", "family": "Expressway",
+        "path": "/mnt/g/Games/Blizzard/World of Warcraft/_retail_/Interface/AddOns/"
+                "SharedMedia_MyMedia/font/Ka0s Expressway.ttf",
+        "name": "Ka0s Expressway.ttf",
+        "sha": "06a2106170c2b5b736955cc749ed755f3757d103230645158f0bd5b5b91c386b",
+        "ship": "Expressway-Bold.ttf",
+        "license": "Expressway-EULA.pdf",
     },
 ]
 
@@ -262,7 +303,25 @@ def fetch():
             _say("  fetched %s/%s @ %s" % (family["dir"], name, family["sha"][:12]))
     for archive in ARCHIVES:
         fetch_archive(archive)
+    for local in LOCALS:
+        fetch_local(local)
     return 0
+
+
+def fetch_local(local):
+    os.makedirs(os.path.join(CACHE, local["dir"]), exist_ok=True)
+    dest = _cached(local, local["name"])
+    if os.path.isfile(dest) and _sha256(dest) == local["sha"]:
+        _say("  cached  %s/%s" % (local["dir"], local["name"]))
+        return
+    if not os.path.isfile(local["path"]):
+        raise SystemExit("%s: not found; copy the owner's file to %s by hand" % (local["path"], dest))
+    shutil.copyfile(local["path"], dest)
+    got = _sha256(dest)
+    if got != local["sha"]:
+        os.remove(dest)
+        raise SystemExit("%s: SHA-256 %s, expected %s" % (local["path"], got, local["sha"]))
+    _say("  copied  %s/%s from the owner's pack" % (local["dir"], local["name"]))
 
 
 def _archive_path(archive):
@@ -370,9 +429,19 @@ def build():
         if not _archive_ok(archive):
             raise SystemExit("missing or changed %s (run --fetch)" % _archive_path(archive))
         for member, out in archive["ship"].items():
-            with open(os.path.join(OUT, out), "wb") as fh:
-                fh.write(_member_bytes(archive, member))
+            body = _member_bytes(archive, member)
+            if member in archive.get("crlf", ()):
+                _write_text_crlf(body.decode("utf-8"), os.path.join(OUT, out))
+            else:
+                with open(os.path.join(OUT, out), "wb") as fh:
+                    fh.write(body)
             _say("  copied  %s (from %s)" % (out, archive["page"]))
+    for local in LOCALS:
+        path = _cached(local, local["name"])
+        if not os.path.isfile(path) or _sha256(path) != local["sha"]:
+            raise SystemExit("missing or changed %s (run --fetch)" % path)
+        shutil.copyfile(path, os.path.join(OUT, local["ship"]))
+        _say("  copied  %s (the owner's %s)" % (local["ship"], local["name"]))
     return 0
 
 

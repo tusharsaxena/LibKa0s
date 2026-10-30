@@ -28,7 +28,7 @@ A.OWNER, A.OTHER = "LootHistory", "BankLedger"
 A.FILES = { "Core", "Skin", "SkinDefs", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinAce", "Pool",
             "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdList", "OptionsTabs",
             "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds" }
-A.LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["font:Ka0s Fira Sans"] = "Fonts\\FiraSans.ttf" }
+A.LSM = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf", ["font:Ka0s Fira Sans"] = "Fonts\\FiraSans.ttf" }
 
 --- A hooksecurefunc that hooks: `t[name]` becomes the original, then `fn`, with the same arguments.
 local function realHook(m)

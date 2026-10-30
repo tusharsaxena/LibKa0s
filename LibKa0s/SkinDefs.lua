@@ -119,9 +119,12 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- 2026-10-30 picks, DECISIONS D-02): Ka0s Default draws Prototype (Media minor 10) for body, titles
 -- and HUD text, where minor 14 drew Oxanium SemiBold and Bold; Prototype has one weight, so its titles
 -- differ by size alone. The eui source inherits the HUD face. WoW Forever's body text is Fira Sans
--- Medium; its titles and HUD stay Fira Sans SemiBold, the heavier-HUD rule above. Obsidian keeps
--- Inter: Expressway, the face D-02 names for it, does not ship (its license forbids embedding it in
--- software; tools/artwork/fonts.py), so its face waits for the owner's next ruling.
+-- Medium; its titles and HUD stay Fira Sans SemiBold, the heavier-HUD rule above. Then (LK-A1, the
+-- owner's ruling of 2026-10-30, "Ship it anyways", which overrides the EULA finding LK-01 withheld it
+-- on; Media minor 10 ships it): Obsidian draws Expressway for body, titles and HUD text, where it drew
+-- Inter and Inter SemiBold. Expressway ships one weight, the pack's Bold, so its titles differ by size
+-- and its HUD face is its body face; the heavier-HUD rule is met by the Bold itself. Sizes do not move
+-- here.
 local DEFS_MINOR = 17
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
@@ -599,9 +602,10 @@ local ICON_EDGE = {
 -- Each skin's HUD face (minor 16, R-4): its own family at the heavier shipped weight, since HUD text
 -- is 12px under an OUTLINE and a Regular's thin strokes close up under it; WoW Default the client's
 -- own face, named here rather than left to a fallback. A skin's `extra` may still override. Ka0s
--- Default's is its token above (Prototype, minor 17), which has no heavier weight.
+-- Default's is its token above (Prototype, minor 17), and Obsidian's Expressway (minor 17, LK-A1),
+-- which ships only as the Bold; neither has another weight.
 local HUD_FACE = {
-  obsidian = "Ka0s Inter SemiBold", azeroth = "Ka0s Vollkorn Bold", glass = "Ka0s Nunito SemiBold",
+  obsidian = "Ka0s Expressway", azeroth = "Ka0s Vollkorn Bold", glass = "Ka0s Nunito SemiBold",
   contrast = "Ka0s Atkinson Bold", ember = "Ka0s Bitter Bold", wow = FRIZ,
   midnight = "Ka0s Philosopher Bold", forever = "Ka0s Fira Sans SemiBold",
 }
@@ -615,10 +619,11 @@ local function register(key, label, desc, swatches, mock, extra)
   lib:RegisterSkin({ key = key, label = label, desc = desc, swatches = swatches, tokens = tokens })
 end
 
--- ── Obsidian ── mockup `obsidian`. Inter, the mockup's own face (Barlow until minor 11).
+-- ── Obsidian ── mockup `obsidian`. Expressway, the owner's pick (minor 17, LK-A1; Inter, the
+-- mockup's own face, from minor 11, Barlow before).
 register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool blue accent.",
   { "#0a0a0b", "#202024", "#141416", "#4db8ff" }, {
-    font = "Ka0s Inter", tfont = "Ka0s Inter SemiBold", fs = 12, titleSize = 14,
+    font = "Ka0s Expressway", tfont = "Ka0s Expressway", fs = 12, titleSize = 14,
     barTex = "Ka0s Matte",
     win = hex("#0A0A0B"), winBorder = edge(1, "flat", hex("#202024")), winInner = false, radius = 0,
     titleBg = hex("#050506"), titleColor = hex("#F2F2F4"), divider = hex("#1c1c20"),

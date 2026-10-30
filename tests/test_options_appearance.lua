@@ -599,7 +599,7 @@ end)
 
 -- ── Font and texture (OptionsAppearance minor 3, LibKa0s-Skin-1.0 minor 6) ───────────────────
 
-local MEDIA_LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["font:Arial Narrow"] = "Fonts\\ARIALN.ttf",
+local MEDIA_LSM = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf", ["font:Arial Narrow"] = "Fonts\\ARIALN.ttf",
                     ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat", ["statusbar:Blizzard"] = "Interface\\Bar" }
 
 --- A client whose LibSharedMedia also lists its keys (the fixture's fake fetches only).
@@ -629,7 +629,7 @@ test("appearance: the Font and texture section draws two dropdowns between the s
   assertEqual(font.order[1], "@skin", "the skin's own entry first")
   assertEqual(font.list["@skin"], "Skin's own (Ka0s Prototype)", "naming Ka0s Default's face")
   assertEqual(texture.list["@skin"], "Skin's own (Ka0s Default)", "and its bar texture")
-  assertEqual(table.concat(font.order, "|"), "@skin|Arial Narrow|Ka0s Inter", "then LSM's font keys, sorted")
+  assertEqual(table.concat(font.order, "|"), "@skin|Arial Narrow|Ka0s Expressway", "then LSM's font keys, sorted")
   assertEqual(table.concat(texture.order, "|"), "@skin|Blizzard|Ka0s Flat", "and its statusbar keys")
   assertEqual(font.value, "@skin", "no override: the skin's own")
   assertEqual(texture.value, "@skin")
@@ -653,17 +653,17 @@ test("appearance: a font pick moves the Skin major first, then writes the seam's
     seam(...)
   end
   local view = O.AppearanceRows(ctx, spec)
-  view.media.font:__fire("OnValueChanged", "Ka0s Inter")
-  assertEqual(seen.override, "Ka0s Inter", "SetOverride ran before the owner's write seam")
+  view.media.font:__fire("OnValueChanged", "Ka0s Expressway")
+  assertEqual(seen.override, "Ka0s Expressway", "SetOverride ran before the owner's write seam")
   assertNil(seen[1]); assertNil(seen[2]); assertNil(seen[3], "no source, skin or scope")
-  assertEqual(store.media.font, "Ka0s Inter")
+  assertEqual(store.media.font, "Ka0s Expressway")
   assertEqual(store.media.texture, false, "the other half as it was: the skin's own")
   assertEqual(store.seamCalls, 1)
-  assertEqual((frame.title:GetFont()), "Fonts\\Inter.ttf", "the title repainted with the override, live")
-  assertEqual(view.media.font.value, "Ka0s Inter")
+  assertEqual((frame.title:GetFont()), "Fonts\\Expressway.ttf", "the title repainted with the override, live")
+  assertEqual(view.media.font.value, "Ka0s Expressway")
   view.media.texture:__fire("OnValueChanged", "Ka0s Flat")
   assertEqual(select(2, Skin:GetOverride(OWNER)), "Ka0s Flat")
-  assertEqual(store.media.font, "Ka0s Inter", "both halves on every write")
+  assertEqual(store.media.font, "Ka0s Expressway", "both halves on every write")
   view.media.font:__fire("OnValueChanged", "@skin")
   assertNil((Skin:GetOverride(OWNER)), "the skin's own entry clears it")
   assertEqual(store.media.font, false)
@@ -677,15 +677,15 @@ test("appearance: in combat a font or texture pick writes nothing and snaps back
   local O, ctx = page(lib, OWNER)
   local view = O.AppearanceRows(ctx, specFor(store))
   lib.__combatLocked = true
-  view.media.font:__fire("OnValueChanged", "Ka0s Inter")
+  view.media.font:__fire("OnValueChanged", "Ka0s Expressway")
   view.media.texture:__fire("OnValueChanged", "Ka0s Flat")
   local font, texture = Skin:GetOverride(OWNER)
   assertNil(font); assertNil(texture, "the Skin major did not move")
   assertNil(store.seamCalls, "the seam was not called")
   assertEqual(view.media.font.value, "@skin", "the refused pick snaps back")
   lib.__combatLocked = false
-  view.media.font:__fire("OnValueChanged", "Ka0s Inter")
-  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Inter", "out of combat it lands")
+  view.media.font:__fire("OnValueChanged", "Ka0s Expressway")
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Expressway", "out of combat it lands")
 end)
 
 test("appearance: sync re-reads the overrides, and the skin's own entry follows a skin switch", function()
@@ -708,15 +708,15 @@ test("appearance: copy gives every other owner this owner's font and texture", f
   local m, Skin, lib = mediaEnv()
   local store = register(Skin, OWNER, "ka0s", "ember")
   local other = register(Skin, OTHER)
-  Skin:SetOverride(OWNER, "Ka0s Inter", nil)
+  Skin:SetOverride(OWNER, "Ka0s Expressway", nil)
   local O, ctx = page(lib, OWNER)
   local view = O.AppearanceRows(ctx, specFor(store))
   view.copy:__fire("OnClick")
   m.popups[1].dialog.OnAccept(nil, m.popups[1].data)
   local font, texture = Skin:GetOverride(OTHER)
-  assertEqual(font, "Ka0s Inter", "the other owner wears the font now")
+  assertEqual(font, "Ka0s Expressway", "the other owner wears the font now")
   assertNil(texture, "and the skin's own texture")
-  assertEqual(other.media.font, "Ka0s Inter", "its profile is written through WriteChoice's media")
+  assertEqual(other.media.font, "Ka0s Expressway", "its profile is written through WriteChoice's media")
   assertEqual(other.media.texture, false)
   assertEqual(other.skin, "ember")
 end)
@@ -783,7 +783,7 @@ test("appearance: the other owners and one owner's skin copy are library-level, 
   assertEqual(table.concat(lib.__skinOthers(Skin, OWNER), "|"), OTHER .. "|" .. THIRD, "sorted, the owner left out")
   assertEqual(#lib.__skinOthers(Skin, "NotAnOwner"), 3, "every owner for a name that is none")
   Skin:SetIgnore(OTHER, true, false)
-  Skin:SetOverride(OTHER, "Ka0s Inter", nil)
+  Skin:SetOverride(OTHER, "Ka0s Expressway", nil)
   local before = other.writes
   local reload = lib.__copySkinTo(Skin, OTHER, "ka0s", "ember")
   assertFalse(reload, "no reload for a Ka0s skin switch")
@@ -793,5 +793,5 @@ test("appearance: the other owners and one owner's skin copy are library-level, 
   assertNil(other.ignore, "no scope half written")
   assertNil(other.media, "no font or texture half written")
   assertEqual(select(1, Skin:GetIgnore(OTHER)), true, "its scope left alone")
-  assertEqual(select(1, Skin:GetOverride(OTHER)), "Ka0s Inter", "its font left alone")
+  assertEqual(select(1, Skin:GetOverride(OTHER)), "Ka0s Expressway", "its font left alone")
 end)

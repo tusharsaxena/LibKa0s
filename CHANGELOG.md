@@ -14,13 +14,13 @@ cannot drift. Release order is in
 
 Opened 2026-10-30, on `feat/2026-10-30-skin-fonts-feedback`: the owner's skin fonts and feedback
 batch (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, M1), the items `LK-01` to
-`LK-14`. The release closes on the same branch (`LK-90`); the tag is local until the owner's
+`LK-14` and `LK-A1` (its Addendum 01). The release closes on the same branch (`LK-90`); the tag is local until the owner's
 go-ahead.
 
 Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**) and **SkinDefs
 minor 17** (`LibKa0s-Skin-1.0` key **8.17.12.6.10.2.4**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
 
-### The payload ships Prototype and Fira Sans Medium (`LK-01`)
+### The payload ships Prototype, Fira Sans Medium and Expressway (`LK-01`, `LK-A1`)
 
 `LibKa0s-Media-1.0` key 10.1, documented in
 [docs/api/Media/version-10.1-docs.md](docs/api/Media/version-10.1-docs.md) (*What changed at this
@@ -38,32 +38,46 @@ and WoW Forever's body text.
   notice.
 - **Fira Sans Medium** comes from google/fonts at the commit and build (4.203) the shipped SemiBold
   already comes from.
-- **Expressway does not ship**, although the same ruling asked for it as Obsidian's face. The archive
-  its author distributes carries the Typodermic Desktop EULA, whose guide puts embedding in software
-  outside the free license and forbids sharing or converting the font; the file's embedding bits say
-  the same. `fonts.py` records the archive and its hashes. Obsidian keeps its face until the owner
-  rules again.
-- **Three faces leave, with their files** (`LK-02`, once no skin names them; the owner's item 7):
-  `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold` (and `Oxanium-OFL.txt`) and `Ka0s Fira Sans`
-  (`FiraSans-Regular.ttf`). `fonts.py` drops the Oxanium family and Fira Sans Regular. No release
-  shipped them, and a profile naming one falls back to its skin's face. Inter stays, Obsidian's face.
-  `FONTS` holds sixteen faces, thirteen of them on ruRU.
+- **Expressway ships on the owner's ruling, against its terms** (`LK-A1`). `LK-01` withheld it: the
+  archive its author distributes carries the Typodermic Desktop EULA 2026, whose guide puts
+  "Embedding in an app, game, plug-in, program, or software product" outside the free license and
+  forbids sharing or converting the font, and the owner's pack copy says "Do not distribute" in its
+  own name table. The owner saw that evidence and ruled on 2026-10-30: **"Ship it anyways."** That
+  ruling overrides the EULA finding. `FONTS` gains `Ka0s Expressway` (`Expressway-Bold.ttf`, the
+  owner's pack copy of Expressway Rg Bold 2.100, byte for byte, the key the pack registers), western
+  and ruRU from its cmap (it has the whole Russian alphabet). The archive's EULA ships beside it as
+  `Expressway-EULA.pdf`, unchanged, and its quick guide as `Expressway-EULA-Guide.html` (CRLF line
+  endings, otherwise unchanged): the record of the terms the ruling overrode. `fonts.py` pins the
+  archive and its three members by SHA-256 and the face under a new `LOCALS` source kind (the
+  owner's file, by path and hash); `NON_OFL` in `tests/test_media.lua` learns the EULA by name and
+  checks both terms files and the face's own notice.
+- **Five faces leave, with their files** (`LK-02` and `LK-A1`, once no skin names them; the owner's
+  item 7): `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold` (and `Oxanium-OFL.txt`), `Ka0s Fira Sans`
+  (`FiraSans-Regular.ttf`), and `Ka0s Inter` and `Ka0s Inter SemiBold` (`Inter-Regular.ttf`,
+  `Inter-SemiBold.ttf` and `Inter-OFL.txt`), Obsidian's until Expressway. `fonts.py` drops the
+  Oxanium and Inter families and Fira Sans Regular; `tools/skin_gallery.py` labels its showcases in
+  Fira Sans SemiBold, where it read Inter SemiBold. No released addon shipped them, and a profile
+  naming one falls back to its skin's face. `FONTS` holds fifteen faces, twelve of them on ruRU.
 
 **What a consumer owes:** nothing in code; the next re-vendor carries the files. A test that counts
-`RegisterLSM`'s fonts (sixteen) or names a retired key moves with the catalog.
+`RegisterLSM`'s fonts (fifteen; twelve on ruRU) or names a retired key (`Ka0s Inter`, `Ka0s Inter
+SemiBold`, the Oxanium pair, `Ka0s Fira Sans`) moves with the catalog, and a README's font credits
+drop Inter and Oxanium and add Prototype and Expressway with their terms.
 
-### Ka0s Default draws Prototype, and WoW Forever's body text Fira Sans Medium (`LK-02`)
+### Ka0s Default draws Prototype, WoW Forever's body text Fira Sans Medium, Obsidian Expressway (`LK-02`, `LK-A1`)
 
 `LibKa0s-Skin-1.0` key 8.17.12.6.10.2.4, documented in
 [docs/api/Skin/version-8.17.12.6.10.2.4-docs.md](docs/api/Skin/version-8.17.12.6.10.2.4-docs.md)
 (*What changed at this version*). SkinDefs minor 17 (D-02): Ka0s Default's `font.body`,
 `font.title` and `hud.font` are `Ka0s Prototype` (one weight; its titles differ by size), where they
 were Oxanium SemiBold, Bold and SemiBold; the `eui` source inherits the HUD face. WoW Forever's
-`font.body` is `Ka0s Fira Sans Medium`; its titles and HUD stay `Ka0s Fira Sans SemiBold`.
-**Obsidian keeps Inter**, because Expressway does not ship (above). Sizes do not move here.
+`font.body` is `Ka0s Fira Sans Medium`; its titles and HUD stay `Ka0s Fira Sans SemiBold`. Then
+(`LK-A1`, still minor 17): **Obsidian draws `Ka0s Expressway`** for `font.body`, `font.title` and
+`hud.font`, where it drew Inter and Inter SemiBold; one weight (the Bold), so its titles differ by
+size. Sizes do not move here.
 
-**What a consumer owes:** a test pinning Ka0s Default's faces or WoW Forever's body face moves with
-it (better: read `Skin:ResolveSkin("ka0s")["font.body"]`), and a degradation copy of Ka0s Default's
+**What a consumer owes:** a test pinning Ka0s Default's faces, WoW Forever's body face or Obsidian's
+faces (`Ka0s Inter SemiBold` as its HUD face, for one) moves with it (better: read `Skin:ResolveSkin("ka0s")["font.body"]`), and a degradation copy of Ka0s Default's
 HUD face (Quick Comms' `NS.SKIN_FALLBACK["hud.font"]`) becomes `Ka0s Prototype`.
 
 ## v1.81.0 — 2026-10-30

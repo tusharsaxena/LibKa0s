@@ -469,10 +469,11 @@ test("skin defs: every skin draws one family of its own, for body and titles ali
   -- across skins). red under: a skin whose titles are another family than its body (Cinzel over a
   -- body face), or a face two skins share, but the client's Friz Quadrata, which WoW Default draws.
   -- SkinDefs minor 17: Ka0s Default draws Prototype for both, the owner's choice (it has one weight),
-  -- and WoW Forever's body is Fira Sans Medium under its SemiBold titles.
+  -- and WoW Forever's body is Fira Sans Medium under its SemiBold titles. Obsidian draws Expressway
+  -- for both, the owner's ruling of 2026-10-30 (LK-A1; one weight too).
   local Skin = skinLib()
   local want = {
-    obsidian = { "Ka0s Inter", "Ka0s Inter SemiBold" }, glass = { "Ka0s Nunito", "Ka0s Nunito SemiBold" },
+    obsidian = { "Ka0s Expressway", "Ka0s Expressway" }, glass = { "Ka0s Nunito", "Ka0s Nunito SemiBold" },
     azeroth = { "Ka0s Vollkorn", "Ka0s Vollkorn Bold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
     ember = { "Ka0s Bitter", "Ka0s Bitter Bold" }, midnight = { "Ka0s Philosopher", "Ka0s Philosopher Bold" },
     forever = { "Ka0s Fira Sans Medium", "Ka0s Fira Sans SemiBold" }, wow = { FRIZ, FRIZ },
@@ -502,7 +503,7 @@ end)
 -- Each skin's HUD face (SkinDefs minor 16, the owner's ruling R-4, DECISIONS D-11): the skin's own
 -- family at its heavier shipped weight; WoW Default the client's Friz Quadrata, set explicitly.
 local HUD_FACE = {
-  ka0s = "Ka0s Prototype", obsidian = "Ka0s Inter SemiBold", azeroth = "Ka0s Vollkorn Bold",
+  ka0s = "Ka0s Prototype", obsidian = "Ka0s Expressway", azeroth = "Ka0s Vollkorn Bold",
   glass = "Ka0s Nunito SemiBold", contrast = "Ka0s Atkinson Bold", ember = "Ka0s Bitter Bold",
   wow = FRIZ, midnight = "Ka0s Philosopher Bold", forever = "Ka0s Fira Sans SemiBold",
 }

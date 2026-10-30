@@ -147,18 +147,20 @@ lib.ICONS = {
 -- with a different one.
 --
 -- THE "Ka0s" FACES ARE THE SKINS' (minor 6; minor 8 gave every skin a family of its own, body and
--- titles alike, the owner's round-5 notes): Inter (Obsidian), Nunito (Glass), Vollkorn (Azeroth),
+-- titles alike, the owner's round-5 notes): Nunito (Glass), Vollkorn (Azeroth),
 -- Bitter (Ember), Philosopher (WoW Midnight), Fira Sans (WoW Forever: Medium for body text since
 -- minor 10, SemiBold for titles and HUD) and Atkinson Hyperlegible (High Contrast), each SIL OFL 1.1;
+-- Prototype (Ka0s Default) and Expressway (Obsidian) are not, each on a recorded owner ruling (below);
 -- WoW Default draws the client's Friz Quadrata. Barlow and Cinzel, minor 6's, left at minor 8, never
 -- released. `tools/artwork/fonts.py` is their provenance record: the pinned upstream commits, and the
--- static weights it cuts from the four variable fonts. A skin names a face by this key and resolves
+-- static weights it cuts from the three variable fonts. A skin names a face by this key and resolves
 -- it through LSM, never by path.
 --
 -- THE MASK IS PER FACE (minor 6; minor 5 had one for all). LibSharedMedia refuses a font whose mask
 -- lacks the client's locale bit, which is the point: a face that draws a player's text as boxes does
 -- not belong in their dropdown. The mask is read off each shipped file's cmap: JetBrains Mono and the
--- families with Cyrillic are western + ruRU; Atkinson and Prototype have none and are western only.
+-- families with Cyrillic (Expressway among them) are western + ruRU; Atkinson and Prototype have none
+-- and are western only.
 -- None has Hangul or Han, and on such a client the skin falls back to the client's own font.
 --
 -- PROTOTYPE IS KA0S DEFAULT'S FACE (minor 10; the owner's ruling of 2026-10-30), for body, titles
@@ -167,20 +169,29 @@ lib.ICONS = {
 -- ruled to ship it on those terms, so `Prototype.txt`, the author's text, ships beside it byte for
 -- byte. That reverses minor 9, when the owner first ruled it out for its terms and Oxanium (OFL)
 -- stood in for it. The key is the one the owner's SharedMedia pack registers, so a stored
--- "Ka0s Prototype" keeps resolving, to the same bytes. Expressway, asked for Obsidian in the same
--- ruling, does not ship: its distributed license forbids embedding it in software (fonts.py
--- records why). Latin only, so western.
+-- "Ka0s Prototype" keeps resolving, to the same bytes. Latin only, so western.
+--
+-- EXPRESSWAY IS OBSIDIAN'S FACE (minor 10, LK-A1), for body, titles and HUD text alike: the owner's
+-- pack copy, Expressway Rg Bold 2.100, one weight, so titles differ by size. It is NOT under the
+-- OFL, and its terms do not allow this: its name table reads "(c) 2005 Typodermic. Do not
+-- distribute.", and the Typodermic Desktop EULA 2026 that dafont's archive carries puts
+-- "Embedding in an app, game, plug-in, program, or software product" outside the free license.
+-- LK-01 withheld it on that evidence. The owner saw it and ruled on 2026-10-30: "Ship it anyways."
+-- So it ships on that ruling, which overrides the EULA finding, and the EULA (`Expressway-EULA.pdf`)
+-- and its quick guide (`Expressway-EULA-Guide.html`) ship beside it, unchanged but for the guide's
+-- line endings, as the record of the terms the ruling overrode. The key is the one the owner's
+-- SharedMedia pack registers, so a stored "Ka0s Expressway" keeps resolving, to the same bytes.
+-- Its cmap has the whole Russian alphabet, so western + ruRU.
 --
 -- A FACE NO SKIN NAMES LEAVES THE PAYLOAD (minor 10, the owner's item 7): Oxanium SemiBold and Bold
--- (Ka0s Default's until SkinDefs minor 17) and Fira Sans Regular (WoW Forever's body until then, now
--- Medium) left. No release shipped them, and a profile still naming one falls back to its skin's
--- face (Skin's override layer drops a key LSM cannot resolve).
+-- (Ka0s Default's until SkinDefs minor 17), Fira Sans Regular (WoW Forever's body until then, now
+-- Medium) and Inter Regular and SemiBold (Obsidian's until Expressway, LK-A1) left. No released
+-- addon shipped them, and a profile still naming one falls back to its skin's face (Skin's override
+-- layer drops a key LSM cannot resolve).
 local WEST_RU = { "western", "ruRU" }
 lib.FONTS = {
   ["JetBrains Mono"]          = { file = "JetBrainsMono-Regular.ttf", license = "JetBrainsMono-OFL.txt",
                                   langmask = WEST_RU },
-  ["Ka0s Inter"]              = { file = "Inter-Regular.ttf", license = "Inter-OFL.txt", langmask = WEST_RU },
-  ["Ka0s Inter SemiBold"]     = { file = "Inter-SemiBold.ttf", license = "Inter-OFL.txt", langmask = WEST_RU },
   ["Ka0s Nunito"]             = { file = "Nunito-Regular.ttf", license = "Nunito-OFL.txt", langmask = WEST_RU },
   ["Ka0s Nunito SemiBold"]    = { file = "Nunito-SemiBold.ttf", license = "Nunito-OFL.txt", langmask = WEST_RU },
   ["Ka0s Vollkorn"]           = { file = "Vollkorn-Regular.ttf", license = "Vollkorn-OFL.txt", langmask = WEST_RU },
@@ -199,6 +210,8 @@ lib.FONTS = {
   ["Ka0s Atkinson Bold"]      = { file = "AtkinsonHyperlegible-Bold.ttf",
                                   license = "AtkinsonHyperlegible-OFL.txt", langmask = { "western" } },
   ["Ka0s Prototype"]          = { file = "Prototype-Regular.ttf", license = "Prototype.txt", langmask = { "western" } },
+  ["Ka0s Expressway"]         = { file = "Expressway-Bold.ttf", license = "Expressway-EULA.pdf",
+                                  langmask = WEST_RU },
 }
 
 -- Every statusbar texture in `media/textures/`, keyed by the LSM name it registers under -- which is

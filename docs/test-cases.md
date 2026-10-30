@@ -495,7 +495,7 @@ Total.
 - media: each face names its own locales, and only a face with Cyrillic reaches ruRU
 - media: every OFL face ships with its license text beside it
 - media: a face off the OFL ships its author's terms verbatim, and the face says the same
-- media: RegisterLSM('X') registers 'Ka0s Inter' under X's own libs folder, each face with its mask
+- media: RegisterLSM('X') registers 'Ka0s Nunito' under X's own libs folder, each face with its mask
 - media: a ruRU client keeps every Cyrillic face and is refused the western-only ones
 - media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
 - media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
