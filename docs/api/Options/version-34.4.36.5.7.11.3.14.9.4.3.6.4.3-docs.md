@@ -44,8 +44,9 @@ Three files move, for `LK-03`, `LK-04` and `LK-07` of Ka0sAddonsCommonTasks
 `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/` (the owner's items 13 and 1 and rulings D-06, D-07 and
 D-10, with `LibKa0s-Skin-1.0` minor 9's font outline mode and SkinPaintExtras minor 7's
 `S.FontFlags`): `OptionsAppearance.lua` 3 -> **4**, `OptionsCompose.lua` 13 -> **14** and
-`OptionsSkinPicker.lua` 2 -> **3**. No public member is added or removed; `lib.APPEARANCE_STRINGS`
-gains five keys.
+`OptionsSkinPicker.lua` 2 -> **3**; `LK-08` (item 6, D-11) lays the Skin tab out again in
+the same minor. No public member is added or removed; `lib.APPEARANCE_STRINGS` gains ten keys (five
+for the outline, five for the layout).
 
 **`O.FontGroup{ flagsFromSkin = true }`: the Font flags row leads with *From skin*** (C14, `LK-04`).
 The row's values gain `"@skin"` (the Skin major's `FROM_SKIN`), labeled "From skin", first in its
@@ -60,7 +61,8 @@ the minimum font setting** the owner's ruling D-07 asks of every element: face w
 font*, size, color with *Use class color*, flags with *From skin*, and shadow. The composite already
 existed (C1's six rows, C12's companion), so it is extended, not duplicated.
 
-**The Skin tab's *Font outline*** (A4). Under the Scope's two check boxes, a dropdown at
+**The Skin tab's *Font outline*** (A4). In the *Font and texture* section, under the reset buttons
+(under the Scope's two check boxes as `LK-03` drew it; `LK-08` moved it), a dropdown at
 `BUTTON_PAIR_REL`, *Font outline*, offers *All text* (`"all"`, the default), *HUD text only*
 (`"hud"`) and *Off* (`"off"`), in that order. A pick is refused in combat; it calls
 `Skin:SetOutline(owner, mode)` first (the live repaint: every string the owner's primitives paint
@@ -108,6 +110,25 @@ skin-change path the player drives goes through it:
   gear and *Apply to all* then write the cleared overrides after the skin
   (`spec.set(nil, nil, nil, { font = false, texture = false, outline })`); the close control and
   Escape put back the overrides the window opened with.
+
+**The Skin tab's layout** (A4, still; `LK-08`, the owner's item 6 and ruling D-11):
+
+- **Reset font** and **Reset texture**, two AceGUI `Button`s at `BUTTON_PAIR_REL` in a row of their
+  own under the two dropdowns (a button on the dropdowns' line would top-align with their labels),
+  font under *Font*, texture under *Texture*. A click is the dropdown's *Skin's own* pick for its
+  half: refused in combat, `Skin:SetOverride` (that half `false`, the other kept), then
+  `spec.set(nil, nil, nil, { font, texture, outline })`. `sync` disables each while its half is
+  already the skin's own (and both on a page drawn disabled), and words its tooltip
+  (`RESET_FONT_TIP` / `RESET_TEXTURE_TIP`, `%s` the skin's own key worn now). The view gains
+  `reset = { font, texture }`.
+- **The *Font outline*** sits under them, in the same section, at the same half width.
+- **The Scope's two check boxes are half width** (`BUTTON_PAIR_REL`, where they were the skins'
+  0.32), so *Ignore fonts* starts in the column *Texture* and *Reset texture* start in.
+- **The copy button has its own heading**, *Other Ka0s addons* (`COPY_HEADING`), after the Scope,
+  and sits in a row of its own; the `COPY_NONE` hint stays under it, and the tab ends there.
+- **The note** (`NOTE`) leads the *Look* section, ahead of the skins (and of `SKIN_EUI_NOTE`), where
+  it was the tab's last line. `view.note` is kept.
+- The two icons at the right of the owner's image-30 are the page's stock scroll bar: no change.
 
 **Never inside `Skin:SetChoice`**: a host re-applies its stored skin with `SetChoice` at load, after
 its stored overrides, and a reset there would wipe them at every login (`tests/test_skin_override.lua`
@@ -2647,7 +2668,9 @@ Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
    client's ready-check mark (`Interface\RaidFrame\ReadyCheck-Ready`) or cross
    (`ReadyCheck-NotReady`) and, for a failing one, its fix. With a Skin copy that has no
    `GetEUIStatus` (no `SkinEUI.lua`) the choice is disabled and one line says so.
-2. **Look** (`SKIN_HEADING`; not "Skin", the tab's own name since A3, `options-ui-§7`): one radio
+2. **Look** (`SKIN_HEADING`; not "Skin", the tab's own name since A3, `options-ui-§7`): the note
+   (since A4, `LK-08`): "Skins change every visual element. HUD style options follow the skin unless
+   you set them yourself.", muted; then one radio
    choice per registered skin, `Skin:Skins()` order, three to a line
    (relative width 0.32), each labeled with its four swatches (`WHITE8X8` texture markup tinted from
    the skin's `swatches`) and its name, its description on the CheckBox's `SetDescription` and in its
@@ -2667,24 +2690,28 @@ Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
    texture override `bar.texture`, so every string and every `S.BarTexture` bar follows), then
    `spec.set(nil, nil, nil, { font = key|false, texture = key|false })` with both halves, `false`
    for the skin's own. *Ignore fonts* wins over a font override (`FONT_TIP` says so). Absent with a
-   Skin copy that has no `SetOverride`.
+   Skin copy that has no `SetOverride`. Under the dropdowns (A4, `LK-08`), in a row of their own,
+   **Reset font** and **Reset texture** at the same width, each disabled while its half is the skin's
+   own; and under those the **Font outline** dropdown (below).
 4. **Scope** (OptionsAppearance minor 2, `LibKa0s-Skin-1.0` minor 5), under its own heading: two check
-   boxes side by side, *Ignore settings panel* (this addon's settings pages stay the client's: the
+   boxes side by side at `BUTTON_PAIR_REL` (since A4; 0.32 before), *Ignore settings panel* (this addon's settings pages stay the client's: the
    Options chrome and the AceGUI rows paint nothing for the owner) and *Ignore fonts* (every string
    keeps its own face, size and shadow; the skin still colors it). A flip is refused in combat; it
    calls `Skin:SetIgnore(owner, panel, fonts)` first (the live repaint: fonts go back or come back,
    open pages re-render), then `spec.set(nil, nil, { panel = bool, fonts = bool })`. Neither needs a
    reload: turning *Ignore settings panel* on hands every chrome target the skin painted back as it
    was (OptionsScroll minor 7's `lib.__chromeRelease`), and turning it off paints the pages again.
-   Absent with a Skin copy that has no `SetIgnore`. Under the two check boxes (OptionsAppearance
-   minor 4, `LibKa0s-Skin-1.0` minor 9), the **Font outline** dropdown (`BUTTON_PAIR_REL`): *All
+   Absent with a Skin copy that has no `SetIgnore`. The **Font outline** dropdown (OptionsAppearance
+   minor 4, `LibKa0s-Skin-1.0` minor 9; in the Font and texture section above, under the reset
+   buttons) (`BUTTON_PAIR_REL`): *All
    text*, *HUD text only*, *Off* (`"all"`, `"hud"`, `"off"`, the Skin major's `OUTLINE_MODES`), where
    the skin's font flags apply. A pick is refused in combat; it calls `Skin:SetOutline(owner, mode)`
    first (the live repaint), then `spec.set(nil, nil, nil, { font, texture, outline })` with every
    half. Grayed while *Ignore fonts* is on, which wins; its tooltip (`OUTLINE_TIP`) says so, and that
    a font outline the player set on an element still applies. Absent with a Skin copy that has no
    `SetOutline`.
-5. **Copy to every Ka0s addon…** (`options-ui-§21`'s ellipsis), a button at `BUTTON_PAIR_REL`. With
+5. **Other Ka0s addons** (`COPY_HEADING`, its own heading since A4): **Copy to every Ka0s addon…**
+   (`options-ui-§21`'s ellipsis), a button at `BUTTON_PAIR_REL` in a row of its own. With
    no other registered owner (`Skin:Owners()` less this one) it is disabled and a line under it says
    "No other loaded Ka0s addon uses skins yet." Otherwise a click opens a confirmation
    (`LIBKA0S_SKIN_COPY`) naming the other owners by `Skin:OwnerLabel`, one per line, and saying that
@@ -2697,8 +2724,7 @@ Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
    Both the click and the accept are refused in combat (`O.__combatRefused("appearance", "copy")`):
    the confirmation sits at `DIALOG`, above the page's combat cover, so it can be accepted after
    combat starts, and an accept then writes no owner.
-6. **The note**: "Skins change every visual element. HUD style options follow the skin unless you
-   set them yourself."
+6. Nothing after it: the note leads the Look section since A4 (it was the tab's last line).
 
 `spec`:
 
@@ -2728,7 +2754,7 @@ Blizzard frame at `DIALOG`, above the settings window, and the tab never re-stra
 (`frame-layering`, `skinning-§7`).
 
 The view: `{ owner, label, source = { ka0s, eui }, skins = { [key] = choice }, media = { font,
-texture }, ignore = { panel, fonts }, outline (the Font outline dropdown, A4; nil without
+texture }, reset = { font, texture } (the two reset buttons, A4), ignore = { panel, fonts }, outline (the Font outline dropdown, A4; nil without
 `Skin:SetOutline`), order, conditions, copy, note, sync }`; `sync()` also reads `Skin:GetOutline`
 into the outline dropdown and grays it while fonts are ignored; `sync()` re-reads
 `spec.get` into the choices, `Skin:GetIgnore` into the two check boxes and `Skin:GetOverride` into
@@ -2750,7 +2776,9 @@ since A3, "Skin" before),
 skin's own key), `MEDIA_MISSING` (`%s` a stored key LibSharedMedia lacks; those seven since A3),
 `SCOPE_HEADING`,
 `IGNORE_PANEL`, `IGNORE_PANEL_TIP`, `IGNORE_FONTS`, `IGNORE_FONTS_TIP`, `OUTLINE`, `OUTLINE_TIP`,
-`OUTLINE_ALL`, `OUTLINE_HUD`, `OUTLINE_OFF` (those five since A4), `COPY`, `COPY_TIP`,
+`OUTLINE_ALL`, `OUTLINE_HUD`, `OUTLINE_OFF` (those five since A4), `RESET_FONT`, `RESET_FONT_TIP`
+(`%s` the skin's own font), `RESET_TEXTURE`, `RESET_TEXTURE_TIP` (`%s` the skin's own bar texture),
+`COPY_HEADING` (those five since A4, `LK-08`), `COPY`, `COPY_TIP`,
 `COPY_NONE`, `COPY_CONFIRM` (`%s` this addon's label, `%s` the list), `COPY_ACCEPT`, `CANCEL`,
 `RELOAD` (`%s` the addon or addons), `RELOAD_ACCEPT`, `RELOAD_LATER`, `NOTE` and `UNAVAILABLE`.
 ASCII throughout but for `COPY`'s ellipsis (U+2026), which `options-ui-§21` asks of a button that
@@ -3665,7 +3693,7 @@ on purpose (`LK-07`): a skin pick in the tab or the picker, and *Apply to all*, 
 texture overrides when the look changes, and write the reset through the seam's fourth argument; a
 host suite that pinned an override surviving a skin pick (the copy helper keeping a target's font
 across a skin change included) moves with it. An Options degradation
-stub owes nothing new. `lib.APPEARANCE_STRINGS` gains five keys, which a host's `spec.strings` may
+stub owes nothing new. `lib.APPEARANCE_STRINGS` gains ten keys, which a host's `spec.strings` may
 translate.
 
 **At 30.2.34.3.5.9.2.11.4.2.1.4 five instance members are added and nothing is removed**: `O.StrataTooltip` (C8), `O.KeybindingsTab`, `O.KeybindRows` and `O.KEYBINDS_UNCHANGED` (K2), and `O.ResetAllTooltip` (C11).

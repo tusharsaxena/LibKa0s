@@ -154,6 +154,30 @@ picker cases (and *Apply to all*'s), and the guard.
 pins an override surviving a skin pick moves with it, and an Options degradation stub owes nothing
 (no instance member is added).
 
+### The Skin tab: Reset font, Reset texture, and one grid (`LK-08`)
+
+The same document (*The Skin tab's layout*), OptionsAppearance minor 4, still. The owner's item 6
+(image-29, image-30) and ruling D-11.
+
+- **Reset font** and **Reset texture**, a row of two half-width buttons under the two dropdowns, each
+  the dropdown's *Skin's own* pick for its half (refused in combat; `SetOverride`, then the seam's
+  fourth argument with every media half) and disabled while that half is already the skin's own.
+  Their tooltips name the skin's own face and bar texture. The view gains `reset = { font, texture }`.
+- **The Font outline moves into the Font and texture section**, under the reset buttons, from under
+  the Scope's check boxes.
+- **The Scope's check boxes take the dropdowns' half width** (`BUTTON_PAIR_REL`, where they were the
+  skins' 0.32), so *Ignore fonts* lines up with *Texture*.
+- **The copy button gets its own heading, *Other Ka0s addons***, after the Scope, in a row of its own.
+- **The note leads the Look section**, where it was the tab's last line.
+- `lib.APPEARANCE_STRINGS` gains `RESET_FONT`, `RESET_FONT_TIP`, `RESET_TEXTURE`, `RESET_TEXTURE_TIP`
+  and `COPY_HEADING`, ASCII.
+
+Tests: eight Appearance cases; the Font outline's place case moves with it.
+
+**What a consumer owes** (M2): nothing in code and no stub member (the Skin tab is the library's). A
+suite that pins the tab's draw order, the Scope's widths, the note's place or the count of
+`APPEARANCE_STRINGS` keys moves with it; a host that translates the tab adds the five keys.
+
 ### Every element's font flags follow the Font outline by default (`LK-04`)
 
 The same two documents. The owner's ruling D-07: every font setting stores its flags, with a *From

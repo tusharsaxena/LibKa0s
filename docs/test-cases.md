@@ -2270,7 +2270,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (50)
+### test_options_appearance.lua (58)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2307,7 +2307,7 @@ Total.
 - appearance: with a Skin copy before minor 6 the section is absent
 - appearance: a stored key LibSharedMedia lacks stays listed, and the skin's own names the worn face
 - appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
-- appearance: the Font outline dropdown sits under the Scope's check boxes, All text first
+- appearance: the Font outline dropdown sits in the Font and texture section, All text first
 - appearance: an outline pick moves the Skin major first, then writes every media half
 - appearance: Ignore fonts grays the Font outline out, and it comes back live
 - appearance: in combat an outline pick writes nothing and snaps back
@@ -2322,6 +2322,14 @@ Total.
 - appearance: a pick keeps the overrides while the look drawn does not change (Skin:DrawsKey)
 - appearance: onto an EllesmereUI that paints resets the overrides; a fallback pick under it does not
 - appearance: copy gives an other owner whose skin changes this owner's overrides, none for none
+- appearance: Reset font and Reset texture sit under their dropdowns, at the dropdowns' width
+- appearance: a reset clears only its half, live and then through the seam
+- appearance: a reset is refused in combat, and a dropdown pick re-enables it
+- appearance: a page drawn disabled keeps both resets disabled after a sync
+- appearance: the resets' tooltips name the skin's own, and spec.strings translates them
+- appearance: the Scope's check boxes sit on the dropdowns' half-width grid
+- appearance: the copy has its own heading, Other Ka0s addons, after the Scope, the tab ending on it
+- appearance: the note leads the Look section, ahead of the first skin
 
 ### test_options_skin_picker.lua (43)
 
@@ -3870,7 +3878,7 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 50 |
+| test_options_appearance.lua | 58 |
 | test_options_skin_picker.lua | 43 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
@@ -3936,4 +3944,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3350** |
+| **Total** | **3358** |

@@ -778,7 +778,8 @@ end)
 
 -- ── the font outline (minor 4, LK-03 of docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK) ─────────────
 
-test("appearance: the Font outline dropdown sits under the Scope's check boxes, All text first", function()
+test("appearance: the Font outline dropdown sits in the Font and texture section, All text first", function()
+  -- red under: minor 4 as LK-03 drew it, under the Scope's check boxes (LK-08 moves it, D-11).
   local _, Skin, lib = env()
   local store = register(Skin, OWNER)
   local O, ctx = page(lib, OWNER)
@@ -792,8 +793,9 @@ test("appearance: the Font outline dropdown sits under the Scope's check boxes, 
   assertFalse(dd.disabled == true, "live while Ignore fonts is off")
   assertTrue(S.OUTLINE_TIP:find("Ignore fonts", 1, true) ~= nil, "the tooltip says Ignore fonts wins")
   local all = flatten(ctx.scroll)
-  assertTrue(indexOf(all, view.ignore.fonts) < indexOf(all, dd) and indexOf(all, dd) < indexOf(all, view.copy),
-    "under the check boxes, above the copy")
+  assertTrue(indexOf(all, view.reset.texture) < indexOf(all, dd) and indexOf(all, dd) < indexOf(all, view.ignore.panel),
+    "under the reset buttons, above the Scope")
+  assertEqual(dd.relativeWidth, lib.BUTTON_PAIR_REL or 0.492, "on the dropdowns' half-width grid")
 end)
 
 test("appearance: an outline pick moves the Skin major first, then writes every media half", function()
@@ -1047,4 +1049,183 @@ test("appearance: copy gives an other owner whose skin changes this owner's over
   assertNil(font); assertNil(texture, "this owner has none, so the other owner has none")
   assertEqual(other.media.font, false); assertEqual(other.media.texture, false)
   assertEqual(other.skin, "ember")
+end)
+
+-- ── the Skin tab's layout (still minor 4: LK-08, the owner's item 6, D-11) ────────────────────
+
+--- The index in `all` of the first widget whose text is `text`.
+local function indexOfText(all, text)
+  for i, w in ipairs(all) do
+    if w.text == text or w.labelText == text then return i end
+  end
+  return nil
+end
+
+--- The container under `root` (`root` itself included) whose children hold `w`, or nil.
+local function holderOf(root, w)
+  for _, c in ipairs(root.children or {}) do
+    if c == w then return root end
+    local h = holderOf(c, w)
+    if h then return h end
+  end
+  return nil
+end
+
+--- The half width the dropdowns use: the instance's BUTTON_PAIR_REL.
+local function half(O) return O.BUTTON_PAIR_REL or 0.492 end
+
+test("appearance: Reset font and Reset texture sit under their dropdowns, at the dropdowns' width", function()
+  local _, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  local S = lib.APPEARANCE_STRINGS
+  local font, texture = view.reset.font, view.reset.texture
+  assertEqual(font.text, "Reset font"); assertEqual(texture.text, "Reset texture")
+  assertEqual(S.RESET_FONT, "Reset font"); assertEqual(S.RESET_TEXTURE, "Reset texture")
+  assertEqual(font.relativeWidth, half(O), "half width"); assertEqual(texture.relativeWidth, half(O))
+  assertEqual(view.media.font.relativeWidth, half(O), "as the dropdowns are")
+  local all = flatten(ctx.scroll)
+  assertTrue(indexOf(all, view.media.texture) < indexOf(all, font) and indexOf(all, font) < indexOf(all, texture),
+    "a row of their own under the two dropdowns, font first")
+  local row = holderOf(ctx.scroll, font)
+  assertTrue(row ~= nil and row ~= holderOf(ctx.scroll, view.media.font),
+    "not on the dropdowns' line (their labels top-align)")
+  assertTrue(row == holderOf(ctx.scroll, texture), "the two share one row")
+  assertTrue(font.disabled, "no override: Reset font is disabled")
+  assertTrue(texture.disabled, "and Reset texture")
+end)
+
+test("appearance: a reset clears only its half, live and then through the seam", function()
+  local m, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
+  local frame = F.window(m)
+  frame.title:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
+  Skin:For(OWNER).Shell(frame)
+  local O, ctx = page(lib, OWNER)
+  local spec = specFor(store)
+  local seam, seen = spec.set, nil
+  spec.set = function(...)
+    seen = { font = (Skin:GetOverride(OWNER)), ... }
+    seam(...)
+  end
+  local view = O.AppearanceRows(ctx, spec)
+  assertFalse(view.reset.font.disabled, "an override: Reset font is live")
+  assertFalse(view.reset.texture.disabled)
+  assertEqual((frame.title:GetFont()), "Fonts\\Expressway.ttf")
+  view.reset.font:__fire("OnClick")
+  assertNil(seen.font, "SetOverride ran before the owner's write seam")
+  assertNil(seen[1]); assertNil(seen[2]); assertNil(seen[3])
+  assertEqual(store.media.font, false, "the font: the skin's own")
+  assertEqual(store.media.texture, "Ka0s Flat", "the texture kept")
+  assertEqual(store.media.outline, "all", "every media half")
+  assertEqual(select(2, Skin:GetOverride(OWNER)), "Ka0s Flat", "the texture override stays live")
+  assertTrue((frame.title:GetFont()) ~= "Fonts\\Expressway.ttf", "the title repainted in the skin's face")
+  assertEqual(view.media.font.value, "@skin", "the dropdown reads the skin's own")
+  assertTrue(view.reset.font.disabled, "and Reset font disables itself")
+  assertFalse(view.reset.texture.disabled, "Reset texture stays live")
+  view.reset.font:__fire("OnClick")
+  assertEqual(store.seamCalls, 1, "a disabled reset writes nothing")
+  view.reset.texture:__fire("OnClick")
+  assertNil(select(2, Skin:GetOverride(OWNER)), "the texture reset")
+  assertEqual(store.media.texture, false)
+  assertTrue(view.reset.texture.disabled)
+end)
+
+test("appearance: a reset is refused in combat, and a dropdown pick re-enables it", function()
+  local _, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  view.media.texture:__fire("OnValueChanged", "Ka0s Flat")
+  assertFalse(view.reset.texture.disabled, "an override picked: live")
+  lib.__combatLocked = true
+  view.reset.texture:__fire("OnClick")
+  lib.__combatLocked = false
+  assertEqual(select(2, Skin:GetOverride(OWNER)), "Ka0s Flat", "the Skin major did not move")
+  assertEqual(store.media.texture, "Ka0s Flat", "nothing written")
+end)
+
+test("appearance: a page drawn disabled keeps both resets disabled after a sync", function()
+  local _, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
+  local O, ctx = page(lib, OWNER)
+  ctx.__renderDisabled = true
+  local view = O.AppearanceRows(ctx, specFor(store))
+  ctx.__renderDisabled = nil
+  view.sync()
+  assertTrue(view.reset.font.disabled); assertTrue(view.reset.texture.disabled)
+end)
+
+test("appearance: the resets' tooltips name the skin's own, and spec.strings translates them", function()
+  local _, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local tips = {}
+  local attach = O.AttachTooltip
+  O.AttachTooltip = function(w, label, tip)
+    tips[w] = { label = label, tip = tip }
+    return attach(w, label, tip)
+  end
+  local view = O.AppearanceRows(ctx, specFor(store, { strings = {
+    RESET_FONT = "Police d'origine", RESET_FONT_TIP = "Police %s", RESET_TEXTURE = "Texture d'origine",
+    RESET_TEXTURE_TIP = "Texture %s", COPY_HEADING = "Autres" } }))
+  assertEqual(view.reset.font.text, "Police d'origine"); assertEqual(view.reset.texture.text, "Texture d'origine")
+  assertEqual(tips[view.reset.font].tip, "Police Ka0s Prototype", "the skin's own face")
+  assertEqual(tips[view.reset.texture].tip, "Texture Ka0s Default", "and its bar texture")
+  assertTrue(hasText(ctx, "Autres"), "the copy's heading translated")
+  view.skins.obsidian:__fire("OnValueChanged", true)
+  assertEqual(tips[view.reset.font].tip, "Police " .. Skin:ResolveSkin("obsidian")["font.body"],
+    "re-worded for the skin worn now")
+  assertEqual(lib.APPEARANCE_STRINGS.RESET_FONT_TIP, "Use the skin's own font again (%s).")
+  assertEqual(lib.APPEARANCE_STRINGS.RESET_TEXTURE_TIP, "Use the skin's own bar texture again (%s).")
+end)
+
+test("appearance: the Scope's check boxes sit on the dropdowns' half-width grid", function()
+  -- red under: minor 3's W_CHOICE (0.32), the skins' three-column grid (image-30).
+  local _, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  assertEqual(view.ignore.panel.relativeWidth, half(O))
+  assertEqual(view.ignore.fonts.relativeWidth, half(O))
+  assertEqual(view.ignore.fonts.relativeWidth, view.media.texture.relativeWidth, "Ignore fonts lines up with Texture")
+  assertEqual(view.skins.ka0s.relativeWidth, 0.32, "the skins keep three to a line")
+end)
+
+test("appearance: the copy has its own heading, Other Ka0s addons, after the Scope, the tab ending on it", function()
+  local _, Skin, lib = mediaEnv()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  local S = lib.APPEARANCE_STRINGS
+  assertEqual(S.COPY_HEADING, "Other Ka0s addons")
+  local all = flatten(ctx.scroll)
+  local scopeH, copyH = indexOfText(all, S.SCOPE_HEADING), indexOfText(all, S.COPY_HEADING)
+  assertTrue(copyH ~= nil, "the heading drawn")
+  assertTrue(scopeH < indexOf(all, view.ignore.fonts) and indexOf(all, view.ignore.fonts) < copyH
+    and copyH < indexOf(all, view.copy), "Scope, its check boxes, then the heading, then the button")
+  local row = holderOf(ctx.scroll, view.copy)
+  assertTrue(row ~= nil and row ~= ctx.scroll and #row.children == 1, "the button sits in a row of its own")
+  assertEqual(view.copy.relativeWidth, half(O))
+  assertTrue(indexOfText(all, S.COPY_NONE) > indexOf(all, view.copy), "the hint under it")
+  assertTrue(indexOfText(all, S.COPY_NONE) == #all or indexOfText(all, S.COPY_NONE) > copyH,
+    "nothing after the copy row but its hint")
+end)
+
+test("appearance: the note leads the Look section, ahead of the first skin", function()
+  -- red under: minor 3, which drew it last, under the copy button (image-30).
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  local S = lib.APPEARANCE_STRINGS
+  local all = flatten(ctx.scroll)
+  local look, note = indexOfText(all, S.SKIN_HEADING), indexOf(all, view.note)
+  assertTrue(note ~= nil, "view.note is kept")
+  assertEqual(view.note.text, S.NOTE)
+  assertTrue(look < note and note < indexOf(all, view.skins[view.order[1]]), "under Look, before the skins")
+  assertTrue(note < indexOfText(all, S.MEDIA_HEADING), "and before Font and texture")
 end)
