@@ -121,9 +121,36 @@ test("glyph guard: comments, debug calls, glyph: mono lines and markup are left 
     'local tex = "|TInterface\\\\x:0|t ok"',
     'print("after the debug call ' .. ARROW .. '")',
     'local x = debug.traceback("' .. APPROX .. '")',
+    'local BYTES = "\\255\\128\\128"',
+    'local SURROGATE = "\\237\\160\\128"',
+    'NS.Debug "a string call ' .. ARROW .. '"',
+    'tip:AddLine(DebugLabel("' .. ARROW .. '"))',
   }, "\n")
-  assertEqual(lines(scan(src)), "18:2192 19:2248",
-    "only the plain call after the debug ones, and the debug library's own call, count; a byte class is data")
+  assertEqual(lines(scan(src)), "18:2192 19:2248 23:2192",
+    "only the plain call after the debug ones, the debug library's own call and a display helper that "
+    .. "merely carries \"Debug\" count; a byte class, a byte past 0xF4 and a surrogate are data")
+end)
+
+test("glyph guard: the decoder takes only valid UTF-8: no lead past 0xF4, no surrogate, no overlong", function()
+  -- red under: a lead byte 0xF5-0xFF read as a 3-byte sequence (U+1F000), a surrogate read as U+D800
+  assertEqual(cps(Kit.glyphUnsafe("\255\128\128")), "b255,b128,b128", "0xFF leads nothing")
+  assertEqual(cps(Kit.glyphUnsafe("\237\160\128")), "b237,b160,b128", "U+D800, a surrogate")
+  assertEqual(cps(Kit.glyphUnsafe("\224\128\175")), "b224,b128,b175", "an overlong 3-byte form")
+  assertEqual(cps(Kit.glyphUnsafe("\240\128\128\128")), "b240,b128,b128,b128", "an overlong 4-byte form")
+  assertEqual(cps(Kit.glyphUnsafe("\244\144\128\128")), "b244,b144,b128,b128", "past U+10FFFF")
+  assertEqual(cps(Kit.glyphUnsafe("\244\143\191\191")), "10FFFF", "U+10FFFF itself decodes")
+  assertEqual(cps(Kit.glyphUnsafe(ARROW)), "2192", "and a plain 3-byte character still does")
+end)
+
+test("glyph guard: a marker region left open, or an end with no begin, fails rather than exempting", function()
+  -- red under: markedLines treating everything after an unmatched begin as covered
+  local MARK = "-- glyph: "   -- spelled in two pieces, so this file's own lines carry no marker
+  assertErrorMatches(function() scan(MARK .. "mono begin\nlocal a = 1\nlocal b = \"" .. ARROW .. "\"") end,
+    "fixture.lua:1: a `glyph: ... begin` with no `end`")
+  assertErrorMatches(function() scan("local a = 1\n" .. MARK .. "data end") end,
+    "fixture.lua:2: `glyph: " .. "data end` with no `begin`")
+  assertEqual(lines(scan(MARK .. "data begin\n\"" .. ARROW .. "\"\n" .. MARK .. "data end\n\"" .. ARROW .. "\"")),
+    "4:2192", "a closed region covers its lines and no more")
 end)
 
 test("glyph guard: opts.debugNames reads a host's own logger as a debug call", function()

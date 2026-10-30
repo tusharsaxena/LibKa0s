@@ -694,12 +694,17 @@ Total.
 - skin hud size: BarStyle's fontSize is each skin's own, Ka0s Default's under Ignore fonts
 - skin hud size: an EllesmereUI owner reads Ka0s Default's HUD size, unscaled
 
-### test_skin_button_contrast.lua (5)
+### test_skin_button_contrast.lua (10)
 
 - skin button contrast: a primary button enabled after a faded disabled paint draws its label opaque (ka0s)
 - skin button contrast: a primary button enabled after a faded disabled paint draws its label opaque (obsidian)
 - skin button contrast: a primary button enabled after a faded disabled paint draws its label opaque (glass)
 - skin button contrast: a plain button's label is opaque again after a faded disabled paint
+- skin button contrast: P.color hands a translucent color over as four numbers
+- skin button contrast: P.color keeps the three-number call over an opaque target (Ka0s Default's traces)
+- skin button contrast: P.color adds the 1 to a SetTextColor over faded text
+- skin button contrast: P.color leaves a host's 0.5 vertex alpha alone (the vertex rule is unmeasured)
+- skin button contrast: a close button's glyph painted faded is drawn opaque on a hover and after it
 - skin button contrast: every skin's enabled button label holds 3:1 on its fill, well clear of disabled
 
 ### test_skin_paint.lua (37)
@@ -3399,7 +3404,7 @@ Total.
 - kit bindings: keybindThroughTab slot 2 with a press that binds nothing answers the row's own line
 - kit bindings: keybindThroughTab fails naming options-ui-§20 without a row or a slot
 
-### test_glyph_guard.lua (10)
+### test_glyph_guard.lua (12)
 
 - glyph guard: the helpers are on the kit table and published by Kit.expose
 - glyph guard: the safe set was generated from exactly the shipped faces, byte for byte
@@ -3407,6 +3412,8 @@ Total.
 - glyph guard: assertGlyphSafe passes a safe string and names an unsafe one
 - glyph guard: the scanner reads every literal, escapes decoded, and long strings too
 - glyph guard: comments, debug calls, glyph: mono lines and markup are left out
+- glyph guard: the decoder takes only valid UTF-8: no lead past 0xF4, no surrogate, no overlong
+- glyph guard: a marker region left open, or an end with no begin, fails rather than exempting
 - glyph guard: opts.debugNames reads a host's own logger as a debug call
 - glyph guard: CRLF sources count lines the same
 - glyph guard: a skip needs its reason, and libs/, tests/ and tools/ are never read
@@ -3878,7 +3885,7 @@ Total.
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 31 |
 | test_skin_width_parity.lua | 11 |
-| test_skin_button_contrast.lua | 5 |
+| test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 37 |
 | test_skin_paint_controls.lua | 31 |
 | test_skin_eui.lua | 29 |
@@ -3975,7 +3982,7 @@ Total.
 | test_kit_secrets.lua | 30 |
 | test_kit_latch.lua | 9 |
 | test_kit_bindings.lua | 17 |
-| test_glyph_guard.lua | 10 |
+| test_glyph_guard.lua | 12 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 42 |
@@ -4000,4 +4007,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3402** |
+| **Total** | **3409** |

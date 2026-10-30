@@ -364,8 +364,11 @@ owner's item 5b and ruling D-19: LootHistory's footer drew U+2248 as a box under
 - **`Kit.assertDisplayGlyphs(opts)`** reads every tracked `.lua` file outside `libs/`, `tests/` and
   `tools/` and fails a string literal carrying a character outside the safe set, decoding `\ddd`,
   `\xNN` and `\u{X}` escapes (the form a grep misses) and reading long strings and locale values.
-  It leaves out comments, debug-log calls (to their closing paren), lines marked `glyph: mono` or
-  `glyph: data` (and `begin` / `end` regions), `|T` / `|A` texture markup and stray non-UTF-8 bytes.
+  It leaves out comments, debug-log calls (to their closing paren, or a sink's string call
+  `NS.Debug "..."`; the collection's sink names exactly, so a display helper such as `DebugLabel` is
+  read), lines marked `glyph: mono` or `glyph: data` (and `begin` / `end` regions; one left open, or
+  an `end` with no `begin`, fails), `|T` / `|A` texture markup and stray bytes that are not valid
+  UTF-8 under RFC 3629 (no lead past `0xF4`, no surrogate, no overlong form).
   `opts.skip` takes a reason per prefix; `opts.debugNames` names a host's own logger.
   **`Kit.assertGlyphSafe(s, label)`**, **`Kit.glyphUnsafe(s)`**, **`Kit.scanGlyphSource`** and
   **`Kit.scanDisplayGlyphs`** are its parts.
@@ -374,8 +377,9 @@ owner's item 5b and ruling D-19: LootHistory's footer drew U+2248 as a box under
   the faces' cmaps by the new **`tools/glyph_safe_set.py`** (fontTools; `--check` reports a stale
   block). Not in it: `≈`, `≠`, the arrows, `▲ ▼`, `✓`, `€`. Real Friz Quadrata is not measured (D-05).
 
-Tests: a new suite, `tests/test_glyph_guard.lua` (ten cases: the members, the face list against the
-shipped folder byte for byte, the set, the lexer's reach and what it leaves out, `debugNames`, CRLF,
+Tests: a new suite, `tests/test_glyph_guard.lua` (twelve cases: the members, the face list against the
+shipped folder byte for byte, the set, the lexer's reach and what it leaves out, the decoder's RFC 3629
+bounds, an unbalanced marker region, `debugNames`, CRLF,
 the skip contract, and LibKa0s's own strings, which pass with no change); `tests/test_kitsync.lua`
 names `glyphs.lua` among the files the kit loads from beside `framework.lua`.
 
@@ -400,14 +404,18 @@ Its label was the skin's `btnPrimary.text` at the 0.4 alpha of DpsRace's disable
 primitives handed an opaque color over as three numbers, and the client keeps a FontString's alpha
 when it is given none.
 
-- **`P.color`** (SkinPaint minor 13, still) adds an opaque color's `1` whenever the target is not
-  opaque now; `P.tint` goes through it, so every primitive that colors a string or a texture does.
+- **`P.color`** (SkinPaint minor 13, still) adds an opaque color's `1` to a `SetTextColor` whenever
+  the target's text is not opaque now; `P.tint` goes through it, so every primitive that colors a
+  string does. A `SetVertexColor` is handed over as before: the client's rule for a three-number
+  vertex color is unmeasured, so a host's own vertex alpha is left alone.
 - **SkinPaintControls minor 11**: `Button`'s label in every state and `CloseButton`'s hover glyph
   go through it too.
 - **Test kit revision 45**: `mock_paint.lua`'s FontString keeps its alpha when `SetTextColor` is
   given none, as the client does ([docs/api/testkit/version-45-docs.md](docs/api/testkit/version-45-docs.md)).
 
-Tests: a new suite, `tests/test_skin_button_contrast.lua` (five cases: a primary button painted
+Tests: a new suite, `tests/test_skin_button_contrast.lua` (ten cases: `P.color` directly, four
+numbers for a translucent color, three over an opaque target, the added `1` over faded text and
+none on a vertex color; a close button's glyph painted faded and then hovered; a primary button painted
 disabled in a faded owner color and then enabled draws `btnPrimary.text` opaque in Ka0s Default,
 Obsidian and Glass; a plain button likewise; and every skin's enabled `btn` and `btnPrimary` label
 holds at least 3:1 on its fill and 1.5 times the disabled label's contrast), and one

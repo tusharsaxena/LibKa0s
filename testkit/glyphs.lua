@@ -39,14 +39,19 @@
 -- and the letter escapes) and [[...]] / [==[...]==]: a locale file's values are literals too. NOT
 -- scanned:
 --   - comments, line and block;
---   - the arguments of a debug-log call: a call whose callee's last name is `debug`, `dbg`, or starts
---     `Debug` / ends `Debug` (NS.Debug, self:Debug, D.Debugf, debug(...)), to its closing paren,
---     however many lines it spans: the debug console draws in the mono face, which has the arrows;
+--   - the arguments of a debug-log call: a call whose callee's last name is one of the collection's
+--     debug sinks (DEBUG_SINKS below: Debug, Debugf, DebugOnce, DebugErrorOnce, DebugSteady,
+--     DebugChanged, DebugAtEnable, DebugMessage, AddDebugMessage, DebugTable, DebugStack, debug, dbg,
+--     Dbg) or one of opts.debugNames, to its closing paren, however many lines it spans, and the one
+--     string literal of a string call (`NS.Debug "..."`): the debug console draws in the mono face,
+--     which has the arrows. Only exact names: a display helper whose name merely carries "Debug"
+--     (DebugLabel, doDebugTooltip) is scanned;
 --   - a line carrying the comment marker `glyph: mono`, and every line between `glyph: mono begin`
 --     and `glyph: mono end`: strings the code draws in the mono role (S.Text(fs, "mono"),
 --     NS.SkinMono) or as a single glyph its own FontString pins to JetBrains Mono. `glyph: data`
 --     (and its begin / end) is the same marker for a string that is never drawn: a lookup key, a
---     pattern, a saved value's name;
+--     pattern, a saved value's name. A `begin` with no `end` before the end of the file, or an `end`
+--     with no `begin`, fails: a mistyped marker never turns the guard off for the rest of a file;
 --   - a stray byte in a literal that is not valid UTF-8: byte data (a pattern's `[\128-\191]`
 --     class), never shown. Kit.glyphUnsafe on a runtime string still names such a byte;
 --   - `|T...|t` / `|A...|a` texture markup inside a string.
@@ -117,18 +122,31 @@ local function stripMarkup(s)
   return (s:gsub("|T.-|t", ""):gsub("|A.-|a", ""))
 end
 
+-- The second byte's range for the lead bytes that narrow it (RFC 3629's table): no overlong form,
+-- no surrogate (U+D800-DFFF), nothing past U+10FFFF.
+local SECOND = { [0xE0] = { 0xA0, 0xBF }, [0xED] = { 0x80, 0x9F }, [0xF0] = { 0x90, 0xBF },
+                 [0xF4] = { 0x80, 0x8F } }
+
+--- A lead byte's sequence length and its payload bits, or nil for a byte no sequence starts with.
+local function lead(c)
+  if c >= 0xF0 and c <= 0xF4 then return 4, c - 0xF0 end
+  if c >= 0xE0 and c <= 0xEF then return 3, c - 0xE0 end
+  if c >= 0xC2 and c <= 0xDF then return 2, c - 0xC0 end
+  return nil
+end
+
 --- The UTF-8 sequence at `i` of `s`: its code point and length, or nil when it is not valid.
 local function decodeAt(s, i)
   local c = s:byte(i)
-  local n, cp
-  if c >= 0xF0 and c <= 0xF4 then n, cp = 4, c - 0xF0
-  elseif c >= 0xE0 then n, cp = 3, c - 0xE0
-  elseif c >= 0xC2 and c <= 0xDF then n, cp = 2, c - 0xC0
-  else return nil end
+  local n, cp = lead(c)
+  if not n then return nil end
+  local lo, hi = 0x80, 0xBF
+  if SECOND[c] then lo, hi = SECOND[c][1], SECOND[c][2] end
   for k = 1, n - 1 do
     local b = s:byte(i + k)
-    if not b or b < 0x80 or b > 0xBF then return nil end
+    if not b or b < lo or b > hi then return nil end
     cp = cp * 64 + (b - 0x80)
+    lo, hi = 0x80, 0xBF
   end
   return cp, n
 end
@@ -234,25 +252,37 @@ local function longAt(src, i)
   return body, e and (e + #close) or (#src + 1)
 end
 
-local DEBUG_EXACT = { debug = true, dbg = true, Dbg = true }
+-- The collection's debug sinks, by exact name: a callee spelled otherwise is a display call unless
+-- the host names it in opts.debugNames.
+local DEBUG_SINKS = { Debug = true, Debugf = true, DebugOnce = true, DebugErrorOnce = true,
+                      DebugSteady = true, DebugChanged = true, DebugAtEnable = true, DebugMessage = true,
+                      AddDebugMessage = true, DebugTable = true, DebugStack = true,
+                      debug = true, dbg = true, Dbg = true }
 
 local function isDebugName(name, extra)
-  if DEBUG_EXACT[name] or (extra and extra[name]) then return true end
-  return name:match("^Debug") ~= nil or name:match("Debug$") ~= nil
+  return DEBUG_SINKS[name] or (extra and extra[name]) or false
 end
 
 local MARKERS = { mono = true, data = true }
 
---- The lines a `glyph: mono` or `glyph: data` marker covers in `src`: a set of line numbers.
-local function markedLines(src)
-  local covered, line, inRegion = {}, 0, false
+--- The lines a `glyph: mono` or `glyph: data` marker covers in `src`: a set of line numbers. A region
+--- left open at the end of the file, or an `end` with no `begin`, fails naming the line.
+local function markedLines(src, path)
+  local covered, line, openAt = {}, 0, nil
   for text in (src .. "\n"):gmatch("([^\n]*)\n") do
     line = line + 1
     local kind, edge = text:match("glyph:%s*(%a+)%s*(%a*)")
     local marker = kind and MARKERS[kind] and edge or nil
-    if marker == "begin" then inRegion = true end
-    if inRegion or marker ~= nil then covered[line] = true end
-    if marker == "end" then inRegion = false end
+    if marker == "begin" then openAt = openAt or line end
+    if marker == "end" and not openAt then
+      fail("glyph guard: " .. path .. ":" .. line .. ": `glyph: " .. kind .. " end` with no `begin`")
+    end
+    if openAt or marker ~= nil then covered[line] = true end
+    if marker == "end" then openAt = nil end
+  end
+  if openAt then
+    fail("glyph guard: " .. path .. ":" .. openAt .. ": a `glyph: ... begin` with no `end` before the "
+      .. "end of the file, which would leave every later string unchecked")
   end
   return covered
 end
@@ -268,7 +298,7 @@ local function walker(src, path, opts)
     extra = set
   end
   return { src = src, path = path, i = 1, line = 1, depth = 0, debugAt = nil, last = nil,
-           extra = extra, marked = markedLines(src), hits = {} }
+           extra = extra, marked = markedLines(src, path), hits = {} }
 end
 
 local function record(w, body, line)
@@ -292,12 +322,24 @@ local function comment(w)
   w.i = e or (#w.src + 1)
 end
 
+--- A literal: recorded, unless it is the one argument of a debug sink's string call (`NS.Debug "..."`).
 local function literal(w, body, after)
   local line = w.line
   w.line = w.line + newlines(w.src:sub(w.i, after - 1))
   w.i = after
-  record(w, body, line)
+  local stringCall = w.last and w.last ~= "string" and isDebugName(w.last, w.extra)
+  if not stringCall then record(w, body, line) end
   w.last = "string"
+end
+
+--- A quoted or long-bracket literal at w.i: true when one was read.
+local function stringAt(w, ch)
+  if ch == '"' or ch == "'" then literal(w, quotedAt(w.src, w.i)); return true end
+  if ch ~= "[" then return false end
+  local body, after = longAt(w.src, w.i)
+  if not body then return false end
+  literal(w, body, after)
+  return true
 end
 
 local function name(w)
@@ -327,11 +369,7 @@ local function step(w)
   if ch == "\n" then w.line = w.line + 1; w.i = i + 1; return end
   if ch:match("%s") then w.i = i + 1; return end
   if ch == "-" and src:sub(i + 1, i + 1) == "-" then return comment(w) end
-  if ch == '"' or ch == "'" then return literal(w, quotedAt(src, i)) end
-  if ch == "[" then
-    local body, after = longAt(src, i)
-    if body then return literal(w, body, after) end
-  end
+  if stringAt(w, ch) then return end
   if ch:match("[%a_]") then return name(w) end
   if ch == "(" or ch == ")" then return paren(w, ch) end
   if ch ~= "." and ch ~= ":" then w.last = nil end

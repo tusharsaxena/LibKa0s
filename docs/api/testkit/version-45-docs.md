@@ -56,11 +56,17 @@ folder.
 **What is scanned.** Every string literal: quoted (escapes decoded: `\ddd`, `\xNN`, `\u{X}`, `\z`
 and the letter escapes) and long (`[[...]]`, `[==[...]==]`), so a locale file's values are read too.
 Left out: comments; the arguments of a debug-log call, to its closing paren over any number of lines
-(a callee whose last name is `debug`, `dbg`, `Dbg`, starts `Debug` or ends `Debug`, plus
-`opts.debugNames`); a line carrying the comment marker `glyph: mono` (a string drawn in the mono
+(a callee whose last name is exactly one of the collection's debug sinks: `Debug`, `Debugf`,
+`DebugOnce`, `DebugErrorOnce`, `DebugSteady`, `DebugChanged`, `DebugAtEnable`, `DebugMessage`,
+`AddDebugMessage`, `DebugTable`, `DebugStack`, `debug`, `dbg`, `Dbg`, plus `opts.debugNames`; a
+display helper whose name merely carries "Debug", such as `DebugLabel`, is scanned), and the one
+literal of a debug sink's string call (`NS.Debug "..."`); a line carrying the comment marker `glyph: mono` (a string drawn in the mono
 role, or a glyph its own FontString pins to JetBrains Mono) or `glyph: data` (a string never drawn),
 and every line between a `glyph: mono begin` / `glyph: data begin` and its `end`; texture markup;
-and a stray byte that is not valid UTF-8 (byte data, a pattern's `[\128-\191]` class).
+and a stray byte that is not valid UTF-8 (byte data, a pattern's `[\128-\191]` class; RFC 3629's
+rules, so a lead byte past `0xF4`, a surrogate or an overlong form is byte data, not a character).
+A `begin` left open at the end of a file, or an `end` with no `begin`, fails naming the line: a
+mistyped marker never exempts the rest of a file.
 
 **opts:** `paths` (read exactly these), `include` (path prefixes kept), `skip`
 (`{ [prefix] = "why" }`, a missing or empty reason fails), `debugNames` (a list or a set), `label`.

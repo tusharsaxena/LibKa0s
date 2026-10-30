@@ -190,10 +190,13 @@ function P.rgb(c)
   return c[1], c[2], c[3], c[4]
 end
 
---- `obj[method](obj, c)` as P.rgb writes it, an opaque color's 1 added while `obj` is not opaque: the
---- client keeps a FontString's alpha on a three-number SetTextColor (minor 13, LK-14, image-55..57).
+--- `obj[method](obj, c)` as P.rgb writes it, an opaque color's 1 added to a SetTextColor while `obj`'s
+--- text is not opaque: the client keeps a FontString's alpha on a three-number SetTextColor (minor 13,
+--- LK-14, image-55..57). Text only: the client's rule for a three-number SetVertexColor is unmeasured,
+--- so a vertex color is handed over as P.rgb writes it and a host's own vertex alpha is left alone.
 function P.color(obj, method, c)
-  local get = obj[(method:gsub("^Set", "Get"))]
+  if method ~= "SetTextColor" then return obj[method](obj, P.rgb(c)) end
+  local get = obj.GetTextColor
   local pa = (c[4] == nil or c[4] == 1) and type(get) == "function" and select(4, get(obj)) or 1
   if type(pa) == "number" and pa ~= 1 then return obj[method](obj, c[1], c[2], c[3], 1) end
   return obj[method](obj, P.rgb(c))

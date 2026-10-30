@@ -163,9 +163,12 @@ when it is given no fourth, so a label once painted in a faded disabled color ke
 every enabled paint after it.
 
 - **`P.color(obj, method, c)`** (SkinPaint minor 13, still) is how `P.tint` hands a text or vertex
-  color over: as before for a translucent color, and for an opaque one with its `1` added whenever
-  the target's current color is not opaque. The alpha is read rather than always written, so a
-  first paint is the same call a host writes by hand and the Ka0s Default traces do not move.
+  color over: as `P.rgb` writes it for a translucent color, and for an opaque `SetTextColor` with
+  its `1` added whenever the target's current text color is not opaque. The alpha is read rather
+  than always written, so a first paint is the same call a host writes by hand and the Ka0s Default
+  traces do not move. A `SetVertexColor` is never given the added `1`: the client's rule for a
+  three-number vertex color is unmeasured, so a host's own vertex alpha (a thumb, a selection
+  texture, an icon) is left as it was.
 - **SkinPaintControls minor 11**: `Button`'s label (rest, hover and disabled, through its
   `OnEnable` / `OnDisable` / `OnEnter` / `OnLeave` hooks) and `CloseButton`'s hover glyph take
   their color through `P.color`.

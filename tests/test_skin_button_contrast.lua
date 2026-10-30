@@ -9,9 +9,12 @@
 -- (its `dr.*.offText` tokens). The library painted every text color through `P.rgb`, which handed an
 -- OPAQUE color over as three numbers, and the client keeps a FontString's alpha when SetTextColor is
 -- given no fourth: once a label had been painted disabled, every enabled paint after it kept 0.4.
--- SkinPaint minor 13 (still) hands every text and vertex color over with its alpha; kit revision 45
--- models the client's keep-the-alpha rule in mock_paint.lua, so the first case below is red on the
--- old `P.rgb`.
+-- SkinPaint minor 13's P.color adds an opaque color's 1 to a SetTextColor when the string's current
+-- alpha is not 1, and otherwise makes the call P.rgb writes (three numbers for an opaque color, four
+-- for a translucent one), so Ka0s Default's traces are unchanged. A SetVertexColor is never given the
+-- added 1: the client's rule for a three-number vertex color is unmeasured, so a host's own vertex
+-- alpha is left alone. Kit revision 45 models the client's keep-the-alpha rule for a FontString in
+-- mock_paint.lua, so the first case below is red on the old `P.rgb`.
 --
 -- THE GUARD. Every skin's button label against the fill it is drawn on, for both bases (`btn` and
 -- `btnPrimary`): WCAG's contrast ratio, the fill composited over the skin's window and a gradient
@@ -76,6 +79,66 @@ test("skin button contrast: a plain button's label is opaque again after a faded
   S.Button(b, { tokens = { disabled = "dr.primary.offText" } })
   on = true; b:__fire("OnEnable")
   assertEqual(F.rgba({ b.text:GetTextColor() }), F.tok(Skin, "obsidian", "btn.text"), "btn.text, opaque")
+end)
+
+-- ── P.color, directly ─────────────────────────────────────────────────────────────────────────
+
+--- A spy that records how many numbers each Set call was handed, with `alpha` as its current alpha.
+local function spy(alpha)
+  local o = { calls = {} }
+  local function rec(method) return function(self, ...) self.calls[#self.calls + 1] = { method, select("#", ...), ... } end end
+  o.SetTextColor, o.SetVertexColor = rec("SetTextColor"), rec("SetVertexColor")
+  function o:GetTextColor() return 1, 1, 1, alpha end
+  function o:GetVertexColor() return 1, 1, 1, alpha end
+  return o
+end
+
+test("skin button contrast: P.color hands a translucent color over as four numbers", function()
+  local _, Skin = F.env()
+  local o = spy(1)
+  Skin.__P.color(o, "SetTextColor", { 0.1, 0.2, 0.3, 0.5 })
+  assertEqual(o.calls[1][2], 4, "four numbers")
+  assertEqual(o.calls[1][6], 0.5, "its own alpha")
+end)
+
+test("skin button contrast: P.color keeps the three-number call over an opaque target (Ka0s Default's traces)", function()
+  local _, Skin = F.env()
+  local o = spy(1)
+  Skin.__P.color(o, "SetTextColor", { 0.1, 0.2, 0.3 })
+  Skin.__P.color(o, "SetTextColor", { 0.1, 0.2, 0.3, 1 })
+  assertEqual(o.calls[1][2], 3, "no alpha given, three numbers")
+  assertEqual(o.calls[2][2], 3, "an alpha of 1, three numbers")
+end)
+
+test("skin button contrast: P.color adds the 1 to a SetTextColor over faded text", function()
+  local _, Skin = F.env()
+  local o = spy(0.4)
+  Skin.__P.color(o, "SetTextColor", { 0.1, 0.2, 0.3 })
+  assertEqual(o.calls[1][2], 4, "four numbers")
+  assertEqual(o.calls[1][6], 1, "drawn opaque")
+end)
+
+test("skin button contrast: P.color leaves a host's 0.5 vertex alpha alone (the vertex rule is unmeasured)", function()
+  -- red under: P.color forcing the 1 onto a SetVertexColor too (review of LK-14)
+  local _, Skin = F.env()
+  local o = spy(0.5)
+  Skin.__P.color(o, "SetVertexColor", { 0.1, 0.2, 0.3, 1 })
+  assertEqual(o.calls[1][2], 3, "three numbers, as P.rgb writes it")
+end)
+
+test("skin button contrast: a close button's glyph painted faded is drawn opaque on a hover and after it", function()
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local b = m.CreateFrame("Button", nil, m.UIParent)
+  b.glyph = b:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+  b.glyph:SetTextColor(0.2, 0.4, 0.6, 0.4)
+  S.CloseButton(b)
+  assertEqual(F.rgba({ b.glyph:GetTextColor() }), F.tok(Skin, "obsidian", "close.rest"), "close.rest, opaque")
+  b.glyph:SetTextColor(0.2, 0.4, 0.6, 0.4)
+  b:__fire("OnEnter")
+  assertEqual(F.rgba({ b.glyph:GetTextColor() }), F.tok(Skin, "obsidian", "close.hot"), "close.hot, opaque")
+  b:__fire("OnLeave")
+  assertEqual(F.rgba({ b.glyph:GetTextColor() }), F.tok(Skin, "obsidian", "close.rest"), "close.rest again, opaque")
 end)
 
 -- ── the guard: label against fill, every skin ─────────────────────────────────────────────────
