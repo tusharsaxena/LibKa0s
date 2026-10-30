@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261030-055012`](20261030-055012/) | `a7e04c1` | clean | 1.80.0 → 1.81.0 | 0/0 | 237 | 3297/2/3299 | skip | 73030 | 10721 | 6.7 | 2.1 | 15 | 0 | **green** |
 | [`20261030-054311`](20261030-054311/) | `aa6365f` | clean | 1.80.0 → 1.81.0 | 0/0 | 237 | 3297/2/3299 | skip | 73023 | 10719 | 6.7 | 2.1 | 17 | 2 | **green** |
 | [`20261029-032426`](20261029-032426/) | `663b0fb` | clean | 1.79.0 → 1.80.0 | 0/0 | 233 | 3220/2/3222 | skip | 71129 | 10458 | 6.7 | 2.1 | 15 | 0 | **green** |
 | [`20261028-223958`](20261028-223958/) | `3c9225f` | clean | 1.78.0 → 1.79.0 | 0/0 | 228 | 3156/2/3158 | skip | 69595 | 10291 | 6.7 | 2.1 | 15 | 0 | **green** |
@@ -166,10 +167,10 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 ## Test suite
 
 **3299 cases** — 3297 passed, 0 failed, 2 skipped. The generated inventory
-[`20261030-054311/test-cases.md`](20261030-054311/test-cases.md) is the authority on which cases existed at this run;
+[`20261030-055012/test-cases.md`](20261030-055012/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **3222 → 3299** since the previous run.
+Unchanged from the previous run at 3299 cases.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -193,8 +194,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261030-054311`](20261030-054311/) — **this run's measurement, not its diff.** Max CCN **17** across 10719
-functions, **2** of them warned on; 12 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261030-055012`](20261030-055012/) — **this run's measurement, not its diff.** Max CCN **15** across 10721
+functions, **0** of them warned on; 12 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -206,8 +207,8 @@ cell is this file saying something crossed and nobody has ruled on it yet.
 
 | Function | CCN | Location | Disposition |
 |---|---|---|---|
-| `lib.ReorderList` | 17 | `LibKa0s/WidgetsReorder.lua` | **Fixed before the tag** (v1.81.0 `LK-90`): the list's colors move, unchanged, into a file-local `listColors`, CCN 14; the constructor drops to 4. WidgetsReorder minor 3 is this release's own, so no minor moves. |
-| `lib.TestStrip` | 16 | `LibKa0s/Widgets.lua` | **Fixed before the tag** (v1.81.0 `LK-90`): the icon and the line move, unchanged and in order, into a file-local `stripLine`. Widgets minor 17 is this release's own, so no minor moves. |
+
+None.
 
 ### Files by `layout-§1` band
 

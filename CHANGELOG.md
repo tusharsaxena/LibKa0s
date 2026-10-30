@@ -485,6 +485,12 @@ re-pin any host test that pins a moved minor or key.
   `TITLE_FOR`.
 - **LK-A1, the font height.** Nothing.
 
+Release gate (`docs/automated-tests/20261030-055012/`): lint pass, 0/0 in 237 files;
+tests pass, 3299 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Current — `Widgets.lua` minor 17 (`aebb719`, `a7e04c1`) and `SimPanel.lua` minor 8 (`ce3f8c3`, `dca3d25`) moved; `tests/fixture_sim_panel.lua`, every `tests/test_sim_*.lua` and `tests/test_widgets_teststrip.lua` re-read and green, unchanged because no scenario, step, control or owner-less strip moved; the look changes are pinned in `tests/test_tool_windows_scope.lua`, `tests/test_tool_windows_skin.lua` and `tests/test_widgets_skin_scope.lua`, and step 8 names the hosts that re-look at their smoke checks (BankLedger, DpsRace, Drop Watcher, KickCD, LootHistory, MultiMeters, Quick Comms, Ka0s Skin Tester).
+
 ## v1.80.0 — 2026-10-29
 
 Opened 2026-10-29, on `feat/2026-10-29-skinning-rollout`: the library half of the skinning rollout to
