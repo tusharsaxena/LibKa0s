@@ -87,6 +87,22 @@ test("paint mock: font string text, color, font, font object and shadow are reco
   assertEqual(fs:GetText(), "hello")
 end)
 
+test("paint mock: SetTextColor with no alpha keeps the alpha the string already had (revision 45)", function()
+  -- red under: revision 44, where three numbers reset the alpha to 1. The client keeps it: DpsRace's
+  -- Arm Race label, painted once in a 0.4-alpha disabled color, drew its enabled color at 0.4 in
+  -- three skins (Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK, image-55..57, LK-14).
+  local M = buildMocks(); install(M)
+  local fs = M.CreateFrame("Frame"):CreateFontString()
+  fs:SetTextColor(1, 0.82, 0, 0.4)
+  fs:SetTextColor(1, 1, 1)
+  assertEqual(rgba(fs:GetTextColor()), "1,1,1,0.4", "three numbers keep the 0.4")
+  fs:SetTextColor(1, 1, 1, 1)
+  assertEqual(rgba(fs:GetTextColor()), "1,1,1,1", "an explicit alpha sets it")
+  local fresh = M.CreateFrame("Frame"):CreateFontString()
+  fresh:SetTextColor(0.5, 0.5, 0.5)
+  assertEqual(rgba(fresh:GetTextColor()), "0.5,0.5,0.5,1", "a string never given an alpha is opaque")
+end)
+
 test("paint mock: regions show, hide and answer IsVisible through their owner", function()
   local M = buildMocks(); install(M)
   local f = M.CreateFrame("Frame")

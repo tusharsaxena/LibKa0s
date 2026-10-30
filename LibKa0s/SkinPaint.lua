@@ -118,7 +118,7 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- Minor 13 (LK-03 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK, D-06): P.font never
 -- outlines the mono role: every skin now states OUTLINE for `font.outline` (SkinDefs minor 17), which
 -- the body and title roles take as the owner's "Font outline" leaves it (Skin minor 9), and the mono
--- face's small digits (the debug console, the perf tables) stay unoutlined.
+-- face's small digits (the debug console, the perf tables) stay unoutlined. Still 13: P.color (LK-14).
 local PAINT_MINOR = 13
 if lib.__paintMinor and lib.__paintMinor >= PAINT_MINOR
   and lib.__paintShellMinor == lib.MINOR then return end
@@ -188,6 +188,15 @@ function P.isDefault() return false end
 function P.rgb(c)
   if c[4] == nil or c[4] == 1 then return c[1], c[2], c[3] end
   return c[1], c[2], c[3], c[4]
+end
+
+--- `obj[method](obj, c)` as P.rgb writes it, an opaque color's 1 added while `obj` is not opaque: the
+--- client keeps a FontString's alpha on a three-number SetTextColor (minor 13, LK-14, image-55..57).
+function P.color(obj, method, c)
+  local get = obj[(method:gsub("^Set", "Get"))]
+  local pa = (c[4] == nil or c[4] == 1) and type(get) == "function" and select(4, get(obj)) or 1
+  if type(pa) == "number" and pa ~= 1 then return obj[method](obj, c[1], c[2], c[3], 1) end
+  return obj[method](obj, P.rgb(c))
 end
 --- r, g, b, a always: fills and backdrop colors.
 function P.rgba(c) return c[1], c[2], c[3], c[4] or 1 end
@@ -417,7 +426,7 @@ function P.tint(rec, obj, T, name, method)
       local getter = obj[(method:gsub("^Set", "Get"))]
       priors[obj] = type(getter) == "function" and { getter(obj) } or false
     end
-    obj[method](obj, rgb(c))
+    P.color(obj, method, c)
   elseif priors[obj] then
     obj[method](obj, unpack(priors[obj]))
     priors[obj] = nil

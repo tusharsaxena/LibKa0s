@@ -18,10 +18,10 @@ batch (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`, M1), th
 go-ahead.
 
 Versions in this release: **Media minor 10** (`LibKa0s-Media-1.0` key **10.1**), **Skin minor 9**,
-**SkinDefs minor 17**, **SkinPaint minor 13** and **SkinPaintExtras minor 7** (`LibKa0s-Skin-1.0` key
-**9.17.13.7.10.2.4**), and **OptionsCompose minor 14**, **OptionsAppearance minor 4** and
+**SkinDefs minor 17**, **SkinPaint minor 13**, **SkinPaintExtras minor 7** and **SkinPaintControls minor 11** (`LibKa0s-Skin-1.0` key
+**9.17.13.7.11.2.4**), and **OptionsCompose minor 14**, **OptionsAppearance minor 4** and
 **OptionsSkinPicker minor 3**, **OptionsWidgets minor 37** and **OptionsSwitch minor 1** (new) (`LibKa0s-Options-1.0` key **34.4.37.5.7.11.3.14.9.4.3.6.4.3.1**), and
-**WidgetsDragHandle minor 8** (`LibKa0s-Widgets-1.0` key **17.3.8.5.5.2**); every other file still at its v1.81.0 minor, and **test kit revision 44**, until an entry below moves one.
+**WidgetsDragHandle minor 8** (`LibKa0s-Widgets-1.0` key **17.3.8.5.5.2**); every other file still at its v1.81.0 minor, and **test kit revision 45**, until an entry below moves one.
 
 ### The payload ships Prototype, Fira Sans Medium and Expressway (`LK-01`, `LK-A1`)
 
@@ -69,9 +69,9 @@ drop Inter and Oxanium and add Prototype and Expressway with their terms.
 
 ### Ka0s Default draws Prototype, WoW Forever's body text Fira Sans Medium, Obsidian Expressway (`LK-02`, `LK-A1`)
 
-`LibKa0s-Skin-1.0` key 9.17.13.7.10.2.4 (8.17.12.6.10.2.4 when this entry was written; its document
+`LibKa0s-Skin-1.0` key 9.17.13.7.11.2.4 (8.17.12.6.10.2.4 when this entry was written; its document
 renamed with the key), documented in
-[docs/api/Skin/version-9.17.13.7.10.2.4-docs.md](docs/api/Skin/version-9.17.13.7.10.2.4-docs.md)
+[docs/api/Skin/version-9.17.13.7.11.2.4-docs.md](docs/api/Skin/version-9.17.13.7.11.2.4-docs.md)
 (*What changed at this version*). SkinDefs minor 17 (D-02): Ka0s Default's `font.body`,
 `font.title` and `hud.font` are `Ka0s Prototype` (one weight; its titles differ by size), where they
 were Oxanium SemiBold, Bold and SemiBold; the `eui` source inherits the HUD face. WoW Forever's
@@ -86,12 +86,12 @@ HUD face (Quick Comms' `NS.SKIN_FALLBACK["hud.font"]`) becomes `Ka0s Prototype`.
 
 ### Text is outlined by default, and the Skin tab says where (`LK-03`)
 
-`LibKa0s-Skin-1.0` key 9.17.13.7.10.2.4 and `LibKa0s-Options-1.0` key
+`LibKa0s-Skin-1.0` key 9.17.13.7.11.2.4 and `LibKa0s-Options-1.0` key
 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1 (9.17.13.6.10.2.4 and 34.4.36.5.7.11.3.13.9.4.3.6.4.3 when this entry
 was written, 34.4.36.5.7.11.3.14.9.4.3.6.4.3 until the review took the outline back out of the
 picker, and 34.4.36.5.7.11.3.14.9.4.3.6.4.2 until `LK-07` moved the picker to minor 3; the documents
 renamed with the keys; 34.4.36.5.7.11.3.14.9.4.3.6.4.3 until `LK-10` added `OptionsSwitch.lua`), documented in
-[docs/api/Skin/version-9.17.13.7.10.2.4-docs.md](docs/api/Skin/version-9.17.13.7.10.2.4-docs.md) and
+[docs/api/Skin/version-9.17.13.7.11.2.4-docs.md](docs/api/Skin/version-9.17.13.7.11.2.4-docs.md) and
 [docs/api/Options/version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md](docs/api/Options/version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md)
 (*What changed at this version*). The owner's item 13 and ruling D-06: outline by default, as a
 setting with three values.
@@ -210,8 +210,8 @@ hand-written flags row (MultiMeters, DpsRace) takes the composed one or offers t
 
 ### Every skin's text is as wide as Ka0s Default's (`LK-05`)
 
-`LibKa0s-Skin-1.0` key 9.17.13.7.10.2.4 (SkinDefs minor 17, still), documented in
-[docs/api/Skin/version-9.17.13.7.10.2.4-docs.md](docs/api/Skin/version-9.17.13.7.10.2.4-docs.md)
+`LibKa0s-Skin-1.0` key 9.17.13.7.11.2.4 (SkinDefs minor 17, still), documented in
+[docs/api/Skin/version-9.17.13.7.11.2.4-docs.md](docs/api/Skin/version-9.17.13.7.11.2.4-docs.md)
 (*Every skin's text is as wide as Ka0s Default's*). The owner's item 5 and ruling D-08: each skin's
 `font.bodySize` and `font.titleSize` give its text Ka0s Default's width (Prototype at 12 / 14),
 measured on the shipped bytes with OUTLINE on (Ka0sAddonsCommonTasks
@@ -352,6 +352,33 @@ ConsumableMaster's `tests/test_surface_parity.lua` member list gains `"SkinVerb"
 library-absent line on `nil, "absent"`; `skin` in each Slash degraded stub's set of verbs not offered
 without the library; the help, landing and verb-count pins move by one row, and `test_disabled`'s
 dispatch of every row covers the new one.
+
+### A button's label is opaque again once it is enabled (`LK-14`)
+
+`LibKa0s-Skin-1.0` key 9.17.13.7.11.2.4 (SkinPaint minor 13, still; SkinPaintControls minor 11), documented
+in [docs/api/Skin/version-9.17.13.7.11.2.4-docs.md](docs/api/Skin/version-9.17.13.7.11.2.4-docs.md)
+(*A label is opaque again once its button is enabled*). The owner's item 16 and ruling D-25:
+DpsRace's Arm Race button read as disabled while enabled under Ka0s Default, Obsidian and Glass.
+Its label was the skin's `btnPrimary.text` at the 0.4 alpha of DpsRace's disabled-label tokens: the
+primitives handed an opaque color over as three numbers, and the client keeps a FontString's alpha
+when it is given none.
+
+- **`P.color`** (SkinPaint minor 13, still) adds an opaque color's `1` whenever the target is not
+  opaque now; `P.tint` goes through it, so every primitive that colors a string or a texture does.
+- **SkinPaintControls minor 11**: `Button`'s label in every state and `CloseButton`'s hover glyph
+  go through it too.
+- **Test kit revision 45**: `mock_paint.lua`'s FontString keeps its alpha when `SetTextColor` is
+  given none, as the client does ([docs/api/testkit/version-45-docs.md](docs/api/testkit/version-45-docs.md)).
+
+Tests: a new suite, `tests/test_skin_button_contrast.lua` (five cases: a primary button painted
+disabled in a faded owner color and then enabled draws `btnPrimary.text` opaque in Ka0s Default,
+Obsidian and Glass; a plain button likewise; and every skin's enabled `btn` and `btnPrimary` label
+holds at least 3:1 on its fill and 1.5 times the disabled label's contrast), and one
+`tests/test_mock_paint.lua` case for the kept alpha.
+
+**What a consumer owes** (M2): nothing in code beyond the re-vendor. DpsRace's Arm Race reads as
+enabled once it carries this tag; its own `dr.*.offText` tokens stay as they are. A suite that
+asserts an opaque text color after a translucent one under the paint recorder passes the alpha.
 
 ## v1.81.0 — 2026-10-30
 

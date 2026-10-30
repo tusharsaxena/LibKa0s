@@ -694,6 +694,14 @@ Total.
 - skin hud size: BarStyle's fontSize is each skin's own, Ka0s Default's under Ignore fonts
 - skin hud size: an EllesmereUI owner reads Ka0s Default's HUD size, unscaled
 
+### test_skin_button_contrast.lua (5)
+
+- skin button contrast: a primary button enabled after a faded disabled paint draws its label opaque (ka0s)
+- skin button contrast: a primary button enabled after a faded disabled paint draws its label opaque (obsidian)
+- skin button contrast: a primary button enabled after a faded disabled paint draws its label opaque (glass)
+- skin button contrast: a plain button's label is opaque again after a faded disabled paint
+- skin button contrast: every skin's enabled button label holds 3:1 on its fill, well clear of disabled
+
 ### test_skin_paint.lua (37)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
@@ -3578,12 +3586,13 @@ Total.
 - layer mock: UIParent carries the recorder too
 - layer mock: restore() puts CreateFrame back, and later frames are plain
 
-### test_mock_paint.lua (15)
+### test_mock_paint.lua (16)
 
 - paint mock: CreateTexture and CreateFontString answer distinct regions the frame owns
 - paint mock: texture paint calls are recorded and answered back
 - paint mock: SetAtlas on a texture records the art and sizes it from the fixture
 - paint mock: font string text, color, font, font object and shadow are recorded
+- paint mock: SetTextColor with no alpha keeps the alpha the string already had (revision 45)
 - paint mock: regions show, hide and answer IsVisible through their owner
 - paint mock: backdrop and its two colors are recorded on the frame
 - paint mock: GetChildren answers the frames parented here, in creation order
@@ -3668,7 +3677,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 44
+- the kit is revision 45
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -3856,6 +3865,7 @@ Total.
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 31 |
 | test_skin_width_parity.lua | 11 |
+| test_skin_button_contrast.lua | 5 |
 | test_skin_paint.lua | 37 |
 | test_skin_paint_controls.lua | 31 |
 | test_skin_eui.lua | 29 |
@@ -3960,7 +3970,7 @@ Total.
 | test_mock_lines.lua | 5 |
 | test_mock_bindings.lua | 17 |
 | test_mock_layers.lua | 7 |
-| test_mock_paint.lua | 15 |
+| test_mock_paint.lua | 16 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
@@ -3976,4 +3986,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3386** |
+| **Total** | **3392** |

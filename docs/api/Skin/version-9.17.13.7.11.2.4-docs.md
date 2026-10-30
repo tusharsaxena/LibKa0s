@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 9.17.13.7.10.2.4
+# `LibKa0s-Skin-1.0` — version 9.17.13.7.11.2.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,18 +8,18 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **9** · `SkinDefs.lua` minor **17** · `SkinPaint.lua` minor **13** · `SkinPaintExtras.lua` minor **7** · `SkinPaintControls.lua` minor **10** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
+| Files and minors | `Skin.lua` minor **9** · `SkinDefs.lua` minor **17** · `SkinPaint.lua` minor **13** · `SkinPaintExtras.lua` minor **7** · `SkinPaintControls.lua` minor **11** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
 | Shipped in | v1.82.0 (unreleased) |
 | Status | **Current** |
 | Supersedes | [version 8.16.12.6.10.2.4](./version-8.16.12.6.10.2.4-docs.md) (shipped in v1.81.0) — the same surface with Ka0s Default drawing Oxanium (SemiBold for body and HUD, Bold for titles) WoW Forever's body text in Fira Sans Regular, and Obsidian drawing Inter / Inter SemiBold, with `font.outline` `""` so no window text was outlined (SkinDefs minor 16), with no font outline mode per owner (Skin minor 8), with the mono role taking `font.outline` like the other two (SkinPaint minor 12), and with no `FontFlags` in the vocabulary (SkinPaintExtras minor 6) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 9, SkinDefs = 17, SkinPaint = 13, SkinPaintExtras = 7, SkinPaintControls = 10, SkinEUI = 2, SkinAce = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 9, SkinDefs = 17, SkinPaint = 13, SkinPaintExtras = 7, SkinPaintControls = 11, SkinEUI = 2, SkinAce = 4 }` |
 
 ## What changed at this version
 
-**Four files move: `SkinDefs.lua` to minor 17, `Skin.lua` to minor 9, `SkinPaint.lua` to minor 13
-and `SkinPaintExtras.lua` to minor 7.** Four members are added (`GetOutline`, `SetOutline`,
+**Five files move: `SkinDefs.lua` to minor 17, `Skin.lua` to minor 9, `SkinPaint.lua` to minor 13,
+`SkinPaintExtras.lua` to minor 7 and `SkinPaintControls.lua` to minor 11.** Four members are added (`GetOutline`, `SetOutline`,
 `OUTLINE_MODES`, `OUTLINE_DEFAULT`), `WriteChoice`'s `media` gains a half, and the facade gains two
 vocabulary names, `FontFlags` and `HudFontSize`; no signature changes and nothing is removed.
 
@@ -151,6 +151,31 @@ It never answers nil, so its answer goes straight to `SetFont`. `LibKa0s-Options
 `O.FontGroup{ flagsFromSkin = true }` (OptionsCompose minor 14) offers the value and makes it the
 row's default. `FontFlags` is a vocabulary name (`VOCAB`), a trampoline like `BarStyle`, so a host's
 degradation facade owes it (*What a consumer owes*).
+
+### A label is opaque again once its button is enabled (SkinPaint minor 13, SkinPaintControls minor 11)
+
+The owner's item 16 and ruling D-25 (`LK-14` of the same bundle): DpsRace's Arm Race button read as
+disabled while enabled, under Ka0s Default, Obsidian and Glass (the bundle's image-55..57). Measured
+off the screenshots, the label was the skin's `btnPrimary.text` at **0.40 alpha** over the enabled
+fill: the alpha of DpsRace's own disabled-label tokens (`dr.*.offText`). The primitives handed an
+opaque color to `SetTextColor` as three numbers (`P.rgb`), and the client keeps a FontString's alpha
+when it is given no fourth, so a label once painted in a faded disabled color kept that alpha in
+every enabled paint after it.
+
+- **`P.color(obj, method, c)`** (SkinPaint minor 13, still) is how `P.tint` hands a text or vertex
+  color over: as before for a translucent color, and for an opaque one with its `1` added whenever
+  the target's current color is not opaque. The alpha is read rather than always written, so a
+  first paint is the same call a host writes by hand and the Ka0s Default traces do not move.
+- **SkinPaintControls minor 11**: `Button`'s label (rest, hover and disabled, through its
+  `OnEnable` / `OnDisable` / `OnEnter` / `OnLeave` hooks) and `CloseButton`'s hover glyph take
+  their color through `P.color`.
+- No member is added, renamed or removed, and no token changes. Every skin's enabled button label
+  holds at least 3:1 on its fill, for `btn` and `btnPrimary`, and at least 1.5 times the disabled
+  label's contrast (`tests/test_skin_button_contrast.lua`). Obsidian (3.87:1) and WoW Forever
+  (3.93:1) are the lowest primary labels; no palette moved.
+
+**What a consumer owes:** nothing in code. A host that paints its own label with a translucent
+color, then an opaque one, passes the opaque one's alpha itself.
 
 ## What this major is
 
