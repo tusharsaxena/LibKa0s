@@ -501,6 +501,8 @@ end
 --- `gloss`, `bg`, `border`, `borderStyle`, `borderSize`, `font` (path or nil), `fontKey`, `fontSize`,
 --- `outline`, `iconBorder`. `font`, `fontKey` and `outline` are nil while the owner ignores fonts
 --- (minor 6, R-1): they read through `Skin:Token`, which leaves the HUD's face and outline alone then.
+--- `fontSize` is `S.HudFontSize()` (minor 7): the skin's own `hud.fontSize`, or Ka0s Default's 12
+--- while the owner ignores fonts, since the host's own face was never measured at the skin's size.
 prim.BarStyle = function(owner)
   local T = P.T(owner)
   local face, outline = lib:Token(owner, "hud.font"), lib:Token(owner, "hud.outline")
@@ -508,7 +510,7 @@ prim.BarStyle = function(owner)
     texture = P.media("statusbar", T["bar.texture"]), textureKey = T["bar.texture"],
     gloss = T["bar.gloss"] == true, bg = T["bar.bg"], border = T["bar.border"],
     borderStyle = T["bar.borderStyle"], borderSize = T["bar.borderSize"],
-    font = P.media("font", face), fontKey = face, fontSize = T["hud.fontSize"],
+    font = P.media("font", face), fontKey = face, fontSize = prim.HudFontSize(owner),
     outline = outline, iconBorder = T["icon.border"],
   }
 end

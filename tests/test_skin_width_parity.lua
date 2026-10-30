@@ -163,3 +163,41 @@ test("skin hud size: the stored value is never rewritten, and the scale follows 
   assertEqual(S.HudFontSize(profile.size), 26, "Obsidian: 26, from the same stored 24")
   assertEqual(profile.size, 24, "the stored size stands")
 end)
+
+test("skin hud size: a font override keeps the skin's sizes, HUD and body alike", function()
+  -- Today's behavior, pinned until the owner rules otherwise (LK-05/06 review: an override draws a
+  -- face at a size measured for the skin's own). red under: an override silently moving the sizes.
+  local _, Skin = F.env({ lsm = { ["font:Ka0s Prototype"] = "Fonts\\Prototype.ttf" } })
+  Skin:RegisterOwner(OWNER, { set = function() end })
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  local S = Skin:For(OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Prototype", nil)
+  assertEqual(S.Token("hud.font"), "Ka0s Prototype", "the override draws")
+  assertEqual(S.HudFontSize(12), 13, "Obsidian's HUD scale stands")
+  assertEqual(S.Token("font.bodySize"), 12.5, "and its body size")
+  assertEqual(S.BarStyle().fontSize, 13, "BarStyle's size too")
+end)
+
+test("skin hud size: BarStyle's fontSize is each skin's own, Ka0s Default's under Ignore fonts", function()
+  -- red under: BarStyle answering 12 in every skin (the showroom's worn line loses its width), or a
+  -- skin's measured size while fonts are ignored (the host's own face drawn at a size measured for
+  -- the skin's).
+  for key, want in pairs({ obsidian = 13, glass = 11, ka0s = 12, forever = 11.5 }) do
+    local _, S = hudOwner(key ~= "ka0s" and key or nil)
+    assertEqual(S.BarStyle().fontSize, want, key .. "'s BarStyle size")
+  end
+  local Skin, S = hudOwner("obsidian")
+  Skin:SetIgnore(OWNER, nil, true)
+  assertEqual(S.BarStyle().fontSize, 12, "Ignore fonts: Ka0s Default's 12, as HudFontSize answers")
+  assertEqual(S.BarStyle().fontSize, S.HudFontSize(), "the two agree")
+end)
+
+test("skin hud size: an EllesmereUI owner reads Ka0s Default's HUD size, unscaled", function()
+  local E = dofile("tests/fixture_skin_eui.lua")
+  local _, Skin, eui = E.env()
+  E.owner(Skin, OWNER, "eui", "obsidian")
+  eui.login()
+  local S = Skin:For(OWNER)
+  assertEqual(S.HudFontSize(24), 24, "the eui source draws Ka0s Default's sizes")
+  assertEqual(S.BarStyle().fontSize, 12)
+end)

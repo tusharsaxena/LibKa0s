@@ -84,12 +84,16 @@ The owner's ruling D-09 (`LK-06` of the same bundle). Every skin names a HUD siz
   written. A size that is not a number above 0 counts as none: the skin's HUD size, or 12 unscaled.
   Never nil.
 - A **font override** keeps the skin's HUD size, as it keeps its body and title sizes: the element
-  still follows the skin, and only its face changes.
-- `BarStyle().fontSize` is the token itself, so the Skin Tester's showroom draws each skin's own
-  12-reference size.
+  still follows the skin, and only its face changes. The override's face was not measured at those
+  sizes, so its width is not held; this is the behavior until the owner rules on it (the LK-05/06
+  review), and a case pins it.
+- `BarStyle().fontSize` is `S.HudFontSize()`: the skin's own `hud.fontSize`, so the Skin Tester's
+  showroom draws each skin's own 12-reference size, and Ka0s Default's 12 while the owner ignores
+  fonts, as `HudFontSize` answers then (the host's own face was never measured at the skin's size).
 
 `tests/test_skin_width_parity.lua` pins the sizes and the HUD faces' widths with the rest, and four
-cases pin `HudFontSize`.
+cases pin `HudFontSize`, three more pin it under a font override and the EllesmereUI source and
+pin `BarStyle().fontSize` per skin and under Ignore fonts.
 
 ### Text is outlined by default, and each owner says where (Skin minor 9, SkinDefs minor 17, SkinPaint minor 13)
 
@@ -1150,7 +1154,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 | `ChartStyle()` | a fresh table of the `chart.*` tokens by short name (`axis`, `axisAlt`, `grid`, `crosshair`, `marker`, `line`, `bar`, `track`, `total`, `other`, `otherLine`, `series`); the colors are shared |
 | `FontFlags(value, where)` | the font flags an element draws with, never nil (SkinPaintExtras minor 7): a picked flag as stored; `FROM_SKIN` (or nil) through the owner's *Font outline*, `hud.outline`, or `font.outline` with `where == "window"`; while the owner ignores fonts `"OUTLINE"` for the HUD and `""` for window text. See *An element's stored font flags, resolved* |
 | `HudFontSize(size, fromSkin)` | the size a HUD element stored at `size` draws at, never nil (SkinPaintExtras minor 7): `size` times the skin's `hud.fontSize` over Ka0s Default's while it uses the skin's face; `size` as stored with `fromSkin == false` or while the owner ignores fonts; the skin's HUD size (12 unscaled) for no size. See *HUD text is as wide too* |
-| `BarStyle()` | a fresh table: `texture` (the LSM path or nil), `textureKey`, `gloss`, `bg`, `border`, `borderStyle`, `borderSize`, `font` (path or nil), `fontKey`, `fontSize`, `outline`, `iconBorder`. `font`, `fontKey` and `outline` are nil while the owner ignores fonts (SkinPaintExtras minor 6) |
+| `BarStyle()` | a fresh table: `texture` (the LSM path or nil), `textureKey`, `gloss`, `bg`, `border`, `borderStyle`, `borderSize`, `font` (path or nil), `fontKey`, `fontSize`, `outline`, `iconBorder`. `font`, `fontKey` and `outline` are nil while the owner ignores fonts (SkinPaintExtras minor 6); `fontSize` is `S.HudFontSize()`, the skin's own HUD size, or 12 while the owner ignores fonts (minor 7) |
 
 ### The slot remap (`opts.tokens`)
 

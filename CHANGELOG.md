@@ -173,8 +173,13 @@ The same document (*HUD text is as wide too*). The owner's ruling D-09.
   at `size` draws at: scaled by the skin's `hud.fontSize` over Ka0s Default's while the element uses
   the skin's face; as stored with `fromSkin == false` or while the owner ignores fonts; never nil. The
   stored value is never written. `HudFontSize` joins the Skin major's `VOCAB` (Skin minor 9, still).
+- **SkinPaintExtras minor 7, still: `BarStyle().fontSize` is `S.HudFontSize()`**: the skin's own HUD
+  size, and Ka0s Default's 12 while the owner ignores fonts, where it answered the skin's measured
+  size with the host's own face (the review of `LK-05` and `LK-06`). A font override keeps every
+  skin size, pinned until the owner rules on it.
 
-Tests: four `HudFontSize` cases and the HUD column of `tests/test_skin_width_parity.lua`'s sizes and
+Tests: seven `HudFontSize` and `BarStyle().fontSize` cases (a font override, Ignore fonts and the
+EllesmereUI source among them) and the HUD column of `tests/test_skin_width_parity.lua`'s sizes and
 widths; `tests/test_skin_defs.lua` reads each skin's own HUD size where it pinned 12.
 
 **What a consumer owes** (M2): every degradation facade gains `HudFontSize` (the facade parity case
