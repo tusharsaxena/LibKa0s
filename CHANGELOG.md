@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.
 
-Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **34.4.39.1.6.1.7.12.1.3.14.9.4.3.6.5.5.1.1.1**, `LibKa0s-Widgets-1.0` key **17.3.9.5.5.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Still **nineteen majors**, now across **sixty-two files** (seven are new), and no `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1**, `LibKa0s-Schema-1.0` **3**, `LibKa0s-Slash-1.0` key **21.2**, `LibKa0s-Widgets-1.0` key **17.3.9.5.5.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Still **nineteen majors**, now across **sixty-two files** (seven are new), and no `NEEDS_*` floor rises.
 
 ### The library peels (`LK-M2-PEEL`)
 
@@ -28,6 +28,19 @@ Every peel below is a pure move on the seam `CLAUDE.md`'s census named. No publi
 - `OptionsFlow.lua` (new, **OptionsFlow minor 1**): the two-column flow engine out of `OptionsWidgets.lua`, which moves to **OptionsWidgets minor 39** and drops from 1375 to 1066 lines.
 - `OptionsTabbed.lua` (new, **OptionsTabbed minor 1**): the tabbed page out of `OptionsTabs.lua`, which moves to **OptionsTabs minor 12** and drops from 1382 to 1169 lines.
 - `testkit/mock_ace.lua` (new, **test kit revision 47**): the Ace fakes, CallbackHandler through AceAddon, out of `testkit/mock_base.lua`, which drops from 1465 to 679 lines. Revision 47 also corrects a comment in `glyphs.lua` (nine skins).
+
+### Flow seams, the note row, the Position block and banner acts (`LK-M2-59`, LibKa0s#59)
+
+Additive on every `-1.0` surface. Consumers' degradation stubs owe the new `O.PositionBlock` at the re-vendor.
+
+- **OptionsFlow minor 2**: `O.RenderRows`' `opts.beforeGroup` and `opts.afterSubgroup`, and `O.RenderSchema` takes the same `opts`. The `note` row draws dim at full width on a line of its own.
+- **OptionsTabbed minor 2**: `O.RenderTabbedSchema`'s `opts` hands both seams to the flow.
+- **OptionsWidgets minor 40**: `O.RenderField` dispatches `note`, and `lib.__widgetsKit` carries `applyLabelFont`. No maker is added.
+- **OptionsCompose minor 15**: `O.PositionBlock(spec)`, X and Y under the rows' subgroup, with a Reset hook for `opts.afterSubgroup`.
+- **OptionsTabs minor 13**: `O.PageBanner{ acts }`, up to three buttons or checkboxes beside the picker in equal cells, with the widgets as a third return.
+- **Options minor 35**: both reset walks skip a note, and `O.ClearScroll` keeps the band's refresher.
+- **Schema minor 3**: `Validate` takes a `note` row and reports one with no `text` or with a `path`.
+- **Slash minor 21**: `/list` and `resetall` skip a note.
 
 ### `ApplyLevel` allocates nothing
 

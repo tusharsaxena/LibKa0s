@@ -7,7 +7,7 @@
 -- history is that file's header.
 --
 -- WHO CALLS IN. lib.__AttachWidgets calls lib.__AttachFlow once per instance, at the end of its
--- body, handing over the shell's sink and its two reads. `lib.__widgetsKit` is the two row helpers the two
+-- body, handing over the shell's sink and its two reads. `lib.__widgetsKit` is the helpers the two
 -- files share. Nothing else crosses the cut.
 -- OptionsTabs.lua's attach, later, replaces the untabbed O.RenderTabbedSchema with the real one.
 --
@@ -18,7 +18,9 @@ local lib = LibStub and LibStub("LibKa0s-Options-1.0", true)
 if not lib or not lib.__widgetsKit then return end
 
 -- Minor 1: the flow engine, moved here unchanged from OptionsWidgets.lua (its minor 39).
-local FLOW_MINOR = 1
+-- Minor 2 (LibKa0s#59, ruling U-14): RenderRows' `opts.beforeGroup` and `opts.afterSubgroup`, which
+-- RenderSchema now takes too, and the schema `note` row, drawn by O.__renderNote.
+local FLOW_MINOR = 2
 -- Paired on the SHELL's minor as well as this file's own: see OptionsScroll.lua.
 if lib.__flowMinor and lib.__flowMinor >= FLOW_MINOR
   and lib.__flowShellMinor == lib.MINOR then return end
@@ -30,16 +32,38 @@ lib.MODULES.OptionsFlow = FLOW_MINOR
 
 local L = lib.LAYOUT
 local startRow, renderRowGuarded = lib.__widgetsKit.startRow, lib.__widgetsKit.renderRowGuarded
+local applyLabelFont = lib.__widgetsKit.applyLabelFont
 
 -- The two-column split. Not BUTTON_PAIR_REL: a schema widget's label sits above its control, so it
 -- has no border to be clipped and takes the honest half.
 local HALF = 0.5
+
+-- Read-only stand-in for a call with no `opts`.
+local NO_OPTS = {}
+
+-- What a note row's text is drawn in: the dim small face, and the owner's muted role off Ka0s Default.
+local NOTE_FONT = "GameFontDisableSmall"
 
 --- RenderGrid's spacer height (minor 34): absent, the row gap every page has; false or 0, none.
 local function gridGap(opts)
   local gap = type(opts) == "table" and opts.gap
   if gap == nil or type(opts) ~= "table" then return L.ROW_VSPACER end
   return gap ~= false and gap ~= 0 and gap or nil
+end
+
+--- Claim a host hook for `key`, or nil if there is none or it has already run this render.
+---
+--- The lookup and the marking are ONE step on purpose. RenderRows honors its hook tables as "fire at
+--- most once per render, and only if it actually fired"; splitting the two halves is how a caller
+--- ends up marking a hook it never ran, or running one it already marked. `fired` is the LIBRARY's
+--- call-local ledger, never the host's table: see the note in O.RenderRows for why consuming the
+--- host's entries silently breaks a second render.
+local function takeOnce(hooks, fired, key)
+  if not (hooks and key) then return nil end
+  local hook = hooks[key]
+  if not hook or fired[key] then return nil end
+  fired[key] = true
+  return hook
 end
 
 --- Emit a section heading when `row` opens a group the page has not drawn yet, and advance the
@@ -50,10 +74,15 @@ end
 --- (options-ui-§13) -- but the flush and the tracker advance happen either way, or a later
 --- group would be treated as a continuation of this one and the boundary flush between them
 --- would never happen.
-local function startGroup(O, ctx, row, flushRow, noHeadings)
+---
+--- `seams.beforeGroup[group]` (minor 2) runs between the flush and the heading, under `noHeadings`
+--- too, where it is the top of the tab: what it draws lands above the group and under the last one.
+local function startGroup(O, ctx, row, flushRow, seams, firedBefore)
   if not (row.group and row.group ~= ctx.lastGroup) then return end
   flushRow()
-  if not noHeadings then O.Section(ctx, row.group) end
+  local before = takeOnce(seams.beforeGroup, firedBefore, row.group)
+  if before then before(ctx) end
+  if not seams.noHeadings then O.Section(ctx, row.group) end
   ctx.lastGroup = row.group
   -- A subgroup belongs to ONE group. Leaving the tracker set across a group boundary would swallow
   -- the first subsection heading of the next group whenever the two happened to share a name --
@@ -88,7 +117,13 @@ end
 --- than as the disjunction. They differ only in what happens AFTER the line opens -- see the field
 --- list on O.RenderRows.
 local function opensLine(row)
-  return row.solo or row.wide or row.startsLine
+  return row.solo or row.wide or row.type == "note" or row.startsLine
+end
+
+--- A row across both columns, alone on its line: `wide`, or a note (minor 2), which is never half a
+--- line.
+local function isWide(row)
+  return row.wide or row.type == "note"
 end
 
 --- Draw one row across BOTH columns, alone on its line. `nil` relative width is what applyWidth
@@ -97,21 +132,6 @@ local function drawWide(O, ctx, row, pendingRow, printer)
   if not pendingRow then pendingRow = startRow(O) end
   renderRowGuarded(printer, row.path, O.RenderField, ctx, row, pendingRow, nil)
   return pendingRow
-end
-
---- Claim a host hook for `key`, or nil if there is none or it has already run this render.
----
---- The lookup and the marking are ONE step on purpose. RenderRows honors two hook tables — pairWith
---- and afterGroup — and both are "fire at most once per render, and only if it actually fired";
---- splitting the two halves is how a caller ends up marking a hook it never ran, or running one it
---- already marked. `fired` is the LIBRARY's call-local ledger, never the host's table: see the note
---- in O.RenderRows for why consuming the host's entries silently breaks a second render.
-local function takeOnce(hooks, fired, key)
-  if not (hooks and key) then return nil end
-  local hook = hooks[key]
-  if not hook or fired[key] then return nil end
-  fired[key] = true
-  return hook
 end
 
 --- Draw one schema row into the pending Flow line, then attach its pairWith partner if it has one.
@@ -150,9 +170,45 @@ local function endGroup(ctx, afterGroup, firedAfter, row, nextRow, flushRow)
   after(ctx)
 end
 
+--- Close out a subgroup on its LAST row (minor 2): the next row is in another block, or there is
+--- none. The flush comes first, as endGroup's, and this runs before endGroup, since the block ends
+--- inside its group.
+---
+--- The ledger is keyed by group AND name, where endGroup's is by name alone. One subgroup name under
+--- two groups is the shape startGroup's note describes, and a name-keyed ledger would close the first
+--- "Border" and lose the second in silence; the hook is handed the group so it can tell them apart. A
+--- block that recurs inside one group closes once, as a recurring group does.
+local function endSubgroup(ctx, seams, fired, row, nextRow, flushRow)
+  local name, group = row.subgroup, row.group
+  if not (name and seams.afterSubgroup) then return end
+  if nextRow and nextRow.subgroup == name and nextRow.group == group then return end
+  local hook = seams.afterSubgroup[name]
+  local key = tostring(group) .. "\0" .. name
+  if not hook or fired[key] then return end
+  fired[key] = true
+  flushRow()
+  hook(ctx, group)
+end
+
 --- The flow engine for instance `O`, descriptor `d`: `h` carries what OptionsWidgets.lua shares.
 function lib.__AttachFlow(O, d, h)
   local print, read, readKey = h.print, h.read, h.readKey
+
+  --- The `note` row's maker (minor 2), which O.RenderField dispatches to: text, not a setting. It
+  --- lives here rather than among the makers because it has no value, no refresher and no path.
+  function O.__renderNote(_ctx, row, parent, relativeWidth)
+    local w = O.AceGUI:Create("Label")
+    if relativeWidth then w:SetRelativeWidth(relativeWidth) else w:SetFullWidth(true) end
+    w:SetText(row.text or "")
+    applyLabelFont(w, NOTE_FONT)
+    if w.label and w.label.SetJustifyH then w.label:SetJustifyH("LEFT") end
+    local Sk = O.__chromeAway and O.__chromeAway()
+    local r, g, b
+    if Sk then r, g, b = Sk.Color("text.muted") end
+    if r and w.SetColor then w:SetColor(r, g, b) end
+    parent:AddChild(w)
+    return w
+  end
 
   -- ── the two-column flow engine ───────────────────────────────────────────────────────────
   --
@@ -176,6 +232,9 @@ function lib.__AttachFlow(O, d, h)
   --               partitions its strip on; `subgroup` is what breaks one tab into named blocks
   --               when it mixes control types. Drawn even under `noHeadings`, which suppresses the
   --               GROUP heading only.
+  --   note        (`type = "note"`, minor 2) `text` drawn dim at full width on a line of its own. No
+  --               path and no value: /list and both reset walks skip it, and the row's `group`,
+  --               `subgroup`, `shownWhen` and `skipRender` read as on any other row.
   --   skipRender  keep the row in the schema (so resets and the CLI still see it) but let the host
   --               draw it bespoke — a header checkbox, say.
   --   afterGroup  { [groupName] = fn(ctx) } fired once PER RENDER, after that group's last row is
@@ -191,6 +250,12 @@ function lib.__AttachFlow(O, d, h)
   --               untabbed caller, which is why it is a fifth argument rather than a field on
   --               the ctx: a page's tabbedness is a property of THIS render, and a ctx flag
   --               would leak it into the next one.
+  --               { beforeGroup = { [group] = fn(ctx) } } (minor 2) fires once per render as a group
+  --               opens, after the last group's tail row and before this one's heading, for a line
+  --               that introduces the group. Fires under `noHeadings` too.
+  --               { afterSubgroup = { [subgroup] = fn(ctx, group) } } (minor 2) fires after a
+  --               subgroup's last row is flushed, once per render per group holding that name, and
+  --               before any afterGroup for the same row. Both tables are read-only to the library.
   --               { disabled = true } (minor 16) draws every widget of the call disabled -- the
   --               rows, and the buttons an afterGroup or pairWith hook draws -- for a page whose
   --               subject does not apply (a Bars page over an icons container). It rides on
@@ -253,7 +318,7 @@ function lib.__AttachFlow(O, d, h)
     end
 
     for _, item in ipairs(items) do
-      if item.wide then
+      if isWide(item) then
         flushRow()
         local r = startRow(O)
         if renderInto(item, r, nil) then addRow(r) else r:Release() end
@@ -280,15 +345,15 @@ function lib.__AttachFlow(O, d, h)
   local watchSelector = switch and switch.watchSelector
 
   --- The flow engine's loop, under the disable flag RenderRows holds for it.
-  local function flowRows(ctx, scroll, allRows, afterGroup, pairWith, opts)
+  local function flowRows(ctx, scroll, allRows, afterGroup, pairWith, seams)
     local pendingRow, pendingCount = nil, 0
     local rows, selectors = switchedRows(allRows)
 
-    -- The one-shot bookkeeping below is the LIBRARY's, and it lives in these two call-local sets
+    -- The one-shot bookkeeping below is the LIBRARY's, and it lives in these call-local sets
     -- rather than in the caller's tables. Consuming the caller's entries would make a second render
     -- of the same page \226\128\148 a unit switch, a ClearScroll + re-render \226\128\148 silently drop every inline
     -- button and every paired widget, for any host that hoisted its table to a file-level constant.
-    local firedAfter, firedPair = {}, {}
+    local firedAfter, firedPair, firedBefore, firedSub = {}, {}, {}, {}
 
     local function flushRow()
       if pendingRow then
@@ -299,13 +364,13 @@ function lib.__AttachFlow(O, d, h)
     end
 
     for i, row in ipairs(rows) do
-      startGroup(O, ctx, row, flushRow, opts and opts.noHeadings)
+      startGroup(O, ctx, row, flushRow, seams, firedBefore)
       startSubgroup(O, ctx, row, flushRow)
 
       if not row.skipRender then
         if opensLine(row) and pendingCount > 0 then flushRow() end
 
-        if row.wide then
+        if isWide(row) then
           pendingRow = drawWide(O, ctx, row, pendingRow, print)
           flushRow()
         else
@@ -316,6 +381,7 @@ function lib.__AttachFlow(O, d, h)
         if selectors and selectors[selectorKey(row)] then watchSelector(ctx, row) end
       end
 
+      endSubgroup(ctx, seams, firedSub, row, rows[i + 1], flushRow)
       endGroup(ctx, afterGroup, firedAfter, row, rows[i + 1], flushRow)
     end
     flushRow()
@@ -333,15 +399,16 @@ function lib.__AttachFlow(O, d, h)
     -- stranded on the ctx and dim the next render. The raise still propagates, as it always has.
     local outer = ctx.__renderDisabled
     ctx.__renderDisabled = ((opts and opts.disabled) or outer) and true or nil
-    local ok, err = pcall(flowRows, ctx, scroll, rows, afterGroup, pairWith, opts)
+    local ok, err = pcall(flowRows, ctx, scroll, rows, afterGroup, pairWith, opts or NO_OPTS)
     ctx.__renderDisabled = outer
     if not ok then error(err, 0) end
   end
 
   --- The per-page wrapper. `ctx.unit` is passed through as the host's filter argument, which is
-  --- how a per-unit page renders only the selected unit's rows.
-  function O.RenderSchema(ctx, pageKey, afterGroup, pairWith)
-    O.RenderRows(ctx, d.rowsForPage(pageKey, ctx.unit) or {}, afterGroup, pairWith)
+  --- how a per-unit page renders only the selected unit's rows. `opts` (OptionsFlow minor 2) is
+  --- RenderRows' own.
+  function O.RenderSchema(ctx, pageKey, afterGroup, pairWith, opts)
+    O.RenderRows(ctx, d.rowsForPage(pageKey, ctx.unit) or {}, afterGroup, pairWith, opts)
   end
 
   --- The UNTABBED fallback for a page meant to render tabbed. OptionsTabs.lua's attach replaces it

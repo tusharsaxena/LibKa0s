@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 34.4.39.1.6.1.7.12.1.3.14.9.4.3.6.5.5.1.1.1
+# `LibKa0s-Options-1.0` — version 35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,16 +8,16 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **39** · `OptionsFlow.lua` **1** · `OptionsIds.lua` **6** · `OptionsIdSuggest.lua` **1** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **12** · `OptionsTabbed.lua` **1** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **14** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **5** · `OptionsSkinPicker.lua` **5** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **1** |
-| Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `34.4.39.1.6.1.7.12.1.3.14.9.4.3.6.5.5.1.1.1` |
+| Files and minors | `Options.lua` **35** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **40** · `OptionsFlow.lua` **2** · `OptionsIds.lua` **6** · `OptionsIdSuggest.lua` **1** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **13** · `OptionsTabbed.lua` **2** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **15** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **5** · `OptionsSkinPicker.lua` **5** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **1** |
+| Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1` |
 | Shipped in | v1.84.0 |
 | Status | **Current** |
 | Supersedes | [version 34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1](./version-34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1-docs.md) (shipped in v1.83.0) — the same surface, with the skin picker's rows, the id suggestions, the flow engine and the tabbed page in the files they peeled from. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 39, OptionsFlow = 1, OptionsIds = 6, OptionsIdSuggest = 1, OptionsIdList = 7, OptionsTabs = 12, OptionsTabbed = 1, OptionsCombat = 3, OptionsCompose = 14, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 5, OptionsSkinPicker = 5, OptionsSkinPickerRows = 1, OptionsSwitch = 1, OptionsMedia = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 35, OptionsRegistry = 4, OptionsWidgets = 40, OptionsFlow = 2, OptionsIds = 6, OptionsIdSuggest = 1, OptionsIdList = 7, OptionsTabs = 13, OptionsTabbed = 2, OptionsCombat = 3, OptionsCompose = 15, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 5, OptionsSkinPicker = 5, OptionsSkinPickerRows = 1, OptionsSwitch = 1, OptionsMedia = 1 }` |
 
-`Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
+`Since` in the tables below names the **file and minor** in which the member first appeared — `F2` for `OptionsFlow.lua` minor 2, `C15` for `OptionsCompose.lua` minor 15, `T13` for `OptionsTabs.lua` minor 13, `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `O32` for `Options.lua` minor 32, `O33` for `Options.lua` minor 33, `O34` for `Options.lua` minor 34, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
 minor 21, `W22` for `OptionsWidgets.lua` minor 22, `W23` for `OptionsWidgets.lua` minor 23, `W24` for `OptionsWidgets.lua` minor 24, `W25` for `OptionsWidgets.lua` minor 25, `W26` for `OptionsWidgets.lua` minor 26, `W27` for `OptionsWidgets.lua` minor 27, `W28` for `OptionsWidgets.lua` minor 28, `W29` for `OptionsWidgets.lua` minor 29, `W30` for `OptionsWidgets.lua` minor 30, `W31` for `OptionsWidgets.lua` minor 31, `W32` for `OptionsWidgets.lua` minor 32, `W34` for `OptionsWidgets.lua` minor 34, `W35` for `OptionsWidgets.lua` minor 35, `W36` for `OptionsWidgets.lua` minor 36, `T1` for `OptionsTabs.lua` minor 1, `T2` for `OptionsTabs.lua` minor 2, `T3` for `OptionsTabs.lua` minor 3, `T4` for `OptionsTabs.lua` minor 4, `T5` for `OptionsTabs.lua` minor 5, `T8` for `OptionsTabs.lua` minor 8, `T9` for `OptionsTabs.lua` minor 9, `T10` for `OptionsTabs.lua` minor 10, `T11` for `OptionsTabs.lua` minor 11, `C7` for `OptionsCompose.lua` minor 7, `C8` for `OptionsCompose.lua` minor 8, `C9` for `OptionsCompose.lua` minor 9, `C10` for `OptionsCompose.lua` minor 10, `C11` for `OptionsCompose.lua` minor 11, `C12` for `OptionsCompose.lua` minor 12, `C13` for `OptionsCompose.lua` minor 13, `C14` for `OptionsCompose.lua` minor 14, `S1` for
 `OptionsScroll.lua` minor 1, `S4` for `OptionsScroll.lua` minor 4, `S5` for `OptionsScroll.lua` minor 5, `S6` for `OptionsScroll.lua` minor 6, `S9` for `OptionsScroll.lua` minor 9, `N1` for `OptionsNav.lua` minor 1, `N3` for `OptionsNav.lua` minor 3, `N4` for `OptionsNav.lua` minor 4, `D1` for `OptionsDrawer.lua` minor 1, `D2` for `OptionsDrawer.lua` minor 2, `D3` for `OptionsDrawer.lua` minor 3, `K1` for `OptionsKeybinds.lua` minor 1, `K2` for `OptionsKeybinds.lua` minor 2, `K3` for `OptionsKeybinds.lua` minor 3, `K4` for `OptionsKeybinds.lua` minor 4, `K5` for `OptionsKeybinds.lua` minor 5, `K6` for `OptionsKeybinds.lua` minor 6, `A1` for `OptionsAppearance.lua` minor 1, `A3` for `OptionsAppearance.lua` minor 3, `A4` for `OptionsAppearance.lua` minor 4, `P1` for `OptionsSkinPicker.lua` minor 1, `P2` for `OptionsSkinPicker.lua` minor 2, `P3` for `OptionsSkinPicker.lua` minor 3, `I1` for
@@ -37,6 +37,41 @@ park's library-level names are `OptionsRegistry.lua`'s from 26.1.32.1.1.6.1.7.4.
 citations still name the `Options.lua` minors that introduced them. The minor that introduced a
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
+
+## What changed at this version: the flow seams, the note row, the Position block and `acts` (`LK-M2-59`)
+
+LibKa0s#59, rulings U-14 and U-08d of Ka0sAddonsCommonTasks `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/inputs/LAYOUT_CROSS_ADDON.md`. Every change is additive: a host that passes none of the new fields draws what it drew. **A new public member, `O.PositionBlock`, is owed by every consumer's degradation stub at the re-vendor.** A host that walks `S.AllRows()` itself and adopts `note` rows must skip them, since they have no `path`.
+
+**`O.RenderRows`' `opts` gains two seams (OptionsFlow minor 2).** `O.RenderSchema` takes the same `opts` as a new fifth argument, and `O.RenderTabbedSchema`'s `opts` hands both to the flow (OptionsTabbed minor 2), on a tab click too. Neither reaches a host tab, which draws its own content.
+
+| Field | Since | Contract |
+|---|---|---|
+| `beforeGroup` | **F2** | `{ [group] = function(ctx) }`. Fires once per render as the group opens, after the previous group's tail row is flushed and before this group's heading. Fires under `noHeadings` too, where it is the top of the tab. A recurring group fires for its first run only, as `afterGroup`. |
+| `afterSubgroup` | **F2** | `{ [subgroup] = function(ctx, group) }`. Fires after the block's last row is flushed, on a fresh line, and before any `afterGroup` for the same row. The block ends where the next row has another `subgroup` or another `group`, or where the rows end. Once per render **per group holding that name**: two groups each with a *Border* block each fire it, and `group` tells them apart. A block that recurs in one group fires once. |
+
+Both tables are read-only to the library, like `afterGroup` and `pairWith`, and both run under the render's `opts.disabled`.
+
+**The `note` row (OptionsFlow minor 2, OptionsWidgets minor 40, `LibKa0s-Schema-1.0` 3, `LibKa0s-Slash-1.0` 21).** `{ type = "note", group, text, [subgroup], [page] }` is text in the schema. It draws in `GameFontDisableSmall`, in the owner's `text.muted` away from Ka0s Default, at full width on a line of its own, in `O.RenderRows`, `O.RenderGrid` and `O.RenderField` (through the private `O.__renderNote`, F2, in `OptionsFlow.lua`). It has no path, no value and no refresher. `/list` and `resetall` skip it, and a group holding only notes lists no heading. `O.RestoreDefaults` and `O.RestoreAllDefaults` never hand one to `d.applyDefault` (Options minor 35). `shownWhen` and `skipRender` read as on any other row.
+
+**`O.PositionBlock(spec)` (OptionsCompose minor 15, **C15**).** Answers `rows, afterSubgroup`: `[X offset] [Y offset]`, number rows on the leaves `x` and `y`, the first with `startsLine`, under the rows' own `subgroup` (default *Position*), so the host draws no heading (options-ui-§7). It takes the common composer fields (`prefix`, `page`, `group`, `subgroup`, `order`, `keys`, `labels`, `tooltips`, `defaults`, `omit`, `bind`, `extra`), plus:
+
+| Field | Default | Contract |
+|---|---|---|
+| `min`, `max`, `step` | -2000, 2000, 1 | Both rows' range. |
+| `onReset` | none | The button's handler. Omitted, the second return is nil and no button is drawn. A non-function raises at compose time. |
+| `resetText` | *Reset position* | The button's words. |
+| `resetTooltip` | *Put this back at its default position.* | Its tooltip. |
+
+Key the hook by the rows' subgroup: `O.RenderRows(ctx, rows, nil, nil, { afterSubgroup = { Position = hook } })`. It draws `O.InlineButtonPair(ctx, reset, nil)`.
+
+**`O.PageBanner`'s `acts` (OptionsTabs minor 13, **T13**; Options minor 35).** Up to three entries on the band's one row: `{ text, tooltip, onClick }` is a Button, `{ label, tooltip, get, set }` a CheckBox.
+
+- The picker and each act take equal cells, placed against the chrome's width and re-placed from its `OnSizeChanged`. An act levels with a labeled picker's control. One act lands where `action` does.
+- `acts` wins over `action`. Past three the rest are not drawn, and a line says so through the descriptor's `print`.
+- The third return is the widgets in act order. The first two are unchanged, and the second is nil while `acts` is given.
+- Clicks and toggles are refused in combat, a box going back to `get`, and every host call is pcall'd.
+- Each widget is released after its replacement exists, as the action's is, so an act may re-render from its own click.
+- A checkbox follows `get` on every refresh, a tab click included: `O.ClearScroll` keeps the band's one per-ctx refresher (Options minor 35), which reads only the live banner's boxes.
 
 ## What changed at this version: the peels (`LK-M2-PEEL`)
 

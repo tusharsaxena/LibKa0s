@@ -703,3 +703,22 @@ test("schema: two instances share nothing", function()
   a.BulkEnd("reset", "all")
   assertEqual(fxa.rec.debugLines[1], "[Set] reset all: 0 rows")
 end)
+
+-- ── the note row (Schema minor 3, LibKa0s#59) ──────────────────────────────────────────────
+
+test("schema: a note row needs no path and no value, under any host `types`", function()
+  local rows = { { type = "note", group = "g", text = "Words." } }
+  local S = Schema:New{ rows = rows }
+  assertEqual((S.Validate()), 0, "red under: `missing or empty path` and the type check")
+  assertEqual((S.Validate{ types = { bool = true } }), 0, "a host set is about its own value types")
+  assertEqual(S.ApplyDefault(rows[1]), false, "a reset does not reach one")
+end)
+
+test("schema: a note with no text or with a path is an authoring error", function()
+  local fx = { chat = {} }
+  local S = Schema:New{ print = function(l) fx.chat[#fx.chat + 1] = l end,
+    rows = { { type = "note", group = "g" },
+             { type = "note", group = "g", text = "w", path = "p" } } }
+  assertEqual((S.Validate()), 2)
+  T.assertTrue(table.concat(fx.chat, "\n"):find("note", 1, true) ~= nil)
+end)

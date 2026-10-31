@@ -16,7 +16,8 @@ local lib = LibStub and LibStub("LibKa0s-Options-1.0", true)
 if not lib then return end
 
 -- Minor 1: the tabbed page, moved here unchanged from OptionsTabs.lua (its minor 12).
-local TABBED_MINOR = 1
+-- Minor 2 (LibKa0s#59): `opts.beforeGroup` and `opts.afterSubgroup`, handed to the flow.
+local TABBED_MINOR = 2
 -- Paired on the SHELL's minor as well as this file's own: see OptionsScroll.lua.
 if lib.__tabbedMinor and lib.__tabbedMinor >= TABBED_MINOR
   and lib.__tabbedShellMinor == lib.MINOR then return end
@@ -163,7 +164,8 @@ function lib.__AttachTabbed(O, d, h)
       renderHostTab(ctx, tab, rows, disabled)
     elseif rows then
       O.RenderRows(ctx, rows, flow.afterGroup, flow.pairWith,
-        { noHeadings = flow.noHeadings, disabled = disabled })
+        { noHeadings = flow.noHeadings, disabled = disabled, beforeGroup = opts.beforeGroup,
+          afterSubgroup = opts.afterSubgroup })
     end
   end
 
@@ -215,6 +217,8 @@ function lib.__AttachTabbed(O, d, h)
   ---                   and no host tab.
   ---   disabledNoticeFont  (minor 8) the notice's font object, by name; default
   ---                   "GameFontHighlightSmall".
+  ---   beforeGroup, afterSubgroup  (OptionsTabbed minor 2) RenderRows' two seams, handed to the
+  ---                   flow unchanged. A host tab draws its own content, so neither reaches one.
   ---   rerender        (minor 8) function(ctx): a tab click sets `ctx.activeTab` and calls this
   ---                   instead of ClearScroll and a render of its own, so the host's whole redraw
   ---                   (its chrome above, its refreshers after) runs. A raise is reported.

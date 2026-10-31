@@ -11,9 +11,9 @@
 | Files and minors | `Slash.lua` **20** · `SlashParse.lua` **2** |
 | Version key | `<Slash>.<SlashParse>`, in load order — the same two numbers `lib.MODULES` reports |
 | Shipped in | v1.71.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 19.1](./version-19.1-docs.md) — whose number rows took `nan` and the infinities |
-| Superseded by | — |
+| Superseded by | [version 21.2](./version-21.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 20, SlashParse = 2 }` |
 
@@ -1044,3 +1044,7 @@ that supplies neither runs `CliResetAll` exactly as version 7 did — the same `
 the same order, the same acknowledgment, and no `pcall` on the path. That is pinned in
 `tests/test_slash.lua` and was measured on all ten consumers with the payload dropped in: nothing
 moves on re-vendor.
+
+## Moving to 21.2
+
+Nothing to do. A host with no `note` row sees no difference.

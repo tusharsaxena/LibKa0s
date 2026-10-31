@@ -233,7 +233,7 @@ Total.
 - bus: Catalog refuses each malformed declaration, naming what is wrong
 - bus: the catalog is strict on read and on write
 
-### test_schema.lua (32)
+### test_schema.lua (34)
 
 - schema: the major is registered and reports its own live version
 - schema: the module refuses to register without Core, and registers with it
@@ -267,6 +267,8 @@ Total.
 - schema: defaultsRoot gets the split parts and the row, and its first may be a string
 - schema: a malformed spec falls back field by field
 - schema: two instances share nothing
+- schema: a note row needs no path and no value, under any host `types`
+- schema: a note with no text or with a path is an authoring error
 
 ### test_schema_write.lua (41)
 
@@ -1466,7 +1468,7 @@ Total.
 - tool windows scope: every library window passes its owner to its grip
 - tool windows scope: icon.grip is the client's art in Ka0s Default and WoW Default, icon.tint elsewhere
 
-### test_slash.lua (74)
+### test_slash.lua (77)
 
 - sl: an empty message runs the host's config verb (minor 11), printing no help
 - sl: whitespace-only input is treated as empty
@@ -1542,6 +1544,9 @@ Total.
 - sl: with no print the dispatcher writes to DEFAULT_CHAT_FRAME
 - sl: with no groupKey the list groups rows by page, and a row with none under 'settings'
 - sl: an L, aliases or liveVerbs that is not a table, and a parse that is not a function, read as absent
+- sl: /list skips a note row, and a group holding only notes prints no heading
+- sl: a schema of notes alone lists as empty
+- sl: resetall never hands a note to the host's applyDefault
 
 ### test_slash_parse.lua (33)
 
@@ -1984,6 +1989,26 @@ Total.
 - widgets: `startsLine` on a line that is already empty costs nothing
 - widgets: InlineButtonPair with no right-hand button draws one, at the pair's width
 
+### test_options_flow_seams.lua (17)
+
+- seams: beforeGroup runs ahead of its group's heading, with the last group flushed
+- seams: beforeGroup fires under noHeadings, and once per render when a group recurs
+- seams: a beforeGroup hook is disabled with the page it draws on
+- seams: afterSubgroup runs after its block's tail row, before the next heading
+- seams: afterSubgroup closes on the page's last row and comes before afterGroup
+- seams: a subgroup name shared by two groups closes in each, naming the group
+- seams: a block that recurs in one group closes once, and no hook means no flush
+- seams: RenderSchema takes the same opts
+- seams: RenderTabbedSchema hands both seams to the flow, on a tab click too
+- seams: a note row draws dim, at full width, on a line of its own
+- seams: a note in RenderGrid and in RenderField draws too, and adds no refresher
+- seams: a note counts for no pairWith and no line parity after it
+- seams: the two reset walks never hand a note to the host's applyDefault
+- seams: PositionBlock emits X | Y under the Position subgroup, on a fresh line
+- seams: PositionBlock's hook draws the Reset button under the block
+- seams: PositionBlock with no onReset has no hook, and never writes to its spec
+- seams: PositionBlock takes the record-backed arm
+
 ### test_options_landing.lua (18)
 
 - widgets: TextRow adds a full-width Label carrying the text
@@ -2178,6 +2203,19 @@ Total.
 - widgets: PageBanner's action button is Released like its picker, never leaked
 - widgets: PageBanner's action re-rendering from its own click never hands itself back
 - widgets: PageBanner's action is refused in combat, like its picker
+
+### test_options_banner_acts.lua (10)
+
+- acts: a Button and a CheckBox draw beside the picker, third return in act order
+- acts: the band splits into equal cells, re-placed when the chrome learns its width
+- acts: one act takes the right half, level with a labeled picker's control
+- acts: past three, the extra are not drawn and the host is told
+- acts: `acts` wins over `action`, and a banner with neither is unchanged
+- acts: a re-render releases the old widgets once the new ones exist, never early
+- acts: a click and a toggle are refused in combat
+- acts: a raising act is reported and costs nothing else
+- acts: a checkbox follows a write after a tab click cleared the scroll
+- acts: a band redrawn without acts leaves no live refresher behind
 
 ### test_options_nav.lua (14)
 
@@ -4003,7 +4041,7 @@ Total.
 | test_lifecycle.lua | 22 |
 | test_lifecycle_debug.lua | 14 |
 | test_bus.lua | 30 |
-| test_schema.lua | 32 |
+| test_schema.lua | 34 |
 | test_schema_write.lua | 41 |
 | test_schema_batch.lua | 22 |
 | test_pool.lua | 23 |
@@ -4048,7 +4086,7 @@ Total.
 | test_tool_windows_layering.lua | 8 |
 | test_tool_windows_skin.lua | 17 |
 | test_tool_windows_scope.lua | 10 |
-| test_slash.lua | 74 |
+| test_slash.lua | 77 |
 | test_slash_parse.lua | 33 |
 | test_slash_disabled.lua | 16 |
 | test_slash_refusal.lua | 7 |
@@ -4063,12 +4101,14 @@ Total.
 | test_options_widgets.lua | 53 |
 | test_options_choicegrid.lua | 22 |
 | test_options_flow.lua | 48 |
+| test_options_flow_seams.lua | 17 |
 | test_options_landing.lua | 18 |
 | test_options_ids.lua | 35 |
 | test_options_idlist.lua | 24 |
 | test_options_idlist_layout.lua | 39 |
 | test_options_tabs.lua | 41 |
 | test_options_tabbed.lua | 20 |
+| test_options_banner_acts.lua | 10 |
 | test_options_nav.lua | 14 |
 | test_options_drawer.lua | 26 |
 | test_options_keybinds_model.lua | 26 |
@@ -4149,4 +4189,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3523** |
+| **Total** | **3555** |

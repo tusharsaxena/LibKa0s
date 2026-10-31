@@ -47,9 +47,11 @@ if not Pool or (Pool.MINOR or 0) < NEEDS_POOL then return end
 -- Minor 37: the switched sections moved out to OptionsSwitch.lua, which adds `shownWhen.any` (LK-10).
 -- Minor 38: an unregistered LSM30_* row falls back to the matching Ka0sMedia_* picker, then to the
 -- stock Dropdown (LK-F03 of Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES, D-08).
+-- Minor 40: O.RenderField dispatches the schema `note` row to OptionsFlow.lua's O.__renderNote
+-- (LibKa0s#59), and lib.__widgetsKit carries applyLabelFont for it. No maker is added here.
 -- Minor 39: the flow engine moved out, unchanged, to OptionsFlow.lua (LK-M2-PEEL of
 -- Ka0sAddonsCommonTasks docs/2026-10-31-FINDINGS_REMEDIATION, the seam CLAUDE.md's census named).
-local WIDGETS_MINOR = 39
+local WIDGETS_MINOR = 40
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__widgetsMinor and lib.__widgetsMinor >= WIDGETS_MINOR
@@ -193,7 +195,8 @@ local function renderRowGuarded(printer, path, fn, ...)
 end
 
 -- OptionsFlow.lua reads these two at its load.
-lib.__widgetsKit = { startRow = startRow, renderRowGuarded = renderRowGuarded }
+lib.__widgetsKit = { startRow = startRow, renderRowGuarded = renderRowGuarded,
+                     applyLabelFont = applyLabelFont }
 
 -- ── the landing page ─────────────────────────────────────────────────────────────────────────
 --
@@ -838,6 +841,10 @@ function lib.__AttachWidgets(O, d)
       return makeDropdown(ctx, row, parent, relativeWidth)
     end
     if row.type == "color"  then return makeColorPicker(ctx, row, parent, relativeWidth) end
+    -- Minor 40: text, not a setting, and OptionsFlow.lua's (its minor 2), so a guard for a partial copy.
+    if row.type == "note" and O.__renderNote then
+      return O.__renderNote(ctx, row, parent, relativeWidth)
+    end
   end
 
   --- A non-schema checkbox wired to caller-supplied get/set instead of a settings path. For
