@@ -37,7 +37,7 @@ Three tools. Only the first has a version that matters.
 | `lizard` | 1.24.0 | 1.24.0 | The `complexity` suite. Recorded on every run; at the tag it gates (`automated-tests-§3`). The kit's sighted shadow (`testkit/lizard_sighted.lua`, kit revision 35) is written against 1.24.0's Lua reader; another version still runs, and its own blind spots surface as parity failures rather than as a quiet undercount. |
 
 The "verified with" column is the toolchain of the last recorded run,
-[`docs/automated-tests/20261022-155222/manifest.json`](docs/automated-tests/20261022-155222/manifest.json)
+[`docs/automated-tests/20261031-202020/manifest.json`](docs/automated-tests/20261031-202020/manifest.json)
 → `host` — evidence, not a pin. `luacheck` is pinned nowhere and pinning it would be false precision;
 `lizard` is named rather than pinned (see its row); `lua5.1` is not a preference. "5.2 will probably work" is **false**, and it costs an
 hour to disprove: 5.2 removed `setfenv`, and the loader is the first thing every suite touches.
@@ -108,17 +108,17 @@ skin's border and fill. `tools/artwork/fonts.py` is the provenance record for th
 `LibKa0s/media/fonts/`: `--fetch` downloads them from google/fonts at pinned commits, and Prototype
 and Expressway's EULA from their authors' archives on dafont.com, and Expressway and the 2026-10-31
 faces from the owner's WoW install, checking each SHA-256, into `tools/artwork/.cache/fonts/`, and `--build`
-copies them in and cuts static weights from the three variable ones (Nunito, Vollkorn, Bitter) with
-fontTools. `tools/skin_gallery.py`
+copies them in and cuts static weights from the five variable ones (Nunito, Vollkorn, Bitter, Inter,
+Oxanium) with fontTools. `tools/skin_gallery.py`
 crops in-game skin screenshots and builds the showcases in `media/screenshots/skins/`; it needs
 Python 3, Pillow and NumPy only, and labels the showcases in the bundled Fira Sans SemiBold.
 
 | Tool | Why | Install |
 |---|---|---|
-| Python 3 | The artwork tools are Python scripts (`tools/artwork/icon_cleaner.py`, `bar_textures.py`, `glass_textures.py`, `fonts.py`, and `tools/skin_gallery.py`) | `sudo apt install python3` |
+| Python 3 | The artwork tools are Python scripts (`tools/artwork/icon_cleaner.py`, `bar_textures.py`, `glass_textures.py`, `fonts.py`, `tools/skin_gallery.py` and `tools/glyph_safe_set.py`) | `sudo apt install python3` |
 | Pillow | Reads the source PNGs and writes the TGAs (`from PIL import Image`, in `icon_cleaner.py`, `bar_textures.py` and `glass_textures.py`); `skin_gallery.py` crops the screenshots and draws the showcase with it | `sudo apt install python3-pil` |
 | NumPy | The recolor, solidify and normalize stages, the bar gradients and the Glass coverage are array work (`import numpy as np`, in `icon_cleaner.py`, `bar_textures.py` and `glass_textures.py`), as is `skin_gallery.py`'s edge search | `sudo apt install python3-numpy` |
-| fontTools | `fonts.py --build`: cuts the static weights of Nunito, Vollkorn and Bitter from upstream's variable fonts (`fontTools.varLib.instancer`, inside `instance`); and `tools/glyph_safe_set.py`, which reads every shipped face's cmap to regenerate the kit's display-glyph safe set (`--check` reports a stale block). The suite never needs it | `sudo apt install python3-fonttools` |
+| fontTools | `fonts.py --build`: cuts the static weights of Nunito, Vollkorn, Bitter, Inter and Oxanium from upstream's variable fonts (`fontTools.varLib.instancer`, inside `instance`); and `tools/glyph_safe_set.py`, which reads every shipped face's cmap to regenerate the kit's display-glyph safe set (`--check` reports a stale block). The suite never needs it | `sudo apt install python3-fonttools` |
 | GitHub CLI | Fetches the upstream PNGs through `gh api`, which the script uses in place of raw.githubusercontent.com because that host times out from here often enough to be useless in a script | `sudo apt install gh && gh auth login` |
 | resvg-py | `icon_cleaner.py` only: renders the Phosphor and Game-icons SVGs to 64×64 (`import resvg_py`, inside `render_svg`). No distro package exists, so it lives in a venv with its own Pillow and NumPy (below) | `python3 -m venv tools/artwork/.venv && tools/artwork/.venv/bin/pip install resvg-py pillow numpy` |
 | `git` | `icon_cleaner.py --fetch` clones Phosphor and Game-icons shallowly at the commits pinned in the script, into `tools/artwork/.cache/src/` | already present (see above) |
@@ -144,7 +144,7 @@ gh --version
 tools/artwork/.venv/bin/python -I tools/artwork/icon_cleaner.py --fetch   # network: gh + git
 tools/artwork/.venv/bin/python -I tools/artwork/icon_cleaner.py --build   # from the cache; no network
 python3 tools/artwork/glass_textures.py                                    # no network
-python3 -I tools/artwork/fonts.py --fetch --build                          # network: raw.githubusercontent.com
+python3 -I tools/artwork/fonts.py --fetch --build                          # network: raw.githubusercontent.com, dl.dafont.com; reads the owner's WoW install
 ```
 
 A clean rebuild must leave `git status` clean — the committed TGAs are what the tool produces.
