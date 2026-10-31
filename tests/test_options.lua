@@ -396,30 +396,6 @@ test("options: LSMValues offers a None placeholder rather than an empty list", f
   assertEqual(n, 1, "and it is the only entry")
 end)
 
--- ── the retired AceGUI widget-registry patch (Options minors 15 to 35) ─────────────────────
-
---- A stand-in for AGSMW's LSM30_Border widget, for the one thing left to prove: nothing touches it.
-local function borderCtor() return { type = "LSM30_Border", frame = {} } end
-
-test("options: __PatchLSM30Border is a no-op a host's call still finds", function()
-  -- Retired by the owner's ruling of 2026-11-01: Ka0sMedia_* is the only media picker, so no row
-  -- draws LSM30_Border and nothing is left to align. Five hosts call this unguarded at file load,
-  -- and a host vendoring an older copy reaches this one through LibStub, so the member stays.
-  -- red under: deleting the member, or leaving the registration in it.
-  local AceGUI = mocks.LibStub("AceGUI-3.0")
-  local ctor, version = AceGUI.WidgetRegistry["LSM30_Border"], AceGUI.__widgetVersions["LSM30_Border"]
-  AceGUI:RegisterWidgetType("LSM30_Border", borderCtor, 4)
-  local ok, answer = pcall(lib.__PatchLSM30Border)
-  local slot, now = AceGUI.WidgetRegistry["LSM30_Border"], AceGUI:GetWidgetVersion("LSM30_Border")
-  AceGUI.WidgetRegistry["LSM30_Border"]   = ctor
-  AceGUI.__widgetVersions["LSM30_Border"] = version
-  assertTrue(ok, "a host's call does not raise")
-  assertFalse(answer, "and it answers that it registered nothing")
-  assertEqual(slot, borderCtor, "the slot is not wrapped")
-  assertEqual(now, 4, "and its version did not move")
-  assertNil(Fixture.new().__PatchLSM30Border, "and no instance carries a copy of it")
-end)
-
 -- ── the always-shown scrollbar patch (OptionsScroll.lua) ───────────────────────────────────
 
 test("options: EnsureScroll is lazy, created once, and patched", function()

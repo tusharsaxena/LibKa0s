@@ -1805,7 +1805,7 @@ Total.
 - launcher: event lines (shown / hidden) stay on debug when debugAtEnable is passed
 - launcher: end to end, a Register at OnEnable lands the first time logging is turned on
 
-### test_options.lua (58)
+### test_options.lua (57)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -1837,7 +1837,6 @@ Total.
 - options: RestoreAllDefaults honors the host's skipRestoreAll veto
 - options: LSMValues returns a DEFERRED closure, not a snapshot
 - options: LSMValues offers a None placeholder rather than an empty list
-- options: __PatchLSM30Border is a no-op a host's call still finds
 - options: EnsureScroll is lazy, created once, and patched
 - options: OptionsScroll.lua owns the font preload; without it a show still renders
 - options: the scrollbar patch is idempotent
@@ -4169,7 +4168,7 @@ Total.
 | test_slash_debug.lua | 14 |
 | test_launcher.lua | 45 |
 | test_atenable.lua | 21 |
-| test_options.lua | 58 |
+| test_options.lua | 57 |
 | test_options_render.lua | 27 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
@@ -4264,4 +4263,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3614** |
+| **Total** | **3613** |
