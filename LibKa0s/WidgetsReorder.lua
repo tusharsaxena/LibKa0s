@@ -42,7 +42,9 @@ if not lib then return end
 -- Minor 2: the skin owner (the header's THE SKIN OWNER).
 -- Minor 3: the settings-panel scope (the header's THE SETTINGS-PANEL SCOPE), with `opts.panel`, and
 -- the handle's tooltip line in the palette's `gtip.value` (white while unskinned; LK-06d).
-local REORDER_MINOR = 3
+-- Minor 4 (cause L6 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): a skinned list with no
+-- `handleIcon` draws the Ka0s `move` icon, not the client's sort arrow.
+local REORDER_MINOR = 4
 -- Paired on the SHELL's minor as well as this file's own, as WidgetsDragHandle.lua is: a list that
 -- attached to an older shell would publish `lib.ReorderList` beside a `lib.MODULES` the shell owns,
 -- and nothing would say the two came from different vendored copies.
@@ -480,7 +482,7 @@ local function raiseGhost(row, list)
 
   skinGhost(g, list.skin)
 
-  g.icon:SetTexture(row.ghostIcon or list.handleIcon or HANDLE_FALLBACK)
+  g.icon:SetTexture(row.ghostIcon or list.handleIcon or list.handleMark or HANDLE_FALLBACK)
   local ic = row.ghostIconColor or { 1, 1, 1 }
   g.icon:SetVertexColor(ic[1], ic[2], ic[3])
 
@@ -517,6 +519,12 @@ local function beginDrag(row)
   list.say("grab %d at y=%.1f", row.index, row.startY)
 end
 
+--- A skinned list's Ka0s handle (minor 4); nil for the rest, which draw their client rung.
+local function handleMark(opts, pal)
+  if pal then return lib.__ownedMark(opts.owner, "move") end
+  return nil
+end
+
 -- The list's colors, resolved once per render: an explicit option, else the owner's palette, else
 -- the constants. The line, the handle's two tints and the ghost's text are minor 2's; the tooltip's is
 -- minor 3's. Split out of ReorderList so the constructor stays under CCN 15 (the v1.81.0 release run
@@ -524,6 +532,7 @@ end
 local function listColors(list, opts, pal)
   list.color       = opts.lineColor or (pal and pal.line) or LINE_COLOR
   list.handleRest  = opts.handleColor or (pal and pal.rest) or HANDLE_REST
+  list.handleMark  = handleMark(opts, pal)
   list.handleHover = opts.handleHoverColor or (pal and pal.hover) or HANDLE_HOVER
   list.ghostText   = (pal and pal.ghostText) or GHOST_TEXT
   list.tipText     = (pal and pal.tip) or TIP_TEXT
@@ -744,7 +753,7 @@ function lib.ReorderList(opts)
 
     local size = opts.iconSize or 16
     handle.art:SetSize(size, size)
-    handle.art:SetTexture(opts.handleIcon or HANDLE_FALLBACK)
+    handle.art:SetTexture(opts.handleIcon or list.handleMark or HANDLE_FALLBACK)
     handle.art:SetVertexColor(handle.__restColor[1], handle.__restColor[2], handle.__restColor[3])
     handle:Show()
 

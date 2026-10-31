@@ -42,7 +42,9 @@ if not lib then return end
 -- with nil for the literal: that is a body line, the client's color wherever the chrome is not skinned.
 -- Minor 12 (cause L3 of the same bundle): a skin's `title.rule` replaces the header's client atlas
 -- with a flat rule; Ka0s Default states none, so its atlas stays, tinted.
-local SCROLL_MINOR = 12
+-- Minor 13 (cause L6 of the same bundle): lib.__chromeMark and O.__chromeMark, the Ka0s icon a mark
+-- wears while the chrome is skinned.
+local SCROLL_MINOR = 13
 -- Paired on the SHELL's minor as well as this file's own. The scroll counter alone is not enough:
 -- two vendored copies can ship the same scroll minor over different Options.lua minors, and then
 -- the higher shell wins the LibStub race while the first-loaded copy's patch stays attached to it.
@@ -293,6 +295,16 @@ function lib.__chromeAway(owner)
   return S
 end
 
+--- The path of Media icon `name` in `owner`'s copy while `owner`'s chrome is skinned, else nil: a
+--- mark on an ignored panel, or without Media, keeps the client art it always wore. `name` is one
+--- of docs/releasing.md's library-drawn icons, so the host declares it.
+function lib.__chromeMark(owner, name)
+  if not lib.__chromeAway(owner) then return nil end
+  local media = LibStub and LibStub("LibKa0s-Media-1.0", true)
+  if not (media and type(media.Icon) == "function") then return nil end
+  return media.Icon(owner, name)
+end
+
 --- Forget `target` in the Skin major's frame registry, so the owner that painted it (a pooled frame
 --- now drawn for no owner) no longer repaints it. Every chrome dress repaints each property a
 --- primitive touches before it is called, so nothing needs putting back.
@@ -513,6 +525,12 @@ function lib.__AttachScroll(O, d)
   function O.__chromeAway()
     if not O.__chromeSkin() then return nil end
     return lib.__chromeAway(owner)
+  end
+
+  --- lib.__chromeMark for this instance's owner (minor 13).
+  function O.__chromeMark(name)
+    if not O.__chromeAway() then return nil end
+    return lib.__chromeMark(owner, name)
   end
 
   --- A tooltip line's color (minor 9): the owner's color token `token` while the chrome is

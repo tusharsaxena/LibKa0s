@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 47", function()
-  assertEqual(Kit.VERSION, 47, "v1.84.0 ships revision 47: the Ace fakes in mock_ace.lua")
-  assertEqual(T.KIT_VERSION, 47, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 48", function()
+  assertEqual(Kit.VERSION, 48, "v1.85.0 ships revision 48: the gate asks for the library-drawn icons")
+  assertEqual(T.KIT_VERSION, 48, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

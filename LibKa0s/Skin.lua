@@ -118,7 +118,9 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Ka0sAddonsCommonTasks docs/2026-10-31-FINDINGS_REMEDIATION, the seam CLAUDE.md's census named). No
 -- behavior moves: RegisterOwner and `__Tokens` reach it through `lib.__takeTokens` and
 -- `lib.__withOwnTokens`, and `lib.__tokenHelpers` hands it the three locals it shares with this file.
-local MAJOR, MINOR = "LibKa0s-Skin-1.0", 11
+-- Minor 12 (cause L6 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): VOCAB gains Mark and
+-- MarkText, SkinPaintExtras minor 9's.
+local MAJOR, MINOR = "LibKa0s-Skin-1.0", 12
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -144,7 +146,7 @@ lib.VOCAB = {
   "GetAccentColor", "GetPanelColor", "GetFont",
   "TitleBar", "Divider", "Footer", "Card", "Slider", "NavItem", "Drawer", "ListRow", "MenuFrame",
   "Tooltip", "Strip", "Cover", "Text", "ChartStyle", "BarStyle", "IconBorder", "GlowColor",
-  "BarTexture", "FontFlags", "HudFontSize",
+  "BarTexture", "FontFlags", "HudFontSize", "Mark", "MarkText",
 }
 
 local WEAK_KEYS = { __mode = "k" }

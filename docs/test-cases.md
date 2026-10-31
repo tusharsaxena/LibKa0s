@@ -2427,7 +2427,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (35)
+### test_options_appearance.lua (36)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2443,6 +2443,7 @@ Total.
 - appearance: a copy clicked in combat asks nothing
 - appearance: a copy confirmation accepted after combat starts writes no other owner
 - appearance: the EllesmereUI choice is disabled while the gate is closed, each condition listed
+- appearance: with Media and the Scope cleared the gate's marks are Ka0s icons in their meaning
 - appearance: with no Skin EllesmereUI provider the choice is disabled with one line
 - appearance: the open gate lets EllesmereUI in, and leaving it raises one reload popup
 - appearance: spec.strings translates every string, the skins' names and descriptions included
@@ -2493,9 +2494,9 @@ Total.
 - appearance: the copy has its own heading, Other Ka0s addons, after the Scope, the tab ending on it
 - appearance: the note leads the Look section, ahead of the first skin
 
-### test_options_skin_picker.lua (39)
+### test_options_skin_picker.lua (40)
 
-- skin picker: OptionsSkinPicker is minor 6, paired on the shell, and attaches three members
+- skin picker: OptionsSkinPicker is minor 7, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -2520,6 +2521,7 @@ Total.
 - skin picker: Apply to all dismisses every queued picker, each onClose run, none shown
 - skin picker: the gear saves, opens the page itself, then the Skin tab, then closes
 - skin picker: in combat the gear opens nothing and the window stays up, not marked seen
+- skin picker: the reset buttons and the arrow are Media's, and client art without it
 - skin picker: the icons come from LibKa0s-Media-1.0, and are glyphs without it
 - skin picker: the eye shows only with onPreview, and calls it
 - skin picker: spec.strings translates the title, the buttons, the tips and a skin's name
@@ -2693,6 +2695,24 @@ Total.
 - IdList removeStyle icon: the highlight goes back onto the art when AceGUI takes the X back
 - IdList removeStyle icon: an AceGUI whose Icon has no textures still draws the X
 
+### test_skin_marks.lua (15)
+
+- skin marks: S.Mark draws the art in icon.tint, and a skin switch repaints it
+- skin marks: S.Mark takes a meaning token
+- skin marks: a panel-scoped S.Mark keeps the client art on an ignored panel, live both ways
+- skin marks: S.Mark ignores a target that is not a texture
+- skin marks: S.MarkText writes the mark at its size in the token's bytes
+- skin marks: with the Scope cleared the id list's X is the Ka0s close icon
+- skin marks: on an ignored panel the id list's X stays the client atlas
+- skin marks: lib.__chromeMark answers nil without a registered owner or a known name
+- skin marks: an owned dropdown with no art draws the Ka0s chevron and a tinted check
+- skin marks: a host's art wins, and an ignored panel's dropdown keeps its client rung
+- skin marks: an unowned dropdown is what it was
+- skin marks: an owned strip's icon wears icon.tint, a skin switch repaints it
+- skin marks: an owned drag handle with no art draws the Ka0s info and close icons
+- skin marks: a panel drag handle's marks follow the Scope live, and a host's art stays
+- skin marks: lib.__ownedMark answers for an owner, and not for a panel control it ignores
+
 ### test_options_switched.lua (16)
 
 - switched: only the subsection the selector names is drawn, its heading with it
@@ -2712,7 +2732,7 @@ Total.
 - switched any: the single-path form is unchanged beside it
 - switched: OptionsSwitch.lua is its own file of the major, paired on the shell's minor
 
-### test_options_media.lua (34)
+### test_options_media.lua (36)
 
 - media: lib.__MediaWidgetType maps a kind, its LSM30_* and its own type name to one type
 - media: no stock Dropdown registered, so no picker, and the caller draws a plain Dropdown
@@ -2738,6 +2758,8 @@ Total.
 - media: the skin paints a picker as a Dropdown and the preview survives its font
 - media: an open pull-out wears the menu tokens
 - media: a picker never closes on its first entry: no value is blank, a value is its key
+- media: a painted picker's speaker is the Ka0s icon in icon.tint; an unowned one is the client's
+- media: a painted picker's swatch takes icon.tint; an unowned one its typed gray
 - media: border and sound rows sit on the stock bar, level with the page's other controls
 - media: with no LibSharedMedia the picker still lists, picks and shows its text
 - media: with no SharedMediaWidgets an LSM30_* row of every kind draws the matching picker
@@ -3966,7 +3988,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 47
+- the kit is revision 48
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -4060,13 +4082,15 @@ Total.
 - runner complexity: a raise no single file reproduces is a whole-tree crash
 - runner complexity: the real 1.24.0 for-header crash is crashed, not blind
 
-### test_kit_vendor_sync.lua (22)
+### test_kit_vendor_sync.lua (25)
 
 - parseIconLine: the three forms
 - parseIconLine: `all` without a parenthesized reason is refused
 - parseIconLine: malformed lists are refused, naming why
 - iconDeclaration: absent, placed, misplaced, doubled
 - iconDeclaration: anchored, so prose that mentions the line is not a second one
+- missingMarks: a list must name what the library draws, and only what the catalog carries
+- the library-drawn marks are all real Media icons
 - iconCatalog: names and attribution by set folder
 - requiredIcons: attribution travels with its set, unknown names come back
 - cappedList: ten names, then a count
@@ -4076,6 +4100,7 @@ Total.
 - vendor sync: no `LibKa0s icons:` line is the whole-folder gate
 - vendor sync: `none.` ships no icon and no icon license
 - vendor sync: a list ships exactly its icons and their sets' attribution
+- vendor sync: a list that leaves out a library-drawn icon fails, and says which
 - vendor sync: an undeclared icon fails, counted and named
 - vendor sync: a name the tag does not carry fails, even if a stray file vouches for it
 - vendor sync: a declared icon that differs from the tag fails
@@ -4217,9 +4242,9 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 35 |
+| test_options_appearance.lua | 36 |
 | test_options_appearance_overrides.lua | 25 |
-| test_options_skin_picker.lua | 39 |
+| test_options_skin_picker.lua | 40 |
 | test_options_skin_picker_shared.lua | 10 |
 | test_options_skin_picker_faces.lua | 15 |
 | test_options_skin_picker_rows.lua | 53 |
@@ -4227,8 +4252,9 @@ Total.
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
+| test_skin_marks.lua | 15 |
 | test_options_switched.lua | 16 |
-| test_options_media.lua | 34 |
+| test_options_media.lua | 36 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 39 |
@@ -4286,10 +4312,10 @@ Total.
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 20 |
-| test_kit_vendor_sync.lua | 22 |
+| test_kit_vendor_sync.lua | 25 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3642** |
+| **Total** | **3664** |

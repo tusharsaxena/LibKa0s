@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Skin-1.0` key **11.1.22.4.14.8.12.2.7**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3**, `LibKa0s-Sim-1.0` key **2.3.10.1**; every other file still at its v1.84.0 minor, and **test kit revision 47**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Skin-1.0` key **12.1.22.4.14.9.12.2.7**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.16.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.1**, `LibKa0s-Widgets-1.0` key **18.4.11.5.5.2**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
 
 ### The launcher's tooltip follows the skin (`FS-L1`, cause L1)
 
@@ -27,6 +27,15 @@ Versions in this release: `LibKa0s-Skin-1.0` key **11.1.22.4.14.8.12.2.7**, `Lib
 - **OptionsScroll minor 11**: a comment on that.
 - **OptionsSkinPicker minor 6** and **SimPanel minor 10**: the picker's tooltips and an owned sim panel's tooltip title take `gtip.title`, read at hover, whose Ka0s Default is the client's gold. Both are windows, so *Ignore settings panel* leaves them skinned. An owner-less sim panel's title still names no color.
 - A tooltip line an addon writes itself is that addon's to color; those are the host parts of the cause.
+
+### Marks are Ka0s icons, tinted (`FS-L6`, cause L6)
+
+- **Skin minor 12** and **SkinPaintExtras minor 9**: new additive `S.Mark(tex, opts)` and `S.MarkText(path, size, token)`, the primitive the addons' own ticks, crosses and removes take.
+- **OptionsIdList minor 8**, **OptionsAppearance minor 6**, **OptionsMedia minor 4**, **OptionsScroll minor 13**: with the Scope cleared the id list's X, the EllesmereUI gate's marks and a sound picker's play button are Ka0s icons in the skin's tint, and a picker's swatches take `icon.tint` and `input.bg`. An ignored panel stays stock.
+- **OptionsSkinPicker minor 7**: the window's reset buttons and arrow are the Ka0s `reset` and `chevron-down` in every skin, Ka0s Default included: the cause asks for it, and a window is not reached by Ignore settings panel.
+- **Widgets minor 18**, **WidgetsDragHandle minor 11**, **WidgetsReorder minor 4**: an owned control with no host art draws the Ka0s icon, not the client rung, and an owned strip's icon wears `icon.tint`. Without an owner there is no skin to follow, so those rungs and Core's multiplication sign stay.
+- **Test kit revision 48**: `VendorSync.LIBRARY_MARKS`. Every host's `LibKa0s icons:` line needs `chevron-down, close, confirm, info, move, reset, volume-high`, or the vendor gate goes red: a pruned icon draws blank and raises nothing. Each addon's re-vendor adds what it lacks.
+- The addons' own marks and hover art are the host half of the cause.
 
 ### Settings typed colors with the Scope cleared (`FS-L5`, cause L5)
 

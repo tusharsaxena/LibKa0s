@@ -103,7 +103,10 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 16: the skin owner (the header's SKIN OWNERS).
 -- Minor 17: the scope switches (the header's THE SCOPE SWITCHES): every string an owned control draws
 -- in its skin's body face, and `opts.panel`.
-local MAJOR, MINOR = "LibKa0s-Widgets-1.0", 17
+-- Minor 18 (cause L6 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): lib.__ownedMark. An owned
+-- control a host gave no art draws the Ka0s icon, not the client rung, and the strip's icon wears
+-- `icon.tint`.
+local MAJOR, MINOR = "LibKa0s-Widgets-1.0", 18
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -154,6 +157,18 @@ local function panelOff(Skin, owner, panel)
     and Skin:GetIgnore(owner) == true
 end
 lib.__panelOff = panelOff
+
+--- The path of Media icon `name` in `owner`'s copy for an owned control a host gave no art (minor
+--- 18), or nil: no owner, no Media, or a panel-scoped control on an ignored panel, each of which
+--- draws its client rung. `name` is one of docs/releasing.md's library-drawn icons, so the host
+--- declares it. Read at call time.
+local function ownedMark(owner, name, panel)
+  local Skin = skinOf(owner)
+  if not Skin or panelOff(Skin, owner, panel) then return nil end
+  local media = LibStub("LibKa0s-Media-1.0", true)
+  return media and type(media.Icon) == "function" and media.Icon(owner, name) or nil
+end
+lib.__ownedMark = ownedMark
 
 -- Strings __skinFont put a skin face on, so an owner-less paint knows which to give back.
 lib.__fonted = lib.__fonted or setmetatable({}, { __mode = "k" })
@@ -496,6 +511,14 @@ local function summarizeSelection(labels, allLabel)
   return (allLabel:match("^(.-):") or allLabel) .. ": " .. n .. " selected"
 end
 
+--- The tick markup a multi-select row leads with (see MakeDropdown): the host's art, an owned
+--- dropdown's Ka0s `confirm` in `icon.hot` (minor 18), else the client rung.
+local function dropdownCheck(opts)
+  local art = not opts.check and ownedMark(opts.owner, "confirm", opts.panel)
+  if art then return skinOf(opts.owner):For(opts.owner).MarkText(art, 0, "icon.hot") .. " " end
+  return "|T" .. (opts.check or CHECK_FALLBACK) .. ":0|t "
+end
+
 -- A dropdown button: shows the current label plus a ▼ texture; clicking opens the shared menu.
 local function MakeDropdown(parent, width, opts)
   opts = opts or {}
@@ -519,7 +542,7 @@ local function MakeDropdown(parent, width, opts)
   -- Blizzard's beveled tick on the rows below it would be the one place where two eras of art meet
   -- inside a single widget. The trailing space is the gap to the label; the path stays as the host
   -- resolved it, EXTENSIONLESS or not.
-  dd.__check = "|T" .. (opts.check or CHECK_FALLBACK) .. ":0|t "
+  dd.__check = dropdownCheck(opts)
   -- The mono face the optional row glyph is drawn in, read by paintMenuRow on every pass. Absent
   -- means the host wants no glyph column at all.
   dd.__glyphFont = opts.glyphFont
@@ -538,7 +561,7 @@ local function MakeDropdown(parent, width, opts)
   local arrow = dd:CreateTexture(nil, "OVERLAY")
   arrow:SetSize(12, 12)
   arrow:SetPoint("RIGHT", -4, 0)
-  arrow:SetTexture(opts.chevron or CHEVRON_FALLBACK)
+  arrow:SetTexture(opts.chevron or ownedMark(opts.owner, "chevron-down", opts.panel) or CHEVRON_FALLBACK)
   arrow:SetVertexColor(0.7, 0.7, 0.72)
   dd.arrow = arrow   -- kept for the out-of-game art suite; nothing at runtime reads it back
 
@@ -767,6 +790,12 @@ local STRIP_H, STRIP_ICON, STRIP_INSET = 18, 12, 6
 --- table moves nothing: the constructor reads the file-local.
 lib.TEST_STRIP = { HEIGHT = STRIP_H }
 
+--- A tinted strip mark: an owned strip's icon in `icon.tint`, given back while a panel-scoped one is
+--- ignored (minor 18).
+local function stripMark(s, Skin, owner, panel)
+  if s.__icon then Skin:For(owner).Mark(s.__icon, { panel = panel and true or nil }) end
+end
+
 -- The strip's icon (host-passed art, optional) and its line, laid out left to right; split out of
 -- TestStrip so the constructor stays under CCN 15 (the v1.81.0 release run measured it at 16).
 local function stripLine(s, opts)
@@ -838,6 +867,7 @@ function lib.TestStrip(parent, opts)
   -- is put back to its own wash while ignored (the primitive cannot read a texture's color back).
   if Skin then
     Skin:For(opts.owner).Text(text, "accent", panel and PANEL or nil)
+    stripMark(s, Skin, opts.owner, panel)
     if panel then
       lib.__onSkin(Skin, opts.owner, fill, function(f, owner)
         if panelOff(skinOf(owner), owner, true) then f:SetColorTexture(unpack(STRIP_FILL[kind])) end

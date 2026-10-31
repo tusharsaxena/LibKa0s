@@ -60,10 +60,10 @@ local pickRow = Bench.pickRow
 
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
-test("skin picker: OptionsSkinPicker is minor 6, paired on the shell, and attaches three members", function()
+test("skin picker: OptionsSkinPicker is minor 7, paired on the shell, and attaches three members", function()
   local _, _, lib = env()
-  assertEqual(lib.MODULES.OptionsSkinPicker, 6)
-  assertEqual(lib.__pickerMinor, 6)
+  assertEqual(lib.MODULES.OptionsSkinPicker, 7)
+  assertEqual(lib.__pickerMinor, 7)
   assertTrue(lib.SKIN_PICKER_STRINGS.APPLY_ALL_TIP:find("skin source, skin, scope, font, texture and font outline", 1, true) ~= nil,
     "the tooltip words it as the Skin tab's copy does")
   assertEqual(lib.__pickerShellMinor, lib.MINOR, "paired on the shell's minor")
@@ -654,6 +654,20 @@ test("skin picker: in combat the gear opens nothing and the window stays up, not
 end)
 
 -- ── icons, strings, degradation ──────────────────────────────────────────────────────────────
+
+test("skin picker: the reset buttons and the arrow are Media's, and client art without it", function()
+  local m, Skin, lib = env({ media = true })
+  local store = register(Skin, OWNER)
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { onPreview = function() end }))
+  local Media = m.LibStub("LibKa0s-Media-1.0")
+  assertEqual(m.__paint(f.reset.font.icon).texture, Media.Icon(OWNER, "reset"))
+  assertEqual(m.__paint(f.dd.arrow).texture, Media.Icon(OWNER, "chevron-down"))
+  local m2, Skin2, lib2 = env()
+  local store2 = register(Skin2, OWNER)
+  local f2 = instance(lib2, OWNER).SkinPicker(specFor(store2, { onPreview = function() end }))
+  assertEqual(m2.__paint(f2.reset.font.icon).texture, "Interface\\Buttons\\UI-RefreshButton")
+  assertEqual(m2.__paint(f2.dd.arrow).texture, "Interface\\ChatFrame\\ChatFrameExpandArrow")
+end)
 
 test("skin picker: the icons come from LibKa0s-Media-1.0, and are glyphs without it", function()
   local m, Skin, lib = env({ media = true })

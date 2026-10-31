@@ -345,18 +345,25 @@ the host's behalf, so the art comes out of the host's copy and its name must be 
 |---|---|
 | `close` | `Core.MakeCloseButton` when given the addon name: the DebugLog console's close, `PerfPanel.lua`'s close (no `decorate`), the Widgets copy window's close, the Sim step panel's close (`SimPanel.lua`) |
 | `clear`, `copy` | the DebugLog console's title-bar buttons (`DebugLog.lua`) |
-| `info` | the Options id list's help mark, unless the spec passes its own `helpIcon` (`OptionsIdList.lua`) |
+| `info` | the Options id list's help mark, unless the spec passes its own `helpIcon` (`OptionsIdList.lua`); an owned drag handle's help mark with no `helpIcon` (`WidgetsDragHandle.lua`) |
+| `close` also | the id list's X, the EllesmereUI gate's cross, an owned drag handle's close mark with no `closeIcon` |
+| `confirm` | the EllesmereUI gate's check (`OptionsAppearance.lua`), an owned multi-select dropdown's tick with no `check` (`Widgets.lua`) |
+| `chevron-down` | the skin picker's dropdown (`OptionsSkinPicker.lua`), an owned dropdown with no `chevron` (`Widgets.lua`) |
+| `reset` | the skin picker's two reset buttons (`OptionsSkinPicker.lua`) |
+| `volume-high` | a skinned sound picker's play button (`OptionsMedia.lua`) |
+| `move` | a skinned reorder list with no `handleIcon` (`WidgetsReorder.lua`) |
 
-A host that wires the debug console declares at least `close, copy, clear`. A pruned icon is **not**
-an absent one to these modules: `Icon` still answers a path, so the text fallback (the `×`, the
-CLEAR and COPY words, the client glyph) never runs and the control draws blank. The gate cannot see
-this, because the declaration is the only list it knows.
+Every host with a list declares `chevron-down, close, confirm, info, move, reset, volume-high`; from
+kit revision 48 the vendor gate goes red on any of them left out (`VendorSync.LIBRARY_MARKS`). A
+host that wires the debug console also declares `copy, clear`. A pruned icon is **not** an absent
+one to these modules: `Icon` still answers a path, so the text fallback (the `×`, the CLEAR and COPY
+words, the client glyph) never runs and the control draws blank. `copy` and `clear` are the one pair
+the gate cannot see, because whether a host wires the console is not in the declaration.
 
 **Host-passed art is declared too.** Three surfaces draw a mark the host resolves and passes in:
 `W.TestStrip`'s icon (its adopters pass their own `info`), `W.SearchBox`'s mark (BankLedger passes
 its own magnifier name) and the Sim step panel's done check (`SimPanel.lua`'s `check`, the host's
-`confirm` or whatever it passes). The library draws none of these, so none joins the closed set
-above, which stays exactly `close`, `copy`, `clear` and `info`. But the host resolves each from its
+`confirm` or whatever it passes). The library draws none of these, so none joins the set above. But the host resolves each from its
 own copy, so the host declares it, and a pruned one draws blank the same way.
 
 **Attribution travels with the set.** After the prune, the consumer's README `## Credits` credits

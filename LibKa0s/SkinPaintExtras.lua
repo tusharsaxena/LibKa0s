@@ -54,7 +54,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Minor 8 (cause L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): a stated
 -- `popup.borderStyle` or `nav.borderStyle` boxes the suggestion popup or the rail in the skin's own
 -- edge and size, where both only recolored; `false`, Ka0s Default's, is the art the frame wears.
-local EXTRAS_MINOR = 8
+-- Minor 9 (cause L6 of the same bundle): S.Mark and S.MarkText, a small mark in the skin's tint and,
+-- once the host names one, a Ka0s icon in place of client art.
+local EXTRAS_MINOR = 9
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
 lib.__extrasMinor      = EXTRAS_MINOR
@@ -220,6 +222,38 @@ prim.Cover = function(owner, target, opts)
   if rec and type(opts) == "table" and P.isFS(opts.text) then
     P.label(owner, rec, opts.text, P.T(owner), "cover.text")
   end
+end
+
+--- S.Mark(tex, opts): a small mark on texture `tex` in the skin's tint. `opts.token` names the color
+--- (default `icon.tint`; `sem.good` and `sem.bad` for a mark that means something), `opts.art` is the
+--- Ka0s icon drawn in place of the client art `tex` wore, a path the host resolved and declared.
+--- `opts.panel = true`: the mark is on the owner's settings panel, so while the owner ignores its
+--- panel the tint is given back and `opts.stock(tex)` puts the client art back, a texture's art
+--- being nothing P.unpaint can read. Live both ways, replayed on a skin switch. Draws no Media icon
+--- of its own.
+prim.Mark = function(owner, tex, opts)
+  if not P.isTexture(tex) then return end
+  opts = type(opts) == "table" and opts or {}
+  local rec = P.track(owner, tex, "Mark", opts)
+  if P.panelIgnored(owner, rec, tex, opts) then
+    if type(opts.stock) == "function" then opts.stock(tex) end
+    return
+  end
+  if opts.art then tex:SetTexture(opts.art) end
+  P.tint(rec, tex, P.T(owner), opts.token or "icon.tint", "SetVertexColor")
+end
+
+--- S.MarkText(path, size, token): the same mark as inline `|T...|t` markup, for a line of text: icon
+--- `path` at `size` (default 14; 0 is the line's height) in `token`, default `icon.tint`. A string
+--- cannot be repainted, so a caller writes it again after a skin switch. Draws no Media icon of its
+--- own.
+prim.MarkText = function(owner, path, size, token)
+  size = size or 14
+  local c = P.T(owner)[token or "icon.tint"]
+  if type(c) ~= "table" then return ("|T%s:%d:%d|t"):format(path, size, size) end
+  local function byte(x) return math.floor(x * 255 + 0.5) end
+  return ("|T%s:%d:%d:0:0:64:64:0:64:0:64:%d:%d:%d|t"):format(path, size, size,
+    byte(c[1]), byte(c[2]), byte(c[3]))
 end
 
 --- S.Tooltip(frame): a LIBRARY-OWNED tooltip frame, never GameTooltip. Its backdrop is recolored

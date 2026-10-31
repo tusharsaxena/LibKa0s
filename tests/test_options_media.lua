@@ -14,6 +14,7 @@ local test, assertEqual, assertTrue, assertFalse, assertNil =
   T.test, T.assertEqual, T.assertTrue, T.assertFalse, T.assertNil
 local A = dofile("tests/fixture_skin_ace.lua")
 
+local Loader = dofile("tests/_kit/loader.lua")
 local Fixture = dofile("tests/fixture_media.lua")
 local env, stockDropdown, FACE, BASE_FONT = Fixture.env, Fixture.stockDropdown, Fixture.FACE, Fixture.BASE_FONT
 
@@ -389,6 +390,49 @@ test("media: a picker never closes on its first entry: no value is blank, a valu
   dd:SetValue("Ka0s Prototype")
   assertEqual(dd.text:GetText(), "Ka0s Prototype")
   assertEqual(rows(dd)[1], "Ka0s Expressway", "and that was not the first row")
+end)
+
+--- Open picker `dd`'s one sound row, with its play button recording what it is dressed in.
+local function dressedPlay(m, dd)
+  dd:SetList({ Ding = "Ding" }, { "Ding" })
+  dd.pullout:Open()
+  local btn = dd.pullout.items[1].__media.play
+  local seen = { tex = m.CreateFrame("Frame"):CreateTexture() }
+  btn.SetNormalTexture = function(_, art) seen.art = art end
+  btn.GetNormalTexture = function() return seen.tex end
+  dd.pullout:Close()
+  dd.pullout:Open()
+  return seen
+end
+
+test("media: a painted picker's speaker is the Ka0s icon in icon.tint; an unowned one is the client's", function()
+  local m, Skin, lib, ace = env()
+  local seen = dressedPlay(m, picker(lib, ace, "sound"))
+  assertEqual(seen.art, "Interface\\Common\\VoiceChat-Speaker", "unowned")
+
+  Loader.load("LibKa0s/Media.lua", nil, m)
+  Skin:RegisterOwner("LootHistory")
+  local owned = picker(lib, ace, "sound")
+  Skin.__ace[owned] = { owner = "LootHistory" }
+  local mine = dressedPlay(m, owned)
+  assertEqual(mine.art, m.LibStub("LibKa0s-Media-1.0").Icon("LootHistory", "volume-high"))
+  assertEqual(m.__paint(mine.tex).vertex[1], Skin:Token("LootHistory", "icon.tint")[1])
+end)
+
+test("media: a painted picker's swatch takes icon.tint; an unowned one its typed gray", function()
+  local m, Skin, lib, ace = env()
+  local dd = picker(lib, ace, "statusbar")
+  dd:SetList({ Smooth = "Smooth" }, { "Smooth" })
+  dd.pullout:Open()
+  assertEqual(m.__paint(dd.pullout.items[1].__media.swatch.bar).vertex[1], 0.65, "unowned")
+
+  Skin:RegisterOwner("LootHistory")
+  local owned = picker(lib, ace, "statusbar")
+  Skin.__ace[owned] = { owner = "LootHistory" }
+  owned:SetList({ Smooth = "Smooth" }, { "Smooth" })
+  owned.pullout:Open()
+  assertEqual(m.__paint(owned.pullout.items[1].__media.swatch.bar).vertex[1],
+    Skin:Token("LootHistory", "icon.tint")[1])
 end)
 
 test("media: border and sound rows sit on the stock bar, level with the page's other controls", function()
