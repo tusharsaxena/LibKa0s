@@ -279,6 +279,22 @@ test("skin hud size: a skin whose face this locale refuses draws unscaled in the
   assertEqual(ru.HudFontSize(24), 26, "a face that reaches ruRU keeps its measured size")
 end)
 
+-- red under: a nil owner on a client that refuses Ka0s Default's own face, where withOverrides wrote
+-- lib.__overTok[nil] and raised "table index is nil"; an unregistered owner reads Ka0s Default.
+test("skin hud size: a nil owner reads Ka0s Default on a client that refuses its face", function()
+  local m, Skin = F.env({ lsm = {} })
+  m.GetLocale = function() return "ruRU" end
+  local Media = m.LibStub:NewLibrary("LibKa0s-Media-1.0", 1)
+  local face = Skin:ResolveSkin(Skin.DEFAULT)["font.body"]
+  Media.FONTS = { [face] = { file = "Face.ttf", langmask = { "western" } } }
+  assertEqual(Skin:Token(nil, "font.body"), face, "Token(nil, name) answers Ka0s Default's face")
+  assertEqual(Skin:Token(nil, "font.bodySize"), 12, "and its size")
+  assertEqual(Skin:__Tokens(nil)["font.titleSize"], 14, "__Tokens(nil) reads the same table")
+  assertTrue(Skin:__Tokens(nil) ~= Skin:__Tokens(nil), "the copy is laid fresh, never cached")
+  assertEqual(next(Skin.__overTok), nil, "nothing was stored")
+  assertEqual(Skin:Token("NoSuchOwner", "font.bodySize"), 12, "a named unregistered owner agrees")
+end)
+
 test("skin hud size: an override's sizes wait for it to resolve, and stay out of its own-face HUD", function()
   -- red under: a Ka0s face no LSM carries moving the sizes of the skin's own face that stands, or an
   -- element on its own face scaled by an override it does not draw.

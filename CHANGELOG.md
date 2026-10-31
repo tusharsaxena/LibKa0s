@@ -103,7 +103,10 @@ addon. A test that counts `RegisterLSM`'s fonts moves with the catalog.
   of LibSharedMedia. One function split at the close (`LK-F90`): the pre-release complexity run found
   `withOverrides` in `LibKa0s/Skin.lua` at CCN 19, so resolving the owner's media and laying them on a
   copy move, unchanged, into the file-local `ownerMedia` and `layOverrides`. No behavior change, and
-  Skin minor 10 is this release's own, so no minor moves.
+  Skin minor 10 is this release's own, so no minor moves. The review's nil-owner finding is closed in
+  the same minor (`LK-A1`): on a client that refuses Ka0s Default's face, `Token(nil, name)` and
+  `__Tokens(nil)` raised "table index is nil" in `withOverrides`; a nil owner now takes the copy
+  uncached and reads Ka0s Default, as documented.
 
 `tests/test_skin_width_parity.lua` pins all twenty-eight faces, and each skin's sizes to its faces'
 rows; `tests/test_skin_defs.lua`'s size band widens from 1.5 to 2 points for Open Sans Bold.

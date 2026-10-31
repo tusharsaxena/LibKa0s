@@ -282,7 +282,7 @@ the Skin key again. The new `LibKa0s/OptionsMedia.lua` (450) is out of the band.
   SimPanel minor 7 (the skin owner, `LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`)
   added none either: its cases are the new `tests/test_tool_windows_skin.lua`'s, and only the two
   pins moved, to "at least" (re-measured 2026-10-25, still 1056).
-- `LibKa0s/Skin.lua` (1221 at minor 10, measured 2026-10-31 at v1.83.0's close, Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`: 1149 → 1221 with the override's face sizes, the
+- `LibKa0s/Skin.lua` (1223 at minor 10 with the nil-owner return of the same run, 2026-10-31, the same minor and so no trigger; 1221, measured 2026-10-31 at v1.83.0's close, Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`: 1149 → 1221 with the override's face sizes, the
   refused-locale check and the close's CCN split, none of it in the owner-token block; this passed the 1150 trigger,
   and it was re-ruled at the close rather than peeled; 1149 at minor 9, measured 2026-10-30 after the review of `LK-03` and `LK-04`: the per-owner font outline mode
   (`LK-03` of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`), outside the owner-token block and one

@@ -685,7 +685,7 @@ Total.
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 
-### test_skin_width_parity.lua (15)
+### test_skin_width_parity.lua (16)
 
 - skin width parity: every skin's body, title and HUD sizes are the measured ones
 - skin width parity: every skin's text is as wide as Ka0s Default's, never more than 2% wider
@@ -699,6 +699,7 @@ Total.
 - skin hud size: an override of a shipped face draws at that face's sizes, HUD and body alike
 - skin hud size: a face the library did not measure draws unscaled, whatever the skin
 - skin hud size: a skin whose face this locale refuses draws unscaled in the fallback
+- skin hud size: a nil owner reads Ka0s Default on a client that refuses its face
 - skin hud size: an override's sizes wait for it to resolve, and stay out of its own-face HUD
 - skin hud size: BarStyle's fontSize is each skin's own, Ka0s Default's under Ignore fonts
 - skin hud size: an EllesmereUI owner reads Ka0s Default's HUD size, unscaled
@@ -3931,7 +3932,7 @@ Total.
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 31 |
-| test_skin_width_parity.lua | 15 |
+| test_skin_width_parity.lua | 16 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 37 |
 | test_skin_paint_controls.lua | 31 |
@@ -4055,4 +4056,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3453** |
+| **Total** | **3454** |
