@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` minor **10** · `SkinDefs.lua` minor **18** · `SkinPaint.lua` minor **13** · `SkinPaintExtras.lua` minor **7** · `SkinPaintControls.lua` minor **11** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **5** |
 | Shipped in | v1.83.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 9.17.13.7.11.2.4](./version-9.17.13.7.11.2.4-docs.md) (shipped in v1.82.0) — the same surface with Azeroth, Glass, High Contrast, Ember and WoW Midnight on their earlier faces, WoW Default on the client's Friz Quadrata at Ka0s Default's sizes, Obsidian's titles near-white, and a font override keeping the skin's sizes. |
-| Superseded by | — |
+| Superseded by | [version 11.1.18.13.7.11.2.5](./version-11.1.18.13.7.11.2.5-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 10, SkinDefs = 18, SkinPaint = 13, SkinPaintExtras = 7, SkinPaintControls = 11, SkinEUI = 2, SkinAce = 5 }` |
 
@@ -1869,3 +1869,7 @@ the LibStub race later keeps every owner, record and facade; the resolve cache a
 - `addonName`: no consumer as of v1.83.0, kept because the scan counts a read of the Options descriptor inside a Skin file; it is `lib:New`'s `addonName`, which is passed there.
 - `thirdPartySkinAddons`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
 - `thirdPartySkinsOff`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
+
+## Moving to the next version
+
+No host change: whole-folder re-vendoring brings the new file, and no public member moved. A hand-typed test load list adds `libs/LibKa0s/SkinOwnerTokens.lua` after `Skin.lua`.

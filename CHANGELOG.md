@@ -10,6 +10,18 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.84.0 — unreleased
+
+Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.
+
+Versions so far: `LibKa0s-Skin-1.0` key **11.1.18.13.7.11.2.5**; every other file still at its v1.83.0 minor. No `NEEDS_*` floor rises.
+
+### The library peels (`LK-M2-PEEL`)
+
+Every peel below is a pure move on the seam `CLAUDE.md`'s census named. No public member, no default and no pixel moves. Each moved-from file bumps because its bytes changed, and each new file starts at minor 1.
+
+- `SkinOwnerTokens.lua` (new, **SkinOwnerTokens minor 1**): the owner-token block out of `Skin.lua`, which moves to **Skin minor 11** and drops from 1232 to 1045 lines.
+
 ## v1.83.0 — 2026-10-31
 
 Opened 2026-10-31, on `feat/2026-10-31-font-pickers-skin-faces`: the owner's font pickers and skin

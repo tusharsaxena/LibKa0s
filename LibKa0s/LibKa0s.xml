@@ -12,6 +12,7 @@
 	<Script file="Media.lua"/>
 	<Script file="MediaIcons.lua"/>
 	<Script file="Skin.lua"/>
+	<Script file="SkinOwnerTokens.lua"/>
 	<Script file="SkinDefs.lua"/>
 	<Script file="SkinPaint.lua"/>
 	<Script file="SkinPaintExtras.lua"/>
