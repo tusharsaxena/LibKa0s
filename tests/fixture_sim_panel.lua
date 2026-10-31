@@ -18,8 +18,8 @@ local F = {}
 F.MAJOR = "LibKa0s-Sim-1.0"
 F.HOST_CHECK = "Interface\\AddOns\\Host\\media\\icons\\confirm"
 
---- A fresh environment: Core, Widgets (unless opts.noWidgets), Sim, SimTimeline and SimPanel.
---- opts.coreMinor overrides Core's MINOR before SimPanel.lua loads (the attach floor's cases).
+--- A fresh environment: Core, Widgets (unless opts.noWidgets), Sim, SimTimeline, SimPanel and SimPanelRender.
+--- opts.coreMinor overrides Core's MINOR while SimPanel.lua and SimPanelRender.lua load (the attach floor's cases).
 function F.env(opts)
   opts = opts or {}
   local m = buildMocks()
@@ -31,6 +31,7 @@ function F.env(opts)
   local saved = core.MINOR
   if opts.coreMinor then core.MINOR = opts.coreMinor end
   Loader.load("LibKa0s/SimPanel.lua", nil, m)
+  Loader.load("LibKa0s/SimPanelRender.lua", nil, m)
   core.MINOR = saved
   return m, m.LibStub(F.MAJOR)
 end

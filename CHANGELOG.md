@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.
 
-Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**; every other file still at its v1.83.0 minor. No `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**; every other file still at its v1.83.0 minor. No `NEEDS_*` floor rises.
 
 ### The library peels (`LK-M2-PEEL`)
 
@@ -22,6 +22,7 @@ Every peel below is a pure move on the seam `CLAUDE.md`'s census named. No publi
 
 - `SkinOwnerTokens.lua` (new, **SkinOwnerTokens minor 1**): the owner-token block out of `Skin.lua`, which moves to **Skin minor 11** and drops from 1232 to 1045 lines.
 - `SkinDefsOthers.lua` (new, **SkinDefsOthers minor 1**): the eight other skins out of `SkinDefs.lua`, which moves to **SkinDefs minor 19** and drops from 1104 to 455 lines. Its `plan-data/font_metrics_shipped.py` citations now name their Ka0sAddonsCommonTasks bundles. `tools/skin_gallery.py` reads both files.
+- `SimPanelRender.lua` (new, **SimPanelRender minor 1**): the step panel's renderer out of `SimPanel.lua`, which moves to **SimPanel minor 9** and drops from 1018 to 672 lines.
 
 ## v1.83.0 — 2026-10-31
 

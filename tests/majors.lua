@@ -154,11 +154,12 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Sim-1.0",
-    files = { "Sim", "SimTimeline", "SimPanel" },
+    files = { "Sim", "SimTimeline", "SimPanel", "SimPanelRender" },
     primary = "Sim",
     paired = {
       { file = "SimTimeline", minorField = "__timelineMinor", probeField = "__timelineShellMinor" },
       { file = "SimPanel", minorField = "__panelMinor", probeField = "__panelShellMinor" },
+      { file = "SimPanelRender", minorField = "__renderMinor", probeField = "__renderShellMinor" },
     },
   },
 }

@@ -384,13 +384,15 @@ test("sim panel: with no dragged point it redocks on every Show", function()
 end)
 
 test("sim panel: the panel never names SavedVariables or a store", function()
-  local fh = assert(io.open("LibKa0s/SimPanel.lua", "rb"))
-  local src = fh:read("*a")
-  fh:close()
-  for line in src:gmatch("[^\n]+") do
-    if not line:match("^%s*%-%-") then
-      assertFalse(line:find("SavedVariables", 1, true) ~= nil, "code line names SavedVariables: " .. line)
-      assertFalse(line:find("store()", 1, true) ~= nil, "code line calls store(): " .. line)
+  for _, path in ipairs({ "LibKa0s/SimPanel.lua", "LibKa0s/SimPanelRender.lua" }) do
+    local fh = assert(io.open(path, "rb"))
+    local src = fh:read("*a")
+    fh:close()
+    for line in src:gmatch("[^\n]+") do
+      if not line:match("^%s*%-%-") then
+        assertFalse(line:find("SavedVariables", 1, true) ~= nil, "code line names SavedVariables: " .. line)
+        assertFalse(line:find("store()", 1, true) ~= nil, "code line calls store(): " .. line)
+      end
     end
   end
 end)

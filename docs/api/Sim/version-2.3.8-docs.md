@@ -11,9 +11,9 @@
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **8** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>`, in load order — the numbers `lib.MODULES` reports |
 | Shipped in | v1.81.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [2.3.7](./version-2.3.7-docs.md) (shipped in v1.78.0 – v1.80.0) — the same surface; its tooltips wrote their colors as literals whatever the owner's skin, its labels kept their template's face, its picker's dropdowns had no owner and its resize grip was the client's art |
-| Superseded by | — |
+| Superseded by | [version 2.3.9.1](./version-2.3.9.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 8 }` |
 
@@ -1005,3 +1005,7 @@ bodies only define functions; no frame, timer or event registration exists until
 host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
 into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
 parse time only.
+
+## Moving to the next version
+
+No host change: whole-folder re-vendoring brings the new file, and no public member moved. A hand-typed test load list adds `libs/LibKa0s/SimPanelRender.lua` before `SimPanel.lua`.

@@ -56,4 +56,5 @@
 	<Script file="Sim.lua"/>
 	<Script file="SimTimeline.lua"/>
 	<Script file="SimPanel.lua"/>
+	<Script file="SimPanelRender.lua"/>
 </Ui>

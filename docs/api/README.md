@@ -75,7 +75,7 @@ the file you need:
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
 | `LibKa0s-Options-1.0` | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSwitch>.<OptionsMedia>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
 | `LibKa0s-Perf-1.0` | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
-| `LibKa0s-Sim-1.0` | `<Sim>.<SimTimeline>.<SimPanel>` | `LibStub("LibKa0s-Sim-1.0").MODULES` |
+| `LibKa0s-Sim-1.0` | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` | `LibStub("LibKa0s-Sim-1.0").MODULES` |
 
 A multi-file major gets a composite key because its files carry **independent** minors that really do
 diverge — the Options major has passed through `O3/W2`, `O3/W3`, `O4/W4` and `O4/W5`. Keying on one
@@ -394,7 +394,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.3.8](./Sim/version-2.3.8-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 8** (an owned panel's tooltips take `gtip.title` and `gtip.value`; its labels in its skin's body face, so *Ignore fonts* reaches them; the picker's dropdowns built with its owner; its resize grip wears its skin; no new member) | v1.81.0 | **Current** |
+| [2.3.9.1](./Sim/version-2.3.9.1-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 9** (the renderer section moved out) · **`SimPanelRender.lua` 1** (new: the renderer section, unchanged) | v1.84.0 | **Current** |
+| [2.3.8](./Sim/version-2.3.8-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 8** (an owned panel's tooltips take `gtip.title` and `gtip.value`; its labels in its skin's body face, so *Ignore fonts* reaches them; the picker's dropdowns built with its owner; its resize grip wears its skin; no new member) | v1.81.0 | Superseded |
 | [2.3.7](./Sim/version-2.3.7-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 7** (the panel and its buttons follow the skin owner; no new member) | v1.78.0 – v1.80.0 | Superseded |
 | [2.3.6](./Sim/version-2.3.6-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 6** (the panel is toplevel and re-raises a shown StaticPopup) | v1.77.0 | Superseded |
 | [2.3.5](./Sim/version-2.3.5-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 (a verb start or restart plays on its own; a manual step or click holds the run) · `SimPanel.lua` 5 (Run all removed: Pause/Resume, Restart and Stop) | v1.76.0 | Superseded |

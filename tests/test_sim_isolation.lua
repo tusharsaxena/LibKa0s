@@ -169,6 +169,7 @@ end
 
 local SIM_SRC = readSource("LibKa0s/Sim.lua")
 local TIMELINE_SRC = readSource("LibKa0s/SimTimeline.lua")
+local RENDER_SRC = readSource("LibKa0s/SimPanelRender.lua")
 local PANEL_SRC = readSource("LibKa0s/SimPanel.lua")
 
 -- The guard lines read `lib.__timelineShellMinor == lib.MINOR`; the single `=` in the tag patterns
@@ -195,7 +196,7 @@ local function copy(tag, shellMinor, timelineMinor, panelMinor)
     "local SIM_PANEL_MINOR = " .. panelMinor, "the panel minor")
   panel = sub(panel, "lib%.__panelShellMinor = lib%.MINOR",
     'lib.__panelShellMinor = lib.MINOR lib.__panelTag = "' .. tag .. '"', "the panel tag")
-  return { tag = tag, sim = sim, timeline = timeline, panel = panel }
+  return { tag = tag, sim = sim, timeline = timeline, render = RENDER_SRC, panel = panel }
 end
 
 --- Load whole copies in the order the client would, each copy's three files together. Core and
@@ -209,6 +210,7 @@ local function loadCopies(...)
     Loader.loadSource(c.sim, c.tag .. "/Sim.lua", nil, env)
     Loader.loadSource(c.timeline, c.tag .. "/SimTimeline.lua", nil, env)
     Loader.loadSource(c.panel, c.tag .. "/SimPanel.lua", nil, env)
+    Loader.loadSource(c.render, c.tag .. "/SimPanelRender.lua", nil, env)
   end
   return env.LibStub("LibKa0s-Sim-1.0")
 end
