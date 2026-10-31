@@ -111,6 +111,12 @@ rows; `tests/test_skin_defs.lua`'s size band widens from 1.5 to 2 points for Ope
 **What a consumer owes:** nothing in code. A test pinning a skin's face, size or Obsidian's title color
 moves with the re-vendor, and a layout measured at a skin's old size is worth a look in game.
 
+Release gate (`docs/automated-tests/20261031-152614/`): lint pass, 0/0 in 248 files;
+tests pass, 3455 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no minor of `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` or `Widgets.lua` (the file that defines `W.TestStrip`) moved since v1.82.0 (`git diff v1.82.0` of the four is empty).
+
 ## v1.82.0 — 2026-10-30
 
 Opened 2026-10-30, on `feat/2026-10-30-skin-fonts-feedback`: the owner's skin fonts and feedback
