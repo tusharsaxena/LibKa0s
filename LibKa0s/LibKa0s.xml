@@ -36,6 +36,7 @@
 	<Script file="Options.lua"/>
 	<Script file="OptionsRegistry.lua"/>
 	<Script file="OptionsWidgets.lua"/>
+	<Script file="OptionsFlow.lua"/>
 	<Script file="OptionsIds.lua"/>
 	<Script file="OptionsIdSuggest.lua"/>
 	<Script file="OptionsIdList.lua"/>

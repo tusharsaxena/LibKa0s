@@ -11,7 +11,7 @@ local Loader = dofile("tests/_kit/loader.lua")
 
 local OWNER, OTHER, THIRD = "LootHistory", "BankLedger", "KickCD"
 local SKIN_FILES = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinEUI" }
-local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs",
+local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs",
                   "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
                   "OptionsKeybinds", "OptionsAppearance" }
 local ELLIPSIS = "\226\128\166"

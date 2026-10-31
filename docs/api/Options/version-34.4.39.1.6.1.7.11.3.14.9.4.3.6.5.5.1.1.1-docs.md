@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 34.4.38.6.1.7.11.3.14.9.4.3.6.5.5.1.1.1
+# `LibKa0s-Options-1.0` — version 34.4.39.1.6.1.7.11.3.14.9.4.3.6.5.5.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,14 +8,14 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **38** · `OptionsIds.lua` **6** · `OptionsIdSuggest.lua` **1** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **14** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **5** · `OptionsSkinPicker.lua` **5** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **1** |
-| Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `34.4.38.6.1.7.11.3.14.9.4.3.6.5.5.1.1.1` |
+| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **39** · `OptionsFlow.lua` **1** · `OptionsIds.lua` **6** · `OptionsIdSuggest.lua` **1** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **14** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **5** · `OptionsSkinPicker.lua` **5** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **1** |
+| Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `34.4.39.1.6.1.7.11.3.14.9.4.3.6.5.5.1.1.1` |
 | Shipped in | v1.84.0 |
 | Status | **Current** |
 | Supersedes | [version 34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1](./version-34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1-docs.md) (shipped in v1.83.0) — the same surface, with the skin picker's rows, the id suggestions, the flow engine and the tabbed page in the files they peeled from. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 38, OptionsIds = 6, OptionsIdSuggest = 1, OptionsIdList = 7, OptionsTabs = 11, OptionsCombat = 3, OptionsCompose = 14, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 5, OptionsSkinPicker = 5, OptionsSkinPickerRows = 1, OptionsSwitch = 1, OptionsMedia = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 39, OptionsFlow = 1, OptionsIds = 6, OptionsIdSuggest = 1, OptionsIdList = 7, OptionsTabs = 11, OptionsCombat = 3, OptionsCompose = 14, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 5, OptionsSkinPicker = 5, OptionsSkinPickerRows = 1, OptionsSwitch = 1, OptionsMedia = 1 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `O32` for `Options.lua` minor 32, `O33` for `Options.lua` minor 33, `O34` for `Options.lua` minor 34, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
@@ -45,6 +45,8 @@ Pure moves, on the seams `CLAUDE.md`'s census named; no public member and no beh
 **`OptionsSkinPickerRows.lua` minor 1** (new) carries the Skin tab's rows, `onRow` through `syncControls`, out of `OptionsSkinPicker.lua`, which moves to **minor 5**. `lib.__AttachSkinPicker` calls `lib.__AttachSkinPickerRows(O, h)` where the section sat, handing over the closures the rows read, and `lib.__pickerKit` is the layout the two share. A copy without the file draws the window with no rows.
 
 **`OptionsIdSuggest.lua` minor 1** (new) carries the suggestion half out of `OptionsIds.lua`, which moves to **minor 6**: the module-scope suggestions-while-typing block and the dropdown members. `lib.__AttachIds` calls `lib.__AttachIdSuggest(O, h)` where the dropdown sat; `lib.__idsKit` is what the file reads of `OptionsIds.lua`'s scope, and `lib.__kindSourceIds` is what the shared-name check reads back. A copy without the file offers no suggestions, and the box still adds what is typed.
+
+**`OptionsFlow.lua` minor 1** (new) carries the two-column flow engine out of `OptionsWidgets.lua`, which moves to **minor 39**: `O.RenderRows`, `O.RenderSchema`, `O.RenderGrid`, the untabbed `O.RenderTabbedSchema`, their file-level helpers and the switched sections' wiring. `lib.__AttachWidgets` calls `lib.__AttachFlow(O, d, h)` at the end of its body, and `lib.__widgetsKit` is the two row helpers the files share. The members land on the instance as before.
 
 ## What changed at this version: the outline default (`LK-F05`)
 

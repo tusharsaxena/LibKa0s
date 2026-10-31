@@ -122,11 +122,12 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Options-1.0",
-    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" },
+    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" },
     primary = "Options",
     paired = {
       { file = "OptionsRegistry", minorField = "__registryMinor", probeField = "__registryShellMinor" },
       { file = "OptionsWidgets", minorField = "__widgetsMinor", probeField = "__widgetsShellMinor" },
+      { file = "OptionsFlow", minorField = "__flowMinor", probeField = "__flowShellMinor" },
       { file = "OptionsIds",     minorField = "__idsMinor",     probeField = "__idsShellMinor" },
       { file = "OptionsIdSuggest", minorField = "__suggestMinor", probeField = "__suggestShellMinor" },
       { file = "OptionsIdList",  minorField = "__idListMinor",  probeField = "__idListShellMinor" },
