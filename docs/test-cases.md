@@ -2434,7 +2434,7 @@ Total.
 - skin picker faces: a name that measures nothing next frame takes the template's face, and the next open tries its own
 - skin picker faces: a client without C_Timer dresses at once and raises nothing
 
-### test_options_skin_picker_rows.lua (50)
+### test_options_skin_picker_rows.lua (53)
 
 - skin picker rows: Font, Texture, Font outline and Scope, in order, in a window at most 10% wider
 - skin picker rows: the rows wear the Skin tab's words, list and leading previewing row
@@ -2464,8 +2464,11 @@ Total.
 - skin picker rows: another addon's focused dropdown is not the picker's to close
 - skin picker rows: a row disabled in combat wakes when combat ends
 - skin picker rows: a window shown in combat wakes when combat ends
-- skin picker rows: the end of combat leaves unlocked rows and an open pull-out alone
-- skin picker rows: the combat event is held for a showing and inert after it
+- skin picker rows: the watch is throttled and redraws once
+- skin picker rows: rows never drawn locked run no watch and an open pull-out stays
+- skin picker rows: closing a window drawn locked leaves it no watch
+- skin picker rows: standing down a window drawn locked leaves it no watch
+- skin picker rows: a shown picker registers no event at all, in or out of combat
 - skin picker rows: a reset icon's foot is its bar's, AceGUI's labeled height
 - skin picker rows: the media rows sit under the Skin tab's heading
 - skin picker rows: no Skin:SetOverride draws no heading for rows it did not draw
@@ -4061,7 +4064,7 @@ Total.
 | test_options_appearance.lua | 60 |
 | test_options_skin_picker.lua | 47 |
 | test_options_skin_picker_faces.lua | 15 |
-| test_options_skin_picker_rows.lua | 50 |
+| test_options_skin_picker_rows.lua | 53 |
 | test_options_skin_verb.lua | 7 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
@@ -4129,4 +4132,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3519** |
+| **Total** | **3522** |

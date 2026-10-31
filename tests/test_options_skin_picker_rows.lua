@@ -26,6 +26,7 @@ local Bench = dofile("tests/fixture_skin_picker.lua")
 local Fixture = dofile("tests/fixture_media.lua")
 local OWNER, OTHER = Bench.OWNER, Bench.OTHER
 local FIRA = "Ka0s Fira Sans"
+local WAKE = 1      -- an OnUpdate's elapsed long past the picker's throttle
 
 --- A fresh client with the real picker types, an owner, an instance and its spec. `opts.noBase`
 --- leaves the stock Dropdown out, `opts.noLsm` LibSharedMedia. Answers the bench table.
@@ -44,6 +45,14 @@ end
 local function open(b)
   b.f = b.O.SkinPicker(b.spec)
   return b.f
+end
+
+--- Is window `f` among what the kit says will still wake up?
+local function armed(b, f)
+  for _, t in ipairs(b.m.__timers()) do
+    if t == f then return true end
+  end
+  return false
 end
 
 local function calls(store) return store.calls or {} end
@@ -492,17 +501,21 @@ test("skin picker rows: a row disabled in combat wakes when combat ends", functi
   assertTrue(f.rows.font.disabled, "the refused row's refresh drew them locked")
   assertTrue(f.rows.fonts.disabled)
   assertFalse(f.reset.font:IsEnabled())
+  assertTrue(f:GetScript("OnUpdate") ~= nil, "rows drawn locked: watching")
   b.m.InCombatLockdown = function() return false end
   b.lib.__combatLocked = true    -- the page lock's flag clears in another frame's handler, maybe after
-  f:__fire("OnEvent", "PLAYER_REGEN_ENABLED")
+  f:__fire("OnUpdate", WAKE)
+  assertTrue(f.rows.font.disabled, "the page lock's flag still up: the rows wait for it")
+  assertTrue(f:GetScript("OnUpdate") ~= nil, "and the watch goes on")
   b.lib.__combatLocked = false
-  b.m.__fireTimers()
+  f:__fire("OnUpdate", WAKE)
   assertFalse(f.rows.font.disabled)
   assertFalse(f.rows.texture.disabled)
   assertFalse(f.rows.outline.disabled)
   assertFalse(f.rows.panel.disabled)
   assertFalse(f.rows.fonts.disabled)
   assertTrue(f.reset.font:IsEnabled())
+  assertNil(f:GetScript("OnUpdate"), "the watch removed itself")
 end)
 
 test("skin picker rows: a window shown in combat wakes when combat ends", function()
@@ -511,30 +524,74 @@ test("skin picker rows: a window shown in combat wakes when combat ends", functi
   local f = open(b)
   assertTrue(f.rows.font.disabled)
   b.m.InCombatLockdown = function() return false end
-  f:__fire("OnEvent", "PLAYER_REGEN_ENABLED")
-  b.m.__fireTimers()
+  f:__fire("OnUpdate", WAKE)
   assertFalse(f.rows.font.disabled)
+  assertNil(f:GetScript("OnUpdate"))
 end)
 
-test("skin picker rows: the end of combat leaves unlocked rows and an open pull-out alone", function()
+test("skin picker rows: the watch is throttled and redraws once", function()
+  local b = bench()
+  b.m.InCombatLockdown = function() return true end
+  local f = open(b)
+  b.m.InCombatLockdown = function() return false end
+  f:__fire("OnUpdate", WAKE / 100)
+  assertTrue(f.rows.font.disabled, "a frame short of the throttle reads nothing")
+  local redraws, set = 0, f.rows.outline.SetValue
+  f.rows.outline.SetValue = function(...)
+    redraws = redraws + 1
+    return set(...)
+  end
+  f:__fire("OnUpdate", WAKE)
+  assertEqual(redraws, 1)
+  assertNil(f:GetScript("OnUpdate"))
+  f:__fire("OnUpdate", WAKE)
+  assertEqual(redraws, 1, "gone means gone")
+  f.rows.outline.SetValue = set
+end)
+
+test("skin picker rows: rows never drawn locked run no watch and an open pull-out stays", function()
   local b = bench()
   local f = open(b)
   openPullout(b, f.rows.font)
-  f:__fire("OnEvent", "PLAYER_REGEN_ENABLED")
-  b.m.__fireTimers()
+  assertNil(f:GetScript("OnUpdate"))
   assertTrue(f.rows.font.open, "nothing was locked, so nothing moved under the open list")
   b.ace:ClearFocus()
 end)
 
-test("skin picker rows: the combat event is held for a showing and inert after it", function()
+test("skin picker rows: closing a window drawn locked leaves it no watch", function()
   local b = bench()
+  b.m.InCombatLockdown = function() return true end
   local f = open(b)
-  assertTrue(f.__frameEvents.PLAYER_REGEN_ENABLED, "up: listening")
+  assertTrue(armed(b, f), "the kit counts the watch, so the two below can fail")
   f.close:__fire("OnClick")
-  assertNil(f.__frameEvents.PLAYER_REGEN_ENABLED, "closed: let go")
-  f:__fire("OnEvent", "PLAYER_REGEN_ENABLED")    -- a stand-down suite fires every event at every frame
-  b.m.__fireTimers()
+  assertNil(f:GetScript("OnUpdate"))
+  assertFalse(armed(b, f), "the kit's live timers hold no frame of the picker")
   assertNil(f.rows)
+end)
+
+test("skin picker rows: standing down a window drawn locked leaves it no watch", function()
+  local b = bench()
+  b.m.InCombatLockdown = function() return true end
+  local f = open(b)
+  b.O.HideSkinPicker()
+  assertFalse(f:IsShown())
+  assertNil(f:GetScript("OnUpdate"))
+  assertFalse(armed(b, f), "the kit's live timers hold no frame of the picker")
+end)
+
+test("skin picker rows: a shown picker registers no event at all, in or out of combat", function()
+  -- red under: the window held PLAYER_REGEN_ENABLED for a showing, and a re-vendor turned seven
+  -- addons' stand-down suites red: slash-commands-§7 wants a disabled addon's registrations exact.
+  local b = bench()
+  local before = #b.m.__registrations()
+  local f = open(b)
+  assertEqual(#b.m.__registrations(), before, "out of combat")
+  assertNil(next(f.__frameEvents))
+  f.close:__fire("OnClick")
+  b.m.InCombatLockdown = function() return true end
+  open(b)
+  assertEqual(#b.m.__registrations(), before, "in combat")
+  assertNil(next(f.__frameEvents))
 end)
 
 -- ── the geometry and the heading ─────────────────────────────────────────────────────────────

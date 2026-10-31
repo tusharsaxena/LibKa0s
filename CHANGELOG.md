@@ -52,8 +52,11 @@ new `tests/test_options_skin_picker_rows.lua`, on `tests/fixture_media.lua`, mov
 
 The review of those rows moved no minor. An open pull-out closes before its list is rebuilt and on a
 click anywhere on the window, because AceGUI's click-to-clear never reaches a raw frame; it had stayed
-up as an empty box. Rows drawn locked wake when combat ends, through `PLAYER_REGEN_ENABLED` held for a
-showing, the redraw a frame later so the page lock's flag has cleared. The rows are spaced at AceGUI's
+up as an empty box. Rows drawn locked wake when combat ends, through a throttled `OnUpdate` that runs
+only while they are drawn locked, reads the same lock, the page lock's flag included, redraws once when
+it clears and removes itself. The picker registers no event: a `PLAYER_REGEN_ENABLED` held for a showing
+put a registration on a stood-down addon, which `slash-commands-§7` wants empty, and turned seven
+consumers' stand-down suites red on re-vendor. The rows are spaced at AceGUI's
 labeled 40, not 44, which hung each reset icon 4 below its bar, and draw the tab's *Font and texture*
 line. **A Skin-tab write made while the owner's picker is up now takes the picker's previews back
 first**, through `lib.__pickerSettle`, then moves what the picker measures from, through

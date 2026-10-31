@@ -2720,7 +2720,10 @@ picker offers nothing Apply could not keep) or no helpers.
   opened with back.
 - **An open pull-out** closes on a click on the window's body or any of its controls, and before the
   rows are synced, since AceGUI's click-to-clear does not reach a raw frame. Only a row of this showing.
-- **The end of combat** wakes rows drawn locked: the window holds `PLAYER_REGEN_ENABLED` while it is up.
+- **The end of combat** wakes rows drawn locked: while they are, and only then, a throttled `OnUpdate`
+  on the window reads the same lock, the page lock's flag included, redraws once when it clears and
+  removes itself. Every close takes it off. The picker registers no event, so a window up on a
+  stood-down addon adds nothing to its registration set (`slash-commands-§7`).
 - **A Skin-tab write** made while the owner's picker is up takes its previews back first
   (`lib.__pickerSettle`, internal) and moves what it measures from after (`lib.__pickerRebase`,
   internal), so the profile never gets a half nobody applied. A preview left unapplied is dropped.
