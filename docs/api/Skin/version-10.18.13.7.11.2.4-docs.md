@@ -20,8 +20,20 @@
 
 **Two files move: `SkinDefs.lua` to minor 18 and `Skin.lua` to minor 10.** No member is added, removed
 or changed in signature. The change is in the values: five skins change face, WoW Default takes the
-shipped Friz, Obsidian's titles take its blue, every size is re-measured, and a font override now
-brings its face's sizes. `lib.__FACE_SIZES` is internal, and a stub owes nothing for it.
+shipped Friz, Obsidian's titles take its blue, every size is re-measured, a font override now
+brings its face's sizes, and `OUTLINE_DEFAULT` is `"hud"`. `lib.__FACE_SIZES` is internal, and a stub
+owes nothing for it.
+
+### The default font outline is HUD text only (Skin minor 10)
+
+`LK-F05` of the same bundle (the owner's item 5, its D-10). `OUTLINE_DEFAULT` moves from `"all"` to
+`"hud"`. An owner that never set a mode, an unregistered owner, and `SetOutline` with a value not in
+`OUTLINE_MODES` (nil included) all resolve to it, and `__Tokens` applies it: until minor 10 it read
+`o.outline` alone, so a nil skipped the mode. So `font.outline` answers `""` for such an owner and a
+painted window string draws unoutlined, while `hud.outline` still answers the skin's `OUTLINE`.
+`ResolveSkin` never moves, and every skin still states `OUTLINE` for both tokens. `"all"` is an
+ordinary stored choice now: **a stored mode stays**, and the owner's table is the resolved table
+itself only under `"all"`.
 
 ### Six skins change face (SkinDefs minor 18)
 
@@ -139,8 +151,8 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `Skin:WriteChoice(owner, source, skin, ignore, media)` | boolean | Writes `(source, skin)`, cleaned as `RegisterOwner` cleans a read, into the owner's profile through the `opts.set` it registered, under pcall: the write of the Appearance tab's copy to every Ka0s addon (`LibKa0s-Options-1.0`'s `OptionsAppearance.lua`), which reaches each addon only through its own write seam. `ignore`, optional (Skin minor 5), `{ panel, fonts }`, reaches the setter as its third argument, each half `true` or false; without it the setter gets nil. `media`, optional (Skin minor 6), `{ font = key|false, texture = key|false }`, reaches the setter as its fourth argument, each half a non-empty LSM key or `false` for "the skin's own" (a missing half, an empty string or a non-string is `false`); without it the setter gets nil, and it never moves the applied overrides (`SetOverride` does). `media.outline` (Skin minor 9), one of `OUTLINE_MODES` or nil (an unknown value is nil: "left alone"), reaches the setter in the same table and never moves the applied mode (`SetOutline` does); a setter written before minor 9 ignores it. A setter written for minor 6 stores both overrides of every `media` it is given, so a caller that writes the outline passes both overrides as well (the Appearance tab always does). **Never moves the applied choice**: the tab calls `SetChoice` first (the live repaint), then this. Answers true when a setter ran and did not raise; false for an unregistered owner, one with no setter, or a raise, which goes to the client's error handler (Skin minor 4). |
 | `Skin:GetOverride(owner)` | font, texture | The owner's overrides, the Appearance tab's *Font and texture* (Skin minor 6, LibKa0s#63): each an LSM key (a `font` key, a `statusbar` key), or nil for "the skin's own". `nil, nil` for an unregistered owner. |
 | `Skin:SetOverride(owner, font, texture)` | changed | Sets the overrides; nil keeps that half, `false`, `""` or `FROM_SKIN` (`"@skin"`) clears it. Idempotent: the same pair answers false and does nothing. A font override replaces `font.body`, `font.title` and `hud.font` in every token read (`Token`, `Color`, the facade, every primitive: `__Tokens` lays the overrides over the owner's table); `font.mono` stays the skin's (the console and the tables need a monospace face) and so does every size. A texture override replaces `bar.texture` (`BarStyle`, and every bar drawn through it). *Ignore fonts* wins: with it on, `P.font` gives every string its own face, `Token` / `Resolve` / `BarStyle` give the HUD its own face and outline (Skin minor 8), and the font override is kept with no effect. A change repaints every frame recorded for the owner and fires its `OnLooksChanged` listeners, unless a reload is pending (then it is stored and the reload applies it). Never writes the host's profile (`WriteChoice`'s `media` does). A host applies its stored overrides with one `SetOverride` after `RegisterOwner`. `ResolveSkin` stays override-free. **An override that does not resolve** (a key no loaded LibSharedMedia pack registers, and not a file path) is stored, and `GetOverride` answers it, but every token read keeps the skin's own face or texture, so the strings never drop to the client's stock font nor the bars to flat. The first time an override is checked against LibSharedMedia the engine subscribes once to its `LibSharedMedia_Registered` callback; a key registered later repaints and notifies every owner whose override names it (unless a reload is pending). |
-| `Skin:GetOutline(owner)` | mode | The owner's font outline mode, the Skin tab's *Font outline* (Skin minor 9): one of `OUTLINE_MODES`, `"all"` for an owner that never set one and for an unregistered owner. |
-| `Skin:SetOutline(owner, mode)` | changed | Sets the mode; a value not in `OUTLINE_MODES` (nil included) is `"all"`. Idempotent. `"hud"` makes `font.outline` answer `""` in every token read, `"off"` both `font.outline` and `hud.outline` (*Text is outlined by default*, above). A change repaints every frame recorded for the owner and fires its `OnLooksChanged` listeners, unless a reload is pending (then it is stored and the reload applies it). Never writes the host's profile (`WriteChoice`'s `media.outline` does). *Ignore fonts* wins. |
+| `Skin:GetOutline(owner)` | mode | The owner's font outline mode, the Skin tab's *Font outline* (Skin minor 9): one of `OUTLINE_MODES`, `OUTLINE_DEFAULT` for an owner that never set one and for an unregistered owner, which wears it in every token read too. |
+| `Skin:SetOutline(owner, mode)` | changed | Sets the mode; a value not in `OUTLINE_MODES` (nil included) is `OUTLINE_DEFAULT`. Idempotent. `"hud"` makes `font.outline` answer `""` in every token read, `"off"` both `font.outline` and `hud.outline` (*The default font outline is HUD text only*, above). A change repaints every frame recorded for the owner and fires its `OnLooksChanged` listeners, unless a reload is pending (then it is stored and the reload applies it). Never writes the host's profile (`WriteChoice`'s `media.outline` does). *Ignore fonts* wins. |
 | `Skin:For(owner)` | facade `S` | The owner's facade, `lib.facades[owner]`: one table per owner, kept for the session and across minors. Does not register the owner; an unregistered owner's facade reads Ka0s Default. |
 | `Skin:GetChoice(owner)` | source, skin | The applied choice. An unregistered owner answers `"ka0s", "ka0s"`. |
 | `Skin:DrawsKey(owner)` | key | The key the owner draws by (Skin minor 8): `"eui"` while EllesmereUI paints it (its derived tokens; a refused EllesmereUI included, since the library then paints from them), else the skin key it wears. `DEFAULT` (`"ka0s"`) for Ka0s Default, for a key no skin registers, for an owner on `eui` before EllesmereUI paints it (the live fallback) and for an unregistered owner. Derived on every call, never stored. Lib-level only: no facade member answers it. Minor 7's internal `__DrawsKey` stays one release as an alias of the same function. What a host that asks which skin an owner draws calls instead of rebuilding the answer from `GetChoice` and `GetSkin`; no primitive asks it since `opts.stockDefault` retired (SkinPaint minor 12). |
@@ -164,7 +176,7 @@ still runs the engine: no skin is registered and every token resolves to nil.
 | `DEFAULT` | `"ka0s"` | The skin every owner wears until it picks another, and the one an unknown key resolves as. |
 | `SOURCES` | `{ "ka0s", "eui" }` | The two skin sources. |
 | `OUTLINE_MODES` | `{ "all", "hud", "off" }` | The font outline modes, in the Skin tab's order (Skin minor 9). Read-only. |
-| `OUTLINE_DEFAULT` | `"all"` | The mode an owner wears until it sets another (Skin minor 9). |
+| `OUTLINE_DEFAULT` | `"hud"` | The mode an owner wears until it sets another (Skin minor 9; `"all"` until minor 10). |
 | `SCHEMA` | array | Every token, as `{ name, kind, nilable, group }` (the reference below). Read-only. |
 | `VOCAB` | array | The names the facade carries as trampolines. |
 | `Skin:PaintAce(owner, widget)` | boolean | `SkinAce.lua`. Paints an AceGUI widget a host acquired for `owner`'s page and wraps its release so the widget goes back to the pool stock; see *AceGUI rows*. Answers false, painting nothing, for an owner that is not registered or that ignores its settings panel, a type with no painter (its own or an aliased base's, `AliasAceType`), or a widget another skinning addon skinned. |
@@ -1724,7 +1736,12 @@ What a host acts on when it re-vendors this version (Ka0sAddonsCommonTasks
 `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`'s M2 items). Nothing raises if a host does none of it; each
 point is what the player sees until it does.
 
-- **Store, write and apply the font outline** (Skin minor 9). Add `outline = "all"` to the skin
+- **Move a stored default off `"all"`** (Skin minor 10, D-10). A profile default of
+  `skin.outline = "all"` keeps every player who never chose on All text, because the host hands
+  it to `SetOutline`. Change it to `"hud"`. A choice a player stored stays. A host test that pins a
+  painted string's flags as `"OUTLINE"` moves to `""`, unless it sets `"all"` first.
+
+- **Store, write and apply the font outline** (Skin minor 9). Add `outline = "hud"` to the skin
   block of the profile defaults (beside the source, skin, scope and overrides), with a schema row of
   values `all`, `hud`, `off` (so `/<slash> set <path> hud` works; its `onChange` applies its own half
   only, as the scope rows do). The host's write seam (`opts.set`, the tab's `spec.set`) stores
@@ -1756,10 +1773,10 @@ point is what the player sees until it does.
   `S.FontFlags(stored)` (`S.FontFlags(stored, "window")` for window text). A migration that moves a
   stored default flag onto From skin can use `Skin.ResetToSkin(profile, { "<path>.fontFlags" })`,
   which writes `FROM_SKIN` into a plain string key.
-- **Expect outlined window text.** Every string a primitive paints is outlined under the default
-  `"all"`, so a host test that pins a painted string's flags as `""` moves to `"OUTLINE"`, and a
-  layout measured on unoutlined text may need its widths re-checked (the strip re-fit and the size
-  parity of the same bundle). A host's own `SetFont` calls are not touched.
+- **Expect outlined window text under *All text*.** Every string a primitive paints is outlined under
+  `"all"` (the default until Skin minor 10), so a layout measured on unoutlined text may need its
+  widths re-checked there (the strip re-fit and the size parity of the same bundle). A host's own
+  `SetFont` calls are not touched.
 
 From version 8.16.12.6.10.2.4, still owed by a host that has not re-vendored it:
 

@@ -82,8 +82,10 @@ end)
 test("skin owner tokens: the library's tokens never move, and an owner with none reads the resolved table", function()
   local _, Skin = F.env()
   register(Skin, OTHER, nil)
+  Skin:SetOutline(OTHER, "all")   -- the mode's own derived table is test_skin_outline.lua's
   assertTrue(Skin:__Tokens(OTHER) == Skin:ResolveSkin("ka0s"), "no owner tokens: the resolved table itself")
   register(Skin, OWNER, tokens())
+  Skin:SetOutline(OWNER, "all")
   local base, own = Skin:ResolveSkin("ka0s"), Skin:__Tokens(OWNER)
   for name, v in pairs(base) do
     assertTrue(own[name] == v, name .. " is the library's value, unchanged")

@@ -3,9 +3,9 @@
 -- the owner's ruling D-06): OUTLINE_MODES, GetOutline, SetOutline, the mode applied in `__Tokens`,
 -- WriteChoice's `media.outline`, and P.font never outlining the mono role.
 --
--- What it pins: every skin states OUTLINE for window and HUD text; "all" (the default) reads them as
--- stated and leaves the owner's table the resolved one; "hud" answers "" for `font.outline`; "off"
--- for both; the mode reaches a painted string's flags on the repaint SetOutline triggers, and
+-- What it pins: every skin states OUTLINE for window and HUD text; "hud", the default since LK-F05 of
+-- docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES, answers "" for `font.outline`, for an owner that never
+-- set one too; "all" reads them as stated and leaves the owner's table the resolved one; "off" for both; the mode reaches a painted string's flags on the repaint SetOutline triggers, and
 -- BarStyle; the mono role is never outlined; Ignore fonts wins; ResolveSkin is untouched; one
 -- owner's mode never reaches another; a font override and the mode compose; and WriteChoice hands
 -- the mode on normalized.
@@ -45,14 +45,43 @@ local function bodyString(m, Skin, owner)
   end
 end
 
-test("skin outline: the three modes, in the tab's order, and all is the default", function()
+test("skin outline: the three modes, in the tab's order, and hud is the default", function()
   local _, Skin = F.env()
   assertEqual(table.concat(Skin.OUTLINE_MODES, "|"), "all|hud|off")
-  assertEqual(Skin.OUTLINE_DEFAULT, "all")
-  assertEqual(Skin:GetOutline("Nobody"), "all", "an unregistered owner reads the default")
+  assertEqual(Skin.OUTLINE_DEFAULT, "hud")
+  assertEqual(Skin:GetOutline("Nobody"), "hud", "an unregistered owner reads the default")
   register(Skin, OWNER)
-  assertEqual(Skin:GetOutline(OWNER), "all", "an owner that never set one too")
+  assertEqual(Skin:GetOutline(OWNER), "hud", "an owner that never set one too")
   assertFalse(Skin:SetOutline("Nobody", "off"), "no owner, no change")
+end)
+
+test("skin outline: an owner that never set one draws HUD text only, and the skin's table is untouched", function()
+  -- red under: withOutline reading `o.outline` alone (nil skips the mode, so the default outlines
+  -- window text however OUTLINE_DEFAULT reads). LK-F05 of docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES.
+  local m, Skin = F.env({ lsm = LSM })
+  register(Skin, OWNER)
+  local S = Skin:For(OWNER)
+  assertEqual(S.Token("font.outline"), "", "window text has no outline")
+  assertEqual(S.Token("hud.outline"), "OUTLINE", "the HUD keeps it")
+  assertEqual(S.FontFlags(Skin.FROM_SKIN), "OUTLINE", "a HUD element following the skin is outlined")
+  assertEqual(S.FontFlags(Skin.FROM_SKIN, "window"), "", "window text following the skin is not")
+  assertEqual(S.BarStyle().outline, "OUTLINE", "BarStyle reads it")
+  local _, flags = bodyString(m, Skin, OWNER)
+  assertEqual(flags(), "", "a painted string draws unoutlined")
+  assertEqual(Skin:ResolveSkin("ka0s")["font.outline"], "OUTLINE", "ResolveSkin never moved")
+  assertEqual(Skin:Token("Nobody", "font.outline"), "", "an unregistered owner wears what GetOutline says")
+  assertEqual(Skin:Token("Nobody", "hud.outline"), "OUTLINE", "the HUD half too")
+end)
+
+test("skin outline: a stored choice stays, all included", function()
+  -- red under: a stored "all" read as never set (D-10: the default is for an owner that never set one).
+  local m, Skin = F.env({ lsm = LSM })
+  register(Skin, OWNER)
+  local _, flags = bodyString(m, Skin, OWNER)
+  assertTrue(Skin:SetOutline(OWNER, "all"), "all is a change from the default now")
+  assertEqual(Skin:GetOutline(OWNER), "all")
+  assertEqual(flags(), "OUTLINE", "and the repaint outlines window text")
+  assertEqual(Skin:Token(OWNER, "font.outline"), "OUTLINE")
 end)
 
 test("skin outline: every skin states OUTLINE for window and HUD text", function()
@@ -74,6 +103,7 @@ test("skin outline: all reads the skin, hud drops window text, off drops both", 
   register(Skin, OWNER)
   local S = Skin:For(OWNER)
   local base = Skin:ResolveSkin("ka0s")
+  assertTrue(Skin:SetOutline(OWNER, "all"), "a change from the default")
   assertTrue(Skin:__Tokens(OWNER) == base, "all: the owner reads the resolved table itself")
   assertEqual(S.Token("font.outline"), "OUTLINE"); assertEqual(S.Token("hud.outline"), "OUTLINE")
   assertTrue(Skin:SetOutline(OWNER, "hud"), "a change")
@@ -94,20 +124,20 @@ test("skin outline: all reads the skin, hud drops window text, off drops both", 
   assertEqual(Skin:ResolveSkin("ka0s")["font.outline"], "OUTLINE", "ResolveSkin never moved")
 end)
 
-test("skin outline: an unknown mode is all, a repeat changes nothing, listeners fire per change", function()
+test("skin outline: an unknown mode is the default, a repeat changes nothing, listeners fire per change", function()
   local _, Skin = F.env()
   register(Skin, OWNER)
   local fired = 0
   Skin:OnLooksChanged(OWNER, function() fired = fired + 1 end)
-  assertFalse(Skin:SetOutline(OWNER, "all"), "the default again is no change")
+  assertFalse(Skin:SetOutline(OWNER, "hud"), "the default again is no change")
   assertTrue(Skin:SetOutline(OWNER, "off"))
   assertFalse(Skin:SetOutline(OWNER, "off"), "a repeat is no change")
   assertEqual(fired, 1, "one listener call for one change")
   assertTrue(Skin:SetOutline(OWNER, "THICK"), "an unknown value")
-  assertEqual(Skin:GetOutline(OWNER), "all", "is all")
-  assertTrue(Skin:SetOutline(OWNER, "hud"))
+  assertEqual(Skin:GetOutline(OWNER), "hud", "is the default")
+  assertTrue(Skin:SetOutline(OWNER, "all"))
   assertTrue(Skin:SetOutline(OWNER, nil), "nil")
-  assertEqual(Skin:GetOutline(OWNER), "all", "is all too")
+  assertEqual(Skin:GetOutline(OWNER), "hud", "is the default too")
   assertEqual(fired, 4)
 end)
 
@@ -117,7 +147,9 @@ test("skin outline: a painted string takes the mode's flags on the repaint", fun
   register(Skin, OWNER)
   local fs, flags = bodyString(m, Skin, OWNER)
   assertEqual(fs:GetFontObject().font[1], "Fonts\\Prototype.ttf", "the skin's face")
-  assertEqual(flags(), "OUTLINE", "all: outlined")
+  assertEqual(flags(), "", "the default: unoutlined")
+  Skin:SetOutline(OWNER, "all")
+  assertEqual(flags(), "OUTLINE", "all: the repaint outlines it")
   Skin:SetOutline(OWNER, "hud")
   assertEqual(flags(), "", "hud: the repaint takes the outline off")
   Skin:SetOutline(OWNER, "all")
@@ -128,6 +160,7 @@ test("skin outline: the mono role is never outlined", function()
   -- red under: FONT_ROLE.mono without `outline = false` (the console's digits take OUTLINE under all).
   local m, Skin = F.env({ lsm = LSM })
   register(Skin, OWNER)
+  Skin:SetOutline(OWNER, "all")
   local P = Skin.__P
   local fs = m.CreateFrame("Frame"):CreateFontString()
   fs:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
@@ -147,7 +180,7 @@ test("skin outline: Ignore fonts wins whatever the mode", function()
   local fs = bodyString(m, Skin, OWNER)
   Skin:SetIgnore(OWNER, nil, true)
   assertEqual((fs:GetFont()), "Fonts\\FRIZQT__.TTF", "the string's own font is back")
-  assertNil(S.Token("hud.outline"), "the HUD outline is left alone under all")
+  assertNil(S.Token("hud.outline"), "the HUD outline is left alone under the default")
   Skin:SetOutline(OWNER, "off")
   assertNil(S.Token("hud.outline"), "and under off")
   assertEqual((fs:GetFont()), "Fonts\\FRIZQT__.TTF", "a mode change paints no font back")
@@ -159,8 +192,8 @@ test("skin outline: one owner's mode never reaches another, and a font override 
   register(Skin, OWNER)
   register(Skin, OTHER)
   Skin:SetOutline(OWNER, "off")
-  assertEqual(Skin:Token(OTHER, "font.outline"), "OUTLINE", "the other owner reads the skin")
-  assertEqual(Skin:GetOutline(OTHER), "all")
+  assertEqual(Skin:Token(OTHER, "hud.outline"), "OUTLINE", "the other owner keeps its own mode")
+  assertEqual(Skin:GetOutline(OTHER), "hud")
   Skin:SetOverride(OWNER, "Ka0s Nunito", nil)
   assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Nunito", "the override")
   assertEqual(Skin:Token(OWNER, "font.outline"), "", "and the mode, together")
@@ -177,23 +210,23 @@ test("skin outline: SetOutline while a reload is pending stores the mode and rep
   local fired = 0
   Skin:OnLooksChanged(OWNER, function() fired = fired + 1 end)
   Skin:__RequestReload(OWNER)
-  assertTrue(Skin:SetOutline(OWNER, "hud"), "stored")
+  assertTrue(Skin:SetOutline(OWNER, "off"), "stored")
   assertEqual(calls, 1, "nothing repainted")
   assertEqual(fired, 0, "no listener fired")
-  assertEqual(Skin:GetOutline(OWNER), "hud")
+  assertEqual(Skin:GetOutline(OWNER), "off")
 end)
 
 test("skin outline: WriteChoice hands media.outline to the setter, normalized", function()
   local _, Skin = F.env()
   local store = register(Skin, OWNER)
-  assertTrue(Skin:WriteChoice(OWNER, nil, nil, nil, { font = false, texture = false, outline = "hud" }))
-  assertEqual(store.media.outline, "hud")
+  assertTrue(Skin:WriteChoice(OWNER, nil, nil, nil, { font = false, texture = false, outline = "off" }))
+  assertEqual(store.media.outline, "off")
   assertEqual(store.media.font, false, "the halves as before")
   Skin:WriteChoice(OWNER, nil, nil, nil, { outline = "THICK" })
   assertNil(store.media.outline, "an unknown mode is left alone: nil")
   Skin:WriteChoice(OWNER, nil, nil, nil, { font = "Ka0s Nunito" })
   assertNil(store.media.outline, "no mode given: nil")
-  assertEqual(Skin:GetOutline(OWNER), "all", "WriteChoice never moves the applied mode")
+  assertEqual(Skin:GetOutline(OWNER), "hud", "WriteChoice never moves the applied mode")
 end)
 
 -- ── S.FontFlags (SkinPaintExtras minor 7, LK-04 of the same bundle, D-07) ─────────────────────
@@ -215,6 +248,7 @@ test("skin font flags: a picked flag wins, From skin follows the Font outline", 
   for _, v in ipairs({ "", "OUTLINE", "THICKOUTLINE", "MONOCHROME", "OUTLINE, MONOCHROME" }) do
     assertEqual(S.FontFlags(v), v, "picked: " .. v)
   end
+  Skin:SetOutline(OWNER, "all")
   assertEqual(S.FontFlags(Skin.FROM_SKIN), "OUTLINE", "all: From skin is OUTLINE")
   assertEqual(S.FontFlags(nil), "OUTLINE", "nothing stored is From skin")
   assertEqual(S.FontFlags(Skin.FROM_SKIN, "window"), "OUTLINE", "window text too")
@@ -262,6 +296,8 @@ test("skin outline: an owner on the eui source takes the mode over EllesmereUI's
   Skin.__euiTokens = function(owner) if owner == OWNER then return eui end end
   local ok, err = pcall(function()
     assertEqual(Skin:DrawsKey(OWNER), "eui", "the owner draws by eui")
+    assertEqual(Skin:Token(OWNER, "font.outline"), "", "the default: no window outline")
+    Skin:SetOutline(OWNER, "all")
     assertTrue(Skin:__Tokens(OWNER) == eui, "all: EllesmereUI's table itself")
     Skin:SetOutline(OWNER, "off")
     assertEqual(Skin:Token(OWNER, "font.outline"), "", "off: no window outline")
@@ -300,6 +336,8 @@ test("skin outline: an owner token that follows font.outline follows the mode", 
     set = function() end,
     tokens = { ["lh.rowOutline"] = { default = "OUTLINE", follow = "font.outline" } },
   })
+  assertEqual(Skin:Token(OWNER, "lh.rowOutline"), "", "the default: the mode moved the follow token")
+  Skin:SetOutline(OWNER, "all")
   assertEqual(Skin:Token(OWNER, "lh.rowOutline"), "OUTLINE", "all: Ka0s Default's default")
   Skin:SetOutline(OWNER, "hud")
   assertEqual(Skin:Token(OWNER, "lh.rowOutline"), "", "hud: the mode moved the follow token")

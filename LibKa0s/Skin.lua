@@ -107,7 +107,10 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 10: a font override of a shipped face brings that face's sizes (LK-F02 of Ka0sAddonsCommonTasks
 -- docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES, its D-07): `__Tokens` lays SkinDefs' `__FACE_SIZES` row
 -- over `font.bodySize`, `font.titleSize` and `hud.fontSize`, so body, title and HUD text all keep
--- Prototype's width. A face with no row, a media pack's, keeps the skin's sizes.
+-- Prototype's width. A face with no row, a media pack's, keeps the skin's sizes. And the default
+-- font outline is "hud" (LK-F05, the owner's item 5, D-10): OUTLINE_DEFAULT moves, an owner that
+-- never set a mode and a value not in OUTLINE_MODES resolve to it, and `__Tokens` applies it, so
+-- window text is unoutlined until an owner picks All text. A stored mode stays.
 local MAJOR, MINOR = "LibKa0s-Skin-1.0", 10
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -683,18 +686,18 @@ end
 --- order: "all" (the default), every string painted for the owner but the mono role, and the HUD;
 --- "hud", the HUD only (`hud.outline`); "off", neither.
 lib.OUTLINE_MODES = { "all", "hud", "off" }
-lib.OUTLINE_DEFAULT = "all"
+lib.OUTLINE_DEFAULT = "hud"
 -- The tokens each mode answers "" for in `__Tokens`; "all" leaves both as the skin states them.
 local OUTLINE_DROP = { hud = { "font.outline" }, off = { "font.outline", "hud.outline" } }
 
---- The owner's font outline mode, one of `OUTLINE_MODES`: "all" for an owner that never set one
---- and for an unregistered owner.
+--- The owner's font outline mode, one of `OUTLINE_MODES`: `OUTLINE_DEFAULT` ("hud") for an owner
+--- that never set one and for an unregistered owner.
 function lib:GetOutline(owner)
   local o = self.owners[owner]
   return o and o.outline or self.OUTLINE_DEFAULT
 end
 
---- Set `owner`'s font outline mode; a value not in `OUTLINE_MODES` (nil included) is "all".
+--- Set `owner`'s font outline mode; a value not in `OUTLINE_MODES` (nil included) is `OUTLINE_DEFAULT`.
 --- Idempotent. Never writes the host's profile (WriteChoice's `media.outline` does). A change
 --- repaints every frame recorded for the owner and fires its OnLooksChanged listeners, unless a
 --- reload is pending. "Ignore fonts" wins: P.font gives every string its own font, and `Token`
@@ -820,12 +823,13 @@ local function withOverrides(owner, base)
   return t
 end
 
---- `t` with `owner`'s font outline mode applied (minor 9): `t` itself under "all" and for an
---- unregistered owner, else a derived copy, cached on (t, mode), whose dropped tokens answer "".
+--- `t` with `owner`'s font outline mode applied (minor 9), the mode `GetOutline` answers: `t` itself
+--- under "all" and with no owner named, else a derived copy, cached on (t, mode), whose dropped
+--- tokens answer "".
 local function withOutline(owner, t)
-  local o = lib.owners[owner]
-  local mode = o and o.outline
-  local drop = mode and OUTLINE_DROP[mode]
+  if owner == nil then return t end
+  local mode = lib:GetOutline(owner)
+  local drop = OUTLINE_DROP[mode]
   if not drop then return t end
   local c = lib.__outTok[owner]
   if c and c.from == t and c.mode == mode then return c.t end

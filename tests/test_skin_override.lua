@@ -50,6 +50,7 @@ end)
 test("skin override: a font and a texture reach every token read, and nothing else moves", function()
   local _, Skin = F.env({ lsm = LSM })
   register(Skin, OWNER)
+  Skin:SetOutline(OWNER, "all")   -- the mode's own derived table is test_skin_outline.lua's
   local S = Skin:For(OWNER)
   local base = Skin:ResolveSkin("ka0s")
   assertTrue(Skin:__Tokens(OWNER) == base, "with no override the owner reads the resolved table itself")
@@ -106,6 +107,7 @@ end)
 test("skin override: nil keeps a half, false and the empty string clear it, a repeat changes nothing", function()
   local _, Skin = F.env()
   register(Skin, OWNER)
+  Skin:SetOutline(OWNER, "all")   -- the mode's own derived table is test_skin_outline.lua's
   local fired = 0
   Skin:OnLooksChanged(OWNER, function() fired = fired + 1 end)
   assertTrue(Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat"))

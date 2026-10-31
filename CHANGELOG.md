@@ -26,6 +26,13 @@ minor, and **test kit revision 46**, until an entry below moves one.
 Still **nineteen majors**, now across **fifty-five files** (`OptionsMedia.lua` is new), and no `NEEDS_*`
 floor rises.
 
+### Font outline defaults to HUD text only (`LK-F05`)
+
+`Skin.OUTLINE_DEFAULT` is `"hud"`, still **Skin minor 10**. An owner that never set a mode, an
+unregistered owner, and a value not in `OUTLINE_MODES` all resolve to it, and `__Tokens` now applies
+it, so window text draws unoutlined until an owner picks *All text*. `"all"` keeps working, and a
+stored mode stays. A host whose profile default stores `"all"` moves it to `"hud"` when it re-vendors.
+
 ### "Skin's default" (`LK-F04`)
 
 The Skin tab's leading font and texture row reads "Skin's default (X)", where it read "Skin's own

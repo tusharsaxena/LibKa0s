@@ -556,7 +556,7 @@ end)
 
 test("skin picker: Apply to all saves here and gives every other owner the source and skin alone", function()
   -- red under: applyAll handing lib.__copySkinTo this owner's font outline (the picker never shows it,
-  -- and an owner that never set one answers "all"; D-06 gives the outline to the Skin tab's copy alone).
+  -- and an owner that never set one answers the default; D-06 gives the outline to the Skin tab's copy alone).
   -- And red under minor 2, which left an other owner's font alone across the skin change (LK-07,
   -- D-10): its overrides now reset, written back with its own outline.
   local _, Skin, lib = env()
@@ -584,7 +584,7 @@ test("skin picker: Apply to all saves here and gives every other owner the sourc
   assertEqual(w[4].texture, false)
   assertEqual(w[4].outline, "off", "its own outline written back as it is")
   assertNil(third.writes[#third.writes][4], "an owner with no overrides: no media half")
-  assertEqual(Skin:GetOutline(OWNER), "all", "this owner never set an outline")
+  assertEqual(Skin:GetOutline(OWNER), "hud", "this owner never set an outline")
   assertEqual(Skin:GetOutline(OTHER), "off", "the other owner's Off left alone")
   assertEqual(select(1, Skin:GetIgnore(OTHER)), true, "the other owner's scope left alone")
   assertNil((Skin:GetOverride(OTHER)), "and its font is the new skin's own")

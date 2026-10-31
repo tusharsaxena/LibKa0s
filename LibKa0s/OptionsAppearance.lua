@@ -22,8 +22,8 @@
 --     through Skin:SetOverride and `spec.set`'s fourth argument (LibKa0s-Skin-1.0 minor 6); under
 --     each (minor 4) its "Reset font" / "Reset texture" button, at the dropdown's width, disabled
 --     while that half is already the skin's own; under those (minor 4) the "Font outline" dropdown,
---     All text | HUD text only | Off, through Skin:SetOutline and `media.outline` in `spec.set`'s
---     fourth argument, disabled while "Ignore fonts" is on (which wins);
+--     All text | HUD text only (the default) | Off, through Skin:SetOutline and `media.outline` in
+--     `spec.set`'s fourth argument, disabled while "Ignore fonts" is on (which wins);
 --   * SCOPE (minor 2): two check boxes on the dropdowns' half-width grid, "Ignore settings panel"
 --     (this addon's settings pages stay the client's) and "Ignore fonts" (every string keeps its own
 --     face and size), through Skin:SetIgnore and `spec.set`'s third argument;

@@ -789,7 +789,7 @@ test("appearance: the Font outline dropdown sits in the Font and texture section
   assertEqual(dd.labelText, "Font outline")
   assertEqual(table.concat(dd.order, "|"), "all|hud|off", "the three modes in the tab's order")
   assertEqual(dd.list.all, "All text"); assertEqual(dd.list.hud, "HUD text only"); assertEqual(dd.list.off, "Off")
-  assertEqual(dd.value, "all", "the default")
+  assertEqual(dd.value, "hud", "the default, HUD text only")
   assertFalse(dd.disabled == true, "live while Ignore fonts is off")
   assertTrue(S.OUTLINE_TIP:find("Ignore fonts", 1, true) ~= nil, "the tooltip says Ignore fonts wins")
   local all = flatten(ctx.scroll)
@@ -802,6 +802,7 @@ test("appearance: an outline pick moves the Skin major first, then writes every 
   -- red under: setOutline writing { outline } alone (a minor-6 setter clears both overrides).
   local m, Skin, lib = mediaEnv()
   local store = register(Skin, OWNER)
+  Skin:SetOutline(OWNER, "all")
   Skin:SetOverride(OWNER, "Ka0s Expressway", nil)
   local frame = F.window(m)
   frame.title:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
@@ -848,9 +849,9 @@ test("appearance: in combat an outline pick writes nothing and snaps back", func
   local view = O.AppearanceRows(ctx, specFor(store))
   lib.__combatLocked = true
   view.outline:__fire("OnValueChanged", "off")
-  assertEqual(Skin:GetOutline(OWNER), "all", "the Skin major did not move")
+  assertEqual(Skin:GetOutline(OWNER), "hud", "the Skin major did not move")
   assertNil(store.seamCalls, "the seam was not called")
-  assertEqual(view.outline.value, "all", "the refused pick snaps back")
+  assertEqual(view.outline.value, "hud", "the refused pick snaps back")
   lib.__combatLocked = false
 end)
 
@@ -961,7 +962,7 @@ test("appearance: a skin pick with both overrides set resets both, live and thro
   assertNil(store.calls[2][1]); assertNil(store.calls[2][2]); assertNil(store.calls[2][3])
   assertEqual(media.font, false, "the font: the skin's own")
   assertEqual(media.texture, false, "the texture: the skin's own")
-  assertEqual(media.outline, "all", "with the outline as it is: every media write carries all three")
+  assertEqual(media.outline, "hud", "with the outline as it is: every media write carries all three")
   assertEqual(view.media.font.value, "@skin", "both dropdowns read the skin's own")
   assertEqual(view.media.texture.value, "@skin")
 end)
@@ -1119,7 +1120,7 @@ test("appearance: a reset clears only its half, live and then through the seam",
   assertNil(seen[1]); assertNil(seen[2]); assertNil(seen[3])
   assertEqual(store.media.font, false, "the font: the skin's own")
   assertEqual(store.media.texture, "Ka0s Flat", "the texture kept")
-  assertEqual(store.media.outline, "all", "every media half")
+  assertEqual(store.media.outline, "hud", "every media half")
   assertEqual(select(2, Skin:GetOverride(OWNER)), "Ka0s Flat", "the texture override stays live")
   assertTrue((frame.title:GetFont()) ~= "Fonts\\Expressway.ttf", "the title repainted in the skin's face")
   assertEqual(view.media.font.value, "@skin", "the dropdown reads the skin's own")

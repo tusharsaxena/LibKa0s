@@ -38,6 +38,15 @@ citations still name the `Options.lua` minors that introduced them. The minor th
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
 
+## What changed at this version: the outline default (`LK-F05`)
+
+`LK-F05` of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/` (the owner's item 5,
+its D-10). `LibKa0s-Skin-1.0`'s `OUTLINE_DEFAULT` is `"hud"`, so the Skin tab's *Font outline* shows
+*HUD text only* for an owner that never set one. No Options file moves for it. The dropdown keeps its
+order, *All text* first. The reset buttons, the skin change, the Skin tab's copy and the picker's
+*Apply to all* behave as before: each carries the applied mode as it is, and a never-set owner's
+applied mode now reads `"hud"`, so that is what the first media write stores. A stored mode stays.
+
 ## What changed at this version: "Skin's default" (`LK-F04`)
 
 `LK-F04` of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/` (the owner's item 4).
@@ -150,8 +159,8 @@ existed (C1's six rows, C12's companion), so it is extended, not duplicated.
 
 **The Skin tab's *Font outline*** (A4). In the *Font and texture* section, under the reset buttons
 (under the Scope's two check boxes as `LK-03` drew it; `LK-08` moved it), a dropdown at
-`BUTTON_PAIR_REL`, *Font outline*, offers *All text* (`"all"`, the default), *HUD text only*
-(`"hud"`) and *Off* (`"off"`), in that order. A pick is refused in combat; it calls
+`BUTTON_PAIR_REL`, *Font outline*, offers *All text* (`"all"`, the default until `LK-F05`), *HUD text only*
+(`"hud"`, the default since) and *Off* (`"off"`), in that order. A pick is refused in combat; it calls
 `Skin:SetOutline(owner, mode)` first (the live repaint: every string the owner's primitives paint
 loses or regains its outline, and the HUD's `hud.outline` follows), then `spec.set(nil, nil, nil,
 { font, texture, outline })`. It is **grayed while *Ignore fonts* is on**, which wins (`sync` reads
@@ -170,7 +179,7 @@ takes a `media` with any half left out (nil: the target's own), calls `SetOutlin
 
 **The skin picker's *Apply to all Ka0s addons* does not carry it**: *Apply to all* still gives the
 other owners the source and skin alone. The picker never shows the outline, and an owner that never
-set one answers `"all"`, so carrying it could silently undo another addon's *Off* (the LK-03 review;
+set one answers the default, so carrying it could silently undo another addon's *Off* (the LK-03 review;
 D-06 gives the outline to the Skin tab's copy alone). `OptionsSkinPicker.lua` stayed at minor 2 for
 it; minor 3 is `LK-07`'s, below.
 
@@ -2816,7 +2825,7 @@ Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
    Absent with a Skin copy that has no `SetIgnore`. The **Font outline** dropdown (OptionsAppearance
    minor 4, `LibKa0s-Skin-1.0` minor 9; in the Font and texture section above, under the reset
    buttons) (`BUTTON_PAIR_REL`): *All
-   text*, *HUD text only*, *Off* (`"all"`, `"hud"`, `"off"`, the Skin major's `OUTLINE_MODES`), where
+   text*, *HUD text only* (the default), *Off* (`"all"`, `"hud"`, `"off"`, the Skin major's `OUTLINE_MODES`), where
    the skin's font flags apply. A pick is refused in combat; it calls `Skin:SetOutline(owner, mode)`
    first (the live repaint), then `spec.set(nil, nil, nil, { font, texture, outline })` with every
    half. Grayed while *Ignore fonts* is on, which wins; its tooltip (`OUTLINE_TIP`) says so, and that

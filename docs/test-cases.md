@@ -571,12 +571,14 @@ Total.
 - skin ignore fonts: BarStyle's font fields are nil, every other field unchanged
 - skin ignore fonts: an unregistered owner reads Ka0s Default's HUD face as before
 
-### test_skin_outline.lua (17)
+### test_skin_outline.lua (19)
 
-- skin outline: the three modes, in the tab's order, and all is the default
+- skin outline: the three modes, in the tab's order, and hud is the default
+- skin outline: an owner that never set one draws HUD text only, and the skin's table is untouched
+- skin outline: a stored choice stays, all included
 - skin outline: every skin states OUTLINE for window and HUD text
 - skin outline: all reads the skin, hud drops window text, off drops both
-- skin outline: an unknown mode is all, a repeat changes nothing, listeners fire per change
+- skin outline: an unknown mode is the default, a repeat changes nothing, listeners fire per change
 - skin outline: a painted string takes the mode's flags on the repaint
 - skin outline: the mono role is never outlined
 - skin outline: Ignore fonts wins whatever the mode
@@ -3915,7 +3917,7 @@ Total.
 | test_media.lua | 42 |
 | test_skin.lua | 33 |
 | test_skin_override.lua | 27 |
-| test_skin_outline.lua | 17 |
+| test_skin_outline.lua | 19 |
 | test_skin_owner_tokens.lua | 16 |
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
@@ -4045,4 +4047,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3443** |
+| **Total** | **3445** |
