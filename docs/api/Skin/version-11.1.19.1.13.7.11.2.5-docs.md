@@ -99,7 +99,7 @@ it down 0.5 when it ran more than 2% wide under any model.
 | Glass | `11` | `13` | `11` | `11.5` / `13` / `11` |
 | High Contrast | `10.5` | `12.5` | `10.5` | `12` / `13` / `11` |
 | Ember | `11` | `12.5` | `11` | `11.5` / `12.5` / `11` |
-| WoW Default | `11` | `13` | `11` | `12` / `14` / `12`; real Friz is at last measured, and is wider than Prototype |
+| WoW Default | `11` | `13` | `11` | `12` / `14` / `12`; real Friz (md5 `87cd491cd119e8c7aa48b562d7482ed8`, LibKa0s#69) is at last measured, and is wider than Prototype |
 | WoW Midnight | `11.5` | `13` | `11.5` | `12.5` / `13.5` / `12` |
 | WoW Forever | `12` | `13.5` | `11.5` | unchanged |
 

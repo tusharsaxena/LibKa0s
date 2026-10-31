@@ -42,6 +42,10 @@ Additive on every `-1.0` surface. Consumers' degradation stubs owe the new `O.Po
 - **Schema minor 3**: `Validate` takes a `note` row and reports one with no `text` or with a `path`.
 - **Slash minor 21**: `/list` and `resetall` skip a note.
 
+### WoW Default's Friz is measured and guarded (`LK-M2-69`, LibKa0s#69)
+
+No size moves. Real Friz Quadrata, md5 `87cd491cd119e8c7aa48b562d7482ed8` against Prototype's `0483b4eeaaefc7b81986e43702c7900d`, is the file `LK-F02` already shipped as `FrizQuadrataTT-Regular.ttf`, so WoW Default's 11 / 13 / 11 came from it. The re-measure by the same rule landed on the same sizes: body best 11.5 runs +2.3% and steps down to 11, title best 13.5 runs +3.5% and steps down to 13, HUD best 11 stands. `tests/test_skin_width_parity.lua` gains a case that goes red if the shipped Friz turns into Prototype's bytes or WoW Default stops drawing it. `SkinDefs.lua`'s minor 17 note no longer calls it unmeasured, and the md5 is recorded there, in `media/fonts/FONTS.md` and in the Skin document. No minor moves: `SkinDefs.lua` changes in comments only, inside the unreleased minor 19.
+
 ### `ApplyLevel` allocates nothing
 
 **WidgetsDragHandle minor 9**: `handle:ApplyLevel()` and the strip's repaint name their two marks where each built a throwaway table per call, so a host that re-levels every frame leaves no garbage.

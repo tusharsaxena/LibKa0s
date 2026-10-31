@@ -134,7 +134,7 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/plan-data/font_metrics_shipped.py:
 -- Obsidian 12.5 / 14.5, Azeroth 12 / 12.5, Glass 11.5 / 13, High Contrast 12 / 13 (it no longer
 -- reads larger), Ember 11.5 / 12.5, WoW Midnight 12.5 / 13.5 and WoW Forever 12 / 13.5; Ka0s Default
--- and WoW Default (real Friz Quadrata unmeasured, D-05) keep 12 / 14. tests/test_skin_width_parity.lua
+-- keeps 12 / 14, and so does WoW Default until minor 18. tests/test_skin_width_parity.lua
 -- pins the measured widths. Then (LK-06, ruling D-09, still minor 17): every skin names a HUD size
 -- of its own (HUD_SIZE below), from the same measurement, and `hud.fontSize` becomes a relative
 -- reference like `font.bodySize`: S.HudFontSize scales a HUD element's stored size by it over Ka0s
@@ -153,7 +153,9 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- with OUTLINE both ways: FACE_SIZES (SkinDefsOthers.lua since minor 19)
 -- holds each shipped face's sizes, each skin's sizes are its faces' rows, and a font override of a
 -- shipped face draws at that face's row (Skin minor 10, D-07). Real Friz is measured at last, so WoW
--- Default no longer shares Ka0s Default's sizes.
+-- Default no longer shares Ka0s Default's sizes: 11 / 13 / 11, measured on FrizQuadrataTT-Regular.ttf,
+-- md5 87cd491cd119e8c7aa48b562d7482ed8 (LibKa0s#69, re-measured 2026-10-31), where Prototype-Regular.ttf and the
+-- owner's replaced client file are md5 0483b4eeaaefc7b81986e43702c7900d.
 -- Minor 19: the eight other skins moved out, unchanged, to SkinDefsOthers.lua (LK-M2-PEEL of
 -- Ka0sAddonsCommonTasks docs/2026-10-31-FINDINGS_REMEDIATION, the seam CLAUDE.md's census named).
 local DEFS_MINOR = 19

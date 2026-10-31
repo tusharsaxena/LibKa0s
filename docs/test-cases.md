@@ -687,12 +687,13 @@ Total.
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 
-### test_skin_width_parity.lua (16)
+### test_skin_width_parity.lua (17)
 
 - skin width parity: every skin's body, title and HUD sizes are the measured ones
 - skin width parity: every skin's text is as wide as Ka0s Default's, never more than 2% wider
 - skin width parity: every shipped face has a size for each role, as wide as Ka0s Default's
 - skin width parity: a skin's sizes are its faces' rows in the library's table
+- skin width parity: WoW Default's Friz is real Friz, not Prototype's bytes
 - skin width parity: High Contrast no longer promises larger type
 - skin hud size: HudFontSize is in the vocabulary and the facade
 - skin hud size: a stored size scales by the skin's HUD size over Ka0s Default's
@@ -4057,7 +4058,7 @@ Total.
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 31 |
-| test_skin_width_parity.lua | 16 |
+| test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 37 |
 | test_skin_paint_controls.lua | 31 |
@@ -4189,4 +4190,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3555** |
+| **Total** | **3556** |
