@@ -460,7 +460,7 @@ Total.
 - toast: a close mark Core cannot build (no frame) leaves the toast without one
 - toast: two instances keep separate queues and frames
 
-### test_media.lua (40)
+### test_media.lua (42)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -495,6 +495,8 @@ Total.
 - media: each face names its own locales, and only a face with Cyrillic reaches ruRU
 - media: every OFL face ships with its license text beside it
 - media: a face off the OFL ships its author's terms verbatim, and the face says the same
+- media: Open Sans ships the Apache 2.0 text, and each new face's bytes carry the notice recorded for it
+- media: FONTS.md records every shipped face by file, and the notice of each new one
 - media: RegisterLSM('X') registers 'Ka0s Nunito' under X's own libs folder, each face with its mask
 - media: a ruRU client keeps every Cyrillic face and is refused the western-only ones
 - media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
@@ -3697,7 +3699,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 45
+- the kit is revision 46
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -3878,7 +3880,7 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
-| test_media.lua | 40 |
+| test_media.lua | 42 |
 | test_skin.lua | 33 |
 | test_skin_override.lua | 27 |
 | test_skin_outline.lua | 17 |
@@ -4010,4 +4012,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3412** |
+| **Total** | **3414** |

@@ -18,8 +18,9 @@ local FONT_DIR = "LibKa0s/media/fonts"
 -- count below reads these, so a payload change moves two numbers here rather than one per case.
 -- Minor 10: JetBrains Mono and fourteen skin faces (Oxanium's two, Fira Sans Regular and Inter's two
 -- left; Fira Sans Medium, Prototype and Expressway came), of which eleven and JetBrains Mono draw
--- Cyrillic.
-local FONT_COUNT, RU_COUNT = 15, 12
+-- Cyrillic. Minor 11 adds thirteen (LK-F01): Segoe UI's four, Open Sans's five and Avant Garde draw
+-- Cyrillic, Friz Quadrata, Emblem and Doris PP do not.
+local FONT_COUNT, RU_COUNT = 28, 22
 
 --- The basenames on disk under `dir`, as a set. Lua 5.1 has no directory API and this repo does not
 --- depend on LuaFileSystem, so the listing shells out — the same bargain tests/_kit/vendor_sync.lua
@@ -602,6 +603,35 @@ local NON_OFL = {
   },
 }
 
+-- The thirteen faces minor 11 adds (LK-F01, the owner's item 3), from the owner's WoW install. Open
+-- Sans is Apache 2.0, whose text ships as a file of its own. The other eight have no license anyone can
+-- ship, so `FONTS.md` records each one's name-table notice and the ruling it ships on; `notice` is
+-- that notice as the file's own name table spells it, so a different cut goes red. `ru` as above.
+local APACHE = "OpenSans-Apache-2.0.txt"
+local RECORD = "FONTS.md"
+local SEGOE, FRIZ_ITC = "Microsoft Corporation. All Rights Reserved", "International Typeface Corporation"
+local OPEN_SANS = "Google Corporation"
+local RULED = {
+  ["Ka0s Friz Quadrata TT"]  = { file = "FrizQuadrataTT-Regular.ttf", license = RECORD, notice = FRIZ_ITC },
+  ["Ka0s Segoe UI"]          = { file = "SegoeUI-Regular.ttf", license = RECORD, notice = SEGOE, ru = true },
+  ["Ka0s Segoe UI Bold"]     = { file = "SegoeUI-Bold.ttf", license = RECORD, notice = SEGOE, ru = true },
+  ["Ka0s Segoe UI Light"]    = { file = "SegoeUI-Semilight.ttf", license = RECORD, notice = SEGOE, ru = true },
+  ["Ka0s Segoe UI Semibold"] = { file = "SegoeUI-Semibold.ttf", license = RECORD, notice = SEGOE, ru = true },
+  ["Ka0s Open Sans"]           = { file = "OpenSans-Regular.ttf", license = APACHE, notice = OPEN_SANS, ru = true },
+  ["Ka0s Open Sans Bold"]      = { file = "OpenSans-Bold.ttf", license = APACHE, notice = OPEN_SANS, ru = true },
+  ["Ka0s Open Sans Condensed"] = { file = "OpenSans-CondBold.ttf", license = APACHE, notice = OPEN_SANS, ru = true },
+  ["Ka0s Open Sans Light"]     = { file = "OpenSans-Light.ttf", license = APACHE, notice = OPEN_SANS, ru = true },
+  ["Ka0s Open Sans Semibold"]  = { file = "OpenSans-Semibold.ttf", license = APACHE, notice = OPEN_SANS, ru = true },
+  ["Ka0s Emblem"]      = { file = "Emblem-Regular.ttf", license = RECORD, notice = "Weatherly Systems" },
+  ["Ka0s Doris PP"]    = { file = "DorisPP-Bold.ttf", license = RECORD, notice = "Ares Software Corp" },
+  ["Ka0s Avant Garde"] = { file = "AvantGarde-Regular.ttf", license = RECORD, notice = "ParaType, Inc.", ru = true },
+}
+
+--- Whether a TrueType name table carries `phrase`, in a Mac (single-byte) or Windows (UTF-16BE) record.
+local function nameTableHas(body, phrase)
+  return body:find(phrase, 1, true) ~= nil or body:find((phrase:gsub(".", "\0%0")), 1, true) ~= nil
+end
+
 test("media: FONTS carries every skin face beside JetBrains Mono", function()
   -- red under: minor 5, whose catalog was one monospace face; and minor 6's five, Barlow and Cinzel
   -- among them, which three skins shared. Minor 9 added Oxanium SemiBold and Bold, Ka0s Default's faces;
@@ -627,12 +657,14 @@ test("media: FONTS carries every skin face beside JetBrains Mono", function()
   for _, license in ipairs(RETIRED_LICENSES) do
     assertTrue(files[license] == nil, license .. " ships without its faces")
   end
-  for name, want in pairs(SKIN_FACES) do
-    local entry = media.FONTS[name]
-    assertTrue(entry ~= nil, "FONTS has no '" .. name .. "'")
-    if entry then
-      assertEqual(entry.file, want.file, name .. "'s file")
-      assertEqual(entry.license, want.license, name .. "'s license")
+  for _, faces in ipairs({ SKIN_FACES, RULED }) do
+    for name, want in pairs(faces) do
+      local entry = media.FONTS[name]
+      assertTrue(entry ~= nil, "FONTS has no '" .. name .. "'")
+      if entry then
+        assertEqual(entry.file, want.file, name .. "'s file")
+        assertEqual(entry.license, want.license, name .. "'s license")
+      end
     end
   end
 end)
@@ -645,9 +677,12 @@ test("media: each face names its own locales, and only a face with Cyrillic reac
       name .. " carries no langmask list")
   end
   assertEqual(table.concat(media.FONTS["JetBrains Mono"].langmask or {}, ","), "western,ruRU")
-  for name, want in pairs(SKIN_FACES) do
-    assertEqual(table.concat(media.FONTS[name].langmask or {}, ","), want.ru and "western,ruRU" or "western",
-      name .. "'s locales")
+  for _, faces in ipairs({ SKIN_FACES, RULED }) do
+    for name, want in pairs(faces) do
+      local entry = media.FONTS[name] or {}
+      assertEqual(table.concat(entry.langmask or {}, ","), want.ru and "western,ruRU" or "western",
+        name .. "'s locales")
+    end
   end
 end)
 
@@ -665,7 +700,7 @@ test("media: every OFL face ships with its license text beside it", function()
   for name, entry in pairs(media.FONTS) do
     local body = readFile(FONT_DIR .. "/" .. entry.license)
     assertTrue(body ~= nil, name .. ": " .. entry.license .. " is missing")
-    if body and not NON_OFL[entry.license] then
+    if body and not NON_OFL[entry.license] and entry.license ~= RECORD and entry.license ~= APACHE then
       assertTrue(body:find("SIL Open Font License, Version 1.1", 1, true) ~= nil,
         entry.license .. " is not the OFL 1.1 text")
     end
@@ -700,6 +735,33 @@ test("media: a face off the OFL ships its author's terms verbatim, and the face 
   end
 end)
 
+test("media: Open Sans ships the Apache 2.0 text, and each new face's bytes carry the notice recorded for it", function()
+  -- red under: a different cut of a face swapped in under the same name, whose ruling would be stale
+  local body = readFile(FONT_DIR .. "/" .. APACHE) or ""
+  assertTrue(body:find("Apache License", 1, true) ~= nil, APACHE .. " is not the Apache text")
+  assertTrue(body:find("Version 2.0, January 2004", 1, true) ~= nil, APACHE .. " is not version 2.0")
+  for name, want in pairs(RULED) do
+    local face = readFile(FONT_DIR .. "/" .. want.file) or ""
+    assertTrue(face ~= "", want.file .. " is missing")
+    assertTrue(nameTableHas(face, want.notice), name .. "'s name table lacks \"" .. want.notice .. "\"")
+  end
+end)
+
+test("media: FONTS.md records every shipped face by file, and the notice of each new one", function()
+  -- red under: a face added without its record; D-12 moved this record out of the README
+  local record = readFile(FONT_DIR .. "/" .. RECORD) or ""
+  assertTrue(record ~= "", RECORD .. " is missing")
+  for name, entry in pairs(media.FONTS) do
+    assertTrue(record:find(entry.file, 1, true) ~= nil, RECORD .. " does not record " .. name)
+    if entry.license ~= RECORD then
+      assertTrue(record:find(entry.license, 1, true) ~= nil, RECORD .. " does not name " .. entry.license)
+    end
+  end
+  for _, want in pairs(RULED) do
+    assertTrue(record:find(want.notice, 1, true) ~= nil, RECORD .. " lacks \"" .. want.notice .. "\"")
+  end
+end)
+
 test("media: RegisterLSM('X') registers 'Ka0s Nunito' under X's own libs folder, each face with its mask", function()
   -- The path is built from the host's name: a vendored copy cannot know its own folder.
   local store, masks = {}, {}
@@ -717,6 +779,10 @@ test("media: RegisterLSM('X') registers 'Ka0s Nunito' under X's own libs folder,
     assertEqual(masks[want.face], want.ru and 128 + 2 or 128, want.face .. "'s mask")
     assertEqual(store.font[want.face], "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\fonts\\" .. want.file)
   end
+  for name, want in pairs(RULED) do
+    assertEqual(masks[name], want.ru and 128 + 2 or 128, name .. "'s mask")
+    assertEqual(store.font[name], "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\fonts\\" .. want.file)
+  end
   assertEqual(fonts, FONT_COUNT)
 end)
 
@@ -730,6 +796,8 @@ test("media: a ruRU client keeps every Cyrillic face and is refused the western-
   assertTrue(store.font["Ka0s Prototype"] == nil, "Prototype, western only, landed on ruRU")
   assertTrue(store.font["Ka0s Nunito"] ~= nil, "a Cyrillic face was refused on ruRU")
   assertTrue(store.font["Ka0s Expressway"] ~= nil, "Expressway, whose cmap has Cyrillic, was refused on ruRU")
+  assertTrue(store.font["Ka0s Friz Quadrata TT"] == nil, "Friz Quadrata, western only, landed on ruRU")
+  assertTrue(store.font["Ka0s Segoe UI Semibold"] ~= nil, "Segoe UI, whose cmap has Cyrillic, was refused on ruRU")
 end)
 
 test("media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless", function()

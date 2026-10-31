@@ -10,9 +10,9 @@
 | Version | **45** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.82.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 44](version-44-docs.md) — no display-glyph guard, and `mock_paint.lua`'s `SetTextColor` reset a string's alpha to 1 when given three numbers |
-| Superseded by | — |
+| Superseded by | [version 46](version-46-docs.md) — the safe set read from the v1.83.0 faces |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `45` |
 

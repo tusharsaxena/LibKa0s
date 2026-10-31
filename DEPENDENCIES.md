@@ -106,8 +106,8 @@ statusbars in `LibKa0s/media/textures/` from named constants — no network and 
 needs Python 3, Pillow and NumPy only; `tools/artwork/glass_textures.py` does the same for the Glass
 skin's border and fill. `tools/artwork/fonts.py` is the provenance record for the skin faces in
 `LibKa0s/media/fonts/`: `--fetch` downloads them from google/fonts at pinned commits, and Prototype
-and Expressway's EULA from their authors' archives on dafont.com, and Expressway itself from the
-owner's SharedMedia pack, checking each SHA-256, into `tools/artwork/.cache/fonts/`, and `--build`
+and Expressway's EULA from their authors' archives on dafont.com, and Expressway and the 2026-10-31
+faces from the owner's WoW install, checking each SHA-256, into `tools/artwork/.cache/fonts/`, and `--build`
 copies them in and cuts static weights from the three variable ones (Nunito, Vollkorn, Bitter) with
 fontTools. `tools/skin_gallery.py`
 crops in-game skin screenshots and builds the showcases in `media/screenshots/skins/`; it needs

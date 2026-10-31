@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **10** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.82.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 9.1](./version-9.1-docs.md) (shipped in v1.79.0) — the same surface with Oxanium SemiBold and Bold, Fira Sans Regular and Inter Regular and SemiBold in `FONTS`, and without Prototype, Fira Sans Medium and Expressway |
-| Superseded by | — |
+| Superseded by | [version 11.1](./version-11.1-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 10, MediaIcons = 1 }` |
 
 ## What changed at this version

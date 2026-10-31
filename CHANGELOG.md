@@ -10,6 +10,37 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.83.0 — unreleased
+
+Opened 2026-10-31, on `feat/2026-10-31-font-pickers-skin-faces`: the owner's font pickers and skin
+faces batch (Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`, M1), the items
+`LK-F01` to `LK-F06`. The release closes on the same branch (`LK-F90`); the tag is local until the
+owner's go-ahead.
+
+Versions in this release: **Media minor 11** (`LibKa0s-Media-1.0` key **11.1**); every other file
+still at its v1.82.0 minor, and **test kit revision 46**, until an entry below moves one.
+
+### The payload ships thirteen more faces and keeps every older one (`LK-F01`)
+
+`LibKa0s-Media-1.0` key 11.1, documented in
+[docs/api/Media/version-11.1-docs.md](docs/api/Media/version-11.1-docs.md) (*What changed at this
+version*). `FONTS` grows from fifteen entries to twenty-eight, twenty-two of them reaching ruRU, from
+the add-ons in the owner's WoW install: `Ka0s Friz Quadrata TT`, Segoe UI's four weights, Open Sans's
+five, `Ka0s Emblem`, `Ka0s Doris PP` and `Ka0s Avant Garde`. A face no skin names now stays in the
+payload, the owner's ruling.
+
+- **Open Sans is Apache 2.0**, and `OpenSans-Apache-2.0.txt` ships beside it. **The other eight have no
+  license that allows this.** They ship on the owner's rulings of 2026-10-31 alone.
+- **`media/fonts/FONTS.md`** records every face: source, copyright as its name table reads, license
+  and ruling. A face with no license file names it as its `license`. `tests/test_media.lua` requires
+  every shipped file in the record, and each new face's notice in both its bytes and the record, so a
+  different cut goes red rather than shipping on a stale ruling.
+- **Test kit revision 46**: `glyphs.lua`'s safe set is read from the twenty-eight faces. U+2044 leaves
+  it (Emblem has none), and real Friz Quadrata is now measured.
+
+**What a consumer owes:** nothing in code; the next re-vendor carries the files, about 5 MB more per
+addon. A test that counts `RegisterLSM`'s fonts moves with the catalog.
+
 ## v1.82.0 — 2026-10-30
 
 Opened 2026-10-30, on `feat/2026-10-30-skin-fonts-feedback`: the owner's skin fonts and feedback

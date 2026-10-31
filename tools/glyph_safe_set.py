@@ -5,12 +5,13 @@ The kit's display-glyph guard (testkit/glyphs.lua, kit revision 45; LK-12 of Ka0
 docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK, ruling D-19) passes a display string only when every
 character in it is one EVERY face a shipped skin draws with can draw: printable ASCII, and the
 non-ASCII code points this script finds in the cmap of every .ttf in LibKa0s/media/fonts. That
-folder holds exactly the faces the skins name (the body, title and HUD faces, and JetBrains Mono,
-the mono role), because LK-02 removed every face no skin uses.
+folder holds every face a skin names, every face the Skin tab's font override offers from the
+library, and JetBrains Mono, the mono role: since LK-F01 of Ka0sAddonsCommonTasks
+docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES a face a skin stops naming stays in the folder, so the
+set holds for a Ka0s face picked as an override too.
 
-Real Friz Quadrata, WoW Default's face and the client's own, is not in the folder and is not
-measured (D-05: on the owner's client Fonts/FRIZQT__.TTF is Prototype; IS-07 asks for a real
-measurement). The set is therefore exact for the shipped faces and assumed for Friz.
+Real Friz Quadrata is in the folder from LK-F01 (`FrizQuadrataTT-Regular.ttf`), so the set now
+measures it, which closes D-05's gap. A client's own Fonts/FRIZQT__.TTF is still not read.
 
 Usage, from the repo root (needs fontTools):
 
