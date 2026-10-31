@@ -1949,3 +1949,8 @@ comparison across all four has no single host to live in, so it is recorded here
 
 This has **not** been run — it needs a live client. Until someone runs it, treat the descriptor's
 visual fidelity as unverified.
+
+**Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
+
+- `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
+- `hostBackdrop`: no consumer as of v1.83.0, kept because `CopyWindow` writes it itself from `d.backdrop`, so it is state rather than a field a host passes.

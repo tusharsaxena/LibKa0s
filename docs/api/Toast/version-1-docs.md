@@ -210,3 +210,13 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 `Toast.lua` is an entry in `LibKa0s.xml`, after `Glow.lua`, so the whole-folder copy brings it in
 with no load-list change in the host. A host vendoring the file alone ahead of a full re-vendor
 (above) lists it in its TOC after `LibKa0s.xml` and records that as a temporary deviation.
+
+**Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
+
+- `lib.DURATION`: no consumer as of v1.83.0, kept because a host passes `duration` as a function of its own setting.
+- `lib.HEIGHT`: no consumer as of v1.83.0, kept because it is the default a host overrides with `height`.
+- `lib.MAX_QUEUE`: no consumer as of v1.83.0, kept because it is the default behind `maxQueue`.
+- `lib.POINT`: no consumer as of v1.83.0, kept because it is the default behind `defaultPosition`.
+- `lib.STRATA`: no consumer as of v1.83.0, kept because it is the alert tier the shell draws at.
+- `lib.WIDTH`: no consumer as of v1.83.0, kept because it is the default a host overrides with `width`.
+- `soundKit`: no consumer as of v1.83.0, kept because it is the numeric alternative to `sound` for a host that plays a sound kit id.

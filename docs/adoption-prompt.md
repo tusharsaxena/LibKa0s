@@ -620,7 +620,7 @@ When it is a real, additive library change, do it in this order and do not skip 
    previous version's document `Superseded`. A field that exists and is undocumented is a field the
    next adopter re-invents; a field documented only in the current version is one the next adopter
    assumes their older copy has. See `../LibKa0s/docs/api/README.md` for the exact steps.
-6. **Green the library**: `lua tests/run.lua` and `luacheck .` (0/0) in `../LibKa0s`.
+6. **Green the library**: `lua tests/run.lua` and `~/.claude/dev-copilot/bin/ka0s-bounded luacheck .` (0/0) in `../LibKa0s`.
 7. **Re-vendor into EVERY consumer, not just this addon.** The consumer list is in
    `../LibKa0s/docs/releasing.md`. It starts at AbsorbTracker and grows by one every time an addon
    completes this migration — so check it, do not assume it is still just the one.
@@ -675,7 +675,7 @@ Run in this addon's repo and paste the real output — do not summarize a run yo
 
 ```
 lua tests/run.lua                                              # all green
-luacheck .                                                     # 0 warnings / 0 errors
+~/.claude/dev-copilot/bin/ka0s-bounded luacheck .             # 0 warnings / 0 errors
 diff -r --strip-trailing-cr ../LibKa0s/LibKa0s libs/LibKa0s    # content — MUST be empty
 diff -r ../LibKa0s/LibKa0s libs/LibKa0s                        # bytes  — SHOULD be empty
 diff -r --strip-trailing-cr ../LibKa0s/testkit tests/_kit      # content — MUST be empty
@@ -689,7 +689,7 @@ was actually checked and confirm **every seam file you wrote is inside that set*
 
 ```
 cat .luacheckrc | grep -A5 exclude_files
-luacheck . --formatter plain | tail -1        # and check the file count it reports
+~/.claude/dev-copilot/bin/ka0s-bounded luacheck . --formatter plain | tail -1        # and check the file count it reports
 ```
 
 A warning inside a seam file is an adoption defect. A warning elsewhere is pre-existing host hygiene
@@ -780,6 +780,27 @@ cannot reach where you need it:
 
 If you find another, add it here in the same shape: what the contract cannot express, the file:line
 where it binds, and the issue tracking it.
+
+### New since v1.78.0 — the Skin major and the media pickers
+
+Two surfaces reached every addon after this page's last pass, and the checklist above does not walk
+them. Each major's document under `docs/api/` is the contract; the table in `docs/releasing.md` shows
+where each host wires it.
+
+**`LibKa0s-Skin-1.0`.** `core/SkinSetup.lua` registers the addon with `Skin:RegisterOwner` and keeps
+the view `Skin:For(owner)` answers as `NS.Skin`, with a degraded view for a missing library, held to
+the live one by `Kit.assertSurfaceParity`. Read every color, font and texture through `NS.Skin`
+(`Color`, `Token`, `Resolve`) and repaint from `OnLooksChanged`, so no hand-typed color survives on a
+surface the skin owns. The settings side is the library's: `O.AppearanceTab` is the Skin tab, and
+`O.SkinPicker` with `O.SkinVerb` is the first-run picker and the `/<slash> skin` verb. The owner's
+write seam takes all four arguments: source, skin, ignore and media.
+
+**The `Ka0sMedia_*` pickers (OptionsMedia, v1.83.0).** `Ka0sMedia_Font`, `Ka0sMedia_Statusbar`,
+`Ka0sMedia_Border`, `Ka0sMedia_Background` and `Ka0sMedia_Sound` are AceGUI types that preview their
+rows. They need neither AceGUI-3.0-SharedMediaWidgets nor LibSharedMedia. Nothing is owed: a
+`dialogControl` naming an unregistered `LSM30_*` type draws the matching picker, and a registered one
+is used as it always was. A row may name `Ka0sMedia_*` directly, and a composer-built row needs no
+change.
 
 ### New at v1.75.0 — two new majors, three promotions, and what must no longer be hand-rolled
 

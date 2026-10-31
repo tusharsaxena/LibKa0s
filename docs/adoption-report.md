@@ -178,7 +178,7 @@ In this repo and in every consumer. Paste real output; never summarize a run you
 
 ```
 lua tests/run.lua
-luacheck .
+~/.claude/dev-copilot/bin/ka0s-bounded luacheck .
 ```
 
 Where a consumer misses the documented 0 warnings / 0 errors, **attribute the warnings**: warnings

@@ -990,3 +990,7 @@ The one thing that was *not* additive at version 12 is the **load-time floor**, 
 the API rather than in it. `NEEDS_WIDGETS = 7` can make this major absent on a copy where minor 11
 would have loaded — but only on a copy where `LibKa0s/` was vendored piecemeal, which the collection
 does not permit. Re-vendor the whole folder and the floor is unobservable.
+
+**Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
+
+- `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws the debug console its own way; every host left it at the skinning rollout for the skin owner path.

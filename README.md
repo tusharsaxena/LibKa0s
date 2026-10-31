@@ -221,11 +221,11 @@ Run the green gate from the repo root before every commit:
 
 ```bash
 lua tests/run.lua
-luacheck .
+~/.claude/dev-copilot/bin/ka0s-bounded luacheck .
 ```
 
 Both must be 0/0 before a release. `lua tests/run.lua` reports
-`N passed, 0 failed, S skipped, N total`, and `luacheck .` reports `0 warnings / 0 errors`. A skipped
+`N passed, 0 failed, S skipped, N total`, and the lint reports `0 warnings / 0 errors`. A skipped
 case is a case that did not run. It never counts as a pass, and the suite prints the reason beside it.
 
 `docs/test-cases.md` is the generated inventory of what the suite covers, and it is the authoritative
@@ -266,18 +266,8 @@ the old copy.
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major*.
 There is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.75.0**, which adds two majors (`Glow` 1, and `Sim` 2
-with `SimTimeline` 2 and `SimPanel` 2) and moves eight existing files' minors (`Core` 10 to 11,
-`Item` 2 to 3, `Widgets` 12 to 13, `DebugLog` 19 to 20, `DebugLogDiagnostics` 2 to 3,
-`OptionsIdList` 4 to 5, `OptionsTabs` 8 to 9 and `PerfPanel` 6 to 7): `Core = { Core = 11 }`,
-`Env = { Env = 2 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 3 }`, `Bus = { Bus = 2 }`,
-`Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 3 }`, `Glow = { Glow = 1 }`,
-`Media = { Media = 5, MediaIcons = 1 }`,
-`Widgets = { Widgets = 13, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }`, `DebugLog = { DebugLog = 20, DebugLogDiagnostics = 3, DebugLogGates = 1 }`, `Slash = { Slash = 20, SlashParse = 2 }`,
-`Launcher = { Launcher = 5 }`,
-`Options = { Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }`,
-`Perf = { Perf = 15, PerfSampler = 1, PerfCommands = 1, PerfPanel = 7 }`,
-`Sim = { Sim = 2, SimTimeline = 2, SimPanel = 2 }`. Those numbers move every release, so read them from the top of
+different vendored copy of each. A table looks like `Item = { Item = 3 }`, or for a major with several
+files `Perf = { Perf = 15, PerfSampler = 1, PerfCommands = 1, PerfPanel = 7 }`. Those numbers move every release, so read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), not from here. Grouping
 by major is what lets you answer "which panel is attached to which probe?" from inside the game, once
 several addons each ship their own vendored copy. `tests/test_versioning.lua` checks that `MODULES`

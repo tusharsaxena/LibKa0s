@@ -3983,3 +3983,11 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+**Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
+
+- `lib.APPEARANCE_STRINGS`: no consumer as of v1.83.0, kept because it holds the default strings a host overrides through `spec.strings`, never by name.
+- `lib.KEYBIND_STRINGS`: no consumer as of v1.83.0, kept because it holds the default strings a host overrides through `spec.strings`, never by name.
+- `lib.SKIN_PICKER_STRINGS`: no consumer as of v1.83.0, kept because it holds the default strings a host overrides through `spec.strings`, never by name.
+- `AppearanceRows`: no consumer as of v1.83.0, kept because `AppearanceTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
+- `KeybindRows`: no consumer as of v1.83.0, kept because `KeybindingsTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
