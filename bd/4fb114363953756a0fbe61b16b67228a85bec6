@@ -1,0 +1,11 @@
+LK-A3 adds the Skin tab's rows to every addon's skin picker (Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/), on the owner's request: Font and Texture as Ka0sMedia pickers, Font outline and Scope, a window 308 wide, Apply to all carrying them.
+
+Commits: f91413b rows, ce4f1ef review fixes (review recorded in its note), 17209cf PaintAce split, this commit the record.
+
+Release gate: docs/automated-tests/20261031-182948/ at 17209cf, clean, --release 1.83.0: lint 0/0 in 251 files; 3521 tests, 3519 passed, 0 failed, 2 declared skips; 0 over CCN 15, max CCN 15, blindFiles 0, crashedFiles 0, 15 band files, 0 over the cap. Perf skipped, not measured (no tests/perf.lua).
+
+A first battery at ce4f1ef failed the gate on lib.PaintAce, CCN 17. Its output, 20261031-182700, was discarded uncommitted. The first ANALYSIS.md failed the eol test on LF endings; fixed before this commit. The RESULTS.md band row for OptionsSkinPicker.lua was blank from the runner and its disposition was filled by hand from CLAUDE.md.
+
+This note is the implementer's record, not an independent review.
+
+Not verified: everything the client does. The fakes pin the calls made, not what paints; the layout, previews, pull-outs and combat wake are the owner's to smoke.
