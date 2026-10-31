@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261031-165103`](20261031-165103/) | `4dd0412` | clean | 1.83.0 → 1.83.0 | 0/0 | 249 | 3469/2/3471 | skip | 77018 | 11168 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261031-163905`](20261031-163905/) | `db02671` | clean | 1.83.0 → 1.83.0 | 0/0 | 248 | 3454/2/3456 | skip | 76739 | 11128 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261031-152614`](20261031-152614/) | `5b47cfb` | clean | 1.82.0 → 1.83.0 | 0/0 | 248 | 3453/2/3455 | skip | 76725 | 11126 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261030-194244`](20261030-194244/) | `9d83cd4` | clean | 1.82.0 → 1.82.0 | 0/0 | 246 | 3412/2/3414 | skip | 75530 | 10995 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -170,18 +171,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**3456 cases** — 3454 passed, 0 failed, 2 skipped. The generated inventory
-[`20261031-163905/test-cases.md`](20261031-163905/test-cases.md) is the authority on which cases existed at this run;
+**3471 cases** — 3469 passed, 0 failed, 2 skipped. The generated inventory
+[`20261031-165103/test-cases.md`](20261031-165103/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **3455 → 3456** since the previous run.
+Moved **3456 → 3471** since the previous run.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 248 files** (`luacheck .`).
+**0 warnings / 0 errors over 249 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -198,7 +199,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261031-163905`](20261031-163905/) — **this run's measurement, not its diff.** Max CCN **15** across 11128
+Current as of [`20261031-165103`](20261031-165103/) — **this run's measurement, not its diff.** Max CCN **15** across 11168
 functions, **0** of them warned on; 14 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
