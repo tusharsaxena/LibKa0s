@@ -55,7 +55,9 @@ if not Pool or (Pool.MINOR or 0) < NEEDS_POOL then return end
 -- or not an LSM30_* type is registered. A row may still name LSM30_*; it reads as the picker.
 -- Minor 42 (cause L2 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): O.AttachTooltip's body line through
 -- O.__tipColor (`gtip.line`, nil where the chrome is not skinned, which is the client's color).
-local WIDGETS_MINOR = 42
+-- Minor 43 (cause L4 of the same bundle): O.LabelFont, and a font set here tells the skin, so a
+-- section heading, a text row and a note keep the skin's face with the Scope cleared.
+local WIDGETS_MINOR = 43
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__widgetsMinor and lib.__widgetsMinor >= WIDGETS_MINOR
@@ -162,11 +164,16 @@ end
 --- once it has been laid out, a widget mock may have neither, and a font object a client does not
 --- ship resolves to nil. None of them may cost the page. The NAME is taken rather than the object
 --- because a host declares its landing spec at file scope, where the font globals may not exist yet.
+---
+--- The set runs after the widget's paint and past its SetFontObject hook, so the skin is told: the
+--- font becomes the stock one, and the skin's face goes back over it at that font's size.
 local function applyLabelFont(widget, fontName)
   if not fontName then return end
   local fs = widget.label
   if fs and fs.SetFontObject and _G[fontName] then
     fs:SetFontObject(_G[fontName])
+    local Skin = LibStub and LibStub("LibKa0s-Skin-1.0", true)
+    if Skin and Skin.__AceFontChanged then Skin:__AceFontChanged(widget) end
   end
 end
 
@@ -462,14 +469,18 @@ function lib.__AttachWidgets(O, d)
     h:SetText(label)
     h:SetFullWidth(true)
     h:SetHeight(L.SECTION_HEADING_H)
-    if h.label and h.label.SetFontObject and _G.GameFontNormalLarge then
-      h.label:SetFontObject(_G.GameFontNormalLarge)
-    end
+    applyLabelFont(h, "GameFontNormalLarge")
     scroll:AddChild(h)
 
     O.AddSpacer(scroll, L.SECTION_BOTTOM_SPACER)
     return h
   end
+
+  --- Give an AceGUI text widget's `label` the _G font object `fontName`, the size a heading or row
+  --- is laid out at, without taking the skin's face off it. A host that builds its own Heading calls
+  --- this rather than setting the FontString, which a skin cannot see. A missing label or font name
+  --- does nothing.
+  function O.LabelFont(widget, fontName) applyLabelFont(widget, fontName) end
 
   --- A full-width line of text: one AceGUI Label added to the page's scroll, left-justified.
   ---

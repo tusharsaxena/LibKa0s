@@ -69,7 +69,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Skin:__PaintAceWindow, for a widget a window holds. Ignore settings panel keeps the settings pages
 -- the client's, and its tooltip promises the windows still wear the skin, so a window's widget is
 -- painted under it; the mark lasts until the widget's release.
-local ACE_MINOR = 6
+-- Minor 7 (cause L4 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): a Heading wears the
+-- title role, and Skin:__AceFontChanged takes a font set on a widget's FontString as its stock font.
+local ACE_MINOR = 7
 if lib.__aceMinor and lib.__aceMinor >= ACE_MINOR
   and lib.__aceShellMinor == lib.MINOR then return end
 lib.__aceMinor      = ACE_MINOR
@@ -473,7 +475,7 @@ PAINT.Heading = function(owner, w, st, T)
   local frame = frameOf(w, "frame")
   if not frame then return end
   local rec = part(st, "frame", frame)
-  text(owner, rec, region(w, "label", "FontString"), T, "text.heading", false)
+  P.label(owner, rec, region(w, "label", "FontString"), T, "text.heading", "title")
   for _, key in ipairs({ "left", "right" }) do
     local t = region(w, key, "Texture")
     local line = t and T["section.rule"] and P.tex(rec, "aceRule" .. key, frame, "BACKGROUND", 1)
@@ -783,6 +785,16 @@ local function hookLabelFont(w, st)
     local s = lib.__ace[self]
     if s and s.owner then forgetFont(self) end
   end)
+end
+
+--- A host or the Options major set a font directly on `widget`'s `label` FontString, which no hook
+--- sees and which ran after the paint: that font is now the stock one a release puts back and the
+--- size the skin scales, so the paint runs again over it. A widget nobody owns keeps the font. Internal.
+function lib:__AceFontChanged(widget)
+  local st = lib.__ace[widget]
+  if not (st and st.owner) then return end
+  forgetFont(widget)
+  repaint(widget, st)
 end
 
 local function installHooks(w, st)

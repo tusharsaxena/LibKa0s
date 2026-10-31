@@ -969,6 +969,7 @@ here are uncapped.
 | Options | `KeybindRows` (instance) | none | call 0 · stub 28 · test 27 | zero — kept, documented |
 | Options | `KeybindingsTab` (instance) | 8: BankLedger, DpsRace, DropWatcher, LibKa0sSkinTester, LootHistory, MultiMeters, QuickComms, WhatGroup | call 8 · stub 29 · test 9 | consumed (8) |
 | Options | `LSMValues` (instance) | AbsorbTracker `settings/Appearance.lua:250`; LibKa0sSkinTester `settings/Schema.lua:229`; MultiMeters `settings/Schema_Compose.lua:258` | call 3 · name-only 1 · def 1 · stub 13 · test 56 | consumed (3) |
+| Options | `LabelFont` (instance) | none yet: new in v1.85.0 (`FS-L4`), for PanelMaster's editor heading | call 0 · test 1 | zero — new |
 | Options | `MASTER_GROUP` (instance) | 12: AbsorbTracker, AuraMaster, DpsRace, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, WhatGroup | call 13 · name-only 2 · stub 13 · test 55 | consumed (12) |
 | Options | `MasterControls` (instance) | 11: AbsorbTracker, AuraMaster, DpsRace, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, PartyFrameEnhanced, PremadeGroupsFilterExtension, QuickComms, WhatGroup | call 11 · name-only 6 · def 1 · stub 24 · test 52 | consumed (11) |
 | Options | `NavRail` (instance) | AuraMaster `settings/OptionsSetup.lua:644`; KickCD `settings/Panel_Render.lua:432`; MultiMeters `settings/OptionsSetup.lua:643` | call 3 · stub 24 · test 20 | consumed (3) |

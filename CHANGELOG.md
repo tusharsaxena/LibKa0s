@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Skin-1.0` key **11.1.21.3.14.8.12.2.6**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.42.2.6.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3**, `LibKa0s-Sim-1.0` key **2.3.10.1**; every other file still at its v1.84.0 minor, and **test kit revision 47**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Skin-1.0` key **11.1.21.3.14.8.12.2.7**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.43.2.6.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3**, `LibKa0s-Sim-1.0` key **2.3.10.1**; every other file still at its v1.84.0 minor, and **test kit revision 47**. No `NEEDS_*` floor rises.
 
 ### The launcher's tooltip follows the skin (`FS-L1`, cause L1)
 
@@ -27,6 +27,13 @@ Versions in this release: `LibKa0s-Skin-1.0` key **11.1.21.3.14.8.12.2.6**, `Lib
 - **OptionsScroll minor 11**: a comment on that.
 - **OptionsSkinPicker minor 6** and **SimPanel minor 10**: the picker's tooltips and an owned sim panel's tooltip title take `gtip.title`, read at hover, whose Ka0s Default is the client's gold. Both are windows, so *Ignore settings panel* leaves them skinned. An owner-less sim panel's title still names no color.
 - A tooltip line an addon writes itself is that addon's to color; those are the host parts of the cause.
+
+### Settings fonts with the Scope cleared (`FS-L4`, cause L4)
+
+- **OptionsWidgets minor 43**: new additive `O.LabelFont(widget, fontName)`. `O.Section`, `O.TextRow` and the `note` row go through it, so the font they name no longer takes the skin's face away or snaps back on a repaint.
+- **SkinAce minor 7**: a `Heading` wears the title role, and the internal `Skin:__AceFontChanged` takes a font set on a widget's `label` as its stock font and repaints over it. Ka0s Default's look does not move.
+- A heading a host builds itself, and raw FontStrings on a host's page, are the host's half of the cause: `O.LabelFont` and `S.Font`.
+- A host's Options degradation stub adds `LabelFont` at the re-vendor, or its surface parity suite goes red.
 
 ### The settings chrome supports skins with the Scope cleared (`FS-L3`, cause L3)
 

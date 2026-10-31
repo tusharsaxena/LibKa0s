@@ -889,7 +889,7 @@ Total.
 - skin eui: EllesmereUI's live looks change repaints the Ka0s extras
 - skin eui: EllesmereUIDB is read in LibKa0s/SkinEUI.lua and no other payload file
 
-### test_skin_ace.lua (22)
+### test_skin_ace.lua (28)
 
 - skin ace: an owned page's CheckBox is painted from the owner's skin through O.AceGUI
 - skin ace: Ka0s Default paints AceGUI rows like every skin
@@ -913,6 +913,12 @@ Total.
 - skin ace: a widget another skinning addon skinned is left to it
 - skin ace: PaintAceTree paints a host container's widgets
 - skin ace: Skin:OnRelease chains once and answers its function
+- skin ace: a Heading wears the title role, and its text the heading color
+- skin ace: O.Section keeps the title face over its large font, and gives the large font back
+- skin ace: O.TextRow and a note keep the body face over the font they name
+- skin ace: O.LabelFont is the same seam for a heading a host built, and a second call moves the stock
+- skin ace: under the Scope a section stays on the client's large font
+- skin ace: a font name the client lacks, and a widget with no label, cost nothing
 
 ### test_skin_ace_tree.lua (14)
 
@@ -4153,7 +4159,7 @@ Total.
 | test_skin_paint.lua | 39 |
 | test_skin_paint_controls.lua | 34 |
 | test_skin_eui.lua | 29 |
-| test_skin_ace.lua | 22 |
+| test_skin_ace.lua | 28 |
 | test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
@@ -4281,4 +4287,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3631** |
+| **Total** | **3637** |
