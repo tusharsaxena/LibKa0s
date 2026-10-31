@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261031-202020`](20261031-202020/) | `6c816fd` | clean | 1.83.0 | 0/0 | 251 | 3522/2/3524 | skip | 78123 | 11318 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261031-185000`](20261031-185000/) | `8cffb7a` | clean | 1.83.0 → 1.83.0 | 0/0 | 251 | 3522/2/3524 | skip | 78123 | 11318 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261031-182948`](20261031-182948/) | `17209cf` | clean | 1.83.0 → 1.83.0 | 0/0 | 251 | 3519/2/3521 | skip | 78071 | 11309 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261031-165103`](20261031-165103/) | `4dd0412` | clean | 1.83.0 → 1.83.0 | 0/0 | 249 | 3469/2/3471 | skip | 77018 | 11168 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -174,10 +175,10 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 ## Test suite
 
 **3524 cases** — 3522 passed, 0 failed, 2 skipped. The generated inventory
-[`20261031-185000/test-cases.md`](20261031-185000/test-cases.md) is the authority on which cases existed at this run;
+[`20261031-202020/test-cases.md`](20261031-202020/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **3521 → 3524** since the previous run.
+Unchanged from the previous run at 3524 cases.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -201,7 +202,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261031-185000`](20261031-185000/) — **this run's measurement, not its diff.** Max CCN **15** across 11318
+Current as of [`20261031-202020`](20261031-202020/) — **this run's measurement, not its diff.** Max CCN **15** across 11318
 functions, **0** of them warned on; 15 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
