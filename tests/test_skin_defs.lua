@@ -496,6 +496,10 @@ test("skin defs: every skin draws one family of its own, for body and titles ali
   end
   -- The title color of Obsidian is its primary button's blue (D-06, the owner's item 3).
   local o = Skin:ResolveSkin("obsidian")
+  -- red under: titleColor fanning out to the headings, when the owner asked for the title alone.
+  assertEqual(o["title.text"][3], 0xD1 / 255, "Obsidian's title: the primary button's blue")
+  assertEqual(o["text.heading"][3], 0xF4 / 255, "and its headings are not")
+  assertEqual(o["text.headingAlt"][3], 0xF4 / 255)
   for i = 1, 3 do assertEqual(o["title.text"][i], o["btnPrimary.bg"][i], "Obsidian's title, channel " .. i) end
   -- High Contrast no longer reads larger: every skin's sizes give Ka0s Default's text width
   -- (SkinDefs minor 17, LK-05), pinned in tests/test_skin_width_parity.lua.

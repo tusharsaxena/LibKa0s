@@ -18,7 +18,9 @@ WHAT SHIPS, AND FROM WHERE. From google/fonts' ofl/ folder, SIL Open Font Licens
     Vollkorn-Regular.ttf, Vollkorn-Bold.ttf            vollkorn, Vollkorn[wght].ttf, INSTANCED
     Bitter-Regular.ttf, Bitter-Bold.ttf                bitter, Bitter[wght].ttf, INSTANCED
     Philosopher-Regular.ttf, Philosopher-Bold.ttf      philosopher, static files, unchanged
-    FiraSans-Medium.ttf, FiraSans-SemiBold.ttf         firasans, static files, unchanged
+    Inter-Regular.ttf, Inter-SemiBold.ttf              inter, Inter[opsz,wght].ttf, INSTANCED
+    Oxanium-SemiBold.ttf, Oxanium-Bold.ttf             oxanium, Oxanium[wght].ttf, INSTANCED
+    FiraSans-Regular.ttf, -Medium, -SemiBold           firasans, static files, unchanged
     AtkinsonHyperlegible-Regular.ttf, -Bold.ttf        atkinsonhyperlegible, static files, unchanged
 
     and one license file per family beside them, `<Family>-OFL.txt`: upstream's OFL.txt verbatim,
@@ -88,10 +90,10 @@ stored pick keeps resolving to the same bytes. Its cmap has the whole Russian al
 WHY INSTANCED. Upstream publishes three of the families as variable fonts only, and the WoW client is
 not known to honor a variable axis, so a variable file would draw its default instance whatever
 weight was asked for (Bitter's and Nunito's default is their thinnest). `fontTools.varLib.instancer`
-pins each axis (weight) and drops the variation
+pins each axis (weight, and Inter's optical size at its text end, 14) and drops the variation
 tables, which gives a static face; the name table is then rewritten to name the weight, so the file
 does not claim to be the instance it was cut from. The OFL allows a modified version under the same
-license. None of the three reserves its family name (Bitter reserves only "Bitter Pro"), so the
+license. None of the five reserves its family name (Bitter reserves only "Bitter Pro"), so the
 names stay. Fira Sans, Philosopher, Atkinson, Prototype and Expressway are copied unchanged: Fira reserves its
 name, so its bytes are never instanced or renamed.
 
@@ -105,10 +107,10 @@ Ka0s Default draws Prototype and Obsidian Expressway (2026-10-30), WoW Default t
 Quadrata. On 2026-10-31 the owner moved WoW Midnight to Segoe UI, Azeroth to Open Sans, Ember to
 Emblem, High Contrast to Doris PP, Glass to Avant Garde and WoW Default to the shipped Friz, and ruled
 that every older face stays in the payload whether or not a skin names it. Barlow and Cinzel, the
-2026-10-25 run's faces, left the payload in round 5; Oxanium, Ka0s
+2026-10-25 run's faces, left the payload in round 5, before that ruling, and stay out. Oxanium, Ka0s
 Default's stand-in for Prototype from 2026-10-28, Fira Sans Regular, and Inter, Obsidian's from round
-5 until Expressway, left on 2026-10-30 (Media minor 10), no skin naming them any more. Atkinson,
-Prototype, Friz, Emblem and Doris PP have no Cyrillic; the other families cover it, so Media.lua
+5 until Expressway, left on 2026-10-30 and came back with the ruling, since v1.81.0 shipped them.
+Atkinson, Oxanium, Prototype, Friz, Emblem and Doris PP have no Cyrillic; the other families cover it, so Media.lua
 registers them for ruRU too.
 
 Requires Python 3 and fontTools (`sudo apt install python3-fonttools`; see DEPENDENCIES.md), and
@@ -140,6 +142,20 @@ RAW = "https://raw.githubusercontent.com/google/fonts/%s/ofl/%s/%s"
 # `ship` copies a static file unchanged. `instances` cuts a static face from a variable one: the
 # source file, the output file, the axis values, and the style name it is given.
 FAMILIES = [
+    {
+        "dir": "inter", "family": "Inter",
+        "sha": "0b58fb370093f9a9f4ff785d94405710b79de67c",
+        "files": {
+            "Inter[opsz,wght].ttf": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+            "OFL.txt": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
+        },
+        "license": "Inter-OFL.txt",
+        "ship": [],
+        "instances": [
+            ("Inter[opsz,wght].ttf", "Inter-Regular.ttf", {"opsz": 14, "wght": 400}, "Regular"),
+            ("Inter[opsz,wght].ttf", "Inter-SemiBold.ttf", {"opsz": 14, "wght": 600}, "SemiBold"),
+        ],
+    },
     {
         "dir": "nunito", "family": "Nunito",
         "sha": "8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5",
@@ -198,14 +214,31 @@ FAMILIES = [
         "dir": "firasans", "family": "Fira Sans",
         "sha": "e345593da2a4d596212542edbd28f2ed08fe6cbe",
         "files": {
+            "FiraSans-Regular.ttf": "c29556a2719bf613ef3d5e070e40d903a8965d9c081beca1375dc1e6e0f93c23",
             # WoW Forever's body face (2026-10-30), from the same commit and build (4.203) as SemiBold.
             "FiraSans-Medium.ttf": "cbc1842cbed8c1d1146ba7c9db97d8f28c9bedfd25f41c5b0e1259ca48622328",
             "FiraSans-SemiBold.ttf": "db0321f83eb3e9f527b8af384a1b3fefdc1039cf2b06fd39b3f61492bda9561c",
             "OFL.txt": "8f24842e9174beda18a556c2ae7d54f5dc444340c19a3a9ef77e23bca366adbd",
         },
         "license": "FiraSans-OFL.txt",
-        "ship": ["FiraSans-Medium.ttf", "FiraSans-SemiBold.ttf"],
+        "ship": ["FiraSans-Regular.ttf", "FiraSans-Medium.ttf", "FiraSans-SemiBold.ttf"],
         "instances": [],
+    },
+    {
+        # Ka0s Default's face from 2026-10-28 to 2026-10-30: a squared techno sans, the free stand-in
+        # for Prototype. SemiBold is Prototype's weight.
+        "dir": "oxanium", "family": "Oxanium",
+        "sha": "8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5",
+        "files": {
+            "Oxanium[wght].ttf": "2ce01d946e1e1ffc8d7eecfffbda8623bedd63eaf811a20488c4b69af45babb0",
+            "OFL.txt": "fe17c0f2581d71b4e1ea7e636e7f4877c29223e11bb1dd1a871e8c3f2a86336b",
+        },
+        "license": "Oxanium-OFL.txt",
+        "ship": [],
+        "instances": [
+            ("Oxanium[wght].ttf", "Oxanium-SemiBold.ttf", {"wght": 600}, "SemiBold"),
+            ("Oxanium[wght].ttf", "Oxanium-Bold.ttf", {"wght": 700}, "Bold"),
+        ],
     },
     {
         "dir": "atkinsonhyperlegible", "family": "Atkinson Hyperlegible",

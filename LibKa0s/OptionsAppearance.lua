@@ -38,7 +38,8 @@
 -- LSM key or false) on a font or texture write, and both nil on a source or skin write (a skin
 -- write that reset the overrides is followed by a media write, minor 4), which
 -- MUST be the owner's write seam (options-ui-§1). Since minor 4 `media` carries `outline` too (one of
--- Skin's OUTLINE_MODES), and every media write carries all three. Skin:SetChoice first, so the repaint
+-- Skin's OUTLINE_MODES), and every media write carries all three, `outline` being the mode the owner
+-- stored and nil while it never moved off the default (minor 5). Skin:SetChoice first, so the repaint
 -- is the library's and an owner's onChange calling SetChoice again is a no-op (SetChoice is idempotent),
 -- then spec.set. The reload popup is raised once, by the tab, from SetChoice's pending-reload answer.
 --
@@ -275,12 +276,17 @@ function lib.__skinOthers(Skin, owner)
 end
 
 --- `name`'s applied media, `{ font, texture, outline }` (each override an LSM key or false for the
---- skin's own; `outline` nil on a Skin copy before minor 9), or nil on a Skin copy before minor 6.
+--- skin's own), or nil on a Skin copy before minor 6. `outline` is the mode `name` stored, nil while
+--- it never moved off the default, because this is what a media write sends: a font pick storing the
+--- default would pin that owner to it when the default moves (it did, in Skin minor 10). Nil too on
+--- a Skin copy before minor 9.
 local function appliedMedia(Skin, name)
   if type(Skin.GetOverride) ~= "function" then return nil end
   local font, texture = Skin:GetOverride(name)
-  return { font = font or false, texture = texture or false,
-           outline = type(Skin.GetOutline) == "function" and Skin:GetOutline(name) or nil }
+  local outline
+  if type(Skin.__StoredOutline) == "function" then outline = Skin:__StoredOutline(name)
+  elseif type(Skin.GetOutline) == "function" then outline = Skin:GetOutline(name) end
+  return { font = font or false, texture = texture or false, outline = outline }
 end
 
 --- Move `name` to (source, skin) and, when the look it draws changed (Skin:DrawsKey before and
@@ -307,7 +313,7 @@ end
 --- font and texture, then SetIgnore, SetOverride and, for `media.outline`, SetOutline: the live
 --- repaint), then the owner's own setter (Skin:WriteChoice, nil leaving that half of its profile
 --- alone). A `media` half left out (nil) keeps the target's own after the move, and the write
---- carries the target's applied font, texture and outline, so a setter that stores every half it is
+--- carries the target's applied font and texture and its stored outline, so a setter that stores every half it is
 --- given keeps what it has (minor 4); with no `media`, a reset the move made is written the same
 --- way, so the target's profile matches what it wears. Answers the reload flag SetChoice answered.
 --- Internal; the caller refuses combat.
@@ -437,8 +443,8 @@ function lib.__AttachAppearance(O, d)
   end
 
   --- This owner's overrides, `{ font, texture, outline }` (each override an LSM key or false for the
-  --- skin's own; `outline` the applied font outline mode, nil on a Skin copy before minor 9), or nil
-  --- on a Skin copy before minor 6.
+  --- skin's own; `outline` the mode this owner stored, nil while it never moved off the default), or
+  --- nil on a Skin copy before minor 6.
   local function readMedia(view)
     return appliedMedia(view.Skin, view.owner)
   end
@@ -453,6 +459,7 @@ function lib.__AttachAppearance(O, d)
     local source, skin = readChoice(view)
     local ignore = readIgnore(view)
     local media = readMedia(view)
+    if media and type(Skin.GetOutline) == "function" then media.outline = Skin:GetOutline(view.owner) end
     local reloads = {}
     for _, name in ipairs(names) do
       if lib.__copySkinTo(Skin, name, source, skin, ignore, media) then

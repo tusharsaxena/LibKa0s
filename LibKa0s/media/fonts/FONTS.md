@@ -1,8 +1,11 @@
 # The faces in this folder
 
 Each face's source, its copyright as its own name table reads, its license and any owner ruling it
-ships on. `Media.lua`'s `FONTS` table is the catalog, keyed by the LibSharedMedia key;
-`tools/artwork/fonts.py` in the LibKa0s repository pins each file's SHA-256.
+ships on. `Media.lua`'s `FONTS` table is the catalog, keyed by the LibSharedMedia key.
+`tools/artwork/fonts.py` in the LibKa0s repository pins the SHA-256 of what each face is taken from:
+a face copied unchanged is pinned byte for byte, and an instanced face (Nunito, Vollkorn, Bitter,
+Oxanium, Inter) through its upstream variable font and the axis values it is cut at, not its own
+bytes. JetBrains Mono came with the library and that tool does not cover it.
 
 Every face here stays in the payload whether or not a skin names it (owner, 2026-10-31).
 
@@ -25,12 +28,17 @@ JetBrains Mono, which came with the library from Mythic Meters.
 | `Bitter-Bold.ttf` | Ka0s Bitter Bold | as above | as above | `Bitter-OFL.txt` |
 | `Philosopher-Regular.ttf` | Ka0s Philosopher | <https://github.com/alexeiva/philosopher> | Copyright 2011 The Philosopher Project Authors | `Philosopher-OFL.txt` |
 | `Philosopher-Bold.ttf` | Ka0s Philosopher Bold | as above | as above | `Philosopher-OFL.txt` |
-| `FiraSans-Medium.ttf` | Ka0s Fira Sans Medium | <https://github.com/mozilla/Fira> | Digitized data copyright 2012-2016, The Mozilla Foundation and Telefonica S.A. | `FiraSans-OFL.txt` |
+| `Oxanium-SemiBold.ttf` | Ka0s Oxanium SemiBold | <https://github.com/sevmeyer/oxanium> | Copyright 2019 The Oxanium Project Authors | `Oxanium-OFL.txt` |
+| `Oxanium-Bold.ttf` | Ka0s Oxanium Bold | as above | as above | `Oxanium-OFL.txt` |
+| `Inter-Regular.ttf` | Ka0s Inter | <https://github.com/rsms/inter> | Copyright 2020 The Inter Project Authors | `Inter-OFL.txt` |
+| `Inter-SemiBold.ttf` | Ka0s Inter SemiBold | as above | as above | `Inter-OFL.txt` |
+| `FiraSans-Regular.ttf` | Ka0s Fira Sans | <https://github.com/mozilla/Fira> | Digitized data copyright 2012-2016, The Mozilla Foundation and Telefonica S.A. | `FiraSans-OFL.txt` |
+| `FiraSans-Medium.ttf` | Ka0s Fira Sans Medium | as above | as above | `FiraSans-OFL.txt` |
 | `FiraSans-SemiBold.ttf` | Ka0s Fira Sans SemiBold | as above | as above | `FiraSans-OFL.txt` |
 | `AtkinsonHyperlegible-Regular.ttf` | Ka0s Atkinson | <https://www.brailleinstitute.org/freefont/> | Copyright 2020 Braille Institute of America, Inc. | `AtkinsonHyperlegible-OFL.txt` |
 | `AtkinsonHyperlegible-Bold.ttf` | Ka0s Atkinson Bold | as above | as above | `AtkinsonHyperlegible-OFL.txt` |
 
-Nunito, Vollkorn and Bitter are changed from the originals: static instances cut from upstream's
+Nunito, Vollkorn, Bitter, Oxanium and Inter are changed from the originals: static instances cut from upstream's
 variable fonts at the weights named, each renamed for its weight, no glyph edited. Their license files
 say so above the license text.
 

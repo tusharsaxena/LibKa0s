@@ -19,8 +19,9 @@ local FONT_DIR = "LibKa0s/media/fonts"
 -- Minor 10: JetBrains Mono and fourteen skin faces (Oxanium's two, Fira Sans Regular and Inter's two
 -- left; Fira Sans Medium, Prototype and Expressway came), of which eleven and JetBrains Mono draw
 -- Cyrillic. Minor 11 adds thirteen (LK-F01): Segoe UI's four, Open Sans's five and Avant Garde draw
--- Cyrillic, Friz Quadrata, Emblem and Doris PP do not.
-local FONT_COUNT, RU_COUNT = 28, 22
+-- Cyrillic, Friz Quadrata, Emblem and Doris PP do not. And the five minor 10 retired come back, since
+-- v1.81.0 shipped them and every older face stays: Inter's two and Fira Sans Regular draw Cyrillic.
+local FONT_COUNT, RU_COUNT = 33, 25
 
 --- The basenames on disk under `dir`, as a set. Lua 5.1 has no directory API and this repo does not
 --- depend on LuaFileSystem, so the listing shells out — the same bargain tests/_kit/vendor_sync.lua
@@ -558,6 +559,12 @@ local SKIN_FACES = {
   ["Ka0s Philosopher Bold"]   = { file = "Philosopher-Bold.ttf", license = "Philosopher-OFL.txt", ru = true },
   ["Ka0s Fira Sans SemiBold"] = { file = "FiraSans-SemiBold.ttf", license = "FiraSans-OFL.txt", ru = true },
   ["Ka0s Fira Sans Medium"]   = { file = "FiraSans-Medium.ttf", license = "FiraSans-OFL.txt", ru = true },
+  -- No skin names these; the owner's "keep all the older fonts" (minor 11) keeps them shipped.
+  ["Ka0s Fira Sans"]          = { file = "FiraSans-Regular.ttf", license = "FiraSans-OFL.txt", ru = true },
+  ["Ka0s Inter"]              = { file = "Inter-Regular.ttf", license = "Inter-OFL.txt", ru = true },
+  ["Ka0s Inter SemiBold"]     = { file = "Inter-SemiBold.ttf", license = "Inter-OFL.txt", ru = true },
+  ["Ka0s Oxanium SemiBold"]   = { file = "Oxanium-SemiBold.ttf", license = "Oxanium-OFL.txt" },
+  ["Ka0s Oxanium Bold"]       = { file = "Oxanium-Bold.ttf", license = "Oxanium-OFL.txt" },
   ["Ka0s Atkinson"]           = { file = "AtkinsonHyperlegible-Regular.ttf",
                                   license = "AtkinsonHyperlegible-OFL.txt" },
   ["Ka0s Atkinson Bold"]      = { file = "AtkinsonHyperlegible-Bold.ttf",
@@ -565,19 +572,7 @@ local SKIN_FACES = {
 }
 
 -- The families cut from a variable font upstream, whose license records the instancing.
-local INSTANCED = { "Nunito-OFL.txt", "Vollkorn-OFL.txt", "Bitter-OFL.txt" }
-
--- The faces minor 10 retired, no skin naming them any more (the owner's item 7), and their files:
--- Oxanium, Ka0s Default's from minor 9, Fira Sans Regular, WoW Forever's body until Medium, and
--- Inter, Obsidian's until Expressway shipped (LK-A1).
-local RETIRED = {
-  ["Ka0s Oxanium SemiBold"] = "Oxanium-SemiBold.ttf",
-  ["Ka0s Oxanium Bold"]     = "Oxanium-Bold.ttf",
-  ["Ka0s Fira Sans"]        = "FiraSans-Regular.ttf",
-  ["Ka0s Inter"]            = "Inter-Regular.ttf",
-  ["Ka0s Inter SemiBold"]   = "Inter-SemiBold.ttf",
-}
-local RETIRED_LICENSES = { "Oxanium-OFL.txt", "Inter-OFL.txt" }
+local INSTANCED = { "Nunito-OFL.txt", "Vollkorn-OFL.txt", "Bitter-OFL.txt", "Oxanium-OFL.txt", "Inter-OFL.txt" }
 
 -- The faces that ship under terms other than the OFL, each on a recorded owner ruling, by the file
 -- that records its terms, with the phrases that file must carry verbatim. Minor 10: Prototype, whose
@@ -648,14 +643,6 @@ test("media: FONTS carries every skin face beside JetBrains Mono", function()
       assertEqual(table.concat(entry.langmask or {}, ","), want.ru and "western,ruRU" or "western",
         want.face .. "'s locales, from its cmap")
     end
-  end
-  local files = listing(FONT_DIR) or {}
-  for name, file in pairs(RETIRED) do
-    assertTrue(media.FONTS[name] == nil, "FONTS still names the retired '" .. name .. "'")
-    assertTrue(files[file] == nil, file .. " still ships, and no skin names it")
-  end
-  for _, license in ipairs(RETIRED_LICENSES) do
-    assertTrue(files[license] == nil, license .. " ships without its faces")
   end
   for _, faces in ipairs({ SKIN_FACES, RULED }) do
     for name, want in pairs(faces) do

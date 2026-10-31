@@ -35,8 +35,11 @@
 -- FACES LOAD BEFORE THEY DRAW. Text set in a face the client has not loaded draws blank until it is
 -- set again (OptionsScroll.lua's font preload). The panel's show has normally loaded them; a font
 -- picker asks again on acquiring and on opening, and when that loaded anything it dresses its rows
--- again on the next frame. Rows are dressed on open, not in SetList: a page refresh rebuilds every
--- list, and only an opened list needs its faces.
+-- again on the next frame, font and text both, since text is what draws blank. A picker dresses
+-- again after acquiring whatever that call loaded: the panel's show preloads in the same tick as its
+-- render, so the closed row's face may be one frame old with the call answering nothing new. Rows are
+-- dressed on open, not in SetList: a page refresh rebuilds every list, and only an opened list needs
+-- its faces.
 
 local lib = LibStub and LibStub("LibKa0s-Options-1.0", true)
 if not lib then return end
@@ -71,6 +74,7 @@ end
 local SWATCH_W, SWATCH_H = 44, 13      -- fits the 16px row pitch Dropdown-Pullout fixes
 local SWATCH_INSET       = 6           -- from the closed bar's left edge and the row's right
 local TEXT_GAP           = 4
+local ROW_TEXT_RIGHT     = -8          -- Dropdown-Item-Toggle's own text inset from the row's right
 local PLAY_SIZE          = 14
 local ROW_FACE_SIZE      = 12          -- a row's preview, Ka0s Prototype's body size
 local BAR_TINT           = 0.65        -- a white statusbar texture reads as a bar on a dark field
@@ -212,6 +216,8 @@ local function itemRelease(self)
   st.stockRelease(self)
   if st.swatch then st.swatch:Hide() end
   if st.play then dressPlay(st.play, nil) end
+  -- One pool for every kind: a font row may be the next use of a row that made room for a swatch.
+  if st.swatch or st.play then self.text:SetPoint("BOTTOMRIGHT", self.frame, "BOTTOMRIGHT", ROW_TEXT_RIGHT, 0) end
   if st.base[1] then setFace(self.text, st.base[1], st.base[2], st.base[3]) end
 end
 
@@ -252,6 +258,14 @@ local function dressClosed(self)
   if m.play then dressPlay(m.play, path) else dressSwatch(m.swatch, m.kind, path) end
 end
 
+--- Set `fs`'s text again, through "" since a client may skip setting the same string.
+local function retext(fs)
+  local text = fs:GetText()
+  if text == nil or text == "" then return end
+  fs:SetText("")
+  fs:SetText(text)
+end
+
 --- Dress the row and an open list again next frame, unless the widget was released meanwhile.
 local function redressNext(self)
   if not (C_Timer and C_Timer.After) then return end
@@ -259,16 +273,24 @@ local function redressNext(self)
   C_Timer.After(0, function()
     if m.serial ~= serial then return end
     dressClosed(self)
-    if self.open then dressRows(self) end
+    retext(self.text)
+    if self.open then
+      dressRows(self)
+      for _, item in self.pullout:IterateItems() do
+        if item.type == ITEM_TYPE then retext(item.text) end
+      end
+    end
   end)
 end
 
---- Have every face loaded (OptionsScroll.lua). A face loaded by this call may draw blank this frame.
-local function loadFaces(self)
+--- Have every face loaded (OptionsScroll.lua). A face loaded by this call may draw blank this frame,
+--- so it dresses again next frame; `always` does so whatever the call loaded.
+local function loadFaces(self, always)
+  if self.__media.kind ~= "font" then return end
   local preload, LSM = lib.__PreloadFonts, getLSM()
-  if self.__media.kind ~= "font" or type(preload) ~= "function" or not LSM then return end
-  local ok, loaded = pcall(preload, LSM)
-  if ok and type(loaded) == "number" and loaded > 0 then redressNext(self) end
+  local ok, loaded = false, 0
+  if type(preload) == "function" and LSM then ok, loaded = pcall(preload, LSM) end
+  if always or (ok and type(loaded) == "number" and loaded > 0) then redressNext(self) end
 end
 
 local function onAcquire(self)
@@ -283,7 +305,7 @@ local function onAcquire(self)
     loadFaces(self)
     dressRows(self)
   end)
-  loadFaces(self)
+  loadFaces(self, true)
   dressClosed(self)
 end
 
@@ -300,7 +322,8 @@ local function onRelease(self)
   end
 end
 
---- Add a stored key the list lacks, so the field never reads blank. On the widget's own list.
+--- Add a stored key the list lacks, so the field never reads blank. On the widget's own list. Only
+--- from SetValue: callers set the list first, and at SetList the old value may be the one leaving it.
 local function keepStored(self, value)
   if value == nil or value == "" or self.list == nil or self.list[value] ~= nil then return end
   self.__media.stock.AddItem(self, value, tostring(value), ITEM_TYPE)
@@ -323,7 +346,6 @@ local function setList(self, list, order)
     own, order = allKeys(m.kind)
   end
   m.stock.SetList(self, own, order, ITEM_TYPE)
-  keepStored(self, self.value)
   if self.open then dressRows(self) end
 end
 

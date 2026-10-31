@@ -231,7 +231,23 @@ test("media: a stored key the list lacks still shows, and the host's table is no
   assertEqual(order[2], "Gone Face", "and it has a row to come back to")
   assertNil(list["Gone Face"], "the host's list is the host's")
   dd:SetList(list, { "Ka0s Fira Sans" })
-  assertEqual(#rows(dd), 2, "a rebuilt list keeps it while it is the value")
+  dd:SetValue("Gone Face")
+  assertEqual(#rows(dd), 2, "a rebuilt list gets it back from SetValue, the order every caller uses")
+end)
+
+test("media: a value leaving the list leaves no row behind", function()
+  -- red under: SetList adding back the widget's old value, a row with nothing behind it that stays
+  -- in the pull-out after SetValue moved on (a Reset font on an unloaded face).
+  local _, _, lib, ace = env()
+  local dd = picker(lib, ace, "font")
+  dd:SetList({ Lead = "Skin's default", Gone = "Gone (not loaded)" }, { "Lead", "Gone" })
+  dd:SetValue("Gone")
+  dd:SetList({ Lead = "Skin's default" }, { "Lead" })
+  dd:SetValue("Lead")
+  local order = rows(dd)
+  assertEqual(#order, 1, "only the new list's rows")
+  assertEqual(order[1], "Lead")
+  assertNil(dd.list["Gone"], "and nothing to pick")
 end)
 
 -- ── previews ─────────────────────────────────────────────────────────────────────────────────
@@ -338,6 +354,36 @@ test("media: faces are preloaded before the rows draw, and a load dresses them a
   assertEqual(font(item.text), FACE["Ka0s Fira Sans"], "dressed again on the next frame")
 end)
 
+test("media: a picker drawn in the tick that preloaded its face dresses again next frame", function()
+  -- red under: the panel's OnShow preloading first, so this picker's call loads nothing and the closed
+  -- row's first draw of that face is never repeated. The text is set again too, since that is what
+  -- draws blank.
+  local m, _, lib, ace = env()
+  lib.__PreloadFonts = function() return 0 end
+  m.__timers = {}
+  local dd = picker(lib, ace, "font")
+  dd:SetList({ ["Ka0s Fira Sans"] = "Ka0s Fira Sans" }, { "Ka0s Fira Sans" })
+  dd:SetValue("Ka0s Fira Sans")
+  local sets, set = 0, dd.text.SetText
+  dd.text.SetText = function(fs, text)
+    sets = sets + 1
+    return set(fs, text)
+  end
+  dd.text:SetFont(BASE_FONT, 10, "")
+  for _, t in ipairs(m.__timers) do if t.fn then t.fn() end end
+  dd.text.SetText = set
+  assertEqual(font(dd.text), FACE["Ka0s Fira Sans"], "the face again")
+  assertTrue(sets > 0, "and the text")
+  assertEqual(dd.text:GetText(), "Ka0s Fira Sans", "the same text")
+end)
+
+test("media: a swatch picker on an acquire asks for no next frame", function()
+  local m, _, lib, ace = env()
+  m.__timers = {}
+  picker(lib, ace, "statusbar")
+  assertEqual(#m.__timers, 0, "only a face can draw blank")
+end)
+
 test("media: a picker released before that next frame does nothing", function()
   local m, _, lib, ace = env()
   lib.__PreloadFonts = function() return 1 end
@@ -374,6 +420,24 @@ test("media: release puts the face, the previews and the rows back, into this ty
   again:SetList({ ["@skin"] = "y" }, { "@skin" })
   again:SetValue("@skin")
   assertEqual(font(again.text), BASE_FONT, "a stale preview does not survive the pool")
+end)
+
+test("media: a pooled row that made room for a swatch gets its text width back", function()
+  -- red under: the font picker reusing a row whose text still stops at a hidden swatch.
+  local _, _, lib, ace = env()
+  for _, kind in ipairs({ "statusbar", "sound" }) do
+    local dd = picker(lib, ace, kind)
+    local key = kind == "sound" and "Ding" or "Smooth"
+    dd:SetList({ [key] = key }, { key })
+    dd.pullout:Open()
+    local item = dd.pullout.items[1]
+    dd:SetList({}, {})
+    local point, anchor, rel, x = item.text:GetPoint(#item.text.__points)
+    assertEqual(point, "BOTTOMRIGHT", kind)
+    assertEqual(anchor, item.frame, kind .. ": on the row again")
+    assertEqual(rel, "BOTTOMRIGHT", kind)
+    assertEqual(x, -8, kind .. ": Dropdown-Item-Toggle's inset")
+  end
 end)
 
 test("media: a released swatch and play button hide, and a stock Dropdown stays stock", function()
@@ -439,6 +503,7 @@ test("media: with no LibSharedMedia the picker still lists, picks and shows its 
   assertEqual(font(dd.text), BASE_FONT)
   dd.pullout:Open()
   dd:SetList()
+  dd:SetValue("@skin")
   assertEqual(#rows(dd), 1, "no list and no LSM offers nothing but the value it holds")
 end)
 

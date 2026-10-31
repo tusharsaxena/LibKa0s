@@ -11,17 +11,17 @@
 | Files and minors | `Media.lua` minor **11** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.83.0 |
 | Status | **Current** |
-| Supersedes | [version 10.1](./version-10.1-docs.md) (shipped in v1.82.0) — the same surface without the thirteen faces below |
+| Supersedes | [version 10.1](./version-10.1-docs.md) (shipped in v1.82.0) — the same surface without the eighteen faces below |
 | Superseded by | — |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 11, MediaIcons = 1 }` |
 
 ## What changed at this version
 
-**Thirteen faces arrive and none leaves; no signature moves.** The owner's 2026-10-31 batch
+**Eighteen faces arrive and none leaves; no signature moves.** The owner's 2026-10-31 batch
 (Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`, `LK-F01`). `FONTS` holds
-twenty-eight entries, twenty-two of them reaching ruRU. `MediaIcons.lua` does not move. A face no skin
-names stays from now on, the owner's ruling, reversing the rule version 10.1 worked to; the faces
-version 10.1 removed stay removed.
+thirty-three entries, twenty-five of them reaching ruRU. `MediaIcons.lua` does not move. A face no skin
+names stays from now on, the owner's ruling, reversing the rule version 10.1 worked to, so the five
+faces version 10.1 removed, which v1.81.0 shipped, come back with `Oxanium-OFL.txt` and `Inter-OFL.txt`.
 
 | | | Since |
 |---|---|---|
@@ -30,6 +30,8 @@ version 10.1 removed stay removed.
 | `Ka0s Open Sans`, `Ka0s Open Sans Bold`, `Ka0s Open Sans Condensed`, `Ka0s Open Sans Light`, `Ka0s Open Sans Semibold` in `FONTS` | `OpenSans-Regular.ttf`, `-Bold`, `-CondBold`, `-Light`, `-Semibold`; `license = "OpenSans-Apache-2.0.txt"`; western and ruRU. The Condensed key is the CondBold file | **11** |
 | `Ka0s Emblem`, `Ka0s Doris PP` in `FONTS` | `Emblem-Regular.ttf` and `DorisPP-Bold.ttf`; `license = "FONTS.md"`; western only | **11** |
 | `Ka0s Avant Garde` in `FONTS` | `AvantGarde-Regular.ttf`; `license = "FONTS.md"`; western and ruRU | **11** |
+| `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold` in `FONTS` | Back, as they were before **10**: `Oxanium-SemiBold.ttf`, `Oxanium-Bold.ttf`; `license = "Oxanium-OFL.txt"`; western only | **11** |
+| `Ka0s Inter`, `Ka0s Inter SemiBold`, `Ka0s Fira Sans` in `FONTS` | Back, as they were before **10**: `Inter-Regular.ttf`, `Inter-SemiBold.ttf` (`Inter-OFL.txt`) and `FiraSans-Regular.ttf` (`FiraSans-OFL.txt`); western and ruRU | **11** |
 | `media/fonts/FONTS.md` | The record of every shipped face: source, copyright as its name table reads, license and the ruling it ships on. A face with no license file names this file as its `license` | **11** |
 
 **Open Sans is Apache 2.0; the other eight have no license that allows this.** They ship on the
@@ -263,7 +265,7 @@ Read straight off the LibStub table. Every function is stateless.
 | `Font(addonName, name[, vendorPath])` | 1 | The font path for one registered face, or `nil` when `name` is not a key of `FONTS` or `addonName` is missing or empty. |
 | `RegisterLSM(addonName[, vendorPath])` | 1 (second return: 3; langmask and counted-only-if-held: 4; per-face mask, borders and backgrounds: **6**; a held key is never offered: **7**) | Register every shipped font, statusbar texture, border and background with LibSharedMedia under its catalog name, each font under the mask its `langmask` list builds. Returns `fonts, bars, borders, backgrounds`, each counting what LSM holds afterwards (`LSM:IsValid`); **`0, 0, 0, 0` when LSM is absent, which is not an error**. |
 | `ICONS` | 1 (three sets since **5**) | Array of every icon name: the set's prefix, then the file's own basename. The catalog — enumerate it rather than hard-coding a list. The 113 hand-written names come first, in version 4's order; `MediaIcons.lua` appends the rest at load. |
-| `FONTS` | 1 (six faces and `langmask`: **6**; Prototype, Fira Sans Medium and Expressway in, Oxanium, Fira Sans Regular and Inter out: **10**; thirteen in: **11**) | Map of LSM name → `{ file, license, langmask }`: two basenames under `media/fonts/` and the array of LSM locale groups the face can draw (`"western"`, `"ruRU"`, ...). |
+| `FONTS` | 1 (six faces and `langmask`: **6**; Prototype, Fira Sans Medium and Expressway in, Oxanium, Fira Sans Regular and Inter out: **10**; eighteen in, those five among them: **11**) | Map of LSM name → `{ file, license, langmask }`: two basenames under `media/fonts/` and the array of LSM locale groups the face can draw (`"western"`, `"ruRU"`, ...). |
 | `VENDOR_PATH` | 1 | `"libs\\LibKa0s"` — where the collection vendors this library, and the default third argument above. |
 | `MODULES` | 1 | `{ Media = <minor>, MediaIcons = <minor> }` — the live minors, and the value that picks this document. |
 
@@ -385,6 +387,9 @@ is one row in its `GLYPHS` table plus a row in `ICONS` in `Media.lua`; every oth
 | `Ka0s Vollkorn` / `Ka0s Vollkorn Bold` | `Vollkorn-Regular.ttf` / `Vollkorn-Bold.ttf` | `Vollkorn-OFL.txt` | western, ruRU | Azeroth |
 | `Ka0s Bitter` / `Ka0s Bitter Bold` | `Bitter-Regular.ttf` / `Bitter-Bold.ttf` | `Bitter-OFL.txt` | western, ruRU | Ember |
 | `Ka0s Philosopher` / `Ka0s Philosopher Bold` | `Philosopher-Regular.ttf` / `Philosopher-Bold.ttf` | `Philosopher-OFL.txt` | western, ruRU | WoW Midnight |
+| `Ka0s Oxanium SemiBold` / `Ka0s Oxanium Bold` | `Oxanium-SemiBold.ttf` / `Oxanium-Bold.ttf` | `Oxanium-OFL.txt` | western | no skin (Ka0s Default's at **9**) |
+| `Ka0s Inter` / `Ka0s Inter SemiBold` | `Inter-Regular.ttf` / `Inter-SemiBold.ttf` | `Inter-OFL.txt` | western, ruRU | no skin (Obsidian's until **10**) |
+| `Ka0s Fira Sans` | `FiraSans-Regular.ttf` | `FiraSans-OFL.txt` | western, ruRU | no skin (WoW Forever's body until **10**) |
 | `Ka0s Fira Sans Medium` / `Ka0s Fira Sans SemiBold` | `FiraSans-Medium.ttf` / `FiraSans-SemiBold.ttf` | `FiraSans-OFL.txt` | western, ruRU | WoW Forever (Medium since **10**; Regular until then) |
 | `Ka0s Atkinson` / `Ka0s Atkinson Bold` | `AtkinsonHyperlegible-Regular.ttf` / `-Bold.ttf` | `AtkinsonHyperlegible-OFL.txt` | western | High Contrast |
 | `Ka0s Prototype` | `Prototype-Regular.ttf` | `Prototype.txt` (the author's terms, not the OFL) | western | Ka0s Default (body, titles and HUD), since **10** |

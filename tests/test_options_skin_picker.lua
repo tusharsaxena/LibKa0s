@@ -1029,7 +1029,7 @@ test("skin picker: Apply writes the cleared overrides only when the saved skin's
   local _, Skin, lib = env()
   local store = register(Skin, OWNER)
   Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
-  Skin:SetOutline(OWNER, "hud")
+  Skin:SetOutline(OWNER, "off")
   local O = instance(lib, OWNER)
   local f = O.SkinPicker(specFor(store))
   pickRow(f, "ember")
@@ -1046,7 +1046,7 @@ test("skin picker: Apply writes the cleared overrides only when the saved skin's
   local media = store.calls[2][4]
   assertNil(store.calls[2][1]); assertNil(store.calls[2][2])
   assertEqual(media.font, false); assertEqual(media.texture, false, "both the skin's own")
-  assertEqual(media.outline, "hud", "every media half, the outline as it is")
+  assertEqual(media.outline, "off", "every media half, the outline as it is")
   assertNil((Skin:GetOverride(OWNER)), "and the Skin major keeps them cleared after the close")
 end)
 

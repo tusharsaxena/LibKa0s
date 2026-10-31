@@ -42,10 +42,12 @@ member is a fact about when a consumer got it, not about which file holds it tod
 
 `LK-F05` of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/` (the owner's item 5,
 its D-10). `LibKa0s-Skin-1.0`'s `OUTLINE_DEFAULT` is `"hud"`, so the Skin tab's *Font outline* shows
-*HUD text only* for an owner that never set one. No Options file moves for it. The dropdown keeps its
-order, *All text* first. The reset buttons, the skin change, the Skin tab's copy and the picker's
-*Apply to all* behave as before: each carries the applied mode as it is, and a never-set owner's
-applied mode now reads `"hud"`, so that is what the first media write stores. A stored mode stays.
+*HUD text only* for an owner that never set one. The dropdown keeps its order, *All text* first.
+`OptionsAppearance.lua` (minor 5) changes what a media write sends: `media.outline` is the mode the
+owner stored, read from `Skin:__StoredOutline`, and nil while it never moved off the default, so a font
+or texture pick no longer stores the default as a choice. A setter reads nil as "left alone", as it
+always has. The Skin tab's copy still carries the source's applied mode to its targets. A stored mode
+stays.
 
 ## What changed at this version: "Skin's default" (`LK-F04`)
 
@@ -213,7 +215,7 @@ skin-change path the player drives goes through it:
 
 - **Reset font** and **Reset texture**, two AceGUI `Button`s at `BUTTON_PAIR_REL` in a row of their
   own under the two dropdowns (a button on the dropdowns' line would top-align with their labels),
-  font under *Font*, texture under *Texture*. A click is the dropdown's *Skin's own* pick for its
+  font under *Font*, texture under *Texture*. A click is the dropdown's *Skin's default* pick for its
   half: refused in combat, `Skin:SetOverride` (that half `false`, the other kept), then
   `spec.set(nil, nil, nil, { font, texture, outline })`. `sync` disables each while its half is
   already the skin's own (and both on a page drawn disabled), and words its tooltip

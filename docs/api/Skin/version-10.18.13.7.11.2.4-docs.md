@@ -19,7 +19,8 @@
 ## What changed at this version
 
 **Two files move: `SkinDefs.lua` to minor 18 and `Skin.lua` to minor 10.** No member is added, removed
-or changed in signature. The change is in the values: five skins change face, WoW Default takes the
+or changed in signature, and `__StoredOutline(owner)` is internal: the stored mode, nil for an owner
+that never moved off the default, which the Skin tab's media writes carry. The change is in the values: five skins change face, WoW Default takes the
 shipped Friz, Obsidian's titles take its blue, every size is re-measured, a font override now
 brings its face's sizes, and `OUTLINE_DEFAULT` is `"hud"`. `lib.__FACE_SIZES` is internal, and a stub
 owes nothing for it.
@@ -83,13 +84,16 @@ it down 0.5 when it ran more than 2% wide under any model.
 | WoW Midnight | `11.5` | `13` | `11.5` | `12.5` / `13.5` / `12` |
 | WoW Forever | `12` | `13.5` | `11.5` | unchanged |
 
-**`lib.__FACE_SIZES`** holds every shipped face's `{ body, title, HUD }` by the same rule, twenty-eight
+**`lib.__FACE_SIZES`** holds every shipped face's `{ body, title, HUD }` by the same rule, thirty-three
 rows, and each skin's sizes are its faces' rows. `withOverrides` lays a row over `font.bodySize`,
 `font.titleSize` and `hud.fontSize` when the owner's resolved font override names that face (D-07), so
 `P.font`, `S.HudFontSize`, `S.BarStyle` and `Token` follow it through the tokens they already read:
 Ka0s Prototype under Obsidian draws 12 / 14 / 12, not Obsidian's 12.5 / 14.5 / 13. An override with no
-row, a face from a media pack, keeps the skin's sizes, as every override did until now: no client can
-measure it. An override that does not resolve changes nothing, and `__BaseTokens` and `ResolveSkin`
+row, a face from a media pack, draws unscaled at Ka0s Default's sizes: no client can measure it, and
+the skin's sizes are tuned for the skin's own face. A skin whose own face this client's locale cannot
+register (`FONTS`' `langmask`, so a ruRU client under WoW Default, Ember or High Contrast) takes Ka0s
+Default's sizes too, since the host draws a fallback face the skin's numbers were never measured for.
+An override that does not resolve changes nothing, and `__BaseTokens` and `ResolveSkin`
 stay override-free. A HUD element on its own face (`fromSkin == false`) still draws as stored.
 
 `tests/test_skin_width_parity.lua` pins every row to `lib.FONTS`, within 2% wide and 5% narrow of

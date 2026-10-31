@@ -196,8 +196,8 @@ lib.ICONS = {
 -- EVERY FACE STAYS (minor 11, the owner's item 3), a skin naming it or not: Nunito, Vollkorn, Bitter,
 -- Philosopher, Fira Sans and Atkinson stay pickable after their skins moved on. That reverses the
 -- rule minor 10 worked to, under which Oxanium SemiBold and Bold, Fira Sans Regular and Inter Regular
--- and SemiBold left. Those stay gone: no released addon shipped them, and a profile still naming one
--- falls back to its skin's face (Skin's override layer drops a key LSM cannot resolve).
+-- and SemiBold left: v1.81.0 shipped those five, so they come back with the Oxanium and Inter texts,
+-- and a profile naming one keeps resolving.
 local WEST_RU = { "western", "ruRU" }
 lib.FONTS = {
   ["JetBrains Mono"]          = { file = "JetBrainsMono-Regular.ttf", license = "JetBrainsMono-OFL.txt",
@@ -212,6 +212,12 @@ lib.FONTS = {
                                   langmask = WEST_RU },
   ["Ka0s Philosopher Bold"]   = { file = "Philosopher-Bold.ttf", license = "Philosopher-OFL.txt",
                                   langmask = WEST_RU },
+  ["Ka0s Oxanium SemiBold"]   = { file = "Oxanium-SemiBold.ttf", license = "Oxanium-OFL.txt",
+                                  langmask = { "western" } },
+  ["Ka0s Oxanium Bold"]       = { file = "Oxanium-Bold.ttf", license = "Oxanium-OFL.txt", langmask = { "western" } },
+  ["Ka0s Inter"]              = { file = "Inter-Regular.ttf", license = "Inter-OFL.txt", langmask = WEST_RU },
+  ["Ka0s Inter SemiBold"]     = { file = "Inter-SemiBold.ttf", license = "Inter-OFL.txt", langmask = WEST_RU },
+  ["Ka0s Fira Sans"]          = { file = "FiraSans-Regular.ttf", license = "FiraSans-OFL.txt", langmask = WEST_RU },
   ["Ka0s Fira Sans Medium"]   = { file = "FiraSans-Medium.ttf", license = "FiraSans-OFL.txt", langmask = WEST_RU },
   ["Ka0s Fira Sans SemiBold"] = { file = "FiraSans-SemiBold.ttf", license = "FiraSans-OFL.txt",
                                   langmask = WEST_RU },

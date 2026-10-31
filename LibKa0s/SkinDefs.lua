@@ -145,7 +145,7 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- titles differ by size. WoW Default draws the shipped Ka0s Friz Quadrata TT, HUD included, where it
 -- drew the client's: the owner's client file is Prototype's bytes, so the two skins read alike
 -- (D-01). The HUD draws the owner's picked weight, the heavier-HUD rule surviving in WoW Forever
--- alone. Obsidian's titles and headings are its primary button's blue, #2A86D1. Then every size is
+-- alone. Obsidian's title is its primary button's blue, #2A86D1, and its headings stay #F2F2F4. Then every size is
 -- re-measured against Prototype at 12 / 14 / 12 (D-03) by that bundle's
 -- plan-data/font_metrics_shipped.py, on the shipped bytes with OUTLINE both ways: FACE_SIZES below
 -- holds each shipped face's sizes, each skin's sizes are its faces' rows, and a font override of a
@@ -648,7 +648,8 @@ local HUD_SIZE = {
 -- Every shipped face's sizes at Ka0s Default's width (minor 18, D-07): { body, title, HUD }, as
 -- `font.bodySize`, `font.titleSize` and `hud.fontSize` would state them, the reference being
 -- Prototype's row. Skin.lua's withOverrides lays a row over the sizes of an owner whose font override
--- names the face, and a face with no row, which no client can measure, keeps the skin's sizes.
+-- names the face, and a face with no row, which no client can measure, draws unscaled at Ka0s
+-- Default's sizes, since the skin's are tuned for the skin's own face.
 -- Measured by plan-data/font_metrics_shipped.py, its section 10, and held to lib.FONTS and to each
 -- skin's own sizes by tests/test_skin_width_parity.lua. JetBrains Mono is the small one, monospace
 -- being wide.
@@ -662,9 +663,12 @@ lib.__FACE_SIZES = {
   ["Ka0s Doris PP"]            = { 10.5, 12.5, 10.5 },
   ["Ka0s Emblem"]              = { 11, 12.5, 11 },
   ["Ka0s Expressway"]          = { 12.5, 14.5, 13 },
+  ["Ka0s Fira Sans"]           = { 12, 13.5, 12 },
   ["Ka0s Fira Sans Medium"]    = { 12, 13.5, 11.5 },
   ["Ka0s Fira Sans SemiBold"]  = { 11.5, 13.5, 11.5 },
   ["Ka0s Friz Quadrata TT"]    = { 11, 13, 11 },
+  ["Ka0s Inter"]               = { 11, 13, 11 },
+  ["Ka0s Inter SemiBold"]      = { 11, 12.5, 10.5 },
   ["Ka0s Nunito"]              = { 11.5, 13.5, 11.5 },
   ["Ka0s Nunito SemiBold"]     = { 11.5, 13, 11 },
   ["Ka0s Open Sans"]           = { 11.5, 13, 11.5 },
@@ -672,6 +676,8 @@ lib.__FACE_SIZES = {
   ["Ka0s Open Sans Condensed"] = { 13.5, 16, 13.5 },
   ["Ka0s Open Sans Light"]     = { 12, 13.5, 11.5 },
   ["Ka0s Open Sans Semibold"]  = { 11, 12.5, 11 },
+  ["Ka0s Oxanium Bold"]        = { 11, 13, 11 },
+  ["Ka0s Oxanium SemiBold"]    = { 11.5, 13, 11 },
   ["Ka0s Philosopher"]         = { 12.5, 14, 12.5 },
   ["Ka0s Philosopher Bold"]    = { 12, 13.5, 12 },
   ["Ka0s Prototype"]           = { 12, 14, 12 },
@@ -701,6 +707,7 @@ register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool 
     barTex = "Ka0s Matte",
     win = hex("#0A0A0B"), winBorder = edge(1, "flat", hex("#202024")), winInner = false, radius = 0,
     titleBg = hex("#050506"), titleColor = hex("#2A86D1"), divider = hex("#1c1c20"),
+    headColor = hex("#F2F2F4"),
     text = hex("#E8E8EC"), muted = hex("#9B9BA4"), accent = hex("#4DB8FF"),
     closeColor = hex("#9B9BA4"),
     btnBg = hex("#141416"), btnBorder = edge(1, "flat", hex("#2a2a30")), btnText = hex("#E8E8EC"),

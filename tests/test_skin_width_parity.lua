@@ -38,9 +38,12 @@ local WIDTH = {
   ["Ka0s Doris PP"]            = { body = 0.5248, title = 0.5330, hud = 0.5500 },
   ["Ka0s Emblem"]              = { body = 0.5066, title = 0.5183, hud = 0.5290 },
   ["Ka0s Expressway"]          = { body = 0.4447, title = 0.4527, hud = 0.4590 },
+  ["Ka0s Fira Sans"]           = { body = 0.4727, title = 0.4829, hud = 0.4890 },
   ["Ka0s Fira Sans Medium"]    = { body = 0.4765, title = 0.4868, hud = 0.4952 },
   ["Ka0s Fira Sans SemiBold"]  = { body = 0.4779, title = 0.4883, hud = 0.4975 },
   ["Ka0s Friz Quadrata TT"]    = { body = 0.5046, title = 0.5067, hud = 0.5333 },
+  ["Ka0s Inter"]               = { body = 0.5077, title = 0.5139, hud = 0.5341 },
+  ["Ka0s Inter SemiBold"]      = { body = 0.5206, title = 0.5273, hud = 0.5490 },
   ["Ka0s Nunito"]              = { body = 0.4850, title = 0.4882, hud = 0.5161 },
   ["Ka0s Nunito SemiBold"]     = { body = 0.4926, title = 0.4967, hud = 0.5231 },
   ["Ka0s Open Sans"]           = { body = 0.4929, title = 0.5004, hud = 0.5196 },
@@ -48,6 +51,8 @@ local WIDTH = {
   ["Ka0s Open Sans Condensed"] = { body = 0.4135, title = 0.4182, hud = 0.4323 },
   ["Ka0s Open Sans Light"]     = { body = 0.4756, title = 0.4819, hud = 0.5025 },
   ["Ka0s Open Sans Semibold"]  = { body = 0.5088, title = 0.5180, hud = 0.5337 },
+  ["Ka0s Oxanium Bold"]        = { body = 0.5071, title = 0.5149, hud = 0.5328 },
+  ["Ka0s Oxanium SemiBold"]    = { body = 0.5015, title = 0.5087, hud = 0.5275 },
   ["Ka0s Philosopher"]         = { body = 0.4543, title = 0.4673, hud = 0.4753 },
   ["Ka0s Philosopher Bold"]    = { body = 0.4720, title = 0.4864, hud = 0.4942 },
   ["Ka0s Prototype"]           = { body = 0.4735, title = 0.4804, hud = 0.4911 },
@@ -124,7 +129,7 @@ test("skin width parity: every shipped face has a size for each role, as wide as
     end
     count = count + 1
   end
-  assertEqual(count, 28, "the shipped faces")
+  assertEqual(count, 33, "the shipped faces")
   for key in pairs(Skin.__FACE_SIZES) do
     assertTrue(Media.FONTS[key] ~= nil, key .. "'s row names a shipped face")
   end
@@ -233,14 +238,45 @@ test("skin hud size: an override of a shipped face draws at that face's sizes, H
   assertEqual(Skin:__BaseTokens(OWNER)["font.bodySize"], 12.5, "the base table never moved")
 end)
 
-test("skin hud size: a face the library did not measure keeps the skin's sizes", function()
-  -- D-07: unmeasurable in the client. red under: a pack's face scaled by a guess.
-  local Skin, S = overrideOwner("obsidian", { ["font:Some Pack Face"] = "Fonts\\Pack.ttf" })
-  Skin:SetOverride(OWNER, "Some Pack Face", nil)
-  assertEqual(S.Token("hud.font"), "Some Pack Face", "the override draws")
-  assertEqual(S.Token("font.bodySize"), 12.5, "Obsidian's body size")
-  assertEqual(S.Token("font.titleSize"), 14.5, "and its title size")
-  assertEqual(S.HudFontSize(12), 13, "and its HUD scale")
+test("skin hud size: a face the library did not measure draws unscaled, whatever the skin", function()
+  -- D-07: unmeasurable in the client. red under: a pack's face drawn at sizes tuned for the skin's
+  -- own face, High Contrast's 10.5 being the worst of them.
+  for _, key in ipairs({ "obsidian", "contrast" }) do
+    local Skin, S = overrideOwner(key, { ["font:Some Pack Face"] = "Fonts\\Pack.ttf" })
+    Skin:SetOverride(OWNER, "Some Pack Face", nil)
+    assertEqual(S.Token("hud.font"), "Some Pack Face", key .. ": the override draws")
+    assertEqual(S.Token("font.bodySize"), 12, key .. ": Ka0s Default's body size")
+    assertEqual(S.Token("font.titleSize"), 14, key .. ": and its title size")
+    assertEqual(S.HudFontSize(24), 24, key .. ": a stored size as stored")
+  end
+end)
+
+test("skin hud size: a skin whose face this locale refuses draws unscaled in the fallback", function()
+  -- red under: a ruRU client's HUD, in a fallback face, shrunk by the factor measured for a western
+  -- face LSM refused. Doris PP and Emblem are western; Expressway reaches ruRU.
+  local function worn(key, locale)
+    local m, Skin = F.env({ lsm = {} })
+    m.GetLocale = function() return locale end
+    local Media = m.LibStub:NewLibrary("LibKa0s-Media-1.0", 1)
+    Media.FONTS = {
+      ["Ka0s Doris PP"]   = { file = "DorisPP-Bold.ttf", langmask = { "western" } },
+      ["Ka0s Expressway"] = { file = "Expressway-Bold.ttf", langmask = { "western", "ruRU" } },
+    }
+    Skin:RegisterOwner(OWNER, { set = function() end })
+    Skin:SetChoice(OWNER, "ka0s", key)
+    return Skin, Skin:For(OWNER)
+  end
+  local Skin, S = worn("contrast", "ruRU")
+  assertEqual(S.HudFontSize(24), 24, "refused: as stored")
+  assertEqual(S.Token("font.bodySize"), 12, "refused: Ka0s Default's body size")
+  assertEqual(S.BarStyle().fontSize, 12, "and BarStyle's")
+  assertEqual(Skin:__BaseTokens(OWNER)["font.bodySize"], 10.5, "the base table never moved")
+  local _, en = worn("contrast", "enUS")
+  assertEqual(en.HudFontSize(24), 21, "a western client draws the face, at its measured size")
+  local _, ko = worn("obsidian", "koKR")
+  assertEqual(ko.HudFontSize(24), 24, "koKR has neither group")
+  local _, ru = worn("obsidian", "ruRU")
+  assertEqual(ru.HudFontSize(24), 26, "a face that reaches ruRU keeps its measured size")
 end)
 
 test("skin hud size: an override's sizes wait for it to resolve, and stay out of its own-face HUD", function()
