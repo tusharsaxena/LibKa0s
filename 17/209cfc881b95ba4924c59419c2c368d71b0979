@@ -1,0 +1,1 @@
+LK-A3 complexity fix: a behavior-preserving split of lib.PaintAce (CCN 17 to 15 or under), seen red in the release battery at ce4f1ef. No new test: the existing suite covers the path and passed unchanged, and the complexity suite is the gate that went red. Full record on bd4fb11. Not an independent review.
