@@ -20,7 +20,9 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- Minor 1: the eight other skins, moved here unchanged from SkinDefs.lua (its minor 19).
 -- Minor 2: `gtip.line`, `gtip.on` and `gtip.off` for the launcher's tooltip (SkinDefs minor 20).
 -- Minor 3: `title.rule`, the settings page header's rule, from each skin's divider (SkinDefs minor 21).
-local OTHERS_MINOR = 3
+-- Minor 4: `text.command`, `text.strong` and `gtip.emphasis` for a settings page's typed colors
+-- (SkinDefs minor 22).
+local OTHERS_MINOR = 4
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
   and lib.__othersShellMinor == lib.MINOR then return end
@@ -139,6 +141,7 @@ local FOLLOW = {
   { "sem.stepLocked", "text.disabled" }, { "sem.stepCancel", "sem.off" }, { "sem.stepCancelHot", "sem.bad" },
   { "icon.arrow", "text.accent" }, { "gtip.footer", "gtip.muted" }, { "gtip.line", "gtip.body" },
   { "icon.grip", "icon.tint" }, { "list.hoverArt", "text.accent" },
+  { "text.command", "text.accent" }, { "text.strong", "text.body" }, { "gtip.emphasis", "text.accent" },
 }
 
 local function blend(a, b)

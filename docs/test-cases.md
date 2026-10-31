@@ -708,7 +708,7 @@ Total.
 - skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
 - skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (34)
+### test_skin_defs.lua (35)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -743,6 +743,7 @@ Total.
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 - skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read in every other skin
 - skin defs: Ka0s Default states its settings art, and every other skin an edge and a rule
+- skin defs: the settings typed-color tokens keep Ka0s Default's yellow and read in every other skin
 - skin defs: a shell bump re-registers the eight other skins from the new copy
 
 ### test_skin_width_parity.lua (17)
@@ -904,6 +905,12 @@ Total.
 - skin ace: SetDisabled and SetValue keep the skin's colors and mark
 - skin ace: the Slider's edit box keeps the skin's edge through AceGUI's hover recolor
 - skin ace: a Label keeps the skin's font through its host's SetFontObject, and gives the host's back
+- skin ace: a Heading wears the title role, and its text the heading color
+- skin ace: O.Section keeps the title face over its large font, and gives the large font back
+- skin ace: O.TextRow and a note keep the body face over the font they name
+- skin ace: O.LabelFont is the same seam for a heading a host built, and a second call moves the stock
+- skin ace: under the Scope a section stays on the client's large font
+- skin ace: a font name the client lacks, and a widget with no label, cost nothing
 - skin ace: a raising restore still returns the widget to the pool, logged once
 - skin ace: a host OnRelease and the skin's restore both run, and a re-acquire is stock
 - skin ace: a widget whose wrapper a host replaced is put back when it is acquired again
@@ -913,12 +920,6 @@ Total.
 - skin ace: a widget another skinning addon skinned is left to it
 - skin ace: PaintAceTree paints a host container's widgets
 - skin ace: Skin:OnRelease chains once and answers its function
-- skin ace: a Heading wears the title role, and its text the heading color
-- skin ace: O.Section keeps the title face over its large font, and gives the large font back
-- skin ace: O.TextRow and a note keep the body face over the font they name
-- skin ace: O.LabelFont is the same seam for a heading a host built, and a second call moves the stock
-- skin ace: under the Scope a section stays on the client's large font
-- skin ace: a font name the client lacks, and a widget with no label, cost nothing
 
 ### test_skin_ace_tree.lua (14)
 
@@ -2903,7 +2904,7 @@ Total.
 - reset tooltip: notes.resetAll is the button's own and does not reach the member
 - reset tooltip: OptionsCompose is at minor 11 or later
 
-### test_options_skin.lua (18)
+### test_options_skin.lua (22)
 
 - options skin: a page with no registered owner is today's paint, call for call
 - options skin: an owner-less page records nothing in the Skin major
@@ -2923,6 +2924,10 @@ Total.
 - options skin: the keybind rows take the skin's text roles away from Ka0s Default
 - options skin: Ka0s Default colors the keybind rows in its own text roles
 - options skin: the id-suggestion popup takes the skin, Ka0s Default's edge included
+- options skin: a landing page's command rows take the skin with the Scope cleared
+- options skin: Ka0s Default's command rows keep their yellow and white with the Scope cleared
+- options skin: a landing page's rows stay as typed under the Scope, with no owner, and off the row shape
+- options skin: an id box's status line takes the skin's colors with the Scope cleared
 
 ### test_options_tooltip_skin.lua (9)
 
@@ -4153,7 +4158,7 @@ Total.
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 34 |
+| test_skin_defs.lua | 35 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 39 |
@@ -4231,7 +4236,7 @@ Total.
 | test_options_compose_master.lua | 15 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
-| test_options_skin.lua | 18 |
+| test_options_skin.lua | 22 |
 | test_options_tooltip_skin.lua | 9 |
 | test_options_chrome_skin.lua | 15 |
 | test_options_compose_skin.lua | 16 |
@@ -4287,4 +4292,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3637** |
+| **Total** | **3642** |

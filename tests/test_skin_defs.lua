@@ -701,6 +701,27 @@ test("skin defs: Ka0s Default states its settings art, and every other skin an e
   end
 end)
 
+test("skin defs: the settings typed-color tokens keep Ka0s Default's yellow and read in every other skin", function()
+  -- SkinDefs minor 22 (FS-L5 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING, cause L5). red
+  -- under: either token missing (a landing row stays typed), Ka0s Default's moved off the yellow
+  -- Slash's FormatRow types, or a skin leaving it in that yellow while it has an accent of its own.
+  local Skin = skinLib()
+  local k = Skin:ResolveSkin("ka0s")
+  assertEqual(colorKey(k["text.command"]), "1.000,1.000,0.000,1.000", "the row's yellow")
+  assertEqual(colorKey(k["gtip.emphasis"]), "1.000,1.000,0.000,1.000", "the tooltip's yellow")
+  assertEqual(colorKey(k["text.strong"]), "1.000,1.000,1.000,1.000", "the row's white")
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    if key ~= "ka0s" then
+      assertEqual(colorKey(t["text.command"]), colorKey(t["text.accent"]), key .. ": a command is its accent")
+      assertEqual(colorKey(t["text.strong"]), colorKey(t["text.body"]), key .. ": strong text is its body")
+      assertEqual(colorKey(t["gtip.emphasis"]), colorKey(t["text.accent"]), key .. ": so is tooltip emphasis")
+    end
+    local ratio = contrast(t["gtip.emphasis"], TOOLTIP_DARK)
+    assertTrue(ratio >= 4.5, ("%s: gtip.emphasis contrast %.2f, want >= 4.5"):format(key, ratio))
+  end
+end)
+
 test("skin defs: a shell bump re-registers the eight other skins from the new copy", function()
   -- red under: dropping the guard's `__othersShellMinor == lib.MINOR` clause.
   local m, Skin = F.env()

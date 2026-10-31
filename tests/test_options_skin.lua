@@ -481,3 +481,105 @@ test("options skin: the id-suggestion popup takes the skin, Ka0s Default's edge 
   m.__fireTimers()
   assertEqual(F.rgba({ popup:GetBackdropBorderColor() }), F.rgba(D["popup.border"]), "a reopen keeps it")
 end)
+
+-- ── typed colors with the Scope cleared (FS-L5, cause L5 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING) ──
+
+--- `env`, with LibKa0s-Slash-1.0 too, so a landing row is the formatter's own bytes and not a copy.
+local function slashEnv()
+  local files = {}
+  for _, f in ipairs(F.FILES) do files[#files + 1] = f end
+  files[#files + 1] = "Pool"
+  files[#files + 1] = "Slash"
+  for _, f in ipairs(OPTIONS) do files[#files + 1] = f end
+  local m, Skin = F.env({ files = files })
+  return m, Skin, m.LibStub("LibKa0s-Options-1.0"), m.LibStub("LibKa0s-Slash-1.0")
+end
+
+--- `c` as the escape a page's markup writes.
+local function esc(c)
+  local function byte(x) return math.floor(x * 255 + 0.5) end
+  return ("|cff%02x%02x%02x"):format(byte(c[1]), byte(c[2]), byte(c[3]))
+end
+
+--- The text of each Label a landing page drew for `rows`, in order.
+local function landingLabels(O, rows)
+  seq = seq + 1
+  local ctx = O.CreatePanel("SkinLanding" .. seq, "Landing", {})
+  O.BuildLandingPage(ctx, { sections = { { heading = "Slash Commands", rows = function() return rows end } } })
+  local out = {}
+  for _, child in ipairs(ctx.scroll.children) do
+    if child.type == "Label" then out[#out + 1] = child.text end
+  end
+  return out
+end
+
+test("options skin: a landing page's command rows take the skin with the Scope cleared", function()
+  -- red under: a row keeping Slash's typed yellow and white, which is every addon's landing page.
+  local _, Skin, lib, Slash = slashEnv()
+  F.owner(Skin, OWNER, "obsidian")
+  local T = Skin:ResolveSkin("obsidian")
+  local got = landingLabels((instance(lib, OWNER)), { Slash.FormatRow("/th get", "Print 100% of it") })
+  assertTrue(rgb(T["text.command"]) ~= rgb({ 1, 1, 0 }), "the skin has a command color of its own")
+  assertEqual(got[1], esc(T["text.command"]) .. "/th get|r \226\128\148 "
+    .. esc(T["text.strong"]) .. "Print 100% of it|r", "both halves are the skin's")
+end)
+
+test("options skin: Ka0s Default's command rows keep their yellow and white with the Scope cleared", function()
+  local _, Skin, lib, Slash = slashEnv()
+  F.owner(Skin, OWNER)
+  local row = Slash.FormatRow("/th get", "Print a setting")
+  local got = landingLabels((instance(lib, OWNER)), { row })
+  assertEqual(got[1]:lower(), row:lower(), "the same colors, whatever the escape's case")
+end)
+
+test("options skin: a landing page's rows stay as typed under the Scope, with no owner, and off the row shape", function()
+  local _, Skin, lib, Slash = slashEnv()
+  F.owner(Skin, OWNER, "obsidian")
+  local row = Slash.FormatRow("/th get", "Print a setting")
+  local O = instance(lib, OWNER)
+  assertEqual(landingLabels(O, { "|cffaaaaaa/x is an alias|r" })[1], "|cffaaaaaa/x is an alias|r",
+    "a host's own line is not a command row")
+  Skin:SetIgnore(OWNER, true, nil)
+  assertEqual(landingLabels(O, { row })[1], row, "an ignored panel is stock")
+  assertEqual(landingLabels((instance(lib, "NoSuchOwner")), { row })[1], row, "no owner, no skin")
+end)
+
+test("options skin: an id box's status line takes the skin's colors with the Scope cleared", function()
+  -- red under: the failure's literal orange or the lookup's literal white under a skin. sem.warn and
+  -- text.strong are those literals in Ka0s Default, so its look does not move. No shipped skin
+  -- states a sem.warn of its own, so this one does, or the test would pass on the literal.
+  local function failed(O)
+    seq = seq + 1
+    local ctx = O.CreatePanel("SkinStatus" .. seq, "Status", {})
+    local _, eb, _, status = O.IdInput(ctx, nil, { kind = "item", onAdd = function() end })
+    eb:SetText("no such thing")
+    eb:__fire("OnEnterPressed", "no such thing")
+    return status
+  end
+  local function looking(O, m)
+    m.addIdRecord("item", 191395, nil, nil, nil, 1)
+    seq = seq + 1
+    local ctx = O.CreatePanel("SkinLook" .. seq, "Status", {})
+    local _, eb, _, status = O.IdInput(ctx, nil, { kind = "item", onAdd = function() end,
+                                                   candidates = function() return { 191395 } end })
+    eb:SetText("no such thing")
+    eb:__fire("OnEnterPressed", "no such thing")
+    return status
+  end
+  local function rgbOf(st) local c = st.color; return rgb({ c.r, c.g, c.b }) end
+  local m, Skin, lib = env()
+  F.owner(Skin, OWNER, "obsidian")
+  local O = instance(lib, OWNER)
+  local T = Skin:ResolveSkin("obsidian")
+  T["sem.warn"] = { 0.2, 0.4, 0.6, 1 }
+  assertEqual(rgbOf(failed(O)), rgb({ 0.2, 0.4, 0.6 }), "a refusal in the skin's warning color")
+  assertEqual(rgbOf(looking(O, m)), rgb(T["text.strong"]), "a lookup in its strong text")
+  assertTrue(rgb(T["text.strong"]) ~= rgb({ 1, 1, 1 }), "which is not the literal")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertEqual(rgbOf(failed(O)), rgb({ 1, 0.5, 0 }), "Ka0s Default keeps the orange")
+  assertEqual(rgbOf(looking(O, m)), rgb({ 1, 1, 1 }), "and the white")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  Skin:SetIgnore(OWNER, true, nil)
+  assertEqual(rgbOf(failed(O)), rgb({ 1, 0.5, 0 }), "an ignored panel keeps the orange")
+  assertEqual(rgbOf(looking(O, m)), rgb({ 1, 1, 1 }), "and the white")
+end)

@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **37** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **43** · `OptionsFlow.lua` **2** · `OptionsIds.lua` **6** · `OptionsIdSuggest.lua` **1** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **15** · `OptionsTabbed.lua` **2** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **16** · `OptionsScroll.lua` **12** · `OptionsNav.lua` **5** · `OptionsDrawer.lua` **5** · `OptionsKeybinds.lua` **7** · `OptionsAppearance.lua` **5** · `OptionsSkinPicker.lua` **6** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **3** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1` |
 | Shipped in | v1.85.0 (unreleased) |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 37.4.42.2.6.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3](./version-37.4.42.2.6.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3-docs.md) (unreleased, an earlier step of v1.85.0) — no `O.LabelFont`, and a font set on a text widget took the skin's face away. |
-| Superseded by | — |
+| Superseded by | [version 37.4.44.2.7.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3](./version-37.4.44.2.7.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 37, OptionsRegistry = 4, OptionsWidgets = 43, OptionsFlow = 2, OptionsIds = 6, OptionsIdSuggest = 1, OptionsIdList = 7, OptionsTabs = 15, OptionsTabbed = 2, OptionsCombat = 3, OptionsCompose = 16, OptionsScroll = 12, OptionsNav = 5, OptionsDrawer = 5, OptionsKeybinds = 7, OptionsAppearance = 5, OptionsSkinPicker = 6, OptionsSkinPickerRows = 1, OptionsSwitch = 1, OptionsMedia = 3 }` |
 
@@ -4068,3 +4068,7 @@ it got.
 - `lib.SKIN_PICKER_STRINGS`: no consumer as of v1.83.0, kept because it holds the default strings a host overrides through `spec.strings`, never by name.
 - `AppearanceRows`: no consumer as of v1.83.0, kept because `AppearanceTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
 - `KeybindRows`: no consumer as of v1.83.0, kept because `KeybindingsTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
+
+## Moving to 37.4.44.2.7.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3
+
+No host change. A landing page built with `O.BuildLandingPage` recolors its command rows itself, and `Sl:LandingRows()` and `FormatRow` are untouched, so chat keeps its colors. See [version 37.4.44.2.7.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3](./version-37.4.44.2.7.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3-docs.md).

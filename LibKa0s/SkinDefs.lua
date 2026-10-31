@@ -165,7 +165,10 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 --- Minor 21 (FS-L3 of the same bundle, cause L3): `title.rule`, the settings page header's rule. Ka0s
 --- Default's `title.rule`, `tab.border`, `nav.borderStyle` and `popup.borderStyle` are `false`, so
 --- its settings chrome keeps its art with the Scope cleared now that a paint reads the three edges.
-local DEFS_MINOR = 21
+-- Minor 22 (FS-L5 of the same bundle, cause L5): `text.command`, `text.strong` and `gtip.emphasis`, the
+-- yellow and white a settings page typed. Ka0s Default's are those literals; every other skin's are
+-- its `text.accent` and `text.body`. The eui source derives them from Ka0s Default.
+local DEFS_MINOR = 22
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -190,7 +193,8 @@ local GROUPS = {
     .. "gtip.title:color gtip.body:color gtip.muted:color text.faint:color log.ts:color "
     .. "log.tag:color log.text:color log.count:color text.value:color text.bodyAlt:color "
     .. "text.subtle:color text.highlight:color gtip.value:color gtip.subtle:color gtip.footer:color "
-    .. "gtip.line:color gtip.on:color gtip.off:color" },
+    .. "gtip.line:color gtip.on:color gtip.off:color text.command:color text.strong:color "
+    .. "gtip.emphasis:color" },
   { "Buttons", "btn.bg:color btn.bgTop:color? btn.bgBottom:color? btn.border:color "
     .. "btn.borderSize:number? btn.borderStyle:string? btn.text:color btn.hover:color "
     .. "btn.icon:color btn.radius:number btnPrimary.bg:color btnPrimary.bgTop:color? "
@@ -318,6 +322,9 @@ local KA0S = {
   -- The launcher's status tooltip (minor 20, cause L1): its lines in the client's default gold, and
   -- the pure green and red of its Yes and No.
   ["gtip.line"] = GOLD, ["gtip.on"] = { 0, 1, 0, 1 }, ["gtip.off"] = { 1, 0, 0, 1 },
+  -- A settings page's typed colors (minor 22, cause L5): the yellow and white of a slash command row,
+  -- and the yellow a tooltip body picks a word out with.
+  ["text.command"] = { 1, 1, 0, 1 }, ["text.strong"] = WHITE, ["gtip.emphasis"] = { 1, 1, 0, 1 },
   -- Buttons: LootHistory's flat buttons (BrowserFilterBar, Export, Timeline). No primary today.
   ["btn.bg"] = CTL_FILL, ["btn.border"] = CTL_LINE, ["btn.borderSize"] = 1,
   ["btn.borderStyle"] = "flat", ["btn.text"] = WHITE, ["btn.hover"] = GOLD,

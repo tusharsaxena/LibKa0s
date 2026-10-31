@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Skin-1.0` key **11.1.21.3.14.8.12.2.7**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.43.2.6.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3**, `LibKa0s-Sim-1.0` key **2.3.10.1**; every other file still at its v1.84.0 minor, and **test kit revision 47**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Skin-1.0` key **11.1.22.4.14.8.12.2.7**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3**, `LibKa0s-Sim-1.0` key **2.3.10.1**; every other file still at its v1.84.0 minor, and **test kit revision 47**. No `NEEDS_*` floor rises.
 
 ### The launcher's tooltip follows the skin (`FS-L1`, cause L1)
 
@@ -27,6 +27,13 @@ Versions in this release: `LibKa0s-Skin-1.0` key **11.1.21.3.14.8.12.2.7**, `Lib
 - **OptionsScroll minor 11**: a comment on that.
 - **OptionsSkinPicker minor 6** and **SimPanel minor 10**: the picker's tooltips and an owned sim panel's tooltip title take `gtip.title`, read at hover, whose Ka0s Default is the client's gold. Both are windows, so *Ignore settings panel* leaves them skinned. An owner-less sim panel's title still names no color.
 - A tooltip line an addon writes itself is that addon's to color; those are the host parts of the cause.
+
+### Settings typed colors with the Scope cleared (`FS-L5`, cause L5)
+
+- **SkinDefs minor 22** and **SkinDefsOthers minor 4**: `text.command`, `text.strong` and `gtip.emphasis`. Ka0s Default's are the literals, the yellow and white of a command row and the yellow of a tooltip's emphasis; every other skin's are its `text.accent`, `text.body` and `text.accent`.
+- **OptionsWidgets minor 44**: `O.BuildLandingPage` recolors a command row while the chrome is skinned, so no host changes. `FormatRow` and `Sl:LandingRows()` stay typed, because chat keeps those colors.
+- **OptionsIds minor 7**: an id box's status line reads `sem.warn` and `text.strong`. The id gray and the help mark already followed the skin.
+- Ka0s Default's look does not move, and an ignored panel stays stock. AuraMaster's dropdown values and `[type]` markers and PanelMaster's tooltip emphasis are the host half of the cause.
 
 ### Settings fonts with the Scope cleared (`FS-L4`, cause L4)
 
