@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Skin-1.0` key **12.1.22.4.14.9.12.2.7**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.16.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.1**, `LibKa0s-Widgets-1.0` key **18.4.11.5.5.2**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Skin-1.0` key **12.1.22.4.15.9.13.2.8**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.16.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.1**, `LibKa0s-Widgets-1.0` key **18.4.11.5.5.2**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
 
 ### The launcher's tooltip follows the skin (`FS-L1`, cause L1)
 
@@ -27,6 +27,12 @@ Versions in this release: `LibKa0s-Skin-1.0` key **12.1.22.4.14.9.12.2.7**, `Lib
 - **OptionsScroll minor 11**: a comment on that.
 - **OptionsSkinPicker minor 6** and **SimPanel minor 10**: the picker's tooltips and an owned sim panel's tooltip title take `gtip.title`, read at hover, whose Ka0s Default is the client's gold. Both are windows, so *Ignore settings panel* leaves them skinned. An owner-less sim panel's title still names no color.
 - A tooltip line an addon writes itself is that addon's to color; those are the host parts of the cause.
+
+### Scroll bar step buttons follow the skin (`FS-L7`, cause L7)
+
+- **SkinPaintControls minor 13**, **SkinPaint minor 15** and **SkinAce minor 8**: a template bar's up and down buttons are the Ka0s `chevron-up` and `chevron-down` in `icon.arrow`, `icon.hot` under the pointer and `scroll.thumbOff` disabled. `S.ScrollBar` reaches the copy window and every addon's own bars, so no host changes code; SkinAce reaches a ScrollFrame, a TreeGroup and a MultiLineEditBox.
+- This is in every skin, Ka0s Default included: the cause asks for it. An ignored settings panel keeps the client's buttons, and the client's art is only faded, so a pooled bar goes back whole.
+- **Test kit revision 49**: `chevron-up` joins `VendorSync.LIBRARY_MARKS`. Each addon's re-vendor adds it to the `LibKa0s icons:` line; a pruned icon draws blank.
 
 ### Marks are Ka0s icons, tinted (`FS-L6`, cause L6)
 

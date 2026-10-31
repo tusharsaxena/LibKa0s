@@ -121,7 +121,9 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- face's small digits (the debug console, the perf tables) stay unoutlined. Still 13: P.color (LK-14).
 -- Minor 14 (cause L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): P.unpaint puts back the
 -- gradient S.Tab's `opts.glow` names (SkinPaintControls minor 12); P.asColor is exported for it.
-local PAINT_MINOR = 14
+-- Minor 15 (cause L7 of the same bundle): P.unpaint gives a bar's step buttons back, the record
+-- saying it took them (SkinPaintControls minor 13's P.stepArrows).
+local PAINT_MINOR = 15
 if lib.__paintMinor and lib.__paintMinor >= PAINT_MINOR
   and lib.__paintShellMinor == lib.MINOR then return end
 lib.__paintMinor      = PAINT_MINOR
@@ -810,6 +812,7 @@ function P.unpaint(rec, frame)
   restoreColors(rec, "SetDesaturated")
   if P.hasBackdrop(frame) then restoreBackdrop(rec, frame) end
   P.hideEdges(rec, frame)
+  if rec.regions.stepped then P.unstep(rec, frame) end
   for key, r in pairs(rec.regions) do
     if key ~= "holder" and lib.__ours[r] then r:Hide() end
   end

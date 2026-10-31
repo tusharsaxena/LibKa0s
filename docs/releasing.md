@@ -349,12 +349,13 @@ the host's behalf, so the art comes out of the host's copy and its name must be 
 | `close` also | the id list's X, the EllesmereUI gate's cross, an owned drag handle's close mark with no `closeIcon` |
 | `confirm` | the EllesmereUI gate's check (`OptionsAppearance.lua`), an owned multi-select dropdown's tick with no `check` (`Widgets.lua`) |
 | `chevron-down` | the skin picker's dropdown (`OptionsSkinPicker.lua`), an owned dropdown with no `chevron` (`Widgets.lua`) |
+| `chevron-down`, `chevron-up` | every skinned scroll bar's step buttons (`SkinPaintControls.lua`'s `P.stepArrows`, through `S.ScrollBar` and `SkinAce.lua`) |
 | `reset` | the skin picker's two reset buttons (`OptionsSkinPicker.lua`) |
 | `volume-high` | a skinned sound picker's play button (`OptionsMedia.lua`) |
 | `move` | a skinned reorder list with no `handleIcon` (`WidgetsReorder.lua`) |
 
-Every host with a list declares `chevron-down, close, confirm, info, move, reset, volume-high`; from
-kit revision 48 the vendor gate goes red on any of them left out (`VendorSync.LIBRARY_MARKS`). A
+Every host with a list declares `chevron-down, chevron-up, close, confirm, info, move, reset, volume-high`;
+from kit revision 48 the vendor gate goes red on any of them left out (`VendorSync.LIBRARY_MARKS`). A
 host that wires the debug console also declares `copy, clear`. A pruned icon is **not** an absent
 one to these modules: `Icon` still answers a path, so the text fallback (the `×`, the CLEAR and COPY
 words, the client glyph) never runs and the control draws blank. `copy` and `clear` are the one pair

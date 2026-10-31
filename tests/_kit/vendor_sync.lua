@@ -355,7 +355,7 @@ end
 --- The icons LibKa0s itself draws on a host's behalf (kit revision 48, docs/releasing.md's
 --- *Library-drawn icons*): every listed host declares them. A pruned icon raises nothing and draws
 --- blank, so this list is the one thing that makes the omission loud.
-VendorSync.LIBRARY_MARKS = { "chevron-down", "close", "confirm", "info", "move", "reset", "volume-high" }
+VendorSync.LIBRARY_MARKS = { "chevron-down", "chevron-up", "close", "confirm", "info", "move", "reset", "volume-high" }
 
 --- The library-drawn names a list declaration leaves out, sorted. `none` ships no icons and `all`
 --- ships every one, so neither has any to miss. A name the catalog does not carry cannot be

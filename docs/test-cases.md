@@ -2713,6 +2713,20 @@ Total.
 - skin marks: a panel drag handle's marks follow the Scope live, and a host's art stays
 - skin marks: lib.__ownedMark answers for an owner, and not for a panel control it ignores
 
+### test_skin_step_arrows.lua (11)
+
+- step arrows: S.ScrollBar draws the Ka0s chevrons in icon.arrow, stock art faded, Ka0s Default too
+- step arrows: a skin switch repaints them
+- step arrows: a NAMED bar's buttons are found by name when the keys are absent
+- step arrows: hover takes icon.hot, a disabled button scroll.thumbOff, both live
+- step arrows: unpainted, the stock art is back, the mark gone and its hooks inert
+- step arrows: without an owner's art the stock buttons stay
+- step arrows: a bar with no step buttons, the console's, paints as before
+- step arrows: an AceGUI ScrollFrame's bar wears them, and a release gives the pool stock art
+- step arrows: a page's bar painted by both SkinAce and S.ScrollBar is one mark, and comes back whole
+- step arrows: an ignored settings panel keeps the client's buttons, live both ways
+- step arrows: a MultiLineEditBox's bar wears them
+
 ### test_options_switched.lua (16)
 
 - switched: only the subsection the selector names is drawn, its heading with it
@@ -3988,7 +4002,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 48
+- the kit is revision 49
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -4253,6 +4267,7 @@ Total.
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
 | test_skin_marks.lua | 15 |
+| test_skin_step_arrows.lua | 11 |
 | test_options_switched.lua | 16 |
 | test_options_media.lua | 36 |
 | test_options_combat.lua | 33 |
@@ -4318,4 +4333,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3664** |
+| **Total** | **3675** |
