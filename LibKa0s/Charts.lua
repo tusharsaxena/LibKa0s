@@ -30,7 +30,7 @@
 --   host.fill     function(texture, color, alpha): a texture's flat color
 --   host.barFill  function(texture, color, alpha): a bar of data's fill
 --   host.onReskin function(ctx): redraw the bound rows, after Reskin repainted the chrome
--- docs/api/Charts/version-1-docs.md is the full contract, and each row's fields are on its renderer
+-- docs/api/Charts/version-1.1-docs.md is the full contract, and each row's fields are on its renderer
 -- below.
 --
 -- ── WHERE A LOOK COMES FROM ──────────────────────────────────────────────────────────────────

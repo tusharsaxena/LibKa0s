@@ -113,6 +113,7 @@ end)
 
 test("acts: a re-render releases the old widgets once the new ones exist, never early", function()
   -- The act's own click may be what re-renders, so its widget must outlive the call.
+  -- red under: dropping the Release of the old acts, or releasing them before the new ones exist.
   local O, _, ctx = bench()
   local s
   local during
@@ -120,12 +121,18 @@ test("acts: a re-render releases the old widgets once the new ones exist, never 
     local _, _, again = O.PageBanner(ctx, s)
     during = again[1]
   end } })
+  local before = T.mocks.__aceguiLive("Button")
   local _, _, first = O.PageBanner(ctx, s)
+  local outAtRelease
+  first[1].OnRelease = function() outAtRelease = T.mocks.__aceguiLive("Button") - before end
   first[1]:__fire("OnClick")
+  done(O)   -- first: a failed assert below must not leave the framed Create on the shared mock
   assertTrue(during ~= first[1], "the render inside the click was handed a different button")
   assertEqual(ctx.__bannerActs[1], during)
   assertNil(ctx.__staleBannerActs)
-  done(O)
+  assertTrue(first[1].__released, "the old act went back to AceGUI")
+  assertEqual(outAtRelease, 2, "the old act was released before its replacement existed")
+  assertEqual(T.mocks.__aceguiLive("Button") - before, 1, "one act button out after two renders")
 end)
 
 test("acts: a click and a toggle are refused in combat", function()

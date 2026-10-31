@@ -9,6 +9,8 @@
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertNil = T.test, T.assertEqual, T.assertTrue, T.assertNil
 
+local F = dofile("tests/fixture_skin_paint.lua")
+
 local MAJOR = "LibKa0s-Skin-1.0"
 
 local KEYS = { "ka0s", "obsidian", "azeroth", "glass", "contrast", "ember", "wow", "midnight",
@@ -652,4 +654,14 @@ test("skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's g
       assertEqual(colorKey(t["gtip.footer"]), colorKey(t["gtip.muted"]), key .. ": the footer is its tooltip gray")
     end
   end
+end)
+
+test("skin defs: a shell bump re-registers the eight other skins from the new copy", function()
+  -- red under: dropping the guard's `__othersShellMinor == lib.MINOR` clause.
+  local m, Skin = F.env()
+  local stale = Skin:GetSkin("obsidian")
+  local minor = F.bumpShell(m)
+  assertEqual(Skin.__othersShellMinor, minor, "reattached to the new shell")
+  assertTrue(Skin:GetSkin("obsidian") ~= stale, "registered again, not left from the old copy")
+  assertEqual(#Skin:Skins(), #KEYS, "still nine, none doubled")
 end)
