@@ -1842,12 +1842,12 @@ the LibStub race later keeps every owner, record and facade; the resolve cache a
 
 - `lib.GetOverride`: no consumer as of v1.83.0, kept because the settings tab and the skin picker (`OptionsAppearance.lua`, `OptionsSkinPicker.lua`) reach it for every host, so no host names it.
 - `lib.GetSkin`: no consumer as of v1.83.0, kept because the settings tab and the skin picker (`OptionsAppearance.lua`, `OptionsSkinPicker.lua`) reach it for every host, so no host names it.
-- `lib.IsFromSkin`: no consumer as of v1.83.0, kept because the settings tab and the skin picker (`OptionsAppearance.lua`, `OptionsSkinPicker.lua`) reach it for every host, so no host names it.
+- `lib.IsFromSkin`: no consumer as of v1.83.0, kept because `-1.0` is additive-only and it is the documented test for the `FROM_SKIN` sentinel; nothing in the library calls it either, and only `tests/test_skin.lua` exercises it.
 - `lib.OUTLINE_DEFAULT`: no consumer as of v1.83.0, kept because it is the constant behind the settings rows, which the library draws; the one name-only hit, if any, is a host constant of the same name.
 - `lib.OUTLINE_MODES`: no consumer as of v1.83.0, kept because it is the constant behind the settings rows, which the library draws; the one name-only hit, if any, is a host constant of the same name.
-- `lib.OnReloadRequest`: no consumer as of v1.83.0, kept because the settings tab and the skin picker (`OptionsAppearance.lua`, `OptionsSkinPicker.lua`) reach it for every host, so no host names it.
+- `lib.OnReloadRequest`: no consumer as of v1.83.0, kept because `-1.0` is additive-only and it is the documented alternative to the `reload` answer from `SetChoice` and `SetIgnore`, which is what the hosts act on; nothing in the library calls it either, and only the suites (this library's and the hosts' `test_skinsetup.lua`) register a listener.
 - `lib.OwnerLabel`: no consumer as of v1.83.0, kept because the settings tab and the skin picker (`OptionsAppearance.lua`, `OptionsSkinPicker.lua`) reach it for every host, so no host names it.
-- `lib.Owners`: no consumer as of v1.83.0, kept because the settings tab and the skin picker (`OptionsAppearance.lua`, `OptionsSkinPicker.lua`) reach it for every host, so no host names it.
+- `lib.Owners`: no consumer as of v1.83.0, kept because the library's own `lib.__skinOthers` (`OptionsAppearance.lua`) reads it for every host, for the settings tab's copy button and the skin picker's "Apply to all Ka0s addons", so no host names it.
 - `lib.RegisterSkin`: no consumer as of v1.83.0, kept because the eight other skins register through it in `SkinDefs.lua`, and it is the seam a future skin would take.
 - `lib.Repaint`: no consumer as of v1.83.0, kept because the library runs it on every skin change, so a host reaches it only through `SetChoice`.
 - `lib.SCHEMA`: no consumer as of v1.83.0, kept because it is the token schema the skins and the suite read; the Skin Tester name-only hit is a guarded read of a table of its own.
