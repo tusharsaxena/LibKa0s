@@ -33,6 +33,14 @@ local function geomFrame()
   function f:IsShown() return self.__shown end
   function f:SetScript(k, fn) self.__scripts[k] = fn; return self end
   function f:GetScript(k) return self.__scripts[k] end
+  function f:HookScript(k, fn)
+    local prev = self.__scripts[k]
+    self.__scripts[k] = function(...)
+      if prev then prev(...) end
+      return fn(...)
+    end
+    return self
+  end
   function f:__fire(k, ...) local fn = self.__scripts[k]; if fn then return fn(self, ...) end end
   function f:RegisterForClicks(...) self.__clicks = { ... }; return self end
   function f:RegisterForDrag(...) self.__drags = { ... }; return self end

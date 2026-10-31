@@ -266,3 +266,15 @@ test("skin owner tokens: an owner token is no vocabulary entry and needs no Skin
   assertFalse(Skin.__schemaIndex["dw.gain"] ~= nil, "the schema never learns an owner token")
   for _, name in ipairs(Skin.VOCAB) do assertTrue(name ~= "dw.gain", "nor the vocabulary") end
 end)
+
+test("skin owner tokens: a shell bump reattaches this file, so its stub never takes the remap", function()
+  -- Skin.lua defines a pass-through __Remap for a copy without this file, and a newer shell runs it
+  -- again. red under: dropping the guard's `__tokensShellMinor == lib.MINOR` clause.
+  local m, Skin = F.env()
+  register(Skin, OWNER, tokens())
+  local minor = F.bumpShell(m)
+  assertEqual(Skin.__tokensShellMinor, minor, "reattached to the new shell")
+  local base = { ["btn.bg"] = { 0, 0, 0, 1 }, ["dw.gain"] = GAIN }
+  local view = Skin:__Remap(OWNER, base, { bg = "dw.gain" }, { bg = "btn.bg" }, nil, "test")
+  assertEqual(view["btn.bg"], GAIN, "the slot still remaps")
+end)

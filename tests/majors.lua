@@ -65,6 +65,14 @@ local MAJORS = {
     primary = "Toast",
   },
   {
+    major = "LibKa0s-Charts-1.0",
+    files = { "Charts", "ChartsRender" },
+    primary = "Charts",
+    paired = {
+      { file = "ChartsRender", minorField = "__renderMinor", probeField = "__renderShellMinor" },
+    },
+  },
+  {
     major = "LibKa0s-Media-1.0",
     files = { "Media", "MediaIcons" },
     primary = "Media",
@@ -74,10 +82,12 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Skin-1.0",
-    files = { "Skin", "SkinDefs", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinEUI", "SkinAce" },
+    files = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinEUI", "SkinAce" },
     primary = "Skin",
     paired = {
+      { file = "SkinOwnerTokens", minorField = "__tokensMinor", probeField = "__tokensShellMinor" },
       { file = "SkinDefs", minorField = "__defsMinor", probeField = "__defsShellMinor" },
+      { file = "SkinDefsOthers", minorField = "__othersMinor", probeField = "__othersShellMinor" },
       { file = "SkinPaint", minorField = "__paintMinor", probeField = "__paintShellMinor" },
       { file = "SkinPaintExtras", minorField = "__extrasMinor", probeField = "__extrasShellMinor" },
       { file = "SkinPaintControls", minorField = "__controlsMinor", probeField = "__controlsShellMinor" },
@@ -120,14 +130,17 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Options-1.0",
-    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdList", "OptionsTabs", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSwitch", "OptionsMedia" },
+    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" },
     primary = "Options",
     paired = {
       { file = "OptionsRegistry", minorField = "__registryMinor", probeField = "__registryShellMinor" },
       { file = "OptionsWidgets", minorField = "__widgetsMinor", probeField = "__widgetsShellMinor" },
+      { file = "OptionsFlow", minorField = "__flowMinor", probeField = "__flowShellMinor" },
       { file = "OptionsIds",     minorField = "__idsMinor",     probeField = "__idsShellMinor" },
+      { file = "OptionsIdSuggest", minorField = "__suggestMinor", probeField = "__suggestShellMinor" },
       { file = "OptionsIdList",  minorField = "__idListMinor",  probeField = "__idListShellMinor" },
       { file = "OptionsTabs",    minorField = "__tabsMinor",    probeField = "__tabsShellMinor" },
+      { file = "OptionsTabbed", minorField = "__tabbedMinor", probeField = "__tabbedShellMinor" },
       { file = "OptionsCombat",  minorField = "__combatMinor",  probeField = "__combatShellMinor" },
       { file = "OptionsCompose", minorField = "__composeMinor", probeField = "__composeShellMinor" },
       { file = "OptionsScroll",  minorField = "__scrollMinor",  probeField = "__scrollShellMinor" },
@@ -136,6 +149,7 @@ local MAJORS = {
       { file = "OptionsKeybinds", minorField = "__keybindsMinor", probeField = "__keybindsShellMinor" },
       { file = "OptionsAppearance", minorField = "__appearanceMinor", probeField = "__appearanceShellMinor" },
       { file = "OptionsSkinPicker", minorField = "__pickerMinor", probeField = "__pickerShellMinor" },
+      { file = "OptionsSkinPickerRows", minorField = "__pickerRowsMinor", probeField = "__pickerRowsShellMinor" },
       { file = "OptionsSwitch", minorField = "__switchMinor", probeField = "__switchShellMinor" },
       { file = "OptionsMedia", minorField = "__mediaMinor", probeField = "__mediaShellMinor" },
     },
@@ -152,11 +166,12 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Sim-1.0",
-    files = { "Sim", "SimTimeline", "SimPanel" },
+    files = { "Sim", "SimTimeline", "SimPanel", "SimPanelRender" },
     primary = "Sim",
     paired = {
       { file = "SimTimeline", minorField = "__timelineMinor", probeField = "__timelineShellMinor" },
       { file = "SimPanel", minorField = "__panelMinor", probeField = "__panelShellMinor" },
+      { file = "SimPanelRender", minorField = "__renderMinor", probeField = "__renderShellMinor" },
     },
   },
 }

@@ -58,15 +58,19 @@ test("keybinds: OptionsKeybinds is at minor 4 or later, paired on an Options she
   assertEqual(type(lib.__AttachKeybinds), "function")
 end)
 
--- Twelve components when OptionsKeybinds arrived; OptionsAppearance.lua (Options minor 33) made a
--- thirteenth, so the case pins OptionsKeybinds' place and one component per file.
-test("keybinds: the Options version key has a component per file, OptionsKeybinds the twelfth", function()
+-- Twelve components when OptionsKeybinds arrived, its twelfth. Files have joined on both sides of it
+-- since, so the case pins its place behind the drawer and one component per file.
+test("keybinds: the Options version key has a component per file, OptionsKeybinds after the drawer", function()
   local files
   for _, row in ipairs(T.majors) do
     if row.major == "LibKa0s-Options-1.0" then files = row.files end
   end
   assertTrue(#files >= 12, "tests/majors.lua's Options row")
-  assertEqual(files[12], "OptionsKeybinds", "the twelfth file")
+  local at
+  for i, f in ipairs(files) do
+    if f == "OptionsKeybinds" then at = i end
+  end
+  assertEqual(files[at - 1], "OptionsDrawer", "OptionsKeybinds follows the drawer")
   local parts = {}
   for i, f in ipairs(files) do parts[i] = tostring(lib.MODULES[f]) end
   local key = table.concat(parts, ".")

@@ -122,7 +122,7 @@ it silently.
 ### Step 3 — Verify, and measure again
 
 ```sh
-lua tests/run.lua && luacheck .
+lua tests/run.lua && ~/.claude/dev-copilot/bin/ka0s-bounded luacheck .
 ```
 
 Same pass count as step 1, `luacheck` 0/0. Then re-time it exactly as in step 1.

@@ -29,7 +29,7 @@ local F = dofile("tests/fixture_skin_paint.lua")
 local OWNER, OTHER = "LootHistory", "BankLedger"
 local TOOL_FILES = { "Widgets", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
   "DebugLogWindow", "Lifecycle", "Perf", "PerfSampler", "PerfCommands", "PerfPanel", "Sim", "SimTimeline",
-  "SimPanel" }
+  "SimPanel", "SimPanelRender" }
 
 -- Every font key resolves, so each skin's body face has a path: "Fonts\<key>".
 local LSM = setmetatable({}, { __index = function(_, k)

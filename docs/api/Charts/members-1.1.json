@@ -1,0 +1,21 @@
+{
+  "major": "LibKa0s-Charts-1.0",
+  "versionKey": "1.1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Charts", "minor": 1 },
+    { "file": "ChartsRender", "minor": 1 }
+  ],
+  "members": [
+    { "name": "K", "kind": "table" },
+    { "name": "New", "kind": "function" },
+    { "name": "OTHER", "kind": "string" },
+    { "name": "RangeScale", "kind": "function" },
+    { "name": "StackSegments", "kind": "function" },
+    { "name": "StripLabels", "kind": "function" },
+    { "name": "StripSlots", "kind": "function" },
+    { "name": "fitFontSize", "kind": "function" },
+    { "name": "tipText", "kind": "function" },
+    { "name": "truncate", "kind": "function" }
+  ]
+}

@@ -183,8 +183,7 @@ end)
 
 test("widgets: a dropdown falls back to a plain Dropdown when its dialogControl is unregistered",
   function()
-  -- AceGUI-3.0-SharedMediaWidgets is optional; without it the option must still render (no media
-  -- swatch, but usable) rather than erroring on an unknown widget type.
+  -- The option must render (no media swatch, but usable) rather than error on an unknown type.
   local dd, row = render("barTexture")
   assertEqual(row.dialogControl, "LSM30_Statusbar", "the row does ask for the LSM widget")
   -- This bench's AceGUI has no stock Dropdown to build a Ka0sMedia_* picker from, so the last rung
@@ -193,6 +192,8 @@ test("widgets: a dropdown falls back to a plain Dropdown when its dialogControl 
 end)
 
 test("widgets: a dropdown uses its dialogControl widget when that IS registered", function()
+  -- With no picker to draw, the bench's case; with one, an LSM30_* row is the picker
+  -- (tests/test_options_media.lua).
   local O, rec, ctx = bench()
   O.AceGUI:RegisterWidgetType("LSM30_Statusbar",
     function() return T.mocks.__makeAceGUIWidget("LSM30_Statusbar") end, 1)

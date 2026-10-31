@@ -546,3 +546,10 @@ The consumer-side gate compares the vendored payload against the tag byte for by
 and normalized line endings on everything, which is right for Lua and wrong for a TGA. **Kit revision
 11 or newer is required** to vendor a payload with `media/` in it — see
 [`../testkit/version-11-docs.md`](../testkit/version-11-docs.md).
+
+**Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
+
+- `lib.BACKGROUNDS`: no consumer as of v1.83.0, kept because it is the catalog `Background` reads.
+- `lib.BORDERS`: no consumer as of v1.83.0, kept because it is the catalog `Border` reads.
+- `lib.Background`: no consumer as of v1.83.0, kept because the Skin major reaches it, so no host names it; the name-only hits are host functions of the same name.
+- `lib.Border`: no consumer as of v1.83.0, kept because the Skin major reaches it, so no host names it; the name-only hits are host functions of the same name.

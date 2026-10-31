@@ -10,6 +10,86 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.84.0 — 2026-11-01
+
+Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.
+
+Versions in this release: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.6**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **37.4.41.2.6.1.7.13.2.3.16.10.4.4.6.5.5.1.1.3**, `LibKa0s-Schema-1.0` **3**, `LibKa0s-Slash-1.0` key **21.2**, `LibKa0s-Widgets-1.0` key **17.3.10.5.5.2**, `LibKa0s-Charts-1.0` key **1.1**, `LibKa0s-DebugLog-1.0` key **22.6.1.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Now **twenty majors**, across **sixty-four files** (nine are new), and no `NEEDS_*` floor rises.
+
+### One media picker (`LK-M3`, LibKa0s#73)
+
+The owner's ruling of 2026-11-01: `Ka0sMedia_*` is the only media picker in the collection, because it is the one the skin can paint. The tag was re-cut locally for this; it had not been pushed.
+
+- **OptionsMedia minor 2**: `lib.__MediaWidgetType` answers the `Ka0sMedia_*` type for a LibSharedMedia kind, a `Ka0sMedia_*` name or an `LSM30_*` name, whether or not that `LSM30_*` type is registered. All five kinds are covered, and a border or sound row sits on the stock bar, so it needs no alignment fix.
+- **OptionsWidgets minor 41**: a row that names `LSM30_*` draws the picker whether or not AceGUI-3.0-SharedMediaWidgets is loaded. A registered type of the row's own is used only when it is no media name or no picker can be built.
+- **OptionsCompose minor 16**: `O.FontGroup`, `O.BorderGroup` and `O.BarGroup` write `dialogControl = "Ka0sMedia_*"`.
+- **Options minor 36**: `lib.__PatchLSM30Border` is a no-op that answers false, and `lib.__lsmBorderPatched` is gone.
+- **Options minor 37** (`LK-M4`, the owner's ruling of 2026-11-01): `lib.__PatchLSM30Border` is deleted, no stub. An addon on an older vendored copy that still calls it unguarded raises at file load if a newer copy of this library won LibStub first, until that addon updates, and the owner accepted that. No addon's shipped code on the run branches calls it.
+- **OptionsDrawer minor 4** and **OptionsMedia minor 3** (`LK-M4`): one comment each, the pointer into `Options.lua`'s note on the AceGUI widget registry.
+- **OptionsScroll minor 10** and **SkinAce minor 6**: comments only. SkinAce still paints a picker by alias and has no `LSM30_*` painter.
+
+A consumer owes, at the re-vendor: a test pinning `LSM30_*` on a composed row or calling `__PatchLSM30Border` moves, and a page that calls `AceGUI:Create("LSM30_*")` itself asks `lib.__MediaWidgetType(kind)`. The library no longer needs a host's vendored AceGUI-3.0-SharedMediaWidgets for anything.
+
+### The library peels (`LK-M2-PEEL`)
+
+Every peel below is a pure move on the seam `CLAUDE.md`'s census named. No public member, no default and no pixel moves. Each moved-from file bumps because its bytes changed, and each new file starts at minor 1.
+
+- `SkinOwnerTokens.lua` (new, **SkinOwnerTokens minor 1**): the owner-token block out of `Skin.lua`, which moves to **Skin minor 11** and drops from 1232 to 1045 lines.
+- `SkinDefsOthers.lua` (new, **SkinDefsOthers minor 1**): the eight other skins out of `SkinDefs.lua`, which moves to **SkinDefs minor 19** and drops from 1104 to 455 lines. Its `plan-data/font_metrics_shipped.py` citations now name their Ka0sAddonsCommonTasks bundles. `tools/skin_gallery.py` reads both files.
+- `SimPanelRender.lua` (new, **SimPanelRender minor 1**): the step panel's renderer out of `SimPanel.lua`, which moves to **SimPanel minor 9** and drops from 1018 to 672 lines.
+- `OptionsSkinPickerRows.lua` (new, **OptionsSkinPickerRows minor 1**): the Skin tab's rows out of `OptionsSkinPicker.lua`, which moves to **OptionsSkinPicker minor 5** and drops from 1455 to 1256 lines.
+- `OptionsIdSuggest.lua` (new, **OptionsIdSuggest minor 1**): the suggestion half out of `OptionsIds.lua`, which moves to **OptionsIds minor 6** and drops from 1412 to 806 lines.
+- `OptionsFlow.lua` (new, **OptionsFlow minor 1**): the two-column flow engine out of `OptionsWidgets.lua`, which moves to **OptionsWidgets minor 39** and drops from 1375 to 1066 lines.
+- `OptionsTabbed.lua` (new, **OptionsTabbed minor 1**): the tabbed page out of `OptionsTabs.lua`, which moves to **OptionsTabs minor 12** and drops from 1382 to 1169 lines.
+- `testkit/mock_ace.lua` (new, **test kit revision 47**): the Ace fakes, CallbackHandler through AceAddon, out of `testkit/mock_base.lua`, which drops from 1465 to 679 lines. Revision 47 also corrects a comment in `glyphs.lua` (nine skins).
+
+### Flow seams, the note row, the Position block and banner acts (`LK-M2-59`, LibKa0s#59)
+
+Additive on every `-1.0` surface. Consumers' degradation stubs owe the new `O.PositionBlock` at the re-vendor.
+
+- **OptionsFlow minor 2**: `O.RenderRows`' `opts.beforeGroup` and `opts.afterSubgroup`, and `O.RenderSchema` takes the same `opts`. The `note` row draws dim at full width on a line of its own.
+- **OptionsTabbed minor 2**: `O.RenderTabbedSchema`'s `opts` hands both seams to the flow.
+- **OptionsWidgets minor 40**: `O.RenderField` dispatches `note`, and `lib.__widgetsKit` carries `applyLabelFont`. No maker is added.
+- **OptionsCompose minor 15**: `O.PositionBlock(spec)`, X and Y under the rows' subgroup, with a Reset hook for `opts.afterSubgroup`.
+- **OptionsTabs minor 13**: `O.PageBanner{ acts }`, up to three buttons or checkboxes beside the picker in equal cells, with the widgets as a third return.
+- **Options minor 35**: both reset walks skip a note, and `O.ClearScroll` keeps the band's refresher.
+- **Schema minor 3**: `Validate` takes a `note` row and reports one with no `text` or with a `path`.
+- **Slash minor 21**: `/list` and `resetall` skip a note.
+
+### WoW Default's Friz is measured and guarded (`LK-M2-69`, LibKa0s#69)
+
+No size moves. Real Friz Quadrata, md5 `87cd491cd119e8c7aa48b562d7482ed8` against Prototype's `0483b4eeaaefc7b81986e43702c7900d`, is the file `LK-F02` already shipped as `FrizQuadrataTT-Regular.ttf`, so WoW Default's 11 / 13 / 11 came from it. The re-measure by the same rule landed on the same sizes: body best 11.5 runs +2.3% and steps down to 11, title best 13.5 runs +3.5% and steps down to 13, HUD best 11 stands. `tests/test_skin_width_parity.lua` gains a case that goes red if the shipped Friz turns into Prototype's bytes or WoW Default stops drawing it. `SkinDefs.lua`'s minor 17 note no longer calls it unmeasured, and the md5 is recorded there, in `media/fonts/FONTS.md` and in the Skin document. No minor moves: `SkinDefs.lua` changes in comments only, inside the unreleased minor 19.
+
+### `ApplyLevel` allocates nothing
+
+**WidgetsDragHandle minor 9**: `handle:ApplyLevel()` and the strip's repaint name their two marks where each built a throwaway table per call, so a host that re-levels every frame leaves no garbage.
+
+### The Insights chart renderers (`LK-M2-66`, LibKa0s#66)
+
+The new major `LibKa0s-Charts-1.0`, documented in [docs/api/Charts/version-1.1-docs.md](docs/api/Charts/version-1.1-docs.md), promoted from Ka0s Loot History's Insights tab by way of Ka0s DPS Race's host-agnostic port. Additive: no host adopts it in this commit.
+
+- **Charts minor 1** (`Charts.lua`): `Charts:New(content, host)`, the context, its pools and `Reskin`, and the pure helpers `truncate`, `tipText`, `fitFontSize`, `StackSegments`, `RangeScale`, `StripSlots` and `StripLabels`.
+- **ChartsRender minor 1** (`ChartsRender.lua`, paired on the shell): the pooled widgets, the chrome (headings, dividers, list panels, stat cards) and the bar, stacked bar, range, legend, strip and list renderers.
+- **DebugLogDiagnostics minor 6**: the identity header names Charts, between Toast and Media. A host suite that pins `DebugLogDiagnostics 5` moves with its re-vendor.
+
+What the promotion changed from the port. The drawing seams are the context's, not file locals, because a file shared across addons must not hand one addon's paint to another's chart. `host.pool` defaults to `LibKa0s-Pool-1.0`, the tooltip to `GameTooltip`, and `host.owner` reads the look from the owner's skin (the host first, then the skin, then Ka0s Default's values), with `barFill` as a seam of its own so a data bar takes the bar texture and a track stays flat. `ctx:Reskin()` repaints both pool lists and the chrome, as Loot History's walk does, and an owner's context runs it on `OnLooksChanged`. `truncate` writes `"..."` inside the cap, since the ellipsis glyph may draw as an empty box. A strip with a `top` of 0, a tooltip of no lines, `RangeScale` of no rows, `truncate` with a cap of 0, an empty legend, and a first legend chip on a narrow line each raise nothing or draw nothing now.
+
+Upstream, for the release close: `library-stack-§7`'s module table in WowAddonStandards gains a `Charts` row, and the file count moves to sixty-four.
+
+### The drag handle's fit (`LK-M2-68`, LibKa0s#68)
+
+**WidgetsDragHandle minor 10**: a strip now measures its title at its own effective scale, writes the measured text fresh, and repeats the host's last fit when it shows, out of combat. Computed over the nine skins' shipped faces, a fitted strip holds its title by construction once the measure matches what is drawn; these three close the ways it did not.
+
+### Deviation register (`CLAUDE.md`)
+
+The owner's rulings of 2026-10-31. The drawer stays in LibKa0s and its one-release trigger renews from v1.84.0. LibKa0sSkinTester counts as the line chart's second consumer, so that row's trigger has fired and the promotion follows in a tracked issue.
+
+Release gate (`docs/automated-tests/20261101-032159/`): lint pass, 0/0 in 273 files;
+tests pass, 3615 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Current — `LibKa0s/SimPanel.lua` minor 9 and the new `LibKa0s/SimPanelRender.lua` are a pure move (284907a), and `Sim.lua`, `SimTimeline.lua` and `Widgets.lua` did not move; the owner's answer, 2026-10-31, and no Sim file or `Widgets.lua` has moved since.
+
 ## v1.83.0 — 2026-10-31
 
 Opened 2026-10-31, on `feat/2026-10-31-font-pickers-skin-faces`: the owner's font pickers and skin

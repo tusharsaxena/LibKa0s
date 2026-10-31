@@ -19,7 +19,11 @@ local function env(noDefs)
   local m = buildMocks()
   Loader.load("LibKa0s/Core.lua", nil, m)
   Loader.load("LibKa0s/Skin.lua", nil, m)
-  if not noDefs then Loader.load("LibKa0s/SkinDefs.lua", nil, m) end
+  Loader.load("LibKa0s/SkinOwnerTokens.lua", nil, m)
+  if not noDefs then
+    Loader.load("LibKa0s/SkinDefs.lua", nil, m)
+    Loader.load("LibKa0s/SkinDefsOthers.lua", nil, m)
+  end
   return m, m.LibStub(MAJOR)
 end
 
@@ -63,7 +67,9 @@ end)
 test("skin: the shell refuses without Core, and SkinDefs then attaches to nothing", function()
   local m = buildMocks()
   Loader.load("LibKa0s/Skin.lua", nil, m)
+  Loader.load("LibKa0s/SkinOwnerTokens.lua", nil, m)
   Loader.load("LibKa0s/SkinDefs.lua", nil, m)
+  Loader.load("LibKa0s/SkinDefsOthers.lua", nil, m)
   assertNil(m.LibStub(MAJOR, true), "no Core, no major")
 end)
 
@@ -281,8 +287,9 @@ test("skin: Ka0s Default equals the file-local constants it replaces", function(
   end
 end)
 
--- LootHistory's constants (inputs/LOOTHISTORY_SURFACES.md section 3), written out: a library
--- suite cannot read a consumer's source, so the values are restated here with their sites.
+-- LootHistory's constants (Ka0sAddonsCommonTasks docs/2026-10-25-SKINNING/inputs/LOOTHISTORY_SURFACES.md
+-- section 3), written out: a library suite cannot read a consumer's source, so the values are
+-- restated here with their sites in that repo as the inventory named them.
 local LOOTHISTORY = {
   { "text.headingAlt", { 0.91, 0.77, 0.42 } },          -- Panel.lua GOLD_RGB (AH header)
   { "list.stripe", { 1, 1, 1, 0.03 } },                 -- BrowserTable / HoldingsTab stripe

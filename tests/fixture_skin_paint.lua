@@ -19,7 +19,7 @@ local installPaint = dofile("tests/_kit/mock_paint.lua")
 local F = {}
 
 F.MAJOR = "LibKa0s-Skin-1.0"
-F.FILES = { "Core", "Skin", "SkinDefs", "SkinPaint", "SkinPaintExtras", "SkinPaintControls" }
+F.FILES = { "Core", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintControls" }
 
 --- A font-object fake for CreateFont: records its face and shadow; a FontString given it answers
 --- its face through GetFont.
@@ -50,6 +50,24 @@ function F.env(opts)
   end
   for _, f in ipairs(opts.files or F.FILES) do Loader.load("LibKa0s/" .. f .. ".lua", nil, m) end
   return m, m.LibStub(F.MAJOR, true)
+end
+
+--- The shell of a newer vendored copy loading over `m`'s: Skin.lua, patched one minor up, then the
+--- rest of the major, as a later copy's LibKa0s.xml would. A paired file whose guard ignores the
+--- shell's minor stays behind on the old shell. Answers the new minor.
+function F.bumpShell(m)
+  local live = m.LibStub(F.MAJOR)
+  local bumped = live.MINOR + 1
+  local src, hits = Loader.readFile("LibKa0s/Skin.lua"):gsub(
+    'local MAJOR, MINOR = "LibKa0s%-Skin%-1%.0", %d+',
+    ('local MAJOR, MINOR = "%s", %d'):format(F.MAJOR, bumped))
+  assert(hits == 1, "Skin.lua's minor line moved")
+  Loader.loadSource(src, "Skin.lua+1", nil, m)
+  assert(live.MINOR == bumped, "the patched shell upgraded in place")
+  for _, f in ipairs(F.FILES) do
+    if f ~= "Core" and f ~= "Skin" then Loader.load("LibKa0s/" .. f .. ".lua", nil, m) end
+  end
+  return bumped
 end
 
 --- A registered owner on `skin` (default Ka0s Default). Answers its facade.

@@ -10,7 +10,7 @@ before changing anything. [`DEPENDENCIES.md`](DEPENDENCIES.md) lists what to ins
 
 LibKa0s is a Ka0s-owned shared library. Ka0s WoW addons vendor it the way they vendor Ace3: each one
 copies it into its own `libs/` folder instead of depending on it at runtime. Every module is one
-LibStub major, and nineteen of them ship today:
+LibStub major, and twenty of them ship today:
 
 - `LibKa0s-Core-1.0`: the small stateless seams every other module sits on. That means secret-safe
   stringification, the window skin and its close button, a prefixed chat printer,
@@ -41,6 +41,9 @@ LibStub major, and nineteen of them ship today:
 - `LibKa0s-Toast-1.0` is the alert-toast shell: one toast at a time from a queue, closed by a
   timer that pauses under the pointer, by its close mark or by a right-click, placed by a drag the
   host allows in test mode. The host draws the content with one builder.
+- `LibKa0s-Charts-1.0` is the Insights chart renderers: pooled bars, stacked bars, range bars,
+  strips, ranked lists, legends and stat cards, drawn from the rows a host hands them, in the look
+  of one host config table or its skin.
 - `LibKa0s-Media-1.0` carries the art and type the collection draws with, inside the payload, along
   with the paths that reach them and the LibSharedMedia registration.
 - `LibKa0s-Skin-1.0` is the skin engine: which skin each addon wears, chosen per addon, what each
@@ -60,7 +63,7 @@ LibStub major, and nineteen of them ship today:
   value parser.
 - `LibKa0s-Launcher-1.0` builds the minimap button and the broker plugin as ONE LibDataBroker
   object, registered twice. Neither broker library is a dependency.
-- `LibKa0s-Options-1.0` has the most files: sixteen, under one major. It holds the Blizzard
+- `LibKa0s-Options-1.0` has the most files: twenty, under one major. It holds the Blizzard
   settings-canvas shell, the translation from schema row to AceGUI widget, the page's chrome (the tab
   strip, the banner, the header block, the secondary strip and the nav rail), the two-column flow
   engine that lays a page out, the drawer that folds a row of choices under a header bar, the key binding model under a
@@ -84,13 +87,13 @@ modules and points you there. It does not restate them.
 1. Copy `LibKa0s/` into `<Addon>/libs/LibKa0s/`. Copy the whole folder, every time. The modules are
    siblings that ship as one released copy, and every file except `Core.lua` returns without
    registering anything when `Core.lua` is missing or older than the minor it needs. If `Options.lua`
-   bails that way, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`,
-   `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua`,
-   `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua`, `OptionsSkinPicker.lua`, `OptionsSwitch.lua` and `OptionsMedia.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole sixteen-file module
+   bails that way, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsFlow.lua`, `OptionsIds.lua`, `OptionsIdSuggest.lua`, `OptionsIdList.lua`,
+   `OptionsTabs.lua`, `OptionsTabbed.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua`,
+   `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua`, `OptionsSkinPicker.lua`, `OptionsSkinPickerRows.lua`, `OptionsSwitch.lua` and `OptionsMedia.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole twenty-file module
    is absent instead of half-attached. `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua` and `WidgetsCopyWindow.lua` do the same
-   behind `Widgets.lua`, `SkinDefs.lua`, `SkinPaint.lua`, `SkinPaintExtras.lua`, `SkinPaintControls.lua`, `SkinEUI.lua` and `SkinAce.lua` behind `Skin.lua` (the extras, the controls and the AceGUI rows also behind `SkinPaint.lua`, whose painter helpers they use), `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
-   `PerfPanel.lua` behind `Perf.lua`, and `SimTimeline.lua` and `SimPanel.lua` behind `Sim.lua`.
-   `SimPanel.lua` also returns when Widgets is absent, since its scenario picker is a
+   behind `Widgets.lua`, `SkinOwnerTokens.lua`, `SkinDefs.lua`, `SkinDefsOthers.lua`, `SkinPaint.lua`, `SkinPaintExtras.lua`, `SkinPaintControls.lua`, `SkinEUI.lua` and `SkinAce.lua` behind `Skin.lua` (the extras, the controls and the AceGUI rows also behind `SkinPaint.lua`, whose painter helpers they use), `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
+   `PerfPanel.lua` behind `Perf.lua`, and `SimTimeline.lua`, `SimPanel.lua` and `SimPanelRender.lua` behind `Sim.lua`.
+   `SimPanel.lua` and `SimPanelRender.lua` also return when Widgets is absent, since its scenario picker is a
    `W.Dropdown`; the simulator then runs headless from its slash verb, with no panel.
    Since v1.48.0 the folder has carried one more file than it used to. That is why you copy the whole
    folder, and never just the files you happen to have.
@@ -117,7 +120,7 @@ addon must work with no other addon installed.
 
 ## The modules
 
-There are nineteen LibStub majors, and a host adopts each one independently. The full contract for
+There are twenty LibStub majors, and a host adopts each one independently. The full contract for
 each (the descriptor, every public member, every row field) lives in [`docs/api/`](docs/api/), one
 document per shipped version. This section is the map and that directory is the reference. Nothing
 here restates a signature, because a second copy of a contract is a contract that drifts.
@@ -134,13 +137,14 @@ here restates a signature, because a second copy of a contract is a contract tha
 | `LibKa0s-Item-1.0` | Item identity as five primitives and no policy: read an item link and its bonus ids, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree about it in writing. | `Item.lua` | [3](docs/api/Item/version-3-docs.md) |
 | `LibKa0s-Glow-1.0` | The stateless LibCustomGlow-1.0 driver. `Start(frame, style, knobs, key, frameLevel)` and `Stop(frame, style, key)` map one of four styles (`button`, `proc`, `pixel`, `autocast`) and its knob values to LibCustomGlow's positional arguments, with its two traps handled (`pixelLength` 0 means automatic; a boolean is false only when false). No defaults, no ranges, no lifecycle: the repaint gate, the proc burst and the triggers stay the host's. LibCustomGlow-1.0 is resolved at call time, and without it nothing is drawn. | `Glow.lua` | [1](docs/api/Glow/version-1-docs.md) |
 | `LibKa0s-Toast-1.0` | The alert-toast shell. `Toast:New(d)` answers a toast that shows one payload at a time and queues the rest (the oldest dropped past a cap), closes after the host's duration with the countdown paused under the pointer, closes on its close mark or a right-click, and can be dragged only while the host's `draggable` says so, its position kept in the host's profile through `getPosition` / `setPosition` in UIParent's units. Scale and an optional alert sound come from the host; the frame is frame-layering's T5 alert tier. The content is the host's: `d.build(frame, payload)` is the one presentation argument. `Clear` is the stand-down, `Hold` / `Release` a host's combat hold, `Preview` test mode's placement. It needs only Core's `ApplySkin` and `MakeCloseButton`, so it runs beside the v1.77.0 payload. | `Toast.lua` | [1](docs/api/Toast/version-1-docs.md) |
+| `LibKa0s-Charts-1.0` | The Insights chart renderers. `Charts:New(content, host)` answers a context whose pooled bars, stacked bars, range bars, strips, list panels, legends, stat cards and dividers draw into `content`, every hover stating its value. One host table carries the pool, the colors, the fonts, the tooltip and the drawing seams, each optional: `host.owner` takes them from that owner's skin, and a skin switch repaints the free list as well as the active one. The rows and the layout pass are the host's. | `Charts.lua`, `ChartsRender.lua` | [1.1](docs/api/Charts/version-1.1-docs.md) |
 | `LibKa0s-Media-1.0` | The art and type this collection draws with: 5,836 white icon TGAs from three sets (Open Iconic and Phosphor, MIT; Game-icons.net, CC BY 3.0), fifteen generated statusbar textures (a bar of its own for every skin but WoW Default among them), the Glass skin's generated rounded border and fill (the LSM `border` and `background` catalogs), and thirty-three faces, each under its own locale mask: Ka0s Default's Prototype, Obsidian's Expressway, WoW Forever's Fira Sans Medium and SemiBold, the faces the other skins draw (Azeroth's Open Sans, Glass's Avant Garde, High Contrast's Doris PP, Ember's Emblem, WoW Default's Friz Quadrata TT and WoW Midnight's Segoe UI, with their other weights), and every older face, kept whether or not a skin names it (JetBrains Mono, Nunito, Vollkorn, Bitter, Philosopher, Atkinson Hyperlegible, Oxanium, Inter and Fira Sans Regular). `media/fonts/FONTS.md` is the record of each face. All of it sits inside the payload, along with the paths that reach it, the set catalog and the LibSharedMedia registration. | `Media.lua`, `MediaIcons.lua`, `media/` | [11.1](docs/api/Media/version-11.1-docs.md) |
 | `LibKa0s-Skin-1.0` | The skin engine. A skin is a token table; each addon registers as an **owner** (`Skin:RegisterOwner`, its folder name) and wears its own choice of skin, read once from its profile and moved by `SetChoice`, which resolves the skin, repaints every frame recorded for that owner (and no other), and fires the owner's `OnLooksChanged`. `Skin:For(owner)` is the owner's facade, the painting vocabulary as late-bound trampolines that survive a minor upgrade. `FROM_SKIN`, `Resolve` and `ResetToSkin` let a HUD setting follow the skin. `GetIgnore` and `SetIgnore` hold an owner's two exceptions, its settings panel and its fonts left as the client draws them, and a change applies live. `GetOverride` and `SetOverride` hold an owner's font and bar texture overrides, laid over its skin's tokens, and the `BarTexture` primitive paints that bar on a Texture or a StatusBar. `GetOutline` and `SetOutline` hold an owner's font outline mode (all text, HUD text only, or off; HUD text only by default), applied wherever the skin's outline tokens are read; the facade's `FontFlags` resolves an element's stored font flags (*From skin* by default) through it, and `HudFontSize` scales a HUD element's stored size so every skin's HUD text is as wide as Ka0s Default's, as each skin's body and title sizes are. `RegisterOwner`'s `opts.tokens` gives an addon its own named colors, which keep their Ka0s Default value under Ka0s Default and resolve through whichever skin it wears otherwise. `SkinDefs.lua` holds the token schema and the nine skins: Ka0s Default, which sets every token and draws Prototype and a bar of its own, then Obsidian, Azeroth, Glass, High Contrast, Ember, WoW Default, WoW Midnight and WoW Forever. `SkinPaint.lua`, `SkinPaintExtras.lua` and `SkinPaintControls.lua` are the primitives the facade calls (`S.Shell`, `S.Button`, `S.ListRow`, ...): each paints from the owner's tokens, fades stock art by alpha, keeps its overlays on a holder frame, records what it painted so a skin switch repaints it, and never branches on Ka0s Default: that skin is painted from its tokens like any other, and its tokens carry the look of the code it replaces. `SkinEUI.lua` is the EllesmereUI provider: an owner on the `eui` source is painted by EllesmereUI's own skinning facade while its gate holds (`GetEUIStatus`), with the Ka0s extras colored from EllesmereUI's accent, panel color and font, one reload away from a Ka0s skin once EllesmereUI has painted. `SkinAce.lua` paints the AceGUI rows a settings page acquires for that page's owner (`PaintAce`, through a proxy on the Options instance's `O.AceGUI`) and gives each one back to AceGUI's shared pool stock on release; `AliasAceType` paints a host's own AceGUI type as the stock type it is built from. | `Skin.lua`, `SkinDefs.lua`, `SkinPaint.lua`, `SkinPaintExtras.lua`, `SkinPaintControls.lua`, `SkinEUI.lua`, `SkinAce.lua` | [10.18.13.7.11.2.5](docs/api/Skin/version-10.18.13.7.11.2.5-docs.md) |
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops, shared process-wide across addons. Then `SearchBox`, the flat filter-bar search box in the same skin, with a hint while empty and a gold border while it has focus. Then `TestStrip`, the mode strip: the amber band a window lays between its chrome and sample data while test mode is on, or with `kind = "sim"` the cyan band of a simulation, born hidden and placed by the host. Then `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, but no row content at all. And `DragHandle`, the labeled strip with a help mark (and optionally a close mark) that a player drags a movable frame by. And `LineChart`, a pooled line chart over a time axis with markers, dashed ranges and a hover crosshair. And `Autocomplete`, a suggestion list hung directly under a host's `EditBox`, in the box's own width and skin, with a debounced provider and keyboard picking. Widgets takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. Every constructor takes an optional skin owner, the caller's folder name: once that addon registered it with `LibKa0s-Skin-1.0` the control wears and follows its skin, the shared menu included, and any other name draws exactly as before. | `Widgets.lua`, `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua`, `WidgetsCopyWindow.lua` | [17.3.8.5.5.2](docs/api/Widgets/version-17.3.8.5.5.2-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console (movable window, color-coded log, copy box, and the one seam that turns logging on and off), plus the diagnostics report a player sends with a bug report, the change gates (log once, log on change) the console re-arms on Clear and on enable, and the at-enable queue that holds a state line written while logging is off until it is turned on. The library writes the markers, the identity header and the cap, and runs each section an addon supplies under its own pcall. The console window lives in its own file, and it wears and follows its skin owner, the host's `addonName`, once that addon registered with `LibKa0s-Skin-1.0`. | `DebugLog.lua`, `DebugLogDiagnostics.lua`, `DebugLogGates.lua`, `DebugLogWindow.lua` | [22.5.1.2](docs/api/DebugLog/version-22.5.1.2-docs.md) |
 | `LibKa0s-Slash-1.0` | The slash dispatcher, help renderer, schema CLI and type-aware value parser. In other words, everything between "the user typed `/at something`" and "a setting changed". | `Slash.lua`, `SlashParse.lua` | [20.2](docs/api/Slash/version-20.2-docs.md) |
 | `LibKa0s-Launcher-1.0` | The minimap button and the broker plugin, as ONE LibDataBroker-1.1 object of `type = "launcher"` registered twice: with LibDBIcon-1.0 for the button, and with whatever broker display the player runs. It has one `OnClick`, implementing launcher-§2. Left-click opens the settings panel; right-click opens the client's context menu of the toggles the host supplies (Enabled, Locked, Test mode, Show window). There is one library-drawn status tooltip (launcher-§1), and LibDBIcon's own `minimap` table comes from the host. Neither broker library is a dependency. Both are resolved with `LibStub(…, true)` at register time, and every degradation is named, not raised. | `Launcher.lua` | [5](docs/api/Launcher/version-5-docs.md) |
-| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, the nav rail a page that edits one instance out of many may lead with, a drawer (a header bar that opens a bordered box of ordinary rows), the Keybindings tab that edits a host's own key bindings in the client's binding set, the Skin tab (`appearance`, its key kept) where a player picks the skin an addon wears, says whether it reaches the settings panel and the fonts, overrides its font and bar texture, sets its font outline (and copies all of it to every other loaded Ka0s addon), the first-run skin picker a host shows before any settings are opened, which carries the tab's font, texture, outline and scope rows (a pick previews, **Apply** saves, closing puts it back, **Apply to all Ka0s addons** copies the lot, one window at a time across every Ka0s addon) and `O.SkinVerb`, which opens that picker again for a host's `/xx skin`, rows a page shows only while a selector (or any of several) holds a value (`shownWhen`), the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block (a media picker can follow the skin through an opt-in companion), and the `Ka0sMedia_*` AceGUI picker types, dropdowns that draw each entry in its own face or beside its swatch, with a play button on a sound row, which a row asks for by name and which an `LSM30_*` row falls back to when that type is not registered. A page whose host is a registered skin owner wears that owner's skin: header, tab strip, nav rail, drawers, combat cover, scrollbar and the AceGUI rows. It also carries the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`, `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua`, `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua`, `OptionsSkinPicker.lua`, `OptionsSwitch.lua`, `OptionsMedia.lua` | [34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1](docs/api/Options/version-34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1-docs.md) |
+| `LibKa0s-Options-1.0` | The settings panel: canvas shell, page registry, lazy Defaults button, the refresh trio, five widget makers, a grid of one-choice-per-row checkbox cells, an input and list for adding spells, items or currencies by id, link or name, the two-column flow engine, the tab strip every page draws, the nav rail a page that edits one instance out of many may lead with, a drawer (a header bar that opens a bordered box of ordinary rows), the Keybindings tab that edits a host's own key bindings in the client's binding set, the Skin tab (`appearance`, its key kept) where a player picks the skin an addon wears, says whether it reaches the settings panel and the fonts, overrides its font and bar texture, sets its font outline (and copies all of it to every other loaded Ka0s addon), the first-run skin picker a host shows before any settings are opened, which carries the tab's font, texture, outline and scope rows (a pick previews, **Apply** saves, closing puts it back, **Apply to all Ka0s addons** copies the lot, one window at a time across every Ka0s addon) and `O.SkinVerb`, which opens that picker again for a host's `/xx skin`, rows a page shows only while a selector (or any of several) holds a value (`shownWhen`), the schema composers that expand one declaration into a canonical font / border / bar / Master-controls block (a media picker can follow the skin through an opt-in companion), and the `Ka0sMedia_*` AceGUI picker types, dropdowns that draw each entry in its own face or beside its swatch, with a play button on a sound row, which a row asks for by name and which an `LSM30_*` row draws too, whether or not that type is registered. A page whose host is a registered skin owner wears that owner's skin: header, tab strip, nav rail, drawers, combat cover, scrollbar and the AceGUI rows. It also carries the one registry fixup that has to be the library's, because AceGUI's widget table is shared by every addon in the client. | `Options.lua`, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`, `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua`, `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua`, `OptionsSkinPicker.lua`, `OptionsSwitch.lua`, `OptionsMedia.lua` | [34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1](docs/api/Options/version-34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1-docs.md) |
 | `LibKa0s-Perf-1.0` | A repeatable A/B performance capture for one host: the probe, the guided run, the record, and the clickable step panel. | `Perf.lua`, `PerfSampler.lua`, `PerfCommands.lua`, `PerfPanel.lua` | [15.1.1.11](docs/api/Perf/version-15.1.1.11-docs.md) |
 | `LibKa0s-Sim-1.0` | The in-client simulator's shell. `Sim:NewSeam(compat, opts)` wraps a host's own Compat table in place, once: every non-pure function answers from the simulator's providers while a bound session is active, a guarded member never reaches the client while active, and an idle call costs one field test. The seam carries `SetProvider`, `Live`, `Keys` and `Unwrapped`. `Sim:New(d)` binds one session to a seam: `Start` (the scenarios read at call time; unknown scenario, already running, the host's refusal read live, stood down; the host's own start fields passed through to `prepare`), a two-phase `Stop` (guarded steps while the seam still answers, then cleanup with it off), `Fire`, `After`, `DeliverForCleanup`, listeners and `Status`. `SimTimeline.lua` plays the scenario's steps behind the host's `gate`: `Step`, `Run` (a per-step delay), `Pause`, `Resume` and `Restart`, and `RunVerb(line)` gives every host one typed grammar (`start`, the controls, `status`, `panel`, then the host's own verbs; no `help` verb). `SimPanel.lua` draws the docked step panel (Start, one row per step, Stop, each beside its typed command; a click runs the same verb, a row ahead plays every step up to it), the scenario picker and the run controls, placed beside the host's window with a session-only dragged point; `PanelRows()` answers the composed rows. The library never touches SavedVariables and carries no behavior flags. | `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` | [2.3.8](docs/api/Sim/version-2.3.8-docs.md) |
 
@@ -221,11 +225,11 @@ Run the green gate from the repo root before every commit:
 
 ```bash
 lua tests/run.lua
-luacheck .
+~/.claude/dev-copilot/bin/ka0s-bounded luacheck .
 ```
 
 Both must be 0/0 before a release. `lua tests/run.lua` reports
-`N passed, 0 failed, S skipped, N total`, and `luacheck .` reports `0 warnings / 0 errors`. A skipped
+`N passed, 0 failed, S skipped, N total`, and the lint reports `0 warnings / 0 errors`. A skipped
 case is a case that did not run. It never counts as a pass, and the suite prints the reason beside it.
 
 `docs/test-cases.md` is the generated inventory of what the suite covers, and it is the authoritative
@@ -246,8 +250,8 @@ somebody eventually runs without the pipeline.
 `testkit/` holds the registry, the assertions, the source loader and the universal half of the
 WoW-API mock. The whole collection shares it, and each addon vendors it as `tests/_kit/`. It is not a
 LibStub major and it never ships, but it does carry a plain revision integer, `Kit.VERSION` (exposed
-to suites as `KIT_VERSION`), so a consumer can say which copy it holds; v1.83.0 carries revision
-46. Its full surface is in
+to suites as `KIT_VERSION`), so a consumer can say which copy it holds; v1.84.0 carries revision
+47. Its full surface is in
 [`docs/api/testkit/`](docs/api/testkit/), indexed alongside the majors, and
 [`testkit/README.md`](./testkit/README.md) covers what it is and the vendoring discipline.
 
@@ -266,18 +270,8 @@ the old copy.
 
 Each major publishes its own `lib.MODULES`, naming the live minor of every file *in that major*.
 There is no single combined table, because the majors are independent and a host may hold a
-different vendored copy of each. As of **v1.75.0**, which adds two majors (`Glow` 1, and `Sim` 2
-with `SimTimeline` 2 and `SimPanel` 2) and moves eight existing files' minors (`Core` 10 to 11,
-`Item` 2 to 3, `Widgets` 12 to 13, `DebugLog` 19 to 20, `DebugLogDiagnostics` 2 to 3,
-`OptionsIdList` 4 to 5, `OptionsTabs` 8 to 9 and `PerfPanel` 6 to 7): `Core = { Core = 11 }`,
-`Env = { Env = 2 }`, `Compat = { Compat = 1 }`, `Lifecycle = { Lifecycle = 3 }`, `Bus = { Bus = 2 }`,
-`Schema = { Schema = 2 }`, `Pool = { Pool = 3 }`, `Item = { Item = 3 }`, `Glow = { Glow = 1 }`,
-`Media = { Media = 5, MediaIcons = 1 }`,
-`Widgets = { Widgets = 13, WidgetsReorder = 1, WidgetsDragHandle = 4, WidgetsLineChart = 3, WidgetsAutocomplete = 2 }`, `DebugLog = { DebugLog = 20, DebugLogDiagnostics = 3, DebugLogGates = 1 }`, `Slash = { Slash = 20, SlashParse = 2 }`,
-`Launcher = { Launcher = 5 }`,
-`Options = { Options = 29, OptionsRegistry = 2, OptionsWidgets = 34, OptionsIds = 2, OptionsIdList = 5, OptionsTabs = 9, OptionsCombat = 1, OptionsCompose = 7, OptionsScroll = 4, OptionsNav = 2, OptionsDrawer = 1 }`,
-`Perf = { Perf = 15, PerfSampler = 1, PerfCommands = 1, PerfPanel = 7 }`,
-`Sim = { Sim = 2, SimTimeline = 2, SimPanel = 2 }`. Those numbers move every release, so read them from the top of
+different vendored copy of each. A table looks like `Item = { Item = 3 }`, or for a major with several
+files `Perf = { Perf = 15, PerfSampler = 1, PerfCommands = 1, PerfPanel = 7 }`. Those numbers move every release, so read them from the top of
 each file, or from the newest version block in [CHANGELOG.md](CHANGELOG.md), not from here. Grouping
 by major is what lets you answer "which panel is attached to which probe?" from inside the game, once
 several addons each ship their own vendored copy. `tests/test_versioning.lua` checks that `MODULES`
@@ -295,7 +289,7 @@ forgotten once already, with both repos' suites green the whole time.
 
 Re-vendoring is **whole-folder**, never file by file, with one carve-out: `media/icons/` ships only the
 icons the consumer declares (see *Installing* above). Every major except Core (Env, Compat, Lifecycle,
-Bus, Schema, Pool, Item, Glow, Toast, Media, Skin, Widgets, DebugLog, Slash, Launcher, Options, Perf and Sim) resolves
+Bus, Schema, Pool, Item, Glow, Toast, Charts, Media, Skin, Widgets, DebugLog, Slash, Launcher, Options, Perf and Sim) resolves
 `LibKa0s-Core-1.0` before it calls `NewLibrary`, and returns outright if Core is missing or below the
 minor it needs. A consumer that copied a new `Perf.lua` over an old `Core.lua` gets no probe at all,
 not a half-updated one, and the host's setup stub then says "perf is not installed". That is the
@@ -318,6 +312,8 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Glow.lua           -- LibKa0s-Glow-1.0, MINOR at the top of the file; needs Core (LibCustomGlow-1.0
                         is the host's, resolved at call time)
   Toast.lua          -- LibKa0s-Toast-1.0, MINOR at the top of the file; needs Core
+  Charts.lua         -- LibKa0s-Charts-1.0, MINOR at the top of the file; needs Core
+  ChartsRender.lua   -- the same module's widgets and renderers, RENDER_MINOR of its own
   Media.lua          -- LibKa0s-Media-1.0, MINOR at the top of the file; needs Core
   MediaIcons.lua     -- the generated icon catalog, same module, ICONS_MINOR of its own;
                         written by tools/artwork/icon_cleaner.py, never by hand
@@ -328,7 +324,9 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
                         face by face in fonts/FONTS.md); each icon set carries its license
                         beside it
   Skin.lua           -- LibKa0s-Skin-1.0, MINOR at the top of the file; needs Core
-  SkinDefs.lua       -- the token schema and the skins, same module, DEFS_MINOR of its own
+  SkinOwnerTokens.lua -- an owner's own tokens and the slot remap, same module, TOKENS_MINOR of its own
+  SkinDefs.lua       -- the token schema and Ka0s Default, same module, DEFS_MINOR of its own
+  SkinDefsOthers.lua -- the eight other skins and each face's sizes, same module, OTHERS_MINOR of its own
   SkinPaint.lua      -- the paint primitives' helpers, Shell, Panel, Inset, PAINT_MINOR
   SkinPaintExtras.lua -- the window extras, the faders, text and getters, same module, EXTRAS_MINOR
   SkinPaintControls.lua -- the control primitives, same module, CONTROLS_MINOR of its own
@@ -349,10 +347,13 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Launcher.lua       -- LibKa0s-Launcher-1.0, MINOR at the top of the file; needs Core
   Options.lua        -- LibKa0s-Options-1.0, MINOR at the top of the file; needs Core
   OptionsRegistry.lua -- the page registry, the category and its combat park, REGISTRY_MINOR
-  OptionsWidgets.lua -- the makers + the flow engine, same module, WIDGETS_MINOR of its own
-  OptionsIds.lua     -- id resolution, suggestions and the id input, same module, IDS_MINOR
+  OptionsWidgets.lua -- the makers, same module, WIDGETS_MINOR of its own
+  OptionsFlow.lua    -- the two-column flow engine, same module, FLOW_MINOR of its own
+  OptionsIds.lua     -- id resolution and the id input, same module, IDS_MINOR
+  OptionsIdSuggest.lua -- the id input's suggestions and dropdown, same module, SUGGEST_MINOR
   OptionsIdList.lua  -- the editable id list, same module, IDLIST_MINOR of its own
   OptionsTabs.lua    -- the page's chrome: strip, banner, header block, sub-strip, TABS_MINOR
+  OptionsTabbed.lua  -- the tabbed page, O.RenderTabbedSchema, same module, TABBED_MINOR of its own
   OptionsCombat.lua  -- the combat lock's event frame, dispatcher and cover, COMBAT_MINOR
   OptionsCompose.lua -- the schema composers, same module, COMPOSE_MINOR of its own
   OptionsScroll.lua  -- the always-shown scrollbar patch and the chrome's skin helpers, SCROLL_MINOR of its own
@@ -360,7 +361,8 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   OptionsDrawer.lua  -- the drawer: a header bar over a box of rows, same module, DRAWER_MINOR
   OptionsKeybinds.lua -- the Keybindings tab and its binding model, same module, KEYBINDS_MINOR
   OptionsAppearance.lua -- the Skin tab: skin source, skin, font and texture, copy to every addon, APPEARANCE_MINOR
-  OptionsSkinPicker.lua -- the first-run skin picker and its media, outline and scope rows, PICKER_MINOR
+  OptionsSkinPicker.lua -- the first-run skin picker, same module, PICKER_MINOR of its own
+  OptionsSkinPickerRows.lua -- the picker's media, outline and scope rows, same module, ROWS_MINOR
   OptionsSwitch.lua  -- the switched sections (shownWhen, its any form), same module, SWITCH_MINOR
   OptionsMedia.lua   -- the Ka0sMedia_* preview pickers for fonts, bars, borders, backgrounds and sounds, MEDIA_MINOR
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
@@ -371,6 +373,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   SimTimeline.lua    -- the gated step machine and RunVerb, same module, TIMELINE_MINOR of its own
   SimPanel.lua       -- the docked step panel, picker and controls, same module, SIM_PANEL_MINOR of its own;
                         also needs Widgets (the picker's W.Dropdown)
+  SimPanelRender.lua -- the panel's private renderer, same module, RENDER_MINOR of its own
   LICENSE            -- ships INSIDE the payload, so every vendored copy carries the MIT notice
 tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json from the LIVE
                         surface, loaded through the same mock the suites use. Generated, never

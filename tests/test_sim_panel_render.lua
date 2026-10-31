@@ -1,8 +1,8 @@
 -- tests/test_sim_panel_render.lua — LibKa0s-Sim-1.0's private step-panel renderer, the file-local
--- section of `LibKa0s/SimPanel.lua`, reached through the internal test seam `lib.__StepPanel`.
+-- `LibKa0s/SimPanelRender.lua`, reached through the internal test seam `lib.__StepPanel`.
 --
 -- LK-11's outcome B (LibKa0s#53): the step panel is NOT public. The renderer LK-10 wrote as
--- `W.StepPanel` lives inside SimPanel.lua with no public contract, so these are LK-10's cases,
+-- `W.StepPanel` lives inside SimPanelRender.lua with no public contract, so these are LK-10's cases,
 -- ported unchanged in what they assert and driven through `lib.__StepPanel` instead of a Widgets
 -- member. The seam is `__`-prefixed and documented as internal (library-stack-§7's `__` clause): no
 -- host reads it, and the members manifest leaves it out.

@@ -43,7 +43,7 @@ end
 -- ── buttons ──────────────────────────────────────────────────────────────────────────────────
 
 test("skin controls: Button on Ka0s Default is LootHistory's flat button's paint", function()
-  -- modules/BrowserFilterBar.lua makeBarButton: the WHITE8X8 table with insets, .1/.1/.12/.9, .24/.24/.27/.9
+  -- LootHistory modules/BrowserFilterBar.lua makeBarButton: the WHITE8X8 table with insets, .1/.1/.12/.9, .24/.24/.27/.9
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local tr = F.tracer(m)

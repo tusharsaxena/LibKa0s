@@ -233,7 +233,7 @@ Total.
 - bus: Catalog refuses each malformed declaration, naming what is wrong
 - bus: the catalog is strict on read and on write
 
-### test_schema.lua (32)
+### test_schema.lua (34)
 
 - schema: the major is registered and reports its own live version
 - schema: the module refuses to register without Core, and registers with it
@@ -267,6 +267,8 @@ Total.
 - schema: defaultsRoot gets the split parts and the row, and its first may be a string
 - schema: a malformed spec falls back field by field
 - schema: two instances share nothing
+- schema: a note row needs no path and no value, under any host `types`
+- schema: a note with no text or with a path is an authoring error
 
 ### test_schema_write.lua (41)
 
@@ -460,6 +462,60 @@ Total.
 - toast: a close mark Core cannot build (no frame) leaves the toast without one
 - toast: two instances keep separate queues and frames
 
+### test_charts.lua (15)
+
+- charts: the major loads and reports its two files
+- charts: no Core means no major, and ChartsRender loads to nothing without the shell
+- charts: New needs a pool, and takes LibKa0s-Pool-1.0's when the host names none
+- charts: a host's own pool API is the one used
+- charts: truncate counts glyphs, stays inside the cap, and reports the cut
+- charts: tipText states the value beside the full label
+- charts: fitFontSize shrinks only an overflow, and never under the floor
+- charts: StackSegments keeps the top, folds the rest to OTHER, in the global order
+- charts: StackSegments with room folds nothing and sorts unlisted keys last, stably
+- charts: RangeScale spans the rows, opens when they meet, and answers an empty set
+- charts: StripSlots stops widening, and the column stays inside its slot
+- charts: StripLabels never lets two collide, and the larger block wins
+- charts: StripLabels moves an edge label in, and ties go to the earlier one
+- charts: paletteColor cycles, paletteMap keeps a key's color by position
+- charts: a palette function is read at every draw, and a bad answer takes the default
+
+### test_charts_draw.lua (15)
+
+- draw: a bar section scales to its longest row, leaves the rows alone, and moves the cursor
+- draw: an empty section hides its heading and leaves the cursor
+- draw: all-zero rows draw a one-pixel fill, and a row with no color takes the bar color
+- draw: a sublabel grows every row and hides again on a row without one
+- draw: a second pass reuses every frame
+- draw: stacked bars lay their segments end to end and hide the unused ones
+- draw: a range bar spans lo to hi on the rows' scale, with its mark and scale line
+- draw: a legend wraps, and the first chip on a narrow line stays on it
+- draw: a strip's columns scale to the tallest, a zero column is a faint stub
+- draw: a strip takes a fixed top, and a top of nothing falls back to the tallest
+- draw: an empty strip hides itself and its heading
+- draw: a list panel caps its rows, sizes itself, and a reused row forgets its click
+- draw: an empty list panel still holds one row's height
+- draw: a card states its figure and hover, and a later bind undoes a shrink
+- draw: a divider's rules flank its title
+
+### test_charts_host.lua (15)
+
+- host: a context with no owner draws Ka0s Default's colors and the font object's face
+- host: a host's colors and fonts win, field by field, and a function is read
+- host: the text, paint, fill, barFill and panel seams each carry their draws
+- host: two contexts keep their own seams, so one addon never paints another's chart
+- host: a host fill stands in for the bar fill when it names no barFill
+- host: the default tooltip shows a title and its lines, and an empty one shows nothing
+- host: a host's tip and hideTip replace it
+- host: an owner nobody registered draws the plain way, with no skin
+- skin: an owner's context reads its colors and palette from the owner's skin
+- skin: the host's color and palette still beat the owner's
+- skin: a bar of data goes through the owner's bar texture, and a panel through its Panel
+- skin: a label is on the owner's face, recorded for the repaint
+- skin: a switch moves the colors in place, repaints both pool lists, then calls onReskin
+- skin: Reskin works for a host with no owner, and a card keeps its caller's color
+- skin: setCard puts the owner's face back on the figure
+
 ### test_media.lua (43)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
@@ -594,7 +650,7 @@ Total.
 - skin outline: hud survives a later font override and a skin change, and the new face applies
 - skin outline: an owner token that follows font.outline follows the mode
 
-### test_skin_owner_tokens.lua (16)
+### test_skin_owner_tokens.lua (17)
 
 - skin owner tokens: Ka0s Default answers each token's default, exactly
 - skin owner tokens: a skin answers its own entry, else the follow token's value in that skin
@@ -612,6 +668,7 @@ Total.
 - skin owner tokens: S.Text draws a token name and repaints it on a skin switch
 - skin owner tokens: under eui a token answers its follow token's EllesmereUI value
 - skin owner tokens: an owner token is no vocabulary entry and needs no SkinDefs change
+- skin owner tokens: a shell bump reattaches this file, so its stub never takes the remap
 
 ### test_skin_remap.lua (12)
 
@@ -651,7 +708,7 @@ Total.
 - skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
 - skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (31)
+### test_skin_defs.lua (32)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -684,13 +741,15 @@ Total.
 - skin defs: in every skin a primary button differs from a normal one
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
+- skin defs: a shell bump re-registers the eight other skins from the new copy
 
-### test_skin_width_parity.lua (16)
+### test_skin_width_parity.lua (17)
 
 - skin width parity: every skin's body, title and HUD sizes are the measured ones
 - skin width parity: every skin's text is as wide as Ka0s Default's, never more than 2% wider
 - skin width parity: every shipped face has a size for each role, as wide as Ka0s Default's
 - skin width parity: a skin's sizes are its faces' rows in the library's table
+- skin width parity: WoW Default's Friz is real Friz, not Prototype's bytes
 - skin width parity: High Contrast no longer promises larger type
 - skin hud size: HudFontSize is in the vocabulary and the facade
 - skin hud size: a stored size scales by the skin's HUD size over Ka0s Default's
@@ -1018,18 +1077,32 @@ Total.
 - draghandle: a tooltipPlace that is not a function is ignored, not called
 - draghandle: DragHandle is at minor 4 or later, the placement hook's floor
 
-### test_widgets_draghandle_layers.lua (10)
+### test_widgets_draghandle_layers.lua (11)
 
 - DragHandle minor 5: MODULES and the file minor say 5
 - DragHandle level: no spec.level keeps minor 4 -- handle at parent + 1, marks at handle + 1
 - DragHandle level: level = 50 on a parent at 7 -- handle 57, marks 58, written before the marks exist
 - DragHandle ApplyLevel: a parent re-leveled to 20 puts the handle at 70 and the marks at 71
+- DragHandle ApplyLevel: a mark the client did not build leaves the other one reached
 - DragHandle ApplyLevel: without spec.level it answers false and writes nothing
 - DragHandle level: a secret or non-number parent level reads as 0
 - DragHandle level: the host's numeric guard reads the parent's level
 - DragHandle ignoreParentAlpha: true sets it, absent leaves it false
 - DragHandle ignoreParentAlpha: a frame without SetIgnoreParentAlpha does not error
 - DragHandle level: onClose plus level builds both marks at handle + 1
+
+### test_widgets_draghandle_fit.lua (10)
+
+- DragHandle minor 10: MODULES and the file minor say 10 or later
+- DragHandle scale: the measuring host sits at the strip's scale over UIParent's
+- DragHandle scale: an unreadable scale measures at UIParent's, not at the last strip's
+- DragHandle scale: a measurer with no host, the test seam's shape, still measures
+- DragHandle measure: the text is cleared first, so a same-string measure is a new one
+- DragHandle show: a fit made in a face that had not loaded is corrected on show
+- DragHandle show: the fit keeps the host's floor
+- DragHandle show: a strip the host never fitted, or sized itself, is not sized
+- DragHandle show: an onRefit host sizes its own strip
+- DragHandle show: nothing is sized in combat
 
 ### test_widgets_linechart_math.lua (21)
 
@@ -1465,7 +1538,7 @@ Total.
 - tool windows scope: every library window passes its owner to its grip
 - tool windows scope: icon.grip is the client's art in Ka0s Default and WoW Default, icon.tint elsewhere
 
-### test_slash.lua (74)
+### test_slash.lua (77)
 
 - sl: an empty message runs the host's config verb (minor 11), printing no help
 - sl: whitespace-only input is treated as empty
@@ -1541,6 +1614,9 @@ Total.
 - sl: with no print the dispatcher writes to DEFAULT_CHAT_FRAME
 - sl: with no groupKey the list groups rows by page, and a row with none under 'settings'
 - sl: an L, aliases or liveVerbs that is not a table, and a parse that is not a function, read as absent
+- sl: /list skips a note row, and a group holding only notes prints no heading
+- sl: a schema of notes alone lists as empty
+- sl: resetall never hands a note to the host's applyDefault
 
 ### test_slash_parse.lua (33)
 
@@ -1729,7 +1805,7 @@ Total.
 - launcher: event lines (shown / hidden) stay on debug when debugAtEnable is passed
 - launcher: end to end, a Register at OnEnable lands the first time logging is turned on
 
-### test_options.lua (61)
+### test_options.lua (57)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -1761,10 +1837,6 @@ Total.
 - options: RestoreAllDefaults honors the host's skipRestoreAll veto
 - options: LSMValues returns a DEFERRED closure, not a snapshot
 - options: LSMValues offers a None placeholder rather than an empty list
-- options: __PatchLSM30Border is published on the library, not on an instance
-- options: __PatchLSM30Border registers once and the second call is a no-op
-- options: the patched constructor hides the preview tile and re-anchors the bar
-- options: __PatchLSM30Border stays armed while the widget is absent
 - options: EnsureScroll is lazy, created once, and patched
 - options: OptionsScroll.lua owns the font preload; without it a show still renders
 - options: the scrollbar patch is idempotent
@@ -1983,6 +2055,26 @@ Total.
 - widgets: `startsLine` on a line that is already empty costs nothing
 - widgets: InlineButtonPair with no right-hand button draws one, at the pair's width
 
+### test_options_flow_seams.lua (17)
+
+- seams: beforeGroup runs ahead of its group's heading, with the last group flushed
+- seams: beforeGroup fires under noHeadings, and once per render when a group recurs
+- seams: a beforeGroup hook is disabled with the page it draws on
+- seams: afterSubgroup runs after its block's tail row, before the next heading
+- seams: afterSubgroup closes on the page's last row and comes before afterGroup
+- seams: a subgroup name shared by two groups closes in each, naming the group
+- seams: a block that recurs in one group closes once, and no hook means no flush
+- seams: RenderSchema takes the same opts
+- seams: RenderTabbedSchema hands both seams to the flow, on a tab click too
+- seams: a note row draws dim, at full width, on a line of its own
+- seams: a note in RenderGrid and in RenderField draws too, and adds no refresher
+- seams: a note counts for no pairWith and no line parity after it
+- seams: the two reset walks never hand a note to the host's applyDefault
+- seams: PositionBlock emits X | Y under the Position subgroup, on a fresh line
+- seams: PositionBlock's hook draws the Reset button under the block
+- seams: PositionBlock with no onReset has no hook, and never writes to its spec
+- seams: PositionBlock takes the record-backed arm
+
 ### test_options_landing.lua (18)
 
 - widgets: TextRow adds a full-width Label carrying the text
@@ -2178,6 +2270,19 @@ Total.
 - widgets: PageBanner's action re-rendering from its own click never hands itself back
 - widgets: PageBanner's action is refused in combat, like its picker
 
+### test_options_banner_acts.lua (10)
+
+- acts: a Button and a CheckBox draw beside the picker, third return in act order
+- acts: the band splits into equal cells, re-placed when the chrome learns its width
+- acts: one act takes the right half, level with a labeled picker's control
+- acts: past three, the extra are not drawn and the host is told
+- acts: `acts` wins over `action`, and a banner with neither is unchanged
+- acts: a re-render releases the old widgets once the new ones exist, never early
+- acts: a click and a toggle are refused in combat
+- acts: a raising act is reported and costs nothing else
+- acts: a checkbox follows a write after a tab click cleared the scroll
+- acts: a band redrawn without acts leaves no live refresher behind
+
 ### test_options_nav.lua (14)
 
 - nav: the rail inset is zero with no rail and the rail's width plus its 12px gap with one
@@ -2227,7 +2332,7 @@ Total.
 ### test_options_keybinds_model.lua (26)
 
 - keybinds: OptionsKeybinds is at minor 4 or later, paired on an Options shell at 30 or later
-- keybinds: the Options version key has a component per file, OptionsKeybinds the twelfth
+- keybinds: the Options version key has a component per file, OptionsKeybinds after the drawer
 - keybinds: KEYBIND_STRINGS carries the exact default words, all ASCII
 - keybinds: the client's own strings win where they exist, with the library's fallbacks
 - keybinds: the API is available only when all five binding functions exist
@@ -2303,7 +2408,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (60)
+### test_options_appearance.lua (35)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2340,6 +2445,9 @@ Total.
 - appearance: with a Skin copy before minor 6 the section is absent
 - appearance: a stored key LibSharedMedia lacks stays listed, and the skin's own names the worn face
 - appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
+
+### test_options_appearance_overrides.lua (25)
+
 - appearance: the Font outline dropdown sits in the Font and texture section, All text first
 - appearance: an outline pick moves the Skin major first, then writes every media half
 - appearance: Ignore fonts grays the Font outline out, and it comes back live
@@ -2366,9 +2474,9 @@ Total.
 - appearance: the copy has its own heading, Other Ka0s addons, after the Scope, the tab ending on it
 - appearance: the note leads the Look section, ahead of the first skin
 
-### test_options_skin_picker.lua (47)
+### test_options_skin_picker.lua (37)
 
-- skin picker: OptionsSkinPicker is minor 4, paired on the shell, and attaches three members
+- skin picker: OptionsSkinPicker is minor 5, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -2393,16 +2501,6 @@ Total.
 - skin picker: Apply to all dismisses every queued picker, each onClose run, none shown
 - skin picker: the gear saves, opens the page itself, then the Skin tab, then closes
 - skin picker: in combat the gear opens nothing and the window stays up, not marked seen
-- skin picker: two instances on one library: the second owner queues, and shows when the first closes
-- skin picker: a queued owner waits out combat and shows when it ends
-- skin picker: a queue dismissed while waiting out combat shows nothing when combat ends
-- skin picker: a queued owner is shown after Apply and after the gear, too
-- skin picker: HideSkinPicker takes a queued owner out unseen, and a shown one down with onClose
-- skin picker: one instance's second owner queues behind its first, each refreshed only by its own
-- skin picker: with the client's own OnHide, one instance's first owner closing leaves the second up
-- skin picker: with the client's own OnHide, onClose still runs once per showing, by every route
-- skin picker: a skin registered after the first show gains its row on the next
-- skin picker: onClose runs once per showing, by every route
 - skin picker: the icons come from LibKa0s-Media-1.0, and are glyphs without it
 - skin picker: the eye shows only with onPreview, and calls it
 - skin picker: spec.strings translates the title, the buttons, the tips and a skin's name
@@ -2415,6 +2513,19 @@ Total.
 - skin picker: a fallback preview under a painting EllesmereUI keeps the overrides
 - skin picker: the gear after a clearing preview writes the skin, then every media half
 - skin picker: two clearing previews, then Apply, write the media once
+
+### test_options_skin_picker_shared.lua (10)
+
+- skin picker: two instances on one library: the second owner queues, and shows when the first closes
+- skin picker: a queued owner waits out combat and shows when it ends
+- skin picker: a queue dismissed while waiting out combat shows nothing when combat ends
+- skin picker: a queued owner is shown after Apply and after the gear, too
+- skin picker: HideSkinPicker takes a queued owner out unseen, and a shown one down with onClose
+- skin picker: one instance's second owner queues behind its first, each refreshed only by its own
+- skin picker: with the client's own OnHide, one instance's first owner closing leaves the second up
+- skin picker: with the client's own OnHide, onClose still runs once per showing, by every route
+- skin picker: a skin registered after the first show gains its row on the next
+- skin picker: onClose runs once per showing, by every route
 
 ### test_options_skin_picker_faces.lua (15)
 
@@ -2580,7 +2691,7 @@ Total.
 - switched any: the single-path form is unchanged beside it
 - switched: OptionsSwitch.lua is its own file of the major, paired on the shell's minor
 
-### test_options_media.lua (30)
+### test_options_media.lua (34)
 
 - media: lib.__MediaWidgetType maps a kind, its LSM30_* and its own type name to one type
 - media: no stock Dropdown registered, so no picker, and the caller draws a plain Dropdown
@@ -2605,9 +2716,13 @@ Total.
 - media: disabling dims the swatch
 - media: the skin paints a picker as a Dropdown and the preview survives its font
 - media: an open pull-out wears the menu tokens
+- media: a picker never closes on its first entry: no value is blank, a value is its key
+- media: border and sound rows sit on the stock bar, level with the page's other controls
 - media: with no LibSharedMedia the picker still lists, picks and shows its text
-- media: an unregistered LSM30_* row is drawn by the matching picker
-- media: a registered LSM30_* row keeps it
+- media: with no SharedMediaWidgets an LSM30_* row of every kind draws the matching picker
+- media: a registered LSM30_* type does not win: the row is still our picker
+- media: a row naming Ka0sMedia_* draws it, a host's own registered type is left alone
+- media: with no picker to draw, a registered LSM30_* row keeps its type
 - media: with no picker to draw, an LSM30_* row is the stock Dropdown
 - media: the Skin tab's font and texture rows are pickers led by a previewing row
 - media: a Skin tab pick writes through the same seam and keeps the row a picker
@@ -2668,7 +2783,7 @@ Total.
 - opt combat debug: no debug on the descriptor is silent, and the chat is unchanged
 - opt combat debug: a debug that is not a function is ignored
 
-### test_options_compose.lua (51)
+### test_options_compose.lua (39)
 
 - compose: the instance carries every composer and every published constant
 - compose: FontGroup emits the six canonical leaves in the canonical order
@@ -2698,6 +2813,20 @@ Total.
 - compose: a frameless addon's lead button shares the pair with Reset all settings
 - compose: a FRAMED addon's lead button takes its own row above the full pair
 - compose: the tail draws the two resets as the tab's closing button pair
+- compose: with no resetProfile the Reset all tooltip keeps its minor-4 wording, byte for byte
+- compose: with resetProfile the Reset all tooltip says it resets the current profile only
+- compose: with resetProfile and profilesPage the tooltip names Profiles -> Reset Profile
+- compose: the descriptor moves the Reset all tooltip and nothing else Master controls draws
+- compose: a shell that hands __AttachCompose no descriptor keeps the minor-4 tooltip
+- compose: StrataTooltip over BACKGROUND..HIGH says the tiers and nothing more
+- compose: StrataTooltip adds the dialog sentence when the row offers Dialog or above
+- compose: StrataTooltip adds both sentences when the row offers Fullscreen Dialog or Tooltip
+- compose: StrataTooltip over a non-table says the tiers alone
+- compose: StrataTooltip takes each part from strings, which is how a host localizes it
+- compose: StrataTooltip's default text is pure ASCII and names the Settings window
+
+### test_options_compose_arm.lua (12)
+
 - compose: a path-keyed call emits byte-for-byte what compose minor 3 emitted
 - compose: the bind arm emits the same rows as the path arm, with the binding in place of path
 - compose: a bound row's get and set reach the bind with the record field and the row
@@ -2710,17 +2839,6 @@ Total.
 - compose: a PanelMaster block writes through the registry and repaints off the live record
 - compose: a bound row takes its pairWith partner, keyed by its field
 - compose: disabledIf on a bound row reads the record through the bind, not the settings store
-- compose: with no resetProfile the Reset all tooltip keeps its minor-4 wording, byte for byte
-- compose: with resetProfile the Reset all tooltip says it resets the current profile only
-- compose: with resetProfile and profilesPage the tooltip names Profiles -> Reset Profile
-- compose: the descriptor moves the Reset all tooltip and nothing else Master controls draws
-- compose: a shell that hands __AttachCompose no descriptor keeps the minor-4 tooltip
-- compose: StrataTooltip over BACKGROUND..HIGH says the tiers and nothing more
-- compose: StrataTooltip adds the dialog sentence when the row offers Dialog or above
-- compose: StrataTooltip adds both sentences when the row offers Fullscreen Dialog or Tooltip
-- compose: StrataTooltip over a non-table says the tiers alone
-- compose: StrataTooltip takes each part from strings, which is how a host localizes it
-- compose: StrataTooltip's default text is pure ASCII and names the Settings window
 
 ### test_options_compose_master.lua (15)
 
@@ -3281,7 +3399,7 @@ Total.
 - sim autoplay: a typed run after a manual step resumes and plays the next step at once
 - sim autoplay: the start and run usage lines say a simulation plays at once
 
-### test_sim_panel.lua (59)
+### test_sim_panel.lua (41)
 
 - sim panel: the file registers on the shell's minor and in MODULES
 - sim panel: the STRINGS keys the panel draws are added to Sim.STRINGS
@@ -3298,24 +3416,6 @@ Total.
 - sim panel: after a stop the rows are the idle preview again
 - sim panel: d.panel.stepLabel names the rows (step, i, steps)
 - sim panel: startTip and stopTip may be functions answering a line list
-- sim panel: the title defaults to name .. ' - Simulation', and d.panel.title overrides it
-- sim panel: headless, ShowPanel answers false and PanelRows still composes
-- sim panel: Show, Hide, Toggle, IsPanelShown
-- sim panel: the empty verb opens it and `panel` toggles it
-- sim panel: ShowPanel answers false and does nothing while stood down
-- sim panel: a stand-down stop hides it; any other stop repaints it
-- sim panel: every listener notification repaints a shown panel
-- sim panel: the check texture is the host's path, shown on a done row
-- sim panel: height bounds are re-pinned when the row count changes
-- sim panel: the picker previews the chosen scenario and offers sizes only when it has them
-- sim panel: the picker's scenario takes the width the bar leaves, on one line
-- sim panel: the picker's Start starts the chosen scenario through the typed verb
-- sim panel: the picker's Start leaves the session playing, its first tick on the next frame
-- sim panel: running, the controls are Pause, Restart and Stop, spanning the bar
-- sim panel: a member start offers Resume, which sends run once ready and starts play
-- sim panel: Restart's button arms the new session
-- sim panel: running, the controls replace the picker, and Pause swaps with Resume
-- sim panel: Restart through the controls prints what the typed verb prints
 - sim panel: clicking Start, the ready row and Stop prints what typing them prints
 - sim panel: clicking an ahead row runs every step up to it, in order (the internal RunTo)
 - sim panel: an ahead click while a run is playing holds it and plays up to the row
@@ -3342,6 +3442,27 @@ Total.
 - sim panel: a picked scenario the host drops falls back to the first listed one
 - sim panel: every documented optional field filled in place after New is read at use
 - sim panel: anchorTo, stepDelay and the required callbacks and slash, reassigned after New, are read at use
+
+### test_sim_panel_controls.lua (18)
+
+- sim panel: the title defaults to name .. ' - Simulation', and d.panel.title overrides it
+- sim panel: headless, ShowPanel answers false and PanelRows still composes
+- sim panel: Show, Hide, Toggle, IsPanelShown
+- sim panel: the empty verb opens it and `panel` toggles it
+- sim panel: ShowPanel answers false and does nothing while stood down
+- sim panel: a stand-down stop hides it; any other stop repaints it
+- sim panel: every listener notification repaints a shown panel
+- sim panel: the check texture is the host's path, shown on a done row
+- sim panel: height bounds are re-pinned when the row count changes
+- sim panel: the picker previews the chosen scenario and offers sizes only when it has them
+- sim panel: the picker's scenario takes the width the bar leaves, on one line
+- sim panel: the picker's Start starts the chosen scenario through the typed verb
+- sim panel: the picker's Start leaves the session playing, its first tick on the next frame
+- sim panel: running, the controls are Pause, Restart and Stop, spanning the bar
+- sim panel: a member start offers Resume, which sends run once ready and starts play
+- sim panel: Restart's button arms the new session
+- sim panel: running, the controls replace the picker, and Pause swaps with Resume
+- sim panel: Restart through the controls prints what the typed verb prints
 
 ### test_sim_panel_render.lua (34)
 
@@ -3816,7 +3937,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 46
+- the kit is revision 47
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -3990,23 +4111,26 @@ Total.
 | test_lifecycle.lua | 22 |
 | test_lifecycle_debug.lua | 14 |
 | test_bus.lua | 30 |
-| test_schema.lua | 32 |
+| test_schema.lua | 34 |
 | test_schema_write.lua | 41 |
 | test_schema_batch.lua | 22 |
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
+| test_charts.lua | 15 |
+| test_charts_draw.lua | 15 |
+| test_charts_host.lua | 15 |
 | test_media.lua | 43 |
 | test_skin.lua | 33 |
 | test_skin_override.lua | 27 |
 | test_skin_outline.lua | 19 |
-| test_skin_owner_tokens.lua | 16 |
+| test_skin_owner_tokens.lua | 17 |
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 31 |
-| test_skin_width_parity.lua | 16 |
+| test_skin_defs.lua | 32 |
+| test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 37 |
 | test_skin_paint_controls.lua | 31 |
@@ -4017,7 +4141,8 @@ Total.
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 49 |
 | test_widgets_draghandle_place.lua | 10 |
-| test_widgets_draghandle_layers.lua | 10 |
+| test_widgets_draghandle_layers.lua | 11 |
+| test_widgets_draghandle_fit.lua | 10 |
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 19 |
 | test_widgets_autocomplete.lua | 37 |
@@ -4035,7 +4160,7 @@ Total.
 | test_tool_windows_layering.lua | 8 |
 | test_tool_windows_skin.lua | 17 |
 | test_tool_windows_scope.lua | 10 |
-| test_slash.lua | 74 |
+| test_slash.lua | 77 |
 | test_slash_parse.lua | 33 |
 | test_slash_disabled.lua | 16 |
 | test_slash_refusal.lua | 7 |
@@ -4043,26 +4168,30 @@ Total.
 | test_slash_debug.lua | 14 |
 | test_launcher.lua | 45 |
 | test_atenable.lua | 21 |
-| test_options.lua | 61 |
+| test_options.lua | 57 |
 | test_options_render.lua | 27 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
 | test_options_widgets.lua | 53 |
 | test_options_choicegrid.lua | 22 |
 | test_options_flow.lua | 48 |
+| test_options_flow_seams.lua | 17 |
 | test_options_landing.lua | 18 |
 | test_options_ids.lua | 35 |
 | test_options_idlist.lua | 24 |
 | test_options_idlist_layout.lua | 39 |
 | test_options_tabs.lua | 41 |
 | test_options_tabbed.lua | 20 |
+| test_options_banner_acts.lua | 10 |
 | test_options_nav.lua | 14 |
 | test_options_drawer.lua | 26 |
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 60 |
-| test_options_skin_picker.lua | 47 |
+| test_options_appearance.lua | 35 |
+| test_options_appearance_overrides.lua | 25 |
+| test_options_skin_picker.lua | 37 |
+| test_options_skin_picker_shared.lua | 10 |
 | test_options_skin_picker_faces.lua | 15 |
 | test_options_skin_picker_rows.lua | 53 |
 | test_options_skin_verb.lua | 7 |
@@ -4070,10 +4199,11 @@ Total.
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 16 |
-| test_options_media.lua | 30 |
+| test_options_media.lua | 34 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
-| test_options_compose.lua | 51 |
+| test_options_compose.lua | 39 |
+| test_options_compose_arm.lua | 12 |
 | test_options_compose_master.lua | 15 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
@@ -4095,7 +4225,8 @@ Total.
 | test_sim_timeline.lua | 41 |
 | test_sim_verbs.lua | 42 |
 | test_sim_autoplay.lua | 16 |
-| test_sim_panel.lua | 59 |
+| test_sim_panel.lua | 41 |
+| test_sim_panel_controls.lua | 18 |
 | test_sim_panel_render.lua | 34 |
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
@@ -4132,4 +4263,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3522** |
+| **Total** | **3613** |

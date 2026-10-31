@@ -908,3 +908,38 @@ test("sl: an L, aliases or liveVerbs that is not a table, and a parse that is no
   T.assertTrue(plain(downRec.chat[1] or ""):find("1.2.3", 1, true) ~= nil,
     "the library's LIVE_VERBS still lets `version` run while disabled: " .. tostring(downRec.chat[1]))
 end)
+
+-- ── the note row (Slash minor 21, LibKa0s#59) ──────────────────────────────────────────────
+
+test("sl: /list skips a note row, and a group holding only notes prints no heading", function()
+  -- red under: the list reading every row, which prints a line against a path a note cannot have.
+  local rows = {
+    { path = "a", type = "bool", page = "Shown" },
+    { type = "note", page = "Shown", text = "Words." },
+    { type = "note", page = "Notes only", text = "More words." },
+  }
+  local Sl = F.new({ allRows = function() return rows end })
+  local text = table.concat(Sl:BuildListLines(), "\n")
+  T.assertTrue(text:find("Shown", 1, true) ~= nil, text)
+  T.assertTrue(text:find("Notes only", 1, true) == nil, text)
+  T.assertTrue(text:find("Words", 1, true) == nil, text)
+
+end)
+
+test("sl: a schema of notes alone lists as empty", function()
+  local rows = { { type = "note", group = "G", text = "Words." } }
+  local Sl = F.new({ allRows = function() return rows end })
+  local lines = Sl:BuildListLines()
+  assertEqual(#lines, 1)
+  assertEqual(lines[1], Sl:Text("LIST_EMPTY"))
+end)
+
+test("sl: resetall never hands a note to the host's applyDefault", function()
+  local seen = 0
+  local rows = { { type = "note", group = "G", text = "Words." },
+                 { path = "a", type = "bool", group = "G", default = true } }
+  local Sl = F.new({ allRows = function() return rows end,
+                     applyDefault = function() seen = seen + 1 end })
+  Sl:CliResetAll()
+  assertEqual(seen, 1)
+end)

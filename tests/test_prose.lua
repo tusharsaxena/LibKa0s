@@ -225,11 +225,13 @@ for _, word in ipairs(ALLOWED) do ALLOWED_WORDS[word] = true end
 --
 -- Both spellings travel with the code that carries them: kit revision 22 peeled the timer queue and
 -- the two handle kinds out to `testkit/mock_record.lua`, so `IsCancelled` moved with them and
--- `.cancelled` is now present in both files -- AceTimer's handle field is read in `mock_base.lua`'s
+-- `.cancelled` is now present in both files, and in `mock_ace.lua` from revision 47, which took the
+-- AceTimer fake -- AceTimer's handle field is read in `mock_base.lua`'s
 -- AceTimer fake and in the queue that drains it. A path-scoped exemption that follows the code is
 -- the point of scoping it by path: the row expires the moment nothing matches it.
 local RATIFIED = {
   ["LibKa0s/Media.lua"] = { "minimise" },
+  ["testkit/mock_ace.lua"] = { ".cancelled" },
   ["testkit/mock_base.lua"] = { ".cancelled" },
   ["testkit/mock_record.lua"] = { ".cancelled", "iscancelled" },
 }

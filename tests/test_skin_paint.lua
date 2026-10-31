@@ -44,7 +44,7 @@ test("skin paint: the three files attach to the shell and fill every vocabulary 
 end)
 
 test("skin paint: the extras and controls attach to nothing without SkinPaint's helpers", function()
-  local _, Skin = F.env({ files = { "Core", "Skin", "SkinDefs", "SkinPaintExtras", "SkinPaintControls" } })
+  local _, Skin = F.env({ files = { "Core", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaintExtras", "SkinPaintControls" } })
   assertNil(Skin.prim.Card, "no extras")
   assertNil(Skin.prim.Button, "no controls")
   assertNil(Skin.MODULES.SkinPaintControls)
@@ -330,7 +330,7 @@ end)
 local function backdropFrame(m) return m.CreateFrame("Frame", nil, m.UIParent, "BackdropTemplate") end
 
 test("skin paint: Panel on Ka0s Default is LootHistory's list panel, call for call", function()
-  -- modules/AnalyticsCharts.lua listPanel: the WHITE8X8 table with 1px insets, then fill, then edge
+  -- LootHistory modules/AnalyticsCharts.lua listPanel: the WHITE8X8 table with 1px insets, then fill, then edge
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local got = traceOn(m, nil, backdropFrame, function(f) S.Panel(f) end)
@@ -440,7 +440,7 @@ test("skin paint: Divider colors a texture in place, as Core's divider is colore
 end)
 
 test("skin paint: Card on Ka0s Default is LootHistory's KPI card, call for call", function()
-  -- modules/Analytics.lua: the WHITE8X8 table with 1px insets, fill .1/.1/.12/.85, edge .24/.24/.27/.9
+  -- LootHistory modules/Analytics.lua: the WHITE8X8 table with 1px insets, fill .1/.1/.12/.85, edge .24/.24/.27/.9
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local text = traceOn(m, nil, backdropFrame, function(f) S.Card(f) end)

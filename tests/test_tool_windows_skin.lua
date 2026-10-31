@@ -21,7 +21,7 @@ local F = dofile("tests/fixture_skin_paint.lua")
 local OWNER, OTHER = "LootHistory", "BankLedger"
 local TOOL_FILES = { "Widgets", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
   "DebugLogWindow", "Lifecycle", "Perf", "PerfSampler", "PerfCommands", "PerfPanel", "Sim", "SimTimeline",
-  "SimPanel" }
+  "SimPanel", "SimPanelRender" }
 
 local function survey(m, obj) return m.__paint(obj) end
 local function rgba(c) return F.rgba(c) end

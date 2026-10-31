@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` minor **10** · `SkinDefs.lua` minor **18** · `SkinPaint.lua` minor **13** · `SkinPaintExtras.lua` minor **7** · `SkinPaintControls.lua` minor **11** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **5** |
 | Shipped in | v1.83.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 9.17.13.7.11.2.4](./version-9.17.13.7.11.2.4-docs.md) (shipped in v1.82.0) — the same surface with Azeroth, Glass, High Contrast, Ember and WoW Midnight on their earlier faces, WoW Default on the client's Friz Quadrata at Ka0s Default's sizes, Obsidian's titles near-white, and a font override keeping the skin's sizes. |
-| Superseded by | — |
+| Superseded by | [version 11.1.19.1.13.7.11.2.5](./version-11.1.19.1.13.7.11.2.5-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 10, SkinDefs = 18, SkinPaint = 13, SkinPaintExtras = 7, SkinPaintControls = 11, SkinEUI = 2, SkinAce = 5 }` |
 
@@ -1837,3 +1837,39 @@ token resolves to nil, and every primitive paints only what it has a token for (
 `SkinAce.lua` (which needs `SkinPaint.lua`'s helpers from the same copy) no AceGUI row is painted and
 no Options instance's `O.AceGUI` is wrapped. The engine's state is written `lib.x = lib.x or {}`, so a newer copy that wins
 the LibStub race later keeps every owner, record and facade; the resolve cache alone is rebuilt.
+
+**Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
+
+- `lib.GetOverride`: no consumer as of v1.83.0, kept because the settings tab and the skin picker (`OptionsAppearance.lua`, `OptionsSkinPicker.lua`) reach it for every host, so no host names it.
+- `lib.GetSkin`: no consumer as of v1.83.0, kept because the settings tab and the skin picker (`OptionsAppearance.lua`, `OptionsSkinPicker.lua`) reach it for every host, so no host names it.
+- `lib.IsFromSkin`: no consumer as of v1.83.0, kept because `-1.0` is additive-only and it is the documented test for the `FROM_SKIN` sentinel; nothing in the library calls it either, and only `tests/test_skin.lua` exercises it.
+- `lib.OUTLINE_DEFAULT`: no consumer as of v1.83.0, kept because it is the constant behind the settings rows, which the library draws; the one name-only hit, if any, is a host constant of the same name.
+- `lib.OUTLINE_MODES`: no consumer as of v1.83.0, kept because it is the constant behind the settings rows, which the library draws; the one name-only hit, if any, is a host constant of the same name.
+- `lib.OnReloadRequest`: no consumer as of v1.83.0, kept because `-1.0` is additive-only and it is the documented alternative to the `reload` answer from `SetChoice` and `SetIgnore`, which is what the hosts act on; nothing in the library calls it either, and only the suites (this library's and the hosts' `test_skinsetup.lua`) register a listener.
+- `lib.OwnerLabel`: no consumer as of v1.83.0, kept because the settings tab and the skin picker (`OptionsAppearance.lua`, `OptionsSkinPicker.lua`) reach it for every host, so no host names it.
+- `lib.Owners`: no consumer as of v1.83.0, kept because the library's own `lib.__skinOthers` (`OptionsAppearance.lua`) reads it for every host, for the settings tab's copy button and the skin picker's "Apply to all Ka0s addons", so no host names it.
+- `lib.RegisterSkin`: no consumer as of v1.83.0, kept because the eight other skins register through it in `SkinDefs.lua`, and it is the seam a future skin would take.
+- `lib.Repaint`: no consumer as of v1.83.0, kept because the library runs it on every skin change, so a host reaches it only through `SetChoice`.
+- `lib.SCHEMA`: no consumer as of v1.83.0, kept because it is the token schema the skins and the suite read; the Skin Tester name-only hit is a guarded read of a table of its own.
+- `lib.SOURCES`: no consumer as of v1.83.0, kept because it is the constant behind the settings rows, which the library draws; the one name-only hit, if any, is a host constant of the same name.
+- `lib.Track`: no consumer as of v1.83.0, kept because it registers a frame the library paints itself; the QuickComms hits are its own `Slices.Track`.
+- `lib.VOCAB`: no consumer as of v1.83.0, kept because it is the view surface every host stub is held to by its own test; the stub hits are comments naming it.
+- `lib.WriteChoice`: no consumer as of v1.83.0, kept because the settings tab and the skin picker (`OptionsAppearance.lua`, `OptionsSkinPicker.lua`) reach it for every host, so no host names it.
+- `lib.byOwner`: no consumer as of v1.83.0, kept because it is state or a helper table the Skin major shares between its own files, public only by the `Kit.publicMembers` rule.
+- `lib.euiFacade`: no consumer as of v1.83.0, kept because it is state or a helper table the Skin major shares between its own files, public only by the `Kit.publicMembers` rule.
+- `lib.euiPainted`: no consumer as of v1.83.0, kept because it is state or a helper table the Skin major shares between its own files, public only by the `Kit.publicMembers` rule.
+- `lib.euiRefused`: no consumer as of v1.83.0, kept because it is state or a helper table the Skin major shares between its own files, public only by the `Kit.publicMembers` rule.
+- `lib.euiRegistered`: no consumer as of v1.83.0, kept because it is state or a helper table the Skin major shares between its own files, public only by the `Kit.publicMembers` rule.
+- `lib.facades`: no consumer as of v1.83.0, kept because it is state or a helper table the Skin major shares between its own files, public only by the `Kit.publicMembers` rule.
+- `lib.owners`: no consumer as of v1.83.0, kept because it is state or a helper table the Skin major shares between its own files, public only by the `Kit.publicMembers` rule.
+- `lib.painted`: no consumer as of v1.83.0, kept because it is state or a helper table the Skin major shares between its own files, public only by the `Kit.publicMembers` rule.
+- `lib.prim`: no consumer as of v1.83.0, kept because it is state or a helper table the Skin major shares between its own files, public only by the `Kit.publicMembers` rule.
+- `lib.shared`: no consumer as of v1.83.0, kept because it is state or a helper table the Skin major shares between its own files, public only by the `Kit.publicMembers` rule.
+- `lib.skins`: no consumer as of v1.83.0, kept because it is state or a helper table the Skin major shares between its own files, public only by the `Kit.publicMembers` rule.
+- `addonName`: no consumer as of v1.83.0, kept because the scan counts a read of the Options descriptor inside a Skin file; it is `lib:New`'s `addonName`, which is passed there.
+- `thirdPartySkinAddons`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
+- `thirdPartySkinsOff`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
+
+## Moving to the next version
+
+No host change: whole-folder re-vendoring brings the new file, and no public member moved. A hand-typed test load list adds `libs/LibKa0s/SkinOwnerTokens.lua` after `Skin.lua`.

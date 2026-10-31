@@ -7,8 +7,8 @@
 --
 -- What it pins: each skin's body, title and HUD sizes, and that each one, times its face's measured
 -- average advance per em, lands within the band below of Ka0s Default's Prototype at 12 / 14. The
--- WIDTH table is the measurement of the 2026-10-31 bundle's plan-data/font_metrics_shipped.py, run on
--- the shipped bytes (LibKa0s/media/fonts) with OUTLINE on (its section 10: HarfBuzz-shaped advances,
+-- WIDTH table is the measurement of Ka0sAddonsCommonTasks
+-- docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/plan-data/font_metrics_shipped.py, run on the shipped bytes (LibKa0s/media/fonts) with OUTLINE on (its section 10: HarfBuzz-shaped advances,
 -- kerning on, over the body, title and HUD corpora). The sizes themselves were picked under six
 -- pixel-snapping layout models with and without an outline's extra pixel (its sections 7, 8 and 10);
 -- this suite checks the linear model, which is enough to catch a face or a size changed without a
@@ -17,7 +17,8 @@
 -- red under: a size changed so a skin runs more than 2% wider than Ka0s Default (wide truncates
 -- first) or more than 5% narrower; a skin given a face this table has no measurement for (re-run the
 -- script and add its row); a skin's size that is not its face's row in the library's table; a shipped
--- face with no row there; High Contrast's description promising larger type again.
+-- face with no row there; High Contrast's description promising larger type again; the shipped Friz
+-- turning into Prototype's bytes, the font replacement that left WoW Default unmeasured (LibKa0s#69).
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
@@ -143,6 +144,26 @@ test("skin width parity: a skin's sizes are its faces' rows in the library's tab
     for i, role in ipairs(ROLES) do
       assertEqual(t[role[2]], Skin.__FACE_SIZES[t[role[1]]][i], key .. "'s " .. role[2])
     end
+  end
+end)
+
+test("skin width parity: WoW Default's Friz is real Friz, not Prototype's bytes", function()
+  -- LibKa0s#69. The measurement above says nothing about WoW Default if these bytes are Prototype's,
+  -- as the owner's client file is. Its md5 is on record in media/fonts/FONTS.md.
+  -- red under: a Friz re-copied from a client with the font replacement.
+  local function bytes(name)
+    local fh = assert(io.open("LibKa0s/media/fonts/" .. name, "rb"))
+    local data = fh:read("*a")
+    fh:close()
+    return data
+  end
+  local friz = bytes("FrizQuadrataTT-Regular.ttf")
+  assertTrue(friz ~= bytes("Prototype-Regular.ttf"), "the shipped Friz is not Prototype's bytes")
+  assertTrue(friz:find("Friz Quadrata TT", 1, true) ~= nil, "its name table names Friz Quadrata TT")
+  local Skin = skinLib()
+  local t = Skin:ResolveSkin("wow")
+  for _, role in ipairs(ROLES) do
+    assertEqual(t[role[1]], "Ka0s Friz Quadrata TT", "WoW Default draws it: " .. role[1])
   end
 end)
 

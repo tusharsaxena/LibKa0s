@@ -1,6 +1,6 @@
 -- tests/test_options_media.lua -- LibKa0s-Options-1.0's OptionsMedia.lua (minor 1): the Ka0sMedia_*
--- picker types, their rows, and the two callers that reach for them (the Skin tab, and an
--- unregistered LSM30_* row).
+-- picker types, their rows, and the two callers that reach for them (the Skin tab, and a row naming
+-- an LSM30_* type or a Ka0sMedia_* one).
 --
 -- THE BENCH. tests/fixture_skin_ace.lua's pooled AceGUI, because "a font never rides a pooled object
 -- into the next acquirer" is the promise, plus what that fixture's Dropdown leaves out and the
@@ -375,6 +375,38 @@ test("media: an open pull-out wears the menu tokens", function()
   ace:Release(dd)
 end)
 
+-- ── the closed row ───────────────────────────────────────────────────────────────────────────
+
+test("media: a picker never closes on its first entry: no value is blank, a value is its key", function()
+  -- The owner's Skin Tester sample read "2002", the first font key. Red under: any default to the
+  -- list's first row. A picker shows list[value] and nothing else.
+  local _, _, lib, ace = env()
+  local dd = picker(lib, ace, "font")
+  dd:SetList()
+  dd:SetValue(nil)
+  assertEqual(dd.text:GetText(), "", "nothing selected reads blank")
+  assertNil(dd.value)
+  dd:SetValue("Ka0s Prototype")
+  assertEqual(dd.text:GetText(), "Ka0s Prototype")
+  assertEqual(rows(dd)[1], "Ka0s Expressway", "and that was not the first row")
+end)
+
+test("media: border and sound rows sit on the stock bar, level with the page's other controls", function()
+  -- LSM30_Border's patch existed because that widget pinned a 42px tile left of its bar. A picker
+  -- has none: the frame is the stock Dropdown's; the swatch or play button is made on the bar, and
+  -- the text moves over inside it (closedExtra).
+  local _, _, lib, ace = env()
+  for _, kind in ipairs({ "statusbar", "border", "background", "sound" }) do
+    local dd = picker(lib, ace, kind)
+    assertNil(rawget(dd.frame, "displayButton"), kind .. ": no preview tile beside the bar")
+    local m = dd.__media
+    local extra = kind == "sound" and m.play or m.swatch
+    local tpoint, tanchor = dd.text:GetPoint(#dd.text.__points)
+    assertEqual(tpoint, "LEFT", kind)
+    assertEqual(tanchor, extra, kind .. ": the text starts after it")
+  end
+end)
+
 -- ── no LibSharedMedia ────────────────────────────────────────────────────────────────────────
 
 test("media: with no LibSharedMedia the picker still lists, picks and shows its text", function()
@@ -400,15 +432,22 @@ local function ctxOn(O)
   return ctx, rec
 end
 
-test("media: an unregistered LSM30_* row is drawn by the matching picker", function()
+test("media: with no SharedMediaWidgets an LSM30_* row of every kind draws the matching picker", function()
   local _, _, lib = env()
   local O = A.instance(lib, nil)
-  local ctx, rec = ctxOn(O)
-  local dd = O.RenderField(ctx, rec, O.AceGUI:Create("SimpleGroup"), 0.5)
-  assertEqual(dd.type, "Ka0sMedia_Font")
+  for asked, want in pairs({
+    LSM30_Font = "Ka0sMedia_Font", LSM30_Statusbar = "Ka0sMedia_Statusbar", LSM30_Border = "Ka0sMedia_Border",
+    LSM30_Background = "Ka0sMedia_Background", LSM30_Sound = "Ka0sMedia_Sound",
+  }) do
+    local ctx, rec = ctxOn(O)
+    rec.dialogControl = asked
+    assertEqual(O.RenderField(ctx, rec, O.AceGUI:Create("SimpleGroup"), 0.5).type, want, asked)
+  end
 end)
 
-test("media: a registered LSM30_* row keeps it", function()
+test("media: a registered LSM30_* type does not win: the row is still our picker", function()
+  -- red under: asking GetWidgetVersion first, which is what let a host's SharedMediaWidgets decide
+  -- what the row drew (the owner's ruling of 2026-11-01: Ka0sMedia_* is the only media picker).
   local m, _, lib, ace = env()
   ace:RegisterWidgetType("LSM30_Font", function()
     local w = stockDropdown(m, ace)
@@ -418,7 +457,34 @@ test("media: a registered LSM30_* row keeps it", function()
   local O = A.instance(lib, nil)
   local ctx, rec = ctxOn(O)
   local dd = O.RenderField(ctx, rec, O.AceGUI:Create("SimpleGroup"), 0.5)
-  assertEqual(dd.type, "LSM30_Font")
+  assertEqual(dd.type, "Ka0sMedia_Font")
+end)
+
+test("media: a row naming Ka0sMedia_* draws it, a host's own registered type is left alone", function()
+  local m, _, lib, ace = env()
+  ace:RegisterWidgetType("HostDropdown", function()
+    local w = stockDropdown(m, ace)
+    w.type = "HostDropdown"
+    return w
+  end, 1)
+  local O = A.instance(lib, nil)
+  local ctx, rec = ctxOn(O)
+  rec.dialogControl = "Ka0sMedia_Font"
+  assertEqual(O.RenderField(ctx, rec, O.AceGUI:Create("SimpleGroup"), 0.5).type, "Ka0sMedia_Font")
+  rec.dialogControl = "HostDropdown"
+  assertEqual(O.RenderField(ctx, rec, O.AceGUI:Create("SimpleGroup"), 0.5).type, "HostDropdown")
+end)
+
+test("media: with no picker to draw, a registered LSM30_* row keeps its type", function()
+  local m, _, lib, ace = env({ noBase = true })
+  ace:RegisterWidgetType("LSM30_Font", function()
+    local w = m.__makeAceGUIWidget("LSM30_Font")
+    w.SetList, w.SetValue = function() end, function() end
+    return w
+  end, 13)
+  local O = A.instance(lib, nil)
+  local ctx, rec = ctxOn(O)
+  assertEqual(O.RenderField(ctx, rec, O.AceGUI:Create("SimpleGroup"), 0.5).type, "LSM30_Font")
 end)
 
 test("media: with no picker to draw, an LSM30_* row is the stock Dropdown", function()

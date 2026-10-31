@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Schema-1.0` |
 | Files and minors | `Schema.lua` minor **2** |
 | Shipped in | v1.56.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 1](./version-1-docs.md) — no `normalize`, no batch, and the instance id stopped short of a row's `get` and of `ApplyDefault` |
-| Superseded by | — |
+| Superseded by | [version 3](./version-3-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Schema-1.0").MODULES` → `{ Schema = 2 }` |
 
 ## What changed at version 2
@@ -615,3 +615,7 @@ rather than a redesign:
   semantic is now expressible here, so a partial adoption — the primitives, the registry, the
   bracket and `Validate`, with the host's seam kept until it is re-evaluated — no longer rests on a
   semantic the library refuses to carry.
+
+## Moving to 3
+
+Nothing to do. Version 3 adds the `note` row and no host that declares none sees a difference. A host adopting one skips it in any walk of `AllRows()` of its own.
