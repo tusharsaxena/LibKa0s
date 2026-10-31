@@ -47,7 +47,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-SKINDEFS = os.path.join(ROOT, "LibKa0s", "SkinDefs.lua")
+SKINDEFS = [os.path.join(ROOT, "LibKa0s", f) for f in ("SkinDefs.lua", "SkinDefsOthers.lua")]
 FONTS = os.path.join(ROOT, "LibKa0s", "media", "fonts")
 LABEL_FONT = os.path.join(FONTS, "FiraSans-SemiBold.ttf")   # Inter until it left the payload (LK-A1)
 TITLE_FONT = os.path.join(FONTS, "FiraSans-SemiBold.ttf")
@@ -64,9 +64,11 @@ INK, SUBINK = (238, 240, 246), (150, 156, 176)
 
 
 def skins():
-    """[{key, label, swatches}] in registration order, read from SkinDefs.lua."""
-    with open(SKINDEFS, encoding="utf-8") as f:
-        src = f.read()
+    """[{key, label, swatches}] in registration order, read from SkinDefs.lua and SkinDefsOthers.lua."""
+    src = ""
+    for path in SKINDEFS:
+        with open(path, encoding="utf-8") as f:
+            src += f.read()
     # Ka0s Default registers through lib:RegisterSkin{ key = ..., label = ..., swatches = {...} }; the
     # rest through the file's register("key", "Label", "desc", { swatches }, ...) helper.
     found = []

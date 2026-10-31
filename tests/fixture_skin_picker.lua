@@ -12,7 +12,7 @@ local F = dofile("tests/fixture_skin_paint.lua")
 local Loader = dofile("tests/_kit/loader.lua")
 
 local OWNER, OTHER, THIRD = "LootHistory", "BankLedger", "KickCD"
-local SKIN_FILES = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinEUI" }
+local SKIN_FILES = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinEUI" }
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdList", "OptionsTabs",
                   "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
                   "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSwitch", "OptionsMedia" }

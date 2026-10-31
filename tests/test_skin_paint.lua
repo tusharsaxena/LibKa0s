@@ -44,7 +44,7 @@ test("skin paint: the three files attach to the shell and fill every vocabulary 
 end)
 
 test("skin paint: the extras and controls attach to nothing without SkinPaint's helpers", function()
-  local _, Skin = F.env({ files = { "Core", "Skin", "SkinDefs", "SkinPaintExtras", "SkinPaintControls" } })
+  local _, Skin = F.env({ files = { "Core", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaintExtras", "SkinPaintControls" } })
   assertNil(Skin.prim.Card, "no extras")
   assertNil(Skin.prim.Button, "no controls")
   assertNil(Skin.MODULES.SkinPaintControls)

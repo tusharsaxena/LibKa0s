@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 11.1.18.13.7.11.2.5
+# `LibKa0s-Skin-1.0` — version 11.1.19.1.13.7.11.2.5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,19 +8,21 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` **11** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **18** · `SkinPaint.lua` **13** · `SkinPaintExtras.lua` **7** · `SkinPaintControls.lua` **11** · `SkinEUI.lua` **2** · `SkinAce.lua` **5** |
+| Files and minors | `Skin.lua` **11** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **19** · `SkinDefsOthers.lua` **1** · `SkinPaint.lua` **13** · `SkinPaintExtras.lua` **7** · `SkinPaintControls.lua` **11** · `SkinEUI.lua` **2** · `SkinAce.lua` **5** |
 | Shipped in | v1.84.0 |
 | Status | **Current** |
 | Supersedes | [version 10.18.13.7.11.2.5](./version-10.18.13.7.11.2.5-docs.md) (shipped in v1.83.0) — the same surface, with the owner-token block in `Skin.lua`. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 11, SkinOwnerTokens = 1, SkinDefs = 18, SkinPaint = 13, SkinPaintExtras = 7, SkinPaintControls = 11, SkinEUI = 2, SkinAce = 5 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 11, SkinOwnerTokens = 1, SkinDefs = 19, SkinDefsOthers = 1, SkinPaint = 13, SkinPaintExtras = 7, SkinPaintControls = 11, SkinEUI = 2, SkinAce = 5 }` |
 
 ## What changed at this version: the peels (`LK-M2-PEEL`)
 
 A pure move, on the seam `CLAUDE.md`'s census named; no public member and no behavior moves.
 
 **`SkinOwnerTokens.lua` minor 1** (new) carries the owner-token block out of `Skin.lua`, which moves to **minor 11**: the checks behind `RegisterOwner`'s `opts.tokens`, `__RemapName`, `ownValue`, `lib.__withOwnTokens` and `__Remap`. `Skin.lua` keeps a one-line `__Remap` that answers `T`, so a copy without the file takes no owner token and remaps no slot.
+
+**`SkinDefsOthers.lua` minor 1** (new) carries the eight other skins out of `SkinDefs.lua`, which moves to **minor 19** and keeps the schema and Ka0s Default. The new file reads Ka0s Default off the registered skin, `lib.skins.ka0s.tokens`, and registers the skins in the same order. Its `lib.__FACE_SIZES` moved with them. A payload without the file offers Ka0s Default alone.
 
 ## What changed at this version: a window's AceGUI rows (`LK-A3`)
 

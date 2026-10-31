@@ -14,6 +14,7 @@
 	<Script file="Skin.lua"/>
 	<Script file="SkinOwnerTokens.lua"/>
 	<Script file="SkinDefs.lua"/>
+	<Script file="SkinDefsOthers.lua"/>
 	<Script file="SkinPaint.lua"/>
 	<Script file="SkinPaintExtras.lua"/>
 	<Script file="SkinPaintControls.lua"/>

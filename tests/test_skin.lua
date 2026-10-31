@@ -20,7 +20,10 @@ local function env(noDefs)
   Loader.load("LibKa0s/Core.lua", nil, m)
   Loader.load("LibKa0s/Skin.lua", nil, m)
   Loader.load("LibKa0s/SkinOwnerTokens.lua", nil, m)
-  if not noDefs then Loader.load("LibKa0s/SkinDefs.lua", nil, m) end
+  if not noDefs then
+    Loader.load("LibKa0s/SkinDefs.lua", nil, m)
+    Loader.load("LibKa0s/SkinDefsOthers.lua", nil, m)
+  end
   return m, m.LibStub(MAJOR)
 end
 
@@ -66,6 +69,7 @@ test("skin: the shell refuses without Core, and SkinDefs then attaches to nothin
   Loader.load("LibKa0s/Skin.lua", nil, m)
   Loader.load("LibKa0s/SkinOwnerTokens.lua", nil, m)
   Loader.load("LibKa0s/SkinDefs.lua", nil, m)
+  Loader.load("LibKa0s/SkinDefsOthers.lua", nil, m)
   assertNil(m.LibStub(MAJOR, true), "no Core, no major")
 end)
 

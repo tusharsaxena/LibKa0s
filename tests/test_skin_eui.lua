@@ -44,7 +44,7 @@ test("skin eui: SkinEUI attaches to the shell and makes no frame until an owner 
 end)
 
 test("skin eui: without SkinEUI the engine keeps eui a stored choice on the owner's Ka0s skin", function()
-  local m2, Skin2 = F.env({ files = { "Core", "Skin", "SkinDefs", "SkinPaint", "SkinPaintExtras",
+  local m2, Skin2 = F.env({ files = { "Core", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras",
                                      "SkinPaintControls" } })
   E.install(m2)
   local S = E.owner(Skin2, OWNER, "eui", "ka0s")

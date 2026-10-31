@@ -12,7 +12,7 @@
 | Shipped in | v1.83.0 |
 | Status | Superseded |
 | Supersedes | [version 9.17.13.7.11.2.4](./version-9.17.13.7.11.2.4-docs.md) (shipped in v1.82.0) — the same surface with Azeroth, Glass, High Contrast, Ember and WoW Midnight on their earlier faces, WoW Default on the client's Friz Quadrata at Ka0s Default's sizes, Obsidian's titles near-white, and a font override keeping the skin's sizes. |
-| Superseded by | [version 11.1.18.13.7.11.2.5](./version-11.1.18.13.7.11.2.5-docs.md) |
+| Superseded by | [version 11.1.19.1.13.7.11.2.5](./version-11.1.19.1.13.7.11.2.5-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 10, SkinDefs = 18, SkinPaint = 13, SkinPaintExtras = 7, SkinPaintControls = 11, SkinEUI = 2, SkinAce = 5 }` |
 

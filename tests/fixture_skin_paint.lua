@@ -19,7 +19,7 @@ local installPaint = dofile("tests/_kit/mock_paint.lua")
 local F = {}
 
 F.MAJOR = "LibKa0s-Skin-1.0"
-F.FILES = { "Core", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinPaint", "SkinPaintExtras", "SkinPaintControls" }
+F.FILES = { "Core", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintControls" }
 
 --- A font-object fake for CreateFont: records its face and shadow; a FontString given it answers
 --- its face through GetFont.
