@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.
 
-Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1**, `LibKa0s-Schema-1.0` **3**, `LibKa0s-Slash-1.0` key **21.2**, `LibKa0s-Widgets-1.0` key **17.3.9.5.5.2**, `LibKa0s-Charts-1.0` key **1.1**, `LibKa0s-DebugLog-1.0` key **22.6.1.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Now **twenty majors**, across **sixty-four files** (nine are new), and no `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1**, `LibKa0s-Schema-1.0` **3**, `LibKa0s-Slash-1.0` key **21.2**, `LibKa0s-Widgets-1.0` key **17.3.10.5.5.2**, `LibKa0s-Charts-1.0` key **1.1**, `LibKa0s-DebugLog-1.0` key **22.6.1.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Now **twenty majors**, across **sixty-four files** (nine are new), and no `NEEDS_*` floor rises.
 
 ### The library peels (`LK-M2-PEEL`)
 
@@ -61,6 +61,10 @@ The new major `LibKa0s-Charts-1.0`, documented in [docs/api/Charts/version-1.1-d
 What the promotion changed from the port. The drawing seams are the context's, not file locals, because a file shared across addons must not hand one addon's paint to another's chart. `host.pool` defaults to `LibKa0s-Pool-1.0`, the tooltip to `GameTooltip`, and `host.owner` reads the look from the owner's skin (the host first, then the skin, then Ka0s Default's values), with `barFill` as a seam of its own so a data bar takes the bar texture and a track stays flat. `ctx:Reskin()` repaints both pool lists and the chrome, as Loot History's walk does, and an owner's context runs it on `OnLooksChanged`. `truncate` writes `"..."` inside the cap, since the ellipsis glyph may draw as an empty box. A strip with a `top` of 0, a tooltip of no lines, `RangeScale` of no rows, `truncate` with a cap of 0, an empty legend, and a first legend chip on a narrow line each raise nothing or draw nothing now.
 
 Upstream, for the release close: `library-stack-§7`'s module table in WowAddonStandards gains a `Charts` row, and the file count moves to sixty-four.
+
+### The drag handle's fit (`LK-M2-68`, LibKa0s#68)
+
+**WidgetsDragHandle minor 10**: a strip now measures its title at its own effective scale, writes the measured text fresh, and repeats the host's last fit when it shows, out of combat. Computed over the nine skins' shipped faces, a fitted strip holds its title by construction once the measure matches what is drawn; these three close the ways it did not.
 
 ## v1.83.0 — 2026-10-31
 

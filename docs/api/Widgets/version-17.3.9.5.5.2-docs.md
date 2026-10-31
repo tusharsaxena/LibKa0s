@@ -10,15 +10,19 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **17** · `WidgetsReorder.lua` **3** · `WidgetsDragHandle.lua` **9** · `WidgetsLineChart.lua` **5** · `WidgetsAutocomplete.lua` **5** · `WidgetsCopyWindow.lua` **2** |
 | Shipped in | v1.84.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 17.3.8.5.5.2](./version-17.3.8.5.5.2-docs.md) (shipped in v1.82.0) — the same surface, with `ApplyLevel` and the strip's repaint building a table per call. |
-| Superseded by | — |
+| Superseded by | [version 17.3.10.5.5.2](./version-17.3.10.5.5.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 17, WidgetsReorder = 3, WidgetsDragHandle = 9, WidgetsLineChart = 5, WidgetsAutocomplete = 5, WidgetsCopyWindow = 2 }` |
 
 ## What changed at this version: `ApplyLevel` allocates nothing (`LK-M2-PEEL`)
 
 No public member moves. **`WidgetsDragHandle.lua` moves to minor 9.** `handle:ApplyLevel()` and the strip's repaint name their two marks where each built a throwaway table per call. A client always builds both marks; a headless mock that made no help mark used to stop the walk there, and the close mark is now reached.
+
+## Moving to the next version
+
+No host change: no member moved.
 
 ## What changed at 17.3.8.5.5.2
 

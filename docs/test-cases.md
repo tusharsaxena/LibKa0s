@@ -1089,6 +1089,19 @@ Total.
 - DragHandle ignoreParentAlpha: a frame without SetIgnoreParentAlpha does not error
 - DragHandle level: onClose plus level builds both marks at handle + 1
 
+### test_widgets_draghandle_fit.lua (10)
+
+- DragHandle minor 10: MODULES and the file minor say 10 or later
+- DragHandle scale: the measuring host sits at the strip's scale over UIParent's
+- DragHandle scale: an unreadable scale measures at UIParent's, not at the last strip's
+- DragHandle scale: a measurer with no host, the test seam's shape, still measures
+- DragHandle measure: the text is cleared first, so a same-string measure is a new one
+- DragHandle show: a fit made in a face that had not loaded is corrected on show
+- DragHandle show: the fit keeps the host's floor
+- DragHandle show: a strip the host never fitted, or sized itself, is not sized
+- DragHandle show: an onRefit host sizes its own strip
+- DragHandle show: nothing is sized in combat
+
 ### test_widgets_linechart_math.lua (21)
 
 - chart math: the file attaches to the Widgets shell and records its minor
@@ -4127,6 +4140,7 @@ Total.
 | test_widgets_draghandle.lua | 49 |
 | test_widgets_draghandle_place.lua | 10 |
 | test_widgets_draghandle_layers.lua | 11 |
+| test_widgets_draghandle_fit.lua | 10 |
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 19 |
 | test_widgets_autocomplete.lua | 37 |
@@ -4247,4 +4261,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3601** |
+| **Total** | **3611** |
