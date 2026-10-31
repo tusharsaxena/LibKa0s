@@ -371,8 +371,8 @@ to `LibKa0s/DebugLogWindow.lua` (575), a fourth DebugLog file paired on the shel
 (`__windowMinor`), and the owner was added there. `LibKa0s/DebugLog.lua` left the band, 1008 → 663,
 measured 2026-10-25. The logging half (`append` through `CopyText`) is the next seam; the re-check
 trigger is 1000 lines. `LibKa0s/Perf.lua` was not touched by the same item (still 997): PerfPanel
-minor 10's skin owner is painted in `LibKa0s/PerfPanel.lua` (346). Of v1.75.0's new files only `tests/test_sim_panel.lua` is in the band
-(1056 at v1.76.0, listed above); `LibKa0s/SimPanel.lua`, the largest payload file among them, came
+minor 10's skin owner is painted in `LibKa0s/PerfPanel.lua` (346). Of v1.75.0's new files `tests/test_sim_panel.lua` came into the band first
+(1056 at v1.76.0) and left it on 2026-10-31 (above); `LibKa0s/SimPanel.lua`, the largest payload file among them, came
 into the band at SimPanel minor 8 (1018, measured 2026-10-30: its tooltip palette, `LK-06d`, and its
 skinned labels, owned dropdowns and grip owner, `LK-06b`, of Ka0sAddonsCommonTasks
 `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`; the renderer section is the seam, to a file of its own,
