@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.82.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.83.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PARSE_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `DEFS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -315,7 +315,7 @@ Three traps in the kit-40 sequence, one rule each:
 the copy. The tool reads the declaration under it, and on a consumer that has no line yet it finds
 none, removes nothing and the copy is committed whole:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.82.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.83.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
@@ -1090,6 +1090,13 @@ so no addon suite is red between commits; that addon's own items follow it. Ka0s
 samples (`ST-01`). Step 5 names no host: `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` and `Widgets.lua` (which
 defines `W.TestStrip`) did not move; `WidgetsDragHandle.lua` did, and a host pinning a natural strip width re-pins
 it by 2 px.
+
+**Step 8 for v1.83.0 (local tag `v1.83.0`, cut at the close, `LK-F90`) is the font pickers and skin faces run's M2**: each
+addon's `<PFX>-F01` item of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/` re-vendors the tag, on its
+own `feat/2026-10-31-font-pickers-skin-faces`, moves a profile default that stores the font outline `"all"` to `"hud"`,
+re-pins any test that pins a skin's face or size, and takes font text out of its README; its `<PFX>-F02` moves its media
+rows to the preview pickers. Ka0s Skin Tester shows every picker kind (`ST-F01`). Step 5 names no host: `Sim.lua`,
+`SimTimeline.lua`, `SimPanel.lua` and `Widgets.lua` (which defines `W.TestStrip`) did not move.
 
 **Step 9 was run for v1.75.0 on 2026-10-23**, over the fourteen run branches: 209 lookup lines in
 205 files across the fourteen. Every one is now named in the Consumers table; the sweep found

@@ -71,6 +71,14 @@ Most of the 118 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.83.0, not in the census (2026-10-31).** The release adds Options' `Ka0sMedia_*` AceGUI picker types
+(`OptionsMedia.lua`, new at minor 1), an unregistered `LSM30_*` row's fall back to them (OptionsWidgets
+minor 38), thirteen more faces (Media minor 11) and `"hud"` as `Skin.OUTLINE_DEFAULT` (Skin minor 10). No
+public member is retired. What each host owes on re-vendor is the CHANGELOG's v1.83.0 *What a consumer
+owes* and each document's. None gets a row here yet, and the v1.75.0 stamp and its numbers stand: the
+addons adopt them in Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`'s M2, and the
+next census re-run measures them.
+
 **v1.82.0, not in the census (2026-10-30).** The release adds Skin's font outline mode
 (`Skin:GetOutline`, `Skin:SetOutline`, `OUTLINE_MODES`, `OUTLINE_DEFAULT`; Skin minor 9) and the paint
 helpers `S.FontFlags` and `S.HudFontSize` (SkinPaintExtras minor 7), Options' `O.SkinVerb` and `shownWhen`'s

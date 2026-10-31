@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.83.0 — unreleased
+## v1.83.0 — 2026-10-31
 
 Opened 2026-10-31, on `feat/2026-10-31-font-pickers-skin-faces`: the owner's font pickers and skin
 faces batch (Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`, M1), the items
@@ -93,12 +93,17 @@ addon. A test that counts `RegisterLSM`'s fonts moves with the catalog.
 - **SkinDefs minor 18.** WoW Midnight draws Segoe UI Semibold, Azeroth Open Sans Semibold (each with
   its Bold for titles), Ember Emblem, High Contrast Doris PP, Glass Avant Garde and WoW Default the
   shipped Ka0s Friz Quadrata TT, its HUD too, since the owner's client file is Prototype's bytes.
-  Obsidian's title color is its primary button's `#2A86D1`, which also moves its headings and DebugLog
-  tag. Every size is measured against Prototype at 12 / 14 / 12 from the shipped bytes, outline both
+  Obsidian's title color is its primary button's `#2A86D1`; its headings and DebugLog tag stay
+  `#F2F2F4`. Every size is measured against Prototype at 12 / 14 / 12 from the shipped bytes, outline both
   ways; WoW Default moves to 11 / 13 / 11 now real Friz is measured.
 - **`lib.__FACE_SIZES`** (internal) carries each shipped face's sizes. **Skin minor 10**: a font override
   of a shipped face lays its row over `font.bodySize`, `font.titleSize` and `hud.fontSize`, so body,
-  title and `S.HudFontSize` all hold Prototype's width. A face with no row keeps the skin's sizes.
+  title and `S.HudFontSize` all hold Prototype's width. A face with no row draws at Ka0s Default's
+  sizes, which is every stored size unscaled, and so does a skin whose own face this locale keeps out
+  of LibSharedMedia. One function split at the close (`LK-F90`): the pre-release complexity run found
+  `withOverrides` in `LibKa0s/Skin.lua` at CCN 19, so resolving the owner's media and laying them on a
+  copy move, unchanged, into the file-local `ownerMedia` and `layOverrides`. No behavior change, and
+  Skin minor 10 is this release's own, so no minor moves.
 
 `tests/test_skin_width_parity.lua` pins all twenty-eight faces, and each skin's sizes to its faces'
 rows; `tests/test_skin_defs.lua`'s size band widens from 1.5 to 2 points for Open Sans Bold.

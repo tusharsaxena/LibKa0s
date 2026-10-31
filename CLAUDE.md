@@ -240,7 +240,11 @@ Two came in, `LibKa0s/SkinPaint.lua` (1002) and `tests/test_options_appearance.l
 stays in the band at 1370; `LibKa0s/Skin.lua`, `LibKa0s/SkinDefs.lua` and `tests/test_options_skin_picker.lua` grew under
 their triggers, re-measured below; the other band files are untouched. Re-measured at v1.82.0's close (2026-10-30,
 the release close of the same run): still **fourteen**, nothing over 1500, no re-check trigger fired, every figure below current (the close's one
-CCN split is in `LibKa0s/WidgetsDragHandle.lua`, 951, out of the band). Largest first:
+CCN split is in `LibKa0s/WidgetsDragHandle.lua`, 951, out of the band). Re-measured at v1.83.0's close (2026-10-31, the release close of
+Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`): still **fourteen**, nothing over 1500. Three re-check
+triggers fired, `LibKa0s/Skin.lua`'s, `LibKa0s/SkinDefs.lua`'s and `tests/test_options_appearance.lua`'s, and each is re-ruled
+below; a peel at the close would land after the release's independent review and, for the two payload files, move
+the Skin key again. The new `LibKa0s/OptionsMedia.lua` (450) is out of the band. Largest first:
 
 - `testkit/mock_base.lua` (1465 with kit revision 43's one comment line pointing at `testkit/mock_paint.lua`, measured 2026-10-25, under its 1490 re-check trigger; 1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
@@ -278,7 +282,9 @@ CCN split is in `LibKa0s/WidgetsDragHandle.lua`, 951, out of the band). Largest 
   SimPanel minor 7 (the skin owner, `LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`)
   added none either: its cases are the new `tests/test_tool_windows_skin.lua`'s, and only the two
   pins moved, to "at least" (re-measured 2026-10-25, still 1056).
-- `LibKa0s/Skin.lua` (1149 at minor 9, measured 2026-10-30 after the review of `LK-03` and `LK-04`: the per-owner font outline mode
+- `LibKa0s/Skin.lua` (1221 at minor 10, measured 2026-10-31 at v1.83.0's close, Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`: 1149 → 1221 with the override's face sizes, the
+  refused-locale check and the close's CCN split, none of it in the owner-token block; this passed the 1150 trigger,
+  and it was re-ruled at the close rather than peeled; 1149 at minor 9, measured 2026-10-30 after the review of `LK-03` and `LK-04`: the per-owner font outline mode
   (`LK-03` of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`), outside the owner-token block and one
   under the 1150 trigger, so it did not fire; re-measured after `LK-06`, still 1149: `S.HudFontSize` lives in
   `SkinPaintExtras.lua` and only its `VOCAB` name reached this file, on an existing line; 1081 at minor 8, measured 2026-10-30: `ResetToSkin`'s companion option (`LK-07`), the public
@@ -289,9 +295,12 @@ CCN split is in `LibKa0s/WidgetsDragHandle.lua`, 951, out of the band). Largest 
   stock-under-Default items of Ka0sAddonsCommonTasks `docs/2026-10-29-SKINNING_ROLLOUT/`)) — **accepted.** The engine is still one piece of
   state with one cache discipline, and the owner-token block is the part with the clearest boundary. The seam
   is that block (`isSchemaName` through `takeTokens`, `__RemapName`, `ownValue`, `withOwnTokens` and `__Remap`),
-  to a secondary file of its own with its own minor, paired on the Skin shell. **Re-check trigger: 1150 lines, or
-  the next Skin minor that adds to the owner-token block.**
-- `LibKa0s/SkinDefs.lua` (1043 at minor 17, measured 2026-10-30 after `LK-06` of Ka0sAddonsCommonTasks
+  to a secondary file of its own with its own minor, paired on the Skin shell. **Re-check trigger: the next Skin
+  minor, and then the seam peels in that change.**
+- `LibKa0s/SkinDefs.lua` (1104 at minor 18, measured 2026-10-31 at v1.83.0's close: 1043 → 1104 with the new faces,
+  their measured sizes and `__FACE_SIZES` of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`,
+  61 lines this release, so both halves of the trigger fired, and it was re-ruled at the close rather than peeled;
+  1043 at minor 17, measured 2026-10-30 after `LK-06` of Ka0sAddonsCommonTasks
   `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`: 1005 → 1043 with the faces, the outline, the width-parity sizes and
   `HUD_SIZE`, 38 lines this release, so the 40-line trigger did not fire and the next line it adds fires it;
   1005, new to the band at minor 16, measured 2026-10-30: 959 → 1005 with the exact `q.*`
@@ -300,8 +309,9 @@ CCN split is in `LibKa0s/WidgetsDragHandle.lua`, 951, out of the band). Largest 
   Ka0s Default value, a value or `FOLLOW` per other skin and its docs, so the file grows with the vocabulary, not with
   logic. The seam is the eight other skins (*the eight other skins* section: `FOLLOW`, `ICON_EDGE`, `HUD_FACE`,
   `register` and the eight `register(...)` blocks), to a secondary file of its own with its own minor, paired on the
-  Skin shell as this file is. **Re-check trigger: 1100 lines, or a release that adds more than 40 lines here.**
-- `tests/test_options_skin_picker.lua` (1131, measured 2026-10-30 after `LK-11` of Ka0sAddonsCommonTasks
+  Skin shell as this file is. **Re-check trigger: the next SkinDefs minor, and then the seam peels in that change.**
+- `tests/test_options_skin_picker.lua` (1133, measured 2026-10-31 at v1.83.0's close: OptionsSkinPicker minor 4 added
+  no case, only a pin of its wording, so the trigger below did not fire; 1131, measured 2026-10-30 after `LK-11` of Ka0sAddonsCommonTasks
   `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/` moved its bench, unchanged, to `tests/fixture_skin_picker.lua` (116), shared
   with the new `tests/test_options_skin_verb.lua`; 1220 before that, after `LK-07` and `LK-08` of the same run added the
   override-reset cases at OptionsSkinPicker minor 3, which fired the trigger below and named no peel; 1064, new to the
@@ -310,13 +320,15 @@ CCN split is in `LibKa0s/WidgetsDragHandle.lua`, 951, out of the band). Largest 
   `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`)) — **accepted.** The seam is the *one window across addons* section, to
   its own `tests/test_options_skin_picker_shared.lua`. **Re-check trigger: 1200 lines, or the next OptionsSkinPicker
   minor that adds cases here.**
-- `tests/test_options_appearance.lua` (1231, new to the band, measured 2026-10-30: 797 → 1231 with OptionsAppearance
+- `tests/test_options_appearance.lua` (1266, measured 2026-10-31 at v1.83.0's close: 1231 → 1266 with OptionsAppearance
+  minor 5's cases of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`, which
+  fired the trigger below, and it was re-ruled at the close rather than peeled; 1231, new to the band, measured 2026-10-30: 797 → 1231 with OptionsAppearance
   minor 4's cases, the font outline (`LK-03`), a skin change resetting the overrides (`LK-07`) and the tab's layout
   (`LK-08`) of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`) — **accepted.** Each section pins one
   part of one tab, and the minor-4 sections are the part with the clearest boundary. The seam is those three
   sections (*the font outline*, *a skin change resets the overrides*, *the Skin tab's layout*), to their own
-  `tests/test_options_appearance_v4.lua` on the same fresh-client bench. **Re-check trigger: 1300 lines, or the next
-  OptionsAppearance minor that adds cases here.**
+  `tests/test_options_appearance_v4.lua` on the same fresh-client bench. **Re-check trigger: the next
+  OptionsAppearance minor that adds cases here, or 1300 lines, and then the seam peels in that change.**
 - `LibKa0s/SkinPaint.lua` (1002, new to the band, measured 2026-10-30: 979 → 1002 with minor 13's mono-role
   outline (`LK-03`) and `P.color` (`LK-14`) of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`) —
   **accepted.** Two lines over the band's floor, and about seventy of its lines are the minor-by-minor header notes

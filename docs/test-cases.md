@@ -685,7 +685,7 @@ Total.
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 
-### test_skin_width_parity.lua (14)
+### test_skin_width_parity.lua (15)
 
 - skin width parity: every skin's body, title and HUD sizes are the measured ones
 - skin width parity: every skin's text is as wide as Ka0s Default's, never more than 2% wider
@@ -697,7 +697,8 @@ Total.
 - skin hud size: its own face, Ignore fonts and a bad size leave the stored size alone
 - skin hud size: the stored value is never rewritten, and the scale follows a live skin change
 - skin hud size: an override of a shipped face draws at that face's sizes, HUD and body alike
-- skin hud size: a face the library did not measure keeps the skin's sizes
+- skin hud size: a face the library did not measure draws unscaled, whatever the skin
+- skin hud size: a skin whose face this locale refuses draws unscaled in the fallback
 - skin hud size: an override's sizes wait for it to resolve, and stay out of its own-face HUD
 - skin hud size: BarStyle's fontSize is each skin's own, Ka0s Default's under Ignore fonts
 - skin hud size: an EllesmereUI owner reads Ka0s Default's HUD size, unscaled
@@ -2301,7 +2302,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (58)
+### test_options_appearance.lua (60)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2346,6 +2347,8 @@ Total.
 - appearance: copy gives every other owner this owner's font outline
 - appearance: the copy helper keeps a target's own half for a media half left out
 - appearance: the other owners and one owner's skin copy are library-level, for the skin picker
+- appearance: a font pick stores no outline the owner never chose, and keeps one it did
+- appearance: the copy gives a target the source's applied outline, the default included
 - appearance: a skin pick with both overrides set resets both, live and through the seam
 - appearance: re-clicking the checked skin, or a pick with no overrides, writes no media
 - appearance: an override picked after a switch sticks until the next switch
@@ -2502,7 +2505,7 @@ Total.
 - switched any: the single-path form is unchanged beside it
 - switched: OptionsSwitch.lua is its own file of the major, paired on the shell's minor
 
-### test_options_media.lua (26)
+### test_options_media.lua (30)
 
 - media: lib.__MediaWidgetType maps a kind, its LSM30_* and its own type name to one type
 - media: no stock Dropdown registered, so no picker, and the caller draws a plain Dropdown
@@ -2511,14 +2514,18 @@ Total.
 - media: the order puts a leading row first and its text is the list's
 - media: a list with no order sorts by its text, and no list means every key of the kind
 - media: a stored key the list lacks still shows, and the host's table is not written
+- media: a value leaving the list leaves no row behind
 - media: the closed row and an opened row draw in the entry's own face
 - media: a leading row previews the key it stands for, closed and open
 - media: a key LSM cannot resolve keeps the plain face and raises nothing
 - media: statusbar, border and background entries draw a swatch of that art
 - media: a sound row's play button plays that sound, and a click on it is not a pick
 - media: faces are preloaded before the rows draw, and a load dresses them again next frame
+- media: a picker drawn in the tick that preloaded its face dresses again next frame
+- media: a swatch picker on an acquire asks for no next frame
 - media: a picker released before that next frame does nothing
 - media: release puts the face, the previews and the rows back, into this type's own pool
+- media: a pooled row that made room for a swatch gets its text width back
 - media: a released swatch and play button hide, and a stock Dropdown stays stock
 - media: disabling dims the swatch
 - media: the skin paints a picker as a Dropdown and the preview survives its font
@@ -3924,7 +3931,7 @@ Total.
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 31 |
-| test_skin_width_parity.lua | 14 |
+| test_skin_width_parity.lua | 15 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 37 |
 | test_skin_paint_controls.lua | 31 |
@@ -3979,14 +3986,14 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 58 |
+| test_options_appearance.lua | 60 |
 | test_options_skin_picker.lua | 47 |
 | test_options_skin_verb.lua | 7 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 16 |
-| test_options_media.lua | 26 |
+| test_options_media.lua | 30 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 51 |
@@ -4048,4 +4055,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3446** |
+| **Total** | **3453** |

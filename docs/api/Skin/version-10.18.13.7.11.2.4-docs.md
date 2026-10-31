@@ -59,10 +59,10 @@ and a ruRU client's own font did. Doris PP draws none either, as Atkinson and Pr
 
 ### Obsidian's titles are its primary button's blue (SkinDefs minor 18)
 
-`titleColor` is `#2A86D1`, the flat `btnPrimary.bg`, where it was `#F2F2F4`. That entry writes
-`title.text`, `text.heading` and `text.headingAlt`, and `log.tag` follows `text.headingAlt`, so
-Obsidian's headings and DebugLog tag move with the title. The heading contrast on `win.bg` stays above
-the suite's 3:1 floor. A selected tab, a selected nav entry and a slider thumb keep their own `#F2F2F4`.
+`titleColor` is `#2A86D1`, the flat `btnPrimary.bg`, where it was `#F2F2F4`. Only the title takes the
+blue: `headColor` keeps `text.heading` and `text.headingAlt` at `#F2F2F4`, so Obsidian's headings and
+DebugLog tag do not move. A selected tab, a selected nav entry and a slider thumb keep their own
+`#F2F2F4` as well.
 
 ### Every size is re-measured, and an override brings its face's (SkinDefs minor 18, Skin minor 10)
 
