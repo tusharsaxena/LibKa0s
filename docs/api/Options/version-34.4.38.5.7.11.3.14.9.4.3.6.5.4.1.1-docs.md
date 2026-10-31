@@ -58,6 +58,22 @@ minor **4** because `APPLY_ALL_TIP` does too. The `SKIN_OWN` key and the `"@skin
 names, so a stored override and a host's `spec.strings` are unaffected, except that a translation
 of the English text is the host's to reword.
 
+## What changed at this version: a picker row's name never stays blank (`LK-A2`)
+
+`LK-A2` of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/` (the owner's blank
+Azeroth row). No member moves, and `OptionsSkinPicker.lua` stays at this release's minor **4**.
+
+- **The preload.** Every show hands `lib.__PreloadFonts` every skin's body face and no other: the
+  window can come up for a player who never opens settings, so it does not load every LSM face. A
+  copy without `OptionsScroll.lua` shows its rows with no preload.
+- **A refused face.** A `SetFont` that raises or answers false puts the row back in its template's
+  face, `GameFontHighlight`, with its name. So does a nil, unless the face reads back through
+  `GetFont`.
+- **The redress.** Every open, and a skin switch under an open list, dresses each row at once and
+  again next frame, the font and then the text through `""`. A name that still measures nothing
+  on that next frame (`GetStringWidth` answers 0) goes to the template's face, and the next open
+  tries the skin's face again.
+
 ## What changed at this version: the media pickers (`LK-F03`)
 
 `LK-F03` of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/` (the owner's item 1,

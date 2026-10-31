@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-10-31, on `feat/2026-10-31-font-pickers-skin-faces`: the owner's font pickers and skin
 faces batch (Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`, M1), the items
-`LK-F01` to `LK-F06`, and `LK-A1`. The release closes on the same branch (`LK-F90`); the tag is local until the
+`LK-F01` to `LK-F06`, `LK-A1` and `LK-A2`. The release closes on the same branch (`LK-F90`); the tag is local until the
 owner's go-ahead.
 
 Versions in this release: **Media minor 11** (`LibKa0s-Media-1.0` key **11.1**), **Skin minor 10** and
@@ -25,6 +25,20 @@ Versions in this release: **Media minor 11** (`LibKa0s-Media-1.0` key **11.1**),
 minor, and **test kit revision 46**, until an entry below moves one.
 Still **nineteen majors**, now across **fifty-five files** (`OptionsMedia.lua` is new), and no `NEEDS_*`
 floor rises.
+
+### A skin picker row's name never stays blank (`LK-A2`)
+
+The owner saw the Azeroth row's name blank in the first-run picker, with its swatches drawn. The cause
+is not proven: the client may not have been restarted since the font files arrived, and a face not
+yet loaded can draw blank. `OptionsSkinPicker.lua` hardens the row for each of those, in minor 4,
+which is this release's own, so no minor moves. Every skin's body face, and no other, goes through
+`lib.__PreloadFonts` on every show. A refused `SetFont` (false, nil or a raise) puts the row back in
+`GameFontHighlight`. Every open, and a skin switch under an open list, dresses each row at once and
+again next frame, font and text through `""`; the next frame's pass also takes a name that measures
+nothing to the template's face, and the next open tries the skin's face again. Its cases are in the
+new `tests/test_options_skin_picker_faces.lua`.
+
+**What a consumer owes:** nothing but the re-vendor.
 
 ### Font terms leave the README (`LK-F06`)
 

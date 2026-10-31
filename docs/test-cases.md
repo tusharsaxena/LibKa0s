@@ -2416,6 +2416,24 @@ Total.
 - skin picker: the gear after a clearing preview writes the skin, then every media half
 - skin picker: two clearing previews, then Apply, write the media once
 
+### test_options_skin_picker_faces.lua (15)
+
+- skin picker faces: a SetFont answering false keeps a named row in the template's face
+- skin picker faces: a SetFont answering nil keeps a named row in the template's face
+- skin picker faces: a SetFont answering a raise keeps a named row in the template's face
+- skin picker faces: a SetFont answering true, or nothing with the face read back, keeps the face
+- skin picker faces: every skin's body face is preloaded before the list can open, and no other
+- skin picker faces: a copy without the preload shows its rows
+- skin picker faces: every open dresses each row, then again next frame, font and text through an empty string
+- skin picker faces: a list closed before the next frame is left alone
+- skin picker faces: a closed list is not dressed by a repaint
+- skin picker faces: a skin switch under an open list dresses each row, which keep their names and faces
+- skin picker faces: a pick's repaint leaves the next open dressing every row
+- skin picker faces: a later showing of the same window still dresses on open
+- skin picker faces: a host's name for a skin survives the redress
+- skin picker faces: a name that measures nothing next frame takes the template's face, and the next open tries its own
+- skin picker faces: a client without C_Timer dresses at once and raises nothing
+
 ### test_options_skin_verb.lua (7)
 
 - skin verb: SkinVerb is a member, and its four words are ASCII
@@ -3989,6 +4007,7 @@ Total.
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 60 |
 | test_options_skin_picker.lua | 47 |
+| test_options_skin_picker_faces.lua | 15 |
 | test_options_skin_verb.lua | 7 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
@@ -4056,4 +4075,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3454** |
+| **Total** | **3469** |
