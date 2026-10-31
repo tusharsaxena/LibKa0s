@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261031-213552`](20261031-213552/) | `e7363f3` | clean | 1.83.0 | 0/0 | 256 | 3522/2/3524 | skip | 78167 | 11318 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261031-202020`](20261031-202020/) | `6c816fd` | clean | 1.83.0 | 0/0 | 251 | 3522/2/3524 | skip | 78123 | 11318 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261031-185000`](20261031-185000/) | `8cffb7a` | clean | 1.83.0 → 1.83.0 | 0/0 | 251 | 3522/2/3524 | skip | 78123 | 11318 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261031-182948`](20261031-182948/) | `17209cf` | clean | 1.83.0 → 1.83.0 | 0/0 | 251 | 3519/2/3521 | skip | 78071 | 11309 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -175,17 +176,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 ## Test suite
 
 **3524 cases** — 3522 passed, 0 failed, 2 skipped. The generated inventory
-[`20261031-202020/test-cases.md`](20261031-202020/test-cases.md) is the authority on which cases existed at this run;
+[`20261031-213552/test-cases.md`](20261031-213552/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Unchanged from the previous run at 3524 cases.
+The count has been **flat at 3524 across the last 3 runs**. A suite that stopped growing while
+the addon did is a coverage gap, and it is the one thing the table above cannot show.
 
 **2 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 251 files** (`luacheck .`).
+**0 warnings / 0 errors over 256 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -202,8 +204,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261031-202020`](20261031-202020/) — **this run's measurement, not its diff.** Max CCN **15** across 11318
-functions, **0** of them warned on; 15 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261031-213552`](20261031-213552/) — **this run's measurement, not its diff.** Max CCN **15** across 11318
+functions, **0** of them warned on; 11 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -233,10 +235,6 @@ None.
 | 1000–1500 (on notice) | `LibKa0s/SkinDefs.lua` | 1104 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4` (2026-10-31, `FX-LK-SIZE`).** Seam: the eight other skins, paired on the Skin shell. **Re-check trigger: the next SkinDefs minor, and then the seam peels in that change.** |
 | 1000–1500 (on notice) | `LibKa0s/SkinPaint.lua` | 1002 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4` (2026-10-31, `FX-LK-SIZE`).** Seam: the window block, to `LibKa0s/SkinPaintExtras.lua`. **Re-check trigger: 1050 lines, or the next SkinPaint minor.** |
 | 1000–1500 (on notice) | `testkit/mock_base.lua` | 1465 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4` (2026-10-31, `FX-LK-SIZE`).** Kit revisions 20, 22, 26, 33 and 37 each put a family of fakes in its own file rather than appending, and that is the rule for the next one. Seam: the Ace fakes, the CallbackHandler registry through AceGUI. **Re-check trigger: 1490 lines, or any kit change that adds more than 30 lines here.** |
-| 1000–1500 (on notice) | `tests/test_options_appearance.lua` | 1266 | **Peeled 2026-10-31 (`FX-LK-SIZE`):** 1266 → 648, the minor-4 sections to `tests/test_options_appearance_overrides.lua`, the bench to `tests/fixture_appearance.lua`. Leaves the band at the next run. |
-| 1000–1500 (on notice) | `tests/test_options_compose.lua` | 1012 | **Peeled 2026-10-31 (`FX-LK-SIZE`):** 1012 → 726, the record-backed arm to `tests/test_options_compose_arm.lua`. Leaves the band at the next run. |
-| 1000–1500 (on notice) | `tests/test_options_skin_picker.lua` | 1129 | **Peeled 2026-10-31 (`FX-LK-SIZE`):** 1129 → 864, the *one window across addons* section to `tests/test_options_skin_picker_shared.lua`. Leaves the band at the next run. |
-| 1000–1500 (on notice) | `tests/test_sim_panel.lua` | 1056 | **Peeled 2026-10-31 (`FX-LK-SIZE`):** 1056 → 683, the *frame, the picker and the controls* section to `tests/test_sim_panel_controls.lua`, the bench to `tests/fixture_sim_panel.lua`. Leaves the band at the next run. |
 
 `lizard` counts every `and`/`or` short-circuit as a decision, so in Lua a run of
 `t.k = rec.k or D.k` defaulting lines scores high with no visible branching at all: a large CCN
