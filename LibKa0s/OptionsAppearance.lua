@@ -15,7 +15,9 @@
 --   * the LOOK: the library's fixed note about what a skin changes, then one radio choice per
 --     registered skin (Skin:Skins(), registration order), each with its four swatches, its name and
 --     its one-line description;
---   * FONT AND TEXTURE (minor 3): two dropdowns side by side, the owner's font and bar texture
+--   * FONT AND TEXTURE (minor 3): two dropdowns side by side (minor 5: the preview pickers of
+--     OptionsMedia.lua, each row in its face or beside its bar, the stock Dropdown without them),
+--     the owner's font and bar texture
 --     (LibSharedMedia-3.0's font and statusbar keys, sorted), each led by "Skin's own (<its key>)",
 --     through Skin:SetOverride and `spec.set`'s fourth argument (LibKa0s-Skin-1.0 minor 6); under
 --     each (minor 4) its "Reset font" / "Reset texture" button, at the dropdown's width, disabled
@@ -71,7 +73,9 @@ if not lib then return end
 -- its half is the skin's own; the Font outline dropdown moves from the Scope into the Font and
 -- texture section, under them; the Scope's check boxes take the dropdowns' half width; the copy
 -- button gets its own heading, "Other Ka0s addons"; and the note leads the Look section.
-local APPEARANCE_MINOR = 4
+-- Minor 5: the font and texture rows are OptionsMedia.lua's pickers, the leading row previewing the
+-- skin's own entry (LK-F03 of Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES).
+local APPEARANCE_MINOR = 5
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__appearanceMinor and lib.__appearanceMinor >= APPEARANCE_MINOR
   and lib.__appearanceShellMinor == lib.MINOR then return end
@@ -536,6 +540,7 @@ function lib.__AttachAppearance(O, d)
 
   --- The list one media dropdown offers: "Skin's own (<the face worn without overrides>)" first,
   --- then LSM's keys, then the stored override when LSM lacks it, so the field never shows blank.
+  --- The third answer is the leading row's preview: it shows the face it stands for.
   local function mediaList(view, which)
     local spec = MEDIA[which]
     local own = baseTokens(view)[spec.token]
@@ -552,15 +557,24 @@ function lib.__AttachAppearance(O, d)
       items[stored] = view.S.MEDIA_MISSING:format(stored)
       order[#order + 1] = stored
     end
-    return items, order
+    return items, order, { [FROM_SKIN] = own }
+  end
+
+  --- One media dropdown's list, and on a picker what its leading row previews. The stock Dropdown
+  --- a client without the picker draws (minor 5) has no SetPreviews.
+  local function fillMedia(view, dd, which)
+    local items, order, previews = mediaList(view, which)
+    if type(dd.SetPreviews) == "function" then dd:SetPreviews(previews) end
+    dd:SetList(items, order)
   end
 
   --- One media dropdown in `group`.
   local function mediaDropdown(view, group, which, label, tip)
-    local dd = O.AceGUI:Create("Dropdown")
+    local mediaType = lib.__MediaWidgetType
+    local dd = O.AceGUI:Create(mediaType and mediaType(MEDIA[which].kind) or "Dropdown")
     dd:SetLabel(label)
     dd:SetRelativeWidth(halfWidth(O))
-    dd:SetList(mediaList(view, which))
+    fillMedia(view, dd, which)
     dd:SetCallback("OnValueChanged", function(_, _, value)
       setMedia(view, which, value)
       view.sync()
@@ -721,7 +735,7 @@ function lib.__AttachAppearance(O, d)
       if view.ignore.fonts then view.ignore.fonts:SetValue(ignore.fonts) end
       local media = readMedia(view)
       for which, dd in pairs(view.media) do
-        dd:SetList(mediaList(view, which))   -- the skin's own entry names the skin worn now
+        fillMedia(view, dd, which)   -- the skin's own entry names the skin worn now
         dd:SetValue(media and media[which] or FROM_SKIN)
       end
       syncResets(view, media)

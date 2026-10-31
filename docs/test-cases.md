@@ -2499,6 +2499,35 @@ Total.
 - switched any: the single-path form is unchanged beside it
 - switched: OptionsSwitch.lua is its own file of the major, paired on the shell's minor
 
+### test_options_media.lua (26)
+
+- media: lib.__MediaWidgetType maps a kind, its LSM30_* and its own type name to one type
+- media: no stock Dropdown registered, so no picker, and the caller draws a plain Dropdown
+- media: registering twice leaves the constructors alone and touches no other type
+- media: the file is its own file of the major, paired on the shell's minor
+- media: the order puts a leading row first and its text is the list's
+- media: a list with no order sorts by its text, and no list means every key of the kind
+- media: a stored key the list lacks still shows, and the host's table is not written
+- media: the closed row and an opened row draw in the entry's own face
+- media: a leading row previews the key it stands for, closed and open
+- media: a key LSM cannot resolve keeps the plain face and raises nothing
+- media: statusbar, border and background entries draw a swatch of that art
+- media: a sound row's play button plays that sound, and a click on it is not a pick
+- media: faces are preloaded before the rows draw, and a load dresses them again next frame
+- media: a picker released before that next frame does nothing
+- media: release puts the face, the previews and the rows back, into this type's own pool
+- media: a released swatch and play button hide, and a stock Dropdown stays stock
+- media: disabling dims the swatch
+- media: the skin paints a picker as a Dropdown and the preview survives its font
+- media: an open pull-out wears the menu tokens
+- media: with no LibSharedMedia the picker still lists, picks and shows its text
+- media: an unregistered LSM30_* row is drawn by the matching picker
+- media: a registered LSM30_* row keeps it
+- media: with no picker to draw, an LSM30_* row is the stock Dropdown
+- media: the Skin tab's font and texture rows are pickers led by a previewing row
+- media: a Skin tab pick writes through the same seam and keeps the row a picker
+- media: without a picker the Skin tab's rows are stock Dropdowns
+
 ### test_options_combat.lua (33)
 
 - combat: a page shown in combat is covered and not drawn, and the window is left alone
@@ -3954,6 +3983,7 @@ Total.
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 16 |
+| test_options_media.lua | 26 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 51 |
@@ -4015,4 +4045,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3417** |
+| **Total** | **3443** |

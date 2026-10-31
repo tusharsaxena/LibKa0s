@@ -346,8 +346,10 @@ local function dress(m, w, wtype)
   local f = m.CreateFrame(FRAME_TYPE[wtype] or "Frame", nil, m.UIParent)
   w.frame = f
   f.obj = w
+  w.__dressed = true
   if DRESS[wtype] then DRESS[wtype](m, w, f) end
 end
+A.dress = dress
 
 --- Make the kit's AceGUI fake pool its widgets, dressed in AceGUI's anatomy. Answers the fake.
 function A.pool(m)
@@ -363,7 +365,7 @@ function A.pool(m)
       self.__created[#self.__created + 1] = w
     else
       w = create(self, wtype)
-      dress(m, w, wtype)
+      if not w.__dressed then dress(m, w, wtype) end   -- a registered constructor dressed its own
     end
     if w.OnAcquire then w:OnAcquire() end
     return w

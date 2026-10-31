@@ -187,6 +187,8 @@ test("widgets: a dropdown falls back to a plain Dropdown when its dialogControl 
   -- swatch, but usable) rather than erroring on an unknown widget type.
   local dd, row = render("barTexture")
   assertEqual(row.dialogControl, "LSM30_Statusbar", "the row does ask for the LSM widget")
+  -- This bench's AceGUI has no stock Dropdown to build a Ka0sMedia_* picker from, so the last rung
+  -- shows; tests/test_options_media.lua holds the rung above it.
   assertEqual(dd.type, "Dropdown", "but falls back when it is not registered")
 end)
 

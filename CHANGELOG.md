@@ -18,8 +18,28 @@ faces batch (Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/
 owner's go-ahead.
 
 Versions in this release: **Media minor 11** (`LibKa0s-Media-1.0` key **11.1**), **Skin minor 10** and
-**SkinDefs minor 18** (`LibKa0s-Skin-1.0` key **10.18.13.7.11.2.4**); every other file still at its v1.82.0
+**SkinDefs minor 18** (`LibKa0s-Skin-1.0` key **10.18.13.7.11.2.4**), **OptionsWidgets minor 38**,
+**OptionsAppearance minor 5** and **OptionsMedia minor 1** (new) (`LibKa0s-Options-1.0` key
+**34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1**); every other file still at its v1.82.0
 minor, and **test kit revision 46**, until an entry below moves one.
+Still **nineteen majors**, now across **fifty-five files** (`OptionsMedia.lua` is new), and no `NEEDS_*`
+floor rises.
+
+### Media pickers that show what they offer (`LK-F03`)
+
+`LibKa0s-Options-1.0` key 34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1, documented in
+[docs/api/Options/version-34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1-docs.md](docs/api/Options/version-34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1-docs.md)
+(*What changed at this version: the media pickers*).
+
+- **OptionsMedia minor 1 (new)**: AceGUI types `Ka0sMedia_Font`, `Ka0sMedia_Statusbar`,
+  `Ka0sMedia_Border`, `Ka0sMedia_Background` and `Ka0sMedia_Sound`. The closed row and every pull-out
+  row draw the entry in its face, or beside its swatch or play button, with no dependency on
+  AceGUI-3.0-SharedMediaWidgets. Built from AceGUI's own Dropdown under our type names, so the skin's
+  Dropdown painter wears them and a pooled stock widget never sees a preview font.
+- **OptionsAppearance minor 5**: the Skin tab's font and texture rows are pickers, and the leading row
+  previews the face or bar it stands for.
+- **OptionsWidgets minor 38**: an unregistered `LSM30_*` row falls back to the matching picker, then
+  to the stock Dropdown.
 
 ### The payload ships thirteen more faces and keeps every older one (`LK-F01`)
 

@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **37** · `OptionsIds.lua` **5** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **14** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **4** · `OptionsSkinPicker.lua` **3** · `OptionsSwitch.lua` **1** (new) |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSwitch>`, in load order — the same fifteen numbers `lib.MODULES` reports. |
 | Shipped in | v1.82.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 34.4.36.5.7.11.3.13.9.4.3.6.3.2](./version-34.4.36.5.7.11.3.13.9.4.3.6.3.2-docs.md) (shipped in v1.81.0) — whose Skin tab had no *Font outline* and wrote `media` as `{ font, texture }`; and whose `O.FontGroup` had no *From skin* Font flags |
-| Superseded by | — |
+| Superseded by | [version 34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1](./version-34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1-docs.md) (v1.83.0) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 37, OptionsIds = 5, OptionsIdList = 7, OptionsTabs = 11, OptionsCombat = 3, OptionsCompose = 14, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 4, OptionsSkinPicker = 3, OptionsSwitch = 1 }` |
 
@@ -3857,3 +3857,12 @@ hint on a composed row rather than a member, a descriptor field or a stored valu
 that can observe the difference is one passing **both** paths — which no host could do before this
 version, because `minimapPath` did not exist. A C6 adopter passing `testModePath` alone gets the row
 it got.
+
+## Moving to version 34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1
+
+**Take it; nothing owed.** Version 34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1, released in v1.83.0, adds a sixteenth file,
+`OptionsMedia.lua` minor 1, and moves `OptionsWidgets.lua` to 38 and `OptionsAppearance.lua` to 5.
+The lib-level and instance surfaces add no member. An `LSM30_*` row in a host without
+AceGUI-3.0-SharedMediaWidgets now draws a `Ka0sMedia_*` picker rather than a plain Dropdown; it takes
+the same `SetList`, `SetValue` and `OnValueChanged`, and a host's test that pins `Dropdown` there is
+still right under the kit's AceGUI fake, which has no stock Dropdown to build from.
