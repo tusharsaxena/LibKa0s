@@ -1,0 +1,9 @@
+LK-A2 hardens the skin picker's row names (Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/), on the owner's report of a blank Azeroth row, cause not proven.
+
+Fix: 4dd0412. Every show preloads every skin's body face and no other through lib.__PreloadFonts. A SetFont that raises or answers false restores GameFontHighlight, and a nil counts only if GetFont reads the face back. Every open, and a skin switch under an open list, dresses each row at once and next frame, font and text through an empty string. The next frame's pass takes a name that measures nothing to the template's face, an addition to the brief for a face the client accepts and cannot draw. No minor moved: OptionsSkinPicker minor 4 is this release's own.
+
+Tests: tests/test_options_skin_picker_faces.lua, 15 cases, 10 seen red first. This note is the implementer's record, not an independent review.
+
+Not verified: everything the client does. The fakes pin the calls made, not what paints; SetFont's return on a missing file and GetStringWidth for an undrawn face are assumptions. OpenSans-Semibold.ttf itself parses, carries the row's glyphs and is registered under the name the skin uses.
+
+Release gate after the fix: docs/automated-tests/20261031-165103/ at 4dd0412, lint 0/0 in 249 files, 3471 tests with 0 failed, 0 over CCN 15.
