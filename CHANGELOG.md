@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-10-31, on `feat/2026-10-31-font-pickers-skin-faces`: the owner's font pickers and skin
 faces batch (Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`, M1), the items
-`LK-F01` to `LK-F06`. The release closes on the same branch (`LK-F90`); the tag is local until the
+`LK-F01` to `LK-F06`, and `LK-A1`. The release closes on the same branch (`LK-F90`); the tag is local until the
 owner's go-ahead.
 
 Versions in this release: **Media minor 11** (`LibKa0s-Media-1.0` key **11.1**), **Skin minor 10** and
@@ -114,8 +114,8 @@ rows; `tests/test_skin_defs.lua`'s size band widens from 1.5 to 2 points for Ope
 **What a consumer owes:** nothing in code. A test pinning a skin's face, size or Obsidian's title color
 moves with the re-vendor, and a layout measured at a skin's old size is worth a look in game.
 
-Release gate (`docs/automated-tests/20261031-152614/`): lint pass, 0/0 in 248 files;
-tests pass, 3455 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+Release gate (`docs/automated-tests/20261031-163905/`): lint pass, 0/0 in 248 files;
+tests pass, 3456 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
 Preview and simulation re-look: Not applicable — no minor of `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` or `Widgets.lua` (the file that defines `W.TestStrip`) moved since v1.82.0 (`git diff v1.82.0` of the four is empty).
