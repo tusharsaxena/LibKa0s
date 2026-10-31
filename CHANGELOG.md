@@ -82,11 +82,11 @@ Upstream, for the release close: `library-stack-§7`'s module table in WowAddonS
 
 The owner's rulings of 2026-10-31. The drawer stays in LibKa0s and its one-release trigger renews from v1.84.0. LibKa0sSkinTester counts as the line chart's second consumer, so that row's trigger has fired and the promotion follows in a tracked issue.
 
-Release gate (`docs/automated-tests/20261031-234858/`): lint pass, 0/0 in 273 files;
-tests pass, 3615 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+Release gate (`docs/automated-tests/20261101-023319/`): lint pass, 0/0 in 273 files;
+tests pass, 3616 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
-Preview and simulation re-look: Current — `LibKa0s/SimPanel.lua` minor 9 and the new `LibKa0s/SimPanelRender.lua` are a pure move (284907a), and `Sim.lua`, `SimTimeline.lua` and `Widgets.lua` did not move; the owner's answer, 2026-10-31.
+Preview and simulation re-look: Current — `LibKa0s/SimPanel.lua` minor 9 and the new `LibKa0s/SimPanelRender.lua` are a pure move (284907a), and `Sim.lua`, `SimTimeline.lua` and `Widgets.lua` did not move; the owner's answer, 2026-10-31, and no Sim file or `Widgets.lua` has moved since.
 
 ## v1.83.0 — 2026-10-31
 
