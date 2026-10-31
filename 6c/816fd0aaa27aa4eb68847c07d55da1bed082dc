@@ -1,0 +1,13 @@
+LK-A3, the event-free wake: the skin picker registers no event (Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/). Holding PLAYER_REGEN_ENABLED for a showing added a registration on a stood-down addon (slash-commands-§7) and turned seven consumers' stand-down suites red on re-vendor.
+
+Commits: 8cffb7a the fix, this commit the record. syncControls arms a throttled OnUpdate (0.25s) only while rows are drawn locked; it reads combatLocked(), the page lock's flag included, then removes itself and redraws once; closed() takes it off on every route. Tests seen red first: six cases of tests/test_options_skin_picker_rows.lua. No minor moves.
+
+Release gate: docs/automated-tests/20261031-185000/ at 8cffb7a, clean, --release 1.83.0: lint 0/0 in 251 files; 3524 tests, 3522 passed, 0 failed, 2 declared skips; 0 over CCN 15, max CCN 15, blindFiles 0, crashedFiles 0, 15 band files, 0 over the cap. Perf skipped, not measured (no tests/perf.lua).
+
+Consumer check on scratch copies with the five payload files, against the re-cut local tag (passed/failed/skipped): AbsorbTracker 972/0/1, DpsRace 1206/0/1, KickCD 1577/0/1, PartyFrameEnhanced 565/0/1, PremadeGroupsFilterExtension 452/0/1.
+
+OPEN, not fixed here: PrettyChat fails 1 case and LibKa0sSkinTester 3, none of them stand-down. Each pins no AceGUI widget before a panel is built and got 5, the picker's five rows acquired on a fresh-profile show. Those cases pass with the 4dd0412 payload, so the rows (f91413b) brought them in, not this fix.
+
+This note is the implementer's record, not an independent review.
+
+Not verified: everything the client does. The fakes pin the calls made; the wake after real combat is the owner's to smoke.
