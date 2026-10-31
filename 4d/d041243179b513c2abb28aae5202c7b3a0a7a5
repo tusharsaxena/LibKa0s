@@ -1,1 +1,1 @@
-LK-A2 record: release bundle docs/automated-tests/20261031-165103/ measured 4dd0412 clean. See the note on 4dd0412's child for the same record; the fix commit carries its own note.
+LK-A2 fix commit: the full record, with what is unverified, is the note on ec41b22, the commit that adds its release bundle docs/automated-tests/20261031-165103/. That note is the implementer's record, not an independent review.
