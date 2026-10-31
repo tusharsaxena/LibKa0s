@@ -16,7 +16,7 @@
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 17, WidgetsReorder = 3, WidgetsDragHandle = 9, WidgetsLineChart = 5, WidgetsAutocomplete = 5, WidgetsCopyWindow = 2 }` |
 
-## What changed at this version: the peels (`LK-M2-PEEL`)
+## What changed at this version: `ApplyLevel` allocates nothing (`LK-M2-PEEL`)
 
 No public member moves. **`WidgetsDragHandle.lua` moves to minor 9.** `handle:ApplyLevel()` and the strip's repaint name their two marks where each built a throwaway table per call. A client always builds both marks; a headless mock that made no help mark used to stop the walk there, and the close mark is now reached.
 

@@ -92,8 +92,9 @@ from `25.32.1.1.5.7.4.1` where `OptionsIds.lua` and `OptionsIdList.lua` did, nin
 twelve from `30.2.34.3.5.9.2.11.4.2.1.4` where `OptionsKeybinds.lua` did, thirteen from
 `33.3.35.4.6.10.3.12.8.3.2.5.2` where `OptionsAppearance.lua` did, fourteen from
 `34.4.35.4.6.10.3.12.8.3.2.5.3.1` where `OptionsSkinPicker.lua` did, and fifteen from
-`34.4.37.5.7.11.3.14.9.4.3.6.4.3.1` where `OptionsSwitch.lua` did, and sixteen from
-`34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1` where `OptionsMedia.lua` did.
+`34.4.37.5.7.11.3.14.9.4.3.6.4.3.1` where `OptionsSwitch.lua` did, sixteen from
+`34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1` where `OptionsMedia.lua` did, and twenty from
+`34.4.39.1.6.1.7.12.1.3.14.9.4.3.6.5.5.1.1.1` where v1.84.0's four peels did.
 The order is
 load order — `LibKa0s.xml`'s — which is what `tests/test_versioning.lua` derives the expected
 filename from, so the two cannot disagree.

@@ -60,7 +60,7 @@ LibStub major, and nineteen of them ship today:
   value parser.
 - `LibKa0s-Launcher-1.0` builds the minimap button and the broker plugin as ONE LibDataBroker
   object, registered twice. Neither broker library is a dependency.
-- `LibKa0s-Options-1.0` has the most files: sixteen, under one major. It holds the Blizzard
+- `LibKa0s-Options-1.0` has the most files: twenty, under one major. It holds the Blizzard
   settings-canvas shell, the translation from schema row to AceGUI widget, the page's chrome (the tab
   strip, the banner, the header block, the secondary strip and the nav rail), the two-column flow
   engine that lays a page out, the drawer that folds a row of choices under a header bar, the key binding model under a
@@ -84,13 +84,13 @@ modules and points you there. It does not restate them.
 1. Copy `LibKa0s/` into `<Addon>/libs/LibKa0s/`. Copy the whole folder, every time. The modules are
    siblings that ship as one released copy, and every file except `Core.lua` returns without
    registering anything when `Core.lua` is missing or older than the minor it needs. If `Options.lua`
-   bails that way, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsIds.lua`, `OptionsIdList.lua`,
-   `OptionsTabs.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua`,
-   `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua`, `OptionsSkinPicker.lua`, `OptionsSwitch.lua` and `OptionsMedia.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole sixteen-file module
+   bails that way, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsFlow.lua`, `OptionsIds.lua`, `OptionsIdSuggest.lua`, `OptionsIdList.lua`,
+   `OptionsTabs.lua`, `OptionsTabbed.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua`,
+   `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua`, `OptionsSkinPicker.lua`, `OptionsSkinPickerRows.lua`, `OptionsSwitch.lua` and `OptionsMedia.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole twenty-file module
    is absent instead of half-attached. `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua` and `WidgetsCopyWindow.lua` do the same
-   behind `Widgets.lua`, `SkinDefs.lua`, `SkinPaint.lua`, `SkinPaintExtras.lua`, `SkinPaintControls.lua`, `SkinEUI.lua` and `SkinAce.lua` behind `Skin.lua` (the extras, the controls and the AceGUI rows also behind `SkinPaint.lua`, whose painter helpers they use), `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
-   `PerfPanel.lua` behind `Perf.lua`, and `SimTimeline.lua` and `SimPanel.lua` behind `Sim.lua`.
-   `SimPanel.lua` also returns when Widgets is absent, since its scenario picker is a
+   behind `Widgets.lua`, `SkinOwnerTokens.lua`, `SkinDefs.lua`, `SkinDefsOthers.lua`, `SkinPaint.lua`, `SkinPaintExtras.lua`, `SkinPaintControls.lua`, `SkinEUI.lua` and `SkinAce.lua` behind `Skin.lua` (the extras, the controls and the AceGUI rows also behind `SkinPaint.lua`, whose painter helpers they use), `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
+   `PerfPanel.lua` behind `Perf.lua`, and `SimTimeline.lua`, `SimPanel.lua` and `SimPanelRender.lua` behind `Sim.lua`.
+   `SimPanel.lua` and `SimPanelRender.lua` also return when Widgets is absent, since its scenario picker is a
    `W.Dropdown`; the simulator then runs headless from its slash verb, with no panel.
    Since v1.48.0 the folder has carried one more file than it used to. That is why you copy the whole
    folder, and never just the files you happen to have.
@@ -318,7 +318,9 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
                         face by face in fonts/FONTS.md); each icon set carries its license
                         beside it
   Skin.lua           -- LibKa0s-Skin-1.0, MINOR at the top of the file; needs Core
-  SkinDefs.lua       -- the token schema and the skins, same module, DEFS_MINOR of its own
+  SkinOwnerTokens.lua -- an owner's own tokens and the slot remap, same module, TOKENS_MINOR of its own
+  SkinDefs.lua       -- the token schema and Ka0s Default, same module, DEFS_MINOR of its own
+  SkinDefsOthers.lua -- the eight other skins and each face's sizes, same module, OTHERS_MINOR of its own
   SkinPaint.lua      -- the paint primitives' helpers, Shell, Panel, Inset, PAINT_MINOR
   SkinPaintExtras.lua -- the window extras, the faders, text and getters, same module, EXTRAS_MINOR
   SkinPaintControls.lua -- the control primitives, same module, CONTROLS_MINOR of its own
@@ -339,10 +341,13 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Launcher.lua       -- LibKa0s-Launcher-1.0, MINOR at the top of the file; needs Core
   Options.lua        -- LibKa0s-Options-1.0, MINOR at the top of the file; needs Core
   OptionsRegistry.lua -- the page registry, the category and its combat park, REGISTRY_MINOR
-  OptionsWidgets.lua -- the makers + the flow engine, same module, WIDGETS_MINOR of its own
-  OptionsIds.lua     -- id resolution, suggestions and the id input, same module, IDS_MINOR
+  OptionsWidgets.lua -- the makers, same module, WIDGETS_MINOR of its own
+  OptionsFlow.lua    -- the two-column flow engine, same module, FLOW_MINOR of its own
+  OptionsIds.lua     -- id resolution and the id input, same module, IDS_MINOR
+  OptionsIdSuggest.lua -- the id input's suggestions and dropdown, same module, SUGGEST_MINOR
   OptionsIdList.lua  -- the editable id list, same module, IDLIST_MINOR of its own
   OptionsTabs.lua    -- the page's chrome: strip, banner, header block, sub-strip, TABS_MINOR
+  OptionsTabbed.lua  -- the tabbed page, O.RenderTabbedSchema, same module, TABBED_MINOR of its own
   OptionsCombat.lua  -- the combat lock's event frame, dispatcher and cover, COMBAT_MINOR
   OptionsCompose.lua -- the schema composers, same module, COMPOSE_MINOR of its own
   OptionsScroll.lua  -- the always-shown scrollbar patch and the chrome's skin helpers, SCROLL_MINOR of its own
@@ -350,7 +355,8 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   OptionsDrawer.lua  -- the drawer: a header bar over a box of rows, same module, DRAWER_MINOR
   OptionsKeybinds.lua -- the Keybindings tab and its binding model, same module, KEYBINDS_MINOR
   OptionsAppearance.lua -- the Skin tab: skin source, skin, font and texture, copy to every addon, APPEARANCE_MINOR
-  OptionsSkinPicker.lua -- the first-run skin picker and its media, outline and scope rows, PICKER_MINOR
+  OptionsSkinPicker.lua -- the first-run skin picker, same module, PICKER_MINOR of its own
+  OptionsSkinPickerRows.lua -- the picker's media, outline and scope rows, same module, ROWS_MINOR
   OptionsSwitch.lua  -- the switched sections (shownWhen, its any form), same module, SWITCH_MINOR
   OptionsMedia.lua   -- the Ka0sMedia_* preview pickers for fonts, bars, borders, backgrounds and sounds, MEDIA_MINOR
   Perf.lua           -- LibKa0s-Perf-1.0, MINOR at the top of the file; needs Core
@@ -361,6 +367,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   SimTimeline.lua    -- the gated step machine and RunVerb, same module, TIMELINE_MINOR of its own
   SimPanel.lua       -- the docked step panel, picker and controls, same module, SIM_PANEL_MINOR of its own;
                         also needs Widgets (the picker's W.Dropdown)
+  SimPanelRender.lua -- the panel's private renderer, same module, RENDER_MINOR of its own
   LICENSE            -- ships INSIDE the payload, so every vendored copy carries the MIT notice
 tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json from the LIVE
                         surface, loaded through the same mock the suites use. Generated, never

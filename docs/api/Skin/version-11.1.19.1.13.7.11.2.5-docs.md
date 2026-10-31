@@ -1837,7 +1837,7 @@ From version 8.16.12.6.10.2.4, still owed by a host that has not re-vendored it:
 
 Whole-folder, like every major. `Skin.lua` returns before `NewLibrary` when Core is missing or below
 minor 1, and `SkinDefs.lua` then returns on its own `LibStub("LibKa0s-Skin-1.0", true)` lookup, so
-the major is absent rather than half-wired. Without `SkinDefs.lua` the engine still loads and every
+the major is absent rather than half-wired. Without `SkinOwnerTokens.lua` no owner token is taken and no slot remap moves a slot. Without `SkinDefsOthers.lua` Ka0s Default is the only skin. Without `SkinDefs.lua` the engine still loads and every
 token resolves to nil, and every primitive paints only what it has a token for (`Shell` is still
 `Core.ApplySkin(frame)`). Without `SkinPaint.lua` neither `SkinPaintExtras.lua` nor
 `SkinPaintControls.lua` attaches, and every vocabulary entry answers nil. Without `SkinEUI.lua`

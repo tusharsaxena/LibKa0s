@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.
 
-Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **34.4.39.1.6.1.7.12.1.3.14.9.4.3.6.5.5.1.1.1**, `LibKa0s-Widgets-1.0` key **17.3.9.5.5.2**; every other file still at its v1.83.0 minor. No `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **34.4.39.1.6.1.7.12.1.3.14.9.4.3.6.5.5.1.1.1**, `LibKa0s-Widgets-1.0` key **17.3.9.5.5.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Still **nineteen majors**, now across **sixty-two files** (seven are new), and no `NEEDS_*` floor rises.
 
 ### The library peels (`LK-M2-PEEL`)
 

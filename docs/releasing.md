@@ -5,7 +5,7 @@ Two version numbers, one of which is load-bearing at runtime.
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
 | Repo semver (`v1.83.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
-| File minor (integer) | `MINOR` / `PARSE_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `IDS_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `DEFS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
+| File minor (integer) | `MINOR` / `PARSE_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
 is offered for a major and discards the rest, so of the copies vendored across every installed addon,
@@ -25,43 +25,43 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   fifty-five, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   sixty-two, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Glow.lua`, `MINOR` in `Toast.lua`, `MINOR` in `Media.lua`, `ICONS_MINOR` in `MediaIcons.lua` (a generated file: change the
-   constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
+   constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `TOKENS_MINOR` in `SkinOwnerTokens.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `OTHERS_MINOR` in `SkinDefsOthers.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
    `Slash.lua`, `PARSE_MINOR` in `SlashParse.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `REORDER_MINOR` in
    `WidgetsReorder.lua`, `DRAG_MINOR` in
    `WidgetsDragHandle.lua`, `CHART_MINOR` in `WidgetsLineChart.lua`, `AUTOCOMPLETE_MINOR` in `WidgetsAutocomplete.lua`, `COPY_MINOR` in `WidgetsCopyWindow.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WINDOW_MINOR` in `DebugLogWindow.lua`, `WIDGETS_MINOR` in
-   `OptionsWidgets.lua`, `IDS_MINOR` in `OptionsIds.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
-   `TABS_MINOR` in `OptionsTabs.lua`, `COMBAT_MINOR` in `OptionsCombat.lua`, `SCROLL_MINOR`
-   in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `DRAWER_MINOR` in `OptionsDrawer.lua`, `KEYBINDS_MINOR` in `OptionsKeybinds.lua`, `APPEARANCE_MINOR` in `OptionsAppearance.lua`, `PICKER_MINOR` in `OptionsSkinPicker.lua`, `SWITCH_MINOR` in `OptionsSwitch.lua`, `MEDIA_MINOR` in `OptionsMedia.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
+   `OptionsWidgets.lua`, `FLOW_MINOR` in `OptionsFlow.lua`, `IDS_MINOR` in `OptionsIds.lua`, `SUGGEST_MINOR` in `OptionsIdSuggest.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
+   `TABS_MINOR` in `OptionsTabs.lua`, `TABBED_MINOR` in `OptionsTabbed.lua`, `COMBAT_MINOR` in `OptionsCombat.lua`, `SCROLL_MINOR`
+   in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `DRAWER_MINOR` in `OptionsDrawer.lua`, `KEYBINDS_MINOR` in `OptionsKeybinds.lua`, `APPEARANCE_MINOR` in `OptionsAppearance.lua`, `PICKER_MINOR` in `OptionsSkinPicker.lua`, `ROWS_MINOR` in `OptionsSkinPickerRows.lua`, `SWITCH_MINOR` in `OptionsSwitch.lua`, `MEDIA_MINOR` in `OptionsMedia.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
    `SAMPLER_MINOR` in `PerfSampler.lua`, `COMMANDS_MINOR` in `PerfCommands.lua`, `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`, `MINOR` in `Sim.lua`,
-   `TIMELINE_MINOR` in `SimTimeline.lua`, `SIM_PANEL_MINOR` in `SimPanel.lua`. The secondary files carry
+   `TIMELINE_MINOR` in `SimTimeline.lua`, `SIM_PANEL_MINOR` in `SimPanel.lua`, `RENDER_MINOR` in `SimPanelRender.lua`. The secondary files carry
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
    file you did not touch does not move. Bumping the whole lib in lockstep would discard the
    narrow-skew property that made one major per module worth having.
 3. **A new module is also a new row in `tests/majors.lua`'s `MAJORS`** — its major string, its files in
    `LibKa0s.xml` order, its primary, and any `paired` secondary. `tests/test_versioning.lua` iterates
    that table rather than naming files inline, so a module missing from it is a module nothing
-   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of sixteen and a
-   `paired` array of fifteen (`{ OptionsRegistry, __registryMinor, __registryShellMinor }`,
-   `{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`,
-   `{ OptionsIds, __idsMinor, __idsShellMinor }`, `{ OptionsIdList, __idListMinor, __idListShellMinor }`,
-   `{ OptionsTabs, __tabsMinor, __tabsShellMinor }`, `{ OptionsCombat, __combatMinor, __combatShellMinor }`,
+   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of twenty and a
+   `paired` array of nineteen (`{ OptionsRegistry, __registryMinor, __registryShellMinor }`,
+   `{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`, `{ OptionsFlow, __flowMinor, __flowShellMinor }`,
+   `{ OptionsIds, __idsMinor, __idsShellMinor }`, `{ OptionsIdSuggest, __suggestMinor, __suggestShellMinor }`, `{ OptionsIdList, __idListMinor, __idListShellMinor }`,
+   `{ OptionsTabs, __tabsMinor, __tabsShellMinor }`, `{ OptionsTabbed, __tabbedMinor, __tabbedShellMinor }`, `{ OptionsCombat, __combatMinor, __combatShellMinor }`,
    `{ OptionsCompose, __composeMinor, __composeShellMinor }`,
    `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`, `{ OptionsNav, __navMinor, __navShellMinor }`,
    `{ OptionsDrawer, __drawerMinor, __drawerShellMinor }`,
    `{ OptionsKeybinds, __keybindsMinor, __keybindsShellMinor }`,
    `{ OptionsAppearance, __appearanceMinor, __appearanceShellMinor }`,
-   `{ OptionsSkinPicker, __pickerMinor, __pickerShellMinor }`,
+   `{ OptionsSkinPicker, __pickerMinor, __pickerShellMinor }`, `{ OptionsSkinPickerRows, __pickerRowsMinor, __pickerRowsShellMinor }`,
    `{ OptionsSwitch, __switchMinor, __switchShellMinor }`, `{ OptionsMedia, __mediaMinor, __mediaShellMinor }`). **A file added to an existing major moves
    that major's version key**, because the key is every file's minor in load order — the Options key
-   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1, nine from 25.32.1.1.6.1.7.4.1, ten from 26.1.32.1.1.6.1.7.4.1, eleven from 29.2.34.2.4.8.1.7.4.2.1, twelve from 30.2.34.3.5.9.2.11.4.2.1.4, thirteen from 33.3.35.4.6.10.3.12.8.3.2.5.2, fourteen from 34.4.35.4.6.10.3.12.8.3.2.5.3.1 fifteen from 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1 and sixteen from 34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1. The table
+   ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1, nine from 25.32.1.1.6.1.7.4.1, ten from 26.1.32.1.1.6.1.7.4.1, eleven from 29.2.34.2.4.8.1.7.4.2.1, twelve from 30.2.34.3.5.9.2.11.4.2.1.4, thirteen from 33.3.35.4.6.10.3.12.8.3.2.5.2, fourteen from 34.4.35.4.6.10.3.12.8.3.2.5.3.1 fifteen from 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1, sixteen from 34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1 and twenty from 34.4.39.1.6.1.7.12.1.3.14.9.4.3.6.5.5.1.1.1, the four files of v1.84.0's peels at once. The table
    carries one row per shipped major — nineteen today, since `LibKa0s-Glow-1.0` and
-   `LibKa0s-Sim-1.0` at v1.75.0, `LibKa0s-Skin-1.0` at v1.78.0 and `LibKa0s-Toast-1.0` at v1.79.0. The Sim row is the example of a three-file major paired on its
-   shell: `files = { Sim, SimTimeline, SimPanel }` and a `paired`
-   array of two (`{ SimTimeline, __timelineMinor, __timelineShellMinor }`,
-   `{ SimPanel, __panelMinor, __panelShellMinor }`), so its key is three numbers (2.2.2 at v1.75.0).
+   `LibKa0s-Sim-1.0` at v1.75.0, `LibKa0s-Skin-1.0` at v1.78.0 and `LibKa0s-Toast-1.0` at v1.79.0. The Sim row is the example of a smaller major paired on its
+   shell: `files = { Sim, SimTimeline, SimPanel, SimPanelRender }` and a `paired`
+   array of three (`{ SimTimeline, __timelineMinor, __timelineShellMinor }`,
+   `{ SimPanel, __panelMinor, __panelShellMinor }`, `{ SimPanelRender, __renderMinor, __renderShellMinor }`), so its key is four numbers (2.2.2 at v1.75.0, three then).
 4. **Update `CHANGELOG.md`**: the release's version block names each file's new minor, and the entries
    say what changed. `tests/test_versioning.lua` fails if the block and any major's `lib.MODULES`
    disagree, so this is enforced rather than remembered. A block written ahead of the release may
@@ -268,7 +268,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the fifty-five `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the sixty-two `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,

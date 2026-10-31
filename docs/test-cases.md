@@ -1018,12 +1018,13 @@ Total.
 - draghandle: a tooltipPlace that is not a function is ignored, not called
 - draghandle: DragHandle is at minor 4 or later, the placement hook's floor
 
-### test_widgets_draghandle_layers.lua (10)
+### test_widgets_draghandle_layers.lua (11)
 
 - DragHandle minor 5: MODULES and the file minor say 5
 - DragHandle level: no spec.level keeps minor 4 -- handle at parent + 1, marks at handle + 1
 - DragHandle level: level = 50 on a parent at 7 -- handle 57, marks 58, written before the marks exist
 - DragHandle ApplyLevel: a parent re-leveled to 20 puts the handle at 70 and the marks at 71
+- DragHandle ApplyLevel: a mark the client did not build leaves the other one reached
 - DragHandle ApplyLevel: without spec.level it answers false and writes nothing
 - DragHandle level: a secret or non-number parent level reads as 0
 - DragHandle level: the host's numeric guard reads the parent's level
@@ -2227,7 +2228,7 @@ Total.
 ### test_options_keybinds_model.lua (26)
 
 - keybinds: OptionsKeybinds is at minor 4 or later, paired on an Options shell at 30 or later
-- keybinds: the Options version key has a component per file, OptionsKeybinds the twelfth
+- keybinds: the Options version key has a component per file, OptionsKeybinds after the drawer
 - keybinds: KEYBIND_STRINGS carries the exact default words, all ASCII
 - keybinds: the client's own strings win where they exist, with the library's fallbacks
 - keybinds: the API is available only when all five binding functions exist
@@ -2371,7 +2372,7 @@ Total.
 
 ### test_options_skin_picker.lua (37)
 
-- skin picker: OptionsSkinPicker is minor 4, paired on the shell, and attaches three members
+- skin picker: OptionsSkinPicker is minor 5, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -3828,7 +3829,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 46
+- the kit is revision 47
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -4029,7 +4030,7 @@ Total.
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 49 |
 | test_widgets_draghandle_place.lua | 10 |
-| test_widgets_draghandle_layers.lua | 10 |
+| test_widgets_draghandle_layers.lua | 11 |
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 19 |
 | test_widgets_autocomplete.lua | 37 |
@@ -4148,4 +4149,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3522** |
+| **Total** | **3523** |
