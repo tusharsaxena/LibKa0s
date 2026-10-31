@@ -19,7 +19,8 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 
 -- Minor 1: the eight other skins, moved here unchanged from SkinDefs.lua (its minor 19).
 -- Minor 2: `gtip.line`, `gtip.on` and `gtip.off` for the launcher's tooltip (SkinDefs minor 20).
-local OTHERS_MINOR = 2
+-- Minor 3: `title.rule`, the settings page header's rule, from each skin's divider (SkinDefs minor 21).
+local OTHERS_MINOR = 3
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
   and lib.__othersShellMinor == lib.MINOR then return end
@@ -81,7 +82,7 @@ local MOCK_MAP = {
   { "radius", "win.radius" },
   { "titleBg", "title.bg" }, { "titleColor", "title.text", "text.heading", "text.headingAlt" },
   { "headColor", "text.heading", "text.headingAlt" }, { "titleAlign", "title.align" },
-  { "divider", "divider", "tab.rule" }, { "footBg", "foot.bg" },
+  { "divider", "divider", "tab.rule", "title.rule" }, { "footBg", "foot.bg" },
   { "text", "text.body", "menu.text", "drawer.text" },
   { "muted", "text.muted", "icon.tint", "drawer.summary", "handle.rest" },
   { "accent", "text.accent", "text.link", "btn.hover", "input.focus", "menu.textSel",

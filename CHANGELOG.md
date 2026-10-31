@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Skin-1.0` key **11.1.20.2.13.7.11.2.6**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.42.2.6.1.7.14.2.3.16.11.5.5.7.5.6.1.1.3**, `LibKa0s-Sim-1.0` key **2.3.10.1**; every other file still at its v1.84.0 minor, and **test kit revision 47**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Skin-1.0` key **11.1.21.3.14.8.12.2.6**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.42.2.6.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3**, `LibKa0s-Sim-1.0` key **2.3.10.1**; every other file still at its v1.84.0 minor, and **test kit revision 47**. No `NEEDS_*` floor rises.
 
 ### The launcher's tooltip follows the skin (`FS-L1`, cause L1)
 
@@ -27,6 +27,14 @@ Versions in this release: `LibKa0s-Skin-1.0` key **11.1.20.2.13.7.11.2.6**, `Lib
 - **OptionsScroll minor 11**: a comment on that.
 - **OptionsSkinPicker minor 6** and **SimPanel minor 10**: the picker's tooltips and an owned sim panel's tooltip title take `gtip.title`, read at hover, whose Ka0s Default is the client's gold. Both are windows, so *Ignore settings panel* leaves them skinned. An owner-less sim panel's title still names no color.
 - A tooltip line an addon writes itself is that addon's to color; those are the host parts of the cause.
+
+### The settings chrome supports skins with the Scope cleared (`FS-L3`, cause L3)
+
+- **SkinDefs minor 21** and **SkinDefsOthers minor 3**: `title.rule`, the page header's rule, each skin's `divider`. Ka0s Default's `title.rule`, `tab.border`, `nav.borderStyle` and `popup.borderStyle` are `false`, the art the frame wears (no edge on a tab), so its look does not move.
+- **OptionsScroll minor 12**: a skin's `title.rule` replaces the header's client atlas with a flat rule, and a release puts the atlas back.
+- **SkinPaintExtras minor 8**: `nav.borderStyle`, `nav.borderSize`, `popup.borderStyle` and `popup.borderSize` reach the rail and the id suggestion popup, which a skin stating a style now boxes in place of their tooltip art.
+- **SkinPaintControls minor 12**: `S.Tab` draws `tab.border` at its size and style, around `opts.fill` when it names one and not on a tab in the skin's art, so window tabs take it too. `opts.glow` takes `tab.glow`.
+- **OptionsTabs minor 15** and **SkinPaint minor 14**: the settings tab names its two glows, and `P.unpaint` gives their stock gradient back.
 
 ## v1.84.0 — 2026-11-01
 

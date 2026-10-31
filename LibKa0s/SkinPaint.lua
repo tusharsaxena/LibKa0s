@@ -119,7 +119,9 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- outlines the mono role: every skin now states OUTLINE for `font.outline` (SkinDefs minor 17), which
 -- the body and title roles take as the owner's "Font outline" leaves it (Skin minor 9), and the mono
 -- face's small digits (the debug console, the perf tables) stay unoutlined. Still 13: P.color (LK-14).
-local PAINT_MINOR = 13
+-- Minor 14 (cause L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): P.unpaint puts back the
+-- gradient S.Tab's `opts.glow` names (SkinPaintControls minor 12); P.asColor is exported for it.
+local PAINT_MINOR = 14
 if lib.__paintMinor and lib.__paintMinor >= PAINT_MINOR
   and lib.__paintShellMinor == lib.MINOR then return end
 lib.__paintMinor      = PAINT_MINOR
@@ -209,6 +211,7 @@ local function asColor(c)
   if type(CreateColor) == "function" then return CreateColor(c[1], c[2], c[3], c[4] or 1) end
   return { r = c[1], g = c[2], b = c[3], a = c[4] or 1 }
 end
+P.asColor = asColor
 
 --- A LibSharedMedia path for `key` of `kind`, or nil. A key that already is a path answers itself.
 function P.media(kind, key)
@@ -798,6 +801,8 @@ function P.unpaint(rec, frame)
   s.alpha = nil
   for fs, align in pairs(s.justify or {}) do fs:SetJustifyH(align) end
   s.justify = nil
+  for tex, g in pairs(s.glow or {}) do tex:SetGradient("VERTICAL", g.bottom, g.top) end
+  s.glow = nil
   for fs in pairs(s.font or {}) do P.unfont(rec, fs) end
   restoreColors(rec, "SetTextColor")
   restoreColors(rec, "SetVertexColor")

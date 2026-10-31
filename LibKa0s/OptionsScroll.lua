@@ -40,7 +40,9 @@ if not lib then return end
 -- so it answers the facade wherever `__chromeSkin` does, Ka0s Default included.
 -- Minor 11 (cause L2 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): a comment only. `gtip.line` joins the tokens read here,
 -- with nil for the literal: that is a body line, the client's color wherever the chrome is not skinned.
-local SCROLL_MINOR = 11
+-- Minor 12 (cause L3 of the same bundle): a skin's `title.rule` replaces the header's client atlas
+-- with a flat rule; Ka0s Default states none, so its atlas stays, tinted.
+local SCROLL_MINOR = 12
 -- Paired on the SHELL's minor as well as this file's own. The scroll counter alone is not enough:
 -- two vendored copies can ship the same scroll minor over different Options.lua minors, and then
 -- the higher shell wins the LibStub race while the first-loaded copy's patch stays attached to it.
@@ -348,7 +350,7 @@ end
 
 --- The page canvas's header and backdrop for a registered owner: the title in the skin's title role,
 --- the divider atlas tinted `title.text` (Ka0s Default's gold is the title font's, as minor 1 tinted
---- it), and, wherever lib.__chromeAway answers (every skin, Ka0s Default included, since SkinPaint
+--- it) or, from minor 12, a skin's flat `title.rule` in its place, and, wherever lib.__chromeAway answers (every skin, Ka0s Default included, since SkinPaint
 --- minor 6), an opaque backdrop from `win.bg` at full alpha under everything the page draws, so a
 --- light skin stays legible over the client's settings window. A texture rather than S.Panel.
 --- Put a page's header and backdrop back as the client drew them (minor 7): the title from its
@@ -357,6 +359,9 @@ local function unpaintPage(panel)
   if panel.title then lib.__chromeUnpaint(panel.title) end
   local div, prior = panel.divider, panel.__ka0sDividerPrior
   if div and div.SetVertexColor and prior then div:SetVertexColor(prior[1], prior[2], prior[3], prior[4]) end
+  if div and div.SetAlpha then div:SetAlpha(1) end
+  local rule = panel.__ka0sSkinRule
+  if rule then rule:Hide() end
   local bg = panel.__ka0sSkinBg
   if bg then bg:Hide() end
 end
@@ -370,6 +375,35 @@ local function tintDivider(S, panel)
     panel.__ka0sDividerPrior = { div:GetVertexColor() }
   end
   div:SetVertexColor(r, g, b)
+end
+
+--- The header's rule, made once over the atlas it replaces. Nil from a bare stub, as pageBackdrop's.
+local function headerRule(panel)
+  local rule = panel.__ka0sSkinRule
+  if rule or not panel.CreateTexture then return rule end
+  rule = panel:CreateTexture(nil, "ARTWORK")
+  if rule == panel then return nil end
+  rule:SetPoint("LEFT", panel.divider, "LEFT")
+  rule:SetPoint("RIGHT", panel.divider, "RIGHT")
+  rule:SetHeight(1)
+  panel.__ka0sSkinRule = rule
+  return rule
+end
+
+--- A skin's `title.rule` in place of the atlas, which is client art no color can make flat. A skin
+--- stating none, Ka0s Default's `false`, wears the atlas.
+local function paintRule(S, panel)
+  local div = panel.divider
+  if not (div and div.SetAlpha) then return end
+  local r, g, b, a = S.Color("title.rule")
+  local rule = r and headerRule(panel)
+  div:SetAlpha(rule and 0 or 1)
+  if rule then
+    rule:SetColorTexture(r, g, b, a)
+    rule:Show()
+  elseif panel.__ka0sSkinRule then
+    panel.__ka0sSkinRule:Hide()
+  end
 end
 
 --- The page's opaque `win.bg` backdrop, made once; hidden when the owner's skin draws none.
@@ -407,6 +441,7 @@ local function paintPage(owner, panel)
     lib.__chromeTargets[panel.title] = owner
   end
   tintDivider(S, panel)
+  paintRule(S, panel)
   pageBackdrop(owner, S, panel)
 end
 

@@ -65,7 +65,10 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- label and a close button's glyph take their color through SkinPaint minor 13's P.color, so an
 -- opaque color is drawn opaque over a label an owner's faded disabled color reached first (DpsRace's
 -- Arm Race read disabled while enabled, image-55..57).
-local CONTROLS_MINOR = 11
+-- Minor 12 (cause L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): Tab reads `tab.border`,
+-- `tab.borderSize` and `tab.borderStyle`, around `opts.fill` when it names one; a tab wearing the
+-- skin's art draws no edge, since the art is its edge. `opts.glow` takes `tab.glow`.
+local CONTROLS_MINOR = 12
 if lib.__controlsMinor and lib.__controlsMinor >= CONTROLS_MINOR
   and lib.__controlsShellMinor == lib.MINOR then return end
 lib.__controlsMinor      = CONTROLS_MINOR
@@ -495,10 +498,43 @@ local function tabLine(rec, tab, T, selected)
   t:Show()
 end
 
+--- The tab's edge, on its own holder so the selected underline stays on the tab's. A tab drawn in
+--- the skin's art has no other edge than the art's; a named fill is the tab's face, which a settings
+--- strip's button is taller than.
+local function tabEdge(rec, tab, T, opts, selected)
+  local c = T["tab.border"]
+  if not c or P.media("background", T[selected and "tab.onTexture" or "tab.texture"]) then
+    return P.hideEdges(rec, tab)
+  end
+  local h = P.edgeHolder(rec, tab)
+  P.edges(rec, tab, c, T["tab.borderStyle"], T["tab.borderSize"], h)
+  if h and P.isTexture(opts.fill) and not rec.regions.nine then
+    h:ClearAllPoints()
+    h:SetAllPoints(opts.fill)
+  end
+end
+
+--- The two glow textures the caller drew (`opts.glow`: `hover`, `sel`, and its stock gradient's
+--- `bottom` and `top`) in `tab.glow`, fading to the same top. Only one is lit at a time, by the
+--- caller's own color, so this moves neither. P.unpaint puts the stock gradient back.
+local function tabGlow(rec, T, glow)
+  if type(glow) ~= "table" then return end
+  local c, prior = T["tab.glow"], P.saved(rec, "glow")
+  local bottom = c and P.asColor(c) or glow.bottom
+  for _, tex in ipairs({ glow.hover or false, glow.sel or false }) do
+    if tex and tex.SetGradient then
+      tex:SetGradient("VERTICAL", bottom, glow.top)
+      prior[tex] = glow
+    end
+  end
+end
+
 --- S.Tab(tab, opts): a tab. The stock art faded (with `opts.stock`, regions the caller drew from
 --- the client's art, such as the settings strip's atlases); the backing (`opts.fill`, else a region)
 --- `tab.onTexture` / `tab.texture` art, else `tab.onBg` / `tab.bg` and its gradient; a `tab.onLine`
---- underline on the holder while selected; the label (`opts.text`, else the tab's own) in
+--- underline on the holder while selected; a `tab.border` edge at `tab.borderSize` and
+--- `tab.borderStyle`, around `opts.fill` when it names one, and none on a tab in the skin's art;
+--- `opts.glow`'s textures in `tab.glow`; the label (`opts.text`, else the tab's own) in
 --- `tab.onText` / `tab.text` and the body font. `opts.selected` is the first state;
 --- `S.SetTabSelection` moves it. Draws no Media icon.
 prim.Tab = function(owner, tab, opts)
@@ -514,6 +550,8 @@ prim.Tab = function(owner, tab, opts)
   P.fadeAll(rec, P.stockRegions(tab, opts))
   tabFill(rec, tab, T, opts, selected)
   tabLine(rec, tab, T, selected)
+  tabEdge(rec, tab, T, opts, selected)
+  tabGlow(rec, T, opts.glow)
   local fs = P.isFS(opts.text) and opts.text or labelOf(tab)
   if fs then
     P.label(owner, rec, fs, T, selected and "tab.onText" or "tab.text")

@@ -708,7 +708,7 @@ Total.
 - skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
 - skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (33)
+### test_skin_defs.lua (34)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -742,6 +742,7 @@ Total.
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 - skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read in every other skin
+- skin defs: Ka0s Default states its settings art, and every other skin an edge and a rule
 - skin defs: a shell bump re-registers the eight other skins from the new copy
 
 ### test_skin_width_parity.lua (17)
@@ -777,7 +778,7 @@ Total.
 - skin button contrast: a close button's glyph painted faded is drawn opaque on a hover and after it
 - skin button contrast: every skin's enabled button label holds 3:1 on its fill, well clear of disabled
 
-### test_skin_paint.lua (37)
+### test_skin_paint.lua (39)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
@@ -806,6 +807,8 @@ Total.
 - skin paint: Footer draws its band in every skin, Ka0s Default's foot.bg included
 - skin paint: Strip and Cover color their textures as TestStrip and the combat cover do
 - skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for call
+- skin paint: the nav rail takes a skin's edge and keeps its art under Ka0s Default
+- skin paint: the suggestion popup takes a skin's edge and keeps its art under Ka0s Default
 - skin paint: Tooltip colors a library tooltip in every skin, its art kept
 - skin paint: Text colors a role, and a skin's font reaches it through the owner's font object
 - skin paint: a panel-scoped Text is given back while its owner ignores the panel, live
@@ -817,7 +820,7 @@ Total.
 - skin paint: a skin's size scales each string from its own, one font object per size
 - skin paint: a string reporting no usable size is painted at the token size, never at 0
 
-### test_skin_paint_controls.lua (31)
+### test_skin_paint_controls.lua (34)
 
 - skin controls: Button on Ka0s Default is LootHistory's flat button's paint
 - skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
@@ -836,6 +839,9 @@ Total.
 - skin controls: Slider is painted under every skin, Ka0s Default's thin bar included
 - skin controls: Tab paints its state, SetTabSelection moves it, and a repaint keeps it
 - skin controls: WoW Default's tabs are the client's tab art; a stock tab is faded under every skin
+- skin controls: Tab draws the skin's edge, Ka0s Default none and a tab art its own
+- skin controls: a Tab with a named fill wears its edge around that fill, not the button
+- skin controls: Tab's glow textures take tab.glow, and P.unpaint gives the stock gradient back
 - skin controls: CloseButton on Ka0s Default is Core's close button, call for call
 - skin controls: a stock close button gets a glyph under every skin, Ka0s Default too
 - skin controls: an unpainted CloseButton's icon gets its own tint back
@@ -2891,13 +2897,14 @@ Total.
 - reset tooltip: notes.resetAll is the button's own and does not reach the member
 - reset tooltip: OptionsCompose is at minor 11 or later
 
-### test_options_skin.lua (17)
+### test_options_skin.lua (18)
 
 - options skin: a page with no registered owner is today's paint, call for call
 - options skin: an owner-less page records nothing in the Skin major
 - options skin: an owned page paints its header and an opaque backdrop from the skin
 - options skin: a page whose CreateTexture answers the page keeps no backdrop and stays hidden
 - options skin: an owned page's tab strip fades the client's art and wears the tab roles
+- options skin: a settings tab's edge wraps its face and its glows take tab.glow
 - options skin: an owned page's rail, drawer and cover paint from the skin
 - options skin: a skin switch repaints the owned page with no reload, Ka0s Default included
 - options skin: Ignore settings panel hands every piece of chrome back live, and off paints again
@@ -4140,11 +4147,11 @@ Total.
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 33 |
+| test_skin_defs.lua | 34 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
-| test_skin_paint.lua | 37 |
-| test_skin_paint_controls.lua | 31 |
+| test_skin_paint.lua | 39 |
+| test_skin_paint_controls.lua | 34 |
 | test_skin_eui.lua | 29 |
 | test_skin_ace.lua | 22 |
 | test_skin_ace_tree.lua | 14 |
@@ -4218,7 +4225,7 @@ Total.
 | test_options_compose_master.lua | 15 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
-| test_options_skin.lua | 17 |
+| test_options_skin.lua | 18 |
 | test_options_tooltip_skin.lua | 9 |
 | test_options_chrome_skin.lua | 15 |
 | test_options_compose_skin.lua | 16 |
@@ -4274,4 +4281,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3624** |
+| **Total** | **3631** |

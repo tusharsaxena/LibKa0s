@@ -162,7 +162,10 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- `gtip.on` and `gtip.off`, the launcher's tooltip lines and status words. Ka0s Default's are the
 -- colors that tooltip drew, the client's gold and a pure green and red; every other skin's are its
 -- `gtip.body`, `sem.on` and `sem.off`. The eui source derives them from Ka0s Default.
-local DEFS_MINOR = 20
+--- Minor 21 (FS-L3 of the same bundle, cause L3): `title.rule`, the settings page header's rule. Ka0s
+--- Default's `title.rule`, `tab.border`, `nav.borderStyle` and `popup.borderStyle` are `false`, so
+--- its settings chrome keeps its art with the Scope cleared now that a paint reads the three edges.
+local DEFS_MINOR = 21
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -180,7 +183,7 @@ local GROUPS = {
   { "Window", "win.bg:color win.bgTop:color? win.bgBottom:color? win.bgTexture:string? "
     .. "win.bgDense:color win.border:color win.borderSize:number win.borderStyle:string "
     .. "win.inner:color? win.inset:number win.radius:number title.bg:color? title.bgTop:color? "
-    .. "title.bgBottom:color? title.text:color title.align:string? title.height:number "
+    .. "title.bgBottom:color? title.text:color title.rule:color? title.align:string? title.height:number "
     .. "divider:color foot.bg:color? close.rest:color close.hot:color" },
   { "Text", "text.body:color text.muted:color text.heading:color text.headingAlt:color "
     .. "text.accent:color text.disabled:color text.link:color text.linkHot:color "
@@ -441,11 +444,17 @@ local KA0S = {
   -- The slider: the thin bar every skin draws (SkinPaintControls minor 3), in Ka0s Default's colors.
   ["slider.track"] = CTL_LINE, ["slider.trackBorder"] = false, ["slider.fill"] = GOLD,
   ["slider.thumb"] = { 0.9, 0.9, 0.9, 1 },
-  ["tab.border"] = CTL_LINE, ["tab.borderSize"] = 1, ["tab.borderStyle"] = "flat",
+  -- The settings chrome's art (minor 21, cause L3 of Ka0sAddonsCommonTasks
+  -- docs/2026-11-01-FULL_SKINNING), `false` as `list.hoverArt`'s is: the client's art as the frame
+  -- wears it, recolored, so Ka0s Default keeps its look with the Scope cleared. `title.rule` false is
+  -- the page header's divider atlas tinted `title.text`, a `*.borderStyle` false the rail's or the
+  -- suggestion popup's tooltip art, and `tab.border` false no edge on a tab. A skin states all four.
+  ["title.rule"] = false,
+  ["tab.border"] = false, ["tab.borderSize"] = 1, ["tab.borderStyle"] = "flat",
   ["tab.onBg"] = { 0.18, 0.18, 0.18, 0.9 }, ["tab.texture"] = false, ["tab.onTexture"] = false,
-  ["nav.borderSize"] = 1, ["nav.borderStyle"] = "flat", ["nav.selBar"] = false,
+  ["nav.borderSize"] = 1, ["nav.borderStyle"] = false, ["nav.selBar"] = false,
   ["list.header.bg"] = { 1, 1, 1, 0.04 }, ["list.sel"] = { 1, 0.82, 0, 0.18 }, ["list.selOutline"] = false,
-  ["popup.border"] = CTL_LINE, ["popup.borderSize"] = 1, ["popup.borderStyle"] = "flat",
+  ["popup.border"] = CTL_LINE, ["popup.borderSize"] = 1, ["popup.borderStyle"] = false,
   ["tooltip.bg"] = { 0.05, 0.05, 0.08, 0.95 }, ["tooltip.border"] = CTL_LINE,
   ["bar.bg"] = { 0, 0, 0, 0.5 }, ["bar.border"] = { 0, 0, 0, 1 }, ["icon.border"] = { 0, 0, 0, 1 },
   ["glow.color"] = GOLD,

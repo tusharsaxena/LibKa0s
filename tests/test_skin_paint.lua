@@ -500,6 +500,49 @@ test("skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for c
   assertEqual(F.rgba(survey(m, pop).backdropColor), F.tok(Skin, "ka0s", "popup.bg"))
 end)
 
+-- Cause L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING: the rail's and the suggestion
+-- popup's edge style and size reached neither frame. A skin that states a style replaces their art;
+-- Ka0s Default's `false` is the frame's own art, recolored, which keeps its look.
+local function artFrame(m)
+  local f = backdropFrame(m)
+  f:SetBackdrop({ bgFile = "tile", edgeFile = "tooltip-edge", edgeSize = 16 })
+  f:SetBackdropColor(0, 0, 0, 0.92)
+  f:SetBackdropBorderColor(0.4, 0.4, 0.4)
+  return f
+end
+
+for _, case in ipairs({
+  { name = "the nav rail", opts = { nav = true }, prim = "Panel", stem = "nav", bg = "nav.bg" },
+  { name = "the suggestion popup", opts = { popup = true }, prim = "MenuFrame", stem = "popup", bg = "popup.bg" },
+}) do
+  test("skin paint: " .. case.name .. " takes a skin's edge and keeps its art under Ka0s Default", function()
+    -- red under: the style or size token unread, an art replaced under Ka0s Default, or a switch
+    -- back leaving the flat backdrop or a nine-slice on the frame.
+    local m, Skin = F.env()
+    local S = F.owner(Skin, OWNER)
+    local f = artFrame(m)
+    S[case.prim](f, case.opts)
+    assertEqual(survey(m, f).backdrop.edgeFile, "tooltip-edge", "Ka0s Default keeps the art")
+    assertEqual(F.rgba(survey(m, f).backdropColor), F.tok(Skin, "ka0s", case.bg), "recolored")
+    Skin:SetChoice(OWNER, "ka0s", "azeroth")
+    local az = Skin:ResolveSkin("azeroth")
+    local bd = survey(m, f).backdrop
+    assertTrue(bd.edgeFile ~= "tooltip-edge", "the skin's edge replaces the tooltip art")
+    assertEqual(bd.edgeSize, az[case.stem .. ".borderSize"], "at the skin's size")
+    assertEqual(F.rgba(survey(m, f).backdropBorderColor), F.tok(Skin, "azeroth", case.stem .. ".border"))
+    Skin:SetChoice(OWNER, "ka0s", "wow")
+    local U = Skin:ResolveSkin("wow")
+    if U[case.stem .. ".borderStyle"] ~= "flat" then
+      assertTrue(survey(m, f).backdrop.edgeFile ~= "tooltip-edge", "a non-flat style replaces it too")
+    end
+    Skin:SetChoice(OWNER, "ka0s", "ka0s")
+    assertEqual(survey(m, f).backdrop.edgeFile, "tooltip-edge", "back to the art")
+    assertEqual(survey(m, f).backdrop.edgeSize, 16, "at its own size")
+    assertEqual(F.rgba(survey(m, f).backdropColor), F.tok(Skin, "ka0s", case.bg), "and recolored again")
+    assertFalse((F.region(Skin, f, "edgeTop") or { IsShown = function() return false end }):IsShown(), "no edge left")
+  end)
+end
+
 test("skin paint: Tooltip colors a library tooltip in every skin, its art kept", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)

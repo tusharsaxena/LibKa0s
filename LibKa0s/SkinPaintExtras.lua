@@ -51,7 +51,10 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- bundle, ruling D-09, still minor 7): S.HudFontSize(size, fromSkin), the size a HUD element stored at
 -- `size` draws at: scaled by the skin's `hud.fontSize` over Ka0s Default's while it uses the skin's
 -- face, the stored size while it draws its own (fromSkin false) or the owner ignores fonts.
-local EXTRAS_MINOR = 7
+-- Minor 8 (cause L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): a stated
+-- `popup.borderStyle` or `nav.borderStyle` boxes the suggestion popup or the rail in the skin's own
+-- edge and size, where both only recolored; `false`, Ka0s Default's, is the art the frame wears.
+local EXTRAS_MINOR = 8
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
 lib.__extrasMinor      = EXTRAS_MINOR
@@ -238,17 +241,36 @@ local MENU = { fill = "menu.bg", border = "menu.border", style = "menu.borderSty
 local MENU_ALT = { fill = "menu.bg", border = "menu.borderAlt", style = "menu.borderStyle",
                    size = "menu.borderSize", insets = false }
 
+--- Give a settings frame its own art back after a skin boxed it, so the recolor that follows lands
+--- on the art it was built with.
+local function keepArt(rec, frame)
+  if not rec.regions.boxed then return end
+  rec.regions.boxed = nil
+  P.restoreBackdrop(rec, frame)
+  P.hide(rec, "grad")
+  P.hideEdges(rec, frame)
+end
+
+local POPUP = { fill = "popup.bg", border = "popup.border", style = "popup.borderStyle",
+                size = "popup.borderSize", insets = false }
+
 --- S.MenuFrame(frame, opts): a popup menu. The flat backdrop with no insets, `menu.bg` under
 --- `menu.border` (Widgets' shared popup menu), or `menu.borderAlt` with `opts.alt` (LootHistory's
 --- row menu). `opts.popup` recolors the backdrop the frame already wears with `popup.bg` /
 --- `popup.border` instead (the id-suggestion popup); a nil one restores what the frame wore before
---- the first paint. Draws no Media icon.
+--- the first paint. A skin stating `popup.borderStyle` boxes it in `popup.borderSize` instead of
+--- recoloring; `false`, Ka0s Default's, keeps the frame's art. Draws no Media icon.
 prim.MenuFrame = function(owner, frame, opts)
   if not P.hasBackdrop(frame) then return end
   local rec = P.track(owner, frame, "MenuFrame", opts)
   opts = type(opts) == "table" and opts or {}
   local T = P.T(owner)
+  if opts.popup and T["popup.borderStyle"] then
+    rec.regions.boxed = true
+    return P.box(rec, frame, T, POPUP, opts)
+  end
   if opts.popup then
+    keepArt(rec, frame)
     -- The frame is built once and kept, so a nil token puts that half back as the frame wore it
     -- before the first paint, not as the last skin left it.
     P.saveBackdrop(rec, frame)
@@ -266,8 +288,23 @@ end
 
 local PANEL = { fill = "panel.bg", border = "panel.border" }
 local NAV_SLOTS = { bg = "nav.bg", border = "nav.border" }
+local NAV = { fill = "nav.bg", border = "nav.border", style = "nav.borderStyle", size = "nav.borderSize" }
 local INSET = { fill = "input.bg", border = "input.border", style = "input.borderStyle",
                 size = "input.borderSize" }
+
+--- The settings nav rail: boxed in the skin's edge when it states `nav.borderStyle`, else its own
+--- backdrop art recolored, its colors saved first so P.unpaint can put them back (minor 8: the panel
+--- exception, live).
+local function navPane(owner, rec, frame, T, opts, name)
+  T = P.remap(owner, T, opts.tokens, NAV_SLOTS, nil, name)
+  if T["nav.borderStyle"] then
+    rec.regions.boxed = true
+    return P.box(rec, frame, T, NAV, opts)
+  end
+  keepArt(rec, frame)
+  if P.hasBackdrop(frame) then P.saveBackdrop(rec, frame) end
+  return P.recolor(frame, T["nav.bg"], T["nav.border"])
+end
 
 local function panel(owner, frame, opts, name, spec)
   if type(frame) ~= "table" then return end
@@ -275,13 +312,7 @@ local function panel(owner, frame, opts, name, spec)
   opts = type(opts) == "table" and opts or {}
   P.markStock(rec, frame, opts)
   local T = P.T(owner)
-  if opts.nav then
-    -- The settings nav rail keeps its own backdrop art and is recolored (OptionsNav's pane); its
-    -- colors are saved first, so P.unpaint can put them back (minor 8: the panel exception, live).
-    if P.hasBackdrop(frame) then P.saveBackdrop(rec, frame) end
-    T = P.remap(owner, T, opts.tokens, NAV_SLOTS, nil, name)
-    return P.recolor(frame, T["nav.bg"], T["nav.border"])
-  end
+  if opts.nav then return navPane(owner, rec, frame, T, opts, name) end
   if opts.inset then spec = INSET end
   T = P.remap(owner, T, opts.tokens, { bg = spec.fill, border = spec.border }, P.FILL_SLOTS, name)
   P.box(rec, frame, T, spec, opts)
@@ -290,7 +321,8 @@ end
 --- S.Panel(frame, opts): a flat panel, `panel.bg` under a `panel.border` edge (LootHistory's list
 --- panels). `opts.inset` paints it as an inset (`input.*`); `opts.noBg`, `opts.noBorder` leave out
 --- either half; `opts.nav` recolors the backdrop the frame already wears with `nav.bg` /
---- `nav.border` (the settings nav rail). `opts.tokens` (SkinPaint minor 11) remaps `bg` and `border` (the
+--- `nav.border` (the settings nav rail), or boxes it in `nav.borderStyle` and `nav.borderSize` when
+--- the skin states a style; `false`, Ka0s Default's, keeps the art. `opts.tokens` (SkinPaint minor 11) remaps `bg` and `border` (the
 --- panel's, the inset's or the nav rail's) to a library or owner token by NAME (a caution callout).
 --- Draws no Media icon.
 prim.Panel = function(owner, frame, opts) return panel(owner, frame, opts, "Panel", PANEL) end

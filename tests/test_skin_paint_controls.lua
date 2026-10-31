@@ -442,6 +442,66 @@ test("skin controls: WoW Default's tabs are the client's tab art; a stock tab is
   assertEqual(art:GetAlpha(), 0, "a skin fades the art the caller named")
 end)
 
+test("skin controls: Tab draws the skin's edge, Ka0s Default none and a tab art its own", function()
+  -- Cause L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING: tab.border, tab.borderSize and
+  -- tab.borderStyle had no reader. red under: S.Tab reading none of them, Ka0s Default's false
+  -- turning into an edge, or the edge staying when the skin's tab art draws its own.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "azeroth")
+  local tab = m.CreateFrame("Button", nil, m.UIParent)
+  S.Tab(tab, { selected = false })
+  local top = F.region(Skin, tab, "edgeTop")
+  assertTrue(top ~= nil and top:IsShown(), "the skin's edge is drawn")
+  assertEqual(F.rgba(survey(m, top).color), F.tok(Skin, "azeroth", "tab.border"))
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertFalse(top:IsShown(), "Ka0s Default draws no tab edge")
+  Skin:SetChoice(OWNER, "ka0s", "contrast")
+  assertTrue(top:IsShown(), "a switch brings it back")
+  assertEqual(F.rgba(survey(m, top).color), F.tok(Skin, "contrast", "tab.border"))
+  Skin:SetChoice(OWNER, "ka0s", "wow")
+  assertFalse(top:IsShown(), "WoW Default's tab art is its own edge")
+end)
+
+test("skin controls: a Tab with a named fill wears its edge around that fill, not the button", function()
+  -- The settings strip's button is taller than its face (OptionsTabs' newTabArt), so an edge on the
+  -- button would box the empty strip above the tab. red under: the edge holder left on the button.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "azeroth")
+  local tab = m.CreateFrame("Button", nil, m.UIParent)
+  local fill = tab:CreateTexture()
+  S.Tab(tab, { selected = false, fill = fill })
+  local over = F.region(Skin, tab, "over")
+  assertTrue(over ~= nil, "the edge has its own holder")
+  local anchor
+  rawset(over, "SetAllPoints", function(_, rel) anchor = rel end)
+  Skin:SetChoice(OWNER, "ka0s", "ember")
+  assertTrue(anchor == fill, "anchored on the fill")
+end)
+
+test("skin controls: Tab's glow textures take tab.glow, and P.unpaint gives the stock gradient back", function()
+  -- tab.glow had no reader. red under: the glows keeping the white stock gradient under every skin,
+  -- or a chrome handed back keeping the skin's.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "contrast")
+  local tab = m.CreateFrame("Button", nil, m.UIParent)
+  local hl, sel = tab:CreateTexture(), tab:CreateTexture()
+  local stock = { r = 1, g = 1, b = 1, a = 0.15 }
+  local glow = { hover = hl, sel = sel, bottom = stock, top = { r = 0, g = 0, b = 0, a = 0 } }
+  S.Tab(tab, { selected = false, glow = glow })
+  local want = Skin:ResolveSkin("contrast")["tab.glow"]
+  for _, tex in ipairs({ hl, sel }) do
+    local g = survey(m, tex).gradient
+    assertEqual(g.orientation, "VERTICAL")
+    assertEqual(F.rgba({ g.min.r, g.min.g, g.min.b, g.min.a }), F.rgba(want), "the skin's glow")
+    assertEqual(g.max.a, 0, "fading to nothing, as the stock gradient does")
+  end
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertEqual(survey(m, hl).gradient.min.a, Skin:ResolveSkin("ka0s")["tab.glow"][4], "Ka0s Default's is the stock one")
+  Skin:SetChoice(OWNER, "ka0s", "contrast")
+  Skin.__P.unpaint(Skin.painted[tab], tab)
+  assertEqual(survey(m, sel).gradient.min.a, 0.15, "given back")
+end)
+
 -- ── small buttons ────────────────────────────────────────────────────────────────────────────
 
 test("skin controls: CloseButton on Ka0s Default is Core's close button, call for call", function()

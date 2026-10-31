@@ -131,8 +131,10 @@ test("options skin: an owned page paints its header and an opaque backdrop from 
   F.owner(Skin, OWNER, "azeroth")
   local ctx = page((instance(lib, OWNER)))
   assertEqual(F.rgba(survey(m, ctx.panel.title).textColor), rgb(Skin:ResolveSkin("azeroth")["title.text"]))
-  assertEqual(F.rgba(survey(m, ctx.panel.divider).vertex), rgb(Skin:ResolveSkin("azeroth")["title.text"]),
-    "the divider atlas is tinted the title color")
+  local rule = ctx.panel.__ka0sSkinRule
+  assertTrue(rule ~= nil and survey(m, rule).shown, "the skin's rule replaces the client's atlas")
+  assertEqual(F.rgba(survey(m, rule).color), F.rgba(Skin:ResolveSkin("azeroth")["title.rule"]), "in title.rule")
+  assertEqual(survey(m, ctx.panel.divider).alpha, 0, "the atlas is faded under it")
   local bg = ctx.panel.__ka0sSkinBg
   assertTrue(bg ~= nil, "a backdrop away from Ka0s Default")
   local p = survey(m, bg)
@@ -172,6 +174,26 @@ test("options skin: an owned page's tab strip fades the client's art and wears t
   assertEqual(F.rgba(survey(m, ctx.__ruleTex).color), tok(Skin, "obsidian", "tab.rule"), "the hairline")
 end)
 
+test("options skin: a settings tab's edge wraps its face and its glows take tab.glow", function()
+  -- Cause L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING. red under: OptionsTabs' skinTab
+  -- passing neither the backing as `fill` nor the two glows.
+  local m, Skin, lib = env()
+  F.owner(Skin, OWNER, "contrast")
+  local ctx = page((instance(lib, OWNER)))
+  local b = tabsOf(ctx)[1]
+  local T = Skin:ResolveSkin("contrast")
+  local anchor
+  rawset(Skin.painted[b].regions.over, "SetAllPoints", function(_, rel) anchor = rel end)
+  Skin:SetChoice(OWNER, "ka0s", "ember")
+  assertTrue(anchor == b.__ka0sTabArt.fill, "the edge is around the tab's face")
+  Skin:SetChoice(OWNER, "ka0s", "contrast")
+  assertEqual(F.rgba(survey(m, Skin.painted[b].regions.edgeTop).color), F.rgba(T["tab.border"]))
+  local g = survey(m, b.__ka0sTabArt.sel).gradient
+  assertEqual(F.rgba({ g.min.r, g.min.g, g.min.b, g.min.a }), F.rgba(T["tab.glow"]), "the selected glow")
+  g = survey(m, b.__ka0sTabArt.hl).gradient
+  assertEqual(F.rgba({ g.min.r, g.min.g, g.min.b, g.min.a }), F.rgba(T["tab.glow"]), "the hover glow")
+end)
+
 test("options skin: an owned page's rail, drawer and cover paint from the skin", function()
   local m, Skin, lib = env()
   F.owner(Skin, OWNER, "ember")
@@ -206,6 +228,8 @@ test("options skin: a skin switch repaints the owned page with no reload, Ka0s D
   assertEqual(F.rgba(survey(m, ctx.panel.__ka0sSkinBg).color), rgb(D["win.bg"]), "Ka0s Default's backdrop (minor 6)")
   assertEqual(survey(m, buttons[1].__ka0sTabArt.left).alpha, 0, "the client's tab art stays faded")
   assertEqual(F.rgba(survey(m, ctx.panel.divider).vertex), "1,0.820,0,1", "the divider is gold again")
+  assertEqual(survey(m, ctx.panel.divider).alpha, 1, "the client's atlas again, Ka0s Default's look")
+  assertTrue(not survey(m, ctx.panel.__ka0sSkinRule).shown, "and the rule is gone")
 end)
 
 test("options skin: Ignore settings panel hands every piece of chrome back live, and off paints again", function()
@@ -231,6 +255,7 @@ test("options skin: Ignore settings panel hands every piece of chrome back live,
       ["cover line"] = { c.__combatCover.__line, "textColor" },
       ["title"] = { c.panel.title, "textColor" },
       ["divider"] = { c.panel.divider, "vertex" },
+      ["divider art"] = { c.panel.divider, "alpha" },
     }
   end
   local T = Skin:ResolveSkin("ember")
@@ -245,6 +270,11 @@ test("options skin: Ignore settings panel hands every piece of chrome back live,
     assertEqual(read(p), read(stock[name]), name .. " is stock again")
   end
   assertTrue(not survey(m, ctx.panel.__ka0sSkinBg).shown, "the backdrop hidden")
+  assertTrue(not survey(m, ctx.panel.__ka0sSkinRule).shown, "the skin's rule hidden")
+  assertEqual(survey(m, ctx.__railFrame).backdrop.edgeFile, survey(m, ref.__railFrame).backdrop.edgeFile,
+    "the rail's art back")
+  local art = tabsOf(ctx)[1].__ka0sTabArt
+  assertEqual(survey(m, art.sel).gradient.min.a, 0.15, "the tab glow's stock gradient back")
   for frame, rec in pairs(Skin.painted) do
     assertTrue(not (rec.owner == OWNER and lib.__chromeTargets[frame]), "no chrome left tracked for the owner")
   end

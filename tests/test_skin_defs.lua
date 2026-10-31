@@ -680,6 +680,27 @@ test("skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read
   end
 end)
 
+test("skin defs: Ka0s Default states its settings art, and every other skin an edge and a rule", function()
+  -- SkinDefs minor 21 (FS-L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING, cause L3): `false`
+  -- is the art the frame wears, as `list.hoverArt`'s is. red under: Ka0s Default stating a style, so
+  -- its rail, popup and tabs change look with the Scope cleared, or a skin left on the client's art.
+  local Skin = skinLib()
+  local k = Skin:ResolveSkin("ka0s")
+  for _, name in ipairs({ "title.rule", "tab.border", "nav.borderStyle", "popup.borderStyle" }) do
+    assertEqual(Skin:GetSkin("ka0s").tokens[name], false, "Ka0s Default states " .. name)
+    assertTrue(not k[name], "and it resolves to none: " .. name)
+  end
+  for _, key in ipairs(KEYS) do
+    if key ~= "ka0s" then
+      local t = Skin:ResolveSkin(key)
+      assertEqual(colorKey(t["title.rule"]), colorKey(t["divider"]), key .. ": the header rule is its divider")
+      assertTrue(type(t["nav.borderStyle"]) == "string", key .. ": a rail edge style")
+      assertTrue(type(t["popup.borderStyle"]) == "string", key .. ": a popup edge style")
+      assertTrue(type(t["tab.border"]) == "table", key .. ": a tab edge")
+    end
+  end
+end)
+
 test("skin defs: a shell bump re-registers the eight other skins from the new copy", function()
   -- red under: dropping the guard's `__othersShellMinor == lib.MINOR` clause.
   local m, Skin = F.env()
