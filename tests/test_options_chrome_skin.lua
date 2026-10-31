@@ -27,7 +27,7 @@ local test, assertEqual, assertTrue, assertNil =
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER, OTHER = "LootHistory", "BankLedger"
-local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs",
+local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed",
                   "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
                   "OptionsKeybinds" }
 local KA0S_FACE = "Fonts\\Ka0s Prototype"

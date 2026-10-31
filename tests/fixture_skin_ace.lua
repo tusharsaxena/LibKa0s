@@ -26,7 +26,7 @@ local A = {}
 
 A.OWNER, A.OTHER = "LootHistory", "BankLedger"
 A.FILES = { "Core", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinAce", "Pool",
-            "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs",
+            "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed",
             "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds" }
 A.LSM = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf", ["font:Ka0s Fira Sans"] = "Fonts\\FiraSans.ttf" }
 
