@@ -67,6 +67,15 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.84.0, not in the census (2026-10-31, unreleased).** The release adds a major,
+`LibKa0s-Charts-1.0` (`Charts:New` and its nine lib-level members in
+`docs/api/Charts/members-1.1.json`, and the context's members in
+[its document](Charts/version-1.1-docs.md)), promoted under
+[LibKa0s#66](https://github.com/tusharsaxena/LibKa0s/issues/66). None gets a row here yet. **No host
+has adopted it.** Ka0s Loot History and Ka0s DPS Race are its two intended consumers and hold their
+own copies until their re-vendor, so the major's verdict is *zero — planned at v1.84.0* until both
+call `Charts:New`.
+
 **v1.83.0 re-run (2026-10-31).** The first re-run since v1.75.0, with the roster at sixteen. Ninety-eight
 exports are new to the table and none leaves. Sixty-four of them were zero to the scan, and eighteen of those are real
 calls it cannot see, marked *read by hand*: a host reaches the Skin major's `Color`, `Resolve`, `Token` and

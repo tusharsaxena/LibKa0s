@@ -65,6 +65,14 @@ local MAJORS = {
     primary = "Toast",
   },
   {
+    major = "LibKa0s-Charts-1.0",
+    files = { "Charts", "ChartsRender" },
+    primary = "Charts",
+    paired = {
+      { file = "ChartsRender", minorField = "__renderMinor", probeField = "__renderShellMinor" },
+    },
+  },
+  {
     major = "LibKa0s-Media-1.0",
     files = { "Media", "MediaIcons" },
     primary = "Media",

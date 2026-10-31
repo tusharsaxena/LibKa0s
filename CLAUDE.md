@@ -253,7 +253,9 @@ on their named seams (the paragraph after this list), and the six payload files 
 to the tenth register row, because that plan edits no payload. Re-measured 2026-10-31 after the v1.84.0 peels: **seven**, nothing over
 1500, every figure below current. `testkit/mock_base.lua`, `LibKa0s/OptionsIds.lua`, `LibKa0s/SkinDefs.lua` and `LibKa0s/SimPanel.lua`
 left (the list after this one); `LibKa0s/OptionsSkinPicker.lua`, `LibKa0s/OptionsTabs.lua`, `LibKa0s/OptionsWidgets.lua` and `LibKa0s/Skin.lua`
-peeled too and stay in it, the last two within 70 lines of its floor.
+peeled too and stay in it, the last two within 70 lines of its floor. Re-measured 2026-10-31 after the Charts major (LibKa0s#66): still **seven**, nothing over
+1500. The new major's two files are out of the band, `LibKa0s/Charts.lua` (474) and `LibKa0s/ChartsRender.lua` (589), because the port would have come in at 1032 as
+one file. `library-stack-§7`'s bar 1 needs no register row for it: Loot History and DPS Race each already draw these shapes, and DPS Race's copy is the one that carries a deviation row until its adoption.
 Largest first:
 
 - `LibKa0s/OptionsWidgets.lua` (1073 at minor 40, measured 2026-10-31, the `note` dispatch of LibKa0s#59, whose maker is in `LibKa0s/OptionsFlow.lua` (427), so no maker is added here; 1066 at minor 39: 1375 -> 1066 when the flow engine peeled to `LibKa0s/OptionsFlow.lua` (360), and the v1.84.0 list above records it; 1375 at minor 38, whose picker fallback added no maker; 1422 new to the band: it came down from the census's 3852 when the id surface left it), ruled below. Still in the band by 73 lines; the seam left is the choice grid.
@@ -536,7 +538,7 @@ never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests
 | Doc | Covers |
 |---|---|
 | [`README.md`](README.md) | What each module is, how to install and re-vendor, the repo layout |
-| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Compat`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Glow`, `Toast`, `Media`, `Skin`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `Perf`, `Sim`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
+| [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Env`, `Compat`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Glow`, `Toast`, `Charts`, `Media`, `Skin`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `Perf`, `Sim`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
 | [`docs/api/CONSUMERS.md`](docs/api/CONSUMERS.md) | The consumer census: for every public export, which hosts call it (file:line), each textual hit classified as call / host duplicate / degradation stub, and a verdict on every zero-consumer export. Stamped with the version it measured; re-run with the tool it names after a release that adds a surface |
 | [`docs/releasing.md`](docs/releasing.md) | The two version numbers (repo semver and the load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule |
 | [`docs/record-schema.md`](docs/record-schema.md) | The in-game Perf capture record, field by field — the contract each consumer's `perf-analysis/README.md` points at rather than restating |

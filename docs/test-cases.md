@@ -462,6 +462,60 @@ Total.
 - toast: a close mark Core cannot build (no frame) leaves the toast without one
 - toast: two instances keep separate queues and frames
 
+### test_charts.lua (15)
+
+- charts: the major loads and reports its two files
+- charts: no Core means no major, and ChartsRender loads to nothing without the shell
+- charts: New needs a pool, and takes LibKa0s-Pool-1.0's when the host names none
+- charts: a host's own pool API is the one used
+- charts: truncate counts glyphs, stays inside the cap, and reports the cut
+- charts: tipText states the value beside the full label
+- charts: fitFontSize shrinks only an overflow, and never under the floor
+- charts: StackSegments keeps the top, folds the rest to OTHER, in the global order
+- charts: StackSegments with room folds nothing and sorts unlisted keys last, stably
+- charts: RangeScale spans the rows, opens when they meet, and answers an empty set
+- charts: StripSlots stops widening, and the column stays inside its slot
+- charts: StripLabels never lets two collide, and the larger block wins
+- charts: StripLabels moves an edge label in, and ties go to the earlier one
+- charts: paletteColor cycles, paletteMap keeps a key's color by position
+- charts: a palette function is read at every draw, and a bad answer takes the default
+
+### test_charts_draw.lua (15)
+
+- draw: a bar section scales to its longest row, leaves the rows alone, and moves the cursor
+- draw: an empty section hides its heading and leaves the cursor
+- draw: all-zero rows draw a one-pixel fill, and a row with no color takes the bar color
+- draw: a sublabel grows every row and hides again on a row without one
+- draw: a second pass reuses every frame
+- draw: stacked bars lay their segments end to end and hide the unused ones
+- draw: a range bar spans lo to hi on the rows' scale, with its mark and scale line
+- draw: a legend wraps, and the first chip on a narrow line stays on it
+- draw: a strip's columns scale to the tallest, a zero column is a faint stub
+- draw: a strip takes a fixed top, and a top of nothing falls back to the tallest
+- draw: an empty strip hides itself and its heading
+- draw: a list panel caps its rows, sizes itself, and a reused row forgets its click
+- draw: an empty list panel still holds one row's height
+- draw: a card states its figure and hover, and a later bind undoes a shrink
+- draw: a divider's rules flank its title
+
+### test_charts_host.lua (15)
+
+- host: a context with no owner draws Ka0s Default's colors and the font object's face
+- host: a host's colors and fonts win, field by field, and a function is read
+- host: the text, paint, fill, barFill and panel seams each carry their draws
+- host: two contexts keep their own seams, so one addon never paints another's chart
+- host: a host fill stands in for the bar fill when it names no barFill
+- host: the default tooltip shows a title and its lines, and an empty one shows nothing
+- host: a host's tip and hideTip replace it
+- host: an owner nobody registered draws the plain way, with no skin
+- skin: an owner's context reads its colors and palette from the owner's skin
+- skin: the host's color and palette still beat the owner's
+- skin: a bar of data goes through the owner's bar texture, and a panel through its Panel
+- skin: a label is on the owner's face, recorded for the repaint
+- skin: a switch moves the colors in place, repaints both pool lists, then calls onReskin
+- skin: Reskin works for a host with no owner, and a card keeps its caller's color
+- skin: setCard puts the owner's face back on the figure
+
 ### test_media.lua (43)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
@@ -4049,6 +4103,9 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
+| test_charts.lua | 15 |
+| test_charts_draw.lua | 15 |
+| test_charts_host.lua | 15 |
 | test_media.lua | 43 |
 | test_skin.lua | 33 |
 | test_skin_override.lua | 27 |
@@ -4190,4 +4247,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3556** |
+| **Total** | **3601** |

@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.
 
-Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1**, `LibKa0s-Schema-1.0` **3**, `LibKa0s-Slash-1.0` key **21.2**, `LibKa0s-Widgets-1.0` key **17.3.9.5.5.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Still **nineteen majors**, now across **sixty-two files** (seven are new), and no `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1**, `LibKa0s-Schema-1.0` **3**, `LibKa0s-Slash-1.0` key **21.2**, `LibKa0s-Widgets-1.0` key **17.3.9.5.5.2**, `LibKa0s-Charts-1.0` key **1.1**, `LibKa0s-DebugLog-1.0` key **22.6.1.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Now **twenty majors**, across **sixty-four files** (nine are new), and no `NEEDS_*` floor rises.
 
 ### The library peels (`LK-M2-PEEL`)
 
@@ -49,6 +49,18 @@ No size moves. Real Friz Quadrata, md5 `87cd491cd119e8c7aa48b562d7482ed8` agains
 ### `ApplyLevel` allocates nothing
 
 **WidgetsDragHandle minor 9**: `handle:ApplyLevel()` and the strip's repaint name their two marks where each built a throwaway table per call, so a host that re-levels every frame leaves no garbage.
+
+### The Insights chart renderers (`LK-M2-66`, LibKa0s#66)
+
+The new major `LibKa0s-Charts-1.0`, documented in [docs/api/Charts/version-1.1-docs.md](docs/api/Charts/version-1.1-docs.md), promoted from Ka0s Loot History's Insights tab by way of Ka0s DPS Race's host-agnostic port. Additive: no host adopts it in this commit.
+
+- **Charts minor 1** (`Charts.lua`): `Charts:New(content, host)`, the context, its pools and `Reskin`, and the pure helpers `truncate`, `tipText`, `fitFontSize`, `StackSegments`, `RangeScale`, `StripSlots` and `StripLabels`.
+- **ChartsRender minor 1** (`ChartsRender.lua`, paired on the shell): the pooled widgets, the chrome (headings, dividers, list panels, stat cards) and the bar, stacked bar, range, legend, strip and list renderers.
+- **DebugLogDiagnostics minor 6**: the identity header names Charts, between Toast and Media. A host suite that pins `DebugLogDiagnostics 5` moves with its re-vendor.
+
+What the promotion changed from the port. The drawing seams are the context's, not file locals, because a file shared across addons must not hand one addon's paint to another's chart. `host.pool` defaults to `LibKa0s-Pool-1.0`, the tooltip to `GameTooltip`, and `host.owner` reads the look from the owner's skin (the host first, then the skin, then Ka0s Default's values), with `barFill` as a seam of its own so a data bar takes the bar texture and a track stays flat. `ctx:Reskin()` repaints both pool lists and the chrome, as Loot History's walk does, and an owner's context runs it on `OnLooksChanged`. `truncate` writes `"..."` inside the cap, since the ellipsis glyph may draw as an empty box. A strip with a `top` of 0, a tooltip of no lines, `RangeScale` of no rows, `truncate` with a cap of 0, an empty legend, and a first legend chip on a narrow line each raise nothing or draw nothing now.
+
+Upstream, for the release close: `library-stack-§7`'s module table in WowAddonStandards gains a `Charts` row, and the file count moves to sixty-four.
 
 ## v1.83.0 — 2026-10-31
 

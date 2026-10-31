@@ -67,6 +67,7 @@ the file you need:
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Toast-1.0` | `<Toast>` | `LibStub("LibKa0s-Toast-1.0").MODULES` |
+| `LibKa0s-Charts-1.0` | `<Charts>.<ChartsRender>` | `LibStub("LibKa0s-Charts-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Skin-1.0` | `<Skin>.<SkinOwnerTokens>.<SkinDefs>.<SkinDefsOthers>.<SkinPaint>.<SkinPaintExtras>.<SkinPaintControls>.<SkinEUI>.<SkinAce>` (six numbers through 3.3.2.1.1.1, never shipped) | `LibStub("LibKa0s-Skin-1.0").MODULES` |
 | `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>.<WidgetsCopyWindow>` (five numbers through 15.1.5.3.3) | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
@@ -186,6 +187,12 @@ answers both "what does this version have?" and "when did I get it?".
 |---|---|---|---|
 | [1](./Toast/version-1-docs.md) | **`Toast.lua` 1** (new: the alert-toast shell, LibKa0s#60) | v1.79.0 | **Current** |
 
+### `LibKa0s-Charts-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1.1](./Charts/version-1.1-docs.md) | **`Charts.lua` 1** · **`ChartsRender.lua` 1** (new: the Insights chart renderers, LibKa0s#66) | v1.84.0 (unreleased) | **Current** |
+
 ### `LibKa0s-Media-1.0`
 
 | Version | Files | Shipped in | Status |
@@ -251,7 +258,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.5.1.2](./DebugLog/version-22.5.1.2-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 5 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 2** (an owned console's title-bar labels in its skin's body face, so *Ignore fonts* reaches them; its resize grip wears its skin; no new member) | v1.81.0 | **Current** |
+| [22.6.1.2](./DebugLog/version-22.6.1.2-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 6** (the identity header names Charts) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 2 | v1.84.0 (unreleased) | **Current** |
+| [22.5.1.2](./DebugLog/version-22.5.1.2-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 5 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 2** (an owned console's title-bar labels in its skin's body face, so *Ignore fonts* reaches them; its resize grip wears its skin; no new member) | v1.81.0 – v1.83.0 | Superseded |
 | [22.5.1.1](./DebugLog/version-22.5.1.1-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 5** (the identity header names Toast) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 1 | v1.79.0 – v1.80.0 | Superseded |
 | [22.4.1.1](./DebugLog/version-22.4.1.1-docs.md) | **`DebugLog.lua` 22** · **`DebugLogDiagnostics.lua` 4** (the identity header names Skin) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 1** (new: the console window peeled out of `DebugLog.lua`; it follows the console's skin owner) | v1.78.0 | Superseded |
 | [21.3.1](./DebugLog/version-21.3.1-docs.md) | **`DebugLog.lua` 21** (the console is toplevel and re-raises a shown StaticPopup) · `DebugLogDiagnostics.lua` 3 · `DebugLogGates.lua` 1 | v1.77.0 | Superseded |
@@ -400,7 +408,7 @@ answers both "what does this version have?" and "when did I get it?".
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
 | [2.3.9.1](./Sim/version-2.3.9.1-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 9** (the renderer section moved out) · **`SimPanelRender.lua` 1** (new: the renderer section, unchanged) | v1.84.0 | **Current** |
-| [2.3.8](./Sim/version-2.3.8-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 8** (an owned panel's tooltips take `gtip.title` and `gtip.value`; its labels in its skin's body face, so *Ignore fonts* reaches them; the picker's dropdowns built with its owner; its resize grip wears its skin; no new member) | v1.81.0 | Superseded |
+| [2.3.8](./Sim/version-2.3.8-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 8** (an owned panel's tooltips take `gtip.title` and `gtip.value`; its labels in its skin's body face, so *Ignore fonts* reaches them; the picker's dropdowns built with its owner; its resize grip wears its skin; no new member) | v1.81.0 – v1.83.0 | Superseded |
 | [2.3.7](./Sim/version-2.3.7-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 7** (the panel and its buttons follow the skin owner; no new member) | v1.78.0 – v1.80.0 | Superseded |
 | [2.3.6](./Sim/version-2.3.6-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 6** (the panel is toplevel and re-raises a shown StaticPopup) | v1.77.0 | Superseded |
 | [2.3.5](./Sim/version-2.3.5-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 (a verb start or restart plays on its own; a manual step or click holds the run) · `SimPanel.lua` 5 (Run all removed: Pause/Resume, Restart and Stop) | v1.76.0 | Superseded |
