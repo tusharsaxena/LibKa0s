@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` minor **9** · `SkinDefs.lua` minor **17** · `SkinPaint.lua` minor **13** · `SkinPaintExtras.lua` minor **7** · `SkinPaintControls.lua` minor **11** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
 | Shipped in | v1.82.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 8.16.12.6.10.2.4](./version-8.16.12.6.10.2.4-docs.md) (shipped in v1.81.0) — the same surface with Ka0s Default drawing Oxanium (SemiBold for body and HUD, Bold for titles) WoW Forever's body text in Fira Sans Regular, and Obsidian drawing Inter / Inter SemiBold, with `font.outline` `""` so no window text was outlined (SkinDefs minor 16), with no font outline mode per owner (Skin minor 8), with the mono role taking `font.outline` like the other two (SkinPaint minor 12), and with no `FontFlags` in the vocabulary (SkinPaintExtras minor 6) |
-| Superseded by | — |
+| Superseded by | [version 10.18.13.7.11.2.4](./version-10.18.13.7.11.2.4-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 9, SkinDefs = 17, SkinPaint = 13, SkinPaintExtras = 7, SkinPaintControls = 11, SkinEUI = 2, SkinAce = 4 }` |
 

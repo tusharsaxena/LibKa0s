@@ -789,7 +789,7 @@ end)
 
 test("skin controls: a dark label is shadowless, a light one keeps its shadow", function()
   -- red under: one shadowed font object for every label, which smears dark text on a bright fill.
-  local m, Skin = F.env({ lsm = { ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf" } })
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Avant Garde"] = "Fonts\\AvantGarde.ttf" } })
   local S = F.owner(Skin, OWNER, "glass")   -- lilac primary with dark text, a light normal label
   local p, b = backdropButton(m), backdropButton(m)
   S.Button(p, { primary = true }); S.Button(b)

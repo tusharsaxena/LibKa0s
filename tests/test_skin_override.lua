@@ -61,7 +61,8 @@ test("skin override: a font and a texture reach every token read, and nothing el
   end
   assertEqual(S.Token("bar.texture"), "Ka0s Flat", "the facade reads the texture override")
   assertEqual(Skin:Token(OWNER, "font.mono"), base["font.mono"], "the mono face stays the skin's")
-  assertEqual(Skin:Token(OWNER, "font.bodySize"), base["font.bodySize"], "sizes stay the skin's")
+  assertEqual(Skin:Token(OWNER, "font.bodySize"), Skin.__FACE_SIZES["Ka0s Expressway"][1],
+    "a shipped face brings its measured size (Skin minor 10, D-07)")
   assertEqual(F.rgba({ Skin:Color(OWNER, "win.bg") }), F.rgba(base["win.bg"]), "colors stay the skin's")
   assertEqual(base["font.body"], "Ka0s Prototype", "ResolveSkin is override-free")
   assertEqual(Skin:ResolveSkin("ka0s")["bar.texture"], "Ka0s Default", "and keeps the skin's texture")

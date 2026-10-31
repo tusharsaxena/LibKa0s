@@ -17,8 +17,9 @@ faces batch (Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/
 `LK-F01` to `LK-F06`. The release closes on the same branch (`LK-F90`); the tag is local until the
 owner's go-ahead.
 
-Versions in this release: **Media minor 11** (`LibKa0s-Media-1.0` key **11.1**); every other file
-still at its v1.82.0 minor, and **test kit revision 46**, until an entry below moves one.
+Versions in this release: **Media minor 11** (`LibKa0s-Media-1.0` key **11.1**), **Skin minor 10** and
+**SkinDefs minor 18** (`LibKa0s-Skin-1.0` key **10.18.13.7.11.2.4**); every other file still at its v1.82.0
+minor, and **test kit revision 46**, until an entry below moves one.
 
 ### The payload ships thirteen more faces and keeps every older one (`LK-F01`)
 
@@ -40,6 +41,28 @@ payload, the owner's ruling.
 
 **What a consumer owes:** nothing in code; the next re-vendor carries the files, about 5 MB more per
 addon. A test that counts `RegisterLSM`'s fonts moves with the catalog.
+
+### New skin faces, measured sizes, and an override that keeps the width (`LK-F02`)
+
+`LibKa0s-Skin-1.0` key 10.18.13.7.11.2.4, documented in
+[docs/api/Skin/version-10.18.13.7.11.2.4-docs.md](docs/api/Skin/version-10.18.13.7.11.2.4-docs.md)
+(*What changed at this version*). No member moves.
+
+- **SkinDefs minor 18.** WoW Midnight draws Segoe UI Semibold, Azeroth Open Sans Semibold (each with
+  its Bold for titles), Ember Emblem, High Contrast Doris PP, Glass Avant Garde and WoW Default the
+  shipped Ka0s Friz Quadrata TT, its HUD too, since the owner's client file is Prototype's bytes.
+  Obsidian's title color is its primary button's `#2A86D1`, which also moves its headings and DebugLog
+  tag. Every size is measured against Prototype at 12 / 14 / 12 from the shipped bytes, outline both
+  ways; WoW Default moves to 11 / 13 / 11 now real Friz is measured.
+- **`lib.__FACE_SIZES`** (internal) carries each shipped face's sizes. **Skin minor 10**: a font override
+  of a shipped face lays its row over `font.bodySize`, `font.titleSize` and `hud.fontSize`, so body,
+  title and `S.HudFontSize` all hold Prototype's width. A face with no row keeps the skin's sizes.
+
+`tests/test_skin_width_parity.lua` pins all twenty-eight faces, and each skin's sizes to its faces'
+rows; `tests/test_skin_defs.lua`'s size band widens from 1.5 to 2 points for Open Sans Bold.
+
+**What a consumer owes:** nothing in code. A test pinning a skin's face, size or Obsidian's title color
+moves with the re-vendor, and a layout measured at a skin's old size is worth a look in game.
 
 ## v1.82.0 — 2026-10-30
 

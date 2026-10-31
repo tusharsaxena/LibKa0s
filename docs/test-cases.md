@@ -675,24 +675,27 @@ Total.
 - skin defs: every skin names a HUD face of its own, its text's family; only WoW Default draws Friz
 - skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin naming neither keeps Friz and Blizzard
 - skin defs: every skin draws its own bar texture, and WoW Default the client's
-- skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's
+- skin defs: every skin sets both sizes, within two points of Ka0s Default's
 - skin defs: a hovered row is told apart from a selected one
 - skin defs: WoW Default's checkbox art is its only box
 - skin defs: in every skin a primary button differs from a normal one
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 
-### test_skin_width_parity.lua (11)
+### test_skin_width_parity.lua (14)
 
 - skin width parity: every skin's body, title and HUD sizes are the measured ones
 - skin width parity: every skin's text is as wide as Ka0s Default's, never more than 2% wider
-- skin width parity: WoW Default keeps Ka0s Default's sizes until real Friz Quadrata is measured
+- skin width parity: every shipped face has a size for each role, as wide as Ka0s Default's
+- skin width parity: a skin's sizes are its faces' rows in the library's table
 - skin width parity: High Contrast no longer promises larger type
 - skin hud size: HudFontSize is in the vocabulary and the facade
 - skin hud size: a stored size scales by the skin's HUD size over Ka0s Default's
 - skin hud size: its own face, Ignore fonts and a bad size leave the stored size alone
 - skin hud size: the stored value is never rewritten, and the scale follows a live skin change
-- skin hud size: a font override keeps the skin's sizes, HUD and body alike
+- skin hud size: an override of a shipped face draws at that face's sizes, HUD and body alike
+- skin hud size: a face the library did not measure keeps the skin's sizes
+- skin hud size: an override's sizes wait for it to resolve, and stay out of its own-face HUD
 - skin hud size: BarStyle's fontSize is each skin's own, Ka0s Default's under Ignore fonts
 - skin hud size: an EllesmereUI owner reads Ka0s Default's HUD size, unscaled
 
@@ -3889,7 +3892,7 @@ Total.
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 31 |
-| test_skin_width_parity.lua | 11 |
+| test_skin_width_parity.lua | 14 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 37 |
 | test_skin_paint_controls.lua | 31 |
@@ -4012,4 +4015,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3414** |
+| **Total** | **3417** |

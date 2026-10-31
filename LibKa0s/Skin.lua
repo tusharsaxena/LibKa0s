@@ -104,7 +104,11 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- "off". "all" reads the skin as it states them, and every skin states OUTLINE for both (SkinDefs
 -- minor 17). The mode is applied here and nowhere else; P.font, BarStyle, Token and Resolve follow.
 -- And VOCAB gains FontFlags (LK-04, D-07) and HudFontSize (LK-06, D-09), SkinPaintExtras minor 7's.
-local MAJOR, MINOR = "LibKa0s-Skin-1.0", 9
+-- Minor 10: a font override of a shipped face brings that face's sizes (LK-F02 of Ka0sAddonsCommonTasks
+-- docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES, its D-07): `__Tokens` lays SkinDefs' `__FACE_SIZES` row
+-- over `font.bodySize`, `font.titleSize` and `hud.fontSize`, so body, title and HUD text all keep
+-- Prototype's width. A face with no row, a media pack's, keeps the skin's sizes.
+local MAJOR, MINOR = "LibKa0s-Skin-1.0", 10
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -783,10 +787,20 @@ local function resolves(kind, key)
   return LSM:Fetch(kind, key, true) ~= nil
 end
 
+--- `t` with `face`'s sizes over its own (minor 10, D-07): the row SkinDefs measured for a shipped
+--- face, so an override of it is as wide as Ka0s Default's text. A face with no row keeps the
+--- skin's sizes: no client can measure one.
+local function layFaceSizes(t, face)
+  local rows = lib.__FACE_SIZES
+  local row = rows and rows[face]
+  if row then t["font.bodySize"], t["font.titleSize"], t["hud.fontSize"] = row[1], row[2], row[3] end
+end
+
 --- `base` with `owner`'s overrides over it (minor 6): `base` itself when the owner sets none, so
 --- Ka0s Default reads unchanged, else a derived copy cached on (base, font, texture). An override
 --- that does not resolve is left out, so the skin's own face or texture stands rather than the
---- client's stock font or the flat bar (a media pack removed, or one that registers later).
+--- client's stock font or the flat bar (a media pack removed, or one that registers later). A font
+--- override brings its face's sizes where SkinDefs has them (minor 10).
 local function withOverrides(owner, base)
   local o = lib.owners[owner]
   local font, texture = o and o.font, o and o.texture
@@ -797,7 +811,10 @@ local function withOverrides(owner, base)
   if c and c.base == base and c.font == font and c.texture == texture then return c.t end
   local t = {}
   overlay(t, base)
-  if font then t["font.body"], t["font.title"], t["hud.font"] = font, font, font end
+  if font then
+    t["font.body"], t["font.title"], t["hud.font"] = font, font, font
+    layFaceSizes(t, font)
+  end
   if texture then t["bar.texture"] = texture end
   lib.__overTok[owner] = { base = base, font = font, texture = texture, t = t }
   return t

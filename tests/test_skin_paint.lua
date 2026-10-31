@@ -517,7 +517,7 @@ end)
 -- ── text, fonts, getters ─────────────────────────────────────────────────────────────────────
 
 local LSM = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf",
-              ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf",
+              ["font:Ka0s Avant Garde"] = "Fonts\\AvantGarde.ttf",
               ["statusbar:Blizzard"] = "Interface\\TargetingFrame\\UI-StatusBar",
               ["statusbar:Ka0s Default"] = "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\textures\\ka0s-default" }
 
@@ -606,7 +606,7 @@ test("skin paint: Font and White put the body font and color on a string", funct
   local S = F.owner(Skin, OWNER, "glass")
   local fs = m.CreateFrame("Frame"):CreateFontString()
   S.Font(fs, 0.1, 0.2, 0.3)
-  assertEqual(fs:GetFontObject().font[1], "Fonts\\Nunito.ttf")
+  assertEqual(fs:GetFontObject().font[1], "Fonts\\AvantGarde.ttf")
   assertEqual(F.rgba(survey(m, fs).textColor), "0.100,0.200,0.300,1")
   local w = m.CreateFrame("Frame"):CreateFontString()
   S.White(w)
@@ -633,7 +633,7 @@ test("skin paint: the getters answer the owner's skin", function()
   local wow = F.owner(Skin, "Classic", "wow").BarStyle()
   assertEqual(wow.textureKey, "Blizzard", "WoW Default keeps the client's bar")
   assertEqual(wow.texture, "Interface\\TargetingFrame\\UI-StatusBar")
-  assertEqual(wow.fontKey, "Friz Quadrata TT", "and the client's face")
+  assertEqual(wow.fontKey, "Ka0s Friz Quadrata TT", "and the shipped Friz (SkinDefs minor 18)")
   assertEqual(F.owner(Skin, "Modern", "obsidian").BarStyle().fontKey, "Ka0s Expressway",
     "Obsidian's own HUD face (SkinDefs minor 16)")
   assertNil(Skin.painted[S], "a getter records nothing")
