@@ -143,7 +143,9 @@ if not lib then return end
 -- way to the OnUpdate in THE ROWS when re-vendoring turned seven addons' stand-down suites red.
 -- Minor 5: the rows' section moved out, unchanged, to OptionsSkinPickerRows.lua (LK-M2-PEEL of
 -- Ka0sAddonsCommonTasks docs/2026-10-31-FINDINGS_REMEDIATION, the seam CLAUDE.md's census named).
-local PICKER_MINOR = 5
+-- Minor 6 (cause L2 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): the tooltip's line takes the owner's `gtip.title`, read at
+-- hover, so a preview reaches it. A window, so Ignore settings panel leaves it skinned.
+local PICKER_MINOR = 6
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__pickerMinor and lib.__pickerMinor >= PICKER_MINOR
   and lib.__pickerShellMinor == lib.MINOR then return end
@@ -422,14 +424,20 @@ local function setFace(fs, path, size)
   return set and true or fs:GetFont() == path
 end
 
---- Show `text` in the game tooltip while the pointer is over `btn`. Set before the skin's paint,
---- which hooks after the host's scripts.
-local function attachTip(btn, text)
+--- Show `text` in the game tooltip while the pointer is over `btn`, in `P`'s owner's `gtip.title`
+--- (the client's color for a skin without it). Set before the skin's paint, which hooks after the
+--- host's scripts.
+local function attachTip(btn, text, P)
   btn.__tip = text
   btn:SetScript("OnEnter", function(self)
     if not (GameTooltip and GameTooltip.SetOwner) then return end
     GameTooltip:SetOwner(self, "ANCHOR_TOP")
-    GameTooltip:SetText(self.__tip or "")
+    local c = P.Sk and P.Sk.Token("gtip.title")
+    if type(c) == "table" and c[1] and c[2] and c[3] then
+      GameTooltip:SetText(self.__tip or "", c[1], c[2], c[3])
+    else
+      GameTooltip:SetText(self.__tip or "")
+    end
     GameTooltip:Show()
   end)
   btn:SetScript("OnLeave", function()
@@ -891,7 +899,7 @@ function lib.__AttachSkinPicker(O, d)
       fs:SetText(glyph)
       btn.text = fs
     end
-    attachTip(btn, tip)
+    attachTip(btn, tip, P)
     btn:SetScript("OnClick", function(...)
       dropFocus(P)
       onClick(...)
@@ -908,7 +916,7 @@ function lib.__AttachSkinPicker(O, d)
     fs:SetPoint("CENTER")
     fs:SetText(text)
     btn.text = fs
-    attachTip(btn, tip)
+    attachTip(btn, tip, P)
     btn:SetScript("OnClick", function(...)
       dropFocus(P)
       onClick(...)
@@ -971,7 +979,7 @@ function lib.__AttachSkinPicker(O, d)
     arrow:SetTexture(ARROW)
     arrow:SetRotation(-math.pi / 2)
     dd.arrow = arrow
-    attachTip(dd, P.S.CHOOSE_TIP)
+    attachTip(dd, P.S.CHOOSE_TIP, P)
     dd:SetScript("OnClick", function() setOpen(not P.open) end)
     f.dd = dd
     P.Sk.Dropdown(dd)

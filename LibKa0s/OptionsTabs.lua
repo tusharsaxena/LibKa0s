@@ -60,7 +60,8 @@ if not Pool or (Pool.MINOR or 0) < NEEDS_POOL then return end
 -- Ka0sAddonsCommonTasks docs/2026-10-31-FINDINGS_REMEDIATION, the seam CLAUDE.md's census named).
 -- Minor 13 (LibKa0s#59, ruling U-08d): O.PageBanner's `acts`, up to three buttons or checkboxes on
 -- the band's one row, placed against the chrome's width and re-placed when it changes.
-local TABS_MINOR = 13
+-- Minor 14 (cause L2 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): a tab's tooltip body through O.__tipColor (`gtip.line`).
+local TABS_MINOR = 14
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__tabsMinor and lib.__tabsMinor >= TABS_MINOR
@@ -727,7 +728,8 @@ function lib.__AttachTabs(O, d)
       if b.__ka0sTabTipLabel and b.__ka0sTabTipLabel ~= "" then
         GameTooltip:SetText(b.__ka0sTabTipLabel, b.__ka0sTabO.__tipColor("gtip.value", 1, 1, 1))
       end
-      GameTooltip:AddLine(b.__ka0sTabTip, nil, nil, nil, true)
+      local r, g, bl = b.__ka0sTabO.__tipColor("gtip.line")
+      GameTooltip:AddLine(b.__ka0sTabTip, r, g, bl, true)
       GameTooltip:Show()
     end)
     b:SetScript("OnLeave", function()

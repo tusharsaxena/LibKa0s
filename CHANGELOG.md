@@ -14,12 +14,19 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Skin-1.0` key **11.1.20.2.13.7.11.2.6**, `LibKa0s-Launcher-1.0` **6**; every other file still at its v1.84.0 minor, and **test kit revision 47**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Skin-1.0` key **11.1.20.2.13.7.11.2.6**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.42.2.6.1.7.14.2.3.16.11.5.5.7.5.6.1.1.3**, `LibKa0s-Sim-1.0` key **2.3.10.1**; every other file still at its v1.84.0 minor, and **test kit revision 47**. No `NEEDS_*` floor rises.
 
 ### The launcher's tooltip follows the skin (`FS-L1`, cause L1)
 
 - **Launcher minor 6**: the status tooltip reads the host's skin on every show, so a switch reaches the next hover. The owner is the descriptor's `name`, which is what every addon registers under, so no host changes; the new optional `owner` names it where the two differ. The title takes `gtip.title`, the other library lines `gtip.line`, and the status words `gtip.on` and `gtip.off`. A name that is no skin owner, or a client with no Skin major, draws minor 5's tooltip call for call. It is no settings page, so *Ignore settings panel* leaves it skinned. The frame, the client's context menu and a host's `onTooltipShow` lines do not change.
 - **SkinDefs minor 20** and **SkinDefsOthers minor 2**: `gtip.line`, `gtip.on` and `gtip.off`. Ka0s Default's are what that tooltip drew, the client's gold and a pure green and red, so its look does not move. Every other skin's are its `gtip.body`, `sem.on` and `sem.off`.
+
+### Tooltip text lines follow the skin (`FS-L2`, cause L2)
+
+- **OptionsWidgets minor 42**, **OptionsDrawer minor 5**, **OptionsNav minor 5**, **OptionsTabs minor 14** and **OptionsKeybinds minor 7**: the tooltip body of a settings row, drawer head, nav entry, tab and key button goes through `O.__tipColor` as `gtip.line`. Ka0s Default's is the client's gold, so its look does not move; every other skin's is its `gtip.body`. An owner-less page and an owner ignoring its settings panel still name no color. This reverses D-14's "a line that names no color stays the client's".
+- **OptionsScroll minor 11**: a comment on that.
+- **OptionsSkinPicker minor 6** and **SimPanel minor 10**: the picker's tooltips and an owned sim panel's tooltip title take `gtip.title`, read at hover, whose Ka0s Default is the client's gold. Both are windows, so *Ignore settings panel* leaves them skinned. An owner-less sim panel's title still names no color.
+- A tooltip line an addon writes itself is that addon's to color; those are the host parts of the cause.
 
 ## v1.84.0 — 2026-11-01
 

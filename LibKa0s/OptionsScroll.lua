@@ -38,7 +38,9 @@ if not lib then return end
 -- suggestion row): `list.hoverArt` while the chrome is skinned, the client's art otherwise and on a
 -- give-back. `__chromeAway`'s comments say what it does: since SkinPaint minor 6 no skin is special,
 -- so it answers the facade wherever `__chromeSkin` does, Ka0s Default included.
-local SCROLL_MINOR = 10
+-- Minor 11 (cause L2 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): a comment only. `gtip.line` joins the tokens read here,
+-- with nil for the literal: that is a body line, the client's color wherever the chrome is not skinned.
+local SCROLL_MINOR = 11
 -- Paired on the SHELL's minor as well as this file's own. The scroll counter alone is not enough:
 -- two vendored copies can ship the same scroll minor over different Options.lua minors, and then
 -- the higher shell wins the LibStub race while the first-loaded copy's patch stays attached to it.
@@ -482,7 +484,8 @@ function lib.__AttachScroll(O, d)
   --- skinned, read at hover so a switch reaches the next one; else `r, g, b`, the literal the line
   --- drew before, which is what an owner-less page and an owner ignoring its settings panel get. One
   --- helper for every line the chrome writes (O.AttachTooltip, the drawer head, the nav entry, the
-  --- tab, the key button, the id list's help mark); a line that names no color stays the client's.
+  --- tab, the key button, the id list's help mark). A body line (`gtip.line`, minor 11) passes nil, so
+  --- its literal is the client's color.
   function O.__tipColor(token, r, g, b)
     local S = O.__chromeSkin()
     local c = S and type(S.Token) == "function" and S.Token(token) or nil

@@ -333,7 +333,9 @@ end)
 
 -- LK-06d (ruling R-5, decision D-14): the row and button tooltips take the owner's tooltip tokens,
 -- the key column `gtip.title` and every white line `gtip.value`. The panel is a window (D-01), so
--- Ignore settings panel leaves them skinned. The title line names no color and stays the client's.
+-- Ignore settings panel leaves them skinned. An owned panel's title line takes `gtip.title` too
+-- (SimPanel minor 10, cause L2 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING); an owner-less
+-- panel's still names no color.
 
 local TIP_PANEL = { startTip = { { "Injects", "a bag" }, "Plain line." } }
 
@@ -362,6 +364,8 @@ test("tool windows skin: an owner-less sim panel's tooltip keeps its literals", 
   local m = env()
   local _, f = sim(m, OTHER, TIP_PANEL)
   local seen = simTip(m, f.__rowButtons[1])
+  assertEqual(seen[1]:match("=(.*)$"), "nil", "the title names no color")
+  assertEqual(simTip(m, f.picker.start)[1]:match("=(.*)$"), "nil", "nor does a button's")
   assertEqual(seen[2], "Injects|a bag=0.900,0.820,0.500,1|1,1,1,1", "the key column's own gold")
   assertEqual(seen[3], "Plain line.=1,1,1,1")
   local typed = simTip(m, f.picker.start)
@@ -377,7 +381,8 @@ test("tool windows skin: an owned sim panel's tooltip takes gtip.title and gtip.
   Skin:ResolveSkin("azeroth")["gtip.value"] = { 0.2, 0.4, 0.6, 1 }
   local _, f = sim(m, OWNER, TIP_PANEL)
   local seen = simTip(m, f.__rowButtons[1])
-  assertEqual(seen[1]:match("=(.*)$"), "nil", "the title names no color")
+  assertEqual(seen[1]:match("=(.*)$"), tok3(Skin, "azeroth", "gtip.title"), "the title")
+  assertEqual(simTip(m, f.picker.start)[1]:match("=(.*)$"), tok3(Skin, "azeroth", "gtip.title"), "a button's title")
   assertEqual(seen[2], "Injects|a bag=" .. tok3(Skin, "azeroth", "gtip.title") .. "|0.200,0.400,0.600,1")
   assertEqual(seen[3], "Plain line.=0.200,0.400,0.600,1")
   assertEqual(simTip(m, f.picker.start)[2]:match("=(.*)$"), "0.200,0.400,0.600,1", "a button's command line")
@@ -396,6 +401,7 @@ test("tool windows skin: under Ka0s Default the sim key column is gtip.title's g
   F.owner(Skin, OWNER)
   local _, f = sim(m, OWNER, TIP_PANEL)
   local seen = simTip(m, f.__rowButtons[1])
+  assertEqual(seen[1]:match("=(.*)$"), "1,0.820,0,1", "the title, the client's gold written out")
   assertEqual(seen[2], "Injects|a bag=1,0.820,0,1|1,1,1,1")
   assertEqual(seen[3], "Plain line.=1,1,1,1")
 end)

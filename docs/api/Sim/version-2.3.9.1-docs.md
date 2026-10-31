@@ -11,11 +11,15 @@
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **9** · `SimPanelRender.lua` **1** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `2.3.9.1` |
 | Shipped in | v1.84.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 2.3.8](./version-2.3.8-docs.md) (shipped in v1.82.0) — the same surface, with the step panel's renderer in `SimPanel.lua`. |
-| Superseded by | — |
+| Superseded by | [version 2.3.10.1](./version-2.3.10.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 9, SimPanelRender = 1 }` |
+
+## Moving to 2.3.10.1
+
+No host change. An owned panel's tooltip title takes `gtip.title`; Ka0s Default's look does not move, and no member moves. See [version 2.3.10.1](./version-2.3.10.1-docs.md).
 
 ## What changed at this version: the peels (`LK-M2-PEEL`)
 

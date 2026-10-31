@@ -53,7 +53,9 @@ if not Pool or (Pool.MINOR or 0) < NEEDS_POOL then return end
 -- Ka0sAddonsCommonTasks docs/2026-10-31-FINDINGS_REMEDIATION, the seam CLAUDE.md's census named).
 -- Minor 41 (the owner's ruling of 2026-11-01): a media row is always the Ka0sMedia_* picker, whether
 -- or not an LSM30_* type is registered. A row may still name LSM30_*; it reads as the picker.
-local WIDGETS_MINOR = 41
+-- Minor 42 (cause L2 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): O.AttachTooltip's body line through
+-- O.__tipColor (`gtip.line`, nil where the chrome is not skinned, which is the client's color).
+local WIDGETS_MINOR = 42
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__widgetsMinor and lib.__widgetsMinor >= WIDGETS_MINOR
@@ -418,7 +420,8 @@ function lib.__AttachWidgets(O, d)
       GameTooltip:SetOwner(anchor, "ANCHOR_RIGHT")
       if label and label ~= "" then GameTooltip:SetText(label, O.__tipColor("gtip.value", 1, 1, 1)) end
       if tooltip and tooltip ~= "" then
-        GameTooltip:AddLine(tooltip, nil, nil, nil, true)
+        local r, g, b = O.__tipColor("gtip.line")
+        GameTooltip:AddLine(tooltip, r, g, b, true)
       end
       GameTooltip:Show()
     end

@@ -60,10 +60,10 @@ local pickRow = Bench.pickRow
 
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
-test("skin picker: OptionsSkinPicker is minor 5, paired on the shell, and attaches three members", function()
+test("skin picker: OptionsSkinPicker is minor 6, paired on the shell, and attaches three members", function()
   local _, _, lib = env()
-  assertEqual(lib.MODULES.OptionsSkinPicker, 5)
-  assertEqual(lib.__pickerMinor, 5)
+  assertEqual(lib.MODULES.OptionsSkinPicker, 6)
+  assertEqual(lib.__pickerMinor, 6)
   assertTrue(lib.SKIN_PICKER_STRINGS.APPLY_ALL_TIP:find("skin source, skin, scope, font, texture and font outline", 1, true) ~= nil,
     "the tooltip words it as the Skin tab's copy does")
   assertEqual(lib.__pickerShellMinor, lib.MINOR, "paired on the shell's minor")
@@ -861,4 +861,47 @@ test("skin picker: two clearing previews, then Apply, write the media once", fun
   assertEqual(#store.calls, 2, "one skin write, one media write")
   assertEqual(store.calls[1][2], "glass")
   assertEqual(store.calls[2][4].font, false)
+end)
+
+-- ── the tooltips (OptionsSkinPicker minor 6, cause L2) ───────────────────────────────────────
+
+--- Hover `btn`: what SetText received, its text and color (the color "nil" when it named none).
+local function tipOf(m, btn)
+  local tip, text, color = m.GameTooltip, nil, nil
+  local saved = { SetOwner = rawget(tip, "SetOwner"), SetText = rawget(tip, "SetText"), Show = rawget(tip, "Show") }
+  rawset(tip, "SetOwner", function() end)
+  rawset(tip, "Show", function() end)
+  rawset(tip, "SetText", function(_, t, r, g, b)
+    text, color = t, r == nil and "nil" or F.rgba({ r, g, b })
+  end)
+  local ok, err = pcall(btn.__fire, btn, "OnEnter")
+  for k, v in pairs(saved) do rawset(tip, k, v) end
+  assertTrue(ok, tostring(err))
+  return text, color
+end
+
+local function rgb3(c) return F.rgba({ c[1], c[2], c[3] }) end
+
+test("skin picker: a tooltip title takes gtip.title, read at hover, Ignore settings panel or not", function()
+  -- red under: SetText with no color, a color captured at build, or a window that stands down.
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER, "azeroth")
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
+  local text, color = tipOf(m, f.settings)
+  assertEqual(text, "Keep these choices and open the Skin settings")
+  assertEqual(color, rgb3(Skin:ResolveSkin("azeroth")["gtip.title"]))
+  assertEqual(select(2, tipOf(m, f.apply)), color, "a text button")
+  assertEqual(select(2, tipOf(m, f.dd)), color, "the dropdown")
+  Skin:SetIgnore(OWNER, true, nil)
+  assertEqual(select(2, tipOf(m, f.settings)), color, "a window keeps its skin")
+  Skin:SetIgnore(OWNER, false, nil)
+  pickRow(f, "ember")
+  assertEqual(select(2, tipOf(m, f.settings)), rgb3(Skin:ResolveSkin("ember")["gtip.title"]), "a preview reaches the next hover")
+end)
+
+test("skin picker: under Ka0s Default a tooltip title is the client's gold, written out", function()
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
+  assertEqual(select(2, tipOf(m, f.settings)), "1,0.820,0,1")
 end)

@@ -2480,9 +2480,9 @@ Total.
 - appearance: the copy has its own heading, Other Ka0s addons, after the Scope, the tab ending on it
 - appearance: the note leads the Look section, ahead of the first skin
 
-### test_options_skin_picker.lua (37)
+### test_options_skin_picker.lua (39)
 
-- skin picker: OptionsSkinPicker is minor 5, paired on the shell, and attaches three members
+- skin picker: OptionsSkinPicker is minor 6, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -2519,6 +2519,8 @@ Total.
 - skin picker: a fallback preview under a painting EllesmereUI keeps the overrides
 - skin picker: the gear after a clearing preview writes the skin, then every media half
 - skin picker: two clearing previews, then Apply, write the media once
+- skin picker: a tooltip title takes gtip.title, read at hover, Ignore settings panel or not
+- skin picker: under Ka0s Default a tooltip title is the client's gold, written out
 
 ### test_options_skin_picker_shared.lua (10)
 
@@ -2909,13 +2911,16 @@ Total.
 - options skin: Ka0s Default colors the keybind rows in its own text roles
 - options skin: the id-suggestion popup takes the skin, Ka0s Default's edge included
 
-### test_options_tooltip_skin.lua (6)
+### test_options_tooltip_skin.lua (9)
 
 - tooltip skin: an owner-less page writes the previous minors' tooltip literals
 - tooltip skin: an owner ignoring its settings panel gets the literals back
 - tooltip skin: Ka0s Default's titles are white and the help mark's lines gtip.body
 - tooltip skin: an owned page's titles take gtip.value and the help lines gtip.body
-- tooltip skin: lines that named no color stay the client's
+- tooltip skin: an owned page's body lines take gtip.line
+- tooltip skin: under Ka0s Default a body line is the client's gold, written out
+- tooltip skin: the key button's every body line takes gtip.line
+- tooltip skin: a skin with no gtip.line leaves a body line the client's
 - tooltip skin: a skin switch reaches the next hover with no rebuild
 
 ### test_options_chrome_skin.lua (15)
@@ -4196,7 +4201,7 @@ Total.
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 35 |
 | test_options_appearance_overrides.lua | 25 |
-| test_options_skin_picker.lua | 37 |
+| test_options_skin_picker.lua | 39 |
 | test_options_skin_picker_shared.lua | 10 |
 | test_options_skin_picker_faces.lua | 15 |
 | test_options_skin_picker_rows.lua | 53 |
@@ -4214,7 +4219,7 @@ Total.
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
 | test_options_skin.lua | 17 |
-| test_options_tooltip_skin.lua | 6 |
+| test_options_tooltip_skin.lua | 9 |
 | test_options_chrome_skin.lua | 15 |
 | test_options_compose_skin.lua | 16 |
 | test_options_compose_flags.lua | 5 |
@@ -4269,4 +4274,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3619** |
+| **Total** | **3624** |
