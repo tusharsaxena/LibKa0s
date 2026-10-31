@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 10.18.13.7.11.2.4
+# `LibKa0s-Skin-1.0` — version 10.18.13.7.11.2.5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,13 +8,24 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` minor **10** · `SkinDefs.lua` minor **18** · `SkinPaint.lua` minor **13** · `SkinPaintExtras.lua` minor **7** · `SkinPaintControls.lua` minor **11** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **4** |
+| Files and minors | `Skin.lua` minor **10** · `SkinDefs.lua` minor **18** · `SkinPaint.lua` minor **13** · `SkinPaintExtras.lua` minor **7** · `SkinPaintControls.lua` minor **11** · `SkinEUI.lua` minor **2** · `SkinAce.lua` minor **5** |
 | Shipped in | v1.83.0 |
 | Status | **Current** |
 | Supersedes | [version 9.17.13.7.11.2.4](./version-9.17.13.7.11.2.4-docs.md) (shipped in v1.82.0) — the same surface with Azeroth, Glass, High Contrast, Ember and WoW Midnight on their earlier faces, WoW Default on the client's Friz Quadrata at Ka0s Default's sizes, Obsidian's titles near-white, and a font override keeping the skin's sizes. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 10, SkinDefs = 18, SkinPaint = 13, SkinPaintExtras = 7, SkinPaintControls = 11, SkinEUI = 2, SkinAce = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 10, SkinDefs = 18, SkinPaint = 13, SkinPaintExtras = 7, SkinPaintControls = 11, SkinEUI = 2, SkinAce = 5 }` |
+
+## What changed at this version: a window's AceGUI rows (`LK-A3`)
+
+**`SkinAce.lua` moves to minor 5** (`LK-A3` of Ka0sAddonsCommonTasks
+`docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`, the skin picker's new rows). `Skin:__PaintAceWindow(owner,
+widget)`, internal, is `PaintAce` for a widget that sits in a window rather than on a settings page.
+Ignore settings panel does not reach it, so a window keeps the skin all of it, as `SetIgnore`'s row
+below says. The mark lasts until the widget's release, so the pool's next user is under the ordinary
+rule. `Skin:__ClearOutline(owner)`, internal, in `Skin.lua` at this release's minor 10, puts an owner
+back to never having set a font outline: the picker's dismissal needs it, because `SetOutline` of
+the default stores the default. Neither is public, and no public member moves.
 
 ## What changed at this version
 

@@ -78,6 +78,11 @@ if not lib then return end
 -- skin's own entry (LK-F03 of Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES).
 -- Still minor 5 (LK-F04, the owner's item 4): that entry reads "Skin's default (%s)" and the reset
 -- tooltips say "the skin's default"; the SKIN_OWN key keeps its name, so spec.strings still works.
+-- Still minor 5 (LK-A3, the owner's request to give every addon's skin picker these rows): what the
+-- tab's rows read and how they word it moved to the library table, unchanged, so OptionsSkinPicker.lua
+-- reads one copy: lib.__skinMedia (the dropdown value, the two halves, the outline order and words),
+-- lib.__appliedMedia, lib.__nextMedia, lib.__readIgnore, lib.__copySettings, lib.__baseTokens,
+-- lib.__mediaList, lib.__fillMedia, lib.__newMediaRow, lib.__outlineItems and lib.__resetTip.
 local APPEARANCE_MINOR = 5
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__appearanceMinor and lib.__appearanceMinor >= APPEARANCE_MINOR
@@ -172,6 +177,8 @@ local MEDIA = { font = { kind = "font", token = "font.body", reset = "RESET_FONT
 -- with its word's key.
 local OUTLINE_ORDER = { "all", "hud", "off" }
 local OUTLINE_WORD = { all = "OUTLINE_ALL", hud = "OUTLINE_HUD", off = "OUTLINE_OFF" }
+-- The same four for OptionsSkinPicker.lua, which draws the same rows.
+lib.__skinMedia = { FROM_SKIN = FROM_SKIN, MEDIA = MEDIA, OUTLINE_ORDER = OUTLINE_ORDER }
 
 --- The Skin major, or nil. Asked at call time: it loads before this major, but a client may lack it.
 local function skinMajor()
@@ -276,17 +283,102 @@ function lib.__skinOthers(Skin, owner)
 end
 
 --- `name`'s applied media, `{ font, texture, outline }` (each override an LSM key or false for the
---- skin's own), or nil on a Skin copy before minor 6. `outline` is the mode `name` stored, nil while
+--- skin's own), or nil on a Skin copy before minor 6. Internal. `outline` is the mode `name` stored, nil while
 --- it never moved off the default, because this is what a media write sends: a font pick storing the
 --- default would pin that owner to it when the default moves (it did, in Skin minor 10). Nil too on
 --- a Skin copy before minor 9.
-local function appliedMedia(Skin, name)
+function lib.__appliedMedia(Skin, name)
   if type(Skin.GetOverride) ~= "function" then return nil end
   local font, texture = Skin:GetOverride(name)
   local outline
   if type(Skin.__StoredOutline) == "function" then outline = Skin:__StoredOutline(name)
   elseif type(Skin.GetOutline) == "function" then outline = Skin:GetOutline(name) end
   return { font = font or false, texture = texture or false, outline = outline }
+end
+local appliedMedia = lib.__appliedMedia
+
+--- `name`'s media with `which` ("font" or "texture") moved to `value` (an LSM key, or FROM_SKIN or
+--- "" for the skin's own), or nil on a Skin copy before minor 6. Internal.
+function lib.__nextMedia(Skin, name, which, value)
+  local media = appliedMedia(Skin, name)
+  if media then media[which] = (type(value) == "string" and value ~= "" and value ~= FROM_SKIN) and value or false end
+  return media
+end
+
+--- `name`'s scope, `{ panel, fonts }`: the Skin major's applied pair (false, false on a copy before
+--- Skin minor 5). Internal.
+function lib.__readIgnore(Skin, name)
+  if type(Skin.GetIgnore) ~= "function" then return { panel = false, fonts = false } end
+  local panel, fonts = Skin:GetIgnore(name)
+  return { panel = panel == true, fonts = fonts == true }
+end
+
+--- What a copy to another owner carries: `name`'s scope and its media with the outline as it reads
+--- (the mode worn, so the targets match it). Internal: the tab's copy and the picker's Apply to all.
+function lib.__copySettings(Skin, name)
+  local media = appliedMedia(Skin, name)
+  if media and type(Skin.GetOutline) == "function" then media.outline = Skin:GetOutline(name) end
+  return lib.__readIgnore(Skin, name), media
+end
+
+--- `owner`'s tokens without its overrides: what it wears as "the skin's own" (EllesmereUI's table
+--- while that paints it). ResolveSkin on a Skin copy without `__BaseTokens`. Internal.
+function lib.__baseTokens(Skin, owner)
+  if type(Skin.__BaseTokens) == "function" then return Skin:__BaseTokens(owner) end
+  local _, skin = Skin:GetChoice(owner)
+  return Skin:ResolveSkin(skin)
+end
+
+--- The list one media dropdown offers: "Skin's default (<the face worn without overrides>)" first,
+--- then LSM's keys, then the stored override when LSM lacks it, so the field never shows blank.
+--- The third answer is the leading row's preview: it shows the face it stands for. Internal.
+function lib.__mediaList(S, Skin, owner, which)
+  local spec = MEDIA[which]
+  local own = lib.__baseTokens(Skin, owner)[spec.token]
+  local items, order = { [FROM_SKIN] = S.SKIN_OWN:format(tostring(own or "-")) }, { FROM_SKIN }
+  for _, key in ipairs(mediaKeys(spec.kind)) do
+    if items[key] == nil then
+      items[key] = key
+      order[#order + 1] = key
+    end
+  end
+  local media = appliedMedia(Skin, owner)
+  local stored = media and media[which]
+  if stored and items[stored] == nil then
+    items[stored] = S.MEDIA_MISSING:format(stored)
+    order[#order + 1] = stored
+  end
+  return items, order, { [FROM_SKIN] = own }
+end
+
+--- One media dropdown's list, and on a picker what its leading row previews. The stock Dropdown
+--- a client without the picker draws (minor 5) has no SetPreviews. Internal.
+function lib.__fillMedia(dd, S, Skin, owner, which)
+  local items, order, previews = lib.__mediaList(S, Skin, owner, which)
+  if type(dd.SetPreviews) == "function" then dd:SetPreviews(previews) end
+  dd:SetList(items, order)
+end
+
+--- A new media dropdown for `which` from AceGUI handle `ace`: OptionsMedia.lua's picker, the stock
+--- Dropdown without it. `lazy` leaves the faces unloaded until its pull-out opens. Internal.
+function lib.__newMediaRow(ace, which, lazy)
+  local mediaType = lib.__MediaWidgetType
+  local wtype = mediaType and mediaType(MEDIA[which].kind) or "Dropdown"
+  if lazy and type(lib.__createLazyMedia) == "function" then return lib.__createLazyMedia(ace, wtype) end
+  return ace:Create(wtype)
+end
+
+--- The font outline dropdown's list, `{ mode = word }`, and its order. Internal.
+function lib.__outlineItems(S)
+  local items = {}
+  for _, mode in ipairs(OUTLINE_ORDER) do items[mode] = S[OUTLINE_WORD[mode]] end
+  return items, OUTLINE_ORDER
+end
+
+--- One reset button's word and tooltip, naming the skin's own key worn now. Internal.
+function lib.__resetTip(S, Skin, owner, which)
+  local spec = MEDIA[which]
+  return S[spec.reset], S[spec.reset .. "_TIP"]:format(tostring(lib.__baseTokens(Skin, owner)[spec.token] or "-"))
 end
 
 --- Move `name` to (source, skin) and, when the look it draws changed (Skin:DrawsKey before and
@@ -437,9 +529,7 @@ function lib.__AttachAppearance(O, d)
   --- This owner's scope, `{ panel, fonts }`: the Skin major's applied pair (false, false on a copy
   --- before Skin minor 5).
   local function readIgnore(view)
-    if type(view.Skin.GetIgnore) ~= "function" then return { panel = false, fonts = false } end
-    local panel, fonts = view.Skin:GetIgnore(view.owner)
-    return { panel = panel == true, fonts = fonts == true }
+    return lib.__readIgnore(view.Skin, view.owner)
   end
 
   --- This owner's overrides, `{ font, texture, outline }` (each override an LSM key or false for the
@@ -457,9 +547,7 @@ function lib.__AttachAppearance(O, d)
     if O.__combatRefused and O.__combatRefused("appearance", "copy") then return end
     local Skin = view.Skin
     local source, skin = readChoice(view)
-    local ignore = readIgnore(view)
-    local media = readMedia(view)
-    if media and type(Skin.GetOutline) == "function" then media.outline = Skin:GetOutline(view.owner) end
+    local ignore, media = lib.__copySettings(Skin, view.owner)
     local reloads = {}
     for _, name in ipairs(names) do
       if lib.__copySkinTo(Skin, name, source, skin, ignore, media) then
@@ -500,8 +588,7 @@ function lib.__AttachAppearance(O, d)
   --- halves. Refused in combat, as every settings write is.
   local function setMedia(view, which, value)
     if O.__combatRefused and O.__combatRefused("appearance", view.owner) then return end
-    local media = readMedia(view)
-    media[which] = (type(value) == "string" and value ~= "" and value ~= FROM_SKIN) and value or false
+    local media = lib.__nextMedia(view.Skin, view.owner, which, value)
     view.Skin:SetOverride(view.owner, media.font, media.texture)
     if type(view.spec.set) == "function" then
       local ok, err = pcall(view.spec.set, nil, nil, nil, media)
@@ -523,12 +610,11 @@ function lib.__AttachAppearance(O, d)
   --- The font outline dropdown in `group` (minor 4), its three modes in OUTLINE_ORDER.
   local function outlineDropdown(view, group)
     local S = view.S
-    local items = {}
-    for _, mode in ipairs(OUTLINE_ORDER) do items[mode] = S[OUTLINE_WORD[mode]] end
+    local items, order = lib.__outlineItems(S)
     local dd = O.AceGUI:Create("Dropdown")
     dd:SetLabel(S.OUTLINE)
     dd:SetRelativeWidth(halfWidth(O))
-    dd:SetList(items, OUTLINE_ORDER)
+    dd:SetList(items, order)
     dd:SetCallback("OnValueChanged", function(_, _, value)
       setOutline(view, value)
       view.sync()
@@ -539,48 +625,13 @@ function lib.__AttachAppearance(O, d)
     return dd
   end
 
-  --- The owner's tokens without its overrides: what it wears as "the skin's own" (EllesmereUI's
-  --- table while that paints it). ResolveSkin on a Skin copy without `__BaseTokens`.
-  local function baseTokens(view)
-    if type(view.Skin.__BaseTokens) == "function" then return view.Skin:__BaseTokens(view.owner) end
-    local _, skin = view.Skin:GetChoice(view.owner)
-    return view.Skin:ResolveSkin(skin)
-  end
-
-  --- The list one media dropdown offers: "Skin's default (<the face worn without overrides>)" first,
-  --- then LSM's keys, then the stored override when LSM lacks it, so the field never shows blank.
-  --- The third answer is the leading row's preview: it shows the face it stands for.
-  local function mediaList(view, which)
-    local spec = MEDIA[which]
-    local own = baseTokens(view)[spec.token]
-    local items, order = { [FROM_SKIN] = view.S.SKIN_OWN:format(tostring(own or "-")) }, { FROM_SKIN }
-    for _, key in ipairs(mediaKeys(spec.kind)) do
-      if items[key] == nil then
-        items[key] = key
-        order[#order + 1] = key
-      end
-    end
-    local media = readMedia(view)
-    local stored = media and media[which]
-    if stored and items[stored] == nil then
-      items[stored] = view.S.MEDIA_MISSING:format(stored)
-      order[#order + 1] = stored
-    end
-    return items, order, { [FROM_SKIN] = own }
-  end
-
-  --- One media dropdown's list, and on a picker what its leading row previews. The stock Dropdown
-  --- a client without the picker draws (minor 5) has no SetPreviews.
   local function fillMedia(view, dd, which)
-    local items, order, previews = mediaList(view, which)
-    if type(dd.SetPreviews) == "function" then dd:SetPreviews(previews) end
-    dd:SetList(items, order)
+    lib.__fillMedia(dd, view.S, view.Skin, view.owner, which)
   end
 
   --- One media dropdown in `group`.
   local function mediaDropdown(view, group, which, label, tip)
-    local mediaType = lib.__MediaWidgetType
-    local dd = O.AceGUI:Create(mediaType and mediaType(MEDIA[which].kind) or "Dropdown")
+    local dd = lib.__newMediaRow(O.AceGUI, which)
     dd:SetLabel(label)
     dd:SetRelativeWidth(halfWidth(O))
     fillMedia(view, dd, which)
@@ -717,14 +768,9 @@ function lib.__AttachAppearance(O, d)
   --- (or the page was drawn disabled), its tooltip naming the skin's own key worn now.
   local function syncResets(view, media)
     if not next(view.reset) then return end
-    local own = baseTokens(view)
     for which, btn in pairs(view.reset) do
-      local spec = MEDIA[which]
       btn:SetDisabled(view.resetLocked or not (media and media[which]))
-      if O.AttachTooltip then
-        local tip = view.S[spec.reset .. "_TIP"]
-        O.AttachTooltip(btn, view.S[spec.reset], tip:format(tostring(own[spec.token] or "-")))
-      end
+      if O.AttachTooltip then O.AttachTooltip(btn, lib.__resetTip(view.S, view.Skin, view.owner, which)) end
     end
   end
 

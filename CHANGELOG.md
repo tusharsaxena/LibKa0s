@@ -14,17 +14,44 @@ cannot drift. Release order is in
 
 Opened 2026-10-31, on `feat/2026-10-31-font-pickers-skin-faces`: the owner's font pickers and skin
 faces batch (Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`, M1), the items
-`LK-F01` to `LK-F06`, `LK-A1` and `LK-A2`. The release closes on the same branch (`LK-F90`); the tag is local until the
+`LK-F01` to `LK-F06` and `LK-A1` to `LK-A3`. The release closes on the same branch (`LK-F90`); the tag is local until the
 owner's go-ahead.
 
-Versions in this release: **Media minor 11** (`LibKa0s-Media-1.0` key **11.1**), **Skin minor 10** and
-**SkinDefs minor 18** (`LibKa0s-Skin-1.0` key **10.18.13.7.11.2.4**), **OptionsWidgets minor 38**,
+Versions in this release: **Media minor 11** (`LibKa0s-Media-1.0` key **11.1**), **Skin minor 10**,
+**SkinDefs minor 18** and **SkinAce minor 5** (`LibKa0s-Skin-1.0` key **10.18.13.7.11.2.5**), **OptionsWidgets minor 38**,
 **OptionsAppearance minor 5**, **OptionsSkinPicker minor 4** and **OptionsMedia minor 1** (new)
 (`LibKa0s-Options-1.0` key
 **34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1**); every other file still at its v1.82.0
 minor, and **test kit revision 46**, until an entry below moves one.
 Still **nineteen majors**, now across **fifty-five files** (`OptionsMedia.lua` is new), and no `NEEDS_*`
 floor rises.
+
+### Every addon's skin picker gets the Skin tab's rows (`LK-A3`)
+
+The owner asked for the Skin tab's elements in the first-run picker, media previews included. Under
+the skin dropdown the picker now draws *Font* and *Texture* (the `Ka0sMedia_*` pickers, each with a
+reset icon at its right), *Font outline*, and *Scope* with *Ignore settings panel* and *Ignore fonts*
+side by side. The window is 308 wide, not 280, and as tall as its rows. The picker's contract holds:
+a change previews, Apply and the gear save it through `spec.set`, closing puts it back, a write from
+elsewhere survives the close, and an outline never set stays unset. Choosing another skin clears the
+override in the preview and the rows show it (D-10). **Apply to all now carries the scope, font,
+texture and outline**, the Skin tab's whole copy, where it carried the skin alone; `APPLY_TIP`,
+`APPLY_ALL_TIP` and `SETTINGS_TIP` say so. That reverses this batch's earlier note that the outline
+reaches other owners only by the tab's copy, on the owner's request. The open skin list is now T8,
+`FULLSCREEN_DIALOG`, laid over the rows, where it grew the window.
+
+The tab's helpers moved to the library table unchanged, so the picker reads one copy, and the tab
+draws as it did. The rows are AceGUI widgets held for a showing and released at the close. They load
+no face but the skins', the owner's and its override's until a font row first opens: `OptionsMedia.lua`
+gains `lib.__createLazyMedia`. **`SkinAce.lua` moves to minor 5** for `Skin:__PaintAceWindow`, since
+`PaintAce` paints nothing under *Ignore settings panel* and a window keeps the skin, and `Skin.lua`
+gains the internal `__ClearOutline` in this release's minor. The reset icons draw the client's
+`UI-RefreshButton`, because the Media icon `reset` is pruned from eleven consumers. Its cases are in the
+new `tests/test_options_skin_picker_rows.lua`, on `tests/fixture_media.lua`, moved out of
+`tests/test_options_media.lua`.
+
+**What a consumer owes:** nothing but the re-vendor. Every addon's spec already passes
+`set = NS.WriteSkinChoice`, which takes all four arguments. A host with no `spec.set` draws no rows.
 
 ### A skin picker row's name never stays blank (`LK-A2`)
 
@@ -100,8 +127,8 @@ addon. A test that counts `RegisterLSM`'s fonts moves with the catalog.
 
 ### New skin faces, measured sizes, and an override that keeps the width (`LK-F02`)
 
-`LibKa0s-Skin-1.0` key 10.18.13.7.11.2.4, documented in
-[docs/api/Skin/version-10.18.13.7.11.2.4-docs.md](docs/api/Skin/version-10.18.13.7.11.2.4-docs.md)
+`LibKa0s-Skin-1.0` key 10.18.13.7.11.2.5, documented in
+[docs/api/Skin/version-10.18.13.7.11.2.5-docs.md](docs/api/Skin/version-10.18.13.7.11.2.5-docs.md)
 (*What changed at this version*). No member moves.
 
 - **SkinDefs minor 18.** WoW Midnight draws Segoe UI Semibold, Azeroth Open Sans Semibold (each with

@@ -58,6 +58,17 @@ minor **4** because `APPLY_ALL_TIP` does too. The `SKIN_OWN` key and the `"@skin
 names, so a stored override and a host's `spec.strings` are unaffected, except that a translation
 of the English text is the host's to reword.
 
+## What changed at this version: the picker's rows (`LK-A3`)
+
+`LK-A3` of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/` (the owner's request to
+give every addon's skin picker the Skin tab's elements). No member moves; `OptionsSkinPicker.lua`,
+`OptionsAppearance.lua` and `OptionsMedia.lua` stay at this release's minors. `lib.__skinMedia`,
+`lib.__appliedMedia`, `lib.__nextMedia`, `lib.__readIgnore`, `lib.__copySettings`, `lib.__baseTokens`,
+`lib.__mediaList`, `lib.__fillMedia`, `lib.__newMediaRow`, `lib.__outlineItems` and `lib.__resetTip`,
+all internal, are the tab's own helpers moved to the library table, and `lib.__createLazyMedia`
+(`OptionsMedia.lua`) is `Create` with the faces left for the first open. See
+[The skin picker](#the-skin-picker-optionsskinpickerlua-minor-2), *The rows*.
+
 ## What changed at this version: a picker row's name never stays blank (`LK-A2`)
 
 `LK-A2` of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/` (the owner's blank
@@ -2648,7 +2659,7 @@ spec, show }, ... } }`, created when absent and adopted by a newer copy of the f
 | `onClose` | Called once each time the window closes, by any route: Apply, *Apply to all*, the gear, the close control, Escape (the window's name is in `UISpecialFrames`) or `O.HideSkinPicker()`; and once for each queued picker *Apply to all* dismisses, which never shows. A hide of UIParent, which leaves the window shown, is not a close. Where the host sets `skin.pickerSeen`. Under pcall. |
 | `strings` | Translations of `lib.SKIN_PICKER_STRINGS` keys, `SKIN_<key>` (a skin's name), and the reload popup's `RELOAD`, `RELOAD_ACCEPT`, `RELOAD_LATER` (default `lib.APPEARANCE_STRINGS`'). |
 
-**The window**, 280 wide or as wide as the addon's label needs, its **center 75% of the way up UIParent** (`SetPoint("CENTER",
+**The window**, 308 wide or as wide as the addon's label needs, its **center 75% of the way up UIParent** (`SetPoint("CENTER",
 UIParent, "BOTTOM", 0, UIParent:GetHeight() * 0.75)`, re-anchored on every show, since UIParent's
 height can change; clamped and movable), clear of the middle of the screen where most main windows
 open. What keeps it in front of the window the eye opens is its strata (**Layering**, below). Top to
@@ -2659,23 +2670,26 @@ bottom:
 2. The addon's label (`frame.ownerLabel`, **P2**): `Skin:OwnerLabel(owner)`, else the owner's name,
    left-justified on one line of its own, painted as a heading (`S.Text(fs, "heading")`, so it
    follows the skin). It is never cut off: the window's width is the label's
-   `GetUnboundedStringWidth()` (rounded up) plus 12 on each side, never less than 280, set on every
+   `GetUnboundedStringWidth()` (rounded up) plus 12 on each side, never less than 308, set on every
    show and every time the owner's looks change. Every other piece is anchored to the window's sides
    and follows the width.
 3. A dropdown button (`frame.dd`): the skin worn now (the pending pick, else the stored choice), as
    the first three of its four swatches and its name, with the eye (`frame.preview`) and the gear
-   (`frame.settings`) at its right. A click opens the list **inside the window**, under the button,
-   and the window grows to hold it; a second click closes it.
+   (`frame.settings`) at its right. A click opens the list under the button, **over the rows**; a
+   second click closes it, and so does using a row.
 4. The list (`frame.list`): one row per skin, `Skin:Skins()` order, each three swatches and the
    skin's name drawn in **that skin's own body face and size** (`Skin:ResolveSkin(key)["font.body"]`
    fetched through LibSharedMedia-3.0, at `font.bodySize`; a face LSM lacks leaves the row's normal
    font). The skin worn now is selected, the others striped, and the pointer hovers a row.
-5. At the bottom, *Apply to all Ka0s addons* (`frame.applyAll`, shown only while another skin owner
+5. The rows (`frame.rows`, **The rows** below): *Font* and *Texture*, each with its reset icon
+   (`frame.reset.font`, `frame.reset.texture`); *Font outline*; *Scope* (`frame.scopeLabel`) with
+   *Ignore settings panel* and *Ignore fonts* side by side.
+6. At the bottom, *Apply to all Ka0s addons* (`frame.applyAll`, shown only while another skin owner
    is registered, read on every show) and **Apply** (`frame.apply`, a primary button:
    `S.Button(btn, { primary = true })`).
 
 The eye is the Media icon `eye` (tooltip "Preview: open test mode") and the gear `settings`
-("Keep this skin and open the Skin settings"). Without LibKa0s-Media-1.0, or for a name the host's
+("Keep these choices and open the Skin settings"). Without LibKa0s-Media-1.0, or for a name the host's
 icon declaration pruned, each draws its text glyph (`PREVIEW_GLYPH`, `SETTINGS_GLYPH`).
 
 **A pick previews.** Refused in combat (`O.__combatRefused("skin picker", owner)`); otherwise
@@ -2684,23 +2698,51 @@ live, and the reload flag `SetChoice` answers is kept. The owner's write seam is
 no popup is raised. It closes the list and never the window, and picking does not count as seeing
 the picker.
 
+**The rows** (`LK-A3`). The Skin tab's font, texture, outline and scope, from the tab's own helpers
+and words, under the picker's contract: a change **previews** through `Skin:SetOverride`,
+`SetOutline` or `SetIgnore` and writes nothing, Apply and the gear save what moved, and a dismissal
+puts it back. `frame.rows` is `{ font, texture, outline, panel, fonts }`, AceGUI widgets acquired at
+the show and released at the close, so a closed picker holds none and leaves none shown; each half
+is left out where its seam is missing, and the table is nil with no AceGUI, no `spec.set` (the
+picker offers nothing Apply could not keep) or no helpers.
+
+- *Font* is `Ka0sMedia_Font` and *Texture* `Ka0sMedia_Statusbar`, led by "Skin's default (X)", the
+  stock Dropdown without them; with no LibSharedMedia they hold that row alone.
+- Each reset icon's tooltip says *Reset font* or *Reset texture* and names the skin's own key. It is
+  disabled while that half is the skin's own. Its art is the client's `UI-RefreshButton`, grayed,
+  not the Media icon `reset`, which a consumer's `LibKa0s icons:` line would have to declare: a
+  pruned texture draws nothing and raises nothing.
+- *Ignore fonts* disables *Font outline*, as on the tab. Under the `eui` source the rows draw and
+  work as on the tab. Combat disables them when they are drawn and refuses them after
+  (`O.__combatRefused("skin picker", owner)`), and a refused row reads the truth again.
+- **Choosing another skin** clears the font and texture override in the preview, a row's own pick
+  among them (D-10), and the rows show it; the look the window opened with gets the overrides it
+  opened with back.
+- **A dismissal** puts back each half only while it still reads what the preview left, so a write
+  from elsewhere stays. An outline that was never set is put back unset.
+- **Skin.** The rows take `Skin:__PaintAceWindow`, on acquire and on every change of looks, so they
+  wear the skin whatever *Ignore settings panel* says: a window keeps the skin.
+- **Faces.** The rows are made with `lib.__createLazyMedia`, so showing the picker loads the skins'
+  faces, the owner's own and its override's, and a font row's first open loads every other.
+
 **Apply** saves: refused in combat with the window left up; otherwise `spec.set(source, key)` for
-the pending pick, then, when any pick in this showing asked for a reload, the one reload popup
+the pending pick, `spec.set(nil, nil, ignore)` for a moved scope and
+`spec.set(nil, nil, nil, media)` for moved media (every half, `outline` the mode stored), then, when any pick in this showing asked for a reload, the one reload popup
 (`lib.__appearanceReload`, `LIBKA0S_SKIN_RELOAD`, naming the addon), then the window closes.
 
 **The close control and Escape dismiss without saving:** a pending preview is put back
 (`Skin:SetChoice(owner, <the owner's stored source and skin as they read at the close>)`: `spec.get`,
-else `Skin:GetChoice`; no write), then the window closes and `onClose` runs, so a dismissal still
+else `Skin:GetChoice`; no write), and whatever the rows previewed with it, then the window closes and `onClose` runs, so a dismissal still
 counts as seen. Only the unsaved preview is undone: a skin the Skin tab or a profile change stored
 while the picker was up is the one put back, not the choice the window opened with. In combat they still close;
 putting the preview back writes nothing. `O.HideSkinPicker()` dismisses the same way.
 
 **Apply to all Ka0s addons** (`O.__combatRefused("skin picker", "copy")` in combat, the window left
 up): Apply for this owner, then every other registered owner (`lib.__skinOthers`, the Skin tab's
-own list) gets the same source and skin through `lib.__copySkinTo(Skin, name, source, skin)`:
-`Skin:SetChoice` (its live repaint) and then `Skin:WriteChoice(name, source, skin)`, its own
-registered setter, with no scope or media half, so its *Ignore* choices, its font and texture and
-its font outline are left alone (the skin half of the Skin tab's copy, which carries them all). One
+own list) gets the same source, skin, scope, font, texture and font outline through
+`lib.__copySkinTo(Skin, name, source, skin, ignore, media)`, reading them with
+`lib.__copySettings`: the Skin tab's copy. Its skin major moves first (the live repaint), then
+`Skin:WriteChoice`, its own registered setter. One
 reload popup names
 every addon that needs one, this one first (`"<label>, <label>"`). Then this window closes and every
 queued picker is dismissed: each one's `onClose` runs and none shows. Hidden while no other owner is
@@ -2712,8 +2754,10 @@ typically shows the addon's main window, itself `HIGH` and toplevel, which a top
 or click brings up over its strata peers, so at `HIGH` it covered the picker. At `DIALOG` no `HIGH`
 window can; the `Raise()` after `onPreview` covers a preview that shows a `DIALOG` window of its own.
 Every show re-raises a shown StaticPopup (`Core.RaiseStaticPopups`, frame-layering-§4), so the
-reload popup one picker's Apply raised stays above the next queued picker. The list is part of the
-window, not a transient popup, so it takes no strata of its own and closes with the window.
+reload popup one picker's Apply raised stays above the next queued picker. The open list is a
+transient popup, tier T8: `FULLSCREEN_DIALOG`, clamped, over the rows and the Apply buttons, and it
+may hang past the window's foot. A child of the window, it closes with it. The media pull-outs are
+AceGUI's and open at `TOOLTIP`.
 
 **Skin.** Every piece is painted for the owner through the Skin facade: the window by
 `Core.ApplySkin(frame, nil, owner)` (so `S.Shell`, the title in the title font), the close control

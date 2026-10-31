@@ -2388,7 +2388,7 @@ Total.
 - skin picker: in combat a pick, Apply and Apply to all write nothing and leave the window up
 - skin picker: in combat the close control still closes, putting a pending preview back unwritten
 - skin picker: Apply to all is hidden while no other skin owner is registered
-- skin picker: Apply to all saves here and gives every other owner the source and skin alone
+- skin picker: Apply to all saves here and gives every other owner what the Skin tab's copy gives
 - skin picker: Apply to all raises one reload popup naming every addon that needs it
 - skin picker: Apply to all dismisses every queued picker, each onClose run, none shown
 - skin picker: the gear saves, opens the page itself, then the Skin tab, then closes
@@ -2433,6 +2433,39 @@ Total.
 - skin picker faces: a host's name for a skin survives the redress
 - skin picker faces: a name that measures nothing next frame takes the template's face, and the next open tries its own
 - skin picker faces: a client without C_Timer dresses at once and raises nothing
+
+### test_options_skin_picker_rows.lua (30)
+
+- skin picker rows: Font, Texture, Font outline and Scope, in order, in a window at most 10% wider
+- skin picker rows: the rows wear the Skin tab's words, list and leading previewing row
+- skin picker rows: a tab copy and the picker read one list (lib-level helpers)
+- skin picker rows: a font pick previews with no write, Apply saves it with every media half
+- skin picker rows: closing puts back font, texture, outline and scope, with no write
+- skin picker rows: an outline taken back to the default in one showing saves nothing
+- skin picker rows: Apply saves the outline and the scope through the owner's seam
+- skin picker rows: the gear saves them as Apply does
+- skin picker rows: a write from elsewhere during a preview survives the close
+- skin picker rows: another skin clears the font and texture override, and the rows show it (D-10)
+- skin picker rows: a font chosen under a previewed skin goes when the skin moves again
+- skin picker rows: a font picked over a cleared override, then Apply, writes the new one
+- skin picker rows: a reset button is disabled while its half is the skin's own, and says what it does
+- skin picker rows: the reset icons draw the client's art, which no consumer's icon prune can take
+- skin picker rows: Ignore fonts disables the Font outline, as on the Skin tab
+- skin picker rows: Apply to all carries font, texture, outline and scope, as the Skin tab's copy does
+- skin picker rows: combat refuses a row and the row goes back to what is worn
+- skin picker rows: a window shown in combat draws its rows disabled
+- skin picker rows: the open skin list lays over the rows at T8, and the window keeps its height
+- skin picker rows: using a row closes an open skin list
+- skin picker rows: the widgets are acquired for a showing and released at its close
+- skin picker rows: the rows are painted, repaint on a skin pick, and wear the skin under Ignore settings panel
+- skin picker rows: a released row goes back to the pool under the panel's ordinary rule
+- skin picker rows: show loads the skins' faces and the override's, and the pull-out loads every face
+- skin picker rows: a lazy acquire leaves the next picker's preload as it was
+- skin picker rows: with no write seam the picker offers nothing it could not save
+- skin picker rows: without LibSharedMedia a media row offers the skin's own entry alone
+- skin picker rows: without the stock Dropdown the media rows are plain Dropdowns
+- skin picker rows: the EllesmereUI source keeps the rows, as the Skin tab does
+- skin picker rows: a Skin major without the seams draws the window as before
 
 ### test_options_skin_verb.lua (7)
 
@@ -4008,6 +4041,7 @@ Total.
 | test_options_appearance.lua | 60 |
 | test_options_skin_picker.lua | 47 |
 | test_options_skin_picker_faces.lua | 15 |
+| test_options_skin_picker_rows.lua | 30 |
 | test_options_skin_verb.lua | 7 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
@@ -4075,4 +4109,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3469** |
+| **Total** | **3499** |

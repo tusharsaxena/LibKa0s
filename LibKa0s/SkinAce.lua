@@ -64,7 +64,11 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- and one this owner painted before is handed back stock when PaintAce is asked again.
 -- Minor 4: Skin:AliasAceType, a host widget type painted as the stock type it is built from, and a
 -- TreeGroup painter (LK-03 of Ka0sAddonsCommonTasks docs/2026-10-29-SKINNING_ROLLOUT).
-local ACE_MINOR = 4
+-- Minor 5 (LK-A3 of Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES):
+-- Skin:__PaintAceWindow, for a widget a window holds. Ignore settings panel keeps the settings pages
+-- the client's, and its tooltip promises the windows still wear the skin, so a window's widget is
+-- painted under it; the mark lasts until the widget's release.
+local ACE_MINOR = 5
 if lib.__aceMinor and lib.__aceMinor >= ACE_MINOR
   and lib.__aceShellMinor == lib.MINOR then return end
 lib.__aceMinor      = ACE_MINOR
@@ -749,7 +753,7 @@ end
 local function releaseHook(w)
   local st = lib.__ace[w]
   if not st then return end
-  st.armed = false
+  st.armed, st.window = false, nil
   if st.owner then restore(w, st) end
 end
 
@@ -799,12 +803,11 @@ function lib:PaintAce(owner, widget)
   if type(widget) ~= "table" or type(rawget(widget, "frame")) ~= "table" then return false end
   local paint = painterOf(widget)
   if type(paint) ~= "function" or not self:IsOwner(owner) then return false end
-  if type(self.__PanelSkinned) == "function" and not self:__PanelSkinned(owner) then
-    local held = lib.__ace[widget]
-    if held and held.owner == owner then restore(widget, held) end
+  local st = lib.__ace[widget]
+  if type(self.__PanelSkinned) == "function" and not self:__PanelSkinned(owner) and not (st and st.window) then
+    if st and st.owner == owner then restore(widget, st) end
     return false
   end
-  local st = lib.__ace[widget]
   if st and st.owner and (st.owner ~= owner or otherSkin(widget)) then restore(widget, st) end
   if otherSkin(widget) then return false end
   st = stateOf(widget)
@@ -814,6 +817,14 @@ function lib:PaintAce(owner, widget)
   local ok, err = pcall(paint, owner, widget, st, P.T(owner))
   if not ok then logOnce(err) end
   return ok
+end
+
+--- PaintAce for a widget that sits in `owner`'s window rather than on its settings pages: Ignore
+--- settings panel does not reach it (minor 5). The mark lasts until the widget's release. Internal.
+function lib:__PaintAceWindow(owner, widget)
+  if type(widget) ~= "table" or type(rawget(widget, "frame")) ~= "table" then return false end
+  stateOf(widget).window = true
+  return self:PaintAce(owner, widget)
 end
 
 --- Paint AceGUI widget type `hostType`, a host's own type built from the stock type `baseType`

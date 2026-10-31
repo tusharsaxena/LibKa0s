@@ -4,7 +4,7 @@
 -- O.SkinPicker, O.HideSkinPicker,
 -- lib.SKIN_PICKER_STRINGS and the library-level queue, lib.__pickerQueue.
 --
--- What it pins: the attach and the file's pairing; the window (shown, one per owner, about 280
+-- What it pins: the attach and the file's pairing; the window (shown, one per owner, about 308
 -- wide, DIALOG, toplevel, clamped, movable, its center 75% of the way up UIParent on every show,
 -- titled "Choose a skin", the addon's label on its own line above the dropdown, never cut off: the
 -- window widens to it, on every show and skin change); the dropdown button naming the skin worn now
@@ -12,8 +12,8 @@
 -- that skin's own body face and size; a pick previewing (the Skin major moves, the window repaints,
 -- no write and no popup), closing the list and not the window; Apply saving through the owner's
 -- write seam, the one reload popup a pick asked for, then the close; the close control and Escape
--- putting the preview back with no write; "Apply to all Ka0s addons" (hidden alone; the skin half
--- of the Skin tab's copy; one popup; every queued picker dismissed); combat refusing a pick, Apply,
+-- putting the preview back with no write; "Apply to all Ka0s addons" (hidden alone; the whole of
+-- the Skin tab's copy; one popup; every queued picker dismissed); combat refusing a pick, Apply,
 -- Apply to all and the gear; the eye (absent without onPreview, working while a preview is pending,
 -- the picker raised after it over the HIGH window it opens) and the gear (saves, then onSettings,
 -- or the panel opened at spec.page and its Skin tab, then the close); onClose once per showing, by
@@ -87,8 +87,8 @@ test("skin picker: OptionsSkinPicker is minor 4, paired on the shell, and attach
   local _, _, lib = env()
   assertEqual(lib.MODULES.OptionsSkinPicker, 4)
   assertEqual(lib.__pickerMinor, 4)
-  assertTrue(lib.SKIN_PICKER_STRINGS.APPLY_ALL_TIP:find("that skin's default font and texture", 1, true) ~= nil,
-    "the tooltip words it as the Skin tab's row does")
+  assertTrue(lib.SKIN_PICKER_STRINGS.APPLY_ALL_TIP:find("skin source, skin, scope, font, texture and font outline", 1, true) ~= nil,
+    "the tooltip words it as the Skin tab's copy does")
   assertEqual(lib.__pickerShellMinor, lib.MINOR, "paired on the shell's minor")
   assertTrue(lib.MINOR >= 34, "Options minor 34 attaches it")
   assertEqual(type(lib.SKIN_PICKER_STRINGS), "table")
@@ -134,7 +134,7 @@ function()
   assertEqual(layers.strata, "DIALOG", "frame-layering T6: a dialog the player answers")
   assertTrue(layers.toplevel, "toplevel (frame-layering §4)")
   assertTrue(layers.clamped, "clamped")
-  assertEqual(f:GetWidth(), 280)
+  assertEqual(f:GetWidth(), 308)
   assertEqual(f.title:GetText(), "Choose a skin", "the title")
   assertEqual(f.ownerLabel:GetText(), OWNER .. " Label", "the addon's label on its own line")
   local def = Skin:GetSkin("obsidian")
@@ -177,7 +177,7 @@ test("skin picker: the list holds every skin, three swatches each and its name i
   local closedH = f:GetHeight()
   f.dd:__fire("OnClick")
   assertTrue(f.list:IsShown(), "a click opens it")
-  assertTrue(f:GetHeight() > closedH, "the window grows to hold it")
+  assertEqual(f:GetHeight(), closedH, "the list lays over the window (T8, LK-A3), it grows nothing")
   local skins = Skin:Skins()
   local rows = {}
   for _, row in ipairs({ f.list:GetChildren() }) do if row.key then rows[#rows + 1] = row end end
@@ -264,7 +264,7 @@ test("skin picker: a long label widens the window to its unbounded width, never 
   width = 250.4
   O.HideSkinPicker()
   O.SkinPicker(specFor(store, { owner = "PremadeGroupsFilterExtension" }))
-  assertEqual(f:GetWidth(), 280, "never narrower than 280: refit on every show")
+  assertEqual(f:GetWidth(), 308, "never narrower than 308: refit on every show")
 end)
 
 test("skin picker: a skin change that moves the label's width refits the window", function()
@@ -285,13 +285,13 @@ test("skin picker: a skin change that moves the label's width refits the window"
   end
   local O = instance(lib, OWNER)
   local f = O.SkinPicker(specFor(store))
-  assertEqual(f:GetWidth(), 280)
+  assertEqual(f:GetWidth(), 308)
   width = 290.2
   pickRow(f, "ember")
   assertEqual(f:GetWidth(), 291 + 2 * 12, "refit on the owner's looks changing, rounded up")
   width = 10
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
-  assertEqual(f:GetWidth(), 280, "and back")
+  assertEqual(f:GetWidth(), 308, "and back")
 end)
 
 -- ── preview, Apply, dismiss ──────────────────────────────────────────────────────────────────
@@ -554,11 +554,9 @@ test("skin picker: Apply to all is hidden while no other skin owner is registere
   assertEqual(f.applyAll.text:GetText(), "Apply to all Ka0s addons")
 end)
 
-test("skin picker: Apply to all saves here and gives every other owner the source and skin alone", function()
-  -- red under: applyAll handing lib.__copySkinTo this owner's font outline (the picker never shows it,
-  -- and an owner that never set one answers the default; D-06 gives the outline to the Skin tab's copy alone).
-  -- And red under minor 2, which left an other owner's font alone across the skin change (LK-07,
-  -- D-10): its overrides now reset, written back with its own outline.
+test("skin picker: Apply to all saves here and gives every other owner what the Skin tab's copy gives", function()
+  -- red under: the skin half alone (minors 1 to 3 and until LK-A3 of the font run): the picker now
+  -- shows the scope, font, texture and outline, so its copy carries them, by lib.__copySettings.
   local _, Skin, lib = env()
   local store = register(Skin, OWNER)
   local other = register(Skin, OTHER)
@@ -577,17 +575,15 @@ test("skin picker: Apply to all saves here and gives every other owner the sourc
     local w = st.writes[#st.writes]
     assertEqual(w[1], "ka0s", name .. ": the source")
     assertEqual(w[2], "ember", name .. ": the skin, through its own registered setter")
-    assertNil(w[3], name .. ": no scope half")
+    assertEqual(w[3].panel, false, name .. ": this owner's scope")
+    assertEqual(w[4].font, false, name .. ": this owner's font")
+    assertEqual(w[4].texture, false, name .. ": this owner's texture")
+    assertEqual(Skin:GetOutline(name), "hud", name .. ": the mode this owner wears")
   end
-  local w = other.writes[#other.writes]
-  assertEqual(w[4].font, false, "the other owner's font reset to the new skin's own")
-  assertEqual(w[4].texture, false)
-  assertEqual(w[4].outline, "off", "its own outline written back as it is")
-  assertNil(third.writes[#third.writes][4], "an owner with no overrides: no media half")
   assertEqual(Skin:GetOutline(OWNER), "hud", "this owner never set an outline")
-  assertEqual(Skin:GetOutline(OTHER), "off", "the other owner's Off left alone")
-  assertEqual(select(1, Skin:GetIgnore(OTHER)), true, "the other owner's scope left alone")
-  assertNil((Skin:GetOverride(OTHER)), "and its font is the new skin's own")
+  assertEqual(Skin:GetOutline(OTHER), "hud", "the other owner takes it")
+  assertEqual(select(1, Skin:GetIgnore(OTHER)), false, "and the scope")
+  assertNil((Skin:GetOverride(OTHER)), "and the font")
   assertFalse(f:IsShown(), "the window closes")
   assertEqual(store.closed, 1)
 end)
@@ -638,7 +634,7 @@ test("skin picker: the gear saves, opens the page itself, then the Skin tab, the
   O.OpenOptionsPanel = function(page) calls[#calls + 1] = "open:" .. tostring(page) end
   O.SelectTab = function(page, tab) calls[#calls + 1] = "tab:" .. tostring(page) .. "/" .. tostring(tab) end
   local f = O.SkinPicker(specFor(store, { page = "general" }))
-  assertEqual(f.settings.__tip, "Keep this skin and open the Skin settings")
+  assertEqual(f.settings.__tip, "Keep these choices and open the Skin settings")
   pickRow(f, "ember")
   f.settings:__fire("OnClick")
   assertEqual(store.calls[1][2], "ember", "the pending pick saved first")

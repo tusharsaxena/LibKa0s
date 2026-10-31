@@ -244,7 +244,9 @@ CCN split is in `LibKa0s/WidgetsDragHandle.lua`, 951, out of the band). Re-measu
 Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`): still **fourteen**, nothing over 1500. Three re-check
 triggers fired, `LibKa0s/Skin.lua`'s, `LibKa0s/SkinDefs.lua`'s and `tests/test_options_appearance.lua`'s, and each is re-ruled
 below; a peel at the close would land after the release's independent review and, for the two payload files, move
-the Skin key again. The new `LibKa0s/OptionsMedia.lua` (450) is out of the band. Largest first:
+the Skin key again. The new `LibKa0s/OptionsMedia.lua` (450) is out of the band. Re-measured 2026-10-31 after the picker-rows addendum of the same
+run: **fifteen**, nothing over 1500. `LibKa0s/OptionsSkinPicker.lua` came in (below), and `LibKa0s/Skin.lua` grew (below).
+Largest first:
 
 - `testkit/mock_base.lua` (1465 with kit revision 43's one comment line pointing at `testkit/mock_paint.lua`, measured 2026-10-25, under its 1490 re-check trigger; 1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
   retiring the geometry flip added no line; 1456 with kit revision 33's two `mock_resize.lua` lines; 1454 before them,
@@ -282,7 +284,12 @@ the Skin key again. The new `LibKa0s/OptionsMedia.lua` (450) is out of the band.
   SimPanel minor 7 (the skin owner, `LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`)
   added none either: its cases are the new `tests/test_tool_windows_skin.lua`'s, and only the two
   pins moved, to "at least" (re-measured 2026-10-25, still 1056).
-- `LibKa0s/Skin.lua` (1223 at minor 10 with the nil-owner return of the same run, 2026-10-31, the same minor and so no trigger; 1221, measured 2026-10-31 at v1.83.0's close, Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`: 1149 → 1221 with the override's face sizes, the
+- `LibKa0s/OptionsSkinPicker.lua` (1359, new to the band, measured 2026-10-31: 983 -> 1359 with the Skin tab's rows at this
+  release's minor 4, the picker-rows addendum of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`) -- **accepted.** The
+  header carries about 180 of those lines. The seam is the rows' section (`onRow` through `syncControls`, with the preview
+  and restore helpers above it), to a secondary file of its own with its own minor, paired on the shell.
+  **Re-check trigger: 1420 lines, or the next OptionsSkinPicker minor.**
+- `LibKa0s/Skin.lua` (1232 at minor 10 with `__ClearOutline` of the picker-rows addendum of the same run, 2026-10-31, outside the owner-token block and the same minor, and so no trigger; 1223 at minor 10 with the nil-owner return of the same run, 2026-10-31, the same minor and so no trigger; 1221, measured 2026-10-31 at v1.83.0's close, Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`: 1149 → 1221 with the override's face sizes, the
   refused-locale check and the close's CCN split, none of it in the owner-token block; this passed the 1150 trigger,
   and it was re-ruled at the close rather than peeled; 1149 at minor 9, measured 2026-10-30 after the review of `LK-03` and `LK-04`: the per-owner font outline mode
   (`LK-03` of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`), outside the owner-token block and one
@@ -310,7 +317,7 @@ the Skin key again. The new `LibKa0s/OptionsMedia.lua` (450) is out of the band.
   logic. The seam is the eight other skins (*the eight other skins* section: `FOLLOW`, `ICON_EDGE`, `HUD_FACE`,
   `register` and the eight `register(...)` blocks), to a secondary file of its own with its own minor, paired on the
   Skin shell as this file is. **Re-check trigger: the next SkinDefs minor, and then the seam peels in that change.**
-- `tests/test_options_skin_picker.lua` (1133, measured 2026-10-31 at v1.83.0's close: OptionsSkinPicker minor 4 added
+- `tests/test_options_skin_picker.lua` (1129 after the picker-rows addendum, whose cases went to the new `tests/test_options_skin_picker_rows.lua` (500), at this release's minor 4, so the trigger below did not fire; 1133, measured 2026-10-31 at v1.83.0's close: OptionsSkinPicker minor 4 added
   no case, only a pin of its wording, so the trigger below did not fire; 1131, measured 2026-10-30 after `LK-11` of Ka0sAddonsCommonTasks
   `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/` moved its bench, unchanged, to `tests/fixture_skin_picker.lua` (116), shared
   with the new `tests/test_options_skin_verb.lua`; 1220 before that, after `LK-07` and `LK-08` of the same run added the
