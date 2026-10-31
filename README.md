@@ -250,8 +250,8 @@ somebody eventually runs without the pipeline.
 `testkit/` holds the registry, the assertions, the source loader and the universal half of the
 WoW-API mock. The whole collection shares it, and each addon vendors it as `tests/_kit/`. It is not a
 LibStub major and it never ships, but it does carry a plain revision integer, `Kit.VERSION` (exposed
-to suites as `KIT_VERSION`), so a consumer can say which copy it holds; v1.83.0 carries revision
-46. Its full surface is in
+to suites as `KIT_VERSION`), so a consumer can say which copy it holds; v1.84.0 carries revision
+47. Its full surface is in
 [`docs/api/testkit/`](docs/api/testkit/), indexed alongside the majors, and
 [`testkit/README.md`](./testkit/README.md) covers what it is and the vendoring discipline.
 

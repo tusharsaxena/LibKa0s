@@ -650,7 +650,7 @@ Total.
 - skin outline: hud survives a later font override and a skin change, and the new face applies
 - skin outline: an owner token that follows font.outline follows the mode
 
-### test_skin_owner_tokens.lua (16)
+### test_skin_owner_tokens.lua (17)
 
 - skin owner tokens: Ka0s Default answers each token's default, exactly
 - skin owner tokens: a skin answers its own entry, else the follow token's value in that skin
@@ -668,6 +668,7 @@ Total.
 - skin owner tokens: S.Text draws a token name and repaints it on a skin switch
 - skin owner tokens: under eui a token answers its follow token's EllesmereUI value
 - skin owner tokens: an owner token is no vocabulary entry and needs no SkinDefs change
+- skin owner tokens: a shell bump reattaches this file, so its stub never takes the remap
 
 ### test_skin_remap.lua (12)
 
@@ -707,7 +708,7 @@ Total.
 - skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
 - skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (31)
+### test_skin_defs.lua (32)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -740,6 +741,7 @@ Total.
 - skin defs: in every skin a primary button differs from a normal one
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
+- skin defs: a shell bump re-registers the eight other skins from the new copy
 
 ### test_skin_width_parity.lua (17)
 
@@ -4123,11 +4125,11 @@ Total.
 | test_skin.lua | 33 |
 | test_skin_override.lua | 27 |
 | test_skin_outline.lua | 19 |
-| test_skin_owner_tokens.lua | 16 |
+| test_skin_owner_tokens.lua | 17 |
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 31 |
+| test_skin_defs.lua | 32 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 37 |
@@ -4261,4 +4263,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3611** |
+| **Total** | **3613** |

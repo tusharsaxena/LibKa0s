@@ -191,7 +191,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1.1](./Charts/version-1.1-docs.md) | **`Charts.lua` 1** · **`ChartsRender.lua` 1** (new: the Insights chart renderers, LibKa0s#66) | v1.84.0 (unreleased) | **Current** |
+| [1.1](./Charts/version-1.1-docs.md) | **`Charts.lua` 1** · **`ChartsRender.lua` 1** (new: the Insights chart renderers, LibKa0s#66) | v1.84.0 | **Current** |
 
 ### `LibKa0s-Media-1.0`
 

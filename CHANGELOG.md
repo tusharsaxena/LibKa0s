@@ -10,11 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.84.0 — unreleased
+## v1.84.0 — 2026-10-31
 
 Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.
 
-Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1**, `LibKa0s-Schema-1.0` **3**, `LibKa0s-Slash-1.0` key **21.2**, `LibKa0s-Widgets-1.0` key **17.3.10.5.5.2**, `LibKa0s-Charts-1.0` key **1.1**, `LibKa0s-DebugLog-1.0` key **22.6.1.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Now **twenty majors**, across **sixty-four files** (nine are new), and no `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1**, `LibKa0s-Schema-1.0` **3**, `LibKa0s-Slash-1.0` key **21.2**, `LibKa0s-Widgets-1.0` key **17.3.10.5.5.2**, `LibKa0s-Charts-1.0` key **1.1**, `LibKa0s-DebugLog-1.0` key **22.6.1.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Now **twenty majors**, across **sixty-four files** (nine are new), and no `NEEDS_*` floor rises.
 
 ### The library peels (`LK-M2-PEEL`)
 
@@ -65,6 +65,10 @@ Upstream, for the release close: `library-stack-§7`'s module table in WowAddonS
 ### The drag handle's fit (`LK-M2-68`, LibKa0s#68)
 
 **WidgetsDragHandle minor 10**: a strip now measures its title at its own effective scale, writes the measured text fresh, and repeats the host's last fit when it shows, out of combat. Computed over the nine skins' shipped faces, a fitted strip holds its title by construction once the measure matches what is drawn; these three close the ways it did not.
+
+### Deviation register (`CLAUDE.md`)
+
+The owner's rulings of 2026-10-31. The drawer stays in LibKa0s and its one-release trigger renews from v1.84.0. LibKa0sSkinTester counts as the line chart's second consumer, so that row's trigger has fired and the promotion follows in a tracked issue.
 
 ## v1.83.0 — 2026-10-31
 
