@@ -160,6 +160,12 @@ local ART = "TGA\0\r\n"
 local LIB_FILES = {
   ["LibKa0s/Core.lua"] = "-- core\n",
   ["LibKa0s/media/fonts/font.ttf"] = "TTF\0\r\n",
+  -- Shipped beside a face as its license (Expressway-EULA.pdf, LK-A2 of the 2026-10-30 run): a
+  -- binary the gate once normalized, because its extension was missing from BINARY_EXT.
+  ["LibKa0s/media/fonts/EULA.pdf"] = "%PDF-1.4\r\n%\0\226\r\nendobj\r\n",
+  -- Its text sibling (Expressway-EULA-Guide.html): an LF blob that a CRLF working tree checks
+  -- out as CR LF, so the gate must normalize it where it compares the PDF raw.
+  ["LibKa0s/media/fonts/Guide.html"] = "<p>terms</p>\n<p>more</p>\n",
   ["LibKa0s/media/icons/close.tga"] = ART .. "close",
   ["LibKa0s/media/icons/settings.tga"] = ART .. "settings",
   ["LibKa0s/media/icons/LICENSE-open-iconic.txt"] = "MIT\n",
@@ -220,6 +226,53 @@ local function prune(addon, keep)
     if not set[p] then rm(addon, p) end
   end
 end
+
+-- ── binaries compare byte for byte (LK-A2) ─────────────────────────────────────────────────
+
+test("vendor sync: a byte-identical PDF holding CR LF pairs passes, and one edited byte fails", function()
+  withFixture(nil, function(addon)
+    local ok, err = gate(addon)
+    assertTrue(ok, "a byte-identical PDF is not line-end normalized: " .. err)
+    write(addon .. "/libs/LibKa0s/media/fonts/EULA.pdf", "%PDF-1.4\n%\0\226\nendobj\n")
+    ok, err = gate(addon)
+    assertTrue(not ok and err:find("EULA.pdf matches", 1, true) ~= nil,
+      "a PDF that lost its CRs is a different file: " .. err)
+  end)
+end)
+
+test("vendor sync: a CR LF copy of an LF text blob passes, and one edited byte under it fails", function()
+  withFixture(nil, function(addon)
+    local path = addon .. "/libs/LibKa0s/media/fonts/Guide.html"
+    write(path, "<p>terms</p>\r\n<p>more</p>\r\n")
+    local ok, err = gate(addon)
+    assertTrue(ok, "a CR LF checkout of an LF text blob is the same file: " .. err)
+    write(path, "<p>terms</p>\r\n<p>mare</p>\r\n")
+    ok, err = gate(addon)
+    assertTrue(not ok and err:find("Guide.html matches", 1, true) ~= nil,
+      "a CR LF copy with one changed content byte is a different file: " .. err)
+  end)
+end)
+
+test("vendor sync: every extension .gitattributes pins binary is one the gate compares raw", function()
+  local f = assert(io.open(".gitattributes", "rb"), "this repo carries a .gitattributes")
+  local body = f:read("*a")
+  f:close()
+  local pinned, missing = 0, {}
+  for line in (body:gsub("\r", "") .. "\n"):gmatch("([^\n]*)\n") do
+    local ext, attrs = line:match("^%*%.([%w]+)%s+(.-)%s*$")
+    local binary = attrs and (" " .. attrs .. " "):find("%sbinary%s") ~= nil
+    if binary then
+      pinned = pinned + 1
+      if not VendorSync.isBinary("x." .. ext) then missing[#missing + 1] = ext end
+    end
+  end
+  assertTrue(pinned > 0, ".gitattributes pins at least one extension binary")
+  assertEqual(table.concat(missing, ", "), "",
+    "testkit/vendor_sync.lua's BINARY_EXT covers every `*.<ext> binary` line in .gitattributes")
+  assertTrue(VendorSync.isBinary("Media/Expressway-EULA.PDF"), "the match ignores case")
+  assertTrue(not VendorSync.isBinary("LibKa0s/Core.lua") and not VendorSync.isBinary("README"),
+    "text, and a name with no extension, are normalized")
+end)
 
 test("vendor sync: no `LibKa0s icons:` line is the whole-folder gate", function()
   withFixture(nil, function(addon)

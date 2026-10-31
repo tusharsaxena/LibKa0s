@@ -264,8 +264,8 @@ test("draghandle: Measure is the label plus the reserve each side of it keeps cl
   stubMeasurer()
   local h = W.DragHandle(mocks.UIParent, baseSpec())
   local D = W.DRAG_HANDLE
-  assertEqual(h:Measure(), 5 * 6 + D.RESERVE * 2)
-  assertEqual(h:Measure(), 88)
+  assertEqual(h:Measure(), 5 * 6 + D.FIT_SLACK + D.RESERVE * 2)
+  assertEqual(h:Measure(), 90, "88 through minor 7, and FIT_SLACK's 2 px from minor 8")
 end)
 
 test("draghandle: the reserve is its own terms, so the clearance beside the label can be changed alone", function()
@@ -289,7 +289,8 @@ test("draghandle: the reserve is its own terms, so the clearance beside the labe
   local width = h:ApplyWidth()
   local labelRight = width / 2 + (5 * 6) / 2
   local artLeft = width - D.HELP_INSET - D.HELP_HIT + D.HELP_GUTTER
-  assertEqual(artLeft - labelRight, 12, "12px of clear space, where both copies drew 8")
+  assertEqual(artLeft - labelRight, 12 + D.FIT_SLACK / 2,
+    "12px of clear space, where both copies drew 8, and half the fit slack (minor 8)")
 end)
 
 test("draghandle: ApplyWidth floors the natural width at the host's minimum and returns it", function()
@@ -299,8 +300,8 @@ test("draghandle: ApplyWidth floors the natural width at the host's minimum and 
   local h = W.DragHandle(mocks.UIParent, baseSpec())
   assertEqual(h:ApplyWidth(200), 200, "a wide bar floors it")
   assertEqual(h:GetWidth(), 200)
-  assertEqual(h:ApplyWidth(40), 88, "a narrow one does not")
-  assertEqual(h:ApplyWidth(), 88, "and no floor at all is the natural width")
+  assertEqual(h:ApplyWidth(40), 90, "a narrow one does not")
+  assertEqual(h:ApplyWidth(), 90, "and no floor at all is the natural width")
 end)
 
 test("draghandle: SetLabel re-texts and re-measures, and touches no geometry of its own", function()
@@ -311,16 +312,50 @@ test("draghandle: SetLabel re-texts and re-measures, and touches no geometry of 
   h:ApplyWidth()
   h:SetLabel("Buffs  TEST")
   assertEqual(h.label:GetText(), "Buffs  TEST")
-  assertEqual(h:Measure(), 11 * 6 + 58)
-  assertEqual(h:GetWidth(), 88, "the width is unchanged until the host asks for it")
+  assertEqual(h:Measure(), 11 * 6 + 60)
+  assertEqual(h:GetWidth(), 90, "the width is unchanged until the host asks for it")
   h:ApplyWidth()
-  assertEqual(h:GetWidth(), 124)
+  assertEqual(h:GetWidth(), 126)
 end)
 
 test("draghandle: a measurer the client cannot build is a width of 0, not a raise", function()
   W.__DragHandleMeasurer = function() return nil end
   local h = W.DragHandle(mocks.UIParent, baseSpec())
-  assertEqual(h:Measure(), W.DRAG_HANDLE.RESERVE * 2)
+  assertEqual(h:Measure(), W.DRAG_HANDLE.FIT_SLACK + W.DRAG_HANDLE.RESERVE * 2)
+end)
+
+-- ── The fit (minor 8) ────────────────────────────────────────────────────────
+
+test("draghandle: the label's width is ceiled and Measure adds FIT_SLACK's 2 px", function()
+  -- red under: minor 7's exact fit, which a fractional width, pixel snapping or an outline tipped
+  -- into an ellipsis by a glyph (the owner's image-43..45).
+  local fs = stubMeasurer()
+  fs.GetStringWidth = function() return 30.2 end
+  local h = W.DragHandle(mocks.UIParent, baseSpec())
+  assertEqual(W.DRAG_HANDLE.FIT_SLACK, 2, "published, not per host")
+  assertEqual(h:Measure(), 31 + 2 + W.DRAG_HANDLE.RESERVE * 2, "ceiled, then the slack")
+end)
+
+test("draghandle: the label is measured unbounded where the client answers it", function()
+  -- A FontString bounded by its points answers its bound from GetStringWidth, not its text.
+  -- red under: GetStringWidth alone.
+  local fs = stubMeasurer()
+  fs.GetStringWidth = function() return 20 end
+  fs.GetUnboundedStringWidth = function() return 41.5 end
+  local h = W.DragHandle(mocks.UIParent, baseSpec())
+  assertEqual(h:Measure(), 42 + 2 + W.DRAG_HANDLE.RESERVE * 2)
+  -- A non-number answer (an older client, a stub) falls back to the plain width.
+  fs.GetUnboundedStringWidth = function() return nil end
+  assertEqual(h:Measure(), 20 + 2 + W.DRAG_HANDLE.RESERVE * 2)
+end)
+
+test("draghandle: an owner-less strip is never re-sized by the widget after the host's fit", function()
+  -- No skin, no repaint, so nothing re-fits: the host's ApplyWidth stays the last word.
+  stubMeasurer()
+  local h = W.DragHandle(mocks.UIParent, baseSpec())
+  h:ApplyWidth(120)
+  h:SetLabel("A much longer title than the strip has room for")
+  assertEqual(h:GetWidth(), 120)
 end)
 
 test("draghandle: the host's numeric guard is what reads every measurement", function()
@@ -634,9 +669,10 @@ test("draghandle: a spec with no onClose draws exactly the minor-2 strip, number
   assertEqual(D.HELP_CLEAR, 12)
   assertEqual(D.HELP_GUTTER, 5)
   assertEqual(D.RESERVE, 29)
+  assertEqual(D.FIT_SLACK, 2)
   assertEqual(h:Reserve(), 29)
-  assertEqual(h:Measure(), 88)
-  assertEqual(h:ApplyWidth(), 88)
+  assertEqual(h:Measure(), 90, "minor 2's 88, plus minor 8's FIT_SLACK")
+  assertEqual(h:ApplyWidth(), 90)
   local p1, r1, rp1, x1, y1 = h.label:GetPoint(1)
   assertEqual(table.concat({ p1, rp1, x1, y1 }, ","), "LEFT,LEFT,29,0")
   assertEqual(r1, h)
@@ -698,9 +734,9 @@ test("draghandle: the X widens the reserve on BOTH sides, so the label stays cen
   local reserve = D.RESERVE + D.HELP_HIT + D.CLOSE_GAP
   assertEqual(reserve, 47)
   assertEqual(h:Reserve(), reserve)
-  assertEqual(h:Measure(), 5 * 6 + reserve * 2)
+  assertEqual(h:Measure(), 5 * 6 + D.FIT_SLACK + reserve * 2)
   local width = h:ApplyWidth()
-  assertEqual(width, 124)
+  assertEqual(width, 126)
   local _, _, _, left = h.label:GetPoint(1)
   local _, _, _, right = h.label:GetPoint(2)
   assertEqual(left, reserve)

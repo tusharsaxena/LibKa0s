@@ -22,7 +22,7 @@ local F = dofile("tests/fixture_skin_paint.lua")
 local OWNER, OTHER = "LootHistory", "BankLedger"
 -- Ka0s Default's bar texture (SkinDefs minor 14), where Media.RegisterLSM would put it for OWNER.
 local KA0S_BAR = "Interface\\AddOns\\LootHistory\\libs\\LibKa0s\\media\\textures\\ka0s-default"
-local LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf",
+local LSM = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf", ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf",
               ["statusbar:Blizzard"] = "Interface\\TargetingFrame\\UI-StatusBar",
               ["statusbar:Ka0s Default"] = KA0S_BAR,
               ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat" }
@@ -43,32 +43,34 @@ test("skin override: an unregistered owner has none and cannot set one", functio
   local _, Skin = F.env()
   local font, texture = Skin:GetOverride("Nobody")
   assertNil(font); assertNil(texture)
-  assertFalse(Skin:SetOverride("Nobody", "Ka0s Inter", nil), "no owner, no change")
+  assertFalse(Skin:SetOverride("Nobody", "Ka0s Expressway", nil), "no owner, no change")
   assertNil((Skin:GetOverride("Nobody")))
 end)
 
 test("skin override: a font and a texture reach every token read, and nothing else moves", function()
   local _, Skin = F.env({ lsm = LSM })
   register(Skin, OWNER)
+  Skin:SetOutline(OWNER, "all")   -- the mode's own derived table is test_skin_outline.lua's
   local S = Skin:For(OWNER)
   local base = Skin:ResolveSkin("ka0s")
   assertTrue(Skin:__Tokens(OWNER) == base, "with no override the owner reads the resolved table itself")
-  assertTrue(Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat"), "a change")
+  assertTrue(Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat"), "a change")
   local font, texture = Skin:GetOverride(OWNER)
-  assertEqual(font, "Ka0s Inter"); assertEqual(texture, "Ka0s Flat")
+  assertEqual(font, "Ka0s Expressway"); assertEqual(texture, "Ka0s Flat")
   for _, name in ipairs({ "font.body", "font.title", "hud.font" }) do
-    assertEqual(Skin:Token(OWNER, name), "Ka0s Inter", name .. " is the override")
+    assertEqual(Skin:Token(OWNER, name), "Ka0s Expressway", name .. " is the override")
   end
   assertEqual(S.Token("bar.texture"), "Ka0s Flat", "the facade reads the texture override")
   assertEqual(Skin:Token(OWNER, "font.mono"), base["font.mono"], "the mono face stays the skin's")
-  assertEqual(Skin:Token(OWNER, "font.bodySize"), base["font.bodySize"], "sizes stay the skin's")
+  assertEqual(Skin:Token(OWNER, "font.bodySize"), Skin.__FACE_SIZES["Ka0s Expressway"][1],
+    "a shipped face brings its measured size (Skin minor 10, D-07)")
   assertEqual(F.rgba({ Skin:Color(OWNER, "win.bg") }), F.rgba(base["win.bg"]), "colors stay the skin's")
-  assertEqual(base["font.body"], "Ka0s Oxanium SemiBold", "ResolveSkin is override-free")
+  assertEqual(base["font.body"], "Ka0s Prototype", "ResolveSkin is override-free")
   assertEqual(Skin:ResolveSkin("ka0s")["bar.texture"], "Ka0s Default", "and keeps the skin's texture")
   assertTrue(Skin:__Tokens(OWNER) == Skin:__Tokens(OWNER), "the derived table is cached")
   local bar = S.BarStyle()
   assertEqual(bar.textureKey, "Ka0s Flat"); assertEqual(bar.texture, "Interface\\Ka0s\\Flat")
-  assertEqual(bar.fontKey, "Ka0s Inter"); assertEqual(bar.font, "Fonts\\Inter.ttf")
+  assertEqual(bar.fontKey, "Ka0s Expressway"); assertEqual(bar.font, "Fonts\\Expressway.ttf")
 end)
 
 test("skin override: the override follows a skin switch, over the new skin's table", function()
@@ -83,14 +85,34 @@ test("skin override: the override follows a skin switch, over the new skin's tab
   assertEqual(after["font.body"], Skin:ResolveSkin("obsidian")["font.body"], "the nil half is the new skin's")
 end)
 
+test("skin override: SetChoice itself never clears an override, so the load path keeps the stored pair",
+function()
+  -- The guard of LK-07 (D-10): the Skin tab's and the picker's reset on a skin change live in
+  -- OptionsAppearance's lib.__chooseSkin. A host re-applies its stored skin with SetChoice at load,
+  -- after its stored overrides, from Ka0s Default; a reset in SetChoice would wipe them every login.
+  local _, Skin = F.env({ lsm = LSM })
+  local store = register(Skin, OWNER)
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
+  for _, key in ipairs({ "obsidian", "glass", "ka0s" }) do
+    assertTrue(Skin:SetChoice(OWNER, "ka0s", key), key .. ": a change")
+    local font, texture = Skin:GetOverride(OWNER)
+    assertEqual(font, "Ka0s Expressway", key .. ": the font kept")
+    assertEqual(texture, "Ka0s Flat", key .. ": the texture kept")
+  end
+  Skin:SetChoice(OWNER, "eui", nil)
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Expressway", "a source switch keeps them too")
+  assertEqual(store.calls, 0, "and SetChoice writes no profile")
+end)
+
 test("skin override: nil keeps a half, false and the empty string clear it, a repeat changes nothing", function()
   local _, Skin = F.env()
   register(Skin, OWNER)
+  Skin:SetOutline(OWNER, "all")   -- the mode's own derived table is test_skin_outline.lua's
   local fired = 0
   Skin:OnLooksChanged(OWNER, function() fired = fired + 1 end)
-  assertTrue(Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat"))
+  assertTrue(Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat"))
   assertEqual(fired, 1, "the listeners fired once")
-  assertFalse(Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat"), "the same pair is no change")
+  assertFalse(Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat"), "the same pair is no change")
   assertFalse(Skin:SetOverride(OWNER, nil, nil), "nil keeps both")
   assertEqual(fired, 1, "no listener for no change")
   assertTrue(Skin:SetOverride(OWNER, false, nil))
@@ -112,8 +134,8 @@ function()
   fs:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
   S.Font(fs)
   assertEqual((fs:GetFont()), "Fonts\\FRIZQT__.TTF", "Ka0s Default's face is not in this LSM: the stock face")
-  Skin:SetOverride(OWNER, "Ka0s Inter", nil)
-  assertEqual(fs:GetFontObject().font[1], "Fonts\\Inter.ttf", "the override's face, through the repaint")
+  Skin:SetOverride(OWNER, "Ka0s Expressway", nil)
+  assertEqual(fs:GetFontObject().font[1], "Fonts\\Expressway.ttf", "the override's face, through the repaint")
   Skin:SetOverride(OWNER, false, nil)
   assertEqual((fs:GetFont()), "Fonts\\FRIZQT__.TTF", "cleared, the string's own face is back")
 end)
@@ -124,12 +146,12 @@ test("skin override: Ignore fonts wins over a font override", function()
   local fs = m.CreateFrame("Frame"):CreateFontString()
   fs:SetFont("Fonts\\FRIZQT__.TTF", 12, "")
   Skin:For(OWNER).Font(fs)
-  Skin:SetOverride(OWNER, "Ka0s Inter", nil)
+  Skin:SetOverride(OWNER, "Ka0s Expressway", nil)
   Skin:SetIgnore(OWNER, nil, true)
   assertEqual((fs:GetFont()), "Fonts\\FRIZQT__.TTF", "ignored fonts keep the string's own face")
-  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Inter", "and the override is kept")
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Expressway", "and the override is kept")
   Skin:SetIgnore(OWNER, nil, false)
-  assertEqual(fs:GetFontObject().font[1], "Fonts\\Inter.ttf", "the override applies again")
+  assertEqual(fs:GetFontObject().font[1], "Fonts\\Expressway.ttf", "the override applies again")
 end)
 
 test("skin override: one owner's override never reaches another owner", function()
@@ -141,8 +163,8 @@ test("skin override: one owner's override never reaches another owner", function
   Skin:For(OTHER).Font(fs)
   local fired = 0
   Skin:OnLooksChanged(OTHER, function() fired = fired + 1 end)
-  Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
-  assertEqual(Skin:Token(OTHER, "font.body"), "Ka0s Oxanium SemiBold", "the other owner reads its skin's face")
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
+  assertEqual(Skin:Token(OTHER, "font.body"), "Ka0s Prototype", "the other owner reads its skin's face")
   assertEqual(Skin:Token(OTHER, "bar.texture"), "Ka0s Default")
   assertNil((Skin:GetOverride(OTHER)))
   assertEqual((fs:GetFont()), "Fonts\\FRIZQT__.TTF", "its string was not repainted")
@@ -158,17 +180,17 @@ test("skin override: SetOverride while a reload is pending stores the pair and r
   local fired = 0
   Skin:OnLooksChanged(OWNER, function() fired = fired + 1 end)
   Skin:__RequestReload(OWNER)
-  assertTrue(Skin:SetOverride(OWNER, "Ka0s Inter", nil), "stored")
+  assertTrue(Skin:SetOverride(OWNER, "Ka0s Expressway", nil), "stored")
   assertEqual(calls, 1, "nothing repainted")
   assertEqual(fired, 0, "no listener fired")
-  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Inter")
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Expressway")
 end)
 
 test("skin override: WriteChoice hands media to the setter as its fourth argument, normalized", function()
   local _, Skin = F.env()
   local store = register(Skin, OWNER)
-  assertTrue(Skin:WriteChoice(OWNER, "ka0s", "glass", nil, { font = "Ka0s Inter", texture = "" }))
-  assertEqual(store.media.font, "Ka0s Inter")
+  assertTrue(Skin:WriteChoice(OWNER, "ka0s", "glass", nil, { font = "Ka0s Expressway", texture = "" }))
+  assertEqual(store.media.font, "Ka0s Expressway")
   assertEqual(store.media.texture, false, "the empty string is the skin's own: false")
   assertNil(store.ignore, "no ignore, no third argument")
   Skin:WriteChoice(OWNER, "ka0s", "glass", { fonts = true }, { texture = 7 })
@@ -186,8 +208,8 @@ test("skin override: FROM_SKIN stored as an override means the skin's own", func
   register(Skin, OWNER)
   assertFalse(Skin:SetOverride(OWNER, Skin.FROM_SKIN, Skin.FROM_SKIN), "no override, so no change")
   assertNil((Skin:GetOverride(OWNER)))
-  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Oxanium SemiBold")
-  Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
+  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Prototype")
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
   assertTrue(Skin:SetOverride(OWNER, Skin.FROM_SKIN, nil), "FROM_SKIN clears a set override")
   assertNil((Skin:GetOverride(OWNER)))
   local store = register(Skin, OWNER)
@@ -213,7 +235,7 @@ end
 
 test("skin override: a key LibSharedMedia lacks leaves the skin's own, until a pack registers it", function()
   -- red under: withOverrides laying any string over the tokens (the stock font and the flat bar).
-  local media = { ["font:Ka0s Oxanium SemiBold"] = "Fonts\\Oxanium-SemiBold.ttf",
+  local media = { ["font:Ka0s Prototype"] = "Fonts\\Prototype-Regular.ttf",
                   ["statusbar:Ka0s Default"] = KA0S_BAR }
   local m, Skin = F.env({ lsm = {} })
   local L = lateLSM(m, media)
@@ -229,9 +251,9 @@ test("skin override: a key LibSharedMedia lacks leaves the skin's own, until a p
   assertTrue(Skin:SetOverride(OWNER, "Gone Font", "Gone Bar"), "stored")
   local font, texture = Skin:GetOverride(OWNER)
   assertEqual(font, "Gone Font"); assertEqual(texture, "Gone Bar", "GetOverride answers the stored keys")
-  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Oxanium SemiBold", "the skin's own face stands")
+  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Prototype", "the skin's own face stands")
   assertEqual(Skin:Token(OWNER, "bar.texture"), "Ka0s Default", "and its own texture")
-  assertEqual(fs:GetFontObject().font[1], "Fonts\\Oxanium-SemiBold.ttf", "the string wears the skin's face, not stock")
+  assertEqual(fs:GetFontObject().font[1], "Fonts\\Prototype-Regular.ttf", "the string wears the skin's face, not stock")
   assertEqual(m.__paint(tex).texture, KA0S_BAR, "the bar is not flat")
   fired = 0
   L:Register("statusbar", "Unrelated", "Interface\\X")
@@ -249,12 +271,12 @@ test("skin override: __BaseTokens is the owner's table without its overrides, El
 function()
   local _, Skin = F.env({ lsm = LSM })
   register(Skin, OWNER)
-  Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
   assertTrue(Skin:__BaseTokens(OWNER) == Skin:ResolveSkin("ka0s"), "the skin's own table")
   local eui = { ["font.body"] = "Expressway", ["bar.texture"] = "EUI Bar" }
   Skin.__euiTokens = function(owner) if owner == OWNER then return eui end end
   assertTrue(Skin:__BaseTokens(OWNER) == eui, "the EllesmereUI table while it answers")
-  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Inter", "the overrides still lie over it")
+  assertEqual(Skin:Token(OWNER, "font.body"), "Ka0s Expressway", "the overrides still lie over it")
   Skin.__euiTokens = nil
 end)
 
@@ -401,11 +423,11 @@ test("skin ignore fonts: the stored HUD face and outline win over a set companio
   local _, Skin = F.env({ lsm = LSM })
   register(Skin, OWNER)
   local S = Skin:For(OWNER)
-  assertEqual(S.Resolve("hud.font", "Ka0s Inter", true), "Ka0s Oxanium SemiBold", "fonts drawn: the skin's")
+  assertEqual(S.Resolve("hud.font", "Ka0s Expressway", true), "Ka0s Prototype", "fonts drawn: the skin's")
   Skin:SetIgnore(OWNER, nil, true)
-  assertEqual(S.Resolve("hud.font", "Ka0s Inter", true), "Ka0s Inter", "ignored: the stored face")
+  assertEqual(S.Resolve("hud.font", "Ka0s Expressway", true), "Ka0s Expressway", "ignored: the stored face")
   assertEqual(S.Resolve("hud.outline", "THICKOUTLINE", true), "THICKOUTLINE", "and the stored outline")
-  assertEqual(Skin:Resolve(OWNER, "hud.font", "Ka0s Inter", true), "Ka0s Inter", "lib-level too")
+  assertEqual(Skin:Resolve(OWNER, "hud.font", "Ka0s Expressway", true), "Ka0s Expressway", "lib-level too")
   assertNil(S.Resolve("hud.font", Skin.FROM_SKIN), "a stored sentinel names no face of its own")
   assertNil(S.Resolve("hud.outline", Skin.FROM_SKIN), "nor an outline")
   assertNil(S.Resolve("hud.font", nil, true), "nothing stored: nil, the host's own stands")
@@ -419,7 +441,7 @@ test("skin ignore fonts: Token leaves the HUD face and outline alone, and nothin
   assertNil(S.Token("hud.font"), "the HUD face is left alone")
   assertNil(S.Token("hud.outline"), "and the outline")
   assertNil(Skin:Token(OWNER, "hud.font"), "lib-level too")
-  assertEqual(S.Token("font.body"), "Ka0s Oxanium SemiBold", "font.body is P.font's, unchanged")
+  assertEqual(S.Token("font.body"), "Ka0s Prototype", "font.body is P.font's, unchanged")
   assertEqual(S.Token("hud.fontSize"), 12, "the HUD size is out of R-1's scope")
   assertEqual(S.Resolve("bar.texture", "Smooth", true), "Ka0s Default", "a texture still follows the skin")
   assertEqual(S.Resolve("hud.fontSize", 9, true), 12, "and so does the size")
@@ -431,12 +453,12 @@ test("skin ignore fonts: the stored face wins over a font override, and switchin
   local S = Skin:For(OWNER)
   Skin:SetOverride(OWNER, "Ka0s Nunito", nil)
   Skin:SetIgnore(OWNER, nil, true)
-  assertEqual(S.Resolve("hud.font", "Ka0s Inter", true), "Ka0s Inter", "the stored face, not the override")
+  assertEqual(S.Resolve("hud.font", "Ka0s Expressway", true), "Ka0s Expressway", "the stored face, not the override")
   Skin:SetIgnore(OWNER, nil, false)
-  assertEqual(S.Resolve("hud.font", "Ka0s Inter", true), "Ka0s Nunito", "off again: the override")
+  assertEqual(S.Resolve("hud.font", "Ka0s Expressway", true), "Ka0s Nunito", "off again: the override")
   assertEqual(S.Token("hud.outline"), "OUTLINE", "and the skin's outline")
   Skin:SetOverride(OWNER, false, nil)
-  assertEqual(S.Token("hud.font"), "Ka0s Oxanium SemiBold", "and the skin's face, with no re-register")
+  assertEqual(S.Token("hud.font"), "Ka0s Prototype", "and the skin's face, with no re-register")
 end)
 
 test("skin ignore fonts: BarStyle's font fields are nil, every other field unchanged", function()
@@ -451,14 +473,14 @@ test("skin ignore fonts: BarStyle's font fields are nil, every other field uncha
   assertEqual(bar.texture, before.texture)
   assertEqual(bar.fontSize, before.fontSize, "and the size")
   Skin:SetIgnore(OWNER, nil, false)
-  assertEqual(S.BarStyle().fontKey, "Ka0s Oxanium SemiBold", "off again: the skin's face")
+  assertEqual(S.BarStyle().fontKey, "Ka0s Prototype", "off again: the skin's face")
 end)
 
 test("skin ignore fonts: an unregistered owner reads Ka0s Default's HUD face as before", function()
   local _, Skin = F.env({ lsm = LSM })
   local S = Skin:For("Nobody")
   assertFalse(Skin:__FontsIgnored("Nobody"))
-  assertEqual(S.Resolve("hud.font", "Ka0s Inter", true), "Ka0s Oxanium SemiBold")
+  assertEqual(S.Resolve("hud.font", "Ka0s Expressway", true), "Ka0s Prototype")
   assertEqual(S.Token("hud.outline"), "OUTLINE")
-  assertEqual(S.BarStyle().fontKey, "Ka0s Oxanium SemiBold")
+  assertEqual(S.BarStyle().fontKey, "Ka0s Prototype")
 end)

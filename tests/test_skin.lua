@@ -124,8 +124,8 @@ end)
 
 test("skin: Ka0s Default sets every token, faces and sizes included", function()
   -- SkinDefs minor 8, the owner's ruling (2026-10-26): Ka0s Default leaves nothing to the client.
-  -- Every schema token carries a value or `false` (the explicit "none"); its faces are Oxanium,
-  -- SemiBold for body and HUD and Bold for titles (SkinDefs minor 14, the owner's choice), set rather than inherited from the client's
+  -- Every schema token carries a value or `false` (the explicit "none"); its face is Prototype, for
+  -- body, titles and HUD alike (SkinDefs minor 17, the owner's choice), set rather than inherited from the client's
   -- font objects, and its sizes the reference every skin scales against. red under: a Ka0s Default
   -- token left nil.
   local Skin = T.mocks.LibStub(MAJOR)
@@ -136,13 +136,13 @@ test("skin: Ka0s Default sets every token, faces and sizes included", function()
   end
   assertEqual(#missing, 0, "Ka0s Default leaves these to the client: " .. table.concat(missing, ", "))
   local tokens = Skin:ResolveSkin("ka0s")
-  assertEqual(tokens["font.body"], "Ka0s Oxanium SemiBold", "the body face, set")
-  assertEqual(tokens["font.title"], "Ka0s Oxanium Bold", "the title face, set")
-  assertEqual(tokens["hud.font"], "Ka0s Oxanium SemiBold", "the HUD face, set")
+  assertEqual(tokens["font.body"], "Ka0s Prototype", "the body face, set")
+  assertEqual(tokens["font.title"], "Ka0s Prototype", "the title face, set")
+  assertEqual(tokens["hud.font"], "Ka0s Prototype", "the HUD face, set")
   assertEqual(tokens["bar.texture"], "Ka0s Default", "the bar texture, set")
   local wow = Skin:ResolveSkin("wow")
-  assertEqual(wow["font.body"], "Friz Quadrata TT", "WoW Default keeps the client's face")
-  assertEqual(wow["font.title"], "Friz Quadrata TT", "and for its titles")
+  assertEqual(wow["font.body"], "Ka0s Friz Quadrata TT", "WoW Default's face, shipped (SkinDefs minor 18, D-01)")
+  assertEqual(wow["font.title"], "Ka0s Friz Quadrata TT", "and for its titles")
   assertEqual(tokens["font.bodySize"], 12, "the body reference")
   assertEqual(tokens["font.titleSize"], 14, "the title reference")
   sameColor(tokens["q.epic"], { 163 / 255, 53 / 255, 238 / 255, 1 }, "the client's epic purple, written out")

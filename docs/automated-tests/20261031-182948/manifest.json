@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "addon": "LibKa0s",
+  "addonVersion": "1.83.0",
+  "run": "20261031-182948",
+  "startedAt": "2026-10-31T18:29:48+05:30",
+  "durationMs": 58949,
+  "label": null,
+  "release": "1.83.0",
+  "git": { "sha": "17209cfc881b95ba4924c59419c2c368d71b0979", "branch": "feat/2026-10-31-font-pickers-skin-faces", "dirty": false },
+  "host": { "lua": "Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio", "luacheck": "Luacheck: 1.2.0", "lizard": "1.24.0", "timingSource": "date +%s%3N" },
+  "suites": {
+    "lint": { "status": "pass", "durationMs": 14821, "warnings": 0, "errors": 0, "files": 251, "gating": true, "gates": { "commit": true, "release": true } },
+    "tests": { "status": "pass", "durationMs": 37348, "passed": 3519, "failed": 0, "skipped": 2, "total": 3521, "gating": true, "gates": { "commit": true, "release": true } },
+    "perf": { "status": "skip", "durationMs": 2, "skipReason": "no tests/perf.lua — this addon ships no offline scenarios", "scenarios": 0, "gating": false, "gates": { "commit": false, "release": true } },
+    "complexity": { "status": "pass", "durationMs": 5291, "warnings": 0, "maxCcn": 15, "nloc": 78071, "functions": 11309, "avgCcn": 2.1, "avgNloc": 6.8, "avgToken": 59.0, "warnFunRatio": 0.00, "warnNlocRatio": 0.00, "bandFiles": 15, "overCapFiles": 0, "blindFiles": 0, "crashedFiles": 0, "gating": false, "gates": { "commit": false, "release": true } }
+  },
+  "verdict": "green"
+}

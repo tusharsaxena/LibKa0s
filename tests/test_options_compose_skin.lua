@@ -139,7 +139,7 @@ test("compose skin: the picker shows the skin's value while its companion is set
   if not Skin:IsOwner(OWNER) then Skin:RegisterOwner(OWNER) end
   local O, rec = host(OWNER)
   local picker = rowAt(O.FontGroup({ prefix = "t.", fromSkin = true }), "t.font")
-  rec.store["t.font"] = "Ka0s Inter"
+  rec.store["t.font"] = "Ka0s Expressway"
   assertNil(picker.skinValue(picker), "companion unset: the stored pick shows")
   rec.store["t.fontFromSkin"] = true
   assertEqual(picker.skinValue(picker), Skin:Token(OWNER, "hud.font"), "companion set: the skin's font")
@@ -155,7 +155,7 @@ test("compose skin: while the owner ignores fonts the font picker shows the stor
   local store = rec.store
   local rows = O.FontGroup({ prefix = "i.", fromSkin = true, page = "general", group = "Text" })
   local picker = rowAt(rows, "i.font")
-  store["i.font"], store["i.fontFromSkin"] = "Ka0s Inter", true
+  store["i.font"], store["i.fontFromSkin"] = "Ka0s Expressway", true
   Skin:SetIgnore(OWNER, nil, true)
   assertNil(picker.skinValue(picker), "ignored: no skin value, so the stored pick shows")
   seq = seq + 1
@@ -163,7 +163,7 @@ test("compose skin: while the owner ignores fonts the font picker shows the stor
   O.RenderRows(ctx, rows)
   local w = widget(ctx.scroll, picker.label)
   assertTrue(w ~= nil, "rendered")
-  assertEqual(w.value, "Ka0s Inter", "showing the stored face")
+  assertEqual(w.value, "Ka0s Expressway", "showing the stored face")
   assertTrue(w.disabled, "still disabled while the companion is set (D-09)")
   Skin:SetIgnore(OWNER, nil, false)
   assertEqual(picker.skinValue(picker), Skin:Token(OWNER, "hud.font"), "off again: the skin's face")
@@ -209,11 +209,11 @@ end)
 
 test("compose skin: ResetToSkin sets companions to true and never writes the sentinel into a pick",
   function()
-  local profile = { t = { font = "Ka0s Inter", fontFromSkin = false, color = { 1, 0, 0, 1 } },
+  local profile = { t = { font = "Ka0s Expressway", fontFromSkin = false, color = { 1, 0, 0, 1 } },
                     b = { borderStyleFromSkin = false }, size = 12 }
   local n = Skin.ResetToSkin(profile, { "t.font", "b.borderStyleFromSkin", "t.color", "size" })
   assertEqual(n, 4)
-  assertEqual(profile.t.font, "Ka0s Inter", "the pick is kept")
+  assertEqual(profile.t.font, "Ka0s Expressway", "the pick is kept")
   assertEqual(profile.t.fontFromSkin, true, "its companion is set")
   assertEqual(profile.b.borderStyleFromSkin, true, "a companion named directly is set to true")
   assertEqual(profile.t.colorFromSkin, true, "a color still takes its companion")

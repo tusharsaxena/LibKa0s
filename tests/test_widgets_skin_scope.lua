@@ -9,7 +9,7 @@
 --     menu is measured on), the mode strip's line, the autocomplete's rows, the chart's tick labels
 --     and the drag handle's label drew their template's face in every skin, so the switch had
 --     nothing to act on. An owned control now draws them in its skin's body face through the
---     facade (Oxanium under Ka0s Default, D-13), and Ignore fonts gives each its template back. A
+--     facade (Prototype under Ka0s Default, D-13), and Ignore fonts gives each its template back. A
 --     face the host named (`opts.font`, `spec.labelFont`) is the host's and is never touched.
 --   * `panel = true` PUTS A CONTROL ON A SETTINGS PAGE (D-02): while its owner ignores its settings
 --     panel the control is drawn as an owner-less one, live both ways; without it a control is a
@@ -19,7 +19,7 @@
 -- does, so "given back" is observable: the kit's base answers none.
 
 local T = _G.LK_TEST
-local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
+local test, assertEqual, assertTrue, assertNil = T.test, T.assertEqual, T.assertTrue, T.assertNil
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER = "LootHistory"
@@ -74,7 +74,7 @@ local function face(fs)
   return nil
 end
 
-local OXANIUM = "Fonts\\Ka0s Oxanium SemiBold"
+local KA0S_FACE = "Fonts\\Ka0s Prototype"
 
 local function bodyFace(Skin, skin)
   return "Fonts\\" .. Skin:ResolveSkin(skin)["font.body"]
@@ -111,9 +111,9 @@ test("skin scope: an owned dropdown's menu rows and measure take the skin's body
   F.owner(Skin, OWNER)
   local state = {}
   local menu = open(m, options(W.Dropdown(m.UIParent, 120, { owner = OWNER })), state)
-  assertEqual(face(menu.buttons[1].fs), OXANIUM, "Ka0s Default's face (D-13)")
-  assertEqual(face(menu.buttons[2].fs), OXANIUM)
-  assertEqual(face(menu.measure), OXANIUM, "measured in the face the rows wear")
+  assertEqual(face(menu.buttons[1].fs), KA0S_FACE, "Ka0s Default's face (D-13)")
+  assertEqual(face(menu.buttons[2].fs), KA0S_FACE)
+  assertEqual(face(menu.measure), KA0S_FACE, "measured in the face the rows wear")
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
   assertEqual(face(menu.buttons[1].fs), bodyFace(Skin, "obsidian"), "a switch repaints an open row")
   Skin:SetIgnore(OWNER, nil, true)
@@ -202,7 +202,7 @@ test("skin scope: an owned strip's line is text.accent in the body face, and Ign
   F.owner(Skin, OWNER)
   local s = W.TestStrip(m.UIParent, { text = "Test", owner = OWNER })
   assertEqual(rgba(survey(m, s.text).textColor), "1,0.820,0,1", "Ka0s Default's accent is the template's gold")
-  assertEqual(face(s.text), OXANIUM)
+  assertEqual(face(s.text), KA0S_FACE)
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
   assertEqual(rgba(survey(m, s.text).textColor), F.tok(Skin, "obsidian", "text.accent"))
   assertEqual(face(s.text), bodyFace(Skin, "obsidian"))
@@ -351,4 +351,183 @@ test("skin scope: a panel-scoped drag handle is owner-less while the panel is ig
   local hud = handle(m, W, { owner = OWNER })
   Skin:SetIgnore(OWNER, true, nil)
   assertEqual(rgba(survey(m, hud.bg).color), F.tok(Skin, "obsidian", "handle.bg"), "a HUD strip keeps the skin")
+end)
+
+-- ── the drag handle's re-fit (WidgetsDragHandle minor 8, LK-09, decision D-12) ────────────────
+
+--- A face-aware measurer: 6 px a character in any face, 8 in Obsidian's body face. Answers it and
+--- the widths a strip was set to.
+local function faceMeasurer(W, Skin, h)
+  local fs = { text = "" }
+  function fs:SetFontObject(obj) self.obj, self.path = obj, nil end
+  function fs:SetFont(path) self.path, self.obj = path, nil end
+  function fs:SetText(t) self.text = t end
+  function fs:GetStringWidth()
+    local path = self.path or (type(self.obj) == "table" and self.obj.font and self.obj.font[1])
+    return #self.text * (path == bodyFace(Skin, "obsidian") and 8 or 6)
+  end
+  W.__DragHandleMeasurer = function() return fs end
+  local widths = {}
+  if h then
+    local set = h.SetWidth
+    rawset(h, "SetWidth", function(self, w) widths[#widths + 1] = w; return set(self, w) end)
+  end
+  return fs, widths
+end
+
+local REAL_MEASURER
+
+test("skin scope: a fitted drag handle re-fits its title in the new face on a skin switch", function()
+  -- red under: dhRepaint re-fonting the label and leaving the width the host measured in the old
+  -- face, which truncated "Ka0s KickCD - Focus" under a wider skin (image-43..45).
+  local m, Skin, W = env()
+  REAL_MEASURER = REAL_MEASURER or W.__DragHandleMeasurer
+  F.owner(Skin, OWNER)
+  local h = handle(m, W, { owner = OWNER, label = "Focus" })
+  local _, widths = faceMeasurer(W, Skin, h)
+  local slack, reserve = W.DRAG_HANDLE.FIT_SLACK, h:Reserve()
+  assertEqual(h:ApplyWidth(0), 5 * 6 + slack + reserve * 2, "fitted in Ka0s Default's face")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(widths[#widths], 5 * 8 + slack + reserve * 2, "re-fitted in Obsidian's")
+  Skin:SetIgnore(OWNER, nil, true)
+  assertEqual(widths[#widths], 5 * 6 + slack + reserve * 2, "and again under Ignore fonts")
+  W.__DragHandleMeasurer = REAL_MEASURER
+end)
+
+test("skin scope: the re-fit keeps the host's last floor, and a strip never fitted is not sized", function()
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER)
+  local floored = handle(m, W, { owner = OWNER })
+  local unfitted = handle(m, W, { owner = OWNER })
+  local _, widths = faceMeasurer(W, Skin, floored)
+  local seen = 0
+  local set = unfitted.SetWidth
+  rawset(unfitted, "SetWidth", function(self, w) seen = seen + 1; return set(self, w) end)
+  floored:ApplyWidth(500)
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(widths[#widths], 500, "the bar's floor still wins")
+  assertEqual(#widths, 2, "one host fit, one re-fit")
+  assertEqual(seen, 0, "born with no width, and the widget does not give it one")
+end)
+
+test("skin scope: onRefit replaces the default re-fit, and a raise in it costs nothing else", function()
+  -- AuraMaster caps its strip and shortens the name itself, so it re-places rather than re-fits.
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER)
+  local calls = {}
+  local h = handle(m, W, { owner = OWNER, onRefit = function(self) calls[#calls + 1] = self end })
+  local bad = handle(m, W, { owner = OWNER, onRefit = function() error("host bug") end })
+  local _, widths = faceMeasurer(W, Skin, h)
+  h:ApplyWidth(0)
+  bad:ApplyWidth(0)
+  local savedEH = m.geterrorhandler
+  local errs = 0
+  m.geterrorhandler = function() return function() errs = errs + 1 end end
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  m.geterrorhandler = savedEH
+  assertEqual(#calls, 1, "called once for the one repaint")
+  assertTrue(calls[1] == h, "with the handle")
+  assertEqual(#widths, 1, "and the widget did not re-fit it as well")
+  assertEqual(errs, 1, "the raise reaches the error handler")
+  assertEqual(face(h.label), bodyFace(Skin, "obsidian"), "the strip is repainted all the same")
+end)
+
+test("skin scope: the measurer hangs off a shown host parked off screen, and wears the label's face", function()
+  -- red under: minor 7's hidden host, on which the client may never load the face it measures.
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "obsidian")
+  local calls, create = {}, m.CreateFrame
+  m.CreateFrame = function(...)
+    local f = create(...)
+    for _, k in ipairs({ "SetSize", "SetPoint", "SetAlpha", "Show", "Hide" }) do
+      local orig = f[k]
+      rawset(f, k, function(self, ...)
+        local args = { k }
+        for i = 1, select("#", ...) do
+          local v = select(i, ...)
+          args[#args + 1] = v == m.UIParent and "UIParent" or tostring(v)
+        end
+        calls[#calls + 1] = table.concat(args, " ")
+        if type(orig) == "function" then return orig(self, ...) end
+      end)
+    end
+    return f
+  end
+  local fs, host = W.__DragHandleMeasurer()
+  m.CreateFrame = create
+  assertTrue(fs ~= nil and host ~= nil, "a FontString and its host")
+  assertEqual(table.concat(calls, "|"),
+    "SetSize 1 1|SetPoint TOPRIGHT UIParent TOPLEFT -64 0|SetAlpha 1|Show", "shown, opaque, off screen")
+  local _, again = W.__DragHandleMeasurer("GameFontHighlight")
+  assertTrue(again == host, "one host for every face")
+  -- A label the skin set by path (no font object) lends its path, size and flags.
+  local h = handle(m, W, { owner = OWNER })
+  local label = h.label
+  rawset(label, "GetFontObject", function() return nil end)
+  rawset(label, "GetFont", function() return "Fonts\\ByPath", 13, "OUTLINE" end)
+  local lentFont
+  rawset(fs, "SetFont", function(_, ...) lentFont = { ... } end)
+  h:Measure()
+  assertEqual(table.concat(lentFont or {}, ","), "Fonts\\ByPath,13,OUTLINE")
+end)
+
+-- ── review of LK-09 ──────────────────────────────────────────────────────────────────────────
+
+test("skin scope: a host's own SetWidth after an ApplyWidth ends the default re-fit until its next fit", function()
+  -- AuraMaster's placeHandle: SetWidth(cap) when capped, ApplyWidth(w) otherwise. A strip once
+  -- placed uncapped and later capped must keep its cap on the next repaint.
+  -- red under: dhRefit re-running ApplyWidth on __fitted alone (the repaint widens the capped strip)
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER)
+  local h = handle(m, W, { owner = OWNER, label = "A long anchor title" })
+  local _, widths = faceMeasurer(W, Skin, h)
+  h:ApplyWidth(0)
+  h:SetWidth(40)
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(widths[#widths], 40, "the cap the host set is kept")
+  assertEqual(#widths, 2, "and the repaint set no width")
+  h:SetSize(41, W.DRAG_HANDLE.HEIGHT)
+  h:ApplyWidth(0)
+  local fitted = #widths
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertEqual(#widths, fitted + 1, "a later ApplyWidth fits again, and the repaint re-fits it")
+  W.__DragHandleMeasurer = REAL_MEASURER
+end)
+
+test("skin scope: the outline setting re-fits a fitted strip as a skin switch does", function()
+  -- D-12 names the outline setting as a re-fit trigger beside a switch and Ignore fonts.
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER)
+  local h = handle(m, W, { owner = OWNER, label = "Focus" })
+  local _, widths = faceMeasurer(W, Skin, h)
+  h:ApplyWidth(7)
+  assertTrue(Skin:SetOutline(OWNER, "off"), "a change")
+  assertEqual(#widths, 2, "one host fit, one re-fit")
+  assertEqual(widths[2], 5 * 6 + W.DRAG_HANDLE.FIT_SLACK + h:Reserve() * 2)
+  W.__DragHandleMeasurer = REAL_MEASURER
+end)
+
+test("skin scope: a label set by path that still answers its template object lends the path", function()
+  -- In the client a template-built FontString keeps answering its template as its font object
+  -- after SetFont(path), so lending the object first measured the skin's label in the template.
+  -- red under: dhLendFont trying GetFontObject before comparing it with the label's GetFont
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "obsidian")
+  local h = handle(m, W, { owner = OWNER })
+  local fs = W.__DragHandleMeasurer()
+  local label = h.label
+  rawset(label, "GetFontObject", function() return templateObject("GameFontNormalSmall") end)
+  rawset(label, "GetFont", function() return "Fonts\\ByPath", 13, "OUTLINE" end)
+  local lentFont, lentObj
+  rawset(fs, "SetFont", function(_, ...) lentFont = { ... } end)
+  rawset(fs, "SetFontObject", function(_, obj) lentObj = obj end)
+  h:Measure()
+  assertEqual(table.concat(lentFont or {}, ","), "Fonts\\ByPath,13,OUTLINE", "the path the label draws")
+  assertNil(lentObj, "not the template object")
+  -- An object that draws what the label draws is lent as the object.
+  lentFont = nil
+  rawset(label, "GetFont", function() return "Fonts\\FRIZQT__.TTF", 10, "" end)
+  h:Measure()
+  assertNil(lentFont)
+  assertEqual(type(lentObj), "table", "the label's own object")
 end)

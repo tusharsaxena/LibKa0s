@@ -403,16 +403,16 @@ test("skin defs: WoW Forever is warm charcoal, black centered titles, tan accent
     end
     local bg = t["win.bg"]
     assertTrue(bg[1] > bg[3] and luminance(bg) < 0.03, "warm charcoal window")
-    assertEqual(t["font.body"], "Ka0s Fira Sans", "Fira Sans (minor 11: a face of its own; Barlow read blurry)")
+    assertEqual(t["font.body"], "Ka0s Fira Sans Medium",
+      "Fira Sans (minor 11: a face of its own; Barlow read blurry), Medium since minor 17")
   end)
 
 -- ── what a skin names exists ─────────────────────────────────────────────────────────────────
 
 -- LibSharedMedia's own default border keys a skin may name besides the shipped ones.
 local LSM_BORDERS = { ["Blizzard Dialog"] = true, ["Blizzard Tooltip"] = true }
--- ...and its default font keys: Friz Quadrata, the client's own face, set by name (WoW Default's: its
--- HUD face explicitly since SkinDefs minor 16, its body and titles through KEEP).
-local LSM_FONTS = { ["Friz Quadrata TT"] = true }
+-- ...and its default font keys: none since SkinDefs minor 18, when WoW Default took the shipped Friz.
+local LSM_FONTS = {}
 -- ...and its default statusbar key: the client's Blizzard bar, WoW Default's through KEEP.
 local LSM_BARS = { ["Blizzard"] = true }
 
@@ -456,25 +456,28 @@ test("skin defs: every font, bar texture and border a skin names is shipped or a
   end
 end)
 
-local FRIZ = "Friz Quadrata TT"
+local FRIZ = "Ka0s Friz Quadrata TT"
 
 --- A face's family: its LSM key without the weight.
 local function family(face)
-  return (face:gsub(" SemiBold$", ""):gsub(" Bold$", ""))
+  return (face:gsub(" SemiBold$", ""):gsub(" Semibold$", ""):gsub(" Medium$", ""):gsub(" Bold$", ""))
 end
 
 test("skin defs: every skin draws one family of its own, for body and titles alike", function()
   -- SkinDefs minor 11 (the owner's round-5 notes: titles that do not match the body, faces reused
   -- across skins). red under: a skin whose titles are another family than its body (Cinzel over a
-  -- body face), or a face two skins share, but the client's Friz Quadrata, which WoW Default draws.
-  -- SkinDefs minor 14: Ka0s Default draws Oxanium, SemiBold body and Bold titles, the owner's choice.
+  -- body face), or a face two skins share.
+  -- SkinDefs minor 17: Ka0s Default draws Prototype for both, the owner's choice (it has one weight),
+  -- and WoW Forever's body is Fira Sans Medium under its SemiBold titles. Obsidian draws Expressway
+  -- for both, the owner's ruling of 2026-10-30 (LK-A1; one weight too). SkinDefs minor 18 is the
+  -- owner's 2026-10-31 picks (D-06): one weight each for Glass, High Contrast, Ember and WoW Default.
   local Skin = skinLib()
   local want = {
-    obsidian = { "Ka0s Inter", "Ka0s Inter SemiBold" }, glass = { "Ka0s Nunito", "Ka0s Nunito SemiBold" },
-    azeroth = { "Ka0s Vollkorn", "Ka0s Vollkorn Bold" }, contrast = { "Ka0s Atkinson", "Ka0s Atkinson Bold" },
-    ember = { "Ka0s Bitter", "Ka0s Bitter Bold" }, midnight = { "Ka0s Philosopher", "Ka0s Philosopher Bold" },
-    forever = { "Ka0s Fira Sans", "Ka0s Fira Sans SemiBold" }, wow = { FRIZ, FRIZ },
-    ka0s = { "Ka0s Oxanium SemiBold", "Ka0s Oxanium Bold" },
+    obsidian = { "Ka0s Expressway", "Ka0s Expressway" }, glass = { "Ka0s Avant Garde", "Ka0s Avant Garde" },
+    azeroth = { "Ka0s Open Sans Semibold", "Ka0s Open Sans Bold" }, contrast = { "Ka0s Doris PP", "Ka0s Doris PP" },
+    ember = { "Ka0s Emblem", "Ka0s Emblem" }, midnight = { "Ka0s Segoe UI Semibold", "Ka0s Segoe UI Bold" },
+    forever = { "Ka0s Fira Sans Medium", "Ka0s Fira Sans SemiBold" }, wow = { FRIZ, FRIZ },
+    ka0s = { "Ka0s Prototype", "Ka0s Prototype" },
   }
   local owner = {}
   for key, pair in pairs(want) do
@@ -483,26 +486,31 @@ test("skin defs: every skin draws one family of its own, for body and titles ali
     assertEqual(t["font.title"], pair[2], key .. " title font")
     assertEqual(family(pair[2]), family(pair[1]), key .. ": its titles are its body's family")
     local fam = family(pair[1])
-    if fam ~= FRIZ then
-      assertNil(owner[fam], fam .. " is " .. tostring(owner[fam]) .. "'s and " .. key .. "'s")
-      owner[fam] = key
-    end
+    assertNil(owner[fam], fam .. " is " .. tostring(owner[fam]) .. "'s and " .. key .. "'s")
+    owner[fam] = key
   end
   -- Every skin draws the client's shadow now: Azeroth's shadowless body was for its light parchment,
   -- and SkinDefs minor 8 made it dark. A dark label goes shadowless on its own (SkinPaint minor 5).
   for key in pairs(want) do
     assertEqual(Skin:ResolveSkin(key)["font.shadow"], true, key .. " draws the shadow")
   end
-  local base, hc = Skin:ResolveSkin("obsidian"), Skin:ResolveSkin("contrast")
-  assertTrue(hc["font.bodySize"] > base["font.bodySize"], "High Contrast reads larger")
+  -- The title color of Obsidian is its primary button's blue (D-06, the owner's item 3).
+  local o = Skin:ResolveSkin("obsidian")
+  -- red under: titleColor fanning out to the headings, when the owner asked for the title alone.
+  assertEqual(o["title.text"][3], 0xD1 / 255, "Obsidian's title: the primary button's blue")
+  assertEqual(o["text.heading"][3], 0xF4 / 255, "and its headings are not")
+  assertEqual(o["text.headingAlt"][3], 0xF4 / 255)
+  for i = 1, 3 do assertEqual(o["title.text"][i], o["btnPrimary.bg"][i], "Obsidian's title, channel " .. i) end
+  -- High Contrast no longer reads larger: every skin's sizes give Ka0s Default's text width
+  -- (SkinDefs minor 17, LK-05), pinned in tests/test_skin_width_parity.lua.
 end)
 
 -- Each skin's HUD face (SkinDefs minor 16, the owner's ruling R-4, DECISIONS D-11): the skin's own
--- family at its heavier shipped weight; WoW Default the client's Friz Quadrata, set explicitly.
+-- family; since minor 18 (D-06) its body weight, the owner's pick for the skin, Forever's excepted.
 local HUD_FACE = {
-  ka0s = "Ka0s Oxanium SemiBold", obsidian = "Ka0s Inter SemiBold", azeroth = "Ka0s Vollkorn Bold",
-  glass = "Ka0s Nunito SemiBold", contrast = "Ka0s Atkinson Bold", ember = "Ka0s Bitter Bold",
-  wow = FRIZ, midnight = "Ka0s Philosopher Bold", forever = "Ka0s Fira Sans SemiBold",
+  ka0s = "Ka0s Prototype", obsidian = "Ka0s Expressway", azeroth = "Ka0s Open Sans Semibold",
+  glass = "Ka0s Avant Garde", contrast = "Ka0s Doris PP", ember = "Ka0s Emblem",
+  wow = FRIZ, midnight = "Ka0s Segoe UI Semibold", forever = "Ka0s Fira Sans SemiBold",
 }
 
 test("skin defs: every skin names a HUD face of its own, its text's family; only WoW Default draws Friz", function()
@@ -516,31 +524,31 @@ test("skin defs: every skin names a HUD face of its own, its text's family; only
     assertEqual(Skin.skins[key].tokens["hud.font"], HUD_FACE[key], key .. " names its HUD face itself")
     assertEqual(family(t["hud.font"]), family(t["font.body"]), key .. ": its HUD face is its text's family")
     assertEqual(t["hud.outline"], "OUTLINE", key .. " outlines HUD text")
-    assertEqual(t["hud.fontSize"], 12, key .. "'s HUD size stays 12")
+    assertEqual(t["hud.fontSize"], Skin.skins[key].tokens["hud.fontSize"], key .. " names its HUD size itself")
     if key ~= "wow" then assertTrue(t["hud.font"] ~= FRIZ, key .. " does not draw Friz on the HUD") end
   end
 end)
 
-test("skin defs: Ka0s Default's Oxanium and its own bar stay its own; a skin naming neither keeps Friz and Blizzard", function()
-  -- SkinDefs minor 14. Every skin inherits Ka0s Default's tokens, so without KEEP minor 14's choice
-  -- would have moved every skin's faces and bar texture with it. red under: a skin naming no body
-  -- face or bar texture of its own that reads Oxanium or the Ka0s Default bar. (The HUD face left
-  -- KEEP in minor 16: every skin names its own, pinned above.)
+test("skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin naming neither keeps Friz and Blizzard", function()
+  -- SkinDefs minor 14 (Oxanium then; Prototype since minor 17). Every skin inherits Ka0s Default's
+  -- tokens, so without KEEP that choice would have moved every skin's faces and bar texture with it.
+  -- red under: a skin naming no body face or bar texture of its own that reads Prototype or the Ka0s
+  -- Default bar. (The HUD face left KEEP in minor 16: every skin names its own, pinned above.)
   local Skin = skinLib()
   local k = Skin:ResolveSkin("ka0s")
-  assertEqual(k["hud.font"], "Ka0s Oxanium SemiBold", "Ka0s Default's HUD face")
+  assertEqual(k["hud.font"], "Ka0s Prototype", "Ka0s Default's HUD face")
   assertEqual(k["bar.texture"], "Ka0s Default", "Ka0s Default's bar texture")
   for _, key in ipairs(KEYS) do
     if key ~= "ka0s" then
       local own, t = Skin.skins[key].tokens, Skin:ResolveSkin(key)
-      assertTrue(family(t["hud.font"]) ~= "Ka0s Oxanium", key .. " does not inherit Ka0s Default's HUD face")
+      assertTrue(t["hud.font"] ~= "Ka0s Prototype", key .. " does not inherit Ka0s Default's HUD face")
       assertEqual(t["bar.texture"], own["bar.texture"] or "Blizzard", key .. " draws its own bar or Blizzard")
-      assertTrue(family(t["font.body"]) ~= "Ka0s Oxanium" and family(t["font.title"]) ~= "Ka0s Oxanium",
+      assertTrue(t["font.body"] ~= "Ka0s Prototype" and t["font.title"] ~= "Ka0s Prototype",
         key .. " does not inherit Ka0s Default's face")
     end
   end
   local wow = Skin:ResolveSkin("wow")
-  assertEqual(wow["font.body"], FRIZ, "WoW Default's body, through KEEP")
+  assertEqual(wow["font.body"], FRIZ, "WoW Default's body, through KEEP (shipped since minor 18)")
   assertEqual(wow["font.title"], FRIZ, "WoW Default's titles, through KEEP")
 end)
 
@@ -571,16 +579,17 @@ end
 
 -- ── the owner's notes of 2026-10-26 (SkinDefs minor 7) ───────────────────────────────────────
 
-test("skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's", function()
+test("skin defs: every skin sets both sizes, within two points of Ka0s Default's", function()
   -- red under: a skin with no size (it would not scale with the others), or one far enough from the
-  -- reference to break a layout measured against the stock fonts.
+  -- reference to break a layout measured against the stock fonts. Two points since SkinDefs minor 18:
+  -- Open Sans Bold, the widest face a skin names, reaches Prototype's width at 12 against its 14.
   local Skin = skinLib()
   local ref = Skin:ResolveSkin("ka0s")
   for _, key in ipairs(KEYS) do
     local own = Skin.skins[key].tokens
     for _, name in ipairs({ "font.bodySize", "font.titleSize" }) do
       assertTrue(type(own[name]) == "number", key .. " sets " .. name)
-      assertTrue(math.abs(own[name] - ref[name]) <= 1.5, ("%s: %s %s is near the reference %s")
+      assertTrue(math.abs(own[name] - ref[name]) <= 2, ("%s: %s %s is near the reference %s")
         :format(key, name, tostring(own[name]), tostring(ref[name])))
     end
   end

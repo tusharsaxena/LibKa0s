@@ -367,7 +367,9 @@ local AUTHORED_LISTS = { ["tests/test_prose.lua"] = true }
 --   * AceTimer's `.cancelled` handle field and C_Timer's `IsCancelled` (register row 1): the suite
 --     that pins the kit's fakes reads them as the fakes spell them, the register row names them,
 --     and the API index's row for kit revision 17, which added the `NewTimer` handle, names the
---     method.
+--     method;
+--   * `dialogueui`, a third-party add-on's folder name, spelled that way only here (register row 3):
+--     `fonts.py` pins the Friz Quadrata it copies by that path.
 -- And one document whose subject is this rule, localization-§5's fourth exclusion: this file,
 -- whose comments quote the forbidden words in order to forbid them and whose tables spell out every
 -- identifier above. Kit revision 26's API document, which records word by word the list entry that
@@ -376,16 +378,18 @@ local AUTHORED_LISTS = { ["tests/test_prose.lua"] = true }
 -- file quotes it, in backticks, asterisks or string quotes, so a stray use of the same spelling as
 -- prose elsewhere in it still reddens.
 local AUTHORED_RATIFIED = {
-  ["docs/api/Media/version-9.1-docs.md"] = { "minimise" },
+  ["docs/api/Media/version-11.1-docs.md"] = { "minimise" },
   ["tools/artwork/icon_cleaner.py"] = { "minimise" },
-  ["CLAUDE.md"] = { "minimise", ".cancelled", "iscancelled" },
+  ["tools/artwork/fonts.py"] = { "dialogueui" },
+  ["CLAUDE.md"] = { "minimise", ".cancelled", "iscancelled", "dialogueui" },
   ["tests/test_mock_ace.lua"] = { ".cancelled", "iscancelled" },
   ["docs/api/README.md"] = { "iscancelled" },
   ["tests/test_prose.lua"] = {
     '`cancelled`', '`colour`', '*coloured*', '*colours*', '`normalis`', '*normalise*',
     '*normalised*', '`analys`', '`programme`', '*analysed*', '`minimise`', '`minimise.tga`',
     '"minimise"', '`.cancelled`', '".cancelled"', '`iscancelled`', '"iscancelled"', '`synchronis`',
-    '*synchronis-*', '`synchronisation`', '*synchronisation*', '*neighbours*',
+    '*synchronis-*', '`synchronisation`', '*synchronisation*', '*neighbours*', '`dialogueui`',
+    '"dialogueui"',
   },
 }
 

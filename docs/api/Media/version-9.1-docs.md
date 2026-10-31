@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **9** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.79.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 8.1](./version-8.1-docs.md) (shipped in v1.78.0) — the same surface without Oxanium in `FONTS`, and without `Ka0s Default` and the seven skins' own bars in `TEXTURES` |
-| Superseded by | — |
+| Superseded by | [version 10.1](./version-10.1-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 9, MediaIcons = 1 }` |
 
 ## What changed at this version
@@ -481,3 +481,16 @@ The consumer-side gate compares the vendored payload against the tag byte for by
 and normalized line endings on everything, which is right for Lua and wrong for a TGA. **Kit revision
 11 or newer is required** to vendor a payload with `media/` in it — see
 [`../testkit/version-11-docs.md`](../testkit/version-11-docs.md).
+
+## Moving to version 10.1
+
+**Take it; five keys leave.** Version 10.1, released in v1.82.0, moves `Media.lua` to minor 10 and
+no signature. What arrives in `FONTS`: `Ka0s Prototype` (Ka0s Default's face, western only, under its
+author's terms in `Prototype.txt`, not the OFL), `Ka0s Fira Sans Medium` (WoW Forever's body face,
+SIL OFL 1.1 in `FiraSans-OFL.txt`) and `Ka0s Expressway` (Obsidian's face, western and ruRU, not
+under the OFL: shipped on the owner's ruling of 2026-10-30, with the Typodermic EULA beside it). What
+leaves, with its files: `Ka0s Oxanium SemiBold`, `Ka0s Oxanium Bold`, `Ka0s Fira Sans`, `Ka0s Inter`
+and `Ka0s Inter SemiBold`, which no skin names from `LibKa0s-Skin-1.0`'s SkinDefs minor 17. A host
+that names one of them in code or in a degradation copy of Ka0s Default's face moves to the new one;
+`RegisterLSM` counts fifteen fonts, twelve of them on ruRU; a README's font credits drop Inter and
+Oxanium and add Prototype and Expressway with their terms. See [version 10.1](./version-10.1-docs.md).

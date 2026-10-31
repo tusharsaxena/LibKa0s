@@ -10,9 +10,9 @@
 | Version | **44** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.79.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 43](version-43-docs.md) — a StatusBar built under the paint recorder answered `SetStatusBarTexture`, `SetStatusBarColor` and `GetStatusBarColor` from the base's metatable (the frame), so a bar's fill could not be asserted |
-| Superseded by | — |
+| Superseded by | [version 45](version-45-docs.md) — `mock_paint.lua`'s `SetTextColor` keeps the alpha when given none, as the client does |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `44` |
 

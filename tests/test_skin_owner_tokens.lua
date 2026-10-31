@@ -82,8 +82,10 @@ end)
 test("skin owner tokens: the library's tokens never move, and an owner with none reads the resolved table", function()
   local _, Skin = F.env()
   register(Skin, OTHER, nil)
+  Skin:SetOutline(OTHER, "all")   -- the mode's own derived table is test_skin_outline.lua's
   assertTrue(Skin:__Tokens(OTHER) == Skin:ResolveSkin("ka0s"), "no owner tokens: the resolved table itself")
   register(Skin, OWNER, tokens())
+  Skin:SetOutline(OWNER, "all")
   local base, own = Skin:ResolveSkin("ka0s"), Skin:__Tokens(OWNER)
   for name, v in pairs(base) do
     assertTrue(own[name] == v, name .. " is the library's value, unchanged")
@@ -158,32 +160,32 @@ test("skin owner tokens: Divider's token name resolves an owner token and repain
 end)
 
 test("skin owner tokens: the owner's font and texture overrides still apply beside them", function()
-  local LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat" }
+  local LSM = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf", ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat" }
   local _, Skin = F.env({ lsm = LSM })
-  local S = register(Skin, OWNER, { ["dw.face"] = { default = "Ka0s Oxanium SemiBold", follow = "font.body" } })
+  local S = register(Skin, OWNER, { ["dw.face"] = { default = "Ka0s Prototype", follow = "font.body" } })
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
-  Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
-  assertEqual(S.Token("font.body"), "Ka0s Inter", "the font override")
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
+  assertEqual(S.Token("font.body"), "Ka0s Expressway", "the font override")
   assertEqual(S.Token("bar.texture"), "Ka0s Flat", "the texture override")
-  assertEqual(S.Token("dw.face"), "Ka0s Inter", "an owner token following font.body follows the override")
+  assertEqual(S.Token("dw.face"), "Ka0s Expressway", "an owner token following font.body follows the override")
   Skin:SetOverride(OWNER, false, false)
   assertEqual(S.Token("dw.face"), Skin:ResolveSkin("obsidian")["font.body"], "cleared: the skin's own again")
 end)
 
 test("skin owner tokens: under Ka0s Default an override still reaches a token that follows it", function()
-  local LSM = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf", ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat" }
+  local LSM = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf", ["statusbar:Ka0s Flat"] = "Interface\\Ka0s\\Flat" }
   local _, Skin = F.env({ lsm = LSM })
   local S = register(Skin, OWNER, {
-    ["dw.face"] = { default = "Ka0s Oxanium SemiBold", follow = "font.body" },
+    ["dw.face"] = { default = "Ka0s Prototype", follow = "font.body" },
     ["dw.bar"] = { default = "Interface\\Own\\Bar", follow = "bar.texture" },
   })
-  assertEqual(S.Token("dw.face"), "Ka0s Oxanium SemiBold", "no override: the default, exactly")
+  assertEqual(S.Token("dw.face"), "Ka0s Prototype", "no override: the default, exactly")
   assertEqual(S.Token("dw.bar"), "Interface\\Own\\Bar", "and the texture's default")
-  Skin:SetOverride(OWNER, "Ka0s Inter", "Ka0s Flat")
-  assertEqual(S.Token("dw.face"), "Ka0s Inter", "the font override wins under Ka0s Default")
+  Skin:SetOverride(OWNER, "Ka0s Expressway", "Ka0s Flat")
+  assertEqual(S.Token("dw.face"), "Ka0s Expressway", "the font override wins under Ka0s Default")
   assertEqual(S.Token("dw.bar"), "Ka0s Flat", "and the texture override")
   Skin:SetOverride(OWNER, false, false)
-  assertEqual(S.Token("dw.face"), "Ka0s Oxanium SemiBold", "cleared: the default again")
+  assertEqual(S.Token("dw.face"), "Ka0s Prototype", "cleared: the default again")
   assertEqual(S.Token("dw.bar"), "Interface\\Own\\Bar", "both halves")
 end)
 

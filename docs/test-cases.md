@@ -460,7 +460,7 @@ Total.
 - toast: a close mark Core cannot build (no frame) leaves the toast without one
 - toast: two instances keep separate queues and frames
 
-### test_media.lua (39)
+### test_media.lua (43)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -491,10 +491,14 @@ Total.
 - media: an LSM without the locale bits gets a plain Register
 - media: an LSM without IsValid counts every Register call, as minor 3 did
 - media: no LibSharedMedia is 0 registrations, not an error
-- media: FONTS carries the fourteen skin faces beside JetBrains Mono and Ka0s Default's Oxanium
+- media: FONTS carries every skin face beside JetBrains Mono
 - media: each face names its own locales, and only a face with Cyrillic reaches ruRU
 - media: every OFL face ships with its license text beside it
-- media: RegisterLSM('X') registers 'Ka0s Inter' under X's own libs folder, each face with its mask
+- media: a face off the OFL ships its author's terms verbatim, and the face says the same
+- media: Open Sans ships the Apache 2.0 text, and each new face's bytes carry the notice recorded for it
+- media: FONTS.md records every shipped face by file, and the notice of each new one
+- media: the README points at FONTS.md and carries no font license or credit of its own
+- media: RegisterLSM('X') registers 'Ka0s Nunito' under X's own libs folder, each face with its mask
 - media: a ruRU client keeps every Cyrillic face and is refused the western-only ones
 - media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
 - media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
@@ -538,11 +542,12 @@ Total.
 - skin: DrawsKey answers the key an owner draws by
 - skin: DrawsKey answers eui once EllesmereUI paints the owner, Ka0s Default before
 
-### test_skin_override.lua (26)
+### test_skin_override.lua (27)
 
 - skin override: an unregistered owner has none and cannot set one
 - skin override: a font and a texture reach every token read, and nothing else moves
 - skin override: the override follows a skin switch, over the new skin's table
+- skin override: SetChoice itself never clears an override, so the load path keeps the stored pair
 - skin override: nil keeps a half, false and the empty string clear it, a repeat changes nothing
 - skin override: a painted string takes the override's face on the repaint, and the skin's back on a clear
 - skin override: Ignore fonts wins over a font override
@@ -566,6 +571,28 @@ Total.
 - skin ignore fonts: the stored face wins over a font override, and switching back is live
 - skin ignore fonts: BarStyle's font fields are nil, every other field unchanged
 - skin ignore fonts: an unregistered owner reads Ka0s Default's HUD face as before
+
+### test_skin_outline.lua (19)
+
+- skin outline: the three modes, in the tab's order, and hud is the default
+- skin outline: an owner that never set one draws HUD text only, and the skin's table is untouched
+- skin outline: a stored choice stays, all included
+- skin outline: every skin states OUTLINE for window and HUD text
+- skin outline: all reads the skin, hud drops window text, off drops both
+- skin outline: an unknown mode is the default, a repeat changes nothing, listeners fire per change
+- skin outline: a painted string takes the mode's flags on the repaint
+- skin outline: the mono role is never outlined
+- skin outline: Ignore fonts wins whatever the mode
+- skin outline: one owner's mode never reaches another, and a font override composes
+- skin outline: SetOutline while a reload is pending stores the mode and repaints nothing
+- skin outline: WriteChoice hands media.outline to the setter, normalized
+- skin font flags: FontFlags is in the vocabulary and the facade
+- skin font flags: a picked flag wins, From skin follows the Font outline
+- skin font flags: under Ignore fonts From skin answers OUTLINE for the HUD whatever the mode
+- skin font flags: under Ignore fonts From skin window text answers none, as its stock text
+- skin outline: an owner on the eui source takes the mode over EllesmereUI's derived table
+- skin outline: hud survives a later font override and a skin change, and the new face applies
+- skin outline: an owner token that follows font.outline follows the mode
 
 ### test_skin_owner_tokens.lua (16)
 
@@ -649,14 +676,46 @@ Total.
 - skin defs: every font, bar texture and border a skin names is shipped or an LSM default
 - skin defs: every skin draws one family of its own, for body and titles alike
 - skin defs: every skin names a HUD face of its own, its text's family; only WoW Default draws Friz
-- skin defs: Ka0s Default's Oxanium and its own bar stay its own; a skin naming neither keeps Friz and Blizzard
+- skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin naming neither keeps Friz and Blizzard
 - skin defs: every skin draws its own bar texture, and WoW Default the client's
-- skin defs: every skin sets both sizes, within a point and a half of Ka0s Default's
+- skin defs: every skin sets both sizes, within two points of Ka0s Default's
 - skin defs: a hovered row is told apart from a selected one
 - skin defs: WoW Default's checkbox art is its only box
 - skin defs: in every skin a primary button differs from a normal one
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
+
+### test_skin_width_parity.lua (16)
+
+- skin width parity: every skin's body, title and HUD sizes are the measured ones
+- skin width parity: every skin's text is as wide as Ka0s Default's, never more than 2% wider
+- skin width parity: every shipped face has a size for each role, as wide as Ka0s Default's
+- skin width parity: a skin's sizes are its faces' rows in the library's table
+- skin width parity: High Contrast no longer promises larger type
+- skin hud size: HudFontSize is in the vocabulary and the facade
+- skin hud size: a stored size scales by the skin's HUD size over Ka0s Default's
+- skin hud size: its own face, Ignore fonts and a bad size leave the stored size alone
+- skin hud size: the stored value is never rewritten, and the scale follows a live skin change
+- skin hud size: an override of a shipped face draws at that face's sizes, HUD and body alike
+- skin hud size: a face the library did not measure draws unscaled, whatever the skin
+- skin hud size: a skin whose face this locale refuses draws unscaled in the fallback
+- skin hud size: a nil owner reads Ka0s Default on a client that refuses its face
+- skin hud size: an override's sizes wait for it to resolve, and stay out of its own-face HUD
+- skin hud size: BarStyle's fontSize is each skin's own, Ka0s Default's under Ignore fonts
+- skin hud size: an EllesmereUI owner reads Ka0s Default's HUD size, unscaled
+
+### test_skin_button_contrast.lua (10)
+
+- skin button contrast: a primary button enabled after a faded disabled paint draws its label opaque (ka0s)
+- skin button contrast: a primary button enabled after a faded disabled paint draws its label opaque (obsidian)
+- skin button contrast: a primary button enabled after a faded disabled paint draws its label opaque (glass)
+- skin button contrast: a plain button's label is opaque again after a faded disabled paint
+- skin button contrast: P.color hands a translucent color over as four numbers
+- skin button contrast: P.color keeps the three-number call over an opaque target (Ka0s Default's traces)
+- skin button contrast: P.color adds the 1 to a SetTextColor over faded text
+- skin button contrast: P.color leaves a host's 0.5 vertex alpha alone (the vertex rule is unmeasured)
+- skin button contrast: a close button's glyph painted faded is drawn opaque on a hover and after it
+- skin button contrast: every skin's enabled button label holds 3:1 on its fill, well clear of disabled
 
 ### test_skin_paint.lua (37)
 
@@ -894,7 +953,7 @@ Total.
 - widgets: the handle owns the collection's 30px gutter unless the host says otherwise
 - widgets: a box frame that cannot make textures is skipped rather than raising
 
-### test_widgets_draghandle.lua (46)
+### test_widgets_draghandle.lua (49)
 
 - draghandle: it builds a named strip of the published height, hidden, with a label and a mark
 - draghandle: with no parent, and in a process with no CreateFrame, it answers nil
@@ -913,6 +972,9 @@ Total.
 - draghandle: ApplyWidth floors the natural width at the host's minimum and returns it
 - draghandle: SetLabel re-texts and re-measures, and touches no geometry of its own
 - draghandle: a measurer the client cannot build is a width of 0, not a raise
+- draghandle: the label's width is ceiled and Measure adds FIT_SLACK's 2 px
+- draghandle: the label is measured unbounded where the client answers it
+- draghandle: an owner-less strip is never re-sized by the widget after the host's fit
 - draghandle: the host's numeric guard is what reads every measurement
 - draghandle: dragging the strip moves the host's frame and reports both ends
 - draghandle: canDrag refuses, and a refused drag stops nothing either
@@ -1136,7 +1198,7 @@ Total.
 - skin owner: an owned DragHandle's tooltip is minor 6's gold, white and gray under Ka0s Default
 - skin owner: an owned DragHandle's tooltip takes its skin's gtip colors and follows a switch
 
-### test_widgets_skin_scope.lua (13)
+### test_widgets_skin_scope.lua (20)
 
 - skin scope: an owned dropdown's menu rows and measure take the skin's body face
 - skin scope: an owner-less open after an owned one gives the rows their template back
@@ -1151,6 +1213,13 @@ Total.
 - skin scope: a panel-scoped chart reads lib.LINE_CHART while the panel is ignored, live
 - skin scope: an owned drag handle's label takes the body face, and is measured in it
 - skin scope: a panel-scoped drag handle is owner-less while the panel is ignored, live
+- skin scope: a fitted drag handle re-fits its title in the new face on a skin switch
+- skin scope: the re-fit keeps the host's last floor, and a strip never fitted is not sized
+- skin scope: onRefit replaces the default re-fit, and a raise in it costs nothing else
+- skin scope: the measurer hangs off a shown host parked off screen, and wears the label's face
+- skin scope: a host's own SetWidth after an ApplyWidth ends the default re-fit until its next fit
+- skin scope: the outline setting re-fits a fitted strip as a skin switch does
+- skin scope: a label set by path that still answers its template object lends the path
 
 ### test_debuglog.lua (75)
 
@@ -2234,7 +2303,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (36)
+### test_options_appearance.lua (60)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2271,11 +2340,35 @@ Total.
 - appearance: with a Skin copy before minor 6 the section is absent
 - appearance: a stored key LibSharedMedia lacks stays listed, and the skin's own names the worn face
 - appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
+- appearance: the Font outline dropdown sits in the Font and texture section, All text first
+- appearance: an outline pick moves the Skin major first, then writes every media half
+- appearance: Ignore fonts grays the Font outline out, and it comes back live
+- appearance: in combat an outline pick writes nothing and snaps back
+- appearance: a page drawn disabled keeps the Font outline disabled after a sync
+- appearance: copy gives every other owner this owner's font outline
+- appearance: the copy helper keeps a target's own half for a media half left out
 - appearance: the other owners and one owner's skin copy are library-level, for the skin picker
+- appearance: a font pick stores no outline the owner never chose, and keeps one it did
+- appearance: the copy gives a target the source's applied outline, the default included
+- appearance: a skin pick with both overrides set resets both, live and through the seam
+- appearance: re-clicking the checked skin, or a pick with no overrides, writes no media
+- appearance: an override picked after a switch sticks until the next switch
+- appearance: in combat a skin pick resets nothing
+- appearance: a pick keeps the overrides while the look drawn does not change (Skin:DrawsKey)
+- appearance: onto an EllesmereUI that paints resets the overrides; a fallback pick under it does not
+- appearance: copy gives an other owner whose skin changes this owner's overrides, none for none
+- appearance: Reset font and Reset texture sit under their dropdowns, at the dropdowns' width
+- appearance: a reset clears only its half, live and then through the seam
+- appearance: a reset is refused in combat, and a dropdown pick re-enables it
+- appearance: a page drawn disabled keeps both resets disabled after a sync
+- appearance: the resets' tooltips name the skin's own, and spec.strings translates them
+- appearance: the Scope's check boxes sit on the dropdowns' half-width grid
+- appearance: the copy has its own heading, Other Ka0s addons, after the Scope, the tab ending on it
+- appearance: the note leads the Look section, ahead of the first skin
 
-### test_options_skin_picker.lua (39)
+### test_options_skin_picker.lua (47)
 
-- skin picker: OptionsSkinPicker is minor 2, paired on the shell, and attaches two members
+- skin picker: OptionsSkinPicker is minor 4, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -2295,7 +2388,7 @@ Total.
 - skin picker: in combat a pick, Apply and Apply to all write nothing and leave the window up
 - skin picker: in combat the close control still closes, putting a pending preview back unwritten
 - skin picker: Apply to all is hidden while no other skin owner is registered
-- skin picker: Apply to all saves here and gives every other owner the source and skin alone
+- skin picker: Apply to all saves here and gives every other owner what the Skin tab's copy gives
 - skin picker: Apply to all raises one reload popup naming every addon that needs it
 - skin picker: Apply to all dismisses every queued picker, each onClose run, none shown
 - skin picker: the gear saves, opens the page itself, then the Skin tab, then closes
@@ -2314,6 +2407,98 @@ Total.
 - skin picker: the eye shows only with onPreview, and calls it
 - skin picker: spec.strings translates the title, the buttons, the tips and a skin's name
 - skin picker: nil with no Skin major, or for an owner that never registered
+- skin picker: a pick to another skin previews with the overrides cleared, and writes nothing
+- skin picker: a close or Escape puts back the overrides the window opened with
+- skin picker: Apply writes the cleared overrides only when the saved skin's look changed
+- skin picker: with no overrides a pick and Apply write no media half
+- skin picker: a close keeps overrides something else set while a clearing preview was up
+- skin picker: a fallback preview under a painting EllesmereUI keeps the overrides
+- skin picker: the gear after a clearing preview writes the skin, then every media half
+- skin picker: two clearing previews, then Apply, write the media once
+
+### test_options_skin_picker_faces.lua (15)
+
+- skin picker faces: a SetFont answering false keeps a named row in the template's face
+- skin picker faces: a SetFont answering nil keeps a named row in the template's face
+- skin picker faces: a SetFont answering a raise keeps a named row in the template's face
+- skin picker faces: a SetFont answering true, or nothing with the face read back, keeps the face
+- skin picker faces: every skin's body face is preloaded before the list can open, and no other
+- skin picker faces: a copy without the preload shows its rows
+- skin picker faces: every open dresses each row, then again next frame, font and text through an empty string
+- skin picker faces: a list closed before the next frame is left alone
+- skin picker faces: a closed list is not dressed by a repaint
+- skin picker faces: a skin switch under an open list dresses each row, which keep their names and faces
+- skin picker faces: a pick's repaint leaves the next open dressing every row
+- skin picker faces: a later showing of the same window still dresses on open
+- skin picker faces: a host's name for a skin survives the redress
+- skin picker faces: a name that measures nothing next frame takes the template's face, and the next open tries its own
+- skin picker faces: a client without C_Timer dresses at once and raises nothing
+
+### test_options_skin_picker_rows.lua (53)
+
+- skin picker rows: Font, Texture, Font outline and Scope, in order, in a window at most 10% wider
+- skin picker rows: the rows wear the Skin tab's words, list and leading previewing row
+- skin picker rows: a tab copy and the picker read one list (lib-level helpers)
+- skin picker rows: a font pick previews with no write, Apply saves it with every media half
+- skin picker rows: closing puts back font, texture, outline and scope, with no write
+- skin picker rows: an outline taken back to the default in one showing saves nothing
+- skin picker rows: Apply saves the outline and the scope through the owner's seam
+- skin picker rows: the gear saves them as Apply does
+- skin picker rows: a write from elsewhere during a preview survives the close
+- skin picker rows: another skin clears the font and texture override, and the rows show it (D-10)
+- skin picker rows: a font chosen under a previewed skin goes when the skin moves again
+- skin picker rows: a font picked over a cleared override, then Apply, writes the new one
+- skin picker rows: a reset button is disabled while its half is the skin's own, and says what it does
+- skin picker rows: the reset icons draw the client's art, which no consumer's icon prune can take
+- skin picker rows: Ignore fonts disables the Font outline, as on the Skin tab
+- skin picker rows: Apply to all carries font, texture, outline and scope, as the Skin tab's copy does
+- skin picker rows: combat refuses a row and the row goes back to what is worn
+- skin picker rows: a window shown in combat draws its rows disabled
+- skin picker rows: the open skin list lays over the rows at T8, and the window keeps its height
+- skin picker rows: using a row closes an open skin list
+- skin picker rows: the widgets are acquired for a showing and released at its close
+- skin picker rows: a reset closes the open pull-out before its list is rebuilt
+- skin picker rows: a skin pick, the skin dropdown and the window's body close an open pull-out
+- skin picker rows: the eye and a refused Apply close an open pull-out too
+- skin picker rows: a change of looks from elsewhere closes an open pull-out
+- skin picker rows: another addon's focused dropdown is not the picker's to close
+- skin picker rows: a row disabled in combat wakes when combat ends
+- skin picker rows: a window shown in combat wakes when combat ends
+- skin picker rows: the watch is throttled and redraws once
+- skin picker rows: rows never drawn locked run no watch and an open pull-out stays
+- skin picker rows: closing a window drawn locked leaves it no watch
+- skin picker rows: standing down a window drawn locked leaves it no watch
+- skin picker rows: a shown picker registers no event at all, in or out of combat
+- skin picker rows: a reset icon's foot is its bar's, AceGUI's labeled height
+- skin picker rows: the media rows sit under the Skin tab's heading
+- skin picker rows: no Skin:SetOverride draws no heading for rows it did not draw
+- skin picker rows: a tab write stores no font the picker only previewed
+- skin picker rows: a tab write stores no outline the picker only previewed
+- skin picker rows: a tab scope flip stores no half the picker only previewed
+- skin picker rows: a tab write stores no override a pending skin pick cleared
+- skin picker rows: a tab write moves what the picker measures from
+- skin picker rows: a dismissal after a tab write puts back the tab's, not the opened
+- skin picker rows: the tab's copy carries no preview to the other owners
+- skin picker rows: Apply saves the scope applied now, not the one the row last previewed
+- skin picker rows: the rows are painted, repaint on a skin pick, and wear the skin under Ignore settings panel
+- skin picker rows: a released row goes back to the pool under the panel's ordinary rule
+- skin picker rows: show loads the skins' faces and the override's, and the pull-out loads every face
+- skin picker rows: a lazy acquire leaves the next picker's preload as it was
+- skin picker rows: with no write seam the picker offers nothing it could not save
+- skin picker rows: without LibSharedMedia a media row offers the skin's own entry alone
+- skin picker rows: without the stock Dropdown the media rows are plain Dropdowns
+- skin picker rows: the EllesmereUI source keeps the rows, as the Skin tab does
+- skin picker rows: a Skin major without the seams draws the window as before
+
+### test_options_skin_verb.lua (7)
+
+- skin verb: SkinVerb is a member, and its four words are ASCII
+- skin verb: shows the picker on a profile that has already seen it, with the same spec
+- skin verb: in combat it shows nothing and prints the gray line on every call
+- skin verb: with another owner's picker up it queues, says so, and shows when that one closes
+- skin verb: a repeat while its own picker is up refreshes the one window
+- skin verb: without the Skin major, or for an unregistered owner, skins are unavailable
+- skin verb: spec.strings translate the verb's words
 
 ### test_options_idsuggest.lua (29)
 
@@ -2376,7 +2561,7 @@ Total.
 - IdList removeStyle icon: the highlight goes back onto the art when AceGUI takes the X back
 - IdList removeStyle icon: an AceGUI whose Icon has no textures still draws the X
 
-### test_options_switched.lua (9)
+### test_options_switched.lua (16)
 
 - switched: only the subsection the selector names is drawn, its heading with it
 - switched: equals may list several values; the row shows for any of them
@@ -2387,6 +2572,46 @@ Total.
 - switched: rows without shownWhen render as before, and no selector watcher is added
 - switched: a bound (path-less) selector reads and is watched through its record
 - switched: two selectors changing in one frame cost one re-render
+- switched any: a section shows while either selector chooses it, both when both differ
+- switched any: a change to either selector re-renders once, on the next frame
+- switched any: a clause whose read raises reads as shown; a malformed clause is skipped
+- switched any: an any with no well-formed clause, or an empty any, switches nothing
+- switched: a copy without OptionsSwitch.lua draws every row and adds no watcher
+- switched any: the single-path form is unchanged beside it
+- switched: OptionsSwitch.lua is its own file of the major, paired on the shell's minor
+
+### test_options_media.lua (30)
+
+- media: lib.__MediaWidgetType maps a kind, its LSM30_* and its own type name to one type
+- media: no stock Dropdown registered, so no picker, and the caller draws a plain Dropdown
+- media: registering twice leaves the constructors alone and touches no other type
+- media: the file is its own file of the major, paired on the shell's minor
+- media: the order puts a leading row first and its text is the list's
+- media: a list with no order sorts by its text, and no list means every key of the kind
+- media: a stored key the list lacks still shows, and the host's table is not written
+- media: a value leaving the list leaves no row behind
+- media: the closed row and an opened row draw in the entry's own face
+- media: a leading row previews the key it stands for, closed and open
+- media: a key LSM cannot resolve keeps the plain face and raises nothing
+- media: statusbar, border and background entries draw a swatch of that art
+- media: a sound row's play button plays that sound, and a click on it is not a pick
+- media: faces are preloaded before the rows draw, and a load dresses them again next frame
+- media: a picker drawn in the tick that preloaded its face dresses again next frame
+- media: a swatch picker on an acquire asks for no next frame
+- media: a picker released before that next frame does nothing
+- media: release puts the face, the previews and the rows back, into this type's own pool
+- media: a pooled row that made room for a swatch gets its text width back
+- media: a released swatch and play button hide, and a stock Dropdown stays stock
+- media: disabling dims the swatch
+- media: the skin paints a picker as a Dropdown and the preview survives its font
+- media: an open pull-out wears the menu tokens
+- media: with no LibSharedMedia the picker still lists, picks and shows its text
+- media: an unregistered LSM30_* row is drawn by the matching picker
+- media: a registered LSM30_* row keeps it
+- media: with no picker to draw, an LSM30_* row is the stock Dropdown
+- media: the Skin tab's font and texture rows are pickers led by a previewing row
+- media: a Skin tab pick writes through the same seam and keeps the row a picker
+- media: without a picker the Skin tab's rows are stock Dropdowns
 
 ### test_options_combat.lua (33)
 
@@ -2605,6 +2830,14 @@ Total.
 - compose skin: the bar family is unchanged; the icon family also governs the thickness
 - compose skin: the icon family's pickers show the skin's icon border while the companion is set
 - compose skin: a rendered icon-family thickness slider is disabled with the style picker
+
+### test_options_compose_flags.lua (5)
+
+- compose flags: OptionsCompose is at minor 14 or later
+- compose flags: without flagsFromSkin the Font flags row is minor 13's
+- compose flags: flagsFromSkin leads with From skin and defaults to it
+- compose flags: fromSkin and flagsFromSkin together are the minimum font setting
+- compose flags: omit, keys, defaults and labels reach the From skin row
 
 ### test_options_throttle.lua (4)
 
@@ -3290,6 +3523,21 @@ Total.
 - kit bindings: keybindThroughTab slot 2 with a press that binds nothing answers the row's own line
 - kit bindings: keybindThroughTab fails naming options-ui-§20 without a row or a slot
 
+### test_glyph_guard.lua (12)
+
+- glyph guard: the helpers are on the kit table and published by Kit.expose
+- glyph guard: the safe set was generated from exactly the shipped faces, byte for byte
+- glyph guard: ASCII and the characters every shipped face draws are safe; the rest are named
+- glyph guard: assertGlyphSafe passes a safe string and names an unsafe one
+- glyph guard: the scanner reads every literal, escapes decoded, and long strings too
+- glyph guard: comments, debug calls, glyph: mono lines and markup are left out
+- glyph guard: the decoder takes only valid UTF-8: no lead past 0xF4, no surrogate, no overlong
+- glyph guard: a marker region left open, or an end with no begin, fails rather than exempting
+- glyph guard: opts.debugNames reads a host's own logger as a debug call
+- glyph guard: CRLF sources count lines the same
+- glyph guard: a skip needs its reason, and libs/, tests/ and tools/ are never read
+- glyph guard: every display string LibKa0s ships uses only characters every shipped face draws
+
 ### test_mock_base.lua (33)
 
 - mock: a frame that was never armed answers zero, dressed or not
@@ -3477,12 +3725,13 @@ Total.
 - layer mock: UIParent carries the recorder too
 - layer mock: restore() puts CreateFrame back, and later frames are plain
 
-### test_mock_paint.lua (15)
+### test_mock_paint.lua (16)
 
 - paint mock: CreateTexture and CreateFontString answer distinct regions the frame owns
 - paint mock: texture paint calls are recorded and answered back
 - paint mock: SetAtlas on a texture records the art and sizes it from the fixture
 - paint mock: font string text, color, font, font object and shadow are recorded
+- paint mock: SetTextColor with no alpha keeps the alpha the string already had (revision 45)
 - paint mock: regions show, hide and answer IsVisible through their owner
 - paint mock: backdrop and its two colors are recorded on the frame
 - paint mock: GetChildren answers the frames parented here, in creation order
@@ -3525,7 +3774,7 @@ Total.
 - kitsync: the kit revision is indexed in docs/api/README.md as the one Current revision
 - kitsync: the runner is mode 100755 in the git index, in BOTH copies
 - kitsync: testkit/ and tests/_kit/ hold the same set of files
-- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, latch.lua, bindings_xml.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
+- kitsync: testkit/asserts.lua, inventory.lua, secrets.lua, latch.lua, bindings_xml.lua, glyphs.lua, prose_lists.lua, prose_coverage.lua and prose_selftests.lua exist in both testkit/ and tests/_kit/
 - kitsync: every kit file is byte-identical in testkit/ and tests/_kit/, README included
 - kitsync: vendor_sync checks the runner's recorded mode, and this repo's copy passes
 - kitsync: the runner-mode case fails on a path the index records 100644
@@ -3567,7 +3816,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 44
+- the kit is revision 46
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -3661,7 +3910,7 @@ Total.
 - runner complexity: a raise no single file reproduces is a whole-tree crash
 - runner complexity: the real 1.24.0 for-header crash is crashed, not blind
 
-### test_kit_vendor_sync.lua (19)
+### test_kit_vendor_sync.lua (22)
 
 - parseIconLine: the three forms
 - parseIconLine: `all` without a parenthesized reason is refused
@@ -3671,6 +3920,9 @@ Total.
 - iconCatalog: names and attribution by set folder
 - requiredIcons: attribution travels with its set, unknown names come back
 - cappedList: ten names, then a count
+- vendor sync: a byte-identical PDF holding CR LF pairs passes, and one edited byte fails
+- vendor sync: a CR LF copy of an LF text blob passes, and one edited byte under it fails
+- vendor sync: every extension .gitattributes pins binary is one the gate compares raw
 - vendor sync: no `LibKa0s icons:` line is the whole-folder gate
 - vendor sync: `none.` ships no icon and no icon license
 - vendor sync: a list ships exactly its icons and their sets' attribution
@@ -3745,14 +3997,17 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
-| test_media.lua | 39 |
+| test_media.lua | 43 |
 | test_skin.lua | 33 |
-| test_skin_override.lua | 26 |
+| test_skin_override.lua | 27 |
+| test_skin_outline.lua | 19 |
 | test_skin_owner_tokens.lua | 16 |
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 31 |
+| test_skin_width_parity.lua | 16 |
+| test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 37 |
 | test_skin_paint_controls.lua | 31 |
 | test_skin_eui.lua | 29 |
@@ -3760,7 +4015,7 @@ Total.
 | test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
 | test_widgets_reorderlist.lua | 24 |
-| test_widgets_draghandle.lua | 46 |
+| test_widgets_draghandle.lua | 49 |
 | test_widgets_draghandle_place.lua | 10 |
 | test_widgets_draghandle_layers.lua | 10 |
 | test_widgets_linechart_math.lua | 21 |
@@ -3770,7 +4025,7 @@ Total.
 | test_widgets_teststrip.lua | 17 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
-| test_widgets_skin_scope.lua | 13 |
+| test_widgets_skin_scope.lua | 20 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -3806,12 +4061,16 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 36 |
-| test_options_skin_picker.lua | 39 |
+| test_options_appearance.lua | 60 |
+| test_options_skin_picker.lua | 47 |
+| test_options_skin_picker_faces.lua | 15 |
+| test_options_skin_picker_rows.lua | 53 |
+| test_options_skin_verb.lua | 7 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
-| test_options_switched.lua | 9 |
+| test_options_switched.lua | 16 |
+| test_options_media.lua | 30 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 51 |
@@ -3822,6 +4081,7 @@ Total.
 | test_options_tooltip_skin.lua | 6 |
 | test_options_chrome_skin.lua | 15 |
 | test_options_compose_skin.lua | 16 |
+| test_options_compose_flags.lua | 5 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
 | test_perf_run.lua | 42 |
@@ -3847,6 +4107,7 @@ Total.
 | test_kit_secrets.lua | 30 |
 | test_kit_latch.lua | 9 |
 | test_kit_bindings.lua | 17 |
+| test_glyph_guard.lua | 12 |
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 39 |
 | test_mock_record.lua | 42 |
@@ -3855,7 +4116,7 @@ Total.
 | test_mock_lines.lua | 5 |
 | test_mock_bindings.lua | 17 |
 | test_mock_layers.lua | 7 |
-| test_mock_paint.lua | 15 |
+| test_mock_paint.lua | 16 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
@@ -3865,10 +4126,10 @@ Total.
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 20 |
-| test_kit_vendor_sync.lua | 19 |
+| test_kit_vendor_sync.lua | 22 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3297** |
+| **Total** | **3522** |

@@ -185,7 +185,7 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   -- through SetFontObject overflowed the client's stack: Forever -> Midnight crashed the game.
   -- Every shipped skin sets a body face since SkinDefs minor 8, so the way back by path is reached
   -- here through a skin registered with none (`false`), as a face the client cannot resolve would.
-  local m, Skin = F.env({ lsm = { ["font:Ka0s Fira Sans"] = "Fonts\\FiraSans.ttf" } })
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Fira Sans Medium"] = "Fonts\\FiraSans-Medium.ttf" } })
   Skin:RegisterSkin({ key = "bare", tokens = { ["font.body"] = false } })
   local S = F.owner(Skin, OWNER)
   local eb = m.CreateFrame("EditBox", nil, m.UIParent)
@@ -789,7 +789,7 @@ end)
 
 test("skin controls: a dark label is shadowless, a light one keeps its shadow", function()
   -- red under: one shadowed font object for every label, which smears dark text on a bright fill.
-  local m, Skin = F.env({ lsm = { ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf" } })
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Avant Garde"] = "Fonts\\AvantGarde.ttf" } })
   local S = F.owner(Skin, OWNER, "glass")   -- lilac primary with dark text, a light normal label
   local p, b = backdropButton(m), backdropButton(m)
   S.Button(p, { primary = true }); S.Button(b)
@@ -799,16 +799,16 @@ end)
 
 test("skin controls: an EditBox hint and a sort header's texts take the skin's face", function()
   -- red under: strings a primitive only tints, left on the client's font and its shadow.
-  local m, Skin = F.env({ lsm = { ["font:Ka0s Inter"] = "Fonts\\Inter.ttf" } })
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf" } })
   local S = F.owner(Skin, OWNER, "obsidian")
   local eb = m.CreateFrame("EditBox", nil, m.UIParent, "BackdropTemplate")
   eb.hint = eb:CreateFontString()
   S.EditBox(eb)
-  assertEqual(eb.hint:GetFontObject().font[1], "Fonts\\Inter.ttf", "the hint")
+  assertEqual(eb.hint:GetFontObject().font[1], "Fonts\\Expressway.ttf", "the hint")
   local bar = m.CreateFrame("Frame", nil, m.UIParent)
   local name = bar:CreateFontString()
   S.SortHeaderBar(bar, { texts = { name } })
-  assertEqual(name:GetFontObject().font[1], "Fonts\\Inter.ttf", "the header text")
+  assertEqual(name:GetFontObject().font[1], "Fonts\\Expressway.ttf", "the header text")
 end)
 
 test("skin controls: a slider's track is a thin bar centered in it", function()
