@@ -22,7 +22,7 @@ local F = dofile("tests/fixture_skin_paint.lua")
 local installBindings = dofile("tests/_kit/mock_bindings.lua")
 
 local OWNER, OTHER = "LootHistory", "BankLedger"
-local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdList", "OptionsTabs",
+local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs",
                   "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
                   "OptionsKeybinds" }
 

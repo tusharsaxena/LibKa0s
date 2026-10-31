@@ -37,6 +37,7 @@
 	<Script file="OptionsRegistry.lua"/>
 	<Script file="OptionsWidgets.lua"/>
 	<Script file="OptionsIds.lua"/>
+	<Script file="OptionsIdSuggest.lua"/>
 	<Script file="OptionsIdList.lua"/>
 	<Script file="OptionsTabs.lua"/>
 	<Script file="OptionsCombat.lua"/>

@@ -1,12 +1,13 @@
 {
   "major": "LibKa0s-Options-1.0",
-  "versionKey": "34.4.38.5.7.11.3.14.9.4.3.6.5.5.1.1.1",
+  "versionKey": "34.4.38.6.1.7.11.3.14.9.4.3.6.5.5.1.1.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Options", "minor": 34 },
     { "file": "OptionsRegistry", "minor": 4 },
     { "file": "OptionsWidgets", "minor": 38 },
-    { "file": "OptionsIds", "minor": 5 },
+    { "file": "OptionsIds", "minor": 6 },
+    { "file": "OptionsIdSuggest", "minor": 1 },
     { "file": "OptionsIdList", "minor": 7 },
     { "file": "OptionsTabs", "minor": 11 },
     { "file": "OptionsCombat", "minor": 3 },
