@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` minor **17** · `WidgetsReorder.lua` minor **3** · `WidgetsDragHandle.lua` minor **8** · `WidgetsLineChart.lua` minor **5** · `WidgetsAutocomplete.lua` minor **5** · `WidgetsCopyWindow.lua` minor **2** |
 | Shipped in | v1.82.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 17.3.7.5.5.2](./version-17.3.7.5.5.2-docs.md) (shipped in v1.81.0) — the same members, with a drag handle whose width is measured exactly (no slack, `GetStringWidth` only) on a hidden host, and never re-fitted after a skin repaint; and the versions that one supersedes |
-| Superseded by | — |
+| Superseded by | [version 17.3.9.5.5.2](./version-17.3.9.5.5.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 17, WidgetsReorder = 3, WidgetsDragHandle = 8, WidgetsLineChart = 5, WidgetsAutocomplete = 5, WidgetsCopyWindow = 2 }` |
 
@@ -1954,3 +1954,7 @@ visual fidelity as unverified.
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
 - `hostBackdrop`: no consumer as of v1.83.0, kept because `CopyWindow` writes it itself from `d.backdrop`, so it is state rather than a field a host passes.
+
+## Moving to the next version
+
+No host change: no member moved.

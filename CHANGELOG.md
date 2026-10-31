@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.
 
-Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **34.4.39.1.6.1.7.12.1.3.14.9.4.3.6.5.5.1.1.1**; every other file still at its v1.83.0 minor. No `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **34.4.39.1.6.1.7.12.1.3.14.9.4.3.6.5.5.1.1.1**, `LibKa0s-Widgets-1.0` key **17.3.9.5.5.2**; every other file still at its v1.83.0 minor. No `NEEDS_*` floor rises.
 
 ### The library peels (`LK-M2-PEEL`)
 
@@ -28,6 +28,10 @@ Every peel below is a pure move on the seam `CLAUDE.md`'s census named. No publi
 - `OptionsFlow.lua` (new, **OptionsFlow minor 1**): the two-column flow engine out of `OptionsWidgets.lua`, which moves to **OptionsWidgets minor 39** and drops from 1375 to 1066 lines.
 - `OptionsTabbed.lua` (new, **OptionsTabbed minor 1**): the tabbed page out of `OptionsTabs.lua`, which moves to **OptionsTabs minor 12** and drops from 1382 to 1169 lines.
 - `testkit/mock_ace.lua` (new, **test kit revision 47**): the Ace fakes, CallbackHandler through AceAddon, out of `testkit/mock_base.lua`, which drops from 1465 to 679 lines. Revision 47 also corrects a comment in `glyphs.lua` (nine skins).
+
+### `ApplyLevel` allocates nothing
+
+**WidgetsDragHandle minor 9**: `handle:ApplyLevel()` and the strip's repaint name their two marks where each built a throwaway table per call, so a host that re-levels every frame leaves no garbage.
 
 ## v1.83.0 — 2026-10-31
 

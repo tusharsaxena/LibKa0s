@@ -91,7 +91,9 @@ if not lib then return end
 -- screen (a hidden one may never load the face it is asked to measure) and wears the label's own
 -- font: its font object, or its path, size and flags where it has none. A fitted strip re-fits
 -- after each skin repaint, and `spec.onRefit` replaces that re-fit (THE RE-FIT above).
-local DRAG_MINOR = 8
+-- Minor 9: ApplyLevel and the repaint name their two marks, with no throwaway table per call
+-- (LK-M2-PEEL of Ka0sAddonsCommonTasks docs/2026-10-31-FINDINGS_REMEDIATION).
+local DRAG_MINOR = 9
 -- Paired on the SHELL's minor as well as this file's own: a handle that attached to an older shell
 -- would publish `lib.DragHandle` beside a `lib.MODULES` the shell owns, and nothing would say the
 -- two came from different vendored copies.
@@ -688,9 +690,8 @@ local function dhRepaint(handle, owner)
     tex:SetColorTexture(pal.edge[1], pal.edge[2], pal.edge[3], pal.edge[4])
   end
   if handle.label then handle.label:SetTextColor(pal.label[1], pal.label[2], pal.label[3]) end
-  for _, mark in ipairs({ handle.help, handle.close }) do
-    if mark then dhTint(mark.icon, pal.tint) end
-  end
+  if handle.help then dhTint(handle.help.icon, pal.tint) end
+  if handle.close then dhTint(handle.close.icon, pal.tint) end
   dhRefit(handle)
 end
 
@@ -746,6 +747,11 @@ local function dhSetDragScripts(handle, spec)
     if mf and mf.StopMovingOrSizing then mf:StopMovingOrSizing() end
     if spec.onDragStop then spec.onDragStop() end
   end)
+end
+
+--- One mark, where the client built it, at `level`.
+local function dhLevelMark(mark, level)
+  if mark and mark.SetFrameLevel then mark:SetFrameLevel(level) end
 end
 
 --- THE LEVEL (minor 5). With a numeric `spec.level`, the handle's frame level becomes the parent's
@@ -836,9 +842,8 @@ local function dhAttachMethods(handle, spec)
   function handle:ApplyLevel()
     local lvl = dhLevel(self, spec, self.GetParent and self:GetParent())
     if not lvl then return false end
-    for _, mark in ipairs({ self.help, self.close }) do
-      if mark and mark.SetFrameLevel then mark:SetFrameLevel(lvl + 1) end
-    end
+    dhLevelMark(self.help, lvl + 1)
+    dhLevelMark(self.close, lvl + 1)
     return true
   end
 end

@@ -122,6 +122,15 @@ test("DragHandle ApplyLevel: a parent re-leveled to 20 puts the handle at 70 and
   assertEqual(rawget(h.close, "__level"), 71, "the close mark's level is written explicitly")
 end)
 
+test("DragHandle ApplyLevel: a mark the client did not build leaves the other one reached", function()
+  local p = parentAt(7)
+  local h = W.DragHandle(p, baseSpec({ level = 50, onClose = function() end }))
+  h.help = nil
+  p:SetFrameLevel(20)
+  assertEqual(h:ApplyLevel(), true)
+  assertEqual(rawget(h.close, "__level"), 71, "the close mark is reached past the missing help mark")
+end)
+
 test("DragHandle ApplyLevel: without spec.level it answers false and writes nothing", function()
   local p = parentAt(7)
   local h = W.DragHandle(p, baseSpec({ onClose = function() end }))
