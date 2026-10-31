@@ -10,6 +10,17 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.85.0 — unreleased
+
+Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
+
+Versions in this release: `LibKa0s-Skin-1.0` key **11.1.20.2.13.7.11.2.6**, `LibKa0s-Launcher-1.0` **6**; every other file still at its v1.84.0 minor, and **test kit revision 47**. No `NEEDS_*` floor rises.
+
+### The launcher's tooltip follows the skin (`FS-L1`, cause L1)
+
+- **Launcher minor 6**: the status tooltip reads the host's skin on every show, so a switch reaches the next hover. The owner is the descriptor's `name`, which is what every addon registers under, so no host changes; the new optional `owner` names it where the two differ. The title takes `gtip.title`, the other library lines `gtip.line`, and the status words `gtip.on` and `gtip.off`. A name that is no skin owner, or a client with no Skin major, draws minor 5's tooltip call for call. It is no settings page, so *Ignore settings panel* leaves it skinned. The frame, the client's context menu and a host's `onTooltipShow` lines do not change.
+- **SkinDefs minor 20** and **SkinDefsOthers minor 2**: `gtip.line`, `gtip.on` and `gtip.off`. Ka0s Default's are what that tooltip drew, the client's gold and a pure green and red, so its look does not move. Every other skin's are its `gtip.body`, `sem.on` and `sem.off`.
+
 ## v1.84.0 — 2026-11-01
 
 Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.

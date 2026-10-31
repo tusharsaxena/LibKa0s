@@ -18,7 +18,8 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- no schema from this copy
 
 -- Minor 1: the eight other skins, moved here unchanged from SkinDefs.lua (its minor 19).
-local OTHERS_MINOR = 1
+-- Minor 2: `gtip.line`, `gtip.on` and `gtip.off` for the launcher's tooltip (SkinDefs minor 20).
+local OTHERS_MINOR = 2
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
   and lib.__othersShellMinor == lib.MINOR then return end
@@ -135,7 +136,7 @@ local FOLLOW = {
   { "log.ts", "sem.info" }, { "log.tag", "text.headingAlt" },
   { "sem.stepReady", "text.body" }, { "sem.stepBusy", "text.accent" },
   { "sem.stepLocked", "text.disabled" }, { "sem.stepCancel", "sem.off" }, { "sem.stepCancelHot", "sem.bad" },
-  { "icon.arrow", "text.accent" }, { "gtip.footer", "gtip.muted" },
+  { "icon.arrow", "text.accent" }, { "gtip.footer", "gtip.muted" }, { "gtip.line", "gtip.body" },
   { "icon.grip", "icon.tint" }, { "list.hoverArt", "text.accent" },
 }
 
@@ -176,7 +177,10 @@ end
 -- Friz since minor 18, since a client's own file need not be Friz at all (D-01). The HUD face left
 -- KEEP in minor 16: every skin names its own (HUD_FACE below).
 local FRIZ = "Ka0s Friz Quadrata TT"
-local KEEP = { ["font.body"] = FRIZ, ["font.title"] = FRIZ, ["bar.texture"] = "Blizzard" }
+local KEEP = { ["font.body"] = FRIZ, ["font.title"] = FRIZ, ["bar.texture"] = "Blizzard",
+  -- Minor 2, cause L1: Ka0s Default's gold lines and pure green and red are its own, so a skin with
+  -- no `gtip.body` of its own to FOLLOW, and every skin's status words, take the value it inherits.
+  ["gtip.line"] = KA0S["gtip.body"], ["gtip.on"] = KA0S["sem.on"], ["gtip.off"] = KA0S["sem.off"] }
 
 --- A skin's tokens: its mockup entry through MOCK_MAP, the accent and text washes, then its extras.
 local function translate(mock, extra)

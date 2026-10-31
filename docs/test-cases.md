@@ -708,7 +708,7 @@ Total.
 - skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
 - skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (32)
+### test_skin_defs.lua (33)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -741,6 +741,7 @@ Total.
 - skin defs: in every skin a primary button differs from a normal one
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
+- skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read in every other skin
 - skin defs: a shell bump re-registers the eight other skins from the new copy
 
 ### test_skin_width_parity.lua (17)
@@ -1733,7 +1734,7 @@ Total.
 - sl debug: a non-function debug field is ignored
 - sl debug: the chat is byte for byte the same with and without a debug sink
 
-### test_launcher.lua (45)
+### test_launcher.lua (50)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
 - launcher: ONE object, of type 'launcher', carrying the host's own icon
@@ -1751,7 +1752,7 @@ Total.
 - launcher: a raising tooltip accessor or host hook costs its own line, not the tooltip
 - launcher: a tooltip argument with no AddLine is left alone
 - launcher: every tooltip string goes through the descriptor's L, rawget-guarded
-- launcher: minor 5 is live
+- launcher: minor 6 is live
 - launcher: left-click opens the settings panel, enabled or disabled
 - launcher: onClick, leftClickLabel, disabledLine and slash are retired and ignored
 - launcher: right-click opens the client's context menu, titled with the label
@@ -1780,6 +1781,11 @@ Total.
 - launcher: a name LibDataBroker already holds takes that object rather than none
 - launcher: a host locale overrides a report, and a key-echoing fallback does not
 - launcher: with no descriptor print, a report reaches the chat frame
+- launcher: an owner's tooltip lines take its skin's tokens, and a switch reaches the next show
+- launcher: Ka0s Default keeps the tooltip's look to the byte
+- launcher: the descriptor's owner names the skin where it is not the folder
+- launcher: a host that is no skin owner draws what it drew, call for call
+- launcher: a skin that raises leaves the tooltip drawn, and the debug seam hears it
 
 ### test_atenable.lua (21)
 
@@ -4129,7 +4135,7 @@ Total.
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 32 |
+| test_skin_defs.lua | 33 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 37 |
@@ -4166,7 +4172,7 @@ Total.
 | test_slash_refusal.lua | 7 |
 | test_slash_profile.lua | 30 |
 | test_slash_debug.lua | 14 |
-| test_launcher.lua | 45 |
+| test_launcher.lua | 50 |
 | test_atenable.lua | 21 |
 | test_options.lua | 57 |
 | test_options_render.lua | 27 |
@@ -4263,4 +4269,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3613** |
+| **Total** | **3619** |

@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Launcher-1.0` |
 | Files and minors | `Launcher.lua` minor **5** |
 | Shipped in | v1.65.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 4](./version-4-docs.md) — whose state lines, written at OnEnable, never reached a console with logging off |
-| Superseded by | — |
+| Superseded by | [version 6](./version-6-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **LibDataBroker-1.1** and **LibDBIcon-1.0** are OPTIONAL and are resolved with `LibStub(…, true)` at `Register` time, never at load. The client's context-menu API (`MenuUtil`, 11.0 and later) is OPTIONAL too, resolved on every right click. |
 | Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 5 }` |
 
@@ -394,3 +394,11 @@ listed in the TOC's `# Libraries` section (`toc-file-§4`). They are not part of
 never will be: they are third-party libraries with their own release cadence, and bundling them
 inside a folder that is itself copied into eleven addons would give each of them two copies to
 reconcile. `MenuUtil` is the client's own and needs nothing vendored.
+
+## Moving to version 6
+
+**Take it; no host change is needed.** Version 6 draws the status tooltip in the host's skin, reading
+the owner from `name`, which is what every addon registers its skin under. Ka0s Default's look does
+not move, and a host that is no owner draws this version's tooltip. It adds one optional descriptor
+field, `owner`, for a host whose skin owner is not its folder name. No member, string or floor moves.
+See [version 6](./version-6-docs.md).

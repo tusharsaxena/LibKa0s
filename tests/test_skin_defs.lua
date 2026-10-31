@@ -656,6 +656,30 @@ test("skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's g
   end
 end)
 
+test("skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read in every other skin", function()
+  -- SkinDefs minor 20 (FS-L1 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING, cause L1). red
+  -- under: any token missing from the schema or Ka0s Default (the launcher would fall back to the
+  -- client's color), Ka0s Default's moved off the client's gold and the launcher's pure green and
+  -- red, or a skin leaving a status word in that green, which no other skin draws anywhere.
+  local Skin = skinLib()
+  local k = Skin:ResolveSkin("ka0s")
+  assertEqual(colorKey(k["gtip.line"]), "1.000,0.820,0.000,1.000", "the client's gold")
+  assertEqual(colorKey(k["gtip.on"]), "0.000,1.000,0.000,1.000", "the launcher's green")
+  assertEqual(colorKey(k["gtip.off"]), "1.000,0.000,0.000,1.000", "the launcher's red")
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    if key ~= "ka0s" then
+      assertEqual(colorKey(t["gtip.line"]), colorKey(t["gtip.body"]), key .. ": the lines are its tooltip body")
+      assertEqual(colorKey(t["gtip.on"]), colorKey(t["sem.on"]), key .. ": Yes is its on color")
+      assertEqual(colorKey(t["gtip.off"]), colorKey(t["sem.off"]), key .. ": No is its off color")
+    end
+    for _, name in ipairs({ "gtip.line", "gtip.on", "gtip.off" }) do
+      local ratio = contrast(t[name], TOOLTIP_DARK)
+      assertTrue(ratio >= 4.5, ("%s: %s contrast %.2f, want >= 4.5"):format(key, name, ratio))
+    end
+  end
+end)
+
 test("skin defs: a shell bump re-registers the eight other skins from the new copy", function()
   -- red under: dropping the guard's `__othersShellMinor == lib.MINOR` clause.
   local m, Skin = F.env()

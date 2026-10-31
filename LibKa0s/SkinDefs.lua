@@ -158,7 +158,11 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- owner's replaced client file are md5 0483b4eeaaefc7b81986e43702c7900d.
 -- Minor 19: the eight other skins moved out, unchanged, to SkinDefsOthers.lua (LK-M2-PEEL of
 -- Ka0sAddonsCommonTasks docs/2026-10-31-FINDINGS_REMEDIATION, the seam CLAUDE.md's census named).
-local DEFS_MINOR = 19
+-- Minor 20 (FS-L1 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING, cause L1): `gtip.line`,
+-- `gtip.on` and `gtip.off`, the launcher's tooltip lines and status words. Ka0s Default's are the
+-- colors that tooltip drew, the client's gold and a pure green and red; every other skin's are its
+-- `gtip.body`, `sem.on` and `sem.off`. The eui source derives them from Ka0s Default.
+local DEFS_MINOR = 20
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -182,7 +186,8 @@ local GROUPS = {
     .. "text.accent:color text.disabled:color text.link:color text.linkHot:color "
     .. "gtip.title:color gtip.body:color gtip.muted:color text.faint:color log.ts:color "
     .. "log.tag:color log.text:color log.count:color text.value:color text.bodyAlt:color "
-    .. "text.subtle:color text.highlight:color gtip.value:color gtip.subtle:color gtip.footer:color" },
+    .. "text.subtle:color text.highlight:color gtip.value:color gtip.subtle:color gtip.footer:color "
+    .. "gtip.line:color gtip.on:color gtip.off:color" },
   { "Buttons", "btn.bg:color btn.bgTop:color? btn.bgBottom:color? btn.border:color "
     .. "btn.borderSize:number? btn.borderStyle:string? btn.text:color btn.hover:color "
     .. "btn.icon:color btn.radius:number btnPrimary.bg:color btnPrimary.bgTop:color? "
@@ -307,6 +312,9 @@ local KA0S = {
   ["gtip.value"] = WHITE, ["gtip.subtle"] = { 0.7, 0.7, 0.7, 1 },
   -- The drag handle's tooltip footer (minor 16, LK-08): the 0.6 gray WidgetsDragHandle drew.
   ["gtip.footer"] = { 0.6, 0.6, 0.6, 1 },
+  -- The launcher's status tooltip (minor 20, cause L1): its lines in the client's default gold, and
+  -- the pure green and red of its Yes and No.
+  ["gtip.line"] = GOLD, ["gtip.on"] = { 0, 1, 0, 1 }, ["gtip.off"] = { 1, 0, 0, 1 },
   -- Buttons: LootHistory's flat buttons (BrowserFilterBar, Export, Timeline). No primary today.
   ["btn.bg"] = CTL_FILL, ["btn.border"] = CTL_LINE, ["btn.borderSize"] = 1,
   ["btn.borderStyle"] = "flat", ["btn.text"] = WHITE, ["btn.hover"] = GOLD,
