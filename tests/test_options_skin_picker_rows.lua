@@ -10,7 +10,10 @@
 -- carrying them the way the Skin tab's copy does; the combat refusals and locks; the skin list laying
 -- over the rows at T8; the widgets being acquired for a showing and released at its close, so a
 -- closed picker holds nothing; the skin reaching them whatever Ignore settings panel says; and the
--- font preload staying the skins' faces until a pull-out opens. The degraded paths close it.
+-- font preload staying the skins' faces until a pull-out opens. The degraded paths close it. The
+-- review of LK-A3 adds: an open pull-out closing before its list is rebuilt, the rows waking when
+-- combat ends, the reset icon sitting on its bar, the section's heading, and a Skin-tab write made
+-- while the picker is up storing nothing the picker only previewed.
 --
 -- These pin what the library asks of the client. Whether the rows fit, and how a pull-out sits over
 -- the window, is the owner's to judge in game.
@@ -398,6 +401,287 @@ test("skin picker rows: the widgets are acquired for a showing and released at i
   assertFalse(f.reset.font:IsShown() and f:IsShown())
   local again = open(b)
   assertTrue(again.rows.font ~= nil, "the next showing acquires again")
+end)
+
+-- ── an open pull-out ─────────────────────────────────────────────────────────────────────────
+
+--- `dd`'s pull-out opened as its bar's click opens it: AceGUI marks the widget focused.
+local function openPullout(b, dd)
+  dd.pullout:Open()
+  b.ace.FocusedWidget = dd
+end
+
+local function assertClosed(b, dd)
+  assertFalse(dd.open == true, "the widget knows it closed")
+  assertFalse(dd.pullout.frame:IsShown(), "no pull-out left on screen")
+  assertNil(b.ace.FocusedWidget)
+end
+
+test("skin picker rows: a reset closes the open pull-out before its list is rebuilt", function()
+  -- red under: raw buttons, which AceGUI's click-to-clear never reaches: SetList emptied the open
+  -- pull-out and only Pullout:Open anchors and shows new items, so it stayed up as an empty box.
+  local b = bench()
+  b.Skin:SetOverride(OWNER, FIRA, "Smooth")
+  local f = open(b)
+  openPullout(b, f.rows.font)
+  f.reset.font:__fire("OnClick")
+  assertClosed(b, f.rows.font)
+  openPullout(b, f.rows.texture)
+  f.reset.texture:__fire("OnClick")
+  assertClosed(b, f.rows.texture)
+end)
+
+test("skin picker rows: a skin pick, the skin dropdown and the window's body close an open pull-out", function()
+  local b = bench()
+  local f = open(b)
+  openPullout(b, f.rows.font)
+  f.dd:__fire("OnClick")
+  assertClosed(b, f.rows.font)
+  f.dd:__fire("OnClick")
+  openPullout(b, f.rows.texture)
+  for _, r in ipairs({ f.list:GetChildren() }) do
+    if r.key == "obsidian" then r:__fire("OnClick") end
+  end
+  assertClosed(b, f.rows.texture)
+  openPullout(b, f.rows.outline)
+  f:__fire("OnMouseDown", "LeftButton")
+  assertClosed(b, f.rows.outline)
+end)
+
+test("skin picker rows: the eye and a refused Apply close an open pull-out too", function()
+  local b = bench({ spec = { onPreview = function() end } })
+  local f = open(b)
+  openPullout(b, f.rows.font)
+  f.preview:__fire("OnClick")
+  assertClosed(b, f.rows.font)
+  b.m.InCombatLockdown = function() return true end
+  openPullout(b, f.rows.font)
+  f.apply:__fire("OnClick")
+  assertClosed(b, f.rows.font)
+end)
+
+test("skin picker rows: a change of looks from elsewhere closes an open pull-out", function()
+  local b = bench()
+  local f = open(b)
+  openPullout(b, f.rows.font)
+  b.Skin:SetOutline(OWNER, "off")
+  assertClosed(b, f.rows.font)
+end)
+
+test("skin picker rows: another addon's focused dropdown is not the picker's to close", function()
+  local b = bench()
+  local f = open(b)
+  local cleared = false
+  local theirs = { ClearFocus = function() cleared = true end }
+  b.ace.FocusedWidget = theirs
+  f:__fire("OnMouseDown", "LeftButton")
+  assertFalse(cleared)
+  assertEqual(b.ace.FocusedWidget, theirs)
+  b.ace.FocusedWidget = nil
+end)
+
+-- ── the end of combat ────────────────────────────────────────────────────────────────────────
+
+test("skin picker rows: a row disabled in combat wakes when combat ends", function()
+  -- red under: syncControls read the lock only when something called refresh.
+  local b = bench()
+  b.Skin:SetOverride(OWNER, FIRA, false)
+  local f = open(b)
+  b.m.InCombatLockdown = function() return true end
+  f.rows.panel:__fire("OnValueChanged", true)
+  assertTrue(f.rows.font.disabled, "the refused row's refresh drew them locked")
+  assertTrue(f.rows.fonts.disabled)
+  assertFalse(f.reset.font:IsEnabled())
+  b.m.InCombatLockdown = function() return false end
+  b.lib.__combatLocked = true    -- the page lock's flag clears in another frame's handler, maybe after
+  f:__fire("OnEvent", "PLAYER_REGEN_ENABLED")
+  b.lib.__combatLocked = false
+  b.m.__fireTimers()
+  assertFalse(f.rows.font.disabled)
+  assertFalse(f.rows.texture.disabled)
+  assertFalse(f.rows.outline.disabled)
+  assertFalse(f.rows.panel.disabled)
+  assertFalse(f.rows.fonts.disabled)
+  assertTrue(f.reset.font:IsEnabled())
+end)
+
+test("skin picker rows: a window shown in combat wakes when combat ends", function()
+  local b = bench()
+  b.m.InCombatLockdown = function() return true end
+  local f = open(b)
+  assertTrue(f.rows.font.disabled)
+  b.m.InCombatLockdown = function() return false end
+  f:__fire("OnEvent", "PLAYER_REGEN_ENABLED")
+  b.m.__fireTimers()
+  assertFalse(f.rows.font.disabled)
+end)
+
+test("skin picker rows: the end of combat leaves unlocked rows and an open pull-out alone", function()
+  local b = bench()
+  local f = open(b)
+  openPullout(b, f.rows.font)
+  f:__fire("OnEvent", "PLAYER_REGEN_ENABLED")
+  b.m.__fireTimers()
+  assertTrue(f.rows.font.open, "nothing was locked, so nothing moved under the open list")
+  b.ace:ClearFocus()
+end)
+
+test("skin picker rows: the combat event is held for a showing and inert after it", function()
+  local b = bench()
+  local f = open(b)
+  assertTrue(f.__frameEvents.PLAYER_REGEN_ENABLED, "up: listening")
+  f.close:__fire("OnClick")
+  assertNil(f.__frameEvents.PLAYER_REGEN_ENABLED, "closed: let go")
+  f:__fire("OnEvent", "PLAYER_REGEN_ENABLED")    -- a stand-down suite fires every event at every frame
+  b.m.__fireTimers()
+  assertNil(f.rows)
+end)
+
+-- ── the geometry and the heading ─────────────────────────────────────────────────────────────
+
+test("skin picker rows: a reset icon's foot is its bar's, AceGUI's labeled height", function()
+  -- red under: 44, what OnAcquire sets and SetLabel overwrites with 40: the icon hung 4 below the bar.
+  local b = bench()
+  armWidgets(b)
+  local f = open(b)
+  for _, which in ipairs({ "font", "texture" }) do
+    local pts = rawget(f.reset[which], "__pts")
+    assertEqual(-pts[1][5] - topOf(f.rows[which]), 40, which)
+  end
+end)
+
+test("skin picker rows: the media rows sit under the Skin tab's heading", function()
+  local b = bench()
+  armWidgets(b)
+  local f = open(b)
+  local pts = {}
+  rawset(f.mediaLabel, "SetPoint", function(_, ...) pts[#pts + 1] = { ... } end)
+  open(b)                        -- a font string records no anchor: spy, then a repeat show draws again
+  assertEqual(f.mediaLabel:GetText(), "Font and texture")
+  assertTrue(f.mediaLabel:IsShown())
+  assertTrue(-pts[#pts][5] < topOf(f.rows.font), "above the Font row")
+  f.close:__fire("OnClick")
+  assertFalse(f.mediaLabel:IsShown())
+end)
+
+test("skin picker rows: no Skin:SetOverride draws no heading for rows it did not draw", function()
+  local b = bench()
+  b.Skin.SetOverride = nil
+  local f = open(b)
+  assertFalse(f.mediaLabel:IsShown())
+end)
+
+-- ── a Skin-tab write while the picker is up ──────────────────────────────────────────────────
+
+--- The Skin tab of the bench's owner, drawn while the picker may be up, over the owner's store.
+local function tabOf(b)
+  local ctx = b.O.CreatePanel("PickerTab", "Picker tab", { pageKey = "general" })
+  return b.O.AppearanceRows(ctx, b.spec)
+end
+
+test("skin picker rows: a tab write stores no font the picker only previewed", function()
+  -- red under: the tab's write read the applied state, the preview with it, and the dismissal's guard
+  -- could not see that it was stored: font X at the next /reload with no Apply ever pressed.
+  local b = bench()
+  local view = tabOf(b)
+  local f = open(b)
+  f.rows.font:__fire("OnValueChanged", FIRA)
+  view.outline:__fire("OnValueChanged", "off")
+  assertEqual(lastMedia(b.store).font, false, "the store keeps the font it had")
+  assertEqual(lastMedia(b.store).outline, "off")
+  assertNil((b.Skin:GetOverride(OWNER)), "and the applied state agrees")
+  assertEqual(f.rows.font.value, "@skin", "the picker shows it")
+  f.close:__fire("OnClick")
+  assertNil((b.Skin:GetOverride(OWNER)))
+  assertEqual(b.Skin:GetOutline(OWNER), "off", "the tab's write stays")
+end)
+
+test("skin picker rows: a tab write stores no outline the picker only previewed", function()
+  local b = bench()
+  local view = tabOf(b)
+  local f = open(b)
+  f.rows.outline:__fire("OnValueChanged", "off")
+  view.media.texture:__fire("OnValueChanged", "Smooth")
+  assertNil(lastMedia(b.store).outline, "never stored, and still not")
+  assertEqual(lastMedia(b.store).texture, "Smooth")
+  assertEqual(b.Skin:GetOutline(OWNER), "hud")
+  f.close:__fire("OnClick")
+  assertEqual(select(2, b.Skin:GetOverride(OWNER)), "Smooth")
+end)
+
+test("skin picker rows: a tab scope flip stores no half the picker only previewed", function()
+  -- red under: the tab handing setScope the half it did not flip, read while the preview was live.
+  local b = bench()
+  local view = tabOf(b)
+  local f = open(b)
+  f.rows.panel:__fire("OnValueChanged", true)
+  view.ignore.fonts:__fire("OnValueChanged", true)
+  local ig = lastIgnore(b.store)
+  assertFalse(ig.panel)
+  assertTrue(ig.fonts)
+  f.close:__fire("OnClick")
+  local panel, fonts = b.Skin:GetIgnore(OWNER)
+  assertFalse(panel)
+  assertTrue(fonts)
+end)
+
+test("skin picker rows: a tab write stores no override a pending skin pick cleared", function()
+  local b = bench()
+  b.Skin:SetOverride(OWNER, FIRA, false)
+  local view = tabOf(b)
+  local f = open(b)
+  pickSkin(f, "obsidian")
+  assertNil((b.Skin:GetOverride(OWNER)))
+  view.outline:__fire("OnValueChanged", "off")
+  assertEqual(lastMedia(b.store).font, FIRA, "the store keeps it; the pick was never applied")
+  assertEqual(b.store.skin, "ka0s")
+  assertEqual((b.Skin:GetOverride(OWNER)), FIRA)
+end)
+
+test("skin picker rows: a tab write moves what the picker measures from", function()
+  -- red under: stale opened* baselines: back to the opened mode cleared the record, and Apply wrote
+  -- nothing while the store kept the tab's.
+  local b = bench()
+  local view = tabOf(b)
+  local f = open(b)
+  view.outline:__fire("OnValueChanged", "all")
+  assertEqual(f.rows.outline.value, "all", "the picker follows the tab")
+  f.rows.outline:__fire("OnValueChanged", "hud")
+  f.apply:__fire("OnClick")
+  assertEqual(lastMedia(b.store).outline, "hud", "Apply stores what the row shows")
+end)
+
+test("skin picker rows: a dismissal after a tab write puts back the tab's, not the opened", function()
+  local b = bench()
+  local view = tabOf(b)
+  local f = open(b)
+  view.media.font:__fire("OnValueChanged", FIRA)
+  f.rows.font:__fire("OnValueChanged", "Ka0s Prototype")
+  f.close:__fire("OnClick")
+  assertEqual((b.Skin:GetOverride(OWNER)), FIRA)
+end)
+
+test("skin picker rows: the tab's copy carries no preview to the other owners", function()
+  local b = bench()
+  Bench.register(b.Skin, OTHER)
+  local view = tabOf(b)
+  local f = open(b)
+  f.rows.font:__fire("OnValueChanged", FIRA)
+  b.m.StaticPopup_Show = function(_, _, _, data) data() end
+  view.copy:__fire("OnClick")
+  assertNil((b.Skin:GetOverride(OTHER)))
+end)
+
+test("skin picker rows: Apply saves the scope applied now, not the one the row last previewed", function()
+  -- red under: saveRows sending scopeLeft while the row, and the addon, read another pair.
+  local b = bench()
+  local f = open(b)
+  f.rows.fonts:__fire("OnValueChanged", true)
+  b.Skin:SetIgnore(OWNER, true, false)
+  f.apply:__fire("OnClick")
+  local ig = lastIgnore(b.store)
+  assertTrue(ig.panel)
+  assertFalse(ig.fonts)
 end)
 
 -- ── the skin ─────────────────────────────────────────────────────────────────────────────────

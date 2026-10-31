@@ -29,9 +29,9 @@
 --   * the gear (Media icon "settings"): saves the pending pick as Apply does, then `spec.onSettings`,
 --     by default the settings panel opened at `spec.page` (O.OpenOptionsPanel(page), OptionsRegistry
 --     minor 4) and O.SelectTab(page, spec.tab or "Appearance"); then the window closes;
---   * the Skin tab's rows (LK-A3; see THE ROWS below): "Font" and "Texture", each a full-width media
---     picker with a reset icon at its right; "Font outline"; "Scope", with "Ignore settings panel" and
---     "Ignore fonts" side by side;
+--   * the Skin tab's rows (LK-A3; see THE ROWS below): under "Font and texture", "Font" and "Texture",
+--     each a full-width media picker with a reset icon at its right, then "Font outline"; "Scope", with
+--     "Ignore settings panel" and "Ignore fonts" side by side;
 --   * "Apply" (a primary button): saves the pending pick (spec.set(source, key)), then a changed scope
 --     (spec.set(nil, nil, ignore)), then changed media (spec.set(nil, nil, nil, media)), then the one
 --     reload popup when any pick in this showing asked for one, then closes the window;
@@ -116,9 +116,22 @@
 -- through Skin:__PaintAceWindow, on acquire and on every change of looks, whatever Ignore settings
 -- panel says: that box's own tooltip says windows still wear the skin. Combat disables them when the
 -- window draws them and refuses them after (O.__combatRefused); a refused row goes back to the truth.
+-- The end of combat wakes rows drawn locked: the window holds PLAYER_REGEN_ENABLED while it is up and
+-- redraws them next frame, when the page lock's flag, cleared by another frame's handler for the same
+-- event, has cleared too. A window never drawn locked moves nothing.
 -- Under the eui source they draw and work as on the tab: the leading row names EllesmereUI's face.
 -- Ignore fonts disables the Font outline, as on the tab. No scope change asks for a reload
 -- (Skin:SetIgnore answers false), so the one popup is still the skin's, on Apply, never in a preview.
+--   These widgets take no click-to-clear from a parent: AceGUI's Frame and Button drop its focus when
+-- clicked, and this window and its raw buttons are neither. dropFocus() does it for them, on a click on
+-- the window's body or any of its controls and before the rows are synced, because the sync's SetList
+-- empties an open pull-out and only Pullout:Open anchors and shows what it adds. It closes only a row
+-- of this showing: another addon's dropdown is not the library's to close.
+--   A Skin-tab write while the window is up saves what it reads, and it reads the applied state, so the
+-- tab first takes the previews back (lib.__pickerSettle: revert(), no write) and then moves what this
+-- window measures from (lib.__pickerRebase) to what it stored. The profile never gets a half nobody
+-- applied, and a later Apply or dismissal starts from the store. The cost is the player's: a tab edit
+-- drops a preview left unapplied here, which the rows show.
 
 local lib = LibStub and LibStub("LibKa0s-Options-1.0", true)
 if not lib then return end
@@ -160,7 +173,10 @@ if not lib then return end
 -- BLANK above.
 -- Still minor 4 (LK-A3 of the same run): see THE ROWS above. The window is 308 wide, not 280; the
 -- open list is T8, over the window, where it grew the window; Apply to all carries the scope, font,
--- texture and outline; and the APPLY, APPLY_ALL and SETTINGS tips say so.
+-- texture and outline; and the APPLY, APPLY_ALL and SETTINGS tips say so. Its review: dropFocus(), the
+-- rows' wake at the end of combat, MEDIA_H at AceGUI's labeled 40 (44 hung each reset icon 4 below its
+-- bar), the "Font and texture" line, lib.__pickerSettle and lib.__pickerRebase, and saveRows sending
+-- the scope and outline that are applied, not the ones the rows last previewed.
 local PICKER_MINOR = 4
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__pickerMinor and lib.__pickerMinor >= PICKER_MINOR
@@ -204,9 +220,10 @@ local DD_H, ROW_H, ICON, BTN_H, APPLY_W = 26, 22, 24, 24, 80
 local LABEL_H = 18
 local DD_TOP = TOP + LABEL_H + 4
 local BASE_H = DD_TOP + DD_H + PAD + BTN_H + 10
--- The rows: a labeled dropdown's height, the gap under each, the Scope's line and its check boxes,
--- and the right check box's width (the left one takes the rest: its label is the longer).
-local MEDIA_H, ROW_GAP, SCOPE_H, CHECK_H, CHECK_W = 44, 4, 16, 24, 112
+-- The rows: a labeled dropdown's height (AceGUI's SetLabel sets 40 over OnAcquire's 44, its bar the
+-- foot of it), the gap under each, a section's line, the check boxes, and the right check box's width
+-- (the left one takes the rest: its label is the longer).
+local MEDIA_H, ROW_GAP, LINE_H, CHECK_H, CHECK_W = 40, 4, 16, 24, 112
 local MEDIA_ROWS = { { which = "font", word = "FONT", tip = "FONT_TIP" },
                      { which = "texture", word = "TEXTURE", tip = "TEXTURE_TIP" } }
 local SWATCH = 10
@@ -259,6 +276,19 @@ local function queue()
   return q
 end
 queue()
+
+--- The Skin tab is about to write `owner`, and the write reads the applied state: the shown picker's
+--- previews go back first (THE ROWS). Internal.
+function lib.__pickerSettle(owner)
+  local cur = queue().current
+  if cur and cur.owner == owner and cur.settle then cur.settle() end
+end
+
+--- The Skin tab wrote `owner`: the shown picker measures from what it stored. Internal.
+function lib.__pickerRebase(owner)
+  local cur = queue().current
+  if cur and cur.owner == owner and cur.rebase then cur.rebase() end
+end
 
 --- Queue `entry` behind the picker shown now: one entry per owner, a repeat refreshing it in place.
 local function enqueue(entry)
@@ -457,8 +487,9 @@ function lib.__AttachSkinPicker(O, d)
   -- that meant and `openedIgnore` its scope (`{ panel, fonts }`); the three `*Left` are what a preview
   -- left in those halves, nil while a half is as it opened (THE ROWS, above); `pending` the skin a
   -- pick previews and Apply has not saved, `reload` whether any pick in this showing asked for a
-  -- reload; `height` the window's, its rows included. The frame's `rows` holds the AceGUI widgets of
-  -- this showing, nil while it is closed.
+  -- reload; `height` the window's, its rows included; `drawnLocked` whether the rows were last drawn
+  -- under combat's lock. The frame's `rows` holds the AceGUI widgets of this showing, nil while it is
+  -- closed.
   local P
   local pickers = {}   -- every owner's picker on this instance, so a window is never orphaned
 
@@ -493,6 +524,19 @@ function lib.__AttachSkinPicker(O, d)
   end
 
   local syncControls
+
+  --- An open pull-out of `p`'s rows closed: see THE ROWS, on why this window has to ask.
+  local function dropFocus(p)
+    local ace, rows = O.AceGUI, p.frame and p.frame.rows
+    local w = ace and ace.FocusedWidget
+    if not (w and rows and type(ace.ClearFocus) == "function") then return end
+    for _, row in pairs(rows) do
+      if row == w then
+        ace:ClearFocus()
+        return
+      end
+    end
+  end
 
   --- The dropdown button, the rows' states and their names' color: from the pending pick, else the
   --- stored choice, and the skin worn now; then the Skin tab's rows, from what is applied.
@@ -570,6 +614,7 @@ function lib.__AttachSkinPicker(O, d)
 
   local function setOpen(open, p)
     p = p or P
+    dropFocus(p)
     p.open = open and true or false
     layout(p)
     if p.open then dressRows(p) end
@@ -698,17 +743,21 @@ function lib.__AttachSkinPicker(O, d)
     return { font = font, texture = texture }
   end
 
-  --- Save what the rows moved, each half through the seam the Skin tab writes it with, and take it
-  --- as what the window opened with: a gear the panel refuses leaves the window up.
+  --- Save what the rows moved, each half through the seam the Skin tab writes it with, as it is
+  --- applied now (what the rows show), and take it as what the window opened with: a gear the panel
+  --- refuses leaves the window up.
   local function saveRows(p)
     if p.scopeLeft then
-      p.openedIgnore, p.scopeLeft = p.scopeLeft, nil
-      safeCall(p.spec.set, nil, nil, { panel = p.openedIgnore.panel, fonts = p.openedIgnore.fonts })
+      local ignore = lib.__readIgnore(p.Skin, p.owner)
+      p.openedIgnore, p.scopeLeft = ignore, nil
+      safeCall(p.spec.set, nil, nil, { panel = ignore.panel, fonts = ignore.fonts })
     end
     if p.mediaLeft or p.outlineLeft then
       local media = mediaWrite(p)
       p.openedMedia, p.mediaLeft = { font = media.font, texture = media.texture }, nil
-      if p.outlineLeft then p.openedOutline, p.openedWorn, p.outlineLeft = p.outlineLeft, p.outlineLeft, nil end
+      if p.outlineLeft then
+        p.openedOutline, p.openedWorn, p.outlineLeft = media.outline, p.Skin:GetOutline(p.owner), nil
+      end
       safeCall(p.spec.set, nil, nil, nil, media)
     end
   end
@@ -758,6 +807,7 @@ function lib.__AttachSkinPicker(O, d)
       O.AceGUI:Release(w)
     end
     for _, btn in pairs(f.reset) do btn:Hide() end
+    f.mediaLabel:Hide()
     f.scopeLabel:Hide()
   end
 
@@ -768,6 +818,7 @@ function lib.__AttachSkinPicker(O, d)
   local function closed(p)
     if not (p and p.shown) then return end
     p.shown = false
+    p.frame:UnregisterEvent("PLAYER_REGEN_ENABLED")
     setOpen(false, p)
     releaseControls(p)
     revert(p)
@@ -868,7 +919,10 @@ function lib.__AttachSkinPicker(O, d)
       btn.text = fs
     end
     attachTip(btn, tip)
-    btn:SetScript("OnClick", onClick)
+    btn:SetScript("OnClick", function(...)
+      dropFocus(P)
+      onClick(...)
+    end)
     P.Sk.Button(btn)
     return btn
   end
@@ -882,7 +936,10 @@ function lib.__AttachSkinPicker(O, d)
     fs:SetText(text)
     btn.text = fs
     attachTip(btn, tip)
-    btn:SetScript("OnClick", onClick)
+    btn:SetScript("OnClick", function(...)
+      dropFocus(P)
+      onClick(...)
+    end)
     P.Sk.Button(btn, primary and { primary = true } or nil)
     return btn
   end
@@ -975,6 +1032,16 @@ function lib.__AttachSkinPicker(O, d)
     end
   end
 
+  --- One section's line, hidden until the rows under it are drawn.
+  local function sectionLine(f)
+    local fs = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    fs:SetPoint("TOPLEFT", f, "TOPLEFT", PAD, 0)
+    if type(fs.SetJustifyH) == "function" then fs:SetJustifyH("LEFT") end
+    fs:Hide()
+    P.Sk.Text(fs, "body")
+    return fs
+  end
+
   local function buildChrome(f)
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     title:SetPoint("TOPLEFT", f, "TOPLEFT", 28, -8)
@@ -989,13 +1056,9 @@ function lib.__AttachSkinPicker(O, d)
     if type(owner.SetJustifyH) == "function" then owner:SetJustifyH("LEFT") end
     f.ownerLabel = owner
     P.Sk.Text(owner, "heading")
-    -- The Scope's line, reading as the dropdowns' own labels do, shown while its check boxes are.
-    local scope = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    scope:SetPoint("TOPLEFT", f, "TOPLEFT", PAD, 0)
-    if type(scope.SetJustifyH) == "function" then scope:SetJustifyH("LEFT") end
-    scope:Hide()
-    f.scopeLabel = scope
-    P.Sk.Text(scope, "body")
+    -- The two sections' lines, reading as the dropdowns' own labels do, shown while their rows are.
+    f.mediaLabel = sectionLine(f)
+    f.scopeLabel = sectionLine(f)
     local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
     if core and type(core.ApplySkin) == "function" then core.ApplySkin(f, nil, P.owner) else P.Sk.Shell(f) end
     if core and type(core.MakeCloseButton) == "function" then
@@ -1043,10 +1106,20 @@ function lib.__AttachSkinPicker(O, d)
     fr:Show()
   end
 
+  --- `line` worded `text` at `y`. Answers the next y.
+  local function sectionAt(f, line, text, y)
+    line:SetText(text)
+    line:ClearAllPoints()
+    line:SetPoint("TOPLEFT", f, "TOPLEFT", PAD, -y)
+    line:Show()
+    return y + LINE_H
+  end
+
   --- Font and Texture: a media picker and, at its bar's right, its reset icon. Answers the next y.
   local function addMediaRows(p, rows, y)
     if type(p.Skin.SetOverride) ~= "function" then return y end
     local f, S = p.frame, p.S
+    y = sectionAt(f, f.mediaLabel, S.MEDIA_HEADING, y)
     for _, row in ipairs(MEDIA_ROWS) do
       local which = row.which
       local dd = lib.__newMediaRow(O.AceGUI, which, true)
@@ -1090,10 +1163,7 @@ function lib.__AttachSkinPicker(O, d)
   local function addScopeRows(p, rows, y)
     if type(p.Skin.SetIgnore) ~= "function" then return y end
     local f, S = p.frame, p.S
-    f.scopeLabel:SetText(S.SCOPE_HEADING)
-    f.scopeLabel:SetPoint("TOPLEFT", f, "TOPLEFT", PAD, -y)
-    f.scopeLabel:Show()
-    y = y + SCOPE_H
+    y = sectionAt(f, f.scopeLabel, S.SCOPE_HEADING, y)
     rows.panel = checkRow(S, "IGNORE_PANEL", "IGNORE_PANEL_TIP", function(on)
       previewScope(P, on, lib.__readIgnore(P.Skin, P.owner).fonts)
     end)
@@ -1166,7 +1236,9 @@ function lib.__AttachSkinPicker(O, d)
     local f = p.frame
     local rows = f.rows
     if not rows then return end
+    dropFocus(p)
     local locked = combatLocked()
+    p.drawnLocked = locked
     local ignore = lib.__readIgnore(p.Skin, p.owner)
     syncMedia(p, locked)
     if rows.outline then
@@ -1209,6 +1281,15 @@ function lib.__AttachSkinPicker(O, d)
     buildDropdown(f)
     buildButtons(f)
     buildList(f)
+    -- Rows drawn locked wake when combat ends (THE ROWS), held for a showing, inert after it.
+    f:SetScript("OnMouseDown", function() dropFocus(mine) end)
+    f:SetScript("OnEvent", function()
+      if not (P == mine and mine.shown and mine.drawnLocked) then return end
+      local function wake()
+        if P == mine and mine.shown then refresh() end
+      end
+      if C_Timer and C_Timer.After then C_Timer.After(0, wake) else wake() end
+    end)
     P.Sk.OnLooksChanged(function()
       if P == mine then
         refresh()
@@ -1235,9 +1316,12 @@ function lib.__AttachSkinPicker(O, d)
     anchorDropdown(f)
   end
 
-  --- What the rows restore to for a fresh showing of `p`, and no preview left in any of them.
+  --- What `p` restores to from now, and no preview left in any row: a fresh showing, or the Skin tab's
+  --- write.
   local function opening(p)
     local Skin, owner = p.Skin, p.owner
+    p.opened = { Skin:GetChoice(owner) }
+    p.openedDraws = drawsNow(p)
     local font, texture = overrides(p)
     p.openedMedia, p.mediaLeft = { font = font, texture = texture }, nil
     p.openedOutline, p.outlineLeft = nil, nil
@@ -1260,8 +1344,7 @@ function lib.__AttachSkinPicker(O, d)
     syncRows()
     applySpec(f)
     if fresh then
-      P.pending, P.reload, P.opened = nil, false, { Skin:GetChoice(owner) }
-      P.openedDraws = drawsNow(P)
+      P.pending, P.reload = nil, false
       opening(P)
       place(f)
     end
@@ -1272,7 +1355,16 @@ function lib.__AttachSkinPicker(O, d)
     local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
     if core and type(core.RaiseStaticPopups) == "function" then core.RaiseStaticPopups() end
     P.shown = true
-    queue().current = { owner = owner, inst = O, frame = f }
+    f:RegisterEvent("PLAYER_REGEN_ENABLED")
+    local mine = P
+    queue().current = {
+      owner = owner, inst = O, frame = f,
+      settle = function() revert(mine) end,
+      rebase = function()
+        opening(mine)
+        if P == mine then refresh() end
+      end,
+    }
     return f
   end
 

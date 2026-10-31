@@ -20,7 +20,8 @@ local LSM = {
 }
 local BASE_FONT = "Fonts\\BASE.TTF"
 
---- Give the fixture's pull-out what AceGUI's has: callbacks, OnOpen, an item walk, a releasing Clear.
+--- Give the fixture's pull-out what AceGUI's has: callbacks, OnOpen, OnClose, an item walk, a releasing
+--- Clear.
 local function fullPullout(ace, po)
   if po.__full then return end
   po.__full = true
@@ -30,6 +31,10 @@ local function fullPullout(ace, po)
   po.Open = function(self)
     self.frame:Show()
     if self.events.OnOpen then self.events.OnOpen(self, "OnOpen") end
+  end
+  po.Close = function(self)
+    self.frame:Hide()
+    if self.events.OnClose then self.events.OnClose(self, "OnClose") end
   end
   po.Clear = function(self)
     for i = #self.items, 1, -1 do
@@ -54,7 +59,11 @@ local function stockDropdown(m, ace)
     acquire(self)
     fullPullout(ace, self.pullout)
     self.pullout.events.OnOpen = function(this) this.userdata.obj.open = true end
+    self.pullout.events.OnClose = function(this) this.userdata.obj.open = nil end
     self.list = {}
+  end
+  w.ClearFocus = function(self)
+    if self.open then self.pullout:Close() end
   end
   w.SetText = function(self, text) self.text:SetText(text or "") end
   w.SetValue = function(self, value)
@@ -109,6 +118,12 @@ local function env(opts)
     local w = create(self, wtype, ...)
     if wtype == "Button" then w.SetText = function() end end
     return w
+  end
+  ace.ClearFocus = function(self)      -- AceGUI-3.0.lua's: the widget drops it, then the mark goes
+    if self.FocusedWidget then
+      self.FocusedWidget:ClearFocus()
+      self.FocusedWidget = nil
+    end
   end
   if not opts.noBase then
     ace:RegisterWidgetType("Dropdown", function() return stockDropdown(m, ace) end, 41)

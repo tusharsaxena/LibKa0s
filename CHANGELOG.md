@@ -50,6 +50,17 @@ gains the internal `__ClearOutline` in this release's minor. The reset icons dra
 new `tests/test_options_skin_picker_rows.lua`, on `tests/fixture_media.lua`, moved out of
 `tests/test_options_media.lua`.
 
+The review of those rows moved no minor. An open pull-out closes before its list is rebuilt and on a
+click anywhere on the window, because AceGUI's click-to-clear never reaches a raw frame; it had stayed
+up as an empty box. Rows drawn locked wake when combat ends, through `PLAYER_REGEN_ENABLED` held for a
+showing, the redraw a frame later so the page lock's flag has cleared. The rows are spaced at AceGUI's
+labeled 40, not 44, which hung each reset icon 4 below its bar, and draw the tab's *Font and texture*
+line. **A Skin-tab write made while the owner's picker is up now takes the picker's previews back
+first**, through `lib.__pickerSettle`, then moves what the picker measures from, through
+`lib.__pickerRebase`: `OptionsAppearance.lua`'s writes read the applied state, so an unapplied preview
+used to reach the profile. The tab's copy and `lib.__copySkinTo` do the same. Apply saves the scope and
+outline applied now, not the ones the rows last previewed.
+
 **What a consumer owes:** nothing but the re-vendor. Every addon's spec already passes
 `set = NS.WriteSkinChoice`, which takes all four arguments. A host with no `spec.set` draws no rows.
 

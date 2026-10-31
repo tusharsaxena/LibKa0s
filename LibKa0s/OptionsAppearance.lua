@@ -82,7 +82,10 @@ if not lib then return end
 -- tab's rows read and how they word it moved to the library table, unchanged, so OptionsSkinPicker.lua
 -- reads one copy: lib.__skinMedia (the dropdown value, the two halves, the outline order and words),
 -- lib.__appliedMedia, lib.__nextMedia, lib.__readIgnore, lib.__copySettings, lib.__baseTokens,
--- lib.__mediaList, lib.__fillMedia, lib.__newMediaRow, lib.__outlineItems and lib.__resetTip.
+-- lib.__mediaList, lib.__fillMedia, lib.__newMediaRow, lib.__outlineItems and lib.__resetTip. Its
+-- review: every write here runs through lib.__pickerSettle first and lib.__pickerRebase after, so a
+-- write made while the owner's skin picker is up stores nothing that picker only previewed. Each write
+-- reads the applied state, the picker previews by moving it, and the tab's copy reads it too.
 local APPEARANCE_MINOR = 5
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__appearanceMinor and lib.__appearanceMinor >= APPEARANCE_MINOR
@@ -272,6 +275,13 @@ end
 
 -- ── the other owners, and one owner's copy ───────────────────────────────────────────────────
 
+--- `lib[name](owner)`, OptionsSkinPicker.lua's two calls around a write, which load after this file and
+--- are absent from a copy without it.
+local function pickerCall(name, owner)
+  local fn = lib[name]
+  if type(fn) == "function" then fn(owner) end
+end
+
 --- Every registered skin owner but `owner`, sorted (Skin:Owners() order). Internal: the copy button
 --- here and the skin picker's "Apply to all Ka0s addons" (OptionsSkinPicker.lua) both read it.
 function lib.__skinOthers(Skin, owner)
@@ -410,6 +420,7 @@ end
 --- way, so the target's profile matches what it wears. Answers the reload flag SetChoice answered.
 --- Internal; the caller refuses combat.
 function lib.__copySkinTo(Skin, name, source, skin, ignore, media)
+  pickerCall("__pickerSettle", name)
   local _, reload, cleared = lib.__chooseSkin(Skin, name, source, skin)
   if ignore and type(Skin.SetIgnore) == "function" then Skin:SetIgnore(name, ignore.panel, ignore.fonts) end
   if media then
@@ -418,6 +429,7 @@ function lib.__copySkinTo(Skin, name, source, skin, ignore, media)
   end
   if media or cleared then media = appliedMedia(Skin, name) or media end
   Skin:WriteChoice(name, source, skin, ignore, media)
+  pickerCall("__pickerRebase", name)
   return reload
 end
 
@@ -510,6 +522,7 @@ function lib.__AttachAppearance(O, d)
   --- asks for. Refused in combat, as every settings write is.
   local function choose(view, source, skin)
     if O.__combatRefused and O.__combatRefused("appearance", view.owner) then return end
+    pickerCall("__pickerSettle", view.owner)
     local _, reload, cleared = lib.__chooseSkin(view.Skin, view.owner, source, skin)
     if type(view.spec.set) == "function" then
       local ok, err = pcall(view.spec.set, source, skin)
@@ -519,6 +532,7 @@ function lib.__AttachAppearance(O, d)
         if not ok then report(err) end
       end
     end
+    pickerCall("__pickerRebase", view.owner)
     if reload then lib.__appearanceReload(view.S, view.label) end
   end
 
@@ -546,6 +560,7 @@ function lib.__AttachAppearance(O, d)
   local function copyTo(view, names)
     if O.__combatRefused and O.__combatRefused("appearance", "copy") then return end
     local Skin = view.Skin
+    pickerCall("__pickerSettle", view.owner)
     local source, skin = readChoice(view)
     local ignore, media = lib.__copySettings(Skin, view.owner)
     local reloads = {}
@@ -557,15 +572,20 @@ function lib.__AttachAppearance(O, d)
     if #reloads > 0 then lib.__appearanceReload(view.S, table.concat(reloads, ", ")) end
   end
 
-  --- Move this owner's scope to (panel, fonts): the Skin major first (live, no reload), then the
-  --- owner's write seam. Refused in combat, as every settings write is.
-  local function setScope(view, panel, fonts)
+  --- Move this owner's scope half `which` ("panel" or "fonts") to `value`, the other half read after
+  --- a picker's previews went back: the Skin major first (live, no reload), then the owner's write
+  --- seam. Refused in combat, as every settings write is.
+  local function setScope(view, which, value)
     if O.__combatRefused and O.__combatRefused("appearance", view.owner) then return end
-    view.Skin:SetIgnore(view.owner, panel, fonts)
+    pickerCall("__pickerSettle", view.owner)
+    local ignore = lib.__readIgnore(view.Skin, view.owner)
+    ignore[which] = value == true
+    view.Skin:SetIgnore(view.owner, ignore.panel, ignore.fonts)
     if type(view.spec.set) == "function" then
-      local ok, err = pcall(view.spec.set, nil, nil, { panel = panel == true, fonts = fonts == true })
+      local ok, err = pcall(view.spec.set, nil, nil, { panel = ignore.panel, fonts = ignore.fonts })
       if not ok then report(err) end
     end
+    pickerCall("__pickerRebase", view.owner)
   end
 
   --- One check box in `group`: `onToggle(value)` runs when the player flips it.
@@ -588,23 +608,27 @@ function lib.__AttachAppearance(O, d)
   --- halves. Refused in combat, as every settings write is.
   local function setMedia(view, which, value)
     if O.__combatRefused and O.__combatRefused("appearance", view.owner) then return end
+    pickerCall("__pickerSettle", view.owner)
     local media = lib.__nextMedia(view.Skin, view.owner, which, value)
     view.Skin:SetOverride(view.owner, media.font, media.texture)
     if type(view.spec.set) == "function" then
       local ok, err = pcall(view.spec.set, nil, nil, nil, media)
       if not ok then report(err) end
     end
+    pickerCall("__pickerRebase", view.owner)
   end
 
   --- Move this owner's font outline to `mode`: the Skin major first (the live repaint), then the
   --- owner's write seam with every media half. Refused in combat, as every settings write is.
   local function setOutline(view, mode)
     if O.__combatRefused and O.__combatRefused("appearance", view.owner) then return end
+    pickerCall("__pickerSettle", view.owner)
     view.Skin:SetOutline(view.owner, mode)
     if type(view.spec.set) == "function" then
       local ok, err = pcall(view.spec.set, nil, nil, nil, readMedia(view))
       if not ok then report(err) end
     end
+    pickerCall("__pickerRebase", view.owner)
   end
 
   --- The font outline dropdown in `group` (minor 4), its three modes in OUTLINE_ORDER.
@@ -685,10 +709,10 @@ function lib.__AttachAppearance(O, d)
     heading(view, S.SCOPE_HEADING)
     local group = flowGroup(view)
     view.ignore.panel = toggle(view, group, S.IGNORE_PANEL, S.IGNORE_PANEL_TIP, function(v)
-      setScope(view, v, readIgnore(view).fonts)
+      setScope(view, "panel", v)
     end)
     view.ignore.fonts = toggle(view, group, S.IGNORE_FONTS, S.IGNORE_FONTS_TIP, function(v)
-      setScope(view, readIgnore(view).panel, v)
+      setScope(view, "fonts", v)
     end)
   end
 

@@ -2434,7 +2434,7 @@ Total.
 - skin picker faces: a name that measures nothing next frame takes the template's face, and the next open tries its own
 - skin picker faces: a client without C_Timer dresses at once and raises nothing
 
-### test_options_skin_picker_rows.lua (30)
+### test_options_skin_picker_rows.lua (50)
 
 - skin picker rows: Font, Texture, Font outline and Scope, in order, in a window at most 10% wider
 - skin picker rows: the rows wear the Skin tab's words, list and leading previewing row
@@ -2457,6 +2457,26 @@ Total.
 - skin picker rows: the open skin list lays over the rows at T8, and the window keeps its height
 - skin picker rows: using a row closes an open skin list
 - skin picker rows: the widgets are acquired for a showing and released at its close
+- skin picker rows: a reset closes the open pull-out before its list is rebuilt
+- skin picker rows: a skin pick, the skin dropdown and the window's body close an open pull-out
+- skin picker rows: the eye and a refused Apply close an open pull-out too
+- skin picker rows: a change of looks from elsewhere closes an open pull-out
+- skin picker rows: another addon's focused dropdown is not the picker's to close
+- skin picker rows: a row disabled in combat wakes when combat ends
+- skin picker rows: a window shown in combat wakes when combat ends
+- skin picker rows: the end of combat leaves unlocked rows and an open pull-out alone
+- skin picker rows: the combat event is held for a showing and inert after it
+- skin picker rows: a reset icon's foot is its bar's, AceGUI's labeled height
+- skin picker rows: the media rows sit under the Skin tab's heading
+- skin picker rows: no Skin:SetOverride draws no heading for rows it did not draw
+- skin picker rows: a tab write stores no font the picker only previewed
+- skin picker rows: a tab write stores no outline the picker only previewed
+- skin picker rows: a tab scope flip stores no half the picker only previewed
+- skin picker rows: a tab write stores no override a pending skin pick cleared
+- skin picker rows: a tab write moves what the picker measures from
+- skin picker rows: a dismissal after a tab write puts back the tab's, not the opened
+- skin picker rows: the tab's copy carries no preview to the other owners
+- skin picker rows: Apply saves the scope applied now, not the one the row last previewed
 - skin picker rows: the rows are painted, repaint on a skin pick, and wear the skin under Ignore settings panel
 - skin picker rows: a released row goes back to the pool under the panel's ordinary rule
 - skin picker rows: show loads the skins' faces and the override's, and the pull-out loads every face
@@ -4041,7 +4061,7 @@ Total.
 | test_options_appearance.lua | 60 |
 | test_options_skin_picker.lua | 47 |
 | test_options_skin_picker_faces.lua | 15 |
-| test_options_skin_picker_rows.lua | 30 |
+| test_options_skin_picker_rows.lua | 50 |
 | test_options_skin_verb.lua | 7 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
@@ -4109,4 +4129,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3499** |
+| **Total** | **3519** |

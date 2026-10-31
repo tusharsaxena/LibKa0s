@@ -2718,6 +2718,12 @@ picker offers nothing Apply could not keep) or no helpers.
 - **Choosing another skin** clears the font and texture override in the preview, a row's own pick
   among them (D-10), and the rows show it; the look the window opened with gets the overrides it
   opened with back.
+- **An open pull-out** closes on a click on the window's body or any of its controls, and before the
+  rows are synced, since AceGUI's click-to-clear does not reach a raw frame. Only a row of this showing.
+- **The end of combat** wakes rows drawn locked: the window holds `PLAYER_REGEN_ENABLED` while it is up.
+- **A Skin-tab write** made while the owner's picker is up takes its previews back first
+  (`lib.__pickerSettle`, internal) and moves what it measures from after (`lib.__pickerRebase`,
+  internal), so the profile never gets a half nobody applied. A preview left unapplied is dropped.
 - **A dismissal** puts back each half only while it still reads what the preview left, so a write
   from elsewhere stays. An outline that was never set is put back unset.
 - **Skin.** The rows take `Skin:__PaintAceWindow`, on acquire and on every change of looks, so they
