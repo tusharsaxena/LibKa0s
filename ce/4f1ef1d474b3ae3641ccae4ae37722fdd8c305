@@ -1,0 +1,7 @@
+LK-A3 review of the picker rows (Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/). This commit carries the fixes from the review of f91413b.
+
+Fixed here: an open pull-out closes before the rows sync and on any click on the window; rows drawn locked wake when combat ends; rows spaced at AceGUI's labeled 40; the "Font and texture" line drawn; Apply saves the applied scope and outline. A Skin-tab write made while the picker is up takes the previews back first and rebases the picker after, so no unapplied preview reaches the profile.
+
+Provenance: this note was written by the later step that ran the release battery, from this commit's message and diff. The reviewer's own findings list is not recorded anywhere this step could read, so this note cannot say what the review examined or whether it left findings open, and it does not claim the review was independent.
+
+Found after this commit: the release battery measured lib.PaintAce at CCN 17, which this review did not catch. Fixed in 17209cf. Full record on bd4fb11.
