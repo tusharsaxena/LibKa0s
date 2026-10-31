@@ -1,0 +1,7 @@
+LK-A1 closes the nil-owner finding of the independent review of the LibKa0s M1 work (Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/).
+
+Finding: on a non-western client refused is true for Ka0s Prototype, so a nil owner (Skin:Token(nil, name), __Tokens(nil)) skipped withOverrides' early return and lib.__overTok[nil] raised "table index is nil", against the documented rule that an unregistered owner reads Ka0s Default.
+
+Fix: db02671 returns a nil owner's layered copy uncached. tests/test_skin_width_parity.lua pins it under a ruRU GetLocale, seen red with LibKa0s/Skin.lua:873: table index is nil. No minor moved. Verified headless with a mocked locale, not on a ruRU client.
+
+Release gate after the fix: docs/automated-tests/20261031-163905/ at db02671, lint 0/0 in 248 files, 3456 tests with 0 failed, 0 over CCN 15.
