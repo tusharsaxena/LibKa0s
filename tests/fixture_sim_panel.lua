@@ -1,5 +1,6 @@
--- tests/fixture_sim_panel.lua — the frame recorder the two Sim panel suites share
--- (tests/test_sim_panel.lua and tests/test_sim_panel_render.lua), and their environment.
+-- tests/fixture_sim_panel.lua — the frame recorder and the bench the Sim panel suites share
+-- (tests/test_sim_panel.lua, tests/test_sim_panel_controls.lua and tests/test_sim_panel_render.lua),
+-- and their environment.
 --
 -- The kit's frame answers `CreateTexture` and `CreateFontString` with the frame itself (its
 -- header's known divergence), so a row's label, its dot and its command would be one table and a
@@ -125,5 +126,104 @@ function F.sameColor(T, got, want, msg)
   T.assertTrue(got ~= nil, msg .. ": no color painted")
   for i = 1, 3 do T.assertEqual(got[i], want[i], msg .. " [" .. i .. "]") end
 end
+
+--- A bench: a three-step scenario and a sized one, a recording play, an anchor frame the panel
+--- docks to, and the panel members live. `over` is merged into the descriptor before New;
+--- `panelOver` into d.panel. `prepare` calls ready() at once unless holdReady is set.
+local function bench(over, holdReady, panelOver, envOpts)
+  local m, Sim = F.env(envOpts)
+  local b0 = { now = 1000 }
+  m.time = function() return b0.now end            -- a fixed clock: RAN_AGO is deterministic
+  local seam = Sim:NewSeam({ Probe = function() return "live" end }, { name = "Host" })
+  local b = b0
+  b.m, b.Sim, b.printed, b.played, b.readies, b.stoodDown = m, Sim, {}, {}, {}, false
+  local panel = {
+    anchorTo = function() return b.anchor end,
+    check = F.HOST_CHECK,
+    stepTip = function(step) return { { "Injects", step.kind } } end,
+    startTip = { { "Builds", "the world" } },
+    stopTip = { { "Ends", "the simulation" } },
+  }
+  for k, v in pairs(panelOver or {}) do panel[k] = v end
+  local d = {
+    name = "Host", seam = seam, slash = "/host sim",
+    deliver = function() return 1 end,
+    isStoodDown = function() return b.stoodDown end,
+    scenarios = {
+      names = { "three", "sized" },
+      defs = {
+        three = { label = "Three", timeline = function()
+          return { { kind = "a", label = "Alpha" }, { kind = "b", label = "Beta" }, { kind = "c", label = "Gamma" } }
+        end },
+        sized = { label = "Sized", sizes = { 5, 10 }, timeline = function()
+          return { { kind = "s1" }, { kind = "s2" } }
+        end },
+      },
+    },
+    prepare = function(_, _, _, ready)
+      b.readies[#b.readies + 1] = ready
+      if not holdReady then ready() end
+    end,
+    play = function(step)
+      b.played[#b.played + 1] = step.kind
+      return "did " .. step.kind
+    end,
+    print = function(line) b.printed[#b.printed + 1] = line end,
+    panel = panel,
+  }
+  for k, v in pairs(over or {}) do d[k] = v end
+  b.d = d
+  b.sim = Sim:New(d)
+  return b
+end
+
+local function joined(list, sep) return table.concat(list, sep or ",") end
+
+--- The lines printed by fn(b) alone.
+local function linesOf(b, fn)
+  local from = #b.printed
+  fn(b)
+  local out = {}
+  for i = from + 1, #b.printed do out[#out + 1] = b.printed[i] end
+  return out
+end
+
+--- Each row's `state` joined, and each row's actionable flag as y/n joined.
+local function states(rows)
+  local out = {}
+  for i, r in ipairs(rows) do out[i] = r.state end
+  return joined(out)
+end
+local function actionable(rows)
+  local out = {}
+  for i, r in ipairs(rows) do out[i] = r.actionable and "y" or "n" end
+  return joined(out, "")
+end
+
+--- True when any line of a row's tip carries `needle` in either column.
+local function tipHas(row, needle)
+  for _, line in ipairs(row.tip or {}) do
+    local text = type(line) == "table" and (tostring(line[1]) .. " " .. tostring(line[2])) or tostring(line)
+    if text:find(needle, 1, true) then return true end
+  end
+  return false
+end
+
+--- Show the panel under the recorder and answer its frame (the renderer's, through the seam's
+--- handle; built on the first Show).
+local function shown(b)
+  _G.LK_TEST.assertTrue(b.sim:ShowPanel(), "ShowPanel")
+  return b.m.__named[b.d.name .. "SimPanel"]
+end
+
+--- The row buttons of the shown panel, by composed position.
+local function buttons(f)
+  local out = {}
+  for _, child in ipairs(f.__rowButtons or {}) do out[#out + 1] = child end
+  return out
+end
+
+F.bench, F.joined, F.linesOf, F.states, F.actionable = bench, joined, linesOf, states, actionable
+F.tipHas, F.shown, F.buttons = tipHas, shown, buttons
 
 return F

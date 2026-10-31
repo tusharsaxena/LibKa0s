@@ -1,8 +1,8 @@
 -- tests/test_options_compose_flags.lua -- FontGroup's "From skin" Font flags (OptionsCompose minor 14;
 -- LK-04 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK, the owner's ruling D-07).
 --
--- A suite of its own: tests/test_options_compose.lua is in the band and peels on the next
--- OptionsCompose minor that adds cases there (CLAUDE.md).
+-- A suite of its own: tests/test_options_compose.lua was in the band when these were written, and
+-- has since peeled its record-backed arm to tests/test_options_compose_arm.lua.
 --
 -- What is pinned:
 --

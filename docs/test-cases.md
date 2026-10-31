@@ -2303,7 +2303,7 @@ Total.
 - keybinds sync: a repaint runs in combat, since it only reads
 - keybinds sync: without C_Timer the repaint runs at once
 
-### test_options_appearance.lua (60)
+### test_options_appearance.lua (35)
 
 - appearance: OptionsAppearance is at minor 1 or later and attaches the two members
 - appearance: the Skin major answers an owner's label and writes through its setter
@@ -2340,6 +2340,9 @@ Total.
 - appearance: with a Skin copy before minor 6 the section is absent
 - appearance: a stored key LibSharedMedia lacks stays listed, and the skin's own names the worn face
 - appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
+
+### test_options_appearance_overrides.lua (25)
+
 - appearance: the Font outline dropdown sits in the Font and texture section, All text first
 - appearance: an outline pick moves the Skin major first, then writes every media half
 - appearance: Ignore fonts grays the Font outline out, and it comes back live
@@ -2366,7 +2369,7 @@ Total.
 - appearance: the copy has its own heading, Other Ka0s addons, after the Scope, the tab ending on it
 - appearance: the note leads the Look section, ahead of the first skin
 
-### test_options_skin_picker.lua (47)
+### test_options_skin_picker.lua (37)
 
 - skin picker: OptionsSkinPicker is minor 4, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
@@ -2393,16 +2396,6 @@ Total.
 - skin picker: Apply to all dismisses every queued picker, each onClose run, none shown
 - skin picker: the gear saves, opens the page itself, then the Skin tab, then closes
 - skin picker: in combat the gear opens nothing and the window stays up, not marked seen
-- skin picker: two instances on one library: the second owner queues, and shows when the first closes
-- skin picker: a queued owner waits out combat and shows when it ends
-- skin picker: a queue dismissed while waiting out combat shows nothing when combat ends
-- skin picker: a queued owner is shown after Apply and after the gear, too
-- skin picker: HideSkinPicker takes a queued owner out unseen, and a shown one down with onClose
-- skin picker: one instance's second owner queues behind its first, each refreshed only by its own
-- skin picker: with the client's own OnHide, one instance's first owner closing leaves the second up
-- skin picker: with the client's own OnHide, onClose still runs once per showing, by every route
-- skin picker: a skin registered after the first show gains its row on the next
-- skin picker: onClose runs once per showing, by every route
 - skin picker: the icons come from LibKa0s-Media-1.0, and are glyphs without it
 - skin picker: the eye shows only with onPreview, and calls it
 - skin picker: spec.strings translates the title, the buttons, the tips and a skin's name
@@ -2415,6 +2408,19 @@ Total.
 - skin picker: a fallback preview under a painting EllesmereUI keeps the overrides
 - skin picker: the gear after a clearing preview writes the skin, then every media half
 - skin picker: two clearing previews, then Apply, write the media once
+
+### test_options_skin_picker_shared.lua (10)
+
+- skin picker: two instances on one library: the second owner queues, and shows when the first closes
+- skin picker: a queued owner waits out combat and shows when it ends
+- skin picker: a queue dismissed while waiting out combat shows nothing when combat ends
+- skin picker: a queued owner is shown after Apply and after the gear, too
+- skin picker: HideSkinPicker takes a queued owner out unseen, and a shown one down with onClose
+- skin picker: one instance's second owner queues behind its first, each refreshed only by its own
+- skin picker: with the client's own OnHide, one instance's first owner closing leaves the second up
+- skin picker: with the client's own OnHide, onClose still runs once per showing, by every route
+- skin picker: a skin registered after the first show gains its row on the next
+- skin picker: onClose runs once per showing, by every route
 
 ### test_options_skin_picker_faces.lua (15)
 
@@ -2668,7 +2674,7 @@ Total.
 - opt combat debug: no debug on the descriptor is silent, and the chat is unchanged
 - opt combat debug: a debug that is not a function is ignored
 
-### test_options_compose.lua (51)
+### test_options_compose.lua (39)
 
 - compose: the instance carries every composer and every published constant
 - compose: FontGroup emits the six canonical leaves in the canonical order
@@ -2698,6 +2704,20 @@ Total.
 - compose: a frameless addon's lead button shares the pair with Reset all settings
 - compose: a FRAMED addon's lead button takes its own row above the full pair
 - compose: the tail draws the two resets as the tab's closing button pair
+- compose: with no resetProfile the Reset all tooltip keeps its minor-4 wording, byte for byte
+- compose: with resetProfile the Reset all tooltip says it resets the current profile only
+- compose: with resetProfile and profilesPage the tooltip names Profiles -> Reset Profile
+- compose: the descriptor moves the Reset all tooltip and nothing else Master controls draws
+- compose: a shell that hands __AttachCompose no descriptor keeps the minor-4 tooltip
+- compose: StrataTooltip over BACKGROUND..HIGH says the tiers and nothing more
+- compose: StrataTooltip adds the dialog sentence when the row offers Dialog or above
+- compose: StrataTooltip adds both sentences when the row offers Fullscreen Dialog or Tooltip
+- compose: StrataTooltip over a non-table says the tiers alone
+- compose: StrataTooltip takes each part from strings, which is how a host localizes it
+- compose: StrataTooltip's default text is pure ASCII and names the Settings window
+
+### test_options_compose_arm.lua (12)
+
 - compose: a path-keyed call emits byte-for-byte what compose minor 3 emitted
 - compose: the bind arm emits the same rows as the path arm, with the binding in place of path
 - compose: a bound row's get and set reach the bind with the record field and the row
@@ -2710,17 +2730,6 @@ Total.
 - compose: a PanelMaster block writes through the registry and repaints off the live record
 - compose: a bound row takes its pairWith partner, keyed by its field
 - compose: disabledIf on a bound row reads the record through the bind, not the settings store
-- compose: with no resetProfile the Reset all tooltip keeps its minor-4 wording, byte for byte
-- compose: with resetProfile the Reset all tooltip says it resets the current profile only
-- compose: with resetProfile and profilesPage the tooltip names Profiles -> Reset Profile
-- compose: the descriptor moves the Reset all tooltip and nothing else Master controls draws
-- compose: a shell that hands __AttachCompose no descriptor keeps the minor-4 tooltip
-- compose: StrataTooltip over BACKGROUND..HIGH says the tiers and nothing more
-- compose: StrataTooltip adds the dialog sentence when the row offers Dialog or above
-- compose: StrataTooltip adds both sentences when the row offers Fullscreen Dialog or Tooltip
-- compose: StrataTooltip over a non-table says the tiers alone
-- compose: StrataTooltip takes each part from strings, which is how a host localizes it
-- compose: StrataTooltip's default text is pure ASCII and names the Settings window
 
 ### test_options_compose_master.lua (15)
 
@@ -3281,7 +3290,7 @@ Total.
 - sim autoplay: a typed run after a manual step resumes and plays the next step at once
 - sim autoplay: the start and run usage lines say a simulation plays at once
 
-### test_sim_panel.lua (59)
+### test_sim_panel.lua (41)
 
 - sim panel: the file registers on the shell's minor and in MODULES
 - sim panel: the STRINGS keys the panel draws are added to Sim.STRINGS
@@ -3298,24 +3307,6 @@ Total.
 - sim panel: after a stop the rows are the idle preview again
 - sim panel: d.panel.stepLabel names the rows (step, i, steps)
 - sim panel: startTip and stopTip may be functions answering a line list
-- sim panel: the title defaults to name .. ' - Simulation', and d.panel.title overrides it
-- sim panel: headless, ShowPanel answers false and PanelRows still composes
-- sim panel: Show, Hide, Toggle, IsPanelShown
-- sim panel: the empty verb opens it and `panel` toggles it
-- sim panel: ShowPanel answers false and does nothing while stood down
-- sim panel: a stand-down stop hides it; any other stop repaints it
-- sim panel: every listener notification repaints a shown panel
-- sim panel: the check texture is the host's path, shown on a done row
-- sim panel: height bounds are re-pinned when the row count changes
-- sim panel: the picker previews the chosen scenario and offers sizes only when it has them
-- sim panel: the picker's scenario takes the width the bar leaves, on one line
-- sim panel: the picker's Start starts the chosen scenario through the typed verb
-- sim panel: the picker's Start leaves the session playing, its first tick on the next frame
-- sim panel: running, the controls are Pause, Restart and Stop, spanning the bar
-- sim panel: a member start offers Resume, which sends run once ready and starts play
-- sim panel: Restart's button arms the new session
-- sim panel: running, the controls replace the picker, and Pause swaps with Resume
-- sim panel: Restart through the controls prints what the typed verb prints
 - sim panel: clicking Start, the ready row and Stop prints what typing them prints
 - sim panel: clicking an ahead row runs every step up to it, in order (the internal RunTo)
 - sim panel: an ahead click while a run is playing holds it and plays up to the row
@@ -3342,6 +3333,27 @@ Total.
 - sim panel: a picked scenario the host drops falls back to the first listed one
 - sim panel: every documented optional field filled in place after New is read at use
 - sim panel: anchorTo, stepDelay and the required callbacks and slash, reassigned after New, are read at use
+
+### test_sim_panel_controls.lua (18)
+
+- sim panel: the title defaults to name .. ' - Simulation', and d.panel.title overrides it
+- sim panel: headless, ShowPanel answers false and PanelRows still composes
+- sim panel: Show, Hide, Toggle, IsPanelShown
+- sim panel: the empty verb opens it and `panel` toggles it
+- sim panel: ShowPanel answers false and does nothing while stood down
+- sim panel: a stand-down stop hides it; any other stop repaints it
+- sim panel: every listener notification repaints a shown panel
+- sim panel: the check texture is the host's path, shown on a done row
+- sim panel: height bounds are re-pinned when the row count changes
+- sim panel: the picker previews the chosen scenario and offers sizes only when it has them
+- sim panel: the picker's scenario takes the width the bar leaves, on one line
+- sim panel: the picker's Start starts the chosen scenario through the typed verb
+- sim panel: the picker's Start leaves the session playing, its first tick on the next frame
+- sim panel: running, the controls are Pause, Restart and Stop, spanning the bar
+- sim panel: a member start offers Resume, which sends run once ready and starts play
+- sim panel: Restart's button arms the new session
+- sim panel: running, the controls replace the picker, and Pause swaps with Resume
+- sim panel: Restart through the controls prints what the typed verb prints
 
 ### test_sim_panel_render.lua (34)
 
@@ -4061,8 +4073,10 @@ Total.
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
-| test_options_appearance.lua | 60 |
-| test_options_skin_picker.lua | 47 |
+| test_options_appearance.lua | 35 |
+| test_options_appearance_overrides.lua | 25 |
+| test_options_skin_picker.lua | 37 |
+| test_options_skin_picker_shared.lua | 10 |
 | test_options_skin_picker_faces.lua | 15 |
 | test_options_skin_picker_rows.lua | 53 |
 | test_options_skin_verb.lua | 7 |
@@ -4073,7 +4087,8 @@ Total.
 | test_options_media.lua | 30 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
-| test_options_compose.lua | 51 |
+| test_options_compose.lua | 39 |
+| test_options_compose_arm.lua | 12 |
 | test_options_compose_master.lua | 15 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
@@ -4095,7 +4110,8 @@ Total.
 | test_sim_timeline.lua | 41 |
 | test_sim_verbs.lua | 42 |
 | test_sim_autoplay.lua | 16 |
-| test_sim_panel.lua | 59 |
+| test_sim_panel.lua | 41 |
+| test_sim_panel_controls.lua | 18 |
 | test_sim_panel_render.lua | 34 |
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |

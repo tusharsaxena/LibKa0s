@@ -79,14 +79,15 @@ is re-vendored. Never patch a vendored copy downstream; fix it here and copy acr
 | `library-stack-§7` | `LibKa0s/WidgetsLineChart.lua` (Widgets key 12.1.4.1, v1.69.0) is promoted into the library with **one** consumer, LootHistory's Timeline tab (its `NS.MakeLineChart` seam), where the section's "What earns promotion into a Ka0s-owned lib" bar 1 asks for two or more consumers with the same semantics. | The owner ruled to build the chart here from the start (LootHistory `docs/superpowers/specs/2026-10-06-timeline-ledger-design.md`, §13 F3) rather than inside the addon and lift it later: a chart is a widget any Ka0s addon with a time series can draw, its math is pinned headless here (`tests/test_widgets_linechart_math.lua`), and it ships as a secondary file paired on the Widgets shell's minor, so it costs no consumer a setup seam and a host that draws no chart owes nothing. A ratification recorded only in an addon's spec is in no register, so the timeline-ledger plan's standards flag S1 put it to the owner, who chose this row over an upstream change to the standard. Its first re-check trigger ("one release passes after v1.69.0 with no second consumer named") fired at v1.70.0, which named none; the owner then ruled to keep the chart here, and the row stands as an **accepted** deviation. | 2026-10-06, the timeline-ledger plan's S1; accepted 2026-10-07 by the owner, after its re-check trigger fired at v1.70.0 | A second addon draws a chart (then the row is retired), or the chart's API needs a breaking change. |
 | `library-stack-§7` | `LibKa0s/OptionsDrawer.lua` (Options key 29.2.34.2.4.8.1.7.4.2.1, v1.73.0), `O.Drawer`, is promoted into the library with **one** consumer, Ka0s Quick Comms' When tab (`settings/Groups_When.lua`), where the section's "What earns promotion into a Ka0s-owned lib" bar 1 asks for two or more consumers with the same semantics. | The owner ruled to build the drawer here rather than inside the addon (Quick Comms `docs/superpowers/specs/2026-10-18-when-drawers-design.md`, goal 2: "If needed, create a new LibKa0s component to build this"), so that it looks like the settings panel the library already draws and any Ka0s page with a list of conditions or filters can fold them the same way. It ships as an eleventh file paired on the Options shell's minor and attached behind a guard, so a host that draws no drawer owes nothing but a `Drawer` no-op in a degradation stub pinned by name; its body ctx and its pooled-frame hygiene are pinned headless here (`tests/test_options_drawer.lua`). The spec flagged the one-consumer promotion for this register, as the line chart's was. | 2026-10-18, the owner's ruling recorded in that spec (L1 of its plan) | A second addon draws a drawer (then the row is retired), or one release passes after v1.73.0 with no second consumer named (then the choice between this row and moving the drawer into Quick Comms is reopened for the owner), or the drawer's API needs a breaking change. |
 | `automated-tests-§4` | Five files in `layout-§1`'s 1000–1500 band have been carried as *accepted* past the watch list's three-run shelf life, and this row is their tracker. Measured 2026-10-07 with the command under *Files over the 1500-line cap*, each with its seam and its trigger: `LibKa0s/OptionsWidgets.lua` (1375 at minor 38, whose picker fallback added no maker; 1370 at minor 37, measured 2026-10-30: the OR form of `shownWhen` would have taken it past its 1450 trigger, so the switched sections peeled on the named seam to `LibKa0s/OptionsSwitch.lua` (163) in the change that added it, `LK-10` of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`; 1447 before, re-measured 2026-10-25 at minor 35's `skinValue` read, no maker added, and again after `LK-08`'s AceGUI rows, which reached it through `O.AceGUI`'s proxy and left it untouched; seam now: the flow engine, `flowRows`; trigger: 1450 lines or the next maker added), `LibKa0s/OptionsIds.lua` (1412, re-measured 2026-10-31 at minor 5, no member added; seam: the suggestion half, the module-scope suggestions-while-typing block and the dropdown members; trigger: 1450 lines), `LibKa0s/OptionsIdList.lua` (1290, re-measured 2026-10-31 at minor 7; no seam inside it, since the list and its entry-line layout are one piece of machinery, so at the trigger a seam is named before the append; trigger: 1350 lines), `LibKa0s/OptionsTabs.lua` (1382, re-measured 2026-10-31 at minor 11, no member added; seam: the tabbed page, `O.RenderTabbedSchema` and its helpers; trigger: the next member added or 1400 lines) and `LibKa0s/Options.lua` (1335, re-measured 2026-10-31 at minor 34, no member added; 1332 at minor 33's one guarded `__AttachAppearance` line in `attachHalves` and its two header lines, no member added: the Appearance tab's members are `LibKa0s/OptionsAppearance.lua`'s, attached the way `OptionsKeybinds.lua`'s are; 1329 at minor 32's one `__AttachSkinAce` line in `attachHalves`, no member added (1325 at minor 31's two skin calls); seam: the reset walk, `runBulk`, `O.RestoreDefaults` and `O.RestoreAllDefaults`; trigger: the next member added or 1400 lines). | No file is over the cap, four have a named seam and the fifth has its trigger, and a peel is a release with a re-vendor into eleven consumers (*A peel here is a release* below), so each is scheduled at its trigger rather than now. The section asks for a tracked deviation with an id and an owner once an *accepted* outlives three release runs. Three of the five cells cited issue #32, which is closed, and an item of the finished 2026-09-26 automated-tests sweep, and neither is a tracker. Filed as `LK-17d` by the 2026-10-07 audit (`docs/audits/2026-10-07/`), which asked for an open issue per file. That remediation run ruled out opening new issues, so the tracker is this row (item `LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-07-REVIEW_AND_STANDARDS_AUDIT_REMEDIATION/`). | 2026-10-07, owner Tushar Saxena, under the owner's standing autonomy for that plan | Any of the five reaches its trigger, and then that file peels on its named seam in the change that reaches it. **Or** a GitHub issue is opened to track the band, and then this row is retired in favor of it. |
+| `automated-tests-§4` | Six payload files in `layout-§1`'s 1000–1500 band had a fired re-check trigger, a spent three-run shelf life or no tracker, and this row is their tracker (id `FX-LK-SIZE`). Measured 2026-10-31, each with its seam and its trigger: `testkit/mock_base.lua` (1465; seam: the Ace fakes, the CallbackHandler registry through AceGUI; trigger: 1490 lines, or any kit change that adds more than 30 lines here), `LibKa0s/OptionsSkinPicker.lua` (1455; seam: the rows' section, `onRow` through `syncControls`; trigger: 1480 lines or the next OptionsSkinPicker minor), `LibKa0s/Skin.lua` (1232; seam: the owner-token block, `isSchemaName` through `takeTokens`, `__RemapName`, `ownValue`, `withOwnTokens` and `__Remap`; trigger: the next Skin minor), `LibKa0s/SkinDefs.lua` (1104; seam: the eight other skins; trigger: the next SkinDefs minor), `LibKa0s/SimPanel.lua` (1018; seam: the renderer section; trigger: the next SimPanel minor that grows it) and `LibKa0s/SkinPaint.lua` (1002; seam: the window block, to `LibKa0s/SkinPaintExtras.lua`; trigger: 1050 lines or the next SkinPaint minor). | No file is over the cap. Each seam is a new shipped file or a kit file, so a peel is a release with a re-vendor into every consumer (*A peel here is a release* below), and the remediation plan of 2026-10-31 rules out editing the payload, so no release follows it. `Skin.lua`, `SkinDefs.lua` and `SimPanel.lua` had spent the shelf life as *accepted*; `testkit/mock_base.lua` sat *on notice* outside any tracker; `OptionsSkinPicker.lua` and `SkinPaint.lua` join so that every payload row in the band has one. | 2026-10-31, owner Tushar Saxena, `FX-LK-SIZE` of Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/` | Any of the six reaches its trigger, and then that file peels on its named seam in the change that reaches it. **Or** a GitHub issue is opened to track the band, and then this row is retired in favor of it. |
 
-**Nine rows.** Three are not prose at all — a path fragment, two third-party API identifiers and a
+**Ten rows.** Three are not prose at all — a path fragment, two third-party API identifiers and a
 third-party add-on's folder name. The fourth declines a kit gate in favor of this repo's own, which is a state `testing-§9` names and the
 suite inventory reads. The fifth keeps one duplicated client read out of a release that promised to
 change no existing file. The sixth keeps three widget-owned UI frames on raw core-event
 registration, outside a rule written for addon event traffic. The seventh promotes a widget with one
 consumer, on the owner's ruling, accepted again after its first trigger fired, with a trigger that retires it or reopens it. The eighth does the same for the drawer, on its first release. The ninth tracks five band files whose acceptance
-outlived its shelf life, each with the seam it peels on and the trigger that peels it. The table is otherwise
+outlived its shelf life, each with the seam it peels on and the trigger that peels it. The tenth does the same for six payload files. The table is otherwise
 empty on purpose:
 the alternative is a register that gets created in the same breath as the first deviation, by whoever
 is already arguing for it.
@@ -246,7 +247,10 @@ triggers fired, `LibKa0s/Skin.lua`'s, `LibKa0s/SkinDefs.lua`'s and `tests/test_o
 below; a peel at the close would land after the release's independent review and, for the two payload files, move
 the Skin key again. The new `LibKa0s/OptionsMedia.lua` (450) is out of the band. Re-measured 2026-10-31 after the picker-rows addendum of the same
 run: **fifteen**, nothing over 1500. `LibKa0s/OptionsSkinPicker.lua` came in (below), and `LibKa0s/Skin.lua` grew (below). Re-measured at the pre-merge automated-test run (2026-10-31,
-`docs/automated-tests/20261031-202020/`): still **fifteen**, nothing over 1500, no re-check trigger fired.
+`docs/automated-tests/20261031-202020/`): still **fifteen**, nothing over 1500, no re-check trigger fired. Re-measured 2026-10-31 by
+`FX-LK-SIZE` of Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/`: **eleven**, nothing over 1500. Four suites left
+on their named seams (the paragraph after this list), and the six payload files whose rows had spent their shelf life moved
+to the tenth register row, because that plan edits no payload.
 Largest first:
 
 - `testkit/mock_base.lua` (1465 with kit revision 43's one comment line pointing at `testkit/mock_paint.lua`, measured 2026-10-25, under its 1490 re-check trigger; 1464 with kit revision 39's six `__kitEver` lines, measured 2026-10-14, under its 1490 re-check trigger; 1458 with kit revision 37's two `mock_lines.lua` lines; 1456 unchanged by kit revision 35, whose GetHeight comment rewrite
@@ -275,16 +279,6 @@ Largest first:
 - `LibKa0s/OptionsIdList.lua` (1290 with `LK-06d`'s tooltip lines and `LK-06c`'s shared id gray (Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`), measured 2026-10-30, under its 1350 re-check trigger; 1268 with minor 6's skinned help tints (`LK-07` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`), measured 2026-10-25, under its 1350 re-check trigger; 1251 at v1.75.0's minor 5, the #57 help-mark comment, measured
   2026-10-22, under its 1350 re-check trigger; 1247 at v1.71.0's minor 4, measured 2026-10-07; 1246 with minor 3's loaded-addon check on `addonName`, LibKa0s#42, measured 2026-10-02;
   1197 at v1.65.0; 1193 new: the id peel), ruled below.
-- `tests/test_sim_panel.lua` (1056 with the step-label truncation's tooltip case (2026-10-23), which moved no
-  SimPanel minor and so does not fire the trigger below; 1039, new to the band at v1.76.0, measured
-  2026-10-23: 933 → 1039 with SimPanel minor 5's controls cases, `LK-01`), ruled in `docs/automated-tests/RESULTS.md`: the seam
-  is the *frame, the picker and the controls* section, to its own `tests/test_sim_panel_controls.lua`
-  beside `tests/test_sim_panel_render.lua`. **Re-check trigger: 1200 lines, or the next SimPanel
-  minor that adds cases here.** SimPanel minor 6 (v1.77.0, `LK-01` of the 2026-10-24 run) added no
-  case here: its cases are `tests/test_tool_windows_layering.lua`'s, and only the two minor pins moved.
-  SimPanel minor 7 (the skin owner, `LK-09` of Ka0sAddonsCommonTasks `docs/2026-10-25-SKINNING/`)
-  added none either: its cases are the new `tests/test_tool_windows_skin.lua`'s, and only the two
-  pins moved, to "at least" (re-measured 2026-10-25, still 1056).
 - `LibKa0s/OptionsSkinPicker.lua` (1455, measured 2026-10-31 at the pre-merge automated-test run, at the same minor 4, with the event-free wake of the locked rows, under the 1480 trigger below; 1451, measured 2026-10-31 after the review of the rows, at the same minor 4: the 1420 trigger below fired and the file is accepted again for this release, with the same seam named, because that peel is a new shipped file on a branch awaiting smoke; **new re-check trigger: 1480 lines, or the next OptionsSkinPicker minor**. 1359, new to the band, measured 2026-10-31: 983 -> 1359 with the Skin tab's rows at this
   release's minor 4, the picker-rows addendum of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`) -- **accepted.** The
   header carries about 180 of those lines. The seam is the rows' section (`onRow` through `syncControls`, with the preview
@@ -318,45 +312,21 @@ Largest first:
   logic. The seam is the eight other skins (*the eight other skins* section: `FOLLOW`, `ICON_EDGE`, `HUD_FACE`,
   `register` and the eight `register(...)` blocks), to a secondary file of its own with its own minor, paired on the
   Skin shell as this file is. **Re-check trigger: the next SkinDefs minor, and then the seam peels in that change.**
-- `tests/test_options_skin_picker.lua` (1129 after the picker-rows addendum, whose cases went to the new `tests/test_options_skin_picker_rows.lua` (843, measured 2026-10-31), at this release's minor 4, so the trigger below did not fire; 1133, measured 2026-10-31 at v1.83.0's close: OptionsSkinPicker minor 4 added
-  no case, only a pin of its wording, so the trigger below did not fire; 1131, measured 2026-10-30 after `LK-11` of Ka0sAddonsCommonTasks
-  `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/` moved its bench, unchanged, to `tests/fixture_skin_picker.lua` (116), shared
-  with the new `tests/test_options_skin_verb.lua`; 1220 before that, after `LK-07` and `LK-08` of the same run added the
-  override-reset cases at OptionsSkinPicker minor 3, which fired the trigger below and named no peel; 1064, new to the
-  band, measured 2026-10-30: 966 → 1064 with the picker's
-  "Choose a skin" title and addon-name line (`LK-11` of Ka0sAddonsCommonTasks
-  `docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS/`)) — **accepted.** The seam is the *one window across addons* section, to
-  its own `tests/test_options_skin_picker_shared.lua`. **Re-check trigger: 1200 lines, or the next OptionsSkinPicker
-  minor that adds cases here.**
-- `tests/test_options_appearance.lua` (1266, measured 2026-10-31 at v1.83.0's close: 1231 → 1266 with OptionsAppearance
-  minor 5's cases of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`, which
-  fired the trigger below, and it was re-ruled at the close rather than peeled; 1231, new to the band, measured 2026-10-30: 797 → 1231 with OptionsAppearance
-  minor 4's cases, the font outline (`LK-03`), a skin change resetting the overrides (`LK-07`) and the tab's layout
-  (`LK-08`) of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`) — **accepted.** Each section pins one
-  part of one tab, and the minor-4 sections are the part with the clearest boundary. The seam is those three
-  sections (*the font outline*, *a skin change resets the overrides*, *the Skin tab's layout*), to their own
-  `tests/test_options_appearance_v4.lua` on the same fresh-client bench. **Re-check trigger: the next
-  OptionsAppearance minor that adds cases here, or 1300 lines, and then the seam peels in that change.**
 - `LibKa0s/SkinPaint.lua` (1002, new to the band, measured 2026-10-30: 979 → 1002 with minor 13's mono-role
   outline (`LK-03`) and `P.color` (`LK-14`) of Ka0sAddonsCommonTasks `docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK/`) —
   **accepted.** Two lines over the band's floor, and about seventy of its lines are the minor-by-minor header notes
   the Skin document already records. The seam is the window block (the table `Shell` hands `Core.ApplySkin`, the
   inner rule and the edge holder), to `LibKa0s/SkinPaintExtras.lua` as Panel and Inset went at minor 11.
   **Re-check trigger: 1050 lines, or the next SkinPaint minor.**
-- `tests/test_options_compose.lua` (1012, new to the band at v1.77.0, measured 2026-10-24: 944 →
-  1012 with OptionsCompose minor 8's six `O.StrataTooltip` cases, `LK-20` of Ka0sAddonsCommonTasks
-  `docs/2026-10-24-KEYBINDS_LAYOUT_STRATA/`) — **accepted.** The seam is the record-backed arm
-  (the *compose minor 4* section and *PanelMaster's three hand-written groups*), to its own
-  `tests/test_options_compose_arm.lua`. **Re-check trigger: 1200 lines, or the next OptionsCompose
-  minor that adds cases here.** Re-measured 2026-10-24 after v1.77.0's settings-layout extension
-  (OptionsCompose minors 9-11, `LK-30` to `LK-32` of the same run): still 1012, since those minors'
-  cases went to suites of their own, `tests/test_options_compose_master.lua` (241),
-  `tests/test_options_compose_tooltips.lua` (217) and `tests/test_options_reset_tooltip.lua` (105), so
-  the trigger did not fire. `LibKa0s/OptionsCompose.lua` is 758 (637 at minor 8), out of the band;
-  `LibKa0s/OptionsWidgets.lua` and `LibKa0s/OptionsTabs.lua` were not touched by the extension.
-  Re-measured 2026-10-25 at v1.78.0's close: still 1012, since OptionsCompose minor 12's `fromSkin`
-  cases went to `tests/test_options_compose_skin.lua` (204), so the trigger did not fire.
-  `LibKa0s/OptionsCompose.lua` is 825 at minor 12, out of the band (re-measured 2026-10-27).
+
+Four suites left the band on 2026-10-31, each on the seam its row named and each move unchanged (`FX-LK-SIZE` of
+Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/`). `tests/test_sim_panel.lua` went 1056 → 683, the *frame, the
+picker and the controls* section to `tests/test_sim_panel_controls.lua` (292), its bench to `tests/fixture_sim_panel.lua`.
+`tests/test_options_skin_picker.lua` went 1129 → 864, the *one window across addons* section to
+`tests/test_options_skin_picker_shared.lua` (256). `tests/test_options_compose.lua` went 1012 → 726, the record-backed arm to
+`tests/test_options_compose_arm.lua` (295). `tests/test_options_appearance.lua` went 1266 → 648, its minor-4 sections to
+`tests/test_options_appearance_overrides.lua` (505), named for what they cover rather than the watch list's `_v4`, with the
+bench in the new `tests/fixture_appearance.lua`. `tests/test_options_skin_picker_rows.lua` (843) stays out of the band.
 
 `LibKa0s/Perf.lua` left the band on 2026-10-01, 1307 → 975, closing issue
 [#7](https://github.com/tusharsaxena/LibKa0s/issues/7) in two peels at minor 14. The first moved the

@@ -1,5 +1,6 @@
--- tests/fixture_skin_picker.lua -- the bench the two skin picker suites share:
--- tests/test_options_skin_picker.lua (the window, the queue, the picks) and
+-- tests/fixture_skin_picker.lua -- the bench the skin picker suites share:
+-- tests/test_options_skin_picker.lua (the window, the picks),
+-- tests/test_options_skin_picker_shared.lua (one window across addons, the queue) and
 -- tests/test_options_skin_verb.lua (O.SkinVerb, the `/xx skin` act; LK-11 of Ka0sAddonsCommonTasks
 -- docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK). Moved out of the first, unchanged, when the second was
 -- written, so the two cannot drift: one copy rather than two, for the reason
@@ -110,7 +111,37 @@ local function specFor(store, extra)
   return spec
 end
 
+--- Open the window's list and click the row for skin `key`.
+local function pickRow(f, key)
+  f.dd:__fire("OnClick")
+  for _, r in ipairs({ f.list:GetChildren() }) do
+    if r.key == key then r:__fire("OnClick") end
+  end
+end
+
+--- Make every frame's Hide fire its OnHide at once when the frame was shown, as the client does
+--- (the kit's Hide only clears the flag). Arm it before the window is built.
+local function armClientHide(m)
+  local create = m.CreateFrame
+  m.CreateFrame = function(...)
+    local f = create(...)
+    local hide = f.Hide
+    rawset(f, "Hide", function(self)
+      local was = self:IsShown()
+      hide(self)
+      if was then self:__fire("OnHide") end
+      return self
+    end)
+    return f
+  end
+end
+
+local function applied(Skin, owner)
+  return select(2, Skin:GetChoice(owner))
+end
+
 return {
   OWNER = OWNER, OTHER = OTHER, THIRD = THIRD, OPTIONS = OPTIONS, LSM = LSM,
   armGeometry = armGeometry, env = env, register = register, instance = instance, specFor = specFor,
+  pickRow = pickRow, armClientHide = armClientHide, applied = applied,
 }

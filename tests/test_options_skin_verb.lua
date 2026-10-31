@@ -9,8 +9,8 @@
 -- without the Skin major, or for an owner that never registered, it says skins are unavailable; and
 -- the four words in lib.SKIN_PICKER_STRINGS, ASCII, spec.strings over them.
 --
--- Its own suite rather than more cases in tests/test_options_skin_picker.lua, which is in layout-§1's
--- band; the bench is shared through tests/fixture_skin_picker.lua.
+-- Its own suite rather than more cases in tests/test_options_skin_picker.lua, which was in layout-§1's
+-- band when these were written; the bench is shared through tests/fixture_skin_picker.lua.
 
 local K = _G.LK_TEST
 local test, assertEqual, assertTrue, assertNil = K.test, K.assertEqual, K.assertTrue, K.assertNil

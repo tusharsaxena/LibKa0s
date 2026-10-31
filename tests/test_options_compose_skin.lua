@@ -2,8 +2,8 @@
 -- (OptionsCompose minor 12, OptionsWidgets minor 35, Skin minor 3; LK-07 of Ka0sAddonsCommonTasks
 -- docs/2026-10-25-SKINNING, the plan review's resolution of the owner's ruling R3).
 --
--- A suite of its own: tests/test_options_compose.lua is in the band and peels on the next
--- OptionsCompose minor that adds cases there (CLAUDE.md).
+-- A suite of its own: tests/test_options_compose.lua was in the band when these were written, and
+-- has since peeled its record-backed arm to tests/test_options_compose_arm.lua.
 --
 -- What is pinned:
 --
