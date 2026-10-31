@@ -109,6 +109,7 @@ local function env(opts)
   for i, f in ipairs(A.FILES) do files[i] = f end
   files[#files + 1] = "OptionsAppearance"
   files[#files + 1] = "OptionsSkinPicker"
+  files[#files + 1] = "OptionsSkinPickerRows"
   local m, Skin, lib, ace = A.env({ files = files, lsm = not opts.noLsm and LSM or nil })
   Loader.load("LibKa0s/OptionsMedia.lua", nil, m)
   -- The kit's SetText overwrites `text`, the field the fixture's Button keeps its FontString in; the

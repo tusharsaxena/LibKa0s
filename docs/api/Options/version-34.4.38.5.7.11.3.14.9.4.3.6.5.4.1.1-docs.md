@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **38** · `OptionsIds.lua` **5** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **14** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **5** · `OptionsSkinPicker.lua` **4** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **1** (new) |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSwitch>.<OptionsMedia>`, in load order — the same fifteen numbers `lib.MODULES` reports. |
 | Shipped in | v1.83.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1](./version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md) (shipped in v1.82.0): its Skin tab's font and texture rows were plain Dropdowns over media keys, and an unregistered `LSM30_*` row fell back to one |
-| Superseded by | — |
+| Superseded by | [version 34.4.38.5.7.11.3.14.9.4.3.6.5.5.1.1.1](./version-34.4.38.5.7.11.3.14.9.4.3.6.5.5.1.1.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 38, OptionsIds = 5, OptionsIdList = 7, OptionsTabs = 11, OptionsCombat = 3, OptionsCompose = 14, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 5, OptionsSkinPicker = 4, OptionsSwitch = 1, OptionsMedia = 1 }` |
 
@@ -3991,3 +3991,7 @@ it got.
 - `lib.SKIN_PICKER_STRINGS`: no consumer as of v1.83.0, kept because it holds the default strings a host overrides through `spec.strings`, never by name.
 - `AppearanceRows`: no consumer as of v1.83.0, kept because `AppearanceTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
 - `KeybindRows`: no consumer as of v1.83.0, kept because `KeybindingsTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
+
+## Moving to the next version
+
+No host change: whole-folder re-vendoring brings the new files, and no public member moved. A hand-typed test load list adds the new files next to the ones they peeled from, in `LibKa0s.xml` order.

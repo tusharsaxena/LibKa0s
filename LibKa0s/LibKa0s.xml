@@ -47,6 +47,7 @@
 	<Script file="OptionsKeybinds.lua"/>
 	<Script file="OptionsAppearance.lua"/>
 	<Script file="OptionsSkinPicker.lua"/>
+	<Script file="OptionsSkinPickerRows.lua"/>
 	<Script file="OptionsSwitch.lua"/>
 	<Script file="OptionsMedia.lua"/>
 	<Script file="Perf.lua"/>

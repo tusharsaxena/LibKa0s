@@ -15,7 +15,7 @@ local OWNER, OTHER, THIRD = "LootHistory", "BankLedger", "KickCD"
 local SKIN_FILES = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinEUI" }
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsIds", "OptionsIdList", "OptionsTabs",
                   "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
-                  "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSwitch", "OptionsMedia" }
+                  "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" }
 local LSM = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf", ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf" }
 
 --- Arm every frame's geometry (the kit answers 0 until a test asks): its size setters record
