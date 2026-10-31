@@ -1805,7 +1805,7 @@ Total.
 - launcher: event lines (shown / hidden) stay on debug when debugAtEnable is passed
 - launcher: end to end, a Register at OnEnable lands the first time logging is turned on
 
-### test_options.lua (61)
+### test_options.lua (58)
 
 - options: the major registers all three of its files
 - options: an instance carries the shell, the widget makers and the scroll patch
@@ -1837,10 +1837,7 @@ Total.
 - options: RestoreAllDefaults honors the host's skipRestoreAll veto
 - options: LSMValues returns a DEFERRED closure, not a snapshot
 - options: LSMValues offers a None placeholder rather than an empty list
-- options: __PatchLSM30Border is published on the library, not on an instance
-- options: __PatchLSM30Border registers once and the second call is a no-op
-- options: the patched constructor hides the preview tile and re-anchors the bar
-- options: __PatchLSM30Border stays armed while the widget is absent
+- options: __PatchLSM30Border is a no-op a host's call still finds
 - options: EnsureScroll is lazy, created once, and patched
 - options: OptionsScroll.lua owns the font preload; without it a show still renders
 - options: the scrollbar patch is idempotent
@@ -2695,7 +2692,7 @@ Total.
 - switched any: the single-path form is unchanged beside it
 - switched: OptionsSwitch.lua is its own file of the major, paired on the shell's minor
 
-### test_options_media.lua (30)
+### test_options_media.lua (34)
 
 - media: lib.__MediaWidgetType maps a kind, its LSM30_* and its own type name to one type
 - media: no stock Dropdown registered, so no picker, and the caller draws a plain Dropdown
@@ -2720,9 +2717,13 @@ Total.
 - media: disabling dims the swatch
 - media: the skin paints a picker as a Dropdown and the preview survives its font
 - media: an open pull-out wears the menu tokens
+- media: a picker never closes on its first entry: no value is blank, a value is its key
+- media: border and sound rows sit on the stock bar, level with the page's other controls
 - media: with no LibSharedMedia the picker still lists, picks and shows its text
-- media: an unregistered LSM30_* row is drawn by the matching picker
-- media: a registered LSM30_* row keeps it
+- media: with no SharedMediaWidgets an LSM30_* row of every kind draws the matching picker
+- media: a registered LSM30_* type does not win: the row is still our picker
+- media: a row naming Ka0sMedia_* draws it, a host's own registered type is left alone
+- media: with no picker to draw, a registered LSM30_* row keeps its type
 - media: with no picker to draw, an LSM30_* row is the stock Dropdown
 - media: the Skin tab's font and texture rows are pickers led by a previewing row
 - media: a Skin tab pick writes through the same seam and keeps the row a picker
@@ -4168,7 +4169,7 @@ Total.
 | test_slash_debug.lua | 14 |
 | test_launcher.lua | 45 |
 | test_atenable.lua | 21 |
-| test_options.lua | 61 |
+| test_options.lua | 58 |
 | test_options_render.lua | 27 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
@@ -4199,7 +4200,7 @@ Total.
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
 | test_options_switched.lua | 16 |
-| test_options_media.lua | 30 |
+| test_options_media.lua | 34 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 39 |
@@ -4263,4 +4264,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3613** |
+| **Total** | **3614** |

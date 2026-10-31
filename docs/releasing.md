@@ -1101,7 +1101,9 @@ rows to the preview pickers. Ka0s Skin Tester shows every picker kind (`ST-F01`)
 
 **Step 8 for v1.84.0 (local tag `v1.84.0`, cut at the close, `LK-M2-REL`) is the re-vendor of Ka0sAddonsCommonTasks
 `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`**: all sixteen consumers on the same branch, one re-vendor.
-A consumer's degradation stubs owe `O.PositionBlock`, and a suite pinning `DebugLogDiagnostics 5` moves with it. Step 5 names no
+A consumer's degradation stubs owe `O.PositionBlock`, and a suite pinning `DebugLogDiagnostics 5` moves with it. The tag was
+re-cut locally on 2026-11-01 for `LK-M3`, the owner's ruling that `Ka0sMedia_*` is the only media picker: the re-vendor comes
+again, a host's own test pinning `LSM30_*` on a composed row or expecting `__PatchLSM30Border` to wrap moves, and LibKa0sSkinTester's two `LSM30_*` samples go. Step 5 names no
 host: `SimPanel.lua` moved only as the pure split into `SimPanelRender.lua`, and `Sim.lua`, `SimTimeline.lua` and `Widgets.lua` did not move.
 
 **Step 9 was run for v1.83.0 on 2026-10-31** (`FX-LK-DOCS` of Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/`), with DpsRace and LibKa0sSkinTester added to its loop: both were absent from it, and from every row but Toast and Skin. KickCD and MultiMeters joined the Sim row. A broader string grep also shows Perf in BankLedger, PanelMaster, PrettyChat and WhatGroup, but all four stay declined: none of them has a lookup in the loop's sense.

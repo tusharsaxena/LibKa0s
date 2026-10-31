@@ -10,11 +10,23 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.84.0 — 2026-10-31
+## v1.84.0 — 2026-11-01
 
 Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.5**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1**, `LibKa0s-Schema-1.0` **3**, `LibKa0s-Slash-1.0` key **21.2**, `LibKa0s-Widgets-1.0` key **17.3.10.5.5.2**, `LibKa0s-Charts-1.0` key **1.1**, `LibKa0s-DebugLog-1.0` key **22.6.1.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Now **twenty majors**, across **sixty-four files** (nine are new), and no `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Skin-1.0` key **11.1.19.1.13.7.11.2.6**, `LibKa0s-Sim-1.0` key **2.3.9.1**, `LibKa0s-Options-1.0` key **36.4.41.2.6.1.7.13.2.3.16.10.4.3.6.5.5.1.1.2**, `LibKa0s-Schema-1.0` **3**, `LibKa0s-Slash-1.0` key **21.2**, `LibKa0s-Widgets-1.0` key **17.3.10.5.5.2**, `LibKa0s-Charts-1.0` key **1.1**, `LibKa0s-DebugLog-1.0` key **22.6.1.2**; every other file still at its v1.83.0 minor, and **test kit revision 47**. Now **twenty majors**, across **sixty-four files** (nine are new), and no `NEEDS_*` floor rises.
+
+### One media picker (`LK-M3`, LibKa0s#73)
+
+The owner's ruling of 2026-11-01: `Ka0sMedia_*` is the only media picker in the collection, because it is the one the skin can paint. The tag was re-cut locally for this; it had not been pushed.
+
+- **OptionsMedia minor 2**: `lib.__MediaWidgetType` answers the `Ka0sMedia_*` type for a LibSharedMedia kind, a `Ka0sMedia_*` name or an `LSM30_*` name, whether or not that `LSM30_*` type is registered. All five kinds are covered, and a border or sound row sits on the stock bar, so it needs no alignment fix.
+- **OptionsWidgets minor 41**: a row that names `LSM30_*` draws the picker whether or not AceGUI-3.0-SharedMediaWidgets is loaded. A registered type of the row's own is used only when it is no media name or no picker can be built.
+- **OptionsCompose minor 16**: `O.FontGroup`, `O.BorderGroup` and `O.BarGroup` write `dialogControl = "Ka0sMedia_*"`.
+- **Options minor 36**: `lib.__PatchLSM30Border` is a no-op that answers false, and `lib.__lsmBorderPatched` is gone. The member stays because five hosts call it unguarded at file load.
+- **OptionsScroll minor 10** and **SkinAce minor 6**: comments only. SkinAce still paints a picker by alias and has no `LSM30_*` painter.
+
+A consumer owes, at the re-vendor: a test pinning `LSM30_*` on a composed row or expecting `__PatchLSM30Border` to wrap moves, and a page that calls `AceGUI:Create("LSM30_*")` itself asks `lib.__MediaWidgetType(kind)`. The library no longer needs a host's vendored AceGUI-3.0-SharedMediaWidgets for anything.
 
 ### The library peels (`LK-M2-PEEL`)
 

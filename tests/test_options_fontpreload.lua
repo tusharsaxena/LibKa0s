@@ -1,12 +1,12 @@
 -- tests/test_options_fontpreload.lua — Options minor 17: every LibSharedMedia font is loaded the
 -- first time any Ka0s settings panel is shown.
 --
--- THE BUG. AceGUI-3.0-SharedMediaWidgets' `LSM30_Font` (the dialogControl `O.FontGroup` writes)
--- builds its pull-out list on open: `f.text:SetFont(font, size, outline); f.text:SetText(k)` for
+-- THE BUG. A font picker builds its pull-out on open (it was found on AceGUI-3.0-SharedMediaWidgets'
+-- `LSM30_Font`; `Ka0sMedia_Font` dresses its rows the same way): `SetFont(face); SetText(k)` for
 -- every face. The client loads a font file on its first reference, and text set with a face that is
 -- not loaded yet draws blank until something sets it again. So the first open of any font dropdown
 -- in a session showed a blank row for every face nothing had used yet, and the second open was
--- fine. The widget is upstream and vendored, so the fix is to have the files loaded before the list
+-- fine. The fix is to have the files loaded before the list
 -- can be opened: by the time a user can click a dropdown, a panel has been shown.
 --
 -- WHY A SUITE OF ITS OWN. `tests/test_options.lua` is in the 1000–1500 band CLAUDE.md keeps on

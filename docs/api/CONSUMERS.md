@@ -91,7 +91,7 @@ below stay as the record of what each release added.
 
 **v1.83.0, first recorded (2026-10-31).** The release adds Options' `Ka0sMedia_*` AceGUI picker types
 (`OptionsMedia.lua`, new at minor 1), an unregistered `LSM30_*` row's fall back to them (OptionsWidgets
-minor 38), thirteen more faces (Media minor 11) and `"hud"` as `Skin.OUTLINE_DEFAULT` (Skin minor 10). No
+minor 38; from minor 41, at v1.84.0, every `LSM30_*` row draws them, registered or not), thirteen more faces (Media minor 11) and `"hud"` as `Skin.OUTLINE_DEFAULT` (Skin minor 10). No
 public member is retired. What each host owes on re-vendor is the CHANGELOG's v1.83.0 *What a consumer
 owes* and each document's. The addons adopted them in Ka0sAddonsCommonTasks
 `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/`'s M2, and the re-run above measures them.

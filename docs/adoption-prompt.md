@@ -798,9 +798,9 @@ write seam takes all four arguments: source, skin, ignore and media.
 **The `Ka0sMedia_*` pickers (OptionsMedia, v1.83.0).** `Ka0sMedia_Font`, `Ka0sMedia_Statusbar`,
 `Ka0sMedia_Border`, `Ka0sMedia_Background` and `Ka0sMedia_Sound` are AceGUI types that preview their
 rows. They need neither AceGUI-3.0-SharedMediaWidgets nor LibSharedMedia. Nothing is owed: a
-`dialogControl` naming an unregistered `LSM30_*` type draws the matching picker, and a registered one
-is used as it always was. A row may name `Ka0sMedia_*` directly, and a composer-built row needs no
-change.
+`dialogControl` naming an `LSM30_*` type draws the matching picker whether or not that type is
+registered. A row may name `Ka0sMedia_*` directly, and a composer-built row needs no change. A page
+that calls `AceGUI:Create("LSM30_*")` itself asks `lib.__MediaWidgetType(kind)` instead.
 
 ### New at v1.75.0 — two new majors, three promotions, and what must no longer be hand-rolled
 

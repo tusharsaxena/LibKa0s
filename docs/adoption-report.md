@@ -148,7 +148,7 @@ section 5 reports a convergence, and be strict about the third state:
 Three checks need no judgment and are worth running fleet-wide:
 
 ```
-grep -rn 'LSM30_Font\|LSM30_Border\|LSM30_Statusbar' ../<Addon>/settings --include='*.lua'
+grep -rn 'Ka0sMedia_\|LSM30_Font\|LSM30_Border\|LSM30_Statusbar' ../<Addon>/settings --include='*.lua'
 grep -rn 'RAID_CLASS_COLORS\|C_ClassColor' ../<Addon> --include='*.lua' | grep -v '/libs/'
 grep -rn 'disabledIf' ../<Addon>/settings ../<Addon>/defaults --include='*.lua'
 ```
