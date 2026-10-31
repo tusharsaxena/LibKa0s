@@ -26,6 +26,14 @@ minor, and **test kit revision 46**, until an entry below moves one.
 Still **nineteen majors**, now across **fifty-five files** (`OptionsMedia.lua` is new), and no `NEEDS_*`
 floor rises.
 
+### Font terms leave the README (`LK-F06`)
+
+`LibKa0s/media/fonts/FONTS.md` is now the one record of each face's source, copyright, license and
+owner ruling, with the license files beside the faces. `README.md` keeps a pointer to it and its icon
+credits, and its inventory names the twenty-eight faces; the Media row's link moves to key 11.1. A
+new case in `tests/test_media.lua` keeps font terms out of the README. No file's minor moves. The
+kit's display-glyph block was checked against the folder and is current.
+
 ### Font outline defaults to HUD text only (`LK-F05`)
 
 `Skin.OUTLINE_DEFAULT` is `"hud"`, still **Skin minor 10**. An owner that never set a mode, an

@@ -134,7 +134,7 @@ here restates a signature, because a second copy of a contract is a contract tha
 | `LibKa0s-Item-1.0` | Item identity as five primitives and no policy: read an item link and its bonus ids, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree about it in writing. | `Item.lua` | [3](docs/api/Item/version-3-docs.md) |
 | `LibKa0s-Glow-1.0` | The stateless LibCustomGlow-1.0 driver. `Start(frame, style, knobs, key, frameLevel)` and `Stop(frame, style, key)` map one of four styles (`button`, `proc`, `pixel`, `autocast`) and its knob values to LibCustomGlow's positional arguments, with its two traps handled (`pixelLength` 0 means automatic; a boolean is false only when false). No defaults, no ranges, no lifecycle: the repaint gate, the proc burst and the triggers stay the host's. LibCustomGlow-1.0 is resolved at call time, and without it nothing is drawn. | `Glow.lua` | [1](docs/api/Glow/version-1-docs.md) |
 | `LibKa0s-Toast-1.0` | The alert-toast shell. `Toast:New(d)` answers a toast that shows one payload at a time and queues the rest (the oldest dropped past a cap), closes after the host's duration with the countdown paused under the pointer, closes on its close mark or a right-click, and can be dragged only while the host's `draggable` says so, its position kept in the host's profile through `getPosition` / `setPosition` in UIParent's units. Scale and an optional alert sound come from the host; the frame is frame-layering's T5 alert tier. The content is the host's: `d.build(frame, payload)` is the one presentation argument. `Clear` is the stand-down, `Hold` / `Release` a host's combat hold, `Preview` test mode's placement. It needs only Core's `ApplySkin` and `MakeCloseButton`, so it runs beside the v1.77.0 payload. | `Toast.lua` | [1](docs/api/Toast/version-1-docs.md) |
-| `LibKa0s-Media-1.0` | The art and type this collection draws with: 5,836 white icon TGAs from three sets (Open Iconic and Phosphor, MIT; Game-icons.net, CC BY 3.0), fifteen generated statusbar textures (a bar of its own for every skin but WoW Default among them), the Glass skin's generated rounded border and fill (the LSM `border` and `background` catalogs), and fifteen faces (JetBrains Mono, a body and a title weight for five skins' families, Fira Sans Medium and SemiBold for WoW Forever, Ka0s Default's Prototype and Obsidian's Expressway), each under its own locale mask: SIL OFL 1.1 but Prototype, which ships under its author's terms, and Expressway, which ships on the owner's ruling. All of it sits inside the payload, along with the paths that reach it, the set catalog and the LibSharedMedia registration. | `Media.lua`, `MediaIcons.lua`, `media/` | [10.1](docs/api/Media/version-10.1-docs.md) |
+| `LibKa0s-Media-1.0` | The art and type this collection draws with: 5,836 white icon TGAs from three sets (Open Iconic and Phosphor, MIT; Game-icons.net, CC BY 3.0), fifteen generated statusbar textures (a bar of its own for every skin but WoW Default among them), the Glass skin's generated rounded border and fill (the LSM `border` and `background` catalogs), and twenty-eight faces, each under its own locale mask: Ka0s Default's Prototype, Obsidian's Expressway, WoW Forever's Fira Sans Medium and SemiBold, the faces the other skins draw (Azeroth's Open Sans, Glass's Avant Garde, High Contrast's Doris PP, Ember's Emblem, WoW Default's Friz Quadrata TT and WoW Midnight's Segoe UI, with their other weights), and every older face, kept whether or not a skin names it (JetBrains Mono, Nunito, Vollkorn, Bitter, Philosopher and Atkinson Hyperlegible). `media/fonts/FONTS.md` is the record of each face. All of it sits inside the payload, along with the paths that reach it, the set catalog and the LibSharedMedia registration. | `Media.lua`, `MediaIcons.lua`, `media/` | [11.1](docs/api/Media/version-11.1-docs.md) |
 | `LibKa0s-Skin-1.0` | The skin engine. A skin is a token table; each addon registers as an **owner** (`Skin:RegisterOwner`, its folder name) and wears its own choice of skin, read once from its profile and moved by `SetChoice`, which resolves the skin, repaints every frame recorded for that owner (and no other), and fires the owner's `OnLooksChanged`. `Skin:For(owner)` is the owner's facade, the painting vocabulary as late-bound trampolines that survive a minor upgrade. `FROM_SKIN`, `Resolve` and `ResetToSkin` let a HUD setting follow the skin. `GetIgnore` and `SetIgnore` hold an owner's two exceptions, its settings panel and its fonts left as the client draws them, and a change applies live. `GetOverride` and `SetOverride` hold an owner's font and bar texture overrides, laid over its skin's tokens, and the `BarTexture` primitive paints that bar on a Texture or a StatusBar. `GetOutline` and `SetOutline` hold an owner's font outline mode (all text, HUD text only, or off; HUD text only by default), applied wherever the skin's outline tokens are read; the facade's `FontFlags` resolves an element's stored font flags (*From skin* by default) through it, and `HudFontSize` scales a HUD element's stored size so every skin's HUD text is as wide as Ka0s Default's, as each skin's body and title sizes are. `RegisterOwner`'s `opts.tokens` gives an addon its own named colors, which keep their Ka0s Default value under Ka0s Default and resolve through whichever skin it wears otherwise. `SkinDefs.lua` holds the token schema and the nine skins: Ka0s Default, which sets every token and draws Prototype and a bar of its own, then Obsidian, Azeroth, Glass, High Contrast, Ember, WoW Default, WoW Midnight and WoW Forever. `SkinPaint.lua`, `SkinPaintExtras.lua` and `SkinPaintControls.lua` are the primitives the facade calls (`S.Shell`, `S.Button`, `S.ListRow`, ...): each paints from the owner's tokens, fades stock art by alpha, keeps its overlays on a holder frame, records what it painted so a skin switch repaints it, and never branches on Ka0s Default: that skin is painted from its tokens like any other, and its tokens carry the look of the code it replaces. `SkinEUI.lua` is the EllesmereUI provider: an owner on the `eui` source is painted by EllesmereUI's own skinning facade while its gate holds (`GetEUIStatus`), with the Ka0s extras colored from EllesmereUI's accent, panel color and font, one reload away from a Ka0s skin once EllesmereUI has painted. `SkinAce.lua` paints the AceGUI rows a settings page acquires for that page's owner (`PaintAce`, through a proxy on the Options instance's `O.AceGUI`) and gives each one back to AceGUI's shared pool stock on release; `AliasAceType` paints a host's own AceGUI type as the stock type it is built from. | `Skin.lua`, `SkinDefs.lua`, `SkinPaint.lua`, `SkinPaintExtras.lua`, `SkinPaintControls.lua`, `SkinEUI.lua`, `SkinAce.lua` | [10.18.13.7.11.2.4](docs/api/Skin/version-10.18.13.7.11.2.4-docs.md) |
 | `LibKa0s-Widgets-1.0` | The collection's flat-skin dropdown button and the one popup menu every instance of it drops, shared process-wide across addons. Then `SearchBox`, the flat filter-bar search box in the same skin, with a hint while empty and a gold border while it has focus. Then `TestStrip`, the mode strip: the amber band a window lays between its chrome and sample data while test mode is on, or with `kind = "sim"` the cyan band of a simulation, born hidden and placed by the host. Then `ReorderList`, which gives any list drag-to-reorder: the handle, the copy carried under the cursor, the insertion line, the bounded box each row sits in and the clamp, but no row content at all. And `DragHandle`, the labeled strip with a help mark (and optionally a close mark) that a player drags a movable frame by. And `LineChart`, a pooled line chart over a time axis with markers, dashed ranges and a hover crosshair. And `Autocomplete`, a suggestion list hung directly under a host's `EditBox`, in the box's own width and skin, with a debounced provider and keyboard picking. Widgets takes its art and its glyph face as parameters, because a vendored copy cannot know which addon folder it sits in. Every constructor takes an optional skin owner, the caller's folder name: once that addon registered it with `LibKa0s-Skin-1.0` the control wears and follows its skin, the shared menu included, and any other name draws exactly as before. | `Widgets.lua`, `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua`, `WidgetsCopyWindow.lua` | [17.3.8.5.5.2](docs/api/Widgets/version-17.3.8.5.5.2-docs.md) |
 | `LibKa0s-DebugLog-1.0` | The on-screen debug console (movable window, color-coded log, copy box, and the one seam that turns logging on and off), plus the diagnostics report a player sends with a bug report, the change gates (log once, log on change) the console re-arms on Clear and on enable, and the at-enable queue that holds a state line written while logging is off until it is turned on. The library writes the markers, the identity header and the cap, and runs each section an addon supplies under its own pcall. The console window lives in its own file, and it wears and follows its skin owner, the host's `addonName`, once that addon registered with `LibKa0s-Skin-1.0`. | `DebugLog.lua`, `DebugLogDiagnostics.lua`, `DebugLogGates.lua`, `DebugLogWindow.lua` | [22.5.1.2](docs/api/DebugLog/version-22.5.1.2-docs.md) |
@@ -324,11 +324,9 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   media/             -- THE ONLY NON-CODE PAYLOAD: icons/ (224 Open Iconic TGAs, MIT, flat;
                         phosphor/ 1,434 Phosphor Fill, MIT; game-icons/ 4,178 Game-icons.net,
                         CC BY 3.0, with AUTHORS.txt), textures/ (15 generated statusbar bars and
-                        the Glass skin's generated border and fill) and fonts/ (JetBrains Mono,
-                        Nunito, Vollkorn, Bitter, Philosopher, Fira Sans and Atkinson
-                        Hyperlegible, SIL OFL; Prototype, under its author's terms; Expressway,
-                        on the owner's ruling, with Typodermic's EULA); every
-                        third-party set carries its license beside it
+                        the Glass skin's generated border and fill) and fonts/ (28 faces, recorded
+                        face by face in fonts/FONTS.md); each icon set carries its license
+                        beside it
   Skin.lua           -- LibKa0s-Skin-1.0, MINOR at the top of the file; needs Core
   SkinDefs.lua       -- the token schema and the skins, same module, DEFS_MINOR of its own
   SkinPaint.lua      -- the paint primitives' helpers, Shell, Panel, Inset, PAINT_MINOR
@@ -391,8 +389,9 @@ tools/skin_gallery.py -- crops in-game screenshots of one addon window, one per 
 tools/artwork/       -- icon_cleaner.py rebuilds media/icons/ and MediaIcons.lua from Open Iconic,
                         Phosphor and Game-icons (pinned commits, its own venv); bar_textures.py
                         and glass_textures.py synthesize media/textures/ from named constants;
-                        fonts.py fetches the skin faces at pinned commits or archive hashes and
-                        cuts static weights from the variable ones. Each IS the provenance record for its
+                        fonts.py fetches the skin faces at pinned commits or archive hashes,
+                        copies the rest from the owner's WoW install by hash, and cuts static
+                        weights from the variable ones. Each IS the provenance record for its
                         art -- upstream repos, commits, licenses and authors, or every value
                         that decides a pixel. Not shipped, not a build step: the art is committed and the tools
                         regenerate it
@@ -448,38 +447,4 @@ The icon art in `LibKa0s/media/icons/` comes from three sets, each license shipp
   `media/icons/game-icons/AUTHORS.txt`. Changed from the originals: rasterized to 64×64 TGA,
   background removed, recolored white, some names suffixed or respelled.
 
-The fonts in `LibKa0s/media/fonts/` are SIL OFL 1.1 but two, Prototype and Expressway, each face's
-terms shipped beside it:
-
-- **[JetBrains Mono](https://github.com/JetBrains/JetBrainsMono)** by JetBrains
-  (`media/fonts/JetBrainsMono-OFL.txt`).
-- **[Nunito](https://github.com/googlefonts/nunito)** by The Nunito Project Authors, Regular and
-  SemiBold (`media/fonts/Nunito-OFL.txt`).
-- **[Vollkorn](https://github.com/FAlthausen/Vollkorn-Typeface)** by The Vollkorn Project Authors,
-  Regular and Bold (`media/fonts/Vollkorn-OFL.txt`).
-- **[Bitter](https://github.com/solmatas/BitterPro)** by The Bitter Project Authors, Regular and Bold
-  (`media/fonts/Bitter-OFL.txt`).
-- **[Philosopher](https://github.com/alexeiva/philosopher)** by The Philosopher Project Authors,
-  Regular and Bold (`media/fonts/Philosopher-OFL.txt`).
-- **[Fira Sans](https://github.com/mozilla/Fira)** by The Mozilla Foundation and Telefonica S.A.,
-  Medium and SemiBold (`media/fonts/FiraSans-OFL.txt`).
-
-  Nunito, Vollkorn and Bitter are changed from the originals: static instances cut from
-  upstream's variable fonts at the weights named, each renamed for its weight; no glyph edited.
-- **[Atkinson Hyperlegible](https://www.brailleinstitute.org/freefont/)** by the Braille Institute
-  of America, Regular and Bold (`media/fonts/AtkinsonHyperlegible-OFL.txt`).
-- **[Prototype](https://www.dafont.com/prototype.font)** v2.0 (2001), Ka0s Default's face. **Not
-  under the OFL**: "free for personal use, freely distributed with Prototype.txt", so the author's
-  `media/fonts/Prototype.txt` ships beside it unchanged. Shipped on the owner's ruling of
-  2026-10-30.
-- **[Expressway](https://www.dafont.com/expressway.font)** Rg Bold 2.100 (2005) by Ray Larabie,
-  Typodermic, Obsidian's face. **Not under the OFL, and shipped against its terms**: its name table
-  reads "Do not distribute", and the Typodermic Desktop EULA 2026 puts embedding in software
-  outside the free license. Shipped on the owner's ruling of 2026-10-30, "Ship it anyways.", with
-  the EULA (`media/fonts/Expressway-EULA.pdf`) and its quick guide
-  (`media/fonts/Expressway-EULA-Guide.html`) beside it as the record of the terms that ruling
-  overrode. Expressway is a trademark of Typodermic.
-
-`tools/artwork/fonts.py` records where each face came from (google/fonts, pinned by commit, the
-author's archive, or for Expressway the owner's SharedMedia pack, and
-SHA-256).
+The fonts in `LibKa0s/media/fonts/` are recorded in `media/fonts/FONTS.md`.

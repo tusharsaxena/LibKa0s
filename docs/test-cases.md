@@ -460,7 +460,7 @@ Total.
 - toast: a close mark Core cannot build (no frame) leaves the toast without one
 - toast: two instances keep separate queues and frames
 
-### test_media.lua (42)
+### test_media.lua (43)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -497,6 +497,7 @@ Total.
 - media: a face off the OFL ships its author's terms verbatim, and the face says the same
 - media: Open Sans ships the Apache 2.0 text, and each new face's bytes carry the notice recorded for it
 - media: FONTS.md records every shipped face by file, and the notice of each new one
+- media: the README points at FONTS.md and carries no font license or credit of its own
 - media: RegisterLSM('X') registers 'Ka0s Nunito' under X's own libs folder, each face with its mask
 - media: a ruRU client keeps every Cyrillic face and is refused the western-only ones
 - media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
@@ -3914,7 +3915,7 @@ Total.
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
 | test_toast.lua | 50 |
-| test_media.lua | 42 |
+| test_media.lua | 43 |
 | test_skin.lua | 33 |
 | test_skin_override.lua | 27 |
 | test_skin_outline.lua | 19 |
@@ -4047,4 +4048,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3445** |
+| **Total** | **3446** |

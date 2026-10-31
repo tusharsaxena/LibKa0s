@@ -74,7 +74,7 @@ alone, and that ruling is the only ground it ships on. Each is byte for byte the
 | `DorisPP-Bold.ttf` | Ka0s Doris PP | SharedMedia add-on, `fonts/doris_pp/DorisPP.ttf` | Copyright (c) 1993 Ares Software Corp. All rights reserved. | none |
 | `AvantGarde-Regular.ttf` | Ka0s Avant Garde | EllesmereUI add-on, `media/fonts/Avant Garde Naowh.ttf` | Copyright (c) 1990-2009 ParaType, Inc. All Rights Reserved. ITC Avangard Gothic is a registered trade mark of International Typeface Corporation. | none |
 
-**Expressway.** Its name table reads "Do not distribute", and the Typodermic Desktop EULA 2026 puts
+**Expressway.** By Ray Larabie, Typodermic (<https://www.dafont.com/expressway.font>). Its name table reads "Do not distribute", and the Typodermic Desktop EULA 2026 puts
 embedding in software outside the free license. The owner's ruling of 2026-10-30: "Ship it anyways."
 The EULA (`Expressway-EULA.pdf`) and its quick guide (`Expressway-EULA-Guide.html`) ship beside it as
 the record of the terms that ruling overrode. Expressway is a trademark of Typodermic.

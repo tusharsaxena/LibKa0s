@@ -762,6 +762,16 @@ test("media: FONTS.md records every shipped face by file, and the notice of each
   end
 end)
 
+test("media: the README points at FONTS.md and carries no font license or credit of its own", function()
+  -- red under: font terms growing back into the README beside the record D-12 made their one home
+  local readme = readFile("README.md") or ""
+  assertTrue(readme ~= "", "README.md is missing")
+  assertTrue(readme:find("media/fonts/FONTS.md", 1, true) ~= nil, "the README does not name the record")
+  for _, phrase in ipairs{ "-OFL.txt", "SIL OFL", "Prototype.txt", "Expressway-EULA", "Apache", "Typodermic" } do
+    assertTrue(readme:find(phrase, 1, true) == nil, "the README still says " .. phrase)
+  end
+end)
+
 test("media: RegisterLSM('X') registers 'Ka0s Nunito' under X's own libs folder, each face with its mask", function()
   -- The path is built from the host's name: a vendored copy cannot know its own folder.
   local store, masks = {}, {}
