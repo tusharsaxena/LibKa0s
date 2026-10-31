@@ -49,7 +49,7 @@ local function miniHost()
   m[SV_NAME] = { profile = { enabled = true, sent = 0 }, global = { seen = { 1, 2 } } }
   local NS = { m = m, printed = {}, live = { ChatSender = 0, UnitName = 0 }, order = {} }
 
-  -- core/Compat.lua: a pure helper, a plain client reader and a guarded outward action.
+  -- A host's core/Compat.lua: a pure helper, a plain client reader and a guarded outward action.
   NS.Compat = {
     FoldName = function(s) return (tostring(s):gsub("%-.*$", "")) end,
     UnitName = function(unit) NS.live.UnitName = NS.live.UnitName + 1; return "Live-" .. tostring(unit) end,
@@ -61,7 +61,7 @@ local function miniHost()
     settle = 0 }
   local H = NS.SimHost
 
-  -- core/SimSetup.lua, straight after the Compat files: wrap at load.
+  -- A host's core/SimSetup.lua, straight after the Compat files: wrap at load.
   NS.SimSeam = Sim:NewSeam(NS.Compat, {
     name = "MiniHost",
     pure = { FoldName = true },

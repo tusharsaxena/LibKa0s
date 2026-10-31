@@ -7,8 +7,8 @@
 --
 -- What it pins: each skin's body, title and HUD sizes, and that each one, times its face's measured
 -- average advance per em, lands within the band below of Ka0s Default's Prototype at 12 / 14. The
--- WIDTH table is the measurement of the 2026-10-31 bundle's plan-data/font_metrics_shipped.py, run on
--- the shipped bytes (LibKa0s/media/fonts) with OUTLINE on (its section 10: HarfBuzz-shaped advances,
+-- WIDTH table is the measurement of Ka0sAddonsCommonTasks
+-- docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/plan-data/font_metrics_shipped.py, run on the shipped bytes (LibKa0s/media/fonts) with OUTLINE on (its section 10: HarfBuzz-shaped advances,
 -- kerning on, over the body, title and HUD corpora). The sizes themselves were picked under six
 -- pixel-snapping layout models with and without an outline's extra pixel (its sections 7, 8 and 10);
 -- this suite checks the linear model, which is enough to catch a face or a size changed without a

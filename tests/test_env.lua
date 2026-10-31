@@ -84,7 +84,7 @@ end)
 
 test("env: GetZone answers empty strings, never nil, when the readers are absent", function()
   -- LOAD-BEARING, not cosmetic. LootHistory buckets "" with nil deliberately in storage and in the
-  -- Zone filter (core/Database.lua, modules/BrowserTable.lua). A nil here would move stored rows
+  -- Zone filter (its core/Database.lua and modules/BrowserTable.lua). A nil here would move stored rows
   -- between buckets on the first re-render.
   without("GetZoneText", function()
     without("GetSubZoneText", function()
