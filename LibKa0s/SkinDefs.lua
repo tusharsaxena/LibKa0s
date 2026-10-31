@@ -168,7 +168,10 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- Minor 22 (FS-L5 of the same bundle, cause L5): `text.command`, `text.strong` and `gtip.emphasis`, the
 -- yellow and white a settings page typed. Ka0s Default's are those literals; every other skin's are
 -- its `text.accent` and `text.body`. The eui source derives them from Ka0s Default.
-local DEFS_MINOR = 22
+-- Minor 23 (cause L8 of the same bundle): `menu.suggestBg`, `menu.suggestBorder` and `list.ghostIcon`,
+-- a suggestion list's chrome and the carried copy's mark. Ka0s Default's are what those drew; every
+-- other skin's are its `menu.bg`, `menu.border` and `icon.tint`.
+local DEFS_MINOR = 23
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -220,11 +223,11 @@ local GROUPS = {
     .. "drawer.boxBg:color drawer.boxBorder:color drawer.text:color drawer.textSet:color "
     .. "drawer.summary:color drawer.summarySet:color menu.bg:color menu.border:color "
     .. "menu.borderAlt:color menu.borderSize:number? menu.borderStyle:string? menu.hover:color "
-    .. "menu.text:color menu.textSel:color" },
+    .. "menu.text:color menu.textSel:color menu.suggestBg:color menu.suggestBorder:color" },
   { "Lists and cards", "list.header.bg:color? list.header.text:color list.stripe:color "
     .. "list.hover:color list.sel:color? list.selOutline:color? card.bg:color card.border:color "
     .. "panel.bg:color panel.border:color section.rule:color icon.tint:color icon.hot:color "
-    .. "handle.bg:color handle.edge:color handle.rest:color list.dropLine:color list.ghostBg:color "
+    .. "handle.bg:color handle.edge:color handle.rest:color list.dropLine:color list.ghostBg:color list.ghostIcon:color "
     .. "list.box:color list.boxDim:color list.boxEdge:color list.boxEdgeDim:color icon.dim:color "
     .. "icon.arrow:color icon.grip:color? list.hoverArt:color?" },
   { "Overlays", "popup.bg:color popup.border:color? popup.borderSize:number? "
@@ -371,6 +374,9 @@ local KA0S = {
   ["menu.borderAlt"] = { 0.62, 0.5, 0.18, 1 }, ["menu.borderSize"] = 1,
   ["menu.borderStyle"] = "flat", ["menu.hover"] = { 1, 0.82, 0, 0.15 },
   ["menu.text"] = BODY, ["menu.textSel"] = GOLD,
+  -- A suggestion list's fill and edge (minor 23, cause L8): the skinned box it hung from, at the alpha
+  -- floor WidgetsAutocomplete keeps.
+  ["menu.suggestBg"] = { CTL_FILL[1], CTL_FILL[2], CTL_FILL[3], 0.95 }, ["menu.suggestBorder"] = CTL_LINE,
   -- Lists and cards: BrowserTable / HoldingsTab rows, Analytics KPI cards and list panels.
   ["list.header.text"] = GOLD, ["list.stripe"] = { 1, 1, 1, 0.03 },
   ["list.hover"] = { 1, 0.82, 0, 0.10 },
@@ -387,6 +393,7 @@ local KA0S = {
   -- carried copy and lib.ROW_BOX's fills and edges.
   ["handle.edge"] = { 1, 0.82, 0, 0.6 }, ["handle.rest"] = { 0.7, 0.7, 0.7, 1 },
   ["list.dropLine"] = { 1, 0.82, 0, 0.9 }, ["list.ghostBg"] = { 0.12, 0.12, 0.12, 0.95 },
+  ["list.ghostIcon"] = WHITE,   -- the carried copy's mark (minor 23, cause L8)
   ["list.box"] = { 1, 1, 1, 0.06 }, ["list.boxDim"] = { 1, 1, 1, 0.03 },
   ["list.boxEdge"] = { 1, 1, 1, 0.12 }, ["list.boxEdgeDim"] = { 1, 1, 1, 0.06 },
   -- The AH table's info icon on an inactive row (LootHistory Panel; a live one is icon.hot).

@@ -70,7 +70,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- skin's art draws no edge, since the art is its edge. `opts.glow` takes `tab.glow`.
 -- Minor 13 (cause L7 of the same bundle): S.ScrollBar's step buttons are the Ka0s `chevron-up` and
 -- `chevron-down` in `icon.arrow`, Ka0s Default included: P.stepArrows, which SkinAce minor 8 calls too.
-local CONTROLS_MINOR = 13
+-- Minor 14 (cause L8 of the same bundle): a stock close button's "x" wears the skin's body face, so
+-- Ignore fonts reaches it.
+local CONTROLS_MINOR = 14
 if lib.__controlsMinor and lib.__controlsMinor >= CONTROLS_MINOR
   and lib.__controlsShellMinor == lib.MINOR then return end
 lib.__controlsMinor      = CONTROLS_MINOR
@@ -698,6 +700,7 @@ local function closeGlyph(rec, btn)
   if not fs then return end
   fs:SetPoint("CENTER")
   fs:SetText("x")
+  P.font(rec.owner, rec, fs, "body", P.T(rec.owner)["close.rest"])
   fs:Show()
 end
 
@@ -716,7 +719,7 @@ end
 --- `btn.glyph`, a font string) in `close.rest`, `close.hot` under the pointer, under every skin,
 --- Ka0s Default included. The art's own tint is recorded on the first paint (P.tint) and given back
 --- when the button is unpainted (minor 10). A stock close button (the client's template) has its
---- art faded and an "x" glyph drawn, under every skin. `opts.own` (a button the library built,
+--- art faded and an "x" glyph drawn in the skin's body face (minor 14), under every skin. `opts.own` (a button the library built,
 --- Core.MakeCloseButton's) SetScripts the hover pair as Core does, keeping the host's pair to fall
 --- back to once the button is no longer painted; otherwise it is HookScript'd. Draws no Media icon
 --- (Core's `close` icon is the caller's).

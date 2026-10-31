@@ -22,7 +22,8 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- Minor 3: `title.rule`, the settings page header's rule, from each skin's divider (SkinDefs minor 21).
 -- Minor 4: `text.command`, `text.strong` and `gtip.emphasis` for a settings page's typed colors
 -- (SkinDefs minor 22).
-local OTHERS_MINOR = 4
+-- Minor 5: `menu.suggestBg`, `menu.suggestBorder` and `list.ghostIcon` (SkinDefs minor 23).
+local OTHERS_MINOR = 5
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
   and lib.__othersShellMinor == lib.MINOR then return end
@@ -142,6 +143,7 @@ local FOLLOW = {
   { "icon.arrow", "text.accent" }, { "gtip.footer", "gtip.muted" }, { "gtip.line", "gtip.body" },
   { "icon.grip", "icon.tint" }, { "list.hoverArt", "text.accent" },
   { "text.command", "text.accent" }, { "text.strong", "text.body" }, { "gtip.emphasis", "text.accent" },
+  { "menu.suggestBg", "menu.bg" }, { "menu.suggestBorder", "menu.border" }, { "list.ghostIcon", "icon.tint" },
 }
 
 local function blend(a, b)

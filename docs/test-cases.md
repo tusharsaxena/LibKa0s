@@ -1294,9 +1294,9 @@ Total.
 - skin scope: a panel-scoped search box is owner-less while the panel is ignored, focus included
 - skin scope: an owned strip's line is text.accent in the body face, and Ignore fonts gives it back
 - skin scope: a panel-scoped strip is owner-less while the panel is ignored, live
-- skin scope: an owned autocomplete's rows take the body face unless the host named one
+- skin scope: an owned autocomplete's rows take the body face, a host's face their template
 - skin scope: a panel-scoped autocomplete is owner-less while the panel is ignored
-- skin scope: an owned chart's labels take the body face unless the host named one
+- skin scope: an owned chart's labels take the body face, a host's face their template
 - skin scope: a panel-scoped chart reads lib.LINE_CHART while the panel is ignored, live
 - skin scope: an owned drag handle's label takes the body face, and is measured in it
 - skin scope: a panel-scoped drag handle is owner-less while the panel is ignored, live
@@ -2726,6 +2726,21 @@ Total.
 - step arrows: a page's bar painted by both SkinAce and S.ScrollBar is one mark, and comes back whole
 - step arrows: an ignored settings panel keeps the client's buttons, live both ways
 - step arrows: a MultiLineEditBox's bar wears them
+
+### test_widgets_small_misses.lua (12)
+
+- small misses: Ka0s Default's new tokens draw what it drew, every other skin's its own role
+- small misses: a stock close button's x wears the skin's body face, and Ignore fonts gives it back
+- small misses: a skinned copy window wears win.bgDense over a host's backdrop
+- small misses: the carried copy takes the body face and the mark's tint, and a host's color wins
+- small misses: an owner-less list after a skinned one gets the ghost's template back
+- small misses: an owned menu's glyph column reads font.mono at the host's size
+- small misses: Ignore fonts and an owner-less menu keep the host's glyph face
+- small misses: S.GetFont('mono') answers font.mono, or nil rather than a proportional face
+- small misses: an owned list's fill and edge are the skin's, read on every show
+- small misses: an owner-less list, and a panel list on an ignored panel, follow the box
+- small misses: a glow naming an owner and no color draws the skin's glow.color
+- small misses: a host's glow color wins, and an unregistered owner or none stays LCG's
 
 ### test_options_switched.lua (16)
 
@@ -4268,6 +4283,7 @@ Total.
 | test_options_idlist_remove.lua | 8 |
 | test_skin_marks.lua | 15 |
 | test_skin_step_arrows.lua | 11 |
+| test_widgets_small_misses.lua | 12 |
 | test_options_switched.lua | 16 |
 | test_options_media.lua | 36 |
 | test_options_combat.lua | 33 |
@@ -4333,4 +4349,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3675** |
+| **Total** | **3687** |

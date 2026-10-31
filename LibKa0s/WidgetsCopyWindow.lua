@@ -19,7 +19,9 @@
 local lib = LibStub and LibStub("LibKa0s-Widgets-1.0", true)
 if not lib then return end
 
-local COPY_MINOR = 2
+local COPY_MINOR = 3
+-- Minor 3 (cause L8 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): a skinned window's fill is
+-- `win.bgDense` whatever `backdrop` says; `backdrop` is an owner-less window's fill.
 -- Minor 2: a skinned window's resize grip wears its owner's skin (Core minor 14's `opts.owner`; an
 -- older Core ignores the key). LK-06b of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS,
 -- ruling R-5.
@@ -93,7 +95,6 @@ local function copyDescriptor(d)
     fontSize  = d.fontSize or COPY_DEFAULTS.fontSize,
     applySkin = d.applySkin,
     backdrop  = d.backdrop or COPY_DEFAULTS.backdrop,
-    hostBackdrop = d.backdrop ~= nil,
     anchorTo  = d.anchorTo,
     -- Optional, minor 7, and NOT defaulted to anything. UIPanelScrollFrameTemplate derives its
     -- scrollbar children's names from its parent's, so an anonymous scroll frame leaves them
@@ -132,11 +133,11 @@ local function makeCopyResizable(f, d, coreLib)
 end
 
 --- The denser fill, again after each skin change of a skinned window (minor 16): the host's own
---- `backdrop` when it passed one, else the owner's `win.bgDense`. Shell repaints the window first.
+--- the owner's `win.bgDense` (minor 3), else `backdrop`. Shell repaints the window first.
 local function copyDense(f, owner)
   local d, Skin = f.__copyDesc, skinOf(owner)
   if not (d and Skin and f.SetBackdropColor) then return end
-  local c = d.hostBackdrop and d.backdrop or Skin:Token(owner, "win.bgDense") or d.backdrop
+  local c = Skin:Token(owner, "win.bgDense") or d.backdrop
   f:SetBackdropColor(c[1], c[2], c[3], c[4])
 end
 

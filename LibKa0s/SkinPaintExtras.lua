@@ -56,7 +56,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- edge and size, where both only recolored; `false`, Ka0s Default's, is the art the frame wears.
 -- Minor 9 (cause L6 of the same bundle): S.Mark and S.MarkText, a small mark in the skin's tint and,
 -- once the host names one, a Ka0s icon in place of client art.
-local EXTRAS_MINOR = 9
+-- Minor 10 (cause L8 of the same bundle): S.GetFont("mono") answers `font.mono`, or nil; a proportional
+-- fallback would draw a glyph column as boxes.
+local EXTRAS_MINOR = 10
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
 lib.__extrasMinor      = EXTRAS_MINOR
@@ -516,9 +518,10 @@ prim.GetAccentColor = function(owner) return colorOf(owner, "text.accent") end
 --- S.GetPanelColor(): r, g, b, a of `win.bg`.
 prim.GetPanelColor = function(owner) return colorOf(owner, "win.bg") end
 --- S.GetFont(): the body font's path, or the client's standard font when the skin sets none.
-prim.GetFont = function(owner)
-  local path = P.media("font", P.T(owner)["font.body"])
-  if path then return path end
+prim.GetFont = function(owner, role)
+  local mono = role == "mono"
+  local path = P.media("font", P.T(owner)[mono and "font.mono" or "font.body"])
+  if path or mono then return path end
   return type(STANDARD_TEXT_FONT) == "string" and STANDARD_TEXT_FONT or nil
 end
 --- S.GlowColor(): r, g, b, a of `glow.color`, or nil (the host's own glow color stands).

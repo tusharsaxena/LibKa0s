@@ -82,8 +82,9 @@
 -- template's gold under Ka0s Default), and, in the secondary files, the autocomplete's rows, the
 -- chart's tick labels and the drag handle's label. Under Ka0s Default that face is Oxanium where the
 -- template drew Friz Quadrata (decision D-13). The paint is recorded, so the owner's "Ignore fonts"
--- gives each string its template back, live. A face a host named (`opts.font`, `spec.labelFont`,
--- `opts.glyphFont`) is the host's and is never touched.
+-- gives each string its template back, live. A face a host named (`opts.font`, `spec.labelFont`) is
+-- that template from minor 19: the skin's face goes over it, and an owner-less control keeps it.
+-- `opts.glyphFont` is the menu's glyph column, whose owned face is `font.mono` (minor 19).
 --
 -- `opts.panel = true` on any owned constructor (Dropdown, SearchBox, TestStrip, Autocomplete,
 -- LineChart, DragHandle) says the control sits on its owner's SETTINGS PAGE: while that owner ignores
@@ -106,7 +107,10 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 18 (cause L6 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): lib.__ownedMark. An owned
 -- control a host gave no art draws the Ka0s icon, not the client rung, and the strip's icon wears
 -- `icon.tint`.
-local MAJOR, MINOR = "LibKa0s-Widgets-1.0", 18
+-- Minor 19 (cause L8 of the same bundle): an owned menu's glyph column reads the skin's `font.mono`; a
+-- host's `glyphFont` is what turns the column on, and what an owner-less menu and Ignore fonts draw.
+-- A face a host names on an owned control (`opts.font`, `spec.labelFont`) is now its template.
+local MAJOR, MINOR = "LibKa0s-Widgets-1.0", 19
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -310,10 +314,20 @@ local function rowSelected(dd, opt)
   return (opt.value == dd._value)
 end
 
+--- The glyph column's face (minor 19): the opener's `font.mono`, else the host's. Nil when the host
+--- named none: that is what asks for a column at all, in every skin.
+local function menuGlyphFace(menu, dd)
+  local host, Skin, owner = dd.__glyphFont, menu.__fontSkin, menu.__fontOwner
+  if not (host and Skin) then return host end
+  local _, noFonts = Skin:GetIgnore(owner)
+  if noFonts then return host end
+  return Skin:For(owner).GetFont("mono") or host
+end
+
 -- Repaint one row from its option. EVERY field is written on every pass, including the blank ones:
 -- the rows are pooled across dropdowns, so a field left alone leaks the previous menu's glyph or
 -- color onto this one.
-local function paintMenuRow(b, dd, opt, selected, pal)
+local function paintMenuRow(b, dd, opt, selected, pal, glyphFace)
   local check = (dd.multi and selected) and dd.__check or ""
   b.fs:SetText(check .. opt.label)
   -- A glyphed row indents its text to clear the glyph; every other row starts at the margin.
@@ -330,11 +344,11 @@ local function paintMenuRow(b, dd, opt, selected, pal)
   -- family of comments is about. The column is DROPPED, not crashed into — the SetText a line
   -- below runs on every row whether or not this branch did, which is why makeMenuRow builds the
   -- glyph from a font template.
-  if dd.__glyphFont and opt.glyph then
-    b.glyph:SetFont(dd.__glyphFont, 11, "")
+  if glyphFace and opt.glyph then
+    b.glyph:SetFont(glyphFace, 11, "")
   end
   b.glyph:SetText(opt.glyph or "")
-  b.glyph:SetShown(opt.glyph ~= nil and dd.__glyphFont ~= nil)
+  b.glyph:SetShown(opt.glyph ~= nil and glyphFace ~= nil)
   -- The selected row goes gold to mark the selection; otherwise the value keeps its own color
   -- (store / direction / class), so the menu reads like the column it filters. The glyph always
   -- keeps the direction's color — it IS the value, not a selection state.
@@ -454,6 +468,7 @@ local function EnsureMenu()
     for _, b in ipairs(self.buttons) do b:Hide() end
     local opts = dd._options or {}
     local w = menuWidth(self, dd, opts)
+    local glyphFace = menuGlyphFace(self, dd)
     for i, opt in ipairs(opts) do
       local b = self.buttons[i]
       if not b then
@@ -465,7 +480,7 @@ local function EnsureMenu()
       b:SetWidth(w)
       b:ClearAllPoints()
       b:SetPoint("TOPLEFT", 0, -4 - (i - 1) * MENU_ROW_H)
-      paintMenuRow(b, dd, opt, rowSelected(dd, opt), self.__pal or MENU_PAL)
+      paintMenuRow(b, dd, opt, rowSelected(dd, opt), self.__pal or MENU_PAL, glyphFace)
       b:SetScript("OnClick", rowOnClick(self, dd, opt))
       b:Show()
     end

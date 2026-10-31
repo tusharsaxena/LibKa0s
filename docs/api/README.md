@@ -179,7 +179,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Glow/version-1-docs.md) | `Glow.lua` 1 | v1.75.0 | **Current** |
+| [2](./Glow/version-2-docs.md) | **`Glow.lua` 2** (`knobs.owner`: a nil `color` takes the skin's `glow.color`) | v1.85.0 (unreleased) | **Current** |
+| [1](./Glow/version-1-docs.md) | `Glow.lua` 1 | v1.75.0 – v1.84.0 | Superseded |
 
 ### `LibKa0s-Toast-1.0`
 
@@ -211,7 +212,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [12.1.22.4.15.9.13.2.8](./Skin/version-12.1.22.4.15.9.13.2.8-docs.md) | `Skin.lua` 12 · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 22 · `SkinDefsOthers.lua` 4 · **`SkinPaint.lua` 15** · `SkinPaintExtras.lua` 9 · **`SkinPaintControls.lua` 13** (a scroll bar's step buttons are the host's chevrons in `icon.arrow`) · `SkinEUI.lua` 2 · **`SkinAce.lua` 8** | v1.85.0 (unreleased) | **Current** |
+| [12.1.23.5.15.10.14.2.8](./Skin/version-12.1.23.5.15.10.14.2.8-docs.md) | `Skin.lua` 12 · `SkinOwnerTokens.lua` 1 · **`SkinDefs.lua` 23** · **`SkinDefsOthers.lua` 5** (`menu.suggestBg`, `menu.suggestBorder`, `list.ghostIcon`) · `SkinPaint.lua` 15 · **`SkinPaintExtras.lua` 10** (`S.GetFont("mono")`) · **`SkinPaintControls.lua` 14** (a stock close button's "x" in the body face) · `SkinEUI.lua` 2 · `SkinAce.lua` 8 | v1.85.0 (unreleased) | **Current** |
+| [12.1.22.4.15.9.13.2.8](./Skin/version-12.1.22.4.15.9.13.2.8-docs.md) | `Skin.lua` 12 · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 22 · `SkinDefsOthers.lua` 4 · **`SkinPaint.lua` 15** · `SkinPaintExtras.lua` 9 · **`SkinPaintControls.lua` 13** (a scroll bar's step buttons are the host's chevrons in `icon.arrow`) · `SkinEUI.lua` 2 · **`SkinAce.lua` 8** | v1.85.0 (unreleased) | Superseded |
 | [12.1.22.4.14.9.12.2.7](./Skin/version-12.1.22.4.14.9.12.2.7-docs.md) | **`Skin.lua` 12** (`VOCAB` gains `Mark`, `MarkText`) · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 22 · `SkinDefsOthers.lua` 4 · `SkinPaint.lua` 14 · **`SkinPaintExtras.lua` 9** · `SkinPaintControls.lua` 12 · `SkinEUI.lua` 2 · `SkinAce.lua` 7 | v1.85.0 (unreleased) | Superseded |
 | [11.1.22.4.14.8.12.2.7](./Skin/version-11.1.22.4.14.8.12.2.7-docs.md) | `Skin.lua` 11 · `SkinOwnerTokens.lua` 1 · **`SkinDefs.lua` 22** (`text.command`, `text.strong`, `gtip.emphasis`) · **`SkinDefsOthers.lua` 4** · `SkinPaint.lua` 14 · `SkinPaintExtras.lua` 8 · `SkinPaintControls.lua` 12 · `SkinEUI.lua` 2 · `SkinAce.lua` 7 | v1.85.0 (unreleased) | Superseded |
 | [11.1.21.3.14.8.12.2.7](./Skin/version-11.1.21.3.14.8.12.2.7-docs.md) | `Skin.lua` 11 · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 21 · `SkinDefsOthers.lua` 3 · `SkinPaint.lua` 14 · `SkinPaintExtras.lua` 8 · `SkinPaintControls.lua` 12 · `SkinEUI.lua` 2 · **`SkinAce.lua` 7** (a `Heading` in the title role, `__AceFontChanged`) | v1.85.0 (unreleased) | Superseded |
@@ -234,7 +236,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [18.4.11.5.5.2](./Widgets/version-18.4.11.5.5.2-docs.md) | **`Widgets.lua` 18** · **`WidgetsReorder.lua` 4** · **`WidgetsDragHandle.lua` 11** (an owned control with no art draws the Ka0s icon) · `WidgetsLineChart.lua` 5 · `WidgetsAutocomplete.lua` 5 · `WidgetsCopyWindow.lua` 2 | v1.85.0 (unreleased) | **Current** |
+| [19.5.12.6.6.3](./Widgets/version-19.5.12.6.6.3-docs.md) | **`Widgets.lua` 19** · **`WidgetsReorder.lua` 5** · **`WidgetsDragHandle.lua` 12** · **`WidgetsLineChart.lua` 6** · **`WidgetsAutocomplete.lua` 6** · **`WidgetsCopyWindow.lua` 3** (an owned control wears the skin over a host's face and `backdrop`; the glyph column, the carried copy and the suggestion list follow it) | v1.85.0 (unreleased) | **Current** |
+| [18.4.11.5.5.2](./Widgets/version-18.4.11.5.5.2-docs.md) | **`Widgets.lua` 18** · **`WidgetsReorder.lua` 4** · **`WidgetsDragHandle.lua` 11** (an owned control with no art draws the Ka0s icon) · `WidgetsLineChart.lua` 5 · `WidgetsAutocomplete.lua` 5 · `WidgetsCopyWindow.lua` 2 | v1.85.0 (unreleased) | Superseded |
 | [17.3.10.5.5.2](./Widgets/version-17.3.10.5.5.2-docs.md) | `Widgets.lua` 17 · `WidgetsReorder.lua` 3 · **`WidgetsDragHandle.lua` 10** (measured at the strip's scale, text written fresh, a fitted strip fits again on show) · `WidgetsLineChart.lua` 5 · `WidgetsAutocomplete.lua` 5 · `WidgetsCopyWindow.lua` 2 | v1.84.0 | Superseded |
 | [17.3.9.5.5.2](./Widgets/version-17.3.9.5.5.2-docs.md) | `Widgets.lua` 17 · `WidgetsReorder.lua` 3 · **`WidgetsDragHandle.lua` 9** (`ApplyLevel` and the repaint allocate nothing) · `WidgetsLineChart.lua` 5 · `WidgetsAutocomplete.lua` 5 · `WidgetsCopyWindow.lua` 2 | v1.84.0 | Superseded |
 | [17.3.8.5.5.2](./Widgets/version-17.3.8.5.5.2-docs.md) | `Widgets.lua` 17 · `WidgetsReorder.lua` 3 · **`WidgetsDragHandle.lua` 8** (`DRAG_HANDLE.FIT_SLACK`: the label ceiled plus 2 px; measured unbounded, on a shown host, in the label's own font; a fitted owned strip re-fits after every repaint of its skin; `spec.onRefit`) · `WidgetsLineChart.lua` 5 · `WidgetsAutocomplete.lua` 5 · `WidgetsCopyWindow.lua` 2; no new member | v1.82.0 | Superseded |

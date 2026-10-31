@@ -105,7 +105,9 @@ if not lib then return end
 -- fits again on show (THE SHOW above). A strip at UIParent's scale measures what it did.
 -- Minor 11 (cause L6 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): an owned strip with no
 -- host art draws the Ka0s `info` and `close` icons on its marks, live on a repaint (dhMarkArt).
-local DRAG_MINOR = 11
+-- Minor 12 (cause L8 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): an owned strip wears the
+-- skin's body face over a host's `spec.labelFont`, which is what Ignore fonts gives back.
+local DRAG_MINOR = 12
 -- Paired on the SHELL's minor as well as this file's own: a handle that attached to an older shell
 -- would publish `lib.DragHandle` beside a `lib.MODULES` the shell owns, and nothing would say the
 -- two came from different vendored copies.
@@ -693,11 +695,12 @@ local function dhBuildChrome(handle, spec)
 end
 
 --- The label's face (minor 7): the skin's body face while the strip is skinned, the template back
---- otherwise; a host's `spec.labelFont` is never touched.
+--- otherwise. A host's `spec.labelFont` is that template (minor 12).
 local function dhFontLabel(handle, owner, Skin)
   local skinFont = lib.__skinFont
-  if not handle.label or handle.__hostFace or type(skinFont) ~= "function" then return end
-  skinFont(handle.label, owner, handle.__pal ~= DH_PAL and Skin or nil, LABEL_FONT_DEFAULT)
+  if not handle.label or type(skinFont) ~= "function" then return end
+  skinFont(handle.label, owner, handle.__pal ~= DH_PAL and Skin or nil,
+    handle.__labelFont or LABEL_FONT_DEFAULT)
 end
 
 --- THE RE-FIT (minor 8): the host's `spec.onRefit(handle)` under pcall where it passed one, else
@@ -964,7 +967,8 @@ end
 ---                                 band colors too from minor 7 (`gtip.title`, `gtip.value`,
 ---                                 `gtip.footer`). Not a tooltip owner -- that is `tooltipOwner` and
 ---                                 a descriptor's own `owner`. From minor 7 the label is drawn and
----                                 measured in that skin's body face unless `labelFont` names one.
+---                                 measured in that skin's body face; `labelFont` is then its
+---                                 template, which Ignore fonts gives back (minor 12).
 ---   panel       boolean|nil       minor 7. true: the strip sits on the owner's settings page, so
 ---                                 while the owner ignores its settings panel it is minor 5's.
 ---   onRefit     function|nil      minor 8. onRefit(handle), called under pcall after every repaint
@@ -980,7 +984,7 @@ function lib.DragHandle(parent, spec)
   if not (handle and handle.SetHeight) then return nil end
   handle:SetHeight(lib.DRAG_HANDLE.HEIGHT)
   local Skin
-  handle.__panel, handle.__hostFace = spec.panel == true, spec.labelFont ~= nil
+  handle.__panel, handle.__labelFont = spec.panel == true, spec.labelFont
   handle.__onRefit = type(spec.onRefit) == "function" and spec.onRefit or nil
   handle.__markSpec = handle.__panel and spec or nil
   handle.__pal, Skin = dhPalette(spec.owner, handle.__panel)

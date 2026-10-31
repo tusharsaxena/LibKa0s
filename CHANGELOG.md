@@ -14,7 +14,21 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Skin-1.0` key **12.1.22.4.15.9.13.2.8**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.16.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.1**, `LibKa0s-Widgets-1.0` key **18.4.11.5.5.2**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **12.1.23.5.15.10.14.2.8**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.16.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.1**, `LibKa0s-Widgets-1.0` key **19.5.12.6.6.3**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
+
+### Small misses, library half (`FS-L8`, cause L8)
+
+- **SkinPaintControls minor 14**: a stock close button's "x" wears the skin's body face, so *Ignore fonts* reaches it.
+- **SkinPaintExtras minor 10**: `S.GetFont(role)`, additive; `"mono"` answers `font.mono` or nil.
+- **SkinDefs minor 23** and **SkinDefsOthers minor 5**: `menu.suggestBg`, `menu.suggestBorder` and `list.ghostIcon`. Ka0s Default's are what those surfaces drew; every other skin's are its `menu.bg`, `menu.border` and `icon.tint`.
+- **Widgets minor 19**: an owned menu's glyph column reads `font.mono` at its size of 11. `opts.glyphFont` still turns the column on, and is what an owner-less menu and *Ignore fonts* draw.
+- **WidgetsAutocomplete minor 6**, **WidgetsLineChart minor 6**, **WidgetsDragHandle minor 12**: on an owned control a host's `opts.font` or `spec.labelFont` is the template, with the skin's body face over it and *Ignore fonts* giving it back. This reverses "a host's face is never touched"; owner-less controls keep it. Only LootHistory's chart seam passes one, and it is the library's default.
+- **WidgetsAutocomplete minor 6**: a skinned list's fill and edge are the two new tokens, read on every show.
+- **WidgetsCopyWindow minor 3**: a skinned window wears `win.bgDense` over a host's `backdrop`, which no host passes. A host's `applySkin` still takes a window out of the skin; none passes that either.
+- **WidgetsReorder minor 5**: the carried copy's text in the body face and its mark in `list.ghostIcon`, unless the row names a color.
+- **Glow minor 2**: `knobs.owner`, a registered skin owner, gives a nil `color` that skin's `glow.color`. The hosts adopt it with D5.
+- Under Ka0s Default two faces move to Prototype, as the row of the cause asks: the close "x" and the carried copy's text. No color moves.
+- The addons' own rows of the cause are their host half: grip owners, sort arrows, labels, LootHistory's chart seam.
 
 ### The launcher's tooltip follows the skin (`FS-L1`, cause L1)
 

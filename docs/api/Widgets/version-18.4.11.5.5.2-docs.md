@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **18** · `WidgetsReorder.lua` **4** · `WidgetsDragHandle.lua` **11** · `WidgetsLineChart.lua` **5** · `WidgetsAutocomplete.lua` **5** · `WidgetsCopyWindow.lua` **2** |
 | Shipped in | v1.85.0 (unreleased) |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 17.3.10.5.5.2](./version-17.3.10.5.5.2-docs.md) (shipped in v1.84.0) — an owned control with no host art drew the client rung. |
-| Superseded by | — |
+| Superseded by | [version 19.5.12.6.6.3](./version-19.5.12.6.6.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 18, WidgetsReorder = 4, WidgetsDragHandle = 11, WidgetsLineChart = 5, WidgetsAutocomplete = 5, WidgetsCopyWindow = 2 }` |
 
@@ -1974,3 +1974,7 @@ visual fidelity as unverified.
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
 - `hostBackdrop`: no consumer as of v1.83.0, kept because `CopyWindow` writes it itself from `d.backdrop`, so it is state rather than a field a host passes.
+
+## Moving to 19.5.12.6.6.3
+
+Nothing to change unless a host passes a face on an owned control, or a `backdrop` on a skinned `CopyWindow`: the skin now goes over both. To keep a fixed face, pass no `owner`. LootHistory's chart seam can drop its `o.font`, which is the library's own default.

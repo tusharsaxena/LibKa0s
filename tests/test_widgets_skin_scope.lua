@@ -10,7 +10,8 @@
 --     and the drag handle's label drew their template's face in every skin, so the switch had
 --     nothing to act on. An owned control now draws them in its skin's body face through the
 --     facade (Prototype under Ka0s Default, D-13), and Ignore fonts gives each its template back. A
---     face the host named (`opts.font`, `spec.labelFont`) is the host's and is never touched.
+--     face the host named (`opts.font`, `spec.labelFont`) is that template (cause L8, row 711 of
+--     Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING); an owner-less control keeps it.
 --   * `panel = true` PUTS A CONTROL ON A SETTINGS PAGE (D-02): while its owner ignores its settings
 --     panel the control is drawn as an owner-less one, live both ways; without it a control is a
 --     window's and wears the skin whatever that switch says (D-01).
@@ -241,7 +242,7 @@ local function suggest(m, W, opts)
   return h
 end
 
-test("skin scope: an owned autocomplete's rows take the body face unless the host named one", function()
+test("skin scope: an owned autocomplete's rows take the body face, a host's face their template", function()
   -- red under: the rows left on GameFontHighlightSmall in every skin.
   local m, Skin, W = env()
   F.owner(Skin, OWNER, "obsidian")
@@ -251,9 +252,14 @@ test("skin scope: an owned autocomplete's rows take the body face unless the hos
   h:Refresh()
   assertEqual(face(h.__rows[1].label), "GameFontHighlightSmall", "Ignore fonts")
   local hosted = suggest(m, W, { owner = OWNER, font = "HostFont" })
+  assertEqual(face(hosted.__rows[1].label), "HostFont", "Ignore fonts: the host's face")
   Skin:SetIgnore(OWNER, nil, false)
   hosted:Refresh()
-  assertEqual(face(hosted.__rows[1].label), "HostFont", "the host's face is the host's")
+  assertEqual(face(hosted.__rows[1].label), bodyFace(Skin, "obsidian"), "row 711: the skin's over it")
+  Skin:SetIgnore(OWNER, nil, true)
+  hosted:Refresh()
+  assertEqual(face(hosted.__rows[1].label), "HostFont", "and back")
+  assertEqual(face(suggest(m, W, { font = "HostFont" }).__rows[1].label), "HostFont", "owner-less")
 end)
 
 test("skin scope: a panel-scoped autocomplete is owner-less while the panel is ignored", function()
@@ -280,7 +286,7 @@ local function chart(m, W, opts)
   return c
 end
 
-test("skin scope: an owned chart's labels take the body face unless the host named one", function()
+test("skin scope: an owned chart's labels take the body face, a host's face their template", function()
   -- red under: the tick labels left on GameFontDisableSmall in every skin.
   local m, Skin, W = env()
   F.owner(Skin, OWNER, "obsidian")
@@ -290,8 +296,12 @@ test("skin scope: an owned chart's labels take the body face unless the host nam
   Skin:SetIgnore(OWNER, nil, true)
   assertEqual(face(c.__labelPool[1]), "GameFontDisableSmall", "Ignore fonts")
   local hosted = chart(m, W, { owner = OWNER, font = "HostFont" })
+  assertEqual(face(hosted.__labelPool[1]), "HostFont", "Ignore fonts: the host's face")
   Skin:SetIgnore(OWNER, nil, false)
-  assertEqual(face(hosted.__labelPool[1]), "HostFont", "the host's face is the host's")
+  assertEqual(face(hosted.__labelPool[1]), bodyFace(Skin, "obsidian"), "row 711: the skin's over it")
+  Skin:SetIgnore(OWNER, nil, true)
+  assertEqual(face(hosted.__labelPool[1]), "HostFont", "and back, live")
+  assertEqual(face(chart(m, W, { font = "HostFont" }).__labelPool[1]), "HostFont", "owner-less")
 end)
 
 test("skin scope: a panel-scoped chart reads lib.LINE_CHART while the panel is ignored, live", function()
@@ -332,8 +342,12 @@ test("skin scope: an owned drag handle's label takes the body face, and is measu
   plain:Measure()
   assertEqual(face(plain.label), "GameFontNormalSmall", "an owner-less label is untouched")
   local hosted = handle(m, W, { owner = OWNER, labelFont = "HostFont" })
+  assertEqual(face(hosted.label), "HostFont", "Ignore fonts: the host's face")
   Skin:SetIgnore(OWNER, nil, false)
-  assertEqual(face(hosted.label), "HostFont", "the host's face is the host's")
+  assertEqual(face(hosted.label), bodyFace(Skin, "obsidian"), "row 711: the skin's over it")
+  Skin:SetIgnore(OWNER, nil, true)
+  assertEqual(face(hosted.label), "HostFont", "and back, live")
+  assertEqual(face(handle(m, W, { labelFont = "HostFont" }).label), "HostFont", "owner-less")
 end)
 
 test("skin scope: a panel-scoped drag handle is owner-less while the panel is ignored, live", function()
