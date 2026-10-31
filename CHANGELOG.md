@@ -27,6 +27,7 @@ Every peel below is a pure move on the seam `CLAUDE.md`'s census named. No publi
 - `OptionsIdSuggest.lua` (new, **OptionsIdSuggest minor 1**): the suggestion half out of `OptionsIds.lua`, which moves to **OptionsIds minor 6** and drops from 1412 to 806 lines.
 - `OptionsFlow.lua` (new, **OptionsFlow minor 1**): the two-column flow engine out of `OptionsWidgets.lua`, which moves to **OptionsWidgets minor 39** and drops from 1375 to 1066 lines.
 - `OptionsTabbed.lua` (new, **OptionsTabbed minor 1**): the tabbed page out of `OptionsTabs.lua`, which moves to **OptionsTabs minor 12** and drops from 1382 to 1169 lines.
+- `testkit/mock_ace.lua` (new, **test kit revision 47**): the Ace fakes, CallbackHandler through AceAddon, out of `testkit/mock_base.lua`, which drops from 1465 to 679 lines. Revision 47 also corrects a comment in `glyphs.lua` (nine skins).
 
 ## v1.83.0 — 2026-10-31
 

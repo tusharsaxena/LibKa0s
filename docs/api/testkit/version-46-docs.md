@@ -10,9 +10,9 @@
 | Version | **46** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.83.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 45](version-45-docs.md) — the safe set read from the fifteen faces of v1.82.0 |
-| Superseded by | — |
+| Superseded by | [version 47](version-47-docs.md) |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `46` |
 
@@ -35,3 +35,7 @@ can pick any of them as an override.
 
 Re-vendor the kit with the library, per `docs/releasing.md`. A display string carrying U+2044 goes red
 under `Kit.assertDisplayGlyphs`.
+
+## Moving to the next version
+
+A re-vendor copies the whole folder, so `mock_ace.lua` arrives with it. Nothing else moves.
