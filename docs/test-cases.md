@@ -2361,7 +2361,7 @@ Total.
 
 ### test_options_skin_picker.lua (47)
 
-- skin picker: OptionsSkinPicker is minor 3, paired on the shell, and attaches three members
+- skin picker: OptionsSkinPicker is minor 4, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show

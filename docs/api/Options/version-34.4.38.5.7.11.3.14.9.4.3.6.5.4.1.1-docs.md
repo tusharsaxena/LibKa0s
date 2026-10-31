@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1
+# `LibKa0s-Options-1.0` — version 34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,14 +8,14 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **38** · `OptionsIds.lua` **5** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **14** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **5** · `OptionsSkinPicker.lua` **3** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **1** (new) |
+| Files and minors | `Options.lua` **34** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **38** · `OptionsIds.lua` **5** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **11** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **14** · `OptionsScroll.lua` **9** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **3** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **5** · `OptionsSkinPicker.lua` **4** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **1** (new) |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsIds>.<OptionsIdList>.<OptionsTabs>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSwitch>.<OptionsMedia>`, in load order — the same fifteen numbers `lib.MODULES` reports. |
 | Shipped in | v1.83.0 |
 | Status | **Current** |
 | Supersedes | [version 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1](./version-34.4.37.5.7.11.3.14.9.4.3.6.4.3.1-docs.md) (shipped in v1.82.0): its Skin tab's font and texture rows were plain Dropdowns over media keys, and an unregistered `LSM30_*` row fell back to one |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 38, OptionsIds = 5, OptionsIdList = 7, OptionsTabs = 11, OptionsCombat = 3, OptionsCompose = 14, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 5, OptionsSkinPicker = 3, OptionsSwitch = 1, OptionsMedia = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 34, OptionsRegistry = 4, OptionsWidgets = 38, OptionsIds = 5, OptionsIdList = 7, OptionsTabs = 11, OptionsCombat = 3, OptionsCompose = 14, OptionsScroll = 9, OptionsNav = 4, OptionsDrawer = 3, OptionsKeybinds = 6, OptionsAppearance = 5, OptionsSkinPicker = 4, OptionsSwitch = 1, OptionsMedia = 1 }` |
 
 `Since` in the tables below names the **file and minor** in which the member first appeared — `O21`
 for `Options.lua` minor 21, `O22` for `Options.lua` minor 22, `O23` for `Options.lua` minor 23, `O24` for `Options.lua` minor 24, `O25` for `Options.lua` minor 25, `O27` for `Options.lua` minor 27, `O28` for `Options.lua` minor 28, `O29` for `Options.lua` minor 29, `O30` for `Options.lua` minor 30, `O31` for `Options.lua` minor 31, `O32` for `Options.lua` minor 32, `O33` for `Options.lua` minor 33, `O34` for `Options.lua` minor 34, `W20` for `OptionsWidgets.lua` minor 20, `W21` for `OptionsWidgets.lua`
@@ -37,6 +37,15 @@ park's library-level names are `OptionsRegistry.lua`'s from 26.1.32.1.1.6.1.7.4.
 citations still name the `Options.lua` minors that introduced them. The minor that introduced a
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
+
+## What changed at this version: "Skin's default" (`LK-F04`)
+
+`LK-F04` of Ka0sAddonsCommonTasks `docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/` (the owner's item 4).
+Wording only. The Skin tab's leading row reads "Skin's default (X)", where it read "Skin's own (X)";
+`RESET_FONT_TIP` and `RESET_TEXTURE_TIP` say "the skin's default", and `OptionsSkinPicker.lua` moves to
+minor **4** because `APPLY_ALL_TIP` does too. The `SKIN_OWN` key and the `"@skin"` value keep their
+names, so a stored override and a host's `spec.strings` are unaffected, except that a translation
+of the English text is the host's to reword.
 
 ## What changed at this version: the media pickers (`LK-F03`)
 
@@ -2549,7 +2558,7 @@ capture, conflict, combat and settings-window cases to this library's suite (`te
 Cases: `tests/test_options_keybinds.lua` (on `tests/fixture_keybinds.lua`'s bench, which fails a
 case on any touch of Blizzard's settings window), and `tests/test_kit_bindings.lua` for the driver.
 
-## The skin picker (OptionsSkinPicker.lua, minor 3)
+## The skin picker (OptionsSkinPicker.lua, minor 4)
 
 New at `OptionsSkinPicker.lua` minor 1, a fourteenth file paired on the shell's minor
 (`lib.__pickerMinor` / `lib.__pickerShellMinor`) and attached by `Options.lua` minor 34
@@ -2781,7 +2790,7 @@ Draws into `parent` (default `O.EnsureScroll(ctx)`), top to bottom:
    skin the addon.
 3. **Font and texture** (OptionsAppearance minor 3, `LibKa0s-Skin-1.0` minor 6, LibKa0s#63), under
    its own heading: two AceGUI `Dropdown`s side by side (`BUTTON_PAIR_REL`), *Font* and *Texture*.
-   Each lists, first, the value `"@skin"` (`Skin.FROM_SKIN`) as "Skin's own (<key>)", the key being
+   Each lists, first, the value `"@skin"` (`Skin.FROM_SKIN`) as "Skin's default (<key>)", the key being
    the face (`font.body`) or bar texture (`bar.texture`) the owner wears without its overrides
    (`Skin:__BaseTokens`: the skin worn now, or EllesmereUI's table while that paints the owner);
    then LibSharedMedia-3.0's `font` or `statusbar` keys, sorted (`LSM:List`, read at call time);

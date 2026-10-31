@@ -19,16 +19,23 @@ owner's go-ahead.
 
 Versions in this release: **Media minor 11** (`LibKa0s-Media-1.0` key **11.1**), **Skin minor 10** and
 **SkinDefs minor 18** (`LibKa0s-Skin-1.0` key **10.18.13.7.11.2.4**), **OptionsWidgets minor 38**,
-**OptionsAppearance minor 5** and **OptionsMedia minor 1** (new) (`LibKa0s-Options-1.0` key
-**34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1**); every other file still at its v1.82.0
+**OptionsAppearance minor 5**, **OptionsSkinPicker minor 4** and **OptionsMedia minor 1** (new)
+(`LibKa0s-Options-1.0` key
+**34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1**); every other file still at its v1.82.0
 minor, and **test kit revision 46**, until an entry below moves one.
 Still **nineteen majors**, now across **fifty-five files** (`OptionsMedia.lua` is new), and no `NEEDS_*`
 floor rises.
 
+### "Skin's default" (`LK-F04`)
+
+The Skin tab's leading font and texture row reads "Skin's default (X)", where it read "Skin's own
+(X)"; the two reset tooltips and the skin picker's *Apply to all* tooltip say "skin's default" too
+(**OptionsSkinPicker minor 4**, wording only). `SKIN_OWN` and `"@skin"` keep their names.
+
 ### Media pickers that show what they offer (`LK-F03`)
 
-`LibKa0s-Options-1.0` key 34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1, documented in
-[docs/api/Options/version-34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1-docs.md](docs/api/Options/version-34.4.38.5.7.11.3.14.9.4.3.6.5.3.1.1-docs.md)
+`LibKa0s-Options-1.0` key 34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1, documented in
+[docs/api/Options/version-34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1-docs.md](docs/api/Options/version-34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1-docs.md)
 (*What changed at this version: the media pickers*).
 
 - **OptionsMedia minor 1 (new)**: AceGUI types `Ka0sMedia_Font`, `Ka0sMedia_Statusbar`,

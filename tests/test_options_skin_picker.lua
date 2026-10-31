@@ -83,10 +83,12 @@ end
 
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
-test("skin picker: OptionsSkinPicker is minor 3, paired on the shell, and attaches three members", function()
+test("skin picker: OptionsSkinPicker is minor 4, paired on the shell, and attaches three members", function()
   local _, _, lib = env()
-  assertEqual(lib.MODULES.OptionsSkinPicker, 3)
-  assertEqual(lib.__pickerMinor, 3)
+  assertEqual(lib.MODULES.OptionsSkinPicker, 4)
+  assertEqual(lib.__pickerMinor, 4)
+  assertTrue(lib.SKIN_PICKER_STRINGS.APPLY_ALL_TIP:find("that skin's default font and texture", 1, true) ~= nil,
+    "the tooltip words it as the Skin tab's row does")
   assertEqual(lib.__pickerShellMinor, lib.MINOR, "paired on the shell's minor")
   assertTrue(lib.MINOR >= 34, "Options minor 34 attaches it")
   assertEqual(type(lib.SKIN_PICKER_STRINGS), "table")

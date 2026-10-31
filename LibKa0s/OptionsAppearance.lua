@@ -18,7 +18,7 @@
 --   * FONT AND TEXTURE (minor 3): two dropdowns side by side (minor 5: the preview pickers of
 --     OptionsMedia.lua, each row in its face or beside its bar, the stock Dropdown without them),
 --     the owner's font and bar texture
---     (LibSharedMedia-3.0's font and statusbar keys, sorted), each led by "Skin's own (<its key>)",
+--     (LibSharedMedia-3.0's font and statusbar keys, sorted), each led by "Skin's default (<its key>)",
 --     through Skin:SetOverride and `spec.set`'s fourth argument (LibKa0s-Skin-1.0 minor 6); under
 --     each (minor 4) its "Reset font" / "Reset texture" button, at the dropdown's width, disabled
 --     while that half is already the skin's own; under those (minor 4) the "Font outline" dropdown,
@@ -75,6 +75,8 @@ if not lib then return end
 -- button gets its own heading, "Other Ka0s addons"; and the note leads the Look section.
 -- Minor 5: the font and texture rows are OptionsMedia.lua's pickers, the leading row previewing the
 -- skin's own entry (LK-F03 of Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES).
+-- Still minor 5 (LK-F04, the owner's item 4): that entry reads "Skin's default (%s)" and the reset
+-- tooltips say "the skin's default"; the SKIN_OWN key keeps its name, so spec.strings still works.
 local APPEARANCE_MINOR = 5
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__appearanceMinor and lib.__appearanceMinor >= APPEARANCE_MINOR
@@ -115,7 +117,7 @@ lib.APPEARANCE_STRINGS = {
                    "with it on, every string keeps the game's own font.",
   TEXTURE        = "Texture",
   TEXTURE_TIP    = "Replace the bar texture of every bar and chart this addon draws.",
-  SKIN_OWN       = "Skin's own (%s)",
+  SKIN_OWN       = "Skin's default (%s)",
   MEDIA_MISSING  = "%s (not loaded)",
   SCOPE_HEADING  = "Scope",
   IGNORE_PANEL   = "Ignore settings panel",
@@ -132,9 +134,9 @@ lib.APPEARANCE_STRINGS = {
   OUTLINE_HUD    = "HUD text only",
   OUTLINE_OFF    = "Off",
   RESET_FONT     = "Reset font",
-  RESET_FONT_TIP = "Use the skin's own font again (%s).",
+  RESET_FONT_TIP = "Use the skin's default font again (%s).",
   RESET_TEXTURE  = "Reset texture",
-  RESET_TEXTURE_TIP = "Use the skin's own bar texture again (%s).",
+  RESET_TEXTURE_TIP = "Use the skin's default bar texture again (%s).",
   COPY_HEADING   = "Other Ka0s addons",
   COPY_TIP       = "Give every other loaded Ka0s addon that uses skins this addon's skin source, " ..
                    "skin, scope, font, texture and font outline. You are asked first.",
@@ -538,7 +540,7 @@ function lib.__AttachAppearance(O, d)
     return view.Skin:ResolveSkin(skin)
   end
 
-  --- The list one media dropdown offers: "Skin's own (<the face worn without overrides>)" first,
+  --- The list one media dropdown offers: "Skin's default (<the face worn without overrides>)" first,
   --- then LSM's keys, then the stored override when LSM lacks it, so the field never shows blank.
   --- The third answer is the leading row's preview: it shows the face it stands for.
   local function mediaList(view, which)
@@ -586,7 +588,7 @@ function lib.__AttachAppearance(O, d)
   end
 
   --- One media half's reset button in `group` (minor 4, D-11): the skin's own again, through the
-  --- same seam as the dropdown's "Skin's own" entry. `sync` disables it while that half is the
+  --- same seam as the dropdown's "Skin's default" entry. `sync` disables it while that half is the
   --- skin's own, and words its tooltip with the skin's own key.
   local function resetButton(view, group, which)
     local btn = O.AceGUI:Create("Button")

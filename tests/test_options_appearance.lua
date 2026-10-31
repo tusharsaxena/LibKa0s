@@ -627,8 +627,8 @@ test("appearance: the Font and texture section draws two dropdowns between the s
   local font, texture = view.media.font, view.media.texture
   assertEqual(font.labelText, "Font"); assertEqual(texture.labelText, "Texture")
   assertEqual(font.order[1], "@skin", "the skin's own entry first")
-  assertEqual(font.list["@skin"], "Skin's own (Ka0s Prototype)", "naming Ka0s Default's face")
-  assertEqual(texture.list["@skin"], "Skin's own (Ka0s Default)", "and its bar texture")
+  assertEqual(font.list["@skin"], "Skin's default (Ka0s Prototype)", "naming Ka0s Default's face")
+  assertEqual(texture.list["@skin"], "Skin's default (Ka0s Default)", "and its bar texture")
   assertEqual(table.concat(font.order, "|"), "@skin|Arial Narrow|Ka0s Expressway", "then LSM's font keys, sorted")
   assertEqual(table.concat(texture.order, "|"), "@skin|Blizzard|Ka0s Flat", "and its statusbar keys")
   assertEqual(font.value, "@skin", "no override: the skin's own")
@@ -697,7 +697,7 @@ test("appearance: sync re-reads the overrides, and the skin's own entry follows 
   ctx.refreshers = {}
   local view = O.AppearanceRows(ctx, specFor(store))
   view.skins.obsidian:__fire("OnValueChanged", true)
-  assertEqual(view.media.font.list["@skin"], "Skin's own (" .. Skin:ResolveSkin("obsidian")["font.body"] .. ")",
+  assertEqual(view.media.font.list["@skin"], "Skin's default (" .. Skin:ResolveSkin("obsidian")["font.body"] .. ")",
     "the first entry names the skin worn now")
   Skin:SetOverride(OWNER, nil, "Ka0s Flat")
   view.sync()
@@ -753,7 +753,7 @@ test("appearance: a stored key LibSharedMedia lacks stays listed, and the skin's
   local view = O.AppearanceRows(ctx, specFor(store))
   Skin.__euiTokens = nil
   local font = view.media.font
-  assertEqual(font.list["@skin"], "Skin's own (Expressway)", "the face worn without overrides")
+  assertEqual(font.list["@skin"], "Skin's default (Expressway)", "the face worn without overrides")
   assertEqual(font.list["Gone Font"], "Gone Font (not loaded)", "the stored key, marked")
   assertEqual(font.order[#font.order], "Gone Font", "after LSM's keys")
   assertEqual(font.value, "Gone Font", "so the field shows it")
@@ -1179,8 +1179,8 @@ test("appearance: the resets' tooltips name the skin's own, and spec.strings tra
   view.skins.obsidian:__fire("OnValueChanged", true)
   assertEqual(tips[view.reset.font].tip, "Police " .. Skin:ResolveSkin("obsidian")["font.body"],
     "re-worded for the skin worn now")
-  assertEqual(lib.APPEARANCE_STRINGS.RESET_FONT_TIP, "Use the skin's own font again (%s).")
-  assertEqual(lib.APPEARANCE_STRINGS.RESET_TEXTURE_TIP, "Use the skin's own bar texture again (%s).")
+  assertEqual(lib.APPEARANCE_STRINGS.RESET_FONT_TIP, "Use the skin's default font again (%s).")
+  assertEqual(lib.APPEARANCE_STRINGS.RESET_TEXTURE_TIP, "Use the skin's default bar texture again (%s).")
 end)
 
 test("appearance: the Scope's check boxes sit on the dropdowns' half-width grid", function()

@@ -849,7 +849,7 @@ end
 
 --- The owner's token table without its overrides (minor 6) or its owner tokens (minor 7): its skin
 --- resolved (`ResolveSkin`), or, while EllesmereUI paints the owner, the table SkinEUI.lua derives
---- from EllesmereUI's accent, panel color and font. What the Skin tab's "Skin's own" entries name.
+--- from EllesmereUI's accent, panel color and font. What the Skin tab's "Skin's default" entries name.
 --- Shared: never write to it. Internal.
 function lib:__BaseTokens(owner)
   return (baseOf(owner))
