@@ -791,6 +791,15 @@ local function installHooks(w, st)
   for _, name in ipairs(EXTRA_HOOKS[t] or {}) do hookMethod(w, st, name) end
 end
 
+-- Is `owner`'s settings panel ignored for this widget? A window's widget is never ignored, and a
+-- widget this owner painted before is handed back stock, so the panel goes back live.
+local function panelIgnored(skin, owner, widget, st)
+  if type(skin.__PanelSkinned) ~= "function" or skin:__PanelSkinned(owner) then return false end
+  if st and st.window then return false end
+  if st and st.owner == owner then restore(widget, st) end
+  return true
+end
+
 -- ── the members ──────────────────────────────────────────────────────────────────────────────
 
 --- Paint an AceGUI widget the host acquired for `owner`'s page: its stock regions faded and its
@@ -804,10 +813,7 @@ function lib:PaintAce(owner, widget)
   local paint = painterOf(widget)
   if type(paint) ~= "function" or not self:IsOwner(owner) then return false end
   local st = lib.__ace[widget]
-  if type(self.__PanelSkinned) == "function" and not self:__PanelSkinned(owner) and not (st and st.window) then
-    if st and st.owner == owner then restore(widget, st) end
-    return false
-  end
+  if panelIgnored(self, owner, widget, st) then return false end
   if st and st.owner and (st.owner ~= owner or otherSkin(widget)) then restore(widget, st) end
   if otherSkin(widget) then return false end
   st = stateOf(widget)

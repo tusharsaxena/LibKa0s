@@ -60,6 +60,8 @@ first**, through `lib.__pickerSettle`, then moves what the picker measures from,
 `lib.__pickerRebase`: `OptionsAppearance.lua`'s writes read the applied state, so an unapplied preview
 used to reach the profile. The tab's copy and `lib.__copySkinTo` do the same. Apply saves the scope and
 outline applied now, not the ones the rows last previewed.
+`PaintAce` peels its ignored-panel question to a local, `panelIgnored`, unchanged in behavior, because the
+`st.window` test had taken it to CCN 17; minor 5 is this release's own, so no minor moves.
 
 **What a consumer owes:** nothing but the re-vendor. Every addon's spec already passes
 `set = NS.WriteSkinChoice`, which takes all four arguments. A host with no `spec.set` draws no rows.
