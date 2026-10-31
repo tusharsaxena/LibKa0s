@@ -1,0 +1,15 @@
+Independent review of the LibKa0s M1 work (LK-F01..LK-F06) of Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/.
+
+Findings: 12. All 12 were verified as real and fixed in LibKa0s/ (commit eca3172); none rejected. Finding 3 (the blank first draw) was fixed defensively and is unconfirmed without a client, because the bug itself is only plausible.
+
+Fixes:
+1. Pool anchor (OptionsMedia.lua): itemRelease puts the text's BOTTOMRIGHT back at the row, -8, for any row that had a swatch or play button. Test added.
+2. keepStored: runs only from setValue now. Test added; the old pin that a rebuilt list keeps its value now goes through SetValue.
+3. Redress: a font picker always redresses the frame after acquiring, and the redress also sets the text again through "". Whether this cures a blank first draw needs in-client confirmation.
+4. Unmeasured override (Skin.lua layFaceSizes): a face with no row now draws at Ka0s Default's sizes, matching D-07. test_skin_width_parity's pin was reversed, with an assertion added under High Contrast.
+5. Refused locale (Skin.lua): a new static faceRefused check reads Media's FONTS langmask against GetLocale. A skin whose own face the locale refuses takes reference sizes, so HudFontSize and BarStyle stay unscaled on ruRU and koKR. Scope is wider than the finding: this also covers High Contrast (Doris PP) and koKR. Not fixed: on ruRU, Ember and WoW Default window text still falls back to a non-skin face, because Emblem and Friz have no Cyrillic. That follows from D-06 and is reported, not changed.
+6. Older faces restored: Oxanium SemiBold and Bold, Inter and Fira Sans Regular, with their measured rows.
+
+The close's record of this review ends there: the summary handed to LK-F90 was cut off inside item 6, so items 7-12 are not itemized in this note. Commit eca3172's message records the rest of the fix round.
+
+Release gate after the fixes: docs/automated-tests/20261031-152614/ at 5b47cfb, lint 0/0 in 248 files, 3455 tests with 0 failed, 0 over CCN 15.
