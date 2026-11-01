@@ -1754,6 +1754,7 @@ What `chart:SetData(data)` takes. Every field is **Since 1**.
 | `series[i].color` | `LINE_CHART.LINE` (the skin's `chart.line` for a skin owner) | RGBA array; a missing alpha reads as 1. |
 | `series[i].colorIndex` | none | **Since 4.** Used when `color` is absent: the index into the owner's `chart.series` (wrapping). Without a skin owner it draws the default line color. |
 | `series[i].thickness` | `1.5` | Line thickness in pixels. |
+| `series[i].fill` | none | **Widgets chart minor 6, SF-L8 (#70).** An area fill under the line. `true` fills in the series color at `LINE_CHART.FILL_ALPHA` (0.25); a number is that alpha; an RGBA table is the fill's own color. One vertical Line per `LINE_CHART.FILL_STEP` (2) pixels, from the baseline (zero, held inside the plot) up to the line, drawn under it. A dashed range does not change the fill. Additive: a series without `fill` draws as before. |
 | `series[i].dashFrom`, `series[i].dashTo` | none | The x range drawn dashed. `dashTo` absent means "to the end". |
 | `markers` | none | Array of vertical rules: `{ x =, color = LINE_CHART.MARKER, dashed = true }`. `dashed = false` draws a solid rule. |
 | `hoverXs` | none | Sorted array of the x values a hover can snap to. Without it the chart never hovers. |

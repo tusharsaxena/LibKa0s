@@ -25,6 +25,7 @@ Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `
 - **SkinDefsOthers minor 8**: High Contrast's window, popup, menu and icon edges are 1px, where they were 2px.
 - **Core minor 15** (`SF-L6`, #72): `MakeResizable` puts a frame anchored to another frame (a cell, a parent) back on that anchor after a grip drag, with the size the drag made. A window anchored to the screen behaves as before. No host owes anything.
 - **SkinPaintControls minor 16** (`SF-L7`, #71): `S.Dropdown` handles `WowStyle1DropdownTemplate`: its `Background` faded, its `Arrow` (the whole gold button) faded and the owner's `chevron-down` laid over it, and the label back to `input.text` on hover and press. PremadeGroupsFilterExtension and the Skin Tester may drop their `opts.stock` and own `dd.arrow` workaround.
+- **WidgetsLineChart minor 6** (`SF-L8`, #70): `series[i].fill` draws an area under a line (`true`, an alpha, or an RGBA color), and `LINE_CHART.FILL_ALPHA` and `FILL_STEP` are published. Additive. The chart's skin tokens (`chart.axis`, `grid`, `crosshair`, `marker`, `line`, `series`) are confirmed in the Skin document. The `library-stack-§7` register row for the chart is retired: the Skin Tester draws one beside LootHistory. DpsRace's Damage profile may move onto `fill`.
 - **What a consumer owes**: a host that colors its own sort marks reads `list.header.arrow`, and a host token table gains the row. BankLedger and LootHistory both do.
 
 ### The review of the rulings and the gate (`FS-FIX`)

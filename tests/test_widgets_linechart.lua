@@ -289,3 +289,31 @@ test("line chart: a render that leaves no scale hides the crosshair, and a later
   c:__fire("OnLeave")
   assertEqual(last, nil, "the host's tooltip is still told the hover ended")
 end)
+
+-- ── the area fill (SF-L8, #70) ──
+local function fillChart(fill)
+  local c = newChart()
+  c:SetData({ xMin = 100, xMax = 300, series = { { points = ramp(3, 10, 40), fill = fill } } })
+  c:Render(400, 200)
+  return c
+end
+
+test("line chart: a series with fill draws columns under its line; without it, none", function()
+  -- red under: drop drawFill from drawSeries in LibKa0s/WidgetsLineChart.lua
+  local plain, filled = shownLines(fillChart(nil)), shownLines(fillChart(true))
+  assertTrue(filled > plain + 10, "columns under the line: " .. plain .. " -> " .. filled)
+  assertEqual(shownLines(fillChart(false)), plain, "fill = false is no fill")
+end)
+
+test("line chart: the fill's alpha is published", function()
+  fillChart(true)
+  local W_ = W.LINE_CHART
+  assertTrue(type(W_.FILL_ALPHA) == "number" and W_.FILL_ALPHA > 0 and W_.FILL_ALPHA < 1, "FILL_ALPHA is published")
+end)
+
+test("line chart: a second Render of a filled series creates no new Lines", function()
+  local c = fillChart(0.5)
+  local made = #c.__madeLines
+  c:Render(400, 200)
+  assertEqual(#c.__madeLines, made)
+end)
