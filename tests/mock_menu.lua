@@ -40,6 +40,14 @@ return function(mocks)
       return element
     end
 
+    --- A plain button (Open skin selector): an entry that runs `onClick` when clicked.
+    function root:CreateButton(text, onClick)
+      local entry = { text = text, isSelected = function() return false end, button = true,
+        setSelected = function() return onClick() end, enabled = true }
+      menu.entries[#menu.entries + 1] = entry
+      return {}
+    end
+
     --- The entries' texts, in order.
     function menu:Texts()
       local out = {}

@@ -1106,3 +1106,35 @@ test("launcher: a skin that raises leaves the tooltip drawn, and the debug seam 
   assertNil(calls[2][2], "the plain tooltip")
   assertTrue(table.concat(logs, "|"):find("tooltip: skin raised", 1, true) ~= nil)
 end)
+
+-- ── Open skin selector (minor 6, SF-F2) ─────────────────────────────────────────────────────────
+
+test("launcher: the menu ends with Open skin selector for a skin owner that passes openSkinPicker", function()
+  -- red under: drop skinEntry from buildMenu
+  local owner = skinnedOwner("azeroth")
+  local opened = 0
+  local rec = skinnedFixture(owner, { openSkinPicker = function() opened = opened + 1 end,
+    isLocked = function() return false end, toggleLock = function() end })
+  local L = lib:New(rec.d)
+  L:Register()
+  local menu = rightClick(L)
+  local texts = menu:Texts()
+  assertEqual(texts[#texts], "Open skin selector", "last")
+  menu:Click("Open skin selector")
+  assertEqual(opened, 1)
+end)
+
+test("launcher: it alone makes a menu, and a host that is no skin owner or passes nothing gets none", function()
+  local owner = skinnedOwner("azeroth")
+  local L = lib:New(skinnedFixture(owner, { openSkinPicker = function() end }).d)
+  L:Register()
+  assertEqual(table.concat(rightClick(L):Texts(), "|"), "Open skin selector")
+  local rec2 = skinnedFixture("NoSuchSkinOwner" .. nextName(), { openSkinPicker = function() end, isLocked = function() return false end,
+    toggleLock = function() end })
+  local L2 = lib:New(rec2.d)
+  L2:Register()
+  assertEqual(table.concat(rightClick(L2):Texts(), "|"), "Locked")
+  local L3 = lib:New(skinnedFixture((skinnedOwner("azeroth")), { isLocked = function() return false end, toggleLock = function() end }).d)
+  L3:Register()
+  assertEqual(table.concat(rightClick(L3):Texts(), "|"), "Locked")
+end)

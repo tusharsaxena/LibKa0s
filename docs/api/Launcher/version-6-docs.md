@@ -190,6 +190,7 @@ addon's face in three places, and left-click **always** opens the panel.
 | `debug` | **L1** | no | `debug(tag, message)` — the host's log seam, called with the tag `"Launcher"`. Every event line, and the state lines too where `debugAtEnable` is absent. |
 | `debugAtEnable` | **L5** | no | `debugAtEnable(tag, message)` — where `Register`'s four state lines go (a broker library absent, no minimap table, `registered`), with the tag `"Launcher"`: the console's `D.DebugAtEnable`, so they land when logging is first turned on rather than being gated off at `OnEnable`. Absent, they go to `debug`. |
 | `owner` | **L6** | no | The `LibKa0s-Skin-1.0` owner the tooltip reads. Defaults to `name`, so a host passes it only where the two differ. See *The status tooltip*. |
+| `openSkinPicker` | **L6** (SF-F2) | no | `function()`: opens the addon's skin picker, the act of its `/<slash> skin` verb. With it, and while `owner` (default `name`) is a registered skin owner, the right-click menu ends with **Open skin selector** (`MENU_SKIN`); on its own it makes a menu where the host supplied no toggle. A raise is caught and printed through the host's printer. |
 | `L` | **L1** | no | Locale override, keyed to `lib.STRINGS`. Read with `rawget`, so a host table that answers an unknown key **with the key** (which every Ka0s locale table does — **anti-pattern #2**) falls through to the library's English rather than printing `MENU_LOCKED` at the player. |
 
 **Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
@@ -300,7 +301,7 @@ twelve tooltip strings (`TOOLTIP_TITLE_VERSION`, `TOOLTIP_ENABLED`, `TOOLTIP_LOC
 `TOOLTIP_TEST_MODE`, `TOOLTIP_YES`, `TOOLTIP_NO`, `TOOLTIP_ON`, `TOOLTIP_OFF`, `TOOLTIP_LEFT`,
 `TOOLTIP_RIGHT`, `TOOLTIP_OPEN_SETTINGS` and, since version 4, `TOOLTIP_OPTIONS_MENU`); and, since
 version 4, the seven menu strings (`MENU_ENABLED`, `MENU_LOCKED`, `MENU_TEST_MODE`,
-`MENU_SHOW_WINDOW`, `MENU_NEEDS_ENABLE`, `MENU_GRAYED` — the `<entry> (<note>)` shape — and
+`MENU_SHOW_WINDOW`, `MENU_SKIN`, `MENU_NEEDS_ENABLE`, `MENU_GRAYED` — the `<entry> (<note>)` shape — and
 `MENU_FAILED`), as a literal table, exactly as every other major's does: the library carries no
 locale, and a host that wants its own words passes `d.L`. None carries a `[LibKa0s] ` tag; each
 report begins with the addon's folder name, and the host's printer adds the host's own tag.
