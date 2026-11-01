@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **6** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **3** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | **Current** |
 | Supersedes | [version 22.6.1.2](./version-22.6.1.2-docs.md) (shipped in v1.84.0) — its title bar was 26 high against a 30 band. |
 | Superseded by | — |

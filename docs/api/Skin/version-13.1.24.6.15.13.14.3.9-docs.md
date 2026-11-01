@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **13** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **24** · `SkinDefsOthers.lua` **6** · `SkinPaint.lua` **15** · `SkinPaintExtras.lua` **13** · `SkinPaintControls.lua` **14** · `SkinEUI.lua` **3** · `SkinAce.lua` **9** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | **Current** |
 | Supersedes | [version 13.1.24.6.15.13.14.2.9](./version-13.1.24.6.15.13.14.2.9-docs.md) (unreleased, an earlier step of v1.85.0) — five tokens the other skins derive from a driven token stayed Ka0s Default's under the `eui` source. |
 | Superseded by | — |

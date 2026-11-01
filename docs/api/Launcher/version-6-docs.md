@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Launcher-1.0` |
 | Files and minors | `Launcher.lua` minor **6** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | **Current** |
 | Supersedes | [version 5](./version-5-docs.md) — whose status tooltip ignored the skin |
 | Superseded by | — |

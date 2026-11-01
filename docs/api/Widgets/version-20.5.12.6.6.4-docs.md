@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **20** · `WidgetsReorder.lua` **5** · `WidgetsDragHandle.lua` **12** · `WidgetsLineChart.lua` **6** · `WidgetsAutocomplete.lua` **6** · `WidgetsCopyWindow.lua` **4** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | **Current** |
 | Supersedes | [version 19.5.12.6.6.4](./version-19.5.12.6.6.4-docs.md) (unreleased, an earlier step of v1.85.0) — an owned dropdown's tick and arrow were baked in its constructor, so a skin switch or the Scope reached neither. |
 | Superseded by | — |

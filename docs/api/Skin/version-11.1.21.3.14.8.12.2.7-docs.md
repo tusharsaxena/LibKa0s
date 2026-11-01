@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **11** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **21** · `SkinDefsOthers.lua` **3** · `SkinPaint.lua` **14** · `SkinPaintExtras.lua` **8** · `SkinPaintControls.lua` **12** · `SkinEUI.lua` **2** · `SkinAce.lua` **7** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 11.1.21.3.14.8.12.2.6](./version-11.1.21.3.14.8.12.2.6-docs.md) (unreleased, an earlier step of v1.85.0) — no Heading in the title role, and a font set on a label took the skin's face away. |
 | Superseded by | [version 11.1.22.4.14.8.12.2.7](./version-11.1.22.4.14.8.12.2.7-docs.md) |

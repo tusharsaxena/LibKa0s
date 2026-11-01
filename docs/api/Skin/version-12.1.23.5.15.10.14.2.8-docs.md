@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **12** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **23** · `SkinDefsOthers.lua` **5** · `SkinPaint.lua` **15** · `SkinPaintExtras.lua` **10** · `SkinPaintControls.lua` **14** · `SkinEUI.lua` **2** · `SkinAce.lua` **8** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 12.1.22.4.15.9.13.2.8](./version-12.1.22.4.15.9.13.2.8-docs.md) (unreleased, an earlier step of v1.85.0) — a stock close button's "x" kept the client's face. |
 | Superseded by | [version 12.1.23.5.15.11.14.2.8](./version-12.1.23.5.15.11.14.2.8-docs.md) |

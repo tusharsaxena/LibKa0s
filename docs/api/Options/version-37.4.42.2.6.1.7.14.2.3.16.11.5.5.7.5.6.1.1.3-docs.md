@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **37** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **42** · `OptionsFlow.lua` **2** · `OptionsIds.lua` **6** · `OptionsIdSuggest.lua` **1** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **14** · `OptionsTabbed.lua` **2** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **16** · `OptionsScroll.lua` **11** · `OptionsNav.lua` **5** · `OptionsDrawer.lua` **5** · `OptionsKeybinds.lua` **7** · `OptionsAppearance.lua` **5** · `OptionsSkinPicker.lua` **6** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **3** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1` |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 37.4.41.2.6.1.7.13.2.3.16.10.4.4.6.5.5.1.1.3](./version-37.4.41.2.6.1.7.13.2.3.16.10.4.4.6.5.5.1.1.3-docs.md) (shipped in v1.84.0) — the same surface, whose tooltip body lines named no color. |
 | Superseded by | [version 37.4.42.2.6.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3](./version-37.4.42.2.6.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3-docs.md) |

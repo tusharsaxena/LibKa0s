@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Sim-1.0` |
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **10** · `SimPanelRender.lua` **2** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `2.3.10.2` |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | **Current** |
 | Supersedes | [version 2.3.10.1](./version-2.3.10.1-docs.md) (unreleased, an earlier step of v1.85.0) — its title band was 24 high against a 30 band. |
 | Superseded by | — |

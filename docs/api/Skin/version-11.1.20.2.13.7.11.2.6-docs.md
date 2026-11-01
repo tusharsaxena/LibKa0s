@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **11** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **20** · `SkinDefsOthers.lua` **2** · `SkinPaint.lua` **13** · `SkinPaintExtras.lua` **7** · `SkinPaintControls.lua` **11** · `SkinEUI.lua` **2** · `SkinAce.lua` **6** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 11.1.19.1.13.7.11.2.6](./version-11.1.19.1.13.7.11.2.6-docs.md) — no token for the launcher's tooltip. |
 | Superseded by | [version 11.1.21.3.14.8.12.2.6](./version-11.1.21.3.14.8.12.2.6-docs.md) |

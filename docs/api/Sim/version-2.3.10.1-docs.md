@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Sim-1.0` |
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **10** · `SimPanelRender.lua` **1** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `2.3.10.1` |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 2.3.9.1](./version-2.3.9.1-docs.md) (shipped in v1.84.0) — the same surface, whose tooltip title named no color. |
 | Superseded by | [version 2.3.10.2](./version-2.3.10.2-docs.md) |

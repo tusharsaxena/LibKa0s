@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **12** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **23** · `SkinDefsOthers.lua` **5** · `SkinPaint.lua` **15** · `SkinPaintExtras.lua` **11** · `SkinPaintControls.lua` **14** · `SkinEUI.lua` **2** · `SkinAce.lua` **8** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 12.1.23.5.15.10.14.2.8](./version-12.1.23.5.15.10.14.2.8-docs.md) (unreleased, an earlier step of v1.85.0) — a hand-built bar had no way to take `title.height` and `title.align`. |
 | Superseded by | [version 13.1.24.6.15.12.14.2.8](./version-13.1.24.6.15.12.14.2.8-docs.md) |

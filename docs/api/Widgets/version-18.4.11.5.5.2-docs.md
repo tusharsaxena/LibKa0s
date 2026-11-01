@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **18** · `WidgetsReorder.lua` **4** · `WidgetsDragHandle.lua` **11** · `WidgetsLineChart.lua` **5** · `WidgetsAutocomplete.lua` **5** · `WidgetsCopyWindow.lua` **2** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 17.3.10.5.5.2](./version-17.3.10.5.5.2-docs.md) (shipped in v1.84.0) — an owned control with no host art drew the client rung. |
 | Superseded by | [version 19.5.12.6.6.3](./version-19.5.12.6.6.3-docs.md) |

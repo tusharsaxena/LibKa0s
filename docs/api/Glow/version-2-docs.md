@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Glow-1.0` |
 | File | `Glow.lua` minor **2** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | **Current** |
 | Supersedes | [version 1](./version-1-docs.md) (shipped in v1.75.0) — a glow could not take the skin's color without the host reading it. |
 | Superseded by | — |

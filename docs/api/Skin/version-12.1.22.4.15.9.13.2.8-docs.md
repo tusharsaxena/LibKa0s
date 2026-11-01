@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **12** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **22** · `SkinDefsOthers.lua` **4** · `SkinPaint.lua` **15** · `SkinPaintExtras.lua` **9** · `SkinPaintControls.lua` **13** · `SkinEUI.lua` **2** · `SkinAce.lua` **8** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 12.1.22.4.14.9.12.2.7](./version-12.1.22.4.14.9.12.2.7-docs.md) (unreleased, an earlier step of v1.85.0) — a scroll bar's step buttons stayed the client's. |
 | Superseded by | [version 12.1.23.5.15.10.14.2.8](./version-12.1.23.5.15.10.14.2.8-docs.md) |

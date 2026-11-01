@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **12** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **22** · `SkinDefsOthers.lua` **4** · `SkinPaint.lua` **14** · `SkinPaintExtras.lua` **9** · `SkinPaintControls.lua` **12** · `SkinEUI.lua` **2** · `SkinAce.lua` **7** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 11.1.22.4.14.8.12.2.7](./version-11.1.22.4.14.8.12.2.7-docs.md) (unreleased, an earlier step of v1.85.0) — no primitive for a small mark. |
 | Superseded by | [version 12.1.22.4.15.9.13.2.8](./version-12.1.22.4.15.9.13.2.8-docs.md) |

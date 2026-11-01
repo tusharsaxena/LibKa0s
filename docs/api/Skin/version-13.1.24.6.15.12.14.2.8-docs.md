@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **13** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **24** · `SkinDefsOthers.lua` **6** · `SkinPaint.lua` **15** · `SkinPaintExtras.lua` **12** · `SkinPaintControls.lua` **14** · `SkinEUI.lua` **2** · `SkinAce.lua` **8** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 12.1.23.5.15.11.14.2.8](./version-12.1.23.5.15.11.14.2.8-docs.md) (unreleased, an earlier step of v1.85.0) — no skin token named the HUD's text color, its bar fill or its text shadow. |
 | Superseded by | [version 13.1.24.6.15.13.14.2.9](./version-13.1.24.6.15.13.14.2.9-docs.md) (unreleased, a later step of v1.85.0) — a Ka0s profile page's delete confirmation stayed the client's. |

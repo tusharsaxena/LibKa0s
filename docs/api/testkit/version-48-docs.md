@@ -9,7 +9,7 @@
 | Payload | `testkit/`, the files version 47 lists |
 | Version | **48** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.85.0 (unreleased) |
+| First released in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 47](version-47-docs.md) — the same surface, with no check on the library-drawn icons |
 | Superseded by | [version 49](version-49-docs.md) |

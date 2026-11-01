@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **37** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **44** · `OptionsFlow.lua` **2** · `OptionsIds.lua` **7** · `OptionsIdSuggest.lua` **1** · `OptionsIdList.lua` **8** · `OptionsTabs.lua` **15** · `OptionsTabbed.lua` **2** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **17** · `OptionsScroll.lua` **13** · `OptionsNav.lua` **5** · `OptionsDrawer.lua` **5** · `OptionsKeybinds.lua` **7** · `OptionsAppearance.lua` **6** · `OptionsSkinPicker.lua` **7** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **4** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4` |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | **Current** |
 | Supersedes | [version 37.4.44.2.7.1.8.15.2.3.16.13.5.5.7.6.7.1.1.4](./version-37.4.44.2.7.1.8.15.2.3.16.13.5.5.7.6.7.1.1.4-docs.md) (unreleased, an earlier step of v1.85.0) — companions start off and pickers on client media. |
 | Superseded by | — |

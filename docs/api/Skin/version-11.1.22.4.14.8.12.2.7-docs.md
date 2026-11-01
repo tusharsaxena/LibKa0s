@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **11** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **22** · `SkinDefsOthers.lua` **4** · `SkinPaint.lua` **14** · `SkinPaintExtras.lua` **8** · `SkinPaintControls.lua` **12** · `SkinEUI.lua` **2** · `SkinAce.lua` **7** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 11.1.21.3.14.8.12.2.7](./version-11.1.21.3.14.8.12.2.7-docs.md) (unreleased, an earlier step of v1.85.0) — no token for the yellow and white a settings page typed. |
 | Superseded by | [version 12.1.22.4.14.9.12.2.7](./version-12.1.22.4.14.9.12.2.7-docs.md) |

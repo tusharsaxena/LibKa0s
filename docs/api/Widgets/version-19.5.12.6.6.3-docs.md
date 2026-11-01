@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **19** · `WidgetsReorder.lua` **5** · `WidgetsDragHandle.lua` **12** · `WidgetsLineChart.lua` **6** · `WidgetsAutocomplete.lua` **6** · `WidgetsCopyWindow.lua` **3** |
-| Shipped in | v1.85.0 (unreleased) |
+| Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 18.4.11.5.5.2](./version-18.4.11.5.5.2-docs.md) (unreleased, an earlier step of v1.85.0) — a host-named face and a host `backdrop` held out against an owner's skin. |
 | Superseded by | [version 19.5.12.6.6.4](./version-19.5.12.6.6.4-docs.md) |
