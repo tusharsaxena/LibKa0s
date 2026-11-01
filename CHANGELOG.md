@@ -112,6 +112,12 @@ Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **13.
 - **SkinPaintControls minor 12**: `S.Tab` draws `tab.border` at its size and style, around `opts.fill` when it names one and not on a tab in the skin's art, so window tabs take it too. `opts.glow` takes `tab.glow`.
 - **OptionsTabs minor 15** and **SkinPaint minor 14**: the settings tab names its two glows, and `P.unpaint` gives their stock gradient back.
 
+Release gate (`docs/automated-tests/20261101-120315/`): lint pass, 0/0 in 279 files;
+tests pass, 3730 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Current — SimPanel.lua minor 10 (954daaa), SimPanelRender.lua minor 2 (e6a6e3e) and Widgets.lua minors 18 to 20 (cda17e0, 5a29047, 153b906) moved; fixtures and suites re-read and green; no scenario, step, control or strip API moved, only the look: the Steps title band is 30 high, an owned tooltip title takes gtip.title, an owned strip icon wears icon.tint. Lead's call under the owner's run guidelines, recorded for the owner's smoke.
+
 ## v1.84.0 — 2026-11-01
 
 Opened 2026-10-31, on `feat/2026-10-31-findings-remediation`: the owner's library release (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`). The tag stays local until the owner's go-ahead.
