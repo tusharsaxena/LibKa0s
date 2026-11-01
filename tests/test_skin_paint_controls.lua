@@ -252,6 +252,23 @@ test("skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for cal
   assertTrue(not survey(m, dd.arrow).desaturated, "given back, the art's own color")
 end)
 
+test("skin controls: a WowStyle1DropdownTemplate dropdown is a flat control (#71)", function()
+  -- red under: drop the wowStyle branch in prim.Dropdown (SkinPaintControls.lua)
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local dd = m.CreateFrame("DropdownButton", nil, m.UIParent, "BackdropTemplate")
+  dd.Background, dd.Arrow = dd:CreateTexture(), dd:CreateTexture()
+  dd.Text = dd:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  Skin:SetChoice(OWNER, "ka0s", "glass")
+  S.Dropdown(dd)
+  assertEqual(dd.Background:GetAlpha(), 0, "the template's background is faded")
+  assertEqual(dd.Arrow:GetAlpha(), 0, "and so is its gold button, which is the Arrow")
+  assertTrue(survey(m, dd.Arrow).vertex == nil or F.rgba(survey(m, dd.Arrow).vertex) == "1,1,1,1", "the Arrow is not tinted")
+  dd.Text:SetTextColor(1, 1, 1, 1)   -- OnButtonStateChanged on hover
+  dd:__fire("OnEnter")
+  assertEqual(F.rgba(survey(m, dd.Text).textColor), F.tok(Skin, "glass", "input.text"), "the label stays input.text")
+end)
+
 -- ── checkboxes ───────────────────────────────────────────────────────────────────────────────
 
 local function checkButton(m)
