@@ -32,6 +32,7 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- skin's color and `list.header.arrow` in another (SkinDefs minor 26). SF-L3: every skin's
 -- `list.stripe` shows, at least 5% off its window in a channel. SF-L4: every title band stands 5%
 -- off the window and every rule 10% off both: Obsidian's, Glass's, High Contrast's and WoW Forever's move.
+-- SF-L5: High Contrast's window, popup, menu and icon edges are 1px.
 local OTHERS_MINOR = 8
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
@@ -226,7 +227,7 @@ end
 -- Default the client's tooltip edge, its one Blizzard-art skin. The mockups draw no icon border, so
 -- none comes through MOCK_MAP; a skin's `extra` may still override.
 local ICON_EDGE = {
-  obsidian = { "Solid", 1 }, azeroth = { "Solid", 2 }, glass = { "Solid", 1 }, contrast = { "Solid", 2 },
+  obsidian = { "Solid", 1 }, azeroth = { "Solid", 2 }, glass = { "Solid", 1 }, contrast = { "Solid", 1 },
   ember = { "Solid", 2 }, wow = { "Blizzard Tooltip", 2 }, midnight = { "Solid", 2 }, forever = { "Solid", 1 },
 }
 
@@ -513,7 +514,7 @@ register("contrast", "High Contrast", "Black and white with yellow focus, crisp 
   { "#000000", "#ffffff", "#1a1a1a", "#ffe600" }, {
     font = "Ka0s Doris PP", tfont = "Ka0s Doris PP", fs = 10.5, titleSize = 12.5,
     barTex = "Ka0s Solid",
-    win = hex("#000000"), winBorder = edge(2, "flat", HC_WHITE), winInner = false, radius = 0,
+    win = hex("#000000"), winBorder = edge(1, "flat", HC_WHITE), winInner = false, radius = 0,
     titleBg = hex("#1F1F1F"), titleColor = HC_YELLOW, divider = HC_WHITE,
     text = HC_WHITE, muted = hex("#E0E0E0"), accent = HC_YELLOW, closeColor = HC_WHITE,
     btnBg = hex("#000000"), btnBorder = edge(1, "flat", HC_WHITE), btnText = HC_WHITE,
@@ -533,7 +534,7 @@ register("contrast", "High Contrast", "Black and white with yellow focus, crisp 
     navBg = hex("#000000"), navBorder = edge(1, "flat", HC_WHITE), navText = HC_WHITE,
     navSelBg = HC_YELLOW, navSelText = hex("#000000"), navSelBar = CLEAR,
     drawerBg = hex("#000000"), drawerBorder = edge(1, "flat", HC_WHITE), drawerText = HC_YELLOW,
-    popBg = hex("#000000"), popBorder = edge(2, "flat", HC_YELLOW), popRadius = 0,
+    popBg = hex("#000000"), popBorder = edge(1, "flat", HC_YELLOW), popRadius = 0,
     tipBg = hex("#000000"), tipBorder = edge(1, "flat", HC_WHITE), tipLevel = HC_YELLOW,
     tipMuted = hex("#E0E0E0"),
     qEpic = hex("#D199FF"), qRare = hex("#6DB6FF"), qUnc = hex("#5CFF5C"),

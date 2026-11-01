@@ -302,15 +302,16 @@ end)
 
 local CONTROLS = { "btn", "btnPrimary", "input", "check", "tab", "nav", "drawer", "popup", "menu" }
 
-test("skin defs: High Contrast draws 1px control edges inside a 2px window and popup edge", function()
-  -- SkinDefs minor 7, the owner's note of 2026-10-26: "borders are too thick on most elements".
-  -- red under: a control edge back at 2px, or the window or popup losing its heavier frame.
+test("skin defs: High Contrast's edges are one pixel, window and popup included", function()
+  -- SkinDefs minor 7, the owner's note of 2026-10-26: "borders are too thick on most elements". SF-L5
+  -- of the smoke feedback took the window, popup, menu and icon edges down too: image 61's heavy
+  -- cells are MultiMeters' cell borders, not these. red under: any edge back at 2px.
   local t = skinLib():ResolveSkin("contrast")
   for _, ctl in ipairs(CONTROLS) do
-    local want = (ctl == "popup" or ctl == "menu") and 2 or 1
-    assertEqual(t[ctl .. ".borderSize"], want, "contrast: " .. ctl .. ".borderSize")
+    assertEqual(t[ctl .. ".borderSize"], 1, "contrast: " .. ctl .. ".borderSize")
   end
-  assertEqual(t["win.borderSize"], 2, "contrast: the window edge is 2px")
+  assertEqual(t["win.borderSize"], 1, "contrast: the window edge")
+  assertEqual(t["icon.borderSize"], 1, "contrast: the icon edge")
 end)
 
 test("skin defs: Glass rounds its window and popups only, on the Ka0s Glass nine-slice", function()

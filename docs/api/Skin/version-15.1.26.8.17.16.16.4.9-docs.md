@@ -23,6 +23,7 @@ Three files move: `SkinDefs.lua` **26**, `SkinDefsOthers.lua` **8** and `SkinPai
 - **`list.header.arrow`** (`SF-L2`), since SkinDefs minor 26: a table's sort arrow, painted by `S.SortHeaderBar`. Ka0s Default's is its gold; every other skin's differs from its header. `list.header.text` is the skin's color: Obsidian, Glass and WoW Forever take their accent where they drew a neutral. `icon.arrow` keeps every other arrow.
 - **`list.stripe`** (`SF-L3`), since SkinDefs Others minor 8: every skin's alternate row stands at least 5% off its window in a channel; Obsidian's and High Contrast's did not show. Ka0s Default's stays.
 - **`title.bg` and `divider`** (`SF-L4`): every skin's title band stands at least 5% off its window, and its rule at least 10% off both, read over black. Ka0s Default's `title.bg` moves to black at 0.9, by the owner's ruling for every skin; Obsidian's, Glass's and High Contrast's bands and Obsidian's, Glass's and WoW Forever's rules move. `title.rule` and `tab.rule` follow `divider`.
+- **High Contrast's edges** (`SF-L5`): its window, popup, menu and icon edges are 1px, where they were 2px. Image 61's heavy cells are MultiMeters' cell borders, not these; that addon's ruling turns them off.
 - **What a consumer owes**: a host that colors its own sort marks reads `list.header.arrow`, not `icon.arrow` or `list.header.text`, and a host token table gains the row beside `list.header.text`.
 
 ## What changed at version 15.1.25.7.17.16.15.4.9: every skin's own HUD values, and the gaps the flips found (`FS-FIX`)
@@ -1518,7 +1519,7 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 | `win.bgTexture` | · | · | · | · | · | `UI-DialogBox-Background-Dark` | · | · |
 | `win.bgDense` | `#0A0A0B` | `#2B1D12` | `#121622 .88` | `#000000` | `#1A0E0A .95` | `#1E1C19` | `#131527` | `#231C14` |
 | `win.border` | `#202024` | `#6B4A22` | `#FFFFFF .18` | `#FFFFFF` | `#6A2E17` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
-| `win.borderSize` | `1` | `1` | `8` | `2` | `1` | `32` | `2` | `1` |
+| `win.borderSize` | `1` | `1` | `8` | `1` | `1` | `32` | `2` | `1` |
 | `win.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
 | `win.inner` | none | `#8A6A36` | none | none | `#C98A3A .45` | none | `#3D2F12` | none |
 | `win.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
@@ -1664,7 +1665,7 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 | `menu.bg` | `#0A0A0B` | `#2B1D12` | `#121622 .92` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#231C14` |
 | `menu.border` | `#2C2C32` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
 | `menu.borderAlt` | `#2C2C32` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
-| `menu.borderSize` | `1` | `2` | `8` | `2` | `1` | `16` | `2` | `1` |
+| `menu.borderSize` | `1` | `2` | `8` | `1` | `1` | `16` | `2` | `1` |
 | `menu.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
 | `menu.hover` | `#4DB8FF .15` | `#E2B659 .15` | `#B69CFF .15` | `#FFE600 .25` | `#FF7A33 .15` | `#FFD100 .15` | `#B48CFF .15` | `#C9A07A .15` |
 | `menu.text` | `#E8E8EC` | `#E9DDBC` | `#F2F4F8` | `#FFFFFF` | `#F4E7DC` | `#FFFFFF` | `#F2EEF8` | `#FFFFFF` |
@@ -1707,7 +1708,7 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 |---|---|---|---|---|---|---|---|---|
 | `popup.bg` | `#0A0A0B` | `#2B1D12` | `#121622 .92` | `#000000` | `#1A0E0A .97` | `#1E1C19` | `#131527` | `#231C14` |
 | `popup.border` | `#2C2C32` | `#6B4A22` | `#FFFFFF .18` | `#FFE600` | `#8A3C1C` | `#FFFFFF` | `#B08A3E` | `#3A3530` |
-| `popup.borderSize` | `1` | `2` | `8` | `2` | `1` | `16` | `2` | `1` |
+| `popup.borderSize` | `1` | `2` | `8` | `1` | `1` | `16` | `2` | `1` |
 | `popup.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
 | `popup.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
 | `tooltip.bg` | `#070708` | `#1C130B` | `#0F121C .92` | `#000000` | `#140A07` | `#000010 .92` | `#0A0A1A .95` | `#0E0D0B` |
@@ -1732,7 +1733,7 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 | `hud.shadowX` | · | · | · | `2` | · | · | · | · |
 | `hud.shadowY` | · | · | · | `-2` | · | · | · | · |
 | `icon.borderStyle` | `Solid` | `Solid` | `Solid` | `Solid` | `Solid` | `Blizzard Tooltip` | `Solid` | `Solid` |
-| `icon.borderSize` | `1` | `2` | `1` | `2` | `2` | `2` | `2` | `1` |
+| `icon.borderSize` | `1` | `2` | `1` | `1` | `2` | `2` | `2` | `1` |
 
 The icon border (SkinDefs minor 15) is every skin's own, set in `ICON_EDGE` rather than translated: the
 mockups draw no icon border. A flat edge as thin as the skin's own control edges, 1px where they are
