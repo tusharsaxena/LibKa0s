@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **13** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **24** · `SkinDefsOthers.lua` **6** · `SkinPaint.lua` **16** · `SkinPaintExtras.lua` **13** · `SkinPaintControls.lua` **14** · `SkinEUI.lua` **3** · `SkinAce.lua` **9** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 13.1.24.6.15.13.14.3.9](./version-13.1.24.6.15.13.14.3.9-docs.md) (unreleased, an earlier step of v1.85.0) — `P.unpaint` measured CCN 16. |
-| Superseded by | — |
+| Superseded by | [version 14.1.24.6.16.14.14.3.9](./version-14.1.24.6.16.14.14.3.9-docs.md) (unreleased, a later step of v1.85.0) — a host wrote its own gloss, font object and record gate. |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 13, SkinOwnerTokens = 1, SkinDefs = 24, SkinDefsOthers = 6, SkinPaint = 16, SkinPaintExtras = 13, SkinPaintControls = 14, SkinEUI = 3, SkinAce = 9 }` |
 

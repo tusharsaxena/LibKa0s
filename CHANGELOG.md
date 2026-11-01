@@ -14,14 +14,17 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **13.1.24.6.16.13.14.3.9**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **20.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**; every other file still at its v1.84.0 minor, and **test kit revision 49**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **14.1.24.6.16.14.14.3.9**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **20.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**; every other file still at its v1.84.0 minor, and **test kit revision 49**. No `NEEDS_*` floor rises.
 
 ### Review fixes (`FS-FIX`)
 
 - **SkinPaint minor 16**: `P.unpaint`'s saved-state loops moved to a file-local, unchanged and in the same order. The first `--release` run of v1.85.0 measured it at CCN 16, refused, and no record of that run was kept. No behavior moves.
 - **Widgets minor 20**: an owned dropdown's tick and arrow follow a skin change and the Scope with no rebuild, where the constructor baked them. A `panel = true` dropdown is stock as soon as its owner ignores its panel. A host's own art stays.
 - **SkinEUI minor 3**: `hud.label`, `bar.fill`, `text.command` and `gtip.emphasis` follow EllesmereUI's accent and `menu.suggestBg` its panel color, so an autocomplete list stays beside its EllesmereUI menu in the same color and the HUD's labels and fills leave Ka0s Default.
-- **What a consumer owes**: every degradation facade gains `Mark`, `MarkText`, `HudTextColor`, `HudLabelColor`, `BarFillColor` and `HudShadow` at the re-vendor, or its facade parity case goes red.
+- **What a consumer owes**: every degradation facade gains `Mark`, `MarkText`, `HudTextColor`, `HudLabelColor`, `BarFillColor`, `HudShadow`, `BarGloss` and `HudFont` at the re-vendor, or its facade parity case goes red. `HudFont` is the one that must draw: a no-op leaves the host with no face.
+- **SkinPaintExtras minor 14**: `S.BarGloss(statusBar)`, one gloss for every host, over the fill's top half and only where `bar.gloss` is true, following a skin change with no host call. `S.HudFont(fs, opts)`, a HUD string's face, size, flags and shadow on one named font object, with `S.HudShadow`'s three answers, the host's stored shadow in `opts.shadow` and its companion in `opts.shadowFromSkin`, and no `CreateFont` tolerated. Additive. Ka0s Default's look does not move.
+- **Skin minor 14**: `VOCAB` gains the two, and `Skin.FollowOnce(profile, keys[, opts])`, the record gate each host's step was writing. `ResetToSkin` and `S.HudShadow` are unchanged.
+- The Options document's *Moving to this version* now states all of this and what the AbsorbTracker pilot found, and `docs/releasing.md`'s step 8 names the blockers.
 
 ### The delete confirmation wears the skin (`FS-A4`, cause A4)
 

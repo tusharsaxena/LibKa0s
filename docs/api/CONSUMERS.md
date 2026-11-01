@@ -93,6 +93,8 @@ rollout for the skin owner path, so the two rows are documented rather than reti
 *planned at v1.77.0* are measured now, and the Sim `by-hand` rows carry KickCD's and MultiMeters' sites. The entries
 below stay as the record of what each release added.
 
+**v1.85.0, not in the census (2026-11-01).** The release adds the skin facade's `S.BarGloss` and `S.HudFont` (SkinPaintExtras minor 14) and `Skin.FollowOnce` (Skin minor 14), for the flips of Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`. No host calls them yet, and no public member is retired. The stamp and its numbers stand until the next census re-run measures them.
+
 **v1.83.0, first recorded (2026-10-31).** The release adds Options' `Ka0sMedia_*` AceGUI picker types
 (`OptionsMedia.lua`, new at minor 1), an unregistered `LSM30_*` row's fall back to them (OptionsWidgets
 minor 38; from minor 41, at v1.84.0, every `LSM30_*` row draws them, registered or not), thirteen more faces (Media minor 11) and `"hud"` as `Skin.OUTLINE_DEFAULT` (Skin minor 10). No

@@ -755,6 +755,28 @@ Total.
 - skin hud tokens: HudShadow tells no shadow from the host's own
 - skin hud tokens: an owner token keeps the addon's pixels under Ka0s Default and follows otherwise
 
+### test_skin_hud_members.lua (19)
+
+- skin hud members: BarGloss and HudFont are in the facade
+- skin hud members: BarGloss draws one look over the fill's top half, on the fill
+- skin hud members: BarGloss builds nothing where the skin sets no gloss
+- skin hud members: BarGloss follows a skin change with no host call, and reuses its layer
+- skin hud members: a BarGloss repaint moves to the fill the bar wears now
+- skin hud members: BarGloss leaves anything but a status bar alone, and keeps the bar's color
+- skin hud members: a bar given back hides the gloss
+- skin hud members: HudFont puts face, size, flags and a skin's shadow on a named font object
+- skin hud members: HudFont gives a string one object, and each string its own
+- skin hud members: HudFont's false draws no shadow, and clears the last one
+- skin hud members: HudFont's nil lets the host's stored shadow stand
+- skin hud members: a host's companion off draws its stored shadow under any skin
+- skin hud members: HudFont tolerates a client with no CreateFont
+- skin hud members: HudFont never hands SetFont what it refuses
+- skin hud members: HudFont paints nothing it cannot and records nothing
+- skin hud members: FollowOnce resets once and records it per profile
+- skin hud members: FollowOnce creates only the record's table
+- skin hud members: FollowOnce answers false and writes nothing on bad input
+- skin hud members: FollowOnce passes opts on, and the colon form works
+
 ### test_skin_width_parity.lua (17)
 
 - skin width parity: every skin's body, title and HUD sizes are the measured ones
@@ -4264,6 +4286,7 @@ Total.
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 35 |
 | test_skin_hud_tokens.lua | 6 |
+| test_skin_hud_members.lua | 19 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 39 |
@@ -4402,4 +4425,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3728** |
+| **Total** | **3747** |
