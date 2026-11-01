@@ -58,7 +58,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- once the host names one, a Ka0s icon in place of client art.
 -- Minor 10 (cause L8 of the same bundle): S.GetFont("mono") answers `font.mono`, or nil; a proportional
 -- fallback would draw a glyph column as boxes.
-local EXTRAS_MINOR = 10
+-- Minor 11 (cause L9 of the same bundle): S.TitleBar's `opts.place`, the bar's height from
+-- `title.height` and its text placed by `title.align`. Additive: with no `opts.place` a bar is as it was.
+local EXTRAS_MINOR = 11
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
 lib.__extrasMinor      = EXTRAS_MINOR
@@ -117,10 +119,30 @@ local function justify(rec, fs, align)
   end
 end
 
+-- Where a placed title stands: the token's edge, in from it by what the host reserved for controls.
+local TITLE_INSET = 8
+
+--- opts.place: the bar takes `title.height`, and its text an anchor on the bar's `title.align`.
+--- Justifying a string only moves it inside its own width, and a hand-anchored title has none.
+local function place(bar, fs, T, spec)
+  if T["title.height"] then bar:SetHeight(T["title.height"]) end
+  local align = T["title.align"]
+  if not (fs and align) then return end
+  local reserve = type(spec) == "table" and spec or {}
+  local x = 0
+  if align == "LEFT" then x = reserve.left or TITLE_INSET end
+  if align == "RIGHT" then x = -(reserve.right or TITLE_INSET) end
+  fs:ClearAllPoints()
+  fs:SetPoint(align, bar, align, x, 0)
+end
+
 --- S.TitleBar(bar, opts): a title bar. Its fill is `title.bg` (or the `title.bgTop` / `bgBottom`
 --- gradient), the bar's backdrop when it has one, else a region of the bar under its text; its text (`opts.text`, else
 --- `bar.title` / `bar.text`) takes `title.text`, the title font and `title.align`, every one given
---- back by P.unpaint (the alignment since SkinPaint minor 12). Draws no Media icon.
+--- back by P.unpaint (the alignment since SkinPaint minor 12). `opts.place` (minor 11), true or
+--- `{ left, right }`, the px a LEFT or RIGHT title stays clear of for the bar's controls (default 8),
+--- gives a hand-built bar `title.height` and anchors its text by `title.align`; that is geometry,
+--- so P.unpaint leaves it. Draws no Media icon.
 prim.TitleBar = function(owner, bar, opts)
   if type(bar) ~= "table" then return end
   local rec = P.track(owner, bar, "TitleBar", opts)
@@ -128,6 +150,7 @@ prim.TitleBar = function(owner, bar, opts)
   local T = P.T(owner)
   P.box(rec, bar, T, TITLE, opts)
   local fs = textOf(bar, opts, "text", { "title", "text" })
+  if opts.place then place(bar, fs, T, opts.place) end
   if not fs then return end
   P.tint(rec, fs, T, "title.text")
   P.font(owner, rec, fs, "title")

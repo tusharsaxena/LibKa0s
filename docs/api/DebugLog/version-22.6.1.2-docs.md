@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **6** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **2** |
 | Shipped in | v1.84.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 22.5.1.2](./version-22.5.1.2-docs.md) (shipped in v1.81.0 – v1.83.0) — the same surface; the identity header names Charts |
-| Superseded by | — |
+| Superseded by | [version 22.6.1.3](./version-22.6.1.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 22, DebugLogDiagnostics = 6, DebugLogGates = 1, DebugLogWindow = 2 }` |
 
@@ -994,3 +994,7 @@ does not permit. Re-vendor the whole folder and the floor is unobservable.
 **Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws the debug console its own way; every host left it at the skinning rollout for the skin owner path.
+
+## Moving to 22.6.1.3
+
+Nothing to change. The console's minimum height grows by 4 px.

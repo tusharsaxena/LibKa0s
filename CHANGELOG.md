@@ -14,7 +14,14 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **12.1.23.5.15.10.14.2.8**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.16.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.1**, `LibKa0s-Widgets-1.0` key **19.5.12.6.6.3**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **12.1.23.5.15.11.14.2.8**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.16.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **19.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
+
+### One title bar shape, library half (`FS-L9`, cause L9)
+
+- **SkinPaintExtras minor 11**: `S.TitleBar`'s `opts.place`, additive. A hand-built bar takes `title.height` and its text an anchor on `title.align`, clear of the px a host reserved. The hosts adopt it in their own items.
+- **DebugLogWindow minor 3**, **WidgetsCopyWindow minor 4**: the title bar is 30 high, not 26.
+- **PerfPanel minor 12**, **SimPanelRender minor 2**: the title band is 30 high, not 24, with the title and the close mark on its middle.
+- Under Ka0s Default those four windows change, as the cause asks: they grow or their text moves by 4 to 6 px. Every shipped skin's `title.align` is CENTER, so no title moves sideways.
 
 ### Small misses, library half (`FS-L8`, cause L8)
 

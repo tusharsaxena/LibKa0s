@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **19** · `WidgetsReorder.lua` **5** · `WidgetsDragHandle.lua` **12** · `WidgetsLineChart.lua` **6** · `WidgetsAutocomplete.lua` **6** · `WidgetsCopyWindow.lua` **3** |
 | Shipped in | v1.85.0 (unreleased) |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 18.4.11.5.5.2](./version-18.4.11.5.5.2-docs.md) (unreleased, an earlier step of v1.85.0) — a host-named face and a host `backdrop` held out against an owner's skin. |
-| Superseded by | — |
+| Superseded by | [version 19.5.12.6.6.4](./version-19.5.12.6.6.4-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 19, WidgetsReorder = 5, WidgetsDragHandle = 12, WidgetsLineChart = 6, WidgetsAutocomplete = 6, WidgetsCopyWindow = 3 }` |
 
@@ -1984,3 +1984,7 @@ visual fidelity as unverified.
 **Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
+
+## Moving to 19.5.12.6.6.4
+
+Nothing to change. The copy box starts 4 px lower.

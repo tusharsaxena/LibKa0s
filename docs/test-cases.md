@@ -2742,6 +2742,19 @@ Total.
 - small misses: a glow naming an owner and no color draws the skin's glow.color
 - small misses: a host's glow color wins, and an unregistered owner or none stays LCG's
 
+### test_title_shape.lua (10)
+
+- title shape: the console's bar is the skin's title.height
+- title shape: the copy window's bar is the skin's title.height, and the text clears it
+- title shape: the perf panel's title sits on the band's middle, with its close
+- title shape: the sim panel's title sits on the band's middle, with its close
+- title shape: opts.place takes title.height and centers the text under Ka0s Default
+- title shape: without opts.place the bar and its anchors are the host's
+- title shape: a skin's alignment places the text, clear of what the host reserved
+- title shape: a right-aligned skin measures in from the right, 8 px unless reserved
+- title shape: a live switch places the text again
+- title shape: placing a bar with no text still takes the height
+
 ### test_options_switched.lua (16)
 
 - switched: only the subsection the selector names is drawn, its heading with it
@@ -4284,6 +4297,7 @@ Total.
 | test_skin_marks.lua | 15 |
 | test_skin_step_arrows.lua | 11 |
 | test_widgets_small_misses.lua | 12 |
+| test_title_shape.lua | 10 |
 | test_options_switched.lua | 16 |
 | test_options_media.lua | 36 |
 | test_options_combat.lua | 33 |
@@ -4349,4 +4363,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3687** |
+| **Total** | **3697** |

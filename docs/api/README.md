@@ -212,7 +212,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [12.1.23.5.15.10.14.2.8](./Skin/version-12.1.23.5.15.10.14.2.8-docs.md) | `Skin.lua` 12 · `SkinOwnerTokens.lua` 1 · **`SkinDefs.lua` 23** · **`SkinDefsOthers.lua` 5** (`menu.suggestBg`, `menu.suggestBorder`, `list.ghostIcon`) · `SkinPaint.lua` 15 · **`SkinPaintExtras.lua` 10** (`S.GetFont("mono")`) · **`SkinPaintControls.lua` 14** (a stock close button's "x" in the body face) · `SkinEUI.lua` 2 · `SkinAce.lua` 8 | v1.85.0 (unreleased) | **Current** |
+| [12.1.23.5.15.11.14.2.8](./Skin/version-12.1.23.5.15.11.14.2.8-docs.md) | `Skin.lua` 12 · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 23 · `SkinDefsOthers.lua` 5 · `SkinPaint.lua` 15 · **`SkinPaintExtras.lua` 11** (`S.TitleBar`'s `opts.place`) · `SkinPaintControls.lua` 14 · `SkinEUI.lua` 2 · `SkinAce.lua` 8 | v1.85.0 (unreleased) | **Current** |
+| [12.1.23.5.15.10.14.2.8](./Skin/version-12.1.23.5.15.10.14.2.8-docs.md) | `Skin.lua` 12 · `SkinOwnerTokens.lua` 1 · **`SkinDefs.lua` 23** · **`SkinDefsOthers.lua` 5** (`menu.suggestBg`, `menu.suggestBorder`, `list.ghostIcon`) · `SkinPaint.lua` 15 · **`SkinPaintExtras.lua` 10** (`S.GetFont("mono")`) · **`SkinPaintControls.lua` 14** (a stock close button's "x" in the body face) · `SkinEUI.lua` 2 · `SkinAce.lua` 8 | v1.85.0 (unreleased) | Superseded |
 | [12.1.22.4.15.9.13.2.8](./Skin/version-12.1.22.4.15.9.13.2.8-docs.md) | `Skin.lua` 12 · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 22 · `SkinDefsOthers.lua` 4 · **`SkinPaint.lua` 15** · `SkinPaintExtras.lua` 9 · **`SkinPaintControls.lua` 13** (a scroll bar's step buttons are the host's chevrons in `icon.arrow`) · `SkinEUI.lua` 2 · **`SkinAce.lua` 8** | v1.85.0 (unreleased) | Superseded |
 | [12.1.22.4.14.9.12.2.7](./Skin/version-12.1.22.4.14.9.12.2.7-docs.md) | **`Skin.lua` 12** (`VOCAB` gains `Mark`, `MarkText`) · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 22 · `SkinDefsOthers.lua` 4 · `SkinPaint.lua` 14 · **`SkinPaintExtras.lua` 9** · `SkinPaintControls.lua` 12 · `SkinEUI.lua` 2 · `SkinAce.lua` 7 | v1.85.0 (unreleased) | Superseded |
 | [11.1.22.4.14.8.12.2.7](./Skin/version-11.1.22.4.14.8.12.2.7-docs.md) | `Skin.lua` 11 · `SkinOwnerTokens.lua` 1 · **`SkinDefs.lua` 22** (`text.command`, `text.strong`, `gtip.emphasis`) · **`SkinDefsOthers.lua` 4** · `SkinPaint.lua` 14 · `SkinPaintExtras.lua` 8 · `SkinPaintControls.lua` 12 · `SkinEUI.lua` 2 · `SkinAce.lua` 7 | v1.85.0 (unreleased) | Superseded |
@@ -236,7 +237,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [19.5.12.6.6.3](./Widgets/version-19.5.12.6.6.3-docs.md) | **`Widgets.lua` 19** · **`WidgetsReorder.lua` 5** · **`WidgetsDragHandle.lua` 12** · **`WidgetsLineChart.lua` 6** · **`WidgetsAutocomplete.lua` 6** · **`WidgetsCopyWindow.lua` 3** (an owned control wears the skin over a host's face and `backdrop`; the glyph column, the carried copy and the suggestion list follow it) | v1.85.0 (unreleased) | **Current** |
+| [19.5.12.6.6.4](./Widgets/version-19.5.12.6.6.4-docs.md) | `Widgets.lua` 19 · `WidgetsReorder.lua` 5 · `WidgetsDragHandle.lua` 12 · `WidgetsLineChart.lua` 6 · `WidgetsAutocomplete.lua` 6 · **`WidgetsCopyWindow.lua` 4** (a 30 high title bar) | v1.85.0 (unreleased) | **Current** |
+| [19.5.12.6.6.3](./Widgets/version-19.5.12.6.6.3-docs.md) | **`Widgets.lua` 19** · **`WidgetsReorder.lua` 5** · **`WidgetsDragHandle.lua` 12** · **`WidgetsLineChart.lua` 6** · **`WidgetsAutocomplete.lua` 6** · **`WidgetsCopyWindow.lua` 3** (an owned control wears the skin over a host's face and `backdrop`; the glyph column, the carried copy and the suggestion list follow it) | v1.85.0 (unreleased) | Superseded |
 | [18.4.11.5.5.2](./Widgets/version-18.4.11.5.5.2-docs.md) | **`Widgets.lua` 18** · **`WidgetsReorder.lua` 4** · **`WidgetsDragHandle.lua` 11** (an owned control with no art draws the Ka0s icon) · `WidgetsLineChart.lua` 5 · `WidgetsAutocomplete.lua` 5 · `WidgetsCopyWindow.lua` 2 | v1.85.0 (unreleased) | Superseded |
 | [17.3.10.5.5.2](./Widgets/version-17.3.10.5.5.2-docs.md) | `Widgets.lua` 17 · `WidgetsReorder.lua` 3 · **`WidgetsDragHandle.lua` 10** (measured at the strip's scale, text written fresh, a fitted strip fits again on show) · `WidgetsLineChart.lua` 5 · `WidgetsAutocomplete.lua` 5 · `WidgetsCopyWindow.lua` 2 | v1.84.0 | Superseded |
 | [17.3.9.5.5.2](./Widgets/version-17.3.9.5.5.2-docs.md) | `Widgets.lua` 17 · `WidgetsReorder.lua` 3 · **`WidgetsDragHandle.lua` 9** (`ApplyLevel` and the repaint allocate nothing) · `WidgetsLineChart.lua` 5 · `WidgetsAutocomplete.lua` 5 · `WidgetsCopyWindow.lua` 2 | v1.84.0 | Superseded |
@@ -270,7 +272,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.6.1.2](./DebugLog/version-22.6.1.2-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 6** (the identity header names Charts) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 2 | v1.84.0 (unreleased) | **Current** |
+| [22.6.1.3](./DebugLog/version-22.6.1.3-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 3** (a 30 high title bar) | v1.85.0 (unreleased) | **Current** |
+| [22.6.1.2](./DebugLog/version-22.6.1.2-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 6** (the identity header names Charts) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 2 | v1.84.0 | Superseded |
 | [22.5.1.2](./DebugLog/version-22.5.1.2-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 5 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 2** (an owned console's title-bar labels in its skin's body face, so *Ignore fonts* reaches them; its resize grip wears its skin; no new member) | v1.81.0 – v1.83.0 | Superseded |
 | [22.5.1.1](./DebugLog/version-22.5.1.1-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 5** (the identity header names Toast) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 1 | v1.79.0 – v1.80.0 | Superseded |
 | [22.4.1.1](./DebugLog/version-22.4.1.1-docs.md) | **`DebugLog.lua` 22** · **`DebugLogDiagnostics.lua` 4** (the identity header names Skin) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 1** (new: the console window peeled out of `DebugLog.lua`; it follows the console's skin owner) | v1.78.0 | Superseded |
@@ -404,7 +407,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.1.1.11](./Perf/version-15.1.1.11-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 11** (an owned panel's step and command columns in its skin's body face, so *Ignore fonts* reaches them; its resize grip wears its skin; no new member) | v1.81.0 | **Current** |
+| [15.1.1.12](./Perf/version-15.1.1.12-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 12** (a 30 high title band) | v1.85.0 (unreleased) | **Current** |
+| [15.1.1.11](./Perf/version-15.1.1.11-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 11** (an owned panel's step and command columns in its skin's body face, so *Ignore fonts* reaches them; its resize grip wears its skin; no new member) | v1.81.0 – v1.84.0 | Superseded |
 | [15.1.1.10](./Perf/version-15.1.1.10-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 10** (the panel follows its skin owner; no new member) | v1.78.0 – v1.80.0 | Superseded |
 | [15.1.1.9](./Perf/version-15.1.1.9-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 9** (the panel is toplevel and re-raises a shown StaticPopup) | v1.77.0 | Superseded |
 | [15.1.1.8](./Perf/version-15.1.1.8-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 8 (a step label stops at the command column) | v1.76.0 | Superseded |
@@ -427,7 +431,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.3.10.1](./Sim/version-2.3.10.1-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 10** (an owned panel's tooltip title `gtip.title`) · `SimPanelRender.lua` 1 | v1.85.0 (unreleased) | **Current** |
+| [2.3.10.2](./Sim/version-2.3.10.2-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · `SimPanel.lua` 10 · **`SimPanelRender.lua` 2** (a 30 high title band) | v1.85.0 (unreleased) | **Current** |
+| [2.3.10.1](./Sim/version-2.3.10.1-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 10** (an owned panel's tooltip title `gtip.title`) · `SimPanelRender.lua` 1 | v1.85.0 (unreleased) | Superseded |
 | [2.3.9.1](./Sim/version-2.3.9.1-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 9** (the renderer section moved out) · **`SimPanelRender.lua` 1** (new: the renderer section, unchanged) | v1.84.0 | Superseded |
 | [2.3.8](./Sim/version-2.3.8-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 8** (an owned panel's tooltips take `gtip.title` and `gtip.value`; its labels in its skin's body face, so *Ignore fonts* reaches them; the picker's dropdowns built with its owner; its resize grip wears its skin; no new member) | v1.81.0 – v1.83.0 | Superseded |
 | [2.3.7](./Sim/version-2.3.7-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 7** (the panel and its buttons follow the skin owner; no new member) | v1.78.0 – v1.80.0 | Superseded |

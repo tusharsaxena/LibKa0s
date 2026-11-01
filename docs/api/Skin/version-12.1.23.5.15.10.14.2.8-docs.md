@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **12** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **23** · `SkinDefsOthers.lua` **5** · `SkinPaint.lua` **15** · `SkinPaintExtras.lua` **10** · `SkinPaintControls.lua` **14** · `SkinEUI.lua` **2** · `SkinAce.lua` **8** |
 | Shipped in | v1.85.0 (unreleased) |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 12.1.22.4.15.9.13.2.8](./version-12.1.22.4.15.9.13.2.8-docs.md) (unreleased, an earlier step of v1.85.0) — a stock close button's "x" kept the client's face. |
-| Superseded by | — |
+| Superseded by | [version 12.1.23.5.15.11.14.2.8](./version-12.1.23.5.15.11.14.2.8-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 12, SkinOwnerTokens = 1, SkinDefs = 23, SkinDefsOthers = 5, SkinPaint = 15, SkinPaintExtras = 10, SkinPaintControls = 14, SkinEUI = 2, SkinAce = 8 }` |
 
@@ -1974,3 +1974,7 @@ the LibStub race later keeps every owner, record and facade; the resolve cache a
 - `addonName`: no consumer as of v1.83.0, kept because the scan counts a read of the Options descriptor inside a Skin file; it is `lib:New`'s `addonName`, which is passed there.
 - `thirdPartySkinAddons`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
 - `thirdPartySkinsOff`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
+
+## Moving to 12.1.23.5.15.11.14.2.8
+
+Nothing to change. To give a hand-built bar the one shape, pass `opts.place` to `S.TitleBar`.
