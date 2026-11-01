@@ -5,7 +5,8 @@
 -- What it pins: one gloss look for every host, drawn on the fill so it never shines past it, shown
 -- only under `bar.gloss` and following a skin change with no host call; a HUD string's face, flags
 -- and shadow on one named font object, with S.HudShadow's three answers and a client with no
--- CreateFont; and the per-profile record gate of the step onto the skin.
+-- CreateFont; a host's texture companion on the gloss; Ignore fonts on the face; and the per-profile
+-- record gate of the step onto the skin.
 --
 -- Every case runs on a fresh environment (tests/fixture_skin_paint.lua).
 
@@ -137,6 +138,72 @@ test("skin hud members: a bar given back hides the gloss", function()
   local gloss = F.region(Skin, bar, "gloss")
   other.BarGloss(bar)
   assertFalse(gloss:IsShown())
+end)
+
+test("skin hud members: BarGloss with fromSkin false hides, and a replay keeps it", function()
+  -- red under: a player's own texture wearing the shine, or a skin change forgetting the argument.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "glass")
+  local mine, skinned = statusBar(m), statusBar(m)
+  S.BarGloss(mine, false)
+  assertNil(F.region(Skin, mine, "gloss"), "a player's texture: nothing is built")
+  S.BarGloss(skinned)
+  local gloss = F.region(Skin, skinned, "gloss")
+  assertTrue(gloss:IsShown(), "no argument is the skin's")
+  S.BarGloss(skinned, false)
+  assertFalse(gloss:IsShown(), "false hides what is up")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  Skin:SetChoice(OWNER, "ka0s", "glass")
+  assertFalse(gloss:IsShown(), "a replay keeps false")
+  assertNil(F.region(Skin, mine, "gloss"), "and builds nothing")
+  S.BarGloss(skinned, true)
+  assertTrue(gloss:IsShown(), "true is back on the skin")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  Skin:SetChoice(OWNER, "ka0s", "glass")
+  assertTrue(gloss:IsShown(), "and a replay keeps that")
+end)
+
+test("skin hud members: BarGloss on a bar with no fill yet builds nothing and hides", function()
+  -- red under: anchoring to a nil fill, which raises at SetPoint's caller or floats the layer.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "glass")
+  local bar = statusBar(m)
+  S.BarGloss(bar)
+  local gloss = F.region(Skin, bar, "gloss")
+  rawset(bar, "GetStatusBarTexture", function() return nil end)
+  S.BarGloss(bar)
+  assertFalse(gloss:IsShown(), "no fill to shine on")
+  local empty = statusBar(m)
+  rawset(empty, "GetStatusBarTexture", function() return nil end)
+  S.BarGloss(empty)
+  assertNil(F.region(Skin, empty, "gloss"), "and none is built")
+end)
+
+test("skin hud members: BarGloss leaves a bar alone when the kit's bare stub makes no region", function()
+  -- red under: a layer used without checking P.tex made one, on a stub answering the frame.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "glass")
+  local bar = statusBar(m)
+  rawset(bar, "CreateTexture", function(self) return self end)
+  S.BarGloss(bar)
+  assertNil(F.region(Skin, bar, "gloss"))
+end)
+
+test("skin hud members: BarGloss shows under Glass, hides entering EllesmereUI and builds nothing there", function()
+  -- red under: the replay not reaching a bar under the eui source, which keeps Glass's shine there.
+  local E = dofile("tests/fixture_skin_eui.lua")
+  local m, Skin, eui = E.env()
+  local S = E.owner(Skin, E.OWNER, "ka0s", "glass")
+  eui.login()
+  local bar = statusBar(m)
+  S.BarGloss(bar)
+  local gloss = E.F.region(Skin, bar, "gloss")
+  assertTrue(gloss:IsShown(), "Glass")
+  Skin:SetChoice(E.OWNER, "eui")
+  assertFalse(gloss:IsShown(), "EllesmereUI sets no gloss")
+  local fresh = statusBar(m)
+  S.BarGloss(fresh)
+  assertNil(E.F.region(Skin, fresh, "gloss"), "none built under it")
 end)
 
 -- ── S.HudFont ────────────────────────────────────────────────────────────────────────────────
@@ -276,6 +343,65 @@ test("skin hud members: HudFont paints nothing it cannot and records nothing", f
   assertNil(F.owner(skin, OWNER).HudFont(unset), "no face anywhere: left alone")
   assertNil(bare.__paint(unset).fontObject)
   assertNil(Skin.painted[fs], "the host's appearance pass calls it; a replay would draw a stale face")
+end)
+
+test("skin hud members: HudFont's face follows Ignore fonts as its shadow does", function()
+  -- red under: the raw token, which leaves the skin's face on while the owner ignores fonts.
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Prototype"] = "Fonts\\Proto.ttf" } })
+  local S = F.owner(Skin, OWNER)
+  local fs = fontString(m)
+  Skin:SetIgnore(OWNER, nil, true)
+  assertNil(S.Token("hud.font"))
+  assertNil(S.HudFont(fs, { size = 12 }), "no face stated and none of the skin's: left alone")
+  assertNil(m.__paint(fs).fontObject)
+  rawset(_G, "STANDARD_TEXT_FONT", "Fonts\\Standard.ttf")
+  local obj = S.HudFont(fs, { size = 12 })
+  rawset(_G, "STANDARD_TEXT_FONT", nil)
+  assertEqual(obj.font[1], "Fonts\\Standard.ttf", "the client's, never the skin's")
+  assertEqual(S.HudFont(fs, { face = FACE, size = 12 }).font[1], FACE, "a stated face stands")
+end)
+
+test("skin hud members: HudFont with no skin face takes the client's, and reads an empty face as none", function()
+  -- red under: no STANDARD_TEXT_FONT arm, or "" handed to SetFont, which draws nothing.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  rawset(_G, "STANDARD_TEXT_FONT", "Fonts\\Standard.ttf")
+  local obj = S.HudFont(fontString(m), { size = 12 })
+  local blank = S.HudFont(fontString(m), { face = "", size = 12 })
+  rawset(_G, "STANDARD_TEXT_FONT", nil)
+  assertEqual(obj.font[1], "Fonts\\Standard.ttf")
+  assertEqual(blank.font[1], "Fonts\\Standard.ttf", "an empty stored face is none")
+end)
+
+test("skin hud members: a stored shadow's missing fields default, and a keyed table is none", function()
+  -- red under: nil handed to the client's shadow calls, or a keyed table read as a shadow.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local fs = fontString(m)
+  local opts = { face = FACE, size = 12, shadowFromSkin = false, shadow = { 3 } }
+  local obj = S.HudFont(fs, opts)
+  assertEqual(obj.shadow[1], 3)
+  assertEqual(obj.shadow[2], 0, "y defaults to 0")
+  assertEqual(F.rgba(obj.shadowColor), F.rgba({ 0, 0, 0, 1 }), "opaque black")
+  opts.shadow = { 3, -2, 0.5 }
+  S.HudFont(fs, opts)
+  assertEqual(obj.shadow[2], -2)
+  assertEqual(F.rgba(obj.shadowColor), F.rgba({ 0.5, 0, 0, 1 }), "a partial color fills in")
+  opts.shadow = { x = 2, y = -2 }
+  S.HudFont(fs, opts)
+  assertEqual(obj.shadow[1], 0, "a keyed table is no shadow")
+  assertEqual(obj.shadowColor[4], 0)
+  opts.shadow = { "2", -2 }
+  S.HudFont(fs, opts)
+  assertEqual(obj.shadow[1], 0, "nor a malformed one")
+end)
+
+test("skin hud members: HudFont leaves a table with no SetFont alone", function()
+  -- red under: a font object made for it, then SetFontObject raising on a plain table.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  assertNil(S.HudFont({}, { face = FACE, size = 12 }))
+  assertEqual(#m.__fontsMade, 0, "no font object spent on it")
 end)
 
 -- ── Skin.FollowOnce ──────────────────────────────────────────────────────────────────────────

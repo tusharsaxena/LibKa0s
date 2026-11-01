@@ -67,7 +67,10 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- delete confirmation of a Ka0s profile page (the section at the end of this file). Additive.
 -- Minor 14 (FS-FIX of the same bundle, the AbsorbTracker pilot's gaps): S.BarGloss and S.HudFont, so
 -- five hosts draw one gloss and none writes its own font object. Additive.
-local EXTRAS_MINOR = 14
+-- Minor 15 (FS-FIX of the same bundle, the review of minor 14): S.BarGloss's `fromSkin`, the host's
+-- texture companion, kept on a replay; S.HudFont's skin face read through Skin:Token, so Ignore fonts
+-- reaches it as it reaches the shadow. Additive. Ka0s Default's look does not move.
+local EXTRAS_MINOR = 15
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
 lib.__extrasMinor      = EXTRAS_MINOR
@@ -639,19 +642,23 @@ end
 -- The one gloss look, as P.fill's tokens: no skin token says otherwise, `bar.gloss` is a bool.
 local GLOSS = { glossTop = { 1, 1, 1, 0.25 }, glossBottom = { 1, 1, 1, 0 } }
 
---- S.BarGloss(statusBar) (minor 14): the skin's gloss on a bar of data, where `bar.gloss` is true: a
+--- S.BarGloss(statusBar, fromSkin) (minor 14): the skin's gloss on a bar of data, where `bar.gloss` is true: a
 --- white gradient over the fill's top half, 0.25 at the top and clear at the middle. One layer, built
 --- on first need, a region of the status bar at the bottom of OVERLAY, so it sits over the fill and
 --- under a host's text, and it is anchored to the fill, so it never shines past it. That makes it the
---- one overlay that is no holder's: a holder would sit over a host's border and text. It keeps no
---- host setting. Recorded, so a skin change shows or hides it with no host call; call it once after
---- the bar has its texture, and again if a host hands the bar a new fill Texture. Anything but a
---- StatusBar is left alone. Draws no Media icon.
-prim.BarGloss = function(owner, statusBar)
+--- one overlay that is no holder's: a holder would sit over a host's border and text. `fromSkin`
+--- (minor 15) is the host's texture companion: the gloss belongs to the skin's texture, so `false`, a
+--- player's own texture, hides it, and nil or true leave it to the skin. Recorded with the argument,
+--- so a skin change shows or hides it with no host call and a replay keeps `false`; call it once
+--- after the bar has its texture, again when the companion moves, and again if a host hands the bar
+--- a new fill Texture. Anything but a StatusBar is left alone. Draws no Media icon.
+prim.BarGloss = function(owner, statusBar, fromSkin)
   if P.kind(statusBar) ~= "StatusBar" then return end
-  local rec = P.track(owner, statusBar, "BarGloss")
+  local rec = P.track(owner, statusBar, "BarGloss", fromSkin)
   local fill = statusBar:GetStatusBarTexture()
-  if P.T(owner)["bar.gloss"] ~= true or not fill then return P.hide(rec, "gloss") end
+  if fromSkin == false or P.T(owner)["bar.gloss"] ~= true or not fill then
+    return P.hide(rec, "gloss")
+  end
   local gloss = P.tex(rec, "gloss", statusBar, "OVERLAY", -8)
   if not gloss then return end
   gloss:ClearAllPoints()
@@ -712,11 +719,12 @@ end
 --- S.HudFont(fs, opts) (minor 14): the one way to give a HUD string its face, size, flags and shadow.
 --- It all goes on one named font object per string, the only place a 12.0.7 client draws a shadow,
 --- or on the string where the client has no CreateFont. `opts`, all optional: `face` (a path; the
---- skin's `hud.font`, else the client's, when absent), `size` (as it draws: pass `S.HudFontSize`'s
+--- skin's `hud.font`, unread while the owner ignores fonts (minor 15), else the client's), `size` (as it draws: pass `S.HudFontSize`'s
 --- answer; 12 when not above 0), `flags` (through S.FontFlags, so "@skin" is safe), `shadow` (the
 --- host's stored one: true, false or `{ x, y, r, g, b, a }`), `shadowFromSkin` (the host's companion;
 --- false draws `shadow` under every skin). S.HudShadow's three answers apply while the companion is
---- on: false no shadow, nil the stored `shadow`, numbers those. Answers the font object, or nil.
+--- on: false no shadow, nil the stored `shadow`, numbers those. A keyed table is no shadow, with no
+--- error. Answers the font object, or nil.
 --- Not recorded: the face and size are the host's resolved values, which a replay would draw stale,
 --- so call it from the appearance pass a skin change reaches, and set the text color after it.
 prim.HudFont = function(owner, fs, opts)
@@ -724,7 +732,7 @@ prim.HudFont = function(owner, fs, opts)
   opts = type(opts) == "table" and opts or {}
   local face = opts.face
   if type(face) ~= "string" or face == "" then
-    face = P.media("font", P.T(owner)["hud.font"]) or STANDARD_TEXT_FONT
+    face = P.media("font", lib:Token(owner, "hud.font")) or STANDARD_TEXT_FONT
   end
   if type(face) ~= "string" then return nil end
   local size, flags = prim.HudFontSize(owner, opts.size, false), prim.FontFlags(owner, opts.flags)

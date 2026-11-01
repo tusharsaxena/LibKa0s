@@ -755,7 +755,7 @@ Total.
 - skin hud tokens: HudShadow tells no shadow from the host's own
 - skin hud tokens: an owner token keeps the addon's pixels under Ka0s Default and follows otherwise
 
-### test_skin_hud_members.lua (19)
+### test_skin_hud_members.lua (27)
 
 - skin hud members: BarGloss and HudFont are in the facade
 - skin hud members: BarGloss draws one look over the fill's top half, on the fill
@@ -764,6 +764,10 @@ Total.
 - skin hud members: a BarGloss repaint moves to the fill the bar wears now
 - skin hud members: BarGloss leaves anything but a status bar alone, and keeps the bar's color
 - skin hud members: a bar given back hides the gloss
+- skin hud members: BarGloss with fromSkin false hides, and a replay keeps it
+- skin hud members: BarGloss on a bar with no fill yet builds nothing and hides
+- skin hud members: BarGloss leaves a bar alone when the kit's bare stub makes no region
+- skin hud members: BarGloss shows under Glass, hides entering EllesmereUI and builds nothing there
 - skin hud members: HudFont puts face, size, flags and a skin's shadow on a named font object
 - skin hud members: HudFont gives a string one object, and each string its own
 - skin hud members: HudFont's false draws no shadow, and clears the last one
@@ -772,6 +776,10 @@ Total.
 - skin hud members: HudFont tolerates a client with no CreateFont
 - skin hud members: HudFont never hands SetFont what it refuses
 - skin hud members: HudFont paints nothing it cannot and records nothing
+- skin hud members: HudFont's face follows Ignore fonts as its shadow does
+- skin hud members: HudFont with no skin face takes the client's, and reads an empty face as none
+- skin hud members: a stored shadow's missing fields default, and a keyed table is none
+- skin hud members: HudFont leaves a table with no SetFont alone
 - skin hud members: FollowOnce resets once and records it per profile
 - skin hud members: FollowOnce creates only the record's table
 - skin hud members: FollowOnce answers false and writes nothing on bad input
@@ -4286,7 +4294,7 @@ Total.
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 35 |
 | test_skin_hud_tokens.lua | 6 |
-| test_skin_hud_members.lua | 19 |
+| test_skin_hud_members.lua | 27 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 39 |
@@ -4425,4 +4433,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3747** |
+| **Total** | **3755** |

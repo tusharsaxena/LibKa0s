@@ -250,6 +250,14 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    includes bumping the version named in each consumer's `CLAUDE.md` provenance line, in the same
    commit as the copy. When step 5 listed affected hosts, each affected host's re-vendor report
    names the change, so the host re-looks at its scenarios or test-mode data at its next release.
+   **Facade members block a re-vendor.** A host's Skin degradation facade answers
+   `Kit.assertSurfaceParity` against the release's manifest, so every member a release adds goes
+   into every facade in the re-vendor commit, or that host's parity case is red. At v1.85.0 those
+   are `Mark`, `MarkText`, `HudTextColor`, `HudLabelColor`, `BarFillColor`, `HudShadow`, `BarGloss`
+   and `HudFont`. Each may be a no-op but `HudFont`, which must draw: a no-op leaves the host with
+   no face, so a stub writes `fs:SetFont(opts.face, opts.size, opts.flags)` and, on the string, the
+   stored shadow. `Skin.FollowOnce` is on the major and not the facade, so a host with no Skin major
+   keeps its own walk and writes the record itself (the Options document, *Moving to*, step 4).
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 
