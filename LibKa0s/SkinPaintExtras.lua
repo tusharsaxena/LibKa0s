@@ -2,7 +2,8 @@
 -- (TitleBar, Divider, Footer, Card, Strip, Cover, Tooltip, MenuFrame), the stock-art faders of
 -- EllesmereUI's vocabulary (FadeRegions, FadeNineSlice, from SkinPaint.lua since its minor 11), the
 -- text and font primitives (Text, Font, White), the bar texture (BarTexture) and the getters
--- (GetAccentColor, GetPanelColor, GetFont, GlowColor, ChartStyle, BarStyle).
+-- (GetAccentColor, GetPanelColor, GetFont, GlowColor, HudTextColor, HudLabelColor, BarFillColor,
+-- HudShadow, ChartStyle, BarStyle).
 --
 -- A file of its own so no primitive file reaches layout-§1's 1000-line band: it is part of the same
 -- major, paired on the shell's minor (`__extrasMinor` / `__extrasShellMinor`), and it paints with
@@ -60,7 +61,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- fallback would draw a glyph column as boxes.
 -- Minor 11 (cause L9 of the same bundle): S.TitleBar's `opts.place`, the bar's height from
 -- `title.height` and its text placed by `title.align`. Additive: with no `opts.place` a bar is as it was.
-local EXTRAS_MINOR = 11
+-- Minor 12 (FS-T1 of the same bundle, causes D2, D3 and D6): S.HudTextColor, S.HudLabelColor,
+-- S.BarFillColor and S.HudShadow, and BarStyle's `text`, `label` and `fill`. Additive.
+local EXTRAS_MINOR = 12
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
 lib.__extrasMinor      = EXTRAS_MINOR
@@ -549,6 +552,22 @@ prim.GetFont = function(owner, role)
 end
 --- S.GlowColor(): r, g, b, a of `glow.color`, or nil (the host's own glow color stands).
 prim.GlowColor = function(owner) return colorOf(owner, "glow.color") end
+--- S.HudTextColor() (minor 12, D2): r, g, b, a of `hud.text`, HUD text's color. Never a class color.
+prim.HudTextColor = function(owner) return colorOf(owner, "hud.text") end
+--- S.HudLabelColor() (minor 12, D2): r, g, b, a of `hud.label`, a HUD label or header's color.
+prim.HudLabelColor = function(owner) return colorOf(owner, "hud.label") end
+--- S.BarFillColor() (minor 12, D3): r, g, b, a of `bar.fill`. Class and state fills stay the host's.
+prim.BarFillColor = function(owner) return colorOf(owner, "bar.fill") end
+--- S.HudShadow() (minor 12, D6): the skin's HUD text shadow as x, y, r, g, b, a; `false` when the skin
+--- draws none (`hud.shadow` false); nil while the owner ignores fonts, when the host's own setting
+--- stands. A 12.0.7 client draws only a font object's shadow, so set these on one (SkinPaint's header).
+prim.HudShadow = function(owner)
+  if lib:__FontsIgnored(owner) then return nil end
+  local T = P.T(owner)
+  local c = T["hud.shadow"]
+  if type(c) ~= "table" then return false end
+  return T["hud.shadowX"], T["hud.shadowY"], c[1], c[2], c[3], c[4] or 1
+end
 
 local CHART_KEYS = { "axis", "axisAlt", "grid", "crosshair", "marker", "line", "bar", "track", "total",
                      "other", "otherLine", "series" }
@@ -591,7 +610,8 @@ end
 
 --- S.BarStyle(): a fresh table of the HUD tokens: `texture` (the LSM path, or nil), `textureKey`,
 --- `gloss`, `bg`, `border`, `borderStyle`, `borderSize`, `font` (path or nil), `fontKey`, `fontSize`,
---- `outline`, `iconBorder`. `font`, `fontKey` and `outline` are nil while the owner ignores fonts
+--- `outline`, `iconBorder`, `text`, `label`, `fill` (minor 12). The shadow is `S.HudShadow`'s, not
+--- a field here. `font`, `fontKey` and `outline` are nil while the owner ignores fonts
 --- (minor 6, R-1): they read through `Skin:Token`, which leaves the HUD's face and outline alone then.
 --- `fontSize` is `S.HudFontSize()` (minor 7): the skin's own `hud.fontSize`, or Ka0s Default's 12
 --- while the owner ignores fonts, since the host's own face was never measured at the skin's size.
@@ -604,5 +624,6 @@ prim.BarStyle = function(owner)
     borderStyle = T["bar.borderStyle"], borderSize = T["bar.borderSize"],
     font = P.media("font", face), fontKey = face, fontSize = prim.HudFontSize(owner),
     outline = outline, iconBorder = T["icon.border"],
+    text = T["hud.text"], label = T["hud.label"], fill = T["bar.fill"],
   }
 end

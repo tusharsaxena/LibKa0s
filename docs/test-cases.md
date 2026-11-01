@@ -746,6 +746,15 @@ Total.
 - skin defs: the settings typed-color tokens keep Ka0s Default's yellow and read in every other skin
 - skin defs: a shell bump re-registers the eight other skins from the new copy
 
+### test_skin_hud_tokens.lua (6)
+
+- skin hud tokens: the schema carries them, in the HUD group
+- skin hud tokens: Ka0s Default is what the HUD draws today
+- skin hud tokens: every other skin states its own, and they read
+- skin hud tokens: the getters answer the owner's skin and are in the facade
+- skin hud tokens: HudShadow tells no shadow from the host's own
+- skin hud tokens: an owner token keeps the addon's pixels under Ka0s Default and follows otherwise
+
 ### test_skin_width_parity.lua (17)
 
 - skin width parity: every skin's body, title and HUD sizes are the measured ones
@@ -4232,6 +4241,7 @@ Total.
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 35 |
+| test_skin_hud_tokens.lua | 6 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 39 |
@@ -4369,4 +4379,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3703** |
+| **Total** | **3709** |

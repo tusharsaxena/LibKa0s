@@ -171,7 +171,12 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- Minor 23 (cause L8 of the same bundle): `menu.suggestBg`, `menu.suggestBorder` and `list.ghostIcon`,
 -- a suggestion list's chrome and the carried copy's mark. Ka0s Default's are what those drew; every
 -- other skin's are its `menu.bg`, `menu.border` and `icon.tint`.
-local DEFS_MINOR = 23
+-- Minor 24 (FS-T1 of the same bundle, causes D2, D3 and D6): `hud.text`, `hud.label`, `bar.fill`,
+-- `hud.shadow`, `hud.shadowX` and `hud.shadowY`, the HUD's text, its labels, its bar fill and its text
+-- shadow. Ka0s Default's are what most of the HUD stores today: white text, gold labels, AuraMaster's
+-- blue fill and no shadow. Every other skin's are its `text.body`, `text.accent` and `slider.fill`, and a
+-- dark shadow of its own. They name no class or meaning color: those stay the host's.
+local DEFS_MINOR = 24
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
 lib.__defsMinor      = DEFS_MINOR
@@ -236,7 +241,8 @@ local GROUPS = {
   { "HUD", "bar.texture:string bar.gloss:bool bar.bg:color? bar.border:color? "
     .. "bar.borderStyle:string bar.borderSize:number icon.border:color? glow.color:color? "
     .. "hud.font:string hud.fontSize:number hud.outline:string icon.borderStyle:string "
-    .. "icon.borderSize:number" },
+    .. "icon.borderSize:number hud.text:color hud.label:color bar.fill:color hud.shadow:color? "
+    .. "hud.shadowX:number hud.shadowY:number" },
   { "Charts", "chart.axis:color chart.axisAlt:color chart.grid:color chart.crosshair:color "
     .. "chart.marker:color chart.line:color chart.bar:color chart.track:color chart.total:color "
     .. "chart.other:color chart.otherLine:color chart.series:colors" },
@@ -406,6 +412,11 @@ local KA0S = {
   ["bar.texture"] = "Ka0s Default", ["bar.gloss"] = false, ["bar.borderStyle"] = "None",
   ["bar.borderSize"] = 1, ["hud.font"] = "Ka0s Prototype", ["hud.fontSize"] = 12,
   ["hud.outline"] = "OUTLINE",
+  -- The HUD's colors and shadow (minor 24, causes D2, D3 and D6): the stored defaults most of the HUD
+  -- draws, AuraMaster's among them, white text, gold labels and its blue fill. `hud.shadow` false is no
+  -- shadow, which is what the HUD stores; the offset is the client's, for a skin or host that draws one.
+  ["hud.text"] = WHITE, ["hud.label"] = GOLD, ["bar.fill"] = { 0.20, 0.55, 0.95, 1 },
+  ["hud.shadow"] = false, ["hud.shadowX"] = 1, ["hud.shadowY"] = -1,
   -- The icon border (minor 15): Drop Watcher's Window › Icons border, the one item-icon border a Ka0s
   -- addon draws today (its defaults/Profile.lua icons.borderStyle "Solid", icons.borderSize 2; the
   -- color is `icon.border`'s black, below).

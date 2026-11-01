@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **12** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **23** · `SkinDefsOthers.lua` **5** · `SkinPaint.lua` **15** · `SkinPaintExtras.lua` **11** · `SkinPaintControls.lua` **14** · `SkinEUI.lua` **2** · `SkinAce.lua` **8** |
 | Shipped in | v1.85.0 (unreleased) |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 12.1.23.5.15.10.14.2.8](./version-12.1.23.5.15.10.14.2.8-docs.md) (unreleased, an earlier step of v1.85.0) — a hand-built bar had no way to take `title.height` and `title.align`. |
-| Superseded by | — |
+| Superseded by | [version 13.1.24.6.15.12.14.2.8](./version-13.1.24.6.15.12.14.2.8-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 12, SkinOwnerTokens = 1, SkinDefs = 23, SkinDefsOthers = 5, SkinPaint = 15, SkinPaintExtras = 11, SkinPaintControls = 14, SkinEUI = 2, SkinAce = 8 }` |
 
@@ -1978,3 +1978,7 @@ the LibStub race later keeps every owner, record and facade; the resolve cache a
 - `addonName`: no consumer as of v1.83.0, kept because the scan counts a read of the Options descriptor inside a Skin file; it is `lib:New`'s `addonName`, which is passed there.
 - `thirdPartySkinAddons`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
 - `thirdPartySkinsOff`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
+
+## Moving to 13.1.24.6.15.12.14.2.8
+
+Nothing to change. To draw HUD text, a label, a bar fill or a text shadow from the skin, read `S.HudTextColor`, `S.HudLabelColor`, `S.BarFillColor` and `S.HudShadow`.

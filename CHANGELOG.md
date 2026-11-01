@@ -14,13 +14,20 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **12.1.23.5.15.11.14.2.8**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **19.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **13.1.24.6.15.12.14.2.8**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **19.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
+
+### HUD text, fill and shadow tokens (`FS-T1`, causes D2, D3 and D6)
+
+- **SkinDefs minor 24** and **SkinDefsOthers minor 6**: `hud.text`, `hud.label`, `bar.fill`, `hud.shadow`, `hud.shadowX` and `hud.shadowY`. Ka0s Default's are what most of the HUD stores: white text, gold labels, AuraMaster's blue fill and no shadow. Every other skin's are its `text.body`, `text.accent` and `slider.fill`, and a dark shadow of its own palette at `1, -1`, `2, -2` in High Contrast.
+- **SkinPaintExtras minor 12**: `S.HudTextColor`, `S.HudLabelColor`, `S.BarFillColor` and `S.HudShadow`, and `S.BarStyle()`'s `text`, `label` and `fill`, additive. `S.HudShadow()` answers `x, y, r, g, b, a`, `false` for no shadow, or nil while the owner ignores fonts.
+- **Skin minor 13**: `VOCAB` gains the four, and *Ignore fonts* reaches the shadow's tokens as it reaches `hud.outline`. The colors stay the skin's.
+- No class or meaning color is in them, and nothing reads them yet, so no look moves here. An addon whose default differs keeps its pixels under Ka0s Default with an owner token that follows these.
 
 ### Composer rows start on the skin (`FS-D1`, cause D1)
 
 - **OptionsCompose minor 17**: a `<key>FromSkin` companion defaults true, and Font and Bar texture default to Ka0s Default's `Ka0s Prototype` and `Ka0s Default`, with or without `fromSkin`. `spec.defaults` still wins. No host's row moves on the re-vendor, because every one states its own default; each host opts its rows over in its flip commit (Options doc, *Moving to*).
 - `BorderGroup{ fromSkin = "bar" }`, additive: the companion governs the thickness too, on `bar.borderSize`. `fromSkin = true` keeps the thickness the player's.
-- Font flags stay opt-in (`flagsFromSkin`), because only a host on `S.FontFlags` can read `@skin`. Swatches and Font shadow wait for `FS-T1`'s tokens.
+- Font flags stay opt-in (`flagsFromSkin`), because only a host on `S.FontFlags` can read `@skin`. Swatches and Font shadow stay stored: `FS-T1` adds their tokens and getters, and a composer row for them is not built.
 
 ### One title bar shape, library half (`FS-L9`, cause L9)
 
