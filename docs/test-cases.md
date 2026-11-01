@@ -2722,6 +2722,22 @@ Total.
 - skin marks: a panel drag handle's marks follow the Scope live, and a host's art stays
 - skin marks: lib.__ownedMark answers for an owner, and not for a panel control it ignores
 
+### test_skin_ace_confirm.lua (13)
+
+- confirm box: raised from a Ka0s profile page with the Scope cleared, it wears the skin
+- confirm box: the font is on before Ace measures the text
+- confirm box: hiding gives every part back, and it is stock for whoever raises it next
+- confirm box: it wears the skin every time, Open's redraw included
+- confirm box: another addon's delete stays stock, before, after and while ours is open
+- confirm box: the shared AceDBOptions tables are not written, nor another database's
+- confirm box: the row keeps every field but its confirm, and every other row is the same table
+- confirm box: an owner ignoring its settings panel keeps the client's box, live both ways
+- confirm box: a table AceDBOptions did not hand out, or another confirm row, is left alone
+- confirm box: nested under an addon's own group, the row is found by its path
+- confirm box: a box another skinning addon took is left to it
+- confirm box: Ka0s Default paints it too
+- confirm box: no AceConfigDialog on the client paints nothing and raises nothing
+
 ### test_skin_step_arrows.lua (11)
 
 - step arrows: S.ScrollBar draws the Ka0s chevrons in icon.arrow, stock art faded, Ka0s Default too
@@ -4311,6 +4327,7 @@ Total.
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
 | test_skin_marks.lua | 15 |
+| test_skin_ace_confirm.lua | 13 |
 | test_skin_step_arrows.lua | 11 |
 | test_widgets_small_misses.lua | 12 |
 | test_title_shape.lua | 10 |
@@ -4379,4 +4396,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3709** |
+| **Total** | **3722** |

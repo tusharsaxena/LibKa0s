@@ -73,7 +73,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- title role, and Skin:__AceFontChanged takes a font set on a widget's FontString as its stock font.
 -- Minor 8 (cause L7 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): a scroll bar's step
 -- buttons take SkinPaintControls minor 13's P.stepArrows, a MultiLineEditBox's bar with them.
-local ACE_MINOR = 8
+-- Minor 9 (cause A4 of the same bundle): PaintAceTree hands each widget to SkinPaintExtras minor 13's
+-- __AceConfirmArm, so a Ka0s profile page's delete confirmation can wear the skin.
+local ACE_MINOR = 9
 if lib.__aceMinor and lib.__aceMinor >= ACE_MINOR
   and lib.__aceShellMinor == lib.MINOR then return end
 lib.__aceMinor      = ACE_MINOR
@@ -879,9 +881,14 @@ function lib:AliasAceType(hostType, baseType)
 end
 
 --- PaintAce over `container` and every widget under it (its `children`, depth first). Answers how
---- many widgets it painted.
+--- many widgets it painted. A delete row of AceDBOptions under it is marked for `owner` (minor 9),
+--- with or without the panel ignored, since the confirmation reads the switch when it opens.
 function lib:PaintAceTree(owner, container)
   if type(container) ~= "table" then return 0 end
+  if type(lib.__AceConfirmArm) == "function" and self:IsOwner(owner) then
+    local ok, err = pcall(lib.__AceConfirmArm, owner, container)
+    if not ok then logOnce(err) end
+  end
   local n = self:PaintAce(owner, container) and 1 or 0
   local kids = rawget(container, "children")
   for _, child in ipairs(type(kids) == "table" and kids or {}) do n = n + self:PaintAceTree(owner, child) end
