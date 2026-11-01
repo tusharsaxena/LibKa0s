@@ -286,7 +286,7 @@ Read straight off the LibStub table.
 | `Sim:New(d) -> sim` | 1 | Binds one session to a seam and answers its instance. Below. |
 | `STRINGS` | 1 | The built-in English lines, every key overridable through `d.L` (below). |
 | `MAJOR` · `MINOR` | 1 | `"LibKa0s-Sim-1.0"` and the live minor. |
-| `MODULES` | 1 | `{ Sim = <minor>, SimTimeline = <minor>, SimPanel = <minor> }`: the live minors, and the values that pick this document. |
+| `MODULES` | 1 | `{ Sim = <minor>, SimTimeline = <minor>, SimPanel = <minor>, SimPanelRender = <minor> }`: the live minors, and the values that pick this document. |
 
 ## The seam: `Sim:NewSeam(compat, opts)`
 
@@ -491,7 +491,7 @@ a headless simulator (seam, session, timeline, verbs) is never lost to a missing
 **The renderer is library-internal (LK-11's outcome B, [#53](https://github.com/tusharsaxena/LibKa0s/issues/53)).**
 The owner's scope made the step panel a public widget, `W.StepPanel`, only if Perf's panel could be
 rebuilt on it with every Perf suite passing unedited. It could not, so there is **no public step
-panel**: the renderer is a file-local section of `SimPanel.lua`, with no contract a host may read,
+panel**: the renderer is `SimPanelRender.lua`'s (a section of `SimPanel.lua` until `SimPanelRender.lua` 1), with no contract a host may read,
 and a deliberate duplicate of `PerfPanel.lua`'s renderer (the same geometry, palette and chrome;
 each file's header names the other). The library's own suites reach it through
 `lib.__StepPanel`, an **internal test seam** under `library-stack-§7`'s `__` clause: no host reads
@@ -994,7 +994,7 @@ BankLedger's stubs read as calls). No host calls or passes these:
 | `sim:Live(fn, ...)` | the seam (`seam:Live`): one `Live` | never: OWNER_SCOPE C.7 |
 | `d.panel.button`, `d.panel.tooltip` | the library's own button and GameTooltip | never: OWNER_SCOPE C.7 (DropWatcher's visible line changes are accepted and on its smoke list) |
 | A saved panel position (`d.panel.store`) | a dragged point held in the instance's memory for the session (H10) | never: nothing a simulation does writes to SavedVariables (OWNER_SCOPE C.11) |
-| A public step-panel widget (`W.StepPanel`) | a file-local renderer in `SimPanel.lua`, duplicated on purpose with `PerfPanel.lua`'s; `lib.__StepPanel` is an internal test seam | a second consumer that can take the renderer with no edit to its suites (LK-11's outcome B, [#53](https://github.com/tusharsaxena/LibKa0s/issues/53)) |
+| A public step-panel widget (`W.StepPanel`) | the renderer in `SimPanelRender.lua`, duplicated on purpose with `PerfPanel.lua`'s; `lib.__StepPanel` is an internal test seam | a second consumer that can take the renderer with no edit to its suites (LK-11's outcome B, [#53](https://github.com/tusharsaxena/LibKa0s/issues/53)) |
 | A StepPanel `place` or `onDragStop` hook | `SimPanel.lua` positions the frame itself and hooks `OnDragStop` | never: OWNER_SCOPE C.7 |
 | `seam:IsGuarded(key)` | the host, which classified its own keys | never: OWNER_SCOPE C.7 |
 | A `__newindex` auto-wrap on the host's table | `seam:Unwrapped()` and the host suite that asserts it empty | never: it adds magic to the host's table and still misses a replacement (OWNER_SCOPE C.8) |
@@ -1012,7 +1012,7 @@ diff -r --strip-trailing-cr LibKa0s <Addon>/libs/LibKa0s   # content — MUST be
 diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD be empty
 ```
 
-`Sim.lua`, `SimTimeline.lua` and `SimPanel.lua` are entries in `LibKa0s.xml`, after `PerfPanel.lua`, so the
+`Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` and `SimPanelRender.lua` are entries in `LibKa0s.xml`, after `PerfPanel.lua`, so the
 whole-folder copy brings them in with no load-list change in the host. **Payload weight:** the file
 bodies only define functions; no frame, timer or event registration exists until `NewSeam` or
 `New` is called (and no timer until a session calls `After`, no frame until `ShowPanel`), so a

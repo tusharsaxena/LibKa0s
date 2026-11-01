@@ -24,7 +24,52 @@ One file moves: `OptionsCompose.lua` 16 -> **17** (cause D1 of Ka0sAddonsCommonT
 - **A `<key>FromSkin` companion defaults `true`.** `spec.defaults` still wins, leaf by leaf.
 - **Font defaults to `Ka0s Prototype` and Bar texture to `Ka0s Default`**, Ka0s Default's `hud.font` and `bar.texture`, with or without `fromSkin`. Border style stays `None`, font size 12, thickness 1 and Font flags `OUTLINE`, which are already that skin's values.
 - **`O.BorderGroup{ fromSkin = "bar" }`**, additive: minor 13's icon arrangement on the bar family. The companion governs `borderSize` as well, showing `bar.borderSize`. `fromSkin = true` still leaves the thickness the player's.
-- **Not changed:** `fromSkin` does not imply `flagsFromSkin`, because `"@skin"` is only safe for a host drawing through `S.FontFlags`. Font size stays a stored value (cause L11). Color swatches and Font shadow have no HUD token yet (`FS-T1`).
+- **Not changed:** `fromSkin` does not imply `flagsFromSkin`, because `"@skin"` is only safe for a host drawing through `S.FontFlags`. Font size stays a stored value (cause L11). Color swatches and Font shadow keep no composer row: *Moving to this version*, below.
+
+## Moving to this version: opting an existing row over to the skin (`FS-D1`)
+
+Nothing here happens on the re-vendor. A row that states its own default keeps it until the host's **flip commit** does the steps below. The rulings of Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/` bind every step: **existing profiles are migrated to follow the skin**, not new profiles only; **a class or meaning color is never touched**; **the settings panel stays stock by default**, so no flip writes `skin.ignorePanel` or `skin.ignoreFonts`, or their defaults, and no step names them.
+
+### 1. Font, border and bar texture rows
+
+For each `O.FontGroup`, `O.BorderGroup` and `O.BarGroup` a HUD surface reads:
+
+1. **Pass the family.** `FontGroup{ fromSkin = true }`, `BarGroup{ fromSkin = true }`, and `BorderGroup{ fromSkin = "bar" }`, or `fromSkin = "icon"` on an icon's border. Use `"bar"`, not `true`: only the family value puts the thickness on the skin. `true` leaves it the player's.
+2. **Know the companion key.** It is the picker's own stored path plus `FromSkin`, `prefix` and `keys` included: `fontFromSkin`, `borderStyleFromSkin` and `barTextureFromSkin` on the canonical leaves, and `icons.borderTextureFromSkin` where `keys` renamed the picker to `icons.borderTexture`. Read the name off the emitted row's `path`; never derive it from the label. A thickness has no companion of its own: the border's governs it.
+3. **Make the default `true` in both places.** Delete any `<key>FromSkin = false` from `spec.defaults`, because `spec.defaults` wins, and set `<key>FromSkin = true` in the addon's AceDB defaults. The two must agree, or *Defaults* and a new profile disagree.
+4. **Move the pick's default.** Delete the `font` and `barTexture` leaves from `spec.defaults` and set the same two keys to `Ka0s Prototype` and `Ka0s Default` in the AceDB defaults, so a player who turns the companion off lands on the Ka0s pick and not on a client one. A stored pick is never rewritten. Border style stays `None`, font size 12 and thickness 1.
+5. **Draw through the skin, every read.** `S.Resolve("hud.font", font, fontFromSkin)`, `S.Resolve("bar.texture", barTexture, barTextureFromSkin)`, `S.Resolve("bar.borderStyle", borderStyle, borderStyleFromSkin)` and `S.Resolve("bar.borderSize", borderSize, borderStyleFromSkin)`; on the icon family `icon.borderStyle` and `icon.borderSize`, or `S.IconBorder(frame, { fromSkin = true })`. A surface that keeps reading the pick shows the skin's value on the disabled row and draws something else, and no suite but a skin-switch case can see it.
+
+**Font size is not flipped.** It stays a stored value (cause L11): no companion, no `HudFontSize` change, no key in the step.
+
+### 2. Font flags
+
+`FontGroup{ flagsFromSkin = true }` **only** for a host that draws that row through `S.FontFlags`. It stores the sentinel `"@skin"`, which any other reader hands to `SetFont` as a flag. A host not on `S.FontFlags` moves its reader first, in the same commit, or leaves the row as it is and says so in its report. The row's default is then `"@skin"`, so set the AceDB default to `"@skin"` as well and delete any `fontFlags` leaf from `spec.defaults`.
+
+### 3. Color swatches and Font shadow
+
+There is no composer row for these. The host writes one bool row per value, in `spec.extra`, with its own full `path`:
+
+- **The companion** is `<color key>FromSkin`, or `fontShadowFromSkin` beside `fontShadow`, type `bool`, default `true` in the AceDB defaults and on the row. Its label is *Use the skin's color* or *Use the skin's shadow*. Its tooltip names the row it governs and says that row is not read while this is on.
+- **No `disabledIf` on a composed swatch or its pair.** That is `CLASS_COLOR_NOTE`'s rule (`options-ui-§17`), and it holds here: a swatch stays live and keeps its stored value for when the companion goes off.
+- **Text color:** `local r, g, b, a = S.HudTextColor()`; a label or title: `S.HudLabelColor()`; a bar fill: `S.BarFillColor()`. When the companion is true and the getter answers `r`, draw that; otherwise draw the stored color. A degraded facade answers nothing, so the stored color is also the fallback.
+- **Shadow:** `local x, y, r, g, b, a = S.HudShadow()`. With the companion true: `false` draws no shadow; `nil` means the owner ignores fonts, so the stored `fontShadow` stands; any number draws `x, y` in `r, g, b, a`.
+- **Backgrounds and borders that are colors** (cause D4) take the same companion, with the skin's own tokens through `S.Color(name)`.
+
+**Class and meaning colors come first and are left alone.** A class-colored bar, an interrupt or uninterruptible state, a pandemic or running-out tint and any `sem.*` meaning keep their branch, ahead of the companion, and get no companion at all: `useClassColor` set means class color whatever the companion says. A color that carries meaning is not listed in the step below.
+
+### 4. The schema step
+
+One step per addon, in its migration runner (`savedvariables`), appended to the ladder with the schema version bumped. It is what moves existing profiles, so it is owed even where the default moved:
+
+1. **Per profile, recorded per profile.** The stamp is per account and following the skin is no shape a later run can read, so the step runs from `Database:Init` and every `OnProfileChanged` and gates on its own record, for example `skin.fullSkinReset`, default `false` in the AceDB defaults. `false`: reset and set it `true`. `true`: return. A companion the player turns off afterwards therefore stays off, and a profile reset re-runs the step against defaults that write nothing a player can see.
+2. **List every companion by name** from steps 1 and 3, as a constant the host's suite reads: `Skin.ResetToSkin(p, keys)`, where `keys` are dotted paths relative to the table passed. For a list of windows or units, build the paths per entry, or call once per entry with that entry's table.
+3. **Name the companion, never the color or the pick.** A listed key ending in `FromSkin` is set `true` whether it is stored or not. A bare color key is only safe while it reads as a table: any other value, with no stored companion beside it, takes `"@skin"` (`Skin.ResetToSkin`, `docs/api/Skin`), which a swatch then reads as a color. The stored color and the stored pick stay exactly as they were, for a player who turns the companion off.
+4. **List a flags key by its own name, only on a host from step 2.** `ResetToSkin` writes `"@skin"` to it, whatever the player picked: the ruling is that existing profiles follow the skin. Skip a key whose reader is not on `S.FontFlags`.
+5. **Do not list:** font size, a class or meaning color or its toggle, `useClassColor`, `skin.ignorePanel`, `skin.ignoreFonts`, or a value no reader resolves through the skin.
+6. **Keep it pure and idempotent, with the library absent too.** With no Skin major, set each listed companion `true` by hand, the same write, and create no table on the way: a path through a missing table is skipped.
+
+**Tests the flip commit owes**, one suite per addon: a stored partial profile (some companions stored `false`, some absent, a color table with one key, a sub-table missing) goes through the step and every listed companion reads `true`, every stored pick and color is byte-identical, and no key holds `"@skin"` but the flags named; a class color, its toggle and the two `skin.ignore*` values are unchanged; a second run writes nothing; a companion turned off after the step stays off; and a skin switch changes what each flipped surface draws.
 
 ## What changed at version 37.4.44.2.7.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3: typed colors with the Scope cleared (`FS-L5`)
 

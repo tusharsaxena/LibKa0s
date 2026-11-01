@@ -248,7 +248,7 @@ exactly as an owner-less widget does. A color the host passes (an option row's `
 | `Dropdown` button | `S.Dropdown` | `input.bg`, `input.border`, `icon.tint` (the arrow), `input.text` (nil in Ka0s Default) | on the owner's switch |
 | the shared menu | `S.MenuFrame`, then the rows; `S.Font` on each row and on the measuring string (Widgets 17) | `menu.bg`, `menu.border`, `menu.textSel`, `menu.text`, `menu.hover`, the body face | on every open |
 | `SearchBox` | `S.EditBox`, then the icon | `input.bg`, `input.border`, `input.focus`, `input.text`, `input.placeholder`, `icon.tint` | on the owner's switch |
-| `TestStrip` | `S.Strip`, `S.Text` (the line, Widgets 17) | `strip.test` / `strip.sim`, `text.accent` and the body face (the line) | on the owner's switch |
+| `TestStrip` | `S.Strip`, `S.Text` (the line, Widgets 17), `S.Mark` (the icon, Widgets 18) | `strip.test` / `strip.sim`, `text.accent` and the body face (the line), `icon.tint` (the icon) | on the owner's switch |
 | `CopyWindow` | `Core.ApplySkin(f, nil, owner)` (`S.Shell`), `S.ScrollBar`, `Core.MakeCloseButton`, `Core.MakeResizable`'s `opts.owner` (the grip, CopyWindow 2) | the window tokens, `win.bgDense` (the denser fill, over any `backdrop`, CopyWindow 3), `close.rest` / `close.hot`, `icon.grip` (the grip) | on the owner's switch |
 | `Autocomplete` rows | read on each show; `S.Font` on each row (Autocomplete 5; a host's `font` is the template, Autocomplete 6) | `menu.text`, `menu.hover`, the body face, `menu.suggestBg`, `menu.suggestBorder` (the list's fill and edge, Autocomplete 6) | the next show |
 | `DragHandle` | `Skin:Token` | `handle.bg`, `handle.edge`, `text.accent` (the label), `icon.tint` / `icon.hot` (the marks), `gtip.title`, `gtip.value`, `gtip.footer` (the tooltip's bands, DragHandle 7), the body face (the label, `S.Font`, DragHandle 7; a host's `labelFont` is the template, DragHandle 12); a host's `spec.edge` pixels are its own | on the owner's switch; the tooltip on every hover |
@@ -812,11 +812,13 @@ Depends on LibStub and `LibKa0s-Core-1.0` (minor 1 or newer), and on no addon fr
 
 ## Why it takes no dependency on `LibKa0s-Media-1.0`
 
-Because it cannot. `Media.Icon` builds a path from the *consuming addon's own name*, and this file is
+Because it cannot, at load. `Media.Icon` builds a path from the *consuming addon's own name*, and this file is
 vendored — every consumer has its own copy at its own path, and a copy cannot know which addon folder
-it was copied into. So every piece of art this widget draws arrives as a parameter: `opts.chevron`
-and `opts.check` are resolved paths the host already has, each falling to a Blizzard texture when the
-host has none. The same reasoning applies to `opts.glyphFont` — the optional leading glyph is a
+it was copied into. So art arrives as a parameter: `opts.chevron`
+and `opts.check` are resolved paths the host already has. **Since 18 there is one call-time lookup:** an
+owned control a host gave no art has that folder name in its `owner`, so the internal `lib.__ownedMark`
+reads `LibKa0s-Media-1.0` then and draws the Ka0s icon. With no owner, no Media, or a panel-scoped
+control on an ignored panel, it falls to the Blizzard texture, and no floor is taken on Media. The same reasoning applies to `opts.glyphFont` — the optional leading glyph is a
 *character* in a monospace face, and which face a host draws in is that host's decision, not this
 library's.
 
@@ -842,8 +844,8 @@ library's.
 
 | `opts` field | Since | Meaning | Fallback with no value |
 |---|---|---|---|
-| `chevron` | 1 | Resolved texture path for the collapsed button's ▼ affordance. | `Interface\Buttons\Arrow-Down-Up` (Blizzard's own arrow) |
-| `check` | 1 | Resolved texture path for the tick a multi-select row draws in front of a selected value. Built once per dropdown into inline `\|T…:0\|t ` markup and stored on `dd.__check`. | `Interface\Buttons\UI-CheckBox-Check` |
+| `chevron` | 1 | Resolved texture path for the collapsed button's ▼ affordance. | An owned dropdown's Ka0s `chevron-down` (Widgets 18), else `Interface\Buttons\Arrow-Down-Up` (Blizzard's own arrow) |
+| `check` | 1 | Resolved texture path for the tick a multi-select row draws in front of a selected value. Built per dropdown into inline `\|T…:0\|t ` markup and stored on `dd.__check`; an owned dropdown with no host art builds it again on each skin change (Widgets 20). | An owned dropdown's Ka0s `confirm` in `icon.hot` (Widgets 18), else `Interface\Buttons\UI-CheckBox-Check` |
 | `owner` | **16** | A registered skin owner (an addon folder name): the button, and the shared menu each time this dropdown opens it, wear that owner's skin, the menu's rows in its body face from 17. See *Skin owners*. | Today's flat skin; an unregistered name is the same. |
 | `panel` | **17** | `true`: the dropdown sits on its owner's settings page, so while the owner ignores its settings panel the button is given back and the menu opens owner-less, live. | A window's dropdown: it keeps the skin. |
 | `glyphFont` | 1 | Resolved font path for the optional leading glyph a row may carry (`opt.glyph`); on an owned menu the skin's `font.mono` goes over it (Widgets 19). **A precondition for any option carrying `glyph`** — see *Behavior a host must know* below. | No glyph column is drawn at all: the glyph `FontString` is hidden on every row regardless of whether that row's option has a `glyph`. |
@@ -1045,7 +1047,7 @@ defaults are filled into a copy.
 | `opts` field | Since | Meaning | With no value |
 |---|---|---|---|
 | `hint` | 13 | The gray text shown while the box is empty. | An empty hint. |
-| `icon` | 13 | A resolved texture path or a fileID, drawn as an 11x11 mark at the box's left edge (+5px), tinted 0.7, 0.7, 0.72. **Host-passed**: `Widgets.lua` cannot call `LibKa0s-Media-1.0` (see *Why it takes no dependency* above), so a host that passes a Media icon declares that icon's name on its `LibKa0s icons:` line. It adds nothing to the closed set the library draws itself (close, copy, clear, info). Any other type is ignored. | No icon; `box.icon` is `nil`. |
+| `icon` | 13 | A resolved texture path or a fileID, drawn as an 11x11 mark at the box's left edge (+5px), tinted 0.7, 0.7, 0.72. **Host-passed**: `Widgets.lua` cannot call `LibKa0s-Media-1.0` (see *Why it takes no dependency* above), so a host that passes a Media icon declares that icon's name on its `LibKa0s icons:` line. It adds nothing to the set the library draws itself, `VendorSync.LIBRARY_MARKS`. Any other type is ignored. | No icon; `box.icon` is `nil`. |
 | `onChange` | 13 | `function(text, box)`, called once per text change, after the hint is toggled. `text` is the box's text, `""` when the client answers `nil`. | Nothing is called. |
 | `owner` | **16** | A registered skin owner: the box, its hint, its focus line and its icon wear that owner's skin, painted after the five scripts are set so the facade's focus hooks run after them. See *Skin owners*. | The flat skin; an unregistered name is the same. |
 | `panel` | **17** | `true`: the box sits on its owner's settings page, so while the owner ignores its settings panel the box, its hint, its focus line and its icon are the flat skin's, live. | A window's box: it keeps the skin. |
@@ -1092,7 +1094,7 @@ shows, where it sits and what it says.
 | `opts` field | Since | Meaning | With no value |
 |---|---|---|---|
 | `text` | 13 | The host's **localized** line, set once at birth. Later changes go through `strip.text:SetText`. Anything that is not a string counts as none. | `""`. |
-| `icon` | 13 | A resolved texture path or a fileID, drawn as a 12x12 mark at the strip's left edge (+6px), the same for both kinds. **Host-passed**: the adopters pass their own `NS.Icon("info")`, so `info` is a **host-declared** icon, declared on each adopter's `LibKa0s icons:` line, and the closed set the library draws itself stays close, copy, clear, info (`OptionsIdList`'s). Any other type is ignored. There is no fallback. | No mark; the text starts at the strip's left edge (+6px). |
+| `icon` | 13 | A resolved texture path or a fileID, drawn as a 12x12 mark at the strip's left edge (+6px), the same for both kinds. **Host-passed**: the adopters pass their own `NS.Icon("info")`, so `info` is a **host-declared** icon, declared on each adopter's `LibKa0s icons:` line. The set the library draws itself is `VendorSync.LIBRARY_MARKS`, which names `info` too, so every host declares it from kit revision 48. Any other type is ignored. There is no fallback. | No mark; the text starts at the strip's left edge (+6px). |
 | `kind` | **14** | `"test"` or `"sim"`: which flavor, read once at birth. Exactly `"sim"` gives the simulation cyan; anything else (a non-string, `"Sim"`, `"preview"`) is `"test"`. | `"test"`, the amber. |
 | `owner` | **16** | A registered skin owner: the wash is that skin's `strip.test` / `strip.sim`. The meaning colors stay the library's; a skin changes only their legibility. From **17** the line is `text.accent` in the skin's body face (`S.Text`), so *Ignore fonts* gives it its template's face back. | The library's two fills. |
 | `panel` | **17** | `true`: the strip sits on its owner's settings page, so while the owner ignores its settings panel the wash is the library's fill and the line its template's, live. | A window's strip: it keeps the skin. |
@@ -1342,7 +1344,7 @@ also spends it in its clamp reach, `HEIGHT + GAP`.
 | `label` **(required)** | the strip's centered text, already localized | empty |
 | `panel` | **DragHandle 7.** `true`: the strip sits on its owner's settings page, so while the owner ignores its settings panel it is minor 5's, live both ways. No consumer's strip does today: a drag handle is a HUD element | a HUD strip: it keeps the skin |
 | `moveFrame` **(required)** | the frame `StartMoving` / `StopMovingOrSizing` are called on | the drag moves nothing |
-| `owner` | **DragHandle 6.** A registered skin owner: the fill, the edge, the label and the marks' tints come from that owner's skin and follow its switches (*Skin owners*); **from DragHandle 7** the tooltip's band colors too (`gtip.title`, `gtip.value`, `gtip.footer`, read at every hover), and the label's face, the skin's body face unless `labelFont` names one, drawn and measured in it. Not a tooltip owner: that is `tooltipOwner`, and a tooltip descriptor's own `owner` | minor 5's colors |
+| `owner` | **DragHandle 6.** A registered skin owner: the fill, the edge, the label and the marks' tints come from that owner's skin and follow its switches (*Skin owners*); **from DragHandle 7** the tooltip's band colors too (`gtip.title`, `gtip.value`, `gtip.footer`, read at every hover), and the label's face, the skin's body face, over `labelFont` from DragHandle 12, drawn and measured in it. Not a tooltip owner: that is `tooltipOwner`, and a tooltip descriptor's own `owner` | minor 5's colors |
 | `name` | global frame name (`"KCMMacroBarHandle"`) | anonymous |
 | `helpIcon` | resolved texture path for the mark, the host's `Icon("help")` | `Interface\FriendsFrame\InformationIcon` |
 | `canDrag` | `function() -> boolean`, asked at `OnDragStart` | always allowed |
@@ -1712,7 +1714,7 @@ Read on every render and every hover, never written. Every field is optional and
 | `onHover` | none | `onHover(chart, index, x)` when the hovered index changes, again on the first hover after a render (**Since 3**, even for the same index), and `onHover(chart, nil, nil)` when a hover clears. `index` is into `data.hoverXs`, `x` is `hoverXs[index]`. The host draws its own tooltip. |
 | `pxPerPoint` | `LINE_CHART.PX_PER_POINT` (2) | **Since 2.** Plot pixels per drawn point: the thinning budget is `floor(plot width / pxPerPoint)`. Larger is smoother and draws fewer segments. A non-positive or non-number value falls to the default. Read on every render. |
 | `formatY` | integer as-is, otherwise `%.2f` | `formatY(v) → string` for each y tick label. |
-| `owner` | none | **Since 4.** A registered skin owner: the axis, grid, crosshair, default marker and default series colors come from `S.ChartStyle()`, the tick labels are tinted `text.disabled`, a series' `colorIndex` indexes `chart.series`, and a skin switch re-renders the chart at its last size (*Skin owners*). **Since 5** the tick labels are in the skin's body face unless `font` names one. |
+| `owner` | none | **Since 4.** A registered skin owner: the axis, grid, crosshair, default marker and default series colors come from `S.ChartStyle()`, the tick labels are tinted `text.disabled`, a series' `colorIndex` indexes `chart.series`, and a skin switch re-renders the chart at its last size (*Skin owners*). **Since 5** the tick labels are in the skin's body face, over `font` from 6. |
 | `panel` | none | **Since 5.** `true`: the chart sits on its owner's settings page, so while the owner ignores its settings panel it reads `lib.LINE_CHART` and its labels' template face, live both ways. |
 | `formatX` | `date("%H:%M")` under a day step, otherwise `date("%d %b")` | `formatX(x, step) → string` for each x tick label; `step` is `ChartMath.TimeTicks`'s step in seconds. The day-step default is `date("%d %b")`, whose `%b` is the C runtime's month abbreviation (English), so a localized host should pass `formatX`. |
 
@@ -1855,9 +1857,9 @@ Read when the handle is made. Every field is **Since 1**.
 | `rowHeight` | `AUTOCOMPLETE.ROW_H` | Row height in pixels. |
 | `minChars` | `AUTOCOMPLETE.MIN_CHARS` | Trimmed characters before the provider is asked. |
 | `debounce` | `AUTOCOMPLETE.DEBOUNCE` | Seconds; never below `AUTOCOMPLETE.DEBOUNCE`. |
-| `font` | `AUTOCOMPLETE.FONT` | Font object the row labels are created with. A host's face is never re-fonted by a skin (**Since 5**). |
+| `font` | `AUTOCOMPLETE.FONT` | Font object the row labels are created with. On an owned list it is the template, with the skin's body face over it and *Ignore fonts* giving it back (**Since 6**); an owner-less list keeps it. |
 | `strata` | `AUTOCOMPLETE.STRATA` | The list's frame strata. |
-| `owner` | none | **Since 4.** A registered skin owner: plain rows in `menu.text`, the highlight in `menu.hover`, read on every show (*Skin owners*); **since 5** the rows in the skin's body face unless `font` names one. |
+| `owner` | none | **Since 4.** A registered skin owner: plain rows in `menu.text`, the highlight in `menu.hover`, read on every show (*Skin owners*); **since 5** the rows in the skin's body face, over `font` from 6. |
 | `panel` | none | **Since 5.** `true`: the list hangs under a box on its owner's settings page, so while the owner ignores its settings panel its rows are minor 3's, colors and face, from the next show. |
 
 ### Handle methods
