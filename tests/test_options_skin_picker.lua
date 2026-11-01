@@ -60,10 +60,10 @@ local pickRow = Bench.pickRow
 
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
-test("skin picker: OptionsSkinPicker is minor 7, paired on the shell, and attaches three members", function()
+test("skin picker: OptionsSkinPicker is minor 8, paired on the shell, and attaches three members", function()
   local _, _, lib = env()
-  assertEqual(lib.MODULES.OptionsSkinPicker, 7)
-  assertEqual(lib.__pickerMinor, 7)
+  assertEqual(lib.MODULES.OptionsSkinPicker, 8)
+  assertEqual(lib.__pickerMinor, 8)
   assertTrue(lib.SKIN_PICKER_STRINGS.APPLY_ALL_TIP:find("skin source, skin, scope, font, texture and font outline", 1, true) ~= nil,
     "the tooltip words it as the Skin tab's copy does")
   assertEqual(lib.__pickerShellMinor, lib.MINOR, "paired on the shell's minor")
@@ -911,6 +911,23 @@ test("skin picker: a tooltip title takes gtip.title, read at hover, Ignore setti
   Skin:SetIgnore(OWNER, false, nil)
   pickRow(f, "ember")
   assertEqual(select(2, tipOf(m, f.settings)), rgb3(Skin:ResolveSkin("ember")["gtip.title"]), "a preview reaches the next hover")
+end)
+
+test("skin picker: a long tooltip wraps", function()
+  -- SF-L1. red under: SetText with no wrap argument, so the Apply to all sentence draws as one
+  -- line as wide as the screen.
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER, "azeroth")
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
+  local tip, wrap = m.GameTooltip, nil
+  local saved = { SetOwner = rawget(tip, "SetOwner"), SetText = rawget(tip, "SetText"), Show = rawget(tip, "Show") }
+  rawset(tip, "SetOwner", function() end)
+  rawset(tip, "Show", function() end)
+  rawset(tip, "SetText", function(_, _, _, _, _, _, w) wrap = w end)
+  local ok, err = pcall(f.applyAll.__fire, f.applyAll, "OnEnter")
+  for k, v in pairs(saved) do rawset(tip, k, v) end
+  assertTrue(ok, tostring(err))
+  assertEqual(wrap, true, "SetText's wrap argument")
 end)
 
 test("skin picker: under Ka0s Default a tooltip title is the client's gold, written out", function()

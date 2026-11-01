@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **37** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **44** · `OptionsFlow.lua` **2** · `OptionsIds.lua` **7** · `OptionsIdSuggest.lua` **1** · `OptionsIdList.lua` **8** · `OptionsTabs.lua` **15** · `OptionsTabbed.lua` **2** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **18** · `OptionsScroll.lua` **13** · `OptionsNav.lua` **5** · `OptionsDrawer.lua` **5** · `OptionsKeybinds.lua` **7** · `OptionsAppearance.lua` **6** · `OptionsSkinPicker.lua` **7** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **4** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.7.1.1.4` |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded
 | Supersedes | [version 37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4](./version-37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4-docs.md) (unreleased, an earlier step of v1.85.0) — a composed bar border row stayed disabled over a stored style that draws under a skin's None. |
-| Superseded by | — |
+| Superseded by | [version 37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4](./version-37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4-docs.md) (unreleased, a later step of v1.85.0) — a skin picker tooltip draws one line however long
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 37, OptionsRegistry = 4, OptionsWidgets = 44, OptionsFlow = 2, OptionsIds = 7, OptionsIdSuggest = 1, OptionsIdList = 8, OptionsTabs = 15, OptionsTabbed = 2, OptionsCombat = 3, OptionsCompose = 18, OptionsScroll = 13, OptionsNav = 5, OptionsDrawer = 5, OptionsKeybinds = 7, OptionsAppearance = 6, OptionsSkinPicker = 7, OptionsSkinPickerRows = 1, OptionsSwitch = 1, OptionsMedia = 4 }` |
 
@@ -4202,3 +4202,7 @@ it got.
 - `lib.SKIN_PICKER_STRINGS`: no consumer as of v1.83.0, kept because it holds the default strings a host overrides through `spec.strings`, never by name.
 - `AppearanceRows`: no consumer as of v1.83.0, kept because `AppearanceTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
 - `KeybindRows`: no consumer as of v1.83.0, kept because `KeybindingsTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
+
+## Moving to version 37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4
+
+Nothing is owed: no member moves.
