@@ -110,7 +110,9 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 19 (cause L8 of the same bundle): an owned menu's glyph column reads the skin's `font.mono`; a
 -- host's `glyphFont` is what turns the column on, and what an owner-less menu and Ignore fonts draw.
 -- A face a host names on an owned control (`opts.font`, `spec.labelFont`) is now its template.
-local MAJOR, MINOR = "LibKa0s-Widgets-1.0", 19
+-- Minor 20 (FS-FIX of the same bundle): an owned dropdown's tick and arrow follow a skin switch and
+-- the Scope, live, where they were baked in the constructor.
+local MAJOR, MINOR = "LibKa0s-Widgets-1.0", 20
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -534,6 +536,19 @@ local function dropdownCheck(opts)
   return "|T" .. (opts.check or CHECK_FALLBACK) .. ":0|t "
 end
 
+--- The arrow's art: the host's, an owned dropdown's Ka0s `chevron-down` (minor 18), else the client
+--- rung.
+local function dropdownArrow(opts)
+  return opts.chevron or ownedMark(opts.owner, "chevron-down", opts.panel) or CHEVRON_FALLBACK
+end
+
+--- An owned dropdown's marks again after its skin changed (minor 20): the tick holds its tint as
+--- text, and the Scope swaps both marks for the client's. The menu reads `__check` on every open.
+local function redressDropdown(dd)
+  dd.__check = dropdownCheck(dd.__markOpts)
+  dd.arrow:SetTexture(dropdownArrow(dd.__markOpts))
+end
+
 -- A dropdown button: shows the current label plus a ▼ texture; clicking opens the shared menu.
 local function MakeDropdown(parent, width, opts)
   opts = opts or {}
@@ -545,8 +560,9 @@ local function MakeDropdown(parent, width, opts)
   dd:SetBackdropBorderColor(unpack(SKIN.line))
 
   -- The tick a multi-select dropdown puts in front of every chosen row. INLINE |T…|t markup,
-  -- resolved ONCE per dropdown so a degraded install appends the Blizzard string it always did
-  -- rather than concatenating a nil into an escape.
+  -- resolved per dropdown so a degraded install appends the Blizzard string it always did rather
+  -- than concatenating a nil into an escape. An owned one is resolved again on a skin change
+  -- (redressDropdown, minor 20).
   --
   -- PER-DROPDOWN, not a file-local, and that is the difference from the version this was lifted
   -- out of: one popup menu is shared by every dropdown in the process, and that process now spans
@@ -576,7 +592,7 @@ local function MakeDropdown(parent, width, opts)
   local arrow = dd:CreateTexture(nil, "OVERLAY")
   arrow:SetSize(12, 12)
   arrow:SetPoint("RIGHT", -4, 0)
-  arrow:SetTexture(opts.chevron or ownedMark(opts.owner, "chevron-down", opts.panel) or CHEVRON_FALLBACK)
+  arrow:SetTexture(dropdownArrow(opts))
   arrow:SetVertexColor(0.7, 0.7, 0.72)
   dd.arrow = arrow   -- kept for the out-of-game art suite; nothing at runtime reads it back
 
@@ -643,7 +659,11 @@ local function MakeDropdown(parent, width, opts)
   dd.__owner = opts.owner
   dd.__panel = opts.panel == true
   local Skin = skinOf(opts.owner)
-  if Skin then Skin:For(opts.owner).Dropdown(dd, dd.__panel and PANEL or nil) end
+  if Skin then
+    Skin:For(opts.owner).Dropdown(dd, dd.__panel and PANEL or nil)
+    dd.__markOpts = opts
+    lib.__onSkin(Skin, opts.owner, dd, redressDropdown)
+  end
   return dd
 end
 

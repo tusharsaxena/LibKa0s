@@ -14,11 +14,17 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **13.1.24.6.15.13.14.2.9**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **19.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **13.1.24.6.15.13.14.3.9**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **20.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**; every other file still at its v1.84.0 minor, and **test kit revision 49**. No `NEEDS_*` floor rises.
+
+### Review fixes (`FS-FIX`)
+
+- **Widgets minor 20**: an owned dropdown's tick and arrow follow a skin change and the Scope with no rebuild, where the constructor baked them. A `panel = true` dropdown is stock as soon as its owner ignores its panel. A host's own art stays.
+- **SkinEUI minor 3**: `hud.label`, `bar.fill`, `text.command` and `gtip.emphasis` follow EllesmereUI's accent and `menu.suggestBg` its panel color, so an autocomplete list stays beside its EllesmereUI menu in the same color and the HUD's labels and fills leave Ka0s Default.
+- **What a consumer owes**: every degradation facade gains `Mark`, `MarkText`, `HudTextColor`, `HudLabelColor`, `BarFillColor` and `HudShadow` at the re-vendor, or its facade parity case goes red.
 
 ### The delete confirmation wears the skin (`FS-A4`, cause A4)
 
-- **SkinPaintExtras minor 13** and **SkinAce minor 9**: AceConfigDialog's confirmation box wears the skin when a Ka0s profile page raises it to delete a profile, and gives every part back when it hides. No host changes code: `Skin:PaintAceTree` gives the page's own AceDBOptions group its own `delete` row, with a `confirm` that marks the delete and answers true, because the popup and AceDBOptions' `args` are shared with every addon in the client. No row, label or layout on the page moves, and no client-wide table is written.
+- **SkinPaintExtras minor 13** and **SkinAce minor 9**: AceConfigDialog's confirmation box wears the skin when a Ka0s profile page raises it to delete a profile, and gives every part back when it hides. No host changes code: `Skin:PaintAceTree` gives the page's own AceDBOptions group its own `delete` row, with a `confirm` that marks the delete and answers true, because the popup and AceDBOptions' `args` are shared with every addon in the client. No row, label or layout on the page moves, and no client-wide table is written. The one exception is LibKa0sSkinTester, whose Profiles page never calls `PaintAceTree` after `AceConfigDialog:Open`: its box stays stock until `FS-ST-FIX` adds that call.
 - Another addon's use of the box stays stock, including one raised over ours, since the box is not modal. An owner ignoring its settings panel keeps the client's box, as it keeps the page. A box another skinning addon took is left to it.
 - **SkinPaintExtras minor 13**: `S.Panel`'s `opts.popup`, additive.
 

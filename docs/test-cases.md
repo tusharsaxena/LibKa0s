@@ -867,7 +867,7 @@ Total.
 - skin controls: an EditBox hint and a sort header's texts take the skin's face
 - skin controls: a slider's track is a thin bar centered in it
 
-### test_skin_eui.lua (29)
+### test_skin_eui.lua (30)
 
 - skin eui: SkinEUI attaches to the shell and makes no frame until an owner registers
 - skin eui: without SkinEUI the engine keeps eui a stored choice on the owner's Ka0s skin
@@ -896,6 +896,7 @@ Total.
 - skin eui: Ka0s-only option keys are stripped before EllesmereUI sees a call
 - skin eui: an eui-owned AceGUI CheckBox makes zero calls to EllesmereUI
 - skin eui: another owner's frames and tokens never see EllesmereUI
+- skin eui: every token a Ka0s skin follows from a driven token follows it here too
 - skin eui: EllesmereUI's live looks change repaints the Ka0s extras
 - skin eui: EllesmereUIDB is read in LibKa0s/SkinEUI.lua and no other payload file
 
@@ -2704,7 +2705,7 @@ Total.
 - IdList removeStyle icon: the highlight goes back onto the art when AceGUI takes the X back
 - IdList removeStyle icon: an AceGUI whose Icon has no textures still draws the X
 
-### test_skin_marks.lua (15)
+### test_skin_marks.lua (18)
 
 - skin marks: S.Mark draws the art in icon.tint, and a skin switch repaints it
 - skin marks: S.Mark takes a meaning token
@@ -2712,10 +2713,13 @@ Total.
 - skin marks: S.Mark ignores a target that is not a texture
 - skin marks: S.MarkText writes the mark at its size in the token's bytes
 - skin marks: with the Scope cleared the id list's X is the Ka0s close icon
+- skin marks: the id list's Ka0s X wears icon.tint
 - skin marks: on an ignored panel the id list's X stays the client atlas
 - skin marks: lib.__chromeMark answers nil without a registered owner or a known name
 - skin marks: an owned dropdown with no art draws the Ka0s chevron and a tinted check
 - skin marks: a host's art wins, and an ignored panel's dropdown keeps its client rung
+- skin marks: an owned dropdown's marks follow a skin switch and the Scope, live
+- skin marks: a skin switch leaves a host's own dropdown art alone
 - skin marks: an unowned dropdown is what it was
 - skin marks: an owned strip's icon wears icon.tint, a skin switch repaints it
 - skin marks: an owned drag handle with no art draws the Ka0s info and close icons
@@ -2799,7 +2803,7 @@ Total.
 - switched any: the single-path form is unchanged beside it
 - switched: OptionsSwitch.lua is its own file of the major, paired on the shell's minor
 
-### test_options_media.lua (36)
+### test_options_media.lua (38)
 
 - media: lib.__MediaWidgetType maps a kind, its LSM30_* and its own type name to one type
 - media: no stock Dropdown registered, so no picker, and the caller draws a plain Dropdown
@@ -2827,6 +2831,8 @@ Total.
 - media: a picker never closes on its first entry: no value is blank, a value is its key
 - media: a painted picker's speaker is the Ka0s icon in icon.tint; an unowned one is the client's
 - media: a painted picker's swatch takes icon.tint; an unowned one its typed gray
+- media: a closed painted picker's swatch takes icon.tint; an unowned one its typed gray
+- media: a border swatch sits on input.bg when painted, on its typed fill when not
 - media: border and sound rows sit on the stock bar, level with the page's other controls
 - media: with no LibSharedMedia the picker still lists, picks and shows its text
 - media: with no SharedMediaWidgets an LSM30_* row of every kind draws the matching picker
@@ -4262,7 +4268,7 @@ Total.
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 39 |
 | test_skin_paint_controls.lua | 34 |
-| test_skin_eui.lua | 29 |
+| test_skin_eui.lua | 30 |
 | test_skin_ace.lua | 28 |
 | test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
@@ -4326,13 +4332,13 @@ Total.
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
-| test_skin_marks.lua | 15 |
+| test_skin_marks.lua | 18 |
 | test_skin_ace_confirm.lua | 13 |
 | test_skin_step_arrows.lua | 11 |
 | test_widgets_small_misses.lua | 12 |
 | test_title_shape.lua | 10 |
 | test_options_switched.lua | 16 |
-| test_options_media.lua | 36 |
+| test_options_media.lua | 38 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
 | test_options_compose.lua | 39 |
@@ -4396,4 +4402,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3722** |
+| **Total** | **3728** |

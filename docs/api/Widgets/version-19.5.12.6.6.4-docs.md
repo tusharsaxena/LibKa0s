@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **19** · `WidgetsReorder.lua` **5** · `WidgetsDragHandle.lua` **12** · `WidgetsLineChart.lua` **6** · `WidgetsAutocomplete.lua` **6** · `WidgetsCopyWindow.lua` **4** |
 | Shipped in | v1.85.0 (unreleased) |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 19.5.12.6.6.3](./version-19.5.12.6.6.3-docs.md) (unreleased, an earlier step of v1.85.0) — its title bar was 26 high against a 30 band. |
-| Superseded by | — |
+| Superseded by | [version 20.5.12.6.6.4](./version-20.5.12.6.6.4-docs.md) (unreleased, a later step of v1.85.0) — an owned dropdown's tick and arrow were baked in its constructor, so a skin switch or the Scope reached neither. |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 19, WidgetsReorder = 5, WidgetsDragHandle = 12, WidgetsLineChart = 6, WidgetsAutocomplete = 6, WidgetsCopyWindow = 4 }` |
 

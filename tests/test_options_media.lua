@@ -435,6 +435,47 @@ test("media: a painted picker's swatch takes icon.tint; an unowned one its typed
     Skin:Token("LootHistory", "icon.tint")[1])
 end)
 
+--- A picker of `kind` the skin painted for `owner`, its one entry closed on the row. `key` is the entry.
+local function paintedPicker(Skin, lib, ace, kind, owner, key)
+  local dd = picker(lib, ace, kind)
+  Skin.__ace[dd] = { owner = owner }
+  dd:SetList({ [key] = key }, { key })
+  dd:SetValue(key)
+  return dd
+end
+
+test("media: a closed painted picker's swatch takes icon.tint; an unowned one its typed gray", function()
+  local m, Skin, lib, ace = env()
+  local plain = picker(lib, ace, "statusbar")
+  plain:SetList({ Smooth = "Smooth" }, { "Smooth" })
+  plain:SetValue("Smooth")
+  assertEqual(m.__paint(plain.__media.swatch.bar).vertex[1], 0.65, "unowned")
+
+  Skin:RegisterOwner("LootHistory")
+  Skin:SetChoice("LootHistory", "ka0s", "azeroth")
+  local tint = Skin:Token("LootHistory", "icon.tint")
+  assertTrue(tint[1] ~= 0.65, "a skin whose tint is not the typed gray")
+  local owned = paintedPicker(Skin, lib, ace, "statusbar", "LootHistory", "Smooth")
+  assertEqual(m.__paint(owned.__media.swatch.bar).vertex[1], tint[1])
+end)
+
+test("media: a border swatch sits on input.bg when painted, on its typed fill when not", function()
+  local _, Skin, lib, ace = env()
+  local plain = picker(lib, ace, "border")
+  plain:SetList({ Glass = "Glass" }, { "Glass" })
+  plain:SetValue("Glass")
+  local typed = { plain.__media.swatch:GetBackdropColor() }
+
+  Skin:RegisterOwner("LootHistory")
+  Skin:SetChoice("LootHistory", "ka0s", "azeroth")
+  local fill = Skin:Token("LootHistory", "input.bg")
+  assertTrue(fill[1] ~= typed[1] or fill[2] ~= typed[2] or fill[3] ~= typed[3], "a skin that shows the difference")
+  local owned = paintedPicker(Skin, lib, ace, "border", "LootHistory", "Glass")
+  local r, g, b = owned.__media.swatch:GetBackdropColor()
+  assertEqual(("%.3f,%.3f,%.3f"):format(r, g, b), ("%.3f,%.3f,%.3f"):format(fill[1], fill[2], fill[3]))
+  assertEqual(("%.2f,%.2f,%.2f"):format(typed[1], typed[2], typed[3]), "0.10,0.10,0.10", "BORDER_FILL, unowned")
+end)
+
 test("media: border and sound rows sit on the stock bar, level with the page's other controls", function()
   -- LSM30_Border's patch existed because that widget pinned a 42px tile left of its bar. A picker
   -- has none: the frame is the stock Dropdown's; the swatch or play button is made on the bar, and

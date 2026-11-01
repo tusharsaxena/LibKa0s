@@ -131,6 +131,25 @@ test("skin marks: with the Scope cleared the id list's X is the Ka0s close icon"
   assertNil(x.__removeAtlas, "no client atlas")
 end)
 
+test("skin marks: the id list's Ka0s X wears icon.tint", function()
+  local m, Skin = env(OPTIONS)
+  F.owner(Skin, OWNER, "azeroth")
+  local gui = m.__libs["AceGUI-3.0"]
+  gui:RegisterWidgetType("Icon", function()
+    local w = m.__makeAceGUIWidget("Icon")
+    local holder = m.CreateFrame("Frame", nil, m.UIParent)
+    local img, hl = holder:CreateTexture(), holder:CreateTexture()
+    w.image = img
+    w.frame.GetRegions = function() return img, hl end
+    return w
+  end, 21)
+  local O, ctx = page(m.LibStub("LibKa0s-Options-1.0"))
+  idList(O, ctx)
+  local x = removeMark(ctx)
+  assertEqual(m.__paint(x.image).texture, m.LibStub("LibKa0s-Media-1.0").Icon(OWNER, "close"))
+  assertEqual(tintOf(m, x.image), rgb(Skin:ResolveSkin("azeroth")["icon.tint"]))
+end)
+
 test("skin marks: on an ignored panel the id list's X stays the client atlas", function()
   local m, Skin = env(OPTIONS)
   F.owner(Skin, OWNER, "azeroth")
@@ -175,6 +194,40 @@ test("skin marks: a host's art wins, and an ignored panel's dropdown keeps its c
   local dd = W.Dropdown(m.UIParent, 100, { owner = OWNER, panel = true })
   assertEqual(m.__paint(dd.arrow).texture, "Interface\\Buttons\\Arrow-Down-Up")
   assertEqual(dd.__check, "|TInterface\\Buttons\\UI-CheckBox-Check:0|t ")
+end)
+
+test("skin marks: an owned dropdown's marks follow a skin switch and the Scope, live", function()
+  local m, Skin = env(WIDGETS)
+  local S = F.owner(Skin, OWNER, "azeroth")
+  local W = m.LibStub("LibKa0s-Widgets-1.0")
+  local Media = m.LibStub("LibKa0s-Media-1.0")
+  local tick, chevron = Media.Icon(OWNER, "confirm"), Media.Icon(OWNER, "chevron-down")
+  local dd = W.Dropdown(m.UIParent, 100, { owner = OWNER, panel = true })
+  local before = dd.__check
+
+  Skin:SetChoice(OWNER, "ka0s", "contrast")
+  assertTrue(dd.__check ~= before, "the tick's color moved with the skin")
+  assertEqual(dd.__check, S.MarkText(tick, 0, "icon.hot") .. " ", "the tick is the live skin's")
+  assertEqual(m.__paint(dd.arrow).texture, chevron)
+
+  Skin:SetIgnore(OWNER, true)
+  assertEqual(m.__paint(dd.arrow).texture, "Interface\\Buttons\\Arrow-Down-Up", "an ignored panel is stock")
+  assertEqual(dd.__check, "|TInterface\\Buttons\\UI-CheckBox-Check:0|t ", "with no rebuild")
+
+  Skin:SetIgnore(OWNER, false)
+  assertEqual(m.__paint(dd.arrow).texture, chevron, "and clearing the Scope brings the marks back")
+  assertEqual(dd.__check, S.MarkText(tick, 0, "icon.hot") .. " ")
+end)
+
+test("skin marks: a skin switch leaves a host's own dropdown art alone", function()
+  local m, Skin = env(WIDGETS)
+  F.owner(Skin, OWNER, "azeroth")
+  local W = m.LibStub("LibKa0s-Widgets-1.0")
+  local dd = W.Dropdown(m.UIParent, 100, { owner = OWNER, panel = true, chevron = "Host\\Arrow", check = "Host\\Tick" })
+  Skin:SetChoice(OWNER, "ka0s", "contrast")
+  Skin:SetIgnore(OWNER, true)
+  assertEqual(m.__paint(dd.arrow).texture, "Host\\Arrow")
+  assertEqual(dd.__check, "|THost\\Tick:0|t ")
 end)
 
 test("skin marks: an unowned dropdown is what it was", function()

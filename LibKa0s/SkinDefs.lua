@@ -167,15 +167,19 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 --- its settings chrome keeps its art with the Scope cleared now that a paint reads the three edges.
 -- Minor 22 (FS-L5 of the same bundle, cause L5): `text.command`, `text.strong` and `gtip.emphasis`, the
 -- yellow and white a settings page typed. Ka0s Default's are those literals; every other skin's are
--- its `text.accent` and `text.body`. The eui source derives them from Ka0s Default.
+-- its `text.accent` and `text.body`. The eui source derives `text.strong` from Ka0s Default, and from
+-- SkinEUI minor 3 the other two follow EllesmereUI's accent.
 -- Minor 23 (cause L8 of the same bundle): `menu.suggestBg`, `menu.suggestBorder` and `list.ghostIcon`,
 -- a suggestion list's chrome and the carried copy's mark. Ka0s Default's are what those drew; every
--- other skin's are its `menu.bg`, `menu.border` and `icon.tint`.
+-- other skin's are its `menu.bg`, `menu.border` and `icon.tint`. Under the eui source `menu.suggestBg`
+-- follows EllesmereUI's panel color (SkinEUI minor 3); the other two are Ka0s Default's.
 -- Minor 24 (FS-T1 of the same bundle, causes D2, D3 and D6): `hud.text`, `hud.label`, `bar.fill`,
 -- `hud.shadow`, `hud.shadowX` and `hud.shadowY`, the HUD's text, its labels, its bar fill and its text
 -- shadow. Ka0s Default's are what most of the HUD stores today: white text, gold labels, AuraMaster's
 -- blue fill and no shadow. Every other skin's are its `text.body`, `text.accent` and `slider.fill`, and a
--- dark shadow of its own. They name no class or meaning color: those stay the host's.
+-- dark shadow of its own. They name no class or meaning color: those stay the host's. Under the eui
+-- source `hud.label` and `bar.fill` follow EllesmereUI's accent (SkinEUI minor 3); the rest are Ka0s
+-- Default's.
 local DEFS_MINOR = 24
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end

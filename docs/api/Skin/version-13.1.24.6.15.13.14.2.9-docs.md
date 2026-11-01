@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **13** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **24** · `SkinDefsOthers.lua` **6** · `SkinPaint.lua` **15** · `SkinPaintExtras.lua` **13** · `SkinPaintControls.lua` **14** · `SkinEUI.lua` **2** · `SkinAce.lua` **9** |
 | Shipped in | v1.85.0 (unreleased) |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 13.1.24.6.15.12.14.2.8](./version-13.1.24.6.15.12.14.2.8-docs.md) (unreleased, an earlier step of v1.85.0) — a Ka0s profile page's delete confirmation stayed the client's. |
-| Superseded by | — |
+| Superseded by | [version 13.1.24.6.15.13.14.3.9](./version-13.1.24.6.15.13.14.3.9-docs.md) (unreleased, a later step of v1.85.0) — five tokens the other skins derive from a driven token stayed Ka0s Default's under the `eui` source. |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 13, SkinOwnerTokens = 1, SkinDefs = 24, SkinDefsOthers = 6, SkinPaint = 15, SkinPaintExtras = 13, SkinPaintControls = 14, SkinEUI = 2, SkinAce = 9 }` |
 
