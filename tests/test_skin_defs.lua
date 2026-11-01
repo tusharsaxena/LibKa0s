@@ -680,6 +680,26 @@ test("skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read
   end
 end)
 
+--- The largest channel difference of two opaque colors.
+local function apart(x, y)
+  return math.max(math.abs(x[1] - y[1]), math.abs(x[2] - y[2]), math.abs(x[3] - y[3]))
+end
+
+local BLACK = { 0, 0, 0 }
+
+test("skin defs: alternate rows show in every skin", function()
+  -- SF-L3, images 53 and 54. red under: Obsidian's 2% white or High Contrast's #0D0D0D, which no
+  -- eye separates from the window. Ka0s Default's own 3% stays: the item names the other two.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    if key ~= "ka0s" then
+      local t = Skin:ResolveSkin(key)
+      local win = over(t["win.bg"], BLACK)
+      assertTrue(apart(over(t["list.stripe"], win), win) >= 0.05, key .. ": the stripe stands off the window")
+    end
+  end
+end)
+
 test("skin defs: a table header wears the skin's color, and its sort arrow another", function()
   -- SF-L2, images 24 to 26. red under: Obsidian or Glass heading a table in its muted gray, or a
   -- skin whose arrow matches its header. Ka0s Default keeps its gold on gold.

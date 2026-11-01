@@ -21,6 +21,7 @@
 Three files move: `SkinDefs.lua` **26**, `SkinDefsOthers.lua` **8** and `SkinPaintControls.lua` **16**, from the owner's smoke feedback (Ka0sAddonsCommonTasks `docs/2026-11-01-SMOKE_FEEDBACK/`).
 
 - **`list.header.arrow`** (`SF-L2`), since SkinDefs minor 26: a table's sort arrow, painted by `S.SortHeaderBar`. Ka0s Default's is its gold; every other skin's differs from its header. `list.header.text` is the skin's color: Obsidian, Glass and WoW Forever take their accent where they drew a neutral. `icon.arrow` keeps every other arrow.
+- **`list.stripe`** (`SF-L3`), since SkinDefs Others minor 8: every skin's alternate row stands at least 5% off its window in a channel; Obsidian's and High Contrast's did not show. Ka0s Default's stays.
 - **What a consumer owes**: a host that colors its own sort marks reads `list.header.arrow`, not `icon.arrow` or `list.header.text`, and a host token table gains the row beside `list.header.text`.
 
 ## What changed at version 15.1.25.7.17.16.15.4.9: every skin's own HUD values, and the gaps the flips found (`FS-FIX`)
@@ -1675,7 +1676,7 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 | `list.header.bg` | `#101012` | `#3A2614` | `#FFFFFF .06` | `#1A1A1A` | `#FF7A33 .08` | `#FFFFFF .07` | `#B48CFF .08` | `#000000 .35` |
 | `list.header.text` | `#4DB8FF` | `#E2B659` | `#B69CFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#C9A07A` |
 | `list.header.arrow` | `#F2F2F4` | `#E9DDBC` | `#FFFFFF` | `#FFFFFF` | `#FF7A33` | `#FFFFFF` | `#B48CFF` | `#FFFFFF` |
-| `list.stripe` | `#FFFFFF .02` | `#E9DDBC .04` | `#FFFFFF .03` | `#0D0D0D` | `#FFFFFF .025` | `#FFFFFF .03` | `#FFFFFF .025` | `#FFFFFF .025` |
+| `list.stripe` | `#FFFFFF .06` | `#E9DDBC .07` | `#FFFFFF .06` | `#222222` | `#FFFFFF .06` | `#FFFFFF .06` | `#FFFFFF .06` | `#FFFFFF .06` |
 | `list.hover` | `#E8E8EC .1` | `#E9DDBC .1` | `#F2F4F8 .1` | `#FFE600 .2` | `#F4E7DC .1` | `#FFFFFF .1` | `#F2EEF8 .1` | `#FFFFFF .1` |
 | `list.sel` | `#4DB8FF .14` | `#A3241A .35` | `#B69CFF .24` | `#000000` | `#FF7A33 .18` | `#FFD100 .18` | `#B48CFF .2` | `#C9A07A .16` |
 | `list.selOutline` | · | · | · | `#FFE600` | · | · | · | · |

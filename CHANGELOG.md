@@ -20,6 +20,7 @@ Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `
 
 - **OptionsSkinPicker minor 8**: every tooltip on the skin picker wraps, so Apply to all's long sentence takes several rows.
 - **SkinDefs minor 26**, **SkinDefsOthers minor 8**, **SkinPaintControls minor 16**: `list.header.arrow`, a table's sort arrow, which `S.SortHeaderBar` paints. Ka0s Default's is its gold and every other skin's differs from its header. Obsidian, Glass and WoW Forever head a table in their accent.
+- **SkinDefsOthers minor 8**: every skin's `list.stripe` stands at least 5% off its window. Obsidian's and High Contrast's did not show. Ka0s Default's stays.
 - **What a consumer owes**: a host that colors its own sort marks reads `list.header.arrow`, and a host token table gains the row. BankLedger and LootHistory both do.
 
 ### The review of the rulings and the gate (`FS-FIX`)
