@@ -316,3 +316,75 @@ test("TestStrip: a write to strip.kind after birth does not repaint the fill", f
     assertFill(s, 0.35, 0.80, 1.00, 0.12, "birth-only: still cyan")
   end)
 end)
+
+-- ── the strip's right-click menu (SF-F1) ─────────────────────────────────────────────────────
+
+--- Open the strip's menu with a right-click, answering the rows ContextMenu was handed.
+local function rightClick(s)
+  local got
+  local real = W.ContextMenu
+  W.ContextMenu = function(anchor, rows, opts) got = { anchor = anchor, rows = rows, opts = opts } end
+  local ok, err = pcall(function() s:__fire("OnMouseUp", "RightButton") end)
+  W.ContextMenu = real
+  if not ok then error(err, 0) end
+  return got
+end
+
+local function labels(rows)
+  local out = {}
+  for _, r in ipairs(rows) do out[#out + 1] = r.label end
+  return table.concat(out, "|")
+end
+
+test("TestStrip: a test strip with onEnd takes the right-click and offers End test", function()
+  -- red under: drop the stripMenu wiring in lib.TestStrip
+  recording(function()
+    local ended = 0
+    local s = W.TestStrip(mocks.UIParent, { onEnd = function() ended = ended + 1 end })
+    assertTrue(s:IsMouseEnabled(), "a strip with something to offer takes the mouse")
+    local m = rightClick(s)
+    assertEqual(m.anchor, s)
+    assertEqual(labels(m.rows), "End test")
+    m.rows[1].onClick()
+    assertEqual(ended, 1)
+    s:__fire("OnMouseUp", "LeftButton")   -- a left click opens nothing
+  end)
+end)
+
+test("TestStrip: a sim strip with a sim instance ends, steps and restarts it", function()
+  recording(function()
+    local calls, active = {}, true
+    local sim = {
+      IsActive = function() return active end,
+      Stop = function(_, why) calls[#calls + 1] = "stop:" .. tostring(why); active = false end,
+      Steps = function() return { "a", "b" } end,
+      Step = function() calls[#calls + 1] = "step" end,
+      Restart = function() calls[#calls + 1] = "restart" end,
+    }
+    local s = W.TestStrip(mocks.UIParent, { kind = "sim", sim = sim })
+    local m = rightClick(s)
+    assertEqual(labels(m.rows), "End sim|Step|Restart")
+    for _, r in ipairs(m.rows) do r.onClick() end
+    assertEqual(table.concat(calls, ","), "stop:stop,step,restart")
+    assertEqual(rightClick(s), nil, "an ended sim has nothing to offer: no menu")
+  end)
+end)
+
+test("TestStrip: a sim without steps offers only End sim; onEnd wins over the instance's Stop", function()
+  recording(function()
+    local ended
+    local sim = { IsActive = function() return true end, Stop = function() ended = "stop" end }
+    local s = W.TestStrip(mocks.UIParent, { kind = "sim", sim = sim, onEnd = function() ended = "host" end })
+    local m = rightClick(s)
+    assertEqual(labels(m.rows), "End sim")
+    m.rows[1].onClick()
+    assertEqual(ended, "host")
+  end)
+end)
+
+test("TestStrip: with neither onEnd nor sim the mouse stays off, as before", function()
+  recording(function()
+    local s = W.TestStrip(mocks.UIParent, { kind = "sim" })
+    assertEqual(s.__mouseCalls, nil)
+  end)
+end)

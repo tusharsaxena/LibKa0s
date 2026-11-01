@@ -1121,6 +1121,11 @@ shows, where it sits and what it says.
 | `kind` | **14** | `"test"` or `"sim"`: which flavor, read once at birth. Exactly `"sim"` gives the simulation cyan; anything else (a non-string, `"Sim"`, `"preview"`) is `"test"`. | `"test"`, the amber. |
 | `owner` | **16** | A registered skin owner: the wash is that skin's `strip.test` / `strip.sim`. The meaning colors stay the library's; a skin changes only their legibility. From **17** the line is `text.accent` in the skin's body face (`S.Text`), so *Ignore fonts* gives it its template's face back. | The library's two fills. |
 | `panel` | **17** | `true`: the strip sits on its owner's settings page, so while the owner ignores its settings panel the wash is the library's fill and the line its template's, live. | A window's strip: it keeps the skin. |
+| `sim` | **21** | A `LibKa0s-Sim-1.0` instance. A right-click on the strip opens `ContextMenu` at the pointer with **End sim** (`sim:Stop("stop")`), **Step** (when the instance has steps) and **Restart** (when it offers `Restart`), each only while `sim:IsActive()`. The library ends the sim; the host writes nothing else. | No menu from this field. |
+| `onEnd` | **21** | `function()`: the host's end of the mode, for a test mode the library cannot see. It is the menu's **End test** (**End sim** on a sim strip) and wins over the instance's `Stop`. | No End row from this field. |
+| `L` | **21** | `{ END_TEST, END_SIM, STEP, RESTART }`: localized menu labels. | English. |
+
+A strip given neither `sim` nor `onEnd` takes no mouse, exactly as before.
 
 ### `lib.TEST_STRIP`
 
