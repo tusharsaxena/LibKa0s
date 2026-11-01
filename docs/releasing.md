@@ -1129,7 +1129,7 @@ degradation stubs owe `O.LabelFont`, and its skin facade `Mark`, `MarkText`, `Hu
 composer row moves on the copy: each host opts its rows over in its flip commit. **Step 5 names hosts this time**: `SimPanel.lua`, `SimPanelRender.lua`
 and `Widgets.lua` moved, in the look only, so each report names the 30 high Steps title band, `gtip.title` on an owned tooltip title and `icon.tint` on
 an owned strip's icon. Strip and Sim: BankLedger, DropWatcher, LootHistory, MultiMeters. Sim only: KickCD. Strip only: DpsRace, LibKa0sSkinTester.
-The tag was re-cut locally on 2026-11-01 for `S.BarGloss`, `S.HudFont` and `Skin.FollowOnce` (`FS-FIX`), so a re-vendor of the first cut comes again.
+The tag was re-cut locally on 2026-11-01 for `S.BarGloss`, `S.HudFont` and `Skin.FollowOnce` (`FS-FIX`), and again for Toast minor 2's `soundFile`, so a re-vendor of an earlier cut comes again. `soundFile` is an additive descriptor field: no member moves, and no facade or stub owes anything for it.
 
 **Step 9 was run for v1.83.0 on 2026-10-31** (`FX-LK-DOCS` of Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/`), with DpsRace and LibKa0sSkinTester added to its loop: both were absent from it, and from every row but Toast and Skin. KickCD and MultiMeters joined the Sim row. A broader string grep also shows Perf in BankLedger, PanelMaster, PrettyChat and WhatGroup, but all four stay declined: none of them has a lookup in the loop's sense.
 
