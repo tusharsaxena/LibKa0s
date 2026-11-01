@@ -680,6 +680,23 @@ test("skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read
   end
 end)
 
+test("skin defs: a table header wears the skin's color, and its sort arrow another", function()
+  -- SF-L2, images 24 to 26. red under: Obsidian or Glass heading a table in its muted gray, or a
+  -- skin whose arrow matches its header. Ka0s Default keeps its gold on gold.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    assertTrue(t["list.header.arrow"] ~= nil, key .. ": states a sort arrow")
+    if key ~= "ka0s" then
+      assertTrue(colorKey(t["list.header.text"]) ~= colorKey(t["list.header.arrow"]), key .. ": the arrow is another color")
+    end
+  end
+  for _, key in ipairs({ "obsidian", "glass", "forever" }) do
+    local t = Skin:ResolveSkin(key)
+    assertEqual(colorKey(t["list.header.text"]), colorKey(t["text.accent"]), key .. ": the header in its accent")
+  end
+end)
+
 test("skin defs: Ka0s Default states its settings art, and every other skin an edge and a rule", function()
   -- SkinDefs minor 21 (FS-L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING, cause L3): `false`
   -- is the art the frame wears, as `list.hoverArt`'s is. red under: Ka0s Default stating a style, so

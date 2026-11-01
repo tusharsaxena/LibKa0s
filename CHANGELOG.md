@@ -14,11 +14,13 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.25.7.17.16.15.4.9**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**, `LibKa0s-Media-1.0` key **12.1**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.26.8.17.16.16.4.9**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**, `LibKa0s-Media-1.0` key **12.1**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
 
 ### The owner's smoke feedback (`SF-L1` to `SF-L5`)
 
 - **OptionsSkinPicker minor 8**: every tooltip on the skin picker wraps, so Apply to all's long sentence takes several rows.
+- **SkinDefs minor 26**, **SkinDefsOthers minor 8**, **SkinPaintControls minor 16**: `list.header.arrow`, a table's sort arrow, which `S.SortHeaderBar` paints. Ka0s Default's is its gold and every other skin's differs from its header. Obsidian, Glass and WoW Forever head a table in their accent.
+- **What a consumer owes**: a host that colors its own sort marks reads `list.header.arrow`, and a host token table gains the row. BankLedger and LootHistory both do.
 
 ### The review of the rulings and the gate (`FS-FIX`)
 

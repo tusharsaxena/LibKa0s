@@ -616,7 +616,8 @@ test("skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and Apply
   S.SquareIcon(icon, { crop = true })
   assertEqual(select(1, icon.icon:GetTexCoord()), 0.08, "cropped")
   Skin:RegisterSkin({ key = "framed", tokens = { ["icon.border"] = { 1, 1, 0, 1 },
-                                                 ["list.header.bg"] = { 0, 0, 0.2, 1 } } })
+                                                 ["list.header.bg"] = { 0, 0, 0.2, 1 },
+                                                 ["list.header.arrow"] = { 0, 1, 0, 1 } } })
   local ib = m.CreateFrame("Frame", nil, m.UIParent)
   S.IconBorder(ib, { size = 2 })
   assertEqual(F.rgba(survey(m, F.region(Skin, ib, "edgeTop")).color), F.tok(Skin, "contrast", "icon.border"),
@@ -628,7 +629,7 @@ test("skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and Apply
   local h1, a1 = bar:CreateFontString(), bar:CreateTexture()
   S.SortHeaderBar(bar, { texts = { h1 }, arrows = { a1 } })
   assertEqual(F.rgba(survey(m, h1).textColor), F.tok(Skin, "framed", "list.header.text"))
-  assertEqual(F.rgba(survey(m, a1).vertex), F.tok(Skin, "framed", "icon.arrow"))
+  assertEqual(F.rgba(survey(m, a1).vertex), "0,1,0,1", "list.header.arrow (SF-L2), not icon.arrow")
   assertTrue(survey(m, a1).desaturated == true, "the sort arrow desaturated")
   assertEqual(F.rgba(survey(m, F.region(Skin, bar, "fill")).color), "0,0,0.200,1", "the header fill")
   local fill = m.CreateFrame("Frame"):CreateTexture()

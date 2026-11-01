@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **15** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **25** · `SkinDefsOthers.lua` **7** · `SkinPaint.lua` **17** · `SkinPaintExtras.lua` **16** · `SkinPaintControls.lua` **15** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded
 | Supersedes | [version 14.1.24.6.16.15.14.3.9](./version-14.1.24.6.16.15.14.3.9-docs.md) (unreleased, an earlier step of v1.85.0) — every skin answered Ka0s Default's bar, icon, glow and cover values, a skin's None drew no border over the player's, and S.HudFont spent a font object per string. |
-| Superseded by | — |
+| Superseded by | [version 15.1.26.8.17.16.16.4.9](./version-15.1.26.8.17.16.16.4.9-docs.md) (unreleased, a later step of v1.85.0) — a table's sort arrow was `icon.arrow`, and Obsidian, Glass and WoW Forever headed tables in a neutral
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 15, SkinOwnerTokens = 1, SkinDefs = 25, SkinDefsOthers = 7, SkinPaint = 17, SkinPaintExtras = 16, SkinPaintControls = 15, SkinEUI = 4, SkinAce = 9 }` |
 
@@ -2079,3 +2079,7 @@ the LibStub race later keeps every owner, record and facade; the resolve cache a
 - `addonName`: no consumer as of v1.83.0, kept because the scan counts a read of the Options descriptor inside a Skin file; it is `lib:New`'s `addonName`, which is passed there.
 - `thirdPartySkinAddons`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
 - `thirdPartySkinsOff`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
+
+## Moving to version 15.1.26.8.17.16.16.4.9
+
+A host that colors its own sort marks reads `list.header.arrow`; see that document's *What changed*.
