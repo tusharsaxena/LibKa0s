@@ -1,0 +1,1 @@
+Independent adversarial review of feat/2026-11-01-full-skinning against master, 2026-11-01: 7 verified issues (2 medium, 5 low), all resolved in 153b906, one by a changelog-named exception owed by FS-ST-FIX (SkinPaintAceTree in the tester). Release gate refused once on P.unpaint CCN 16, fixed in 0f0eeab. Run wf_0c556713-761.
