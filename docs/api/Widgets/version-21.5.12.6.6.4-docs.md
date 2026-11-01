@@ -1178,8 +1178,7 @@ another.*
 Inside a frozen `-1.0` major, anything added is permanent — so what is *not* here at version 7 is a
 decision, not an oversight, and every one of these is reachable later without a major bump:
 
-- **No per-row disable**, still — an `isActive` predicate reports a state, it does not gate a
-  click. A row that must not be clickable is not expressible at this version.
+- **A per-row disable arrived at minor 21** (`disabled`, *What changed at this version*). An `isActive` predicate still only reports a state.
 - **No setters to restyle a dropdown after it is built.** `chevron`, `check` and `glyphFont` are
   read once, at construction, from `opts`; there is no `dd:SetChevron(...)` or equivalent to change
   them on a live instance.

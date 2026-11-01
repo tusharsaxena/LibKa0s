@@ -789,7 +789,6 @@ end
 
 --- Everything a font object carries, as a key: two strings with one key draw alike.
 local function hudLookKey(face, size, flags, x, y, r, g, b, a)
-  if x == false then return ("%s|%s|%s|none"):format(face, tostring(size), flags) end
   return ("%s|%s|%s|%s|%s|%s|%s|%s|%s"):format(face, tostring(size), flags, tostring(x), tostring(y),
     tostring(r), tostring(g), tostring(b), tostring(a))
 end

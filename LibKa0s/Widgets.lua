@@ -325,7 +325,6 @@ end
 -- predicate is asked FIRST and its answer is final: an option that carries one is describing a
 -- state the value set alone does not express.
 local function rowSelected(dd, opt)
-  if opt.title or opt.divider then return false end
   if opt.isActive then return opt.isActive(dd) and true or false end
   if dd.multi then
     return (opt.value == "all") and (not next(dd._selected)) or (dd._selected[opt.value] or false)

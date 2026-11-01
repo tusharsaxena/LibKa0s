@@ -246,7 +246,8 @@ test("skin hud count: two owners with one look share it, and a new look makes on
   local looks = { { face = "Fonts\\B.ttf", size = 12 }, { face = FACE, size = 13 },
                   { face = FACE, size = 12, flags = "THICKOUTLINE" },
                   { face = FACE, size = 12, shadow = true, shadowFromSkin = false },
-                  { face = FACE, size = 12, shadow = { 2, -2, 1, 0, 0, 1 }, shadowFromSkin = false } }
+                  { face = FACE, size = 12, shadow = { 2, -2, 1, 0, 0, 1 }, shadowFromSkin = false },
+                  { face = FACE, size = 12, shadow = { 2, -2, 1, 0, 0, 0.5 }, shadowFromSkin = false } }
   for i, look in ipairs(looks) do
     assertTrue(A.HudFont(fontString(m), look) ~= one, "look " .. i)
     assertEqual(#m.__fontsMade, 1 + i)
@@ -427,14 +428,18 @@ end)
 test("skin host gaps: IconBorder follows its Texture's shown state", function()
   -- red under: a border left standing around a hidden icon.
   local m, Skin = F.env()
+  local hooks = 0
   m.hooksecurefunc = function(t, name, fn)
     local real = t[name]
+    hooks = hooks + 1
     rawset(t, name, function(...) real(...); fn(...) end)
   end
   local S = F.owner(Skin, OWNER)
   local tex = m.CreateFrame("Frame"):CreateTexture()
   tex:Hide()
   S.IconBorder(tex, { fromSkin = true })
+  S.IconBorder(tex, { fromSkin = true })
+  assertEqual(hooks, 3, "Show, Hide and SetShown, once each however often it paints")
   local h = Skin.painted[tex].regions.holder
   assertFalse(h:IsShown(), "a hidden Texture starts hidden")
   tex:Show()
@@ -485,6 +490,15 @@ test("skin host gaps: a numeric leaf lands on the list's own entry", function()
   Skin.ResetToSkin(p, { "flags.2" })
   assertEqual(p.flags[2], true)
   assertNil(p.flags["2"])
+end)
+
+test("skin host gaps: a numeric leaf with no such entry stays a string key", function()
+  -- red under: a list grown by a path whose number names nothing.
+  local _, Skin = F.env()
+  local p = { flags = {} }
+  Skin.ResetToSkin(p, { "flags.2" })
+  assertNil(p.flags[2])
+  assertEqual(p.flags["2"], Skin.FROM_SKIN)
 end)
 
 test("skin host gaps: a missing numeric entry is still skipped", function()
@@ -618,9 +632,12 @@ test("skin host gaps: S.Mark's stock puts the client's art back at release", fun
   local S = F.owner(Skin, OWNER, "obsidian")
   local widget, image = iconWidget(m)
   local stocked = 0
-  S.Mark(image, { art = "x", stock = function() stocked = stocked + 1 end })
+  local opts = { art = "x", stock = function() stocked = stocked + 1 end }
+  S.Mark(image, opts)
+  Skin:SetChoice(OWNER, "ka0s", "contrast")
+  S.Mark(image, opts)
   widget:OnRelease()
-  assertEqual(stocked, 1)
+  assertEqual(stocked, 1, "once, however often it painted")
 end)
 
 test("skin host gaps: a mark on a plain frame arms no release", function()

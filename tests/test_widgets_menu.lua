@@ -128,6 +128,7 @@ test("menu: a divider row is short, drawn as a rule, and the height counts it", 
   assertEqual(rule:GetHeight(), 8)
   assertNil(rule:GetScript("OnClick"))
   assertTrue(rule.__rule:IsShown(), "the rule")
+  assertEqual(table.concat(rule.__rule.__colorTexture, ","), "0.24,0.24,0.27,0.85", "in the divider's color")
   assertEqual(rule.fs:GetText(), "")
   assertFalse(menu.buttons[1].__rule:IsShown(), "and on no other row")
   assertEqual(menu:GetHeight(), 16 + 8 + 16 + 8)

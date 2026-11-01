@@ -354,7 +354,7 @@ end
 -- and the same list is the CLI's allowed values, so a
 -- "From skin" entry would draw no preview and be a value the CLI accepts and nothing can render. A
 -- companion bool says it instead, beside the picker it governs: `<key>FromSkin`, emitted only when
--- the spec opts in. While it is true the picker is disabled (`disabledIf`, the companion's own key,
+-- the spec opts in. While it is true the picker is disabled (bar border: see minor 18) (`disabledIf`, the companion's own key,
 -- so a record-backed row reads its record) and shows the skin's value (`skinValue`, the row field the
 -- flow engine reads before the stored one, OptionsWidgets minor 35); the host draws with
 -- `S.Resolve(token, stored, fromSkin)`, which answers the skin's value while the companion is set.

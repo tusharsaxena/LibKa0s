@@ -789,7 +789,7 @@ Total.
 - skin hud members: FollowOnce answers false and writes nothing on bad input
 - skin hud members: FollowOnce passes opts on, and the colon form works
 
-### test_skin_host_gaps.lua (44)
+### test_skin_host_gaps.lua (45)
 
 - skin host gaps: Ka0s Default's bar, icon, glow and cover values stand
 - skin host gaps: every other skin answers its own five values
@@ -824,6 +824,7 @@ Total.
 - skin host gaps: ResetToSkin walks a numeric segment into a list
 - skin host gaps: FollowOnce reaches a numeric container, and a string key wins
 - skin host gaps: a numeric leaf lands on the list's own entry
+- skin host gaps: a numeric leaf with no such entry stays a string key
 - skin host gaps: a missing numeric entry is still skipped
 - skin host gaps: S.HoverArt tints hover art in list.hoverArt and follows a skin
 - skin host gaps: S.HoverArt leaves the client's art where the skin says false
@@ -4368,7 +4369,7 @@ Total.
 | test_skin_defs.lua | 35 |
 | test_skin_hud_tokens.lua | 6 |
 | test_skin_hud_members.lua | 27 |
-| test_skin_host_gaps.lua | 44 |
+| test_skin_host_gaps.lua | 45 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 39 |
@@ -4508,4 +4509,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3822** |
+| **Total** | **3823** |
