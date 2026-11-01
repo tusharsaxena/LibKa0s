@@ -1124,6 +1124,20 @@ test("launcher: the menu ends with Open skin selector for a skin owner that pass
   assertEqual(opened, 1)
 end)
 
+test("launcher: Open skin selector is grayed with the note while the addon is disabled", function()
+  local owner = skinnedOwner("azeroth")
+  local opened, on = 0, false
+  local L = lib:New(skinnedFixture(owner, { openSkinPicker = function() opened = opened + 1 end,
+    isEnabled = function() return on end, setEnabled = function() end }).d)
+  L:Register()
+  local menu = rightClick(L)
+  local e = assert(menu:Find("Open skin selector"))
+  assertFalse(e.enabled, "grayed")
+  assertEqual(e.text, "Open skin selector (enable the addon first)")
+  assertNil(menu:Click("Open skin selector"))
+  assertEqual(opened, 0)
+end)
+
 test("launcher: it alone makes a menu, and a host that is no skin owner or passes nothing gets none", function()
   local owner = skinnedOwner("azeroth")
   local L = lib:New(skinnedFixture(owner, { openSkinPicker = function() end }).d)
