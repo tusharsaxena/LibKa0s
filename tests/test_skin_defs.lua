@@ -700,6 +700,20 @@ test("skin defs: alternate rows show in every skin", function()
   end
 end)
 
+test("skin defs: a window's header stands off its content, with a rule that shows", function()
+  -- SF-L4, images 65 to 69. red under: Obsidian's title band one step from its body under a rule
+  -- no brighter than either, or High Contrast's black band on black.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    local win = over(t["win.bg"], BLACK)
+    local band = over(t["title.bg"], win)
+    assertTrue(apart(band, win) >= 0.05, key .. ": the title band stands off the content")
+    local rule = over(t["divider"], win)
+    assertTrue(apart(rule, win) >= 0.1 and apart(rule, band) >= 0.1, key .. ": the rule shows against both")
+  end
+end)
+
 test("skin defs: a table header wears the skin's color, and its sort arrow another", function()
   -- SF-L2, images 24 to 26. red under: Obsidian or Glass heading a table in its muted gray, or a
   -- skin whose arrow matches its header. Ka0s Default keeps its gold on gold.

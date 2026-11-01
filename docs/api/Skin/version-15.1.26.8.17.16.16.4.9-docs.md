@@ -22,6 +22,7 @@ Three files move: `SkinDefs.lua` **26**, `SkinDefsOthers.lua` **8** and `SkinPai
 
 - **`list.header.arrow`** (`SF-L2`), since SkinDefs minor 26: a table's sort arrow, painted by `S.SortHeaderBar`. Ka0s Default's is its gold; every other skin's differs from its header. `list.header.text` is the skin's color: Obsidian, Glass and WoW Forever take their accent where they drew a neutral. `icon.arrow` keeps every other arrow.
 - **`list.stripe`** (`SF-L3`), since SkinDefs Others minor 8: every skin's alternate row stands at least 5% off its window in a channel; Obsidian's and High Contrast's did not show. Ka0s Default's stays.
+- **`title.bg` and `divider`** (`SF-L4`): every skin's title band stands at least 5% off its window, and its rule at least 10% off both, read over black. Ka0s Default's `title.bg` moves to black at 0.9, by the owner's ruling for every skin; Obsidian's, Glass's and High Contrast's bands and Obsidian's, Glass's and WoW Forever's rules move. `title.rule` and `tab.rule` follow `divider`.
 - **What a consumer owes**: a host that colors its own sort marks reads `list.header.arrow`, not `icon.arrow` or `list.header.text`, and a host token table gains the row beside `list.header.text`.
 
 ## What changed at version 15.1.25.7.17.16.15.4.9: every skin's own HUD values, and the gaps the flips found (`FS-FIX`)
@@ -684,7 +685,7 @@ eight skins*, below.
 | `win.inner` | color | yes | `0.24, 0.24, 0.27, 0.85` |
 | `win.inset` | number | no | `1` |
 | `win.radius` | number | no | `0` |
-| `title.bg` | color | yes | `0.04, 0.04, 0.05, 0.9` |
+| `title.bg` | color | yes | `0, 0, 0, 0.9` |
 | `title.bgTop` | color | yes | none (`false`) |
 | `title.bgBottom` | color | yes | none (`false`) |
 | `title.text` | color | no | `1, 0.82, 0, 1` |
@@ -1521,13 +1522,13 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 | `win.borderStyle` | `flat` | `flat` | `nine:Ka0s Glass` | `flat` | `flat` | `nine:Blizzard Dialog` | `flat` | `flat` |
 | `win.inner` | none | `#8A6A36` | none | none | `#C98A3A .45` | none | `#3D2F12` | none |
 | `win.radius` | `0` | `0` | `8` | `0` | `0` | `0` | `0` | `0` |
-| `title.bg` | `#050506` | `#1A110A` | `#FFFFFF .06` | `#000000` | `#2F150D` | `#383838` | `#211C39` | `#050505` |
+| `title.bg` | `#1E1E22` | `#1A110A` | `#FFFFFF .10` | `#1F1F1F` | `#2F150D` | `#383838` | `#211C39` | `#050505` |
 | `title.bgTop` | none | none | none | none | `#3A1A0F` | `#4B4B4B` | `#2A2347` | none |
 | `title.bgBottom` | none | none | none | none | `#24100A` | `#252525` | `#17142B` | none |
 | `title.text` | `#2A86D1` | `#F5C542` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFD100` | `#F6D27A` | `#FFFFFF` |
-| `title.rule` | `#1C1C20` | `#6B4A22` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
+| `title.rule` | `#4A4A54` | `#6B4A22` | `#FFFFFF .22` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#48433D` |
 | `title.align` | · | · | · | · | · | · | `CENTER` | `CENTER` |
-| `divider` | `#1C1C20` | `#6B4A22` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
+| `divider` | `#4A4A54` | `#6B4A22` | `#FFFFFF .22` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#48433D` |
 | `foot.bg` | `#050506` | `#1A110A` | `#FFFFFF .04` | `#000000` | `#000000 .3` | `#000000 .3` | `#000000 .3` | `#050505` |
 | `close.rest` | `#9B9BA4` | `#F5C542` | `#C9CFDB` | `#FFFFFF` | `#C7A993` | `#D9D9D9` | `#F6D27A` | `#FFFFFF` |
 | `close.hot` | · | `#FF6B4A` | · | `#FF5050` | · | · | · | · |
@@ -1631,7 +1632,7 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 | `tab.onBg` | `#000000 0` | `#7A1A10` | `#B69CFF .1` | `#000000` | `#4A2012` | `#4A4A4A` | `#2C2550` | `#000000 .4` |
 | `tab.onText` | `#F2F2F4` | `#FFD866` | `#FFFFFF` | `#FFE600` | `#FFB45A` | `#FFFFFF` | `#F6D27A` | `#FFFFFF` |
 | `tab.onLine` | `#4DB8FF` | `#000000 0` | `#B69CFF` | `#FFE600` | `#FF7A33` | `#000000 0` | `#B48CFF` | `#C9A07A` |
-| `tab.rule` | `#1C1C20` | `#6B4A22` | `#FFFFFF .12` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#2E2A26` |
+| `tab.rule` | `#4A4A54` | `#6B4A22` | `#FFFFFF .22` | `#FFFFFF` | `#6A2E17` | `#6E6E6E` | `#4A3D1E` | `#48433D` |
 | `tab.radius` | `0` | `0` | `0` | `0` | `0` | `0` | `0` | `0` |
 | `tab.texture` | · | · | · | · | · | `UI-OptionsFrame-ActiveTab` | · | · |
 | `tab.onTexture` | · | · | · | · | · | `UI-OptionsFrame-ActiveTab` | · | · |

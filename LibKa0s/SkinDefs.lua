@@ -186,6 +186,8 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 --- Minor 26 (SF-L2 of Ka0sAddonsCommonTasks docs/2026-11-01-SMOKE_FEEDBACK): `list.header.arrow`, a
 --- table's sort arrow, so it can differ from the header it sits in. Ka0s Default's is its gold, as
 --- `icon.arrow` is; the arrows elsewhere stay `icon.arrow`.
+--- Then (SF-L4, still minor 26): Ka0s Default's `title.bg` is black at 0.9, where it sat one step
+--- under its window, so its header stands off its content as the owner asked of every skin.
 local DEFS_MINOR = 26
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
@@ -471,7 +473,7 @@ local KA0S = {
   -- palette, the client's quality colors written out, or `false`, the explicit "none" (a decoration
   -- Ka0s Default does not draw, which is a setting, not a fallback).
   ["win.bgTop"] = false, ["win.bgBottom"] = false, ["win.bgTexture"] = false,
-  ["title.bg"] = { 0.04, 0.04, 0.05, 0.9 }, ["title.bgTop"] = false, ["title.bgBottom"] = false,
+  ["title.bg"] = { 0, 0, 0, 0.9 }, ["title.bgTop"] = false, ["title.bgBottom"] = false,
   ["title.align"] = "CENTER", ["foot.bg"] = { 0.04, 0.04, 0.05, 0.9 },
   ["btn.bgTop"] = false, ["btn.bgBottom"] = false, ["btnPrimary.bgTop"] = false, ["btnPrimary.bgBottom"] = false,
   ["input.text"] = BODY, ["input.placeholder"] = DIM,

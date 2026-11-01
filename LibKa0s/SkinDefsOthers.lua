@@ -30,7 +30,8 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- palette calls for one through BAR_EDGE. Ka0s Default's values stand. No `sem.*` moves.
 -- Minor 8 (Ka0sAddonsCommonTasks docs/2026-11-01-SMOKE_FEEDBACK): SF-L2, a table header in the
 -- skin's color and `list.header.arrow` in another (SkinDefs minor 26). SF-L3: every skin's
--- `list.stripe` shows, at least 5% off its window in a channel.
+-- `list.stripe` shows, at least 5% off its window in a channel. SF-L4: every title band stands 5%
+-- off the window and every rule 10% off both: Obsidian's, Glass's, High Contrast's and WoW Forever's move.
 local OTHERS_MINOR = 8
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
@@ -367,7 +368,7 @@ register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool 
     font = "Ka0s Expressway", tfont = "Ka0s Expressway", fs = 12.5, titleSize = 14.5,
     barTex = "Ka0s Matte",
     win = hex("#0A0A0B"), winBorder = edge(1, "flat", hex("#202024")), winInner = false, radius = 0,
-    titleBg = hex("#050506"), titleColor = hex("#2A86D1"), divider = hex("#1c1c20"),
+    titleBg = hex("#1E1E22"), titleColor = hex("#2A86D1"), divider = hex("#4A4A54"),
     headColor = hex("#F2F2F4"),
     text = hex("#E8E8EC"), muted = hex("#9B9BA4"), accent = hex("#4DB8FF"),
     closeColor = hex("#9B9BA4"),
@@ -462,8 +463,8 @@ register("glass", "Glass", "Translucent frosted panels with rounded corners and 
     barTex = "Ka0s Glass Bar",
     win = rgba(18, 22, 34, 0.88), winBorder = edge(8, "nine:Ka0s Glass", GLASS_EDGE),
     winInner = false, radius = 8,
-    titleBg = rgba(255, 255, 255, 0.06), titleColor = hex("#FFFFFF"),
-    divider = rgba(255, 255, 255, 0.12),
+    titleBg = rgba(255, 255, 255, 0.1), titleColor = hex("#FFFFFF"),
+    divider = rgba(255, 255, 255, 0.22),
     text = hex("#F2F4F8"), muted = hex("#C9CFDB"), accent = hex("#B69CFF"),
     closeColor = hex("#C9CFDB"),
     btnBg = rgba(255, 255, 255, 0.08), btnBorder = edge(1, "flat", rgba(255, 255, 255, 0.22)),
@@ -513,7 +514,7 @@ register("contrast", "High Contrast", "Black and white with yellow focus, crisp 
     font = "Ka0s Doris PP", tfont = "Ka0s Doris PP", fs = 10.5, titleSize = 12.5,
     barTex = "Ka0s Solid",
     win = hex("#000000"), winBorder = edge(2, "flat", HC_WHITE), winInner = false, radius = 0,
-    titleBg = hex("#000000"), titleColor = HC_YELLOW, divider = HC_WHITE,
+    titleBg = hex("#1F1F1F"), titleColor = HC_YELLOW, divider = HC_WHITE,
     text = HC_WHITE, muted = hex("#E0E0E0"), accent = HC_YELLOW, closeColor = HC_WHITE,
     btnBg = hex("#000000"), btnBorder = edge(1, "flat", HC_WHITE), btnText = HC_WHITE,
     btnRadius = 0,
@@ -729,7 +730,7 @@ register("forever", "WoW Forever", "Warm charcoal, black title bars with centere
     barTex = "Ka0s Classic",
     win = FV_BG, winBorder = edge(1, "flat", FV_EDGE), winInner = false, radius = 0,
     titleBg = hex("#050505"), titleColor = hex("#FFFFFF"), titleAlign = "CENTER",
-    divider = hex("#2e2a26"), headColor = hex("#F2B33D"),
+    divider = hex("#48433d"), headColor = hex("#F2B33D"),
     text = hex("#FFFFFF"), muted = hex("#A39E97"), accent = FV_TAN, closeColor = hex("#FFFFFF"),
     btnBg = hex("#1f1d1b"), btnBorder = edge(1, "flat", hex("#48433d")), btnText = hex("#FFFFFF"),
     btnRadius = 0,
