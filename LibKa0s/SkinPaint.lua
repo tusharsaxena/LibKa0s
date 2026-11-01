@@ -123,7 +123,9 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- gradient S.Tab's `opts.glow` names (SkinPaintControls minor 12); P.asColor is exported for it.
 -- Minor 15 (cause L7 of the same bundle): P.unpaint gives a bar's step buttons back, the record
 -- saying it took them (SkinPaintControls minor 13's P.stepArrows).
-local PAINT_MINOR = 15
+-- Minor 16 (FS-FIX of the same bundle): P.unpaint's saved-state loops moved to restoreSaved, unchanged and
+-- in the same order, because minors 14 and 15 took it to CCN 16.
+local PAINT_MINOR = 16
 if lib.__paintMinor and lib.__paintMinor >= PAINT_MINOR
   and lib.__paintShellMinor == lib.MINOR then return end
 lib.__paintMinor      = PAINT_MINOR
@@ -794,10 +796,9 @@ local function restoreColors(rec, method)
   end
 end
 
---- Undo everything a primitive did to a target: faded art back to its alpha, fonts, text and vertex
---- colors, text alignment (minor 12) and a backdrop back to what they were, every Ka0s region and
---- both holders hidden. The regions are kept for reuse.
-function P.unpaint(rec, frame)
+--- The saved alpha, text alignment, gradient and fonts back, in that order (P.unpaint's first step,
+--- out of it at minor 16 so it stays under CCN 15).
+local function restoreSaved(rec)
   local s = rec.regions.saved or {}
   for region, a in pairs(s.alpha or {}) do region:SetAlpha(a) end
   s.alpha = nil
@@ -806,6 +807,13 @@ function P.unpaint(rec, frame)
   for tex, g in pairs(s.glow or {}) do tex:SetGradient("VERTICAL", g.bottom, g.top) end
   s.glow = nil
   for fs in pairs(s.font or {}) do P.unfont(rec, fs) end
+end
+
+--- Undo everything a primitive did to a target: faded art back to its alpha, fonts, text and vertex
+--- colors, text alignment (minor 12) and a backdrop back to what they were, every Ka0s region and
+--- both holders hidden. The regions are kept for reuse.
+function P.unpaint(rec, frame)
+  restoreSaved(rec)
   restoreColors(rec, "SetTextColor")
   restoreColors(rec, "SetVertexColor")
   restoreColors(rec, "SetBackdropBorderColor")
