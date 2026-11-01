@@ -3023,7 +3023,7 @@ Total.
 - chrome skin: an owner-less popup and an ignored panel draw the client's suggestion rows
 - chrome skin: list.hoverArt is the client's art in Ka0s Default and WoW Default, the accent elsewhere
 
-### test_options_compose_skin.lua (16)
+### test_options_compose_skin.lua (22)
 
 - compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
 - compose skin: without fromSkin the three groups emit exactly the rows they did
@@ -3041,6 +3041,12 @@ Total.
 - compose skin: the bar family is unchanged; the icon family also governs the thickness
 - compose skin: the icon family's pickers show the skin's icon border while the companion is set
 - compose skin: a rendered icon-family thickness slider is disabled with the style picker
+- compose skin: OptionsCompose is at minor 17 or later
+- compose skin: every family's companion starts on
+- compose skin: a host's own default still wins, which is how a row stays put until its addon moves
+- compose skin: the pickers start on Ka0s Default's own values, with or without a companion
+- compose skin: the bar family governs the thickness, and fromSkin = true still does not
+- compose skin: fromSkin alone leaves Font flags typed, because only a host on S.FontFlags reads @skin
 
 ### test_options_compose_flags.lua (5)
 
@@ -4310,7 +4316,7 @@ Total.
 | test_options_skin.lua | 22 |
 | test_options_tooltip_skin.lua | 9 |
 | test_options_chrome_skin.lua | 15 |
-| test_options_compose_skin.lua | 16 |
+| test_options_compose_skin.lua | 22 |
 | test_options_compose_flags.lua | 5 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
@@ -4363,4 +4369,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3697** |
+| **Total** | **3703** |

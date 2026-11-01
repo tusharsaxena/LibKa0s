@@ -14,7 +14,13 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **12.1.23.5.15.11.14.2.8**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.16.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **19.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Skin-1.0` key **12.1.23.5.15.11.14.2.8**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **19.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**; every other file still at its v1.84.0 minor, and **test kit revision 48**. No `NEEDS_*` floor rises.
+
+### Composer rows start on the skin (`FS-D1`, cause D1)
+
+- **OptionsCompose minor 17**: a `<key>FromSkin` companion defaults true, and Font and Bar texture default to Ka0s Default's `Ka0s Prototype` and `Ka0s Default`, with or without `fromSkin`. `spec.defaults` still wins. No host's row moves on the re-vendor, because every one states its own default; each host opts its rows over in its flip commit (Options doc, *Moving to*).
+- `BorderGroup{ fromSkin = "bar" }`, additive: the companion governs the thickness too, on `bar.borderSize`. `fromSkin = true` keeps the thickness the player's.
+- Font flags stay opt-in (`flagsFromSkin`), because only a host on `S.FontFlags` can read `@skin`. Swatches and Font shadow wait for `FS-T1`'s tokens.
 
 ### One title bar shape, library half (`FS-L9`, cause L9)
 

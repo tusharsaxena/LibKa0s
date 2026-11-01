@@ -7,8 +7,9 @@
 --
 -- What is pinned:
 --
---   * WITHOUT `fromSkin`, FontGroup / BorderGroup / BarGroup emit exactly the rows minor 11 emitted.
---   * WITH IT, one companion bool `<key>FromSkin` follows the canonical rows (default false, on a
+--   * WITHOUT `fromSkin`, FontGroup / BorderGroup / BarGroup emit the rows minor 11 emitted, the
+--     picker defaults aside (Ka0s Default's since minor 17).
+--   * WITH IT, one companion bool `<key>FromSkin` follows the canonical rows (default true since minor 17, on a
 --     line of its own); the picker is disabled while it is set and shows the skin's value, and the
 --     companion writes and clears through the host's seam like any row.
 --   * NO SENTINEL REACHES A LIST: the picker's values (the CLI's allowed values) are unchanged.
@@ -80,7 +81,7 @@ test("compose skin: fromSkin appends one companion per picker, after the canonic
   local c = rowAt(font, "t.fontFromSkin")
   assertEqual(c.type, "bool")
   assertEqual(c.label, "Use the skin's font")
-  assertEqual(c.default, false)
+  assertEqual(c.default, true, "FS-D1: it starts on")
   assertTrue(c.startsLine, "on a line of its own")
   assertEqual(rowAt(font, "t.font").disabledIf, "t.fontFromSkin", "the picker follows its companion")
   assertEqual(paths(O.BorderGroup({ prefix = "b.", fromSkin = true })),
@@ -237,7 +238,7 @@ test("compose skin: BorderGroup fromSkin = 'icon' emits the same rows as fromSki
   local icon = O.BorderGroup({ prefix = "b.", fromSkin = "icon" })
   assertEqual(paths(icon), paths(bar), "one companion, after the canonical four")
   assertEqual(rowAt(icon, "b.borderStyleFromSkin").label, "Use the skin's border")
-  assertEqual(rowAt(icon, "b.borderStyleFromSkin").default, false)
+  assertEqual(rowAt(icon, "b.borderStyleFromSkin").default, true)
   assertEqual(rowAt(icon, "b.borderStyle").disabledIf, "b.borderStyleFromSkin")
   assertTrue(rowAt(icon, "b.borderStyleFromSkin").tooltip:find("thickness", 1, true) ~= nil,
     "the icon companion says it governs the thickness too")
@@ -292,4 +293,71 @@ test("compose skin: a rendered icon-family thickness slider is disabled with the
   assertTrue(slider.disabled, "the slider is disabled")
   assertEqual(slider.value, Skin:Token(OWNER, "icon.borderSize"), "showing the skin's thickness")
   assertEqual(store["i.borderSize"], 6, "the stored thickness is untouched")
+end)
+
+-- ── starting on the skin (OptionsCompose minor 17, FS-D1 of Ka0sAddonsCommonTasks
+-- docs/2026-11-01-FULL_SKINNING, cause D1) ───────────────────────────────────────────────────
+
+test("compose skin: OptionsCompose is at minor 17 or later", function()
+  assertTrue(T.options.MODULES.OptionsCompose >= 17)
+end)
+
+test("compose skin: every family's companion starts on", function()
+  local O = host(OWNER)
+  assertEqual(rowAt(O.FontGroup({ prefix = "t.", fromSkin = true }), "t.fontFromSkin").default, true)
+  assertEqual(rowAt(O.BorderGroup({ prefix = "b.", fromSkin = true }), "b.borderStyleFromSkin").default, true)
+  assertEqual(rowAt(O.BorderGroup({ prefix = "b.", fromSkin = "bar" }), "b.borderStyleFromSkin").default, true)
+  assertEqual(rowAt(O.BorderGroup({ prefix = "b.", fromSkin = "icon" }), "b.borderStyleFromSkin").default, true)
+  assertEqual(rowAt(O.BarGroup({ prefix = "r.", fromSkin = true }), "r.barTextureFromSkin").default, true)
+end)
+
+test("compose skin: a host's own default still wins, which is how a row stays put until its addon moves",
+  function()
+  local O = host(OWNER)
+  local rows = O.FontGroup({ prefix = "t.", fromSkin = true,
+    defaults = { fontFromSkin = false, font = "Ka0s Expressway" } })
+  assertEqual(rowAt(rows, "t.fontFromSkin").default, false)
+  assertEqual(rowAt(rows, "t.font").default, "Ka0s Expressway")
+  assertEqual(rowAt(rows, "t.font").disabledIf, "t.fontFromSkin", "still governed")
+end)
+
+test("compose skin: the pickers start on Ka0s Default's own values, with or without a companion", function()
+  local O = host(OWNER)
+  local ka0s = Skin:ResolveSkin("ka0s")
+  for _, fromSkin in ipairs({ false, true }) do
+    local spec = function(prefix) return { prefix = prefix, fromSkin = fromSkin } end
+    assertEqual(rowAt(O.FontGroup(spec("t.")), "t.font").default, ka0s["hud.font"])
+    assertEqual(rowAt(O.BorderGroup(spec("b.")), "b.borderStyle").default, ka0s["bar.borderStyle"])
+    assertEqual(rowAt(O.BarGroup(spec("r.")), "r.barTexture").default, ka0s["bar.texture"])
+    assertEqual(rowAt(O.FontGroup(spec("t.")), "t.fontSize").default, ka0s["hud.fontSize"])
+    assertEqual(rowAt(O.BorderGroup(spec("b.")), "b.borderSize").default, ka0s["bar.borderSize"])
+    assertEqual(rowAt(O.FontGroup(spec("t.")), "t.fontFlags").default, ka0s["hud.outline"])
+  end
+end)
+
+test("compose skin: the bar family governs the thickness, and fromSkin = true still does not", function()
+  local O, rec = host(OWNER)
+  if not Skin:IsOwner(OWNER) then Skin:RegisterOwner(OWNER) end
+  local rows = O.BorderGroup({ prefix = "b.", fromSkin = "bar" })
+  assertEqual(paths(rows), paths(O.BorderGroup({ prefix = "b.", fromSkin = true })), "the same rows")
+  local style, size = rowAt(rows, "b.borderStyle"), rowAt(rows, "b.borderSize")
+  assertEqual(size.disabledIf, "b.borderStyleFromSkin")
+  assertTrue(rowAt(rows, "b.borderStyleFromSkin").tooltip:find("thickness", 1, true) ~= nil,
+    "the companion says it governs the thickness too")
+  rec.store["b.borderStyle"], rec.store["b.borderSize"] = "Blizzard Tooltip", 6
+  assertNil(size.skinValue(size), "companion unset: the stored size shows")
+  rec.store["b.borderStyleFromSkin"] = true
+  assertEqual(style.skinValue(style), Skin:Token(OWNER, "bar.borderStyle"))
+  assertEqual(size.skinValue(size), Skin:Token(OWNER, "bar.borderSize"))
+  assertEqual(rec.store["b.borderSize"], 6, "the stored thickness is untouched")
+  assertEqual(rowAt(O.FontGroup({ prefix = "t.", fromSkin = "bar" }), "t.fontFromSkin").label, "Use the skin's font",
+    "a family that names no font leaf is the plain one")
+end)
+
+test("compose skin: fromSkin alone leaves Font flags typed, because only a host on S.FontFlags reads @skin",
+  function()
+  local O = host(OWNER)
+  local row = rowAt(O.FontGroup({ prefix = "t.", fromSkin = true }), "t.fontFlags")
+  assertEqual(row.default, "OUTLINE")
+  assertNil(row.values["@skin"])
 end)

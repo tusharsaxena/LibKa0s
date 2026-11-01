@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **37** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **44** · `OptionsFlow.lua` **2** · `OptionsIds.lua` **7** · `OptionsIdSuggest.lua` **1** · `OptionsIdList.lua` **8** · `OptionsTabs.lua` **15** · `OptionsTabbed.lua` **2** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **16** · `OptionsScroll.lua` **13** · `OptionsNav.lua` **5** · `OptionsDrawer.lua` **5** · `OptionsKeybinds.lua` **7** · `OptionsAppearance.lua` **6** · `OptionsSkinPicker.lua` **7** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **4** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1` |
 | Shipped in | v1.85.0 (unreleased) |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 37.4.44.2.7.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3](./version-37.4.44.2.7.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3-docs.md) (unreleased, an earlier step of v1.85.0) — client marks on a skinned page. |
-| Superseded by | — |
+| Superseded by | [version 37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4](./version-37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 37, OptionsRegistry = 4, OptionsWidgets = 44, OptionsFlow = 2, OptionsIds = 7, OptionsIdSuggest = 1, OptionsIdList = 8, OptionsTabs = 15, OptionsTabbed = 2, OptionsCombat = 3, OptionsCompose = 16, OptionsScroll = 13, OptionsNav = 5, OptionsDrawer = 5, OptionsKeybinds = 7, OptionsAppearance = 6, OptionsSkinPicker = 7, OptionsSkinPickerRows = 1, OptionsSwitch = 1, OptionsMedia = 4 }` |
 
@@ -4091,3 +4091,17 @@ it got.
 - `lib.SKIN_PICKER_STRINGS`: no consumer as of v1.83.0, kept because it holds the default strings a host overrides through `spec.strings`, never by name.
 - `AppearanceRows`: no consumer as of v1.83.0, kept because `AppearanceTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
 - `KeybindRows`: no consumer as of v1.83.0, kept because `KeybindingsTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
+
+## Moving to 37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4
+
+Taking this version moves no row. Measured on 2026-11-01 against v1.84.0 hosts in scratch copies: every path-keyed composed row has its default from the host (`spec.defaults`, or AuraMaster's `NS.RegisterSchemaRows`, which stamps the template's), and no host defaults a companion off. A host with no such default would see Reset write the new value, so it declares one.
+
+A host opts its existing rows over in its `FS-<ADDON>-FLIP` commit:
+
+1. **Defaults.** Point the host's defaults at the skin: each companion `true`, and a stored pick may stay, since it is what the player gets back by clearing the companion.
+2. **Rows with no companion.** Add `fromSkin`: AuraMaster's four border rows (`"icon"` or `"bar"`, by what the row draws), DpsRace's `appearance.left.font` and `appearance.elapsed.font`, MultiMeters' `window.frame.borderStyle`.
+3. **Thickness.** A border that should follow the skin's thickness moves from `fromSkin = true` to `"bar"` and draws `S.Resolve("bar.borderSize", size, fromSkin)`: AbsorbTracker 3 (and it drops its hand-wired `followsSkin` on the slider), ConsumableMaster 1, DpsRace 7, MultiMeters 2, PartyFrameEnhanced 3, QuickComms 4.
+4. **Existing profiles.** One schema step, over every profile, calls `Skin.ResetToSkin(profile, keys)` with the companions named directly: it sets a key ending in `FromSkin` to `true`, stored or not, and keeps the stored pick. It never names a class or meaning color.
+5. **Colors and shadow.** Follow on the tokens `FS-T1` adds.
+
+See [version 37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4](./version-37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4-docs.md).
