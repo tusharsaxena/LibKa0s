@@ -11,10 +11,18 @@
 -- schema and off Ka0s Default; a number moves by one; a bool flips; a string takes another skin's
 -- value, because a font or bar key has to resolve, and stays put only where every skin agrees.
 --
--- THE FLIP. Ka0s Default, probe, Ka0s Default, probe: three real switches, so a host's repaint path
--- runs each time. The first settles: a region a lazy paint makes on it is spied from then on, and
--- the last two are compared, setter by setter, on what each object was last given. Nothing is
--- called "painted" that the host did not draw in response to the switch.
+-- THE FLIP. Ka0s Default, probe, Ka0s Default, probe, one more repaint, Ka0s Default: four real
+-- switches, so a host's repaint path runs each time. The first settles: a region a lazy paint makes on
+-- it is spied from then on. The rest are compared, setter by setter, on what each object was last
+-- given. Nothing is called "painted" that the host did not draw in response to the switch.
+--
+-- THE TWO HOME FLIPS ARE THE NOISE FLOOR. A setter that moves for its own reasons (a counter's
+-- SetText, a fade's SetAlpha, a fresh table with a field that changes) would read as the skin. So a
+-- key the two home flips disagree on is dropped from the comparison: the skin was the same both
+-- times, so the skin did not move it, and a surface with nothing else left did not change. The
+-- repaint under the probe, whose draws are not read, puts the home flips an odd distance apart: at
+-- an even distance, something that alternates per paint would agree with itself at home and differ
+-- under the probe. A host that skips an unchanged repaint loses nothing by it.
 --
 -- THE TWO PASSES. "clear": Scope cleared and companions on, every surface changes. "ignored": the
 -- owner's Scope ignored and companions off, a surface marked `scope` or carrying a `companion` is
@@ -196,6 +204,22 @@ end
 
 local function isEmpty(t) return next(t) == nil end
 
+--- One more paint under the skin that holds, its draws not read: a surface with no `paint` has only
+--- the library's own listeners, which a repaint of nothing does not reach.
+local function repaint(run)
+  run.rec.log = {}
+  if run.surface.paint then run.surface.paint(unpack(run.frames)) end
+end
+
+--- `log` without the keys `a` and `b`, two draws of one skin, disagree on.
+local function steady(log, a, b)
+  local out = {}
+  for key, args in pairs(log) do
+    if a[key] == b[key] then out[key] = args end
+  end
+  return out
+end
+
 --- True when a key in `a` draws something else in `b`, or is not drawn there.
 local function differs(a, b)
   for key, args in pairs(a) do
@@ -214,31 +238,35 @@ local function setterNames(log)
   return table.concat(names, ", ")
 end
 
---- The three flips over a built surface. Answers a problem, or nil.
+--- The four flips over a built surface. Answers a problem, or nil.
 local function compare(run)
   local Skin, name = run.Skin, run.surface.name
   flip(run, W.PROBE_KEY)
   local home = flip(run, Skin.DEFAULT)
   local probe = flip(run, W.PROBE_KEY)
+  repaint(run)
+  local again = flip(run, Skin.DEFAULT)
   if isEmpty(home) and isEmpty(probe) then
     return ("%s drew nothing on a skin switch: no drawing setter ran, so it does not repaint, or "
       .. "its build answered the wrong object"):format(name)
   end
-  if differs(home, probe) or differs(probe, home) then return nil end
+  local base, seen = steady(home, home, again), steady(probe, home, again)
+  if differs(base, seen) or differs(seen, base) then return nil end
+  if isEmpty(base) then
+    return ("%s did not change on a skin switch: all it drew (%s) moved between two draws of one skin, "
+      .. "so none of it follows the skin"):format(name, setterNames(home))
+  end
   return ("%s did not change on a skin switch (%s drew the same under the probe)"):format(name, setterNames(home))
 end
 
-local function setCompanion(surface, on)
-  if surface.companion then surface.companion(on) end
-end
-
---- One built, spied and compared pass, under the Scope `panel` and `fonts` and companions `on`.
+--- One built, spied and compared pass. Only "clear" reaches a companion: "ignored" excludes the
+--- surfaces that carry one, so its surfaces have no companion to hold off.
 local function pass(facts, Skin, surface, ignore)
   local rec
   local ok, problem = pcall(function()
     Skin:SetIgnore(facts.owner, ignore, ignore)
     Skin:SetChoice(facts.owner, "ka0s", Skin.DEFAULT)
-    setCompanion(surface, not ignore)
+    if surface.companion then surface.companion(true) end
     local frames = { surface.build() }
     rec = W.spy(frames)
     return compare({ Skin = Skin, owner = facts.owner, surface = surface, frames = frames, rec = rec })

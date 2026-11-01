@@ -22,6 +22,7 @@
 One file moves: `OptionsCompose.lua` 17 -> **18**. No member is added or removed.
 
 - **`O.BorderGroup` on the bar family** (`fromSkin = true` or `"bar"`) follows `Skin:Resolve`'s deferral. While the companion is on and the skin's `bar.borderStyle` is `None`, the style row and, on `"bar"`, the thickness row stay live and show the stored value, because that is what draws. A real style disables them, shows the skin's value, and with `spec.show` also disables Show border, which reads true meanwhile. A row's `disabledIf` on this family is therefore a predicate, not the companion's path.
+- **What a consumer owes:** two moves under a signature that did not. On the bar family a style or thickness row's `disabledIf` is a **function** of the row, where it was the companion's path string, and Show border gains a `disabledIf`, where it had none. Any reader that concatenates or compares the field, or pins its absence, goes red at the re-vendor: AbsorbTracker's `tests/test_schema.lua` raises on a concatenation, and AuraMaster, ConsumableMaster, DpsRace and MultiMeters each pin the old shape. A reader takes the field as the engine does, a path or a `function(row)`; font rows keep the string, so AuraMaster's production reader in `settings/Layout.lua` is untouched.
 - The companion's tooltip says so. The icon family and every other picker are as they were.
 
 ## What changed at version 37.4.44.2.7.1.8.15.2.3.17.13.5.5.7.6.7.1.1.4: composer rows start on the skin (`FS-D1`)

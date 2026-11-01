@@ -48,6 +48,9 @@ end)
 test("menu: ContextMenu refuses no anchor and no rows", function()
   assertNil(W.ContextMenu(nil, { { label = "x" } }))
   assertNil(W.ContextMenu(anchor(), nil))
+  assertNil(W.ContextMenu(anchor(), {}), "an empty list opens nothing, as the doc says")
+  assertFalse(W.ContextMenu(anchor(), { { label = "x" } }) == nil, "a row still opens")
+  W.CloseMenu()
 end)
 
 test("menu: a ContextMenu row's onClick runs after the menu has hidden", function()
@@ -208,6 +211,94 @@ test("menu: keepOpen holds the menu through the callback and repaints the row", 
   assertEqual(rr, 1)
   assertEqual(gg, 0.82, "the row reads its new state")
   W.CloseMenu()
+end)
+
+test("menu: a keepOpen row leaves a menu its callback opened alone", function()
+  -- red under: the repaint after the callback, which wrote the first menu's rows over the second's.
+  local there, second = anchor(), { { label = "Second", value = "s" } }
+  local rows = { { label = "Keep", value = "k", keepOpen = true,
+                   onClick = function() W.ContextMenu(there, second) end } }
+  local menu = W.ContextMenu(anchor(), rows)
+  click(menu.buttons[1])
+  assertTrue(menu._owner == there, "the callback's menu is up")
+  assertEqual(menu.buttons[1].fs:GetText(), "Second", "and wears its own rows")
+  W.CloseMenu()
+end)
+
+test("menu: a keepOpen row leaves a cursor menu on its own anchor alone", function()
+  -- red under: a repaint gated on the owner alone: the same anchor, a new menu.
+  local same, second = anchor(), { { label = "Second", value = "s" } }
+  local rows = { { label = "Keep", value = "k", keepOpen = true,
+                   onClick = function() W.ContextMenu(same, second, { cursor = true }) end } }
+  local menu = W.ContextMenu(same, rows)
+  click(menu.buttons[1])
+  assertEqual(menu.buttons[1].fs:GetText(), "Second")
+  W.CloseMenu()
+end)
+
+test("menu: a keepOpen row whose callback closed the menu does not repaint it", function()
+  local rows = { { label = "Keep", value = "k", keepOpen = true, onClick = function() W.CloseMenu() end } }
+  local menu = W.ContextMenu(anchor(), rows)
+  local pop, painted = menu.Populate, 0
+  menu.Populate = function(...) painted = painted + 1; return pop(...) end
+  click(menu.buttons[1])
+  menu.Populate = pop
+  assertEqual(painted, 0)
+  assertFalse(menu:IsShown())
+end)
+
+test("menu: every row takes the mouse, so a press on a title stops at the menu", function()
+  -- red under: EnableMouse false on a title or a divider: the outside-click check exempts the press
+  -- by geometry, so the menu stayed open and the click landed on whatever was under it.
+  local rows = { { label = "Heading", title = true }, { divider = true }, { label = "Off", disabled = true },
+                 { label = "Tip", title = true, tooltip = "why" }, { label = "Row" } }
+  local a = anchor()
+  local menu = W.ContextMenu(a, rows)
+  W.CloseMenu()
+  local got = {}
+  for i = 1, #rows do
+    local row = menu.buttons[i]
+    local real = row.EnableMouse
+    row.EnableMouse = function(self, on) got[i] = on; return real(self, on) end
+  end
+  menu = W.ContextMenu(a, rows)
+  for i = 1, #rows do assertEqual(got[i], true, "row " .. i) end
+  assertNil(menu.buttons[1]:GetScript("OnClick"), "and it is still inert")
+  assertFalse(menu.buttons[1].__hl:IsShown())
+  W.CloseMenu()
+end)
+
+test("menu: a title row first does not name a multi dropdown's All", function()
+  -- red under: UpdateMultiLabel reading _options[1], which a title row now can be.
+  local dd = W.Dropdown(mocks.UIParent, 110)
+  dd:SetMulti(true)
+  dd:SetOptions({ { label = "Filters", title = true }, { value = "all", label = "Everything" },
+                  { value = "a", label = "A" }, { value = "b", label = "B" } })
+  dd:UpdateMultiLabel()
+  assertEqual(dd.text:GetText(), "Everything")
+  dd:SetSelected({ a = true, b = true })
+  dd:UpdateMultiLabel()
+  assertEqual(dd.text:GetText(), "Everything: 2 selected")
+  dd:SetOptions({ { value = "a", label = "A" }, { value = "all", label = "Everything" } })
+  dd:SetSelected({})
+  dd:UpdateMultiLabel()
+  assertEqual(dd.text:GetText(), "Everything", "the sentinel's, wherever it stands")
+end)
+
+test("menu: a multi dropdown with no all row reads its first real row, as it always did", function()
+  local dd = W.Dropdown(mocks.UIParent, 110)
+  dd:SetMulti(true)
+  dd:SetOptions({ { label = "Filters", title = true }, { divider = true }, { value = "a", label = "First" } })
+  dd:UpdateMultiLabel()
+  assertEqual(dd.text:GetText(), "First")
+end)
+
+test("menu: a multi dropdown with no options says All", function()
+  local dd = W.Dropdown(mocks.UIParent, 110)
+  dd:SetMulti(true)
+  dd:SetOptions({})
+  dd:UpdateMultiLabel()
+  assertEqual(dd.text:GetText(), "All")
 end)
 
 test("menu: a dropdown takes the row options too, and onSelect its row", function()

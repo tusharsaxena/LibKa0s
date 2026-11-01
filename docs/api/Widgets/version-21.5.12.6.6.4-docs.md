@@ -29,9 +29,11 @@
 | `divider` | A rule in `divider`, on a row 8 high. No label needed. |
 | `disabled` | `true`, or a predicate of the opener read on every open. `text.disabled`, no click, no highlight. It keeps its tooltip, which is where it says why. |
 | `tooltip` | A string, or `fn(rowFrame, row)` drawing on GameTooltip. Taken off with the row and with the menu. |
-| `keepOpen` | The menu stays, and repaints after the callback, so a toggle row shows its new state. |
+| `keepOpen` | The menu stays, and repaints after the callback, so a toggle row shows its new state. It does not repaint a menu the callback closed or replaced. |
 
 - **The menu hides before the callback, and that is contract.** A callback may open another menu, and a hide after it would close that one. A row that must hold the menu says `keepOpen`. `dd.onSelect` also takes the row, as its second argument.
+- **Every row takes the mouse, an inert one too.** The menu has no mouse of its own and exempts a press on itself by geometry, so a row that let a press through would keep the menu open and hand the click to whatever is under it.
+- A multi-select's collapsed "All" label is the `"all"` row's, wherever it stands, else the first row that is neither a title nor a divider.
 - A dropdown's collapsed label is one line: `dd.text:SetWordWrap(false)`, so a long pick truncates rather than wrapping past the button's edge.
 - A row's color reads, in order: title, disabled, selected, `color`, plain. Under an owner the three new colors are `menu.textSel`, `text.disabled` and `divider`, read on every open.
 - **What a consumer owes:** a host with a degradation stub of this major gains `ContextMenu`, which may answer nil. A suite's seeded menu row needs `SetHeight`, `EnableMouse`, and `__hl` and `__rule` regions, since every paint writes them.

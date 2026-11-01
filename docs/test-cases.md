@@ -520,7 +520,7 @@ Total.
 - skin: Reskin works for a host with no owner, and a card keeps its caller's color
 - skin: setCard puts the owner's face back on the figure
 
-### test_media.lua (43)
+### test_media.lua (44)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -560,6 +560,7 @@ Total.
 - media: the README points at FONTS.md and carries no font license or credit of its own
 - media: RegisterLSM('X') registers 'Ka0s Nunito' under X's own libs folder, each face with its mask
 - media: a ruRU client keeps every Cyrillic face and is refused the western-only ones
+- media: RegisterLSM offers the flat Solid border LSM does not ship, unless it is held
 - media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless
 - media: the Glass art is uncompressed 32-bit TGA, power-of-two on both axes
 - media: every statusbar, Ka0s Default's bar among them, is a 256x32 32-bit TGA
@@ -789,7 +790,7 @@ Total.
 - skin hud members: FollowOnce answers false and writes nothing on bad input
 - skin hud members: FollowOnce passes opts on, and the colon form works
 
-### test_skin_host_gaps.lua (45)
+### test_skin_host_gaps.lua (46)
 
 - skin host gaps: Ka0s Default's bar, icon, glow and cover values stand
 - skin host gaps: every other skin answers its own five values
@@ -800,6 +801,7 @@ Total.
 - skin host gaps: a real bar border style in a skin wins
 - skin host gaps: the deferral is the bar's alone
 - skin host gaps: S.BarBorder answers style, show and size in one read
+- skin host gaps: every skin's bar border style resolves through LibSharedMedia alone
 - skin host gaps: S.BarBorder with the sentinel stored
 - skin host gaps: HudFont's shadowToken gives a host its shipped shadow under Ka0s Default
 - skin host gaps: HudFont's shadowToken follows a skin, a skin's own entry and its false
@@ -1091,7 +1093,7 @@ Total.
 - widgets: CopyWindow names the scroll frame when asked (minor 7)
 - widgets: CopyWindow leaves the scroll frame anonymous when not asked
 
-### test_widgets_menu.lua (16)
+### test_widgets_menu.lua (23)
 
 - menu: ContextMenu opens the shared menu on rows a host passes
 - menu: ContextMenu refuses no anchor and no rows
@@ -1106,6 +1108,13 @@ Total.
 - menu: a tooltip function is the host's renderer
 - menu: a disabled row keeps its tooltip, which says why
 - menu: keepOpen holds the menu through the callback and repaints the row
+- menu: a keepOpen row leaves a menu its callback opened alone
+- menu: a keepOpen row leaves a cursor menu on its own anchor alone
+- menu: a keepOpen row whose callback closed the menu does not repaint it
+- menu: every row takes the mouse, so a press on a title stops at the menu
+- menu: a title row first does not name a multi dropdown's All
+- menu: a multi dropdown with no all row reads its first real row, as it always did
+- menu: a multi dropdown with no options says All
 - menu: a dropdown takes the row options too, and onSelect its row
 - menu: the dropdown's own label is one line
 - menu: an owned menu reads its title, disabled and rule colors from the skin
@@ -4293,7 +4302,7 @@ Total.
 - prune-icons: none empties the folder; all and no line remove nothing
 - prune-icons: an unknown name is refused and nothing is removed
 
-### test_kit_skin_values.lua (27)
+### test_kit_skin_values.lua (29)
 
 - skin values: a planted color of each shape is reported, and only those lines
 - skin values: a planted texture of each shape is reported, and only those lines
@@ -4303,6 +4312,8 @@ Total.
 - skin values: a host's own paint call is read at its named positions
 - skin values: a row of numbers past a color's range is data
 - skin values: each category takes what its ruling leaves alone
+- skin values: a numeric `or` past the color positions is no hit, nor is a token fallback
+- skin values: a hit is reported once however many values share a CreateColor
 - skin values: a category takes nothing past its ruling
 - skin values: the seam, defaults/ and the locales are out by file
 - skin values: chat by file is for escapes, never a numeric color
@@ -4323,7 +4334,7 @@ Total.
 - skin values suite: a causeless row fails
 - skin values suite: no git fails
 
-### test_kit_skin_switch.lua (30)
+### test_kit_skin_switch.lua (35)
 
 - skin switch: the probe gives every token a value of its kind
 - skin switch: every probe color is its own, and none is Ka0s Default's
@@ -4341,6 +4352,11 @@ Total.
 - skin switch: a region made on the first repaint is compared on the later two
 - skin switch: only one surface's own draws count
 - skin switch: a table argument is compared by contents
+- skin switch: a change the skin did not cause does not pass a literal surface
+- skin switch: noise leaves a surface that does follow the skin passing
+- skin switch: a surface that only draws noise is told so
+- skin switch: a setter only one skin draws is a change
+- skin switch: a host that skips an unchanged repaint still reads as changing
 - skin switch: the first pass clears the Scope
 - skin switch: the first pass turns a companion on
 - skin switch: a Scope-ignored surface is excluded from the second pass
@@ -4434,7 +4450,7 @@ Total.
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
-| test_media.lua | 43 |
+| test_media.lua | 44 |
 | test_skin.lua | 33 |
 | test_skin_override.lua | 27 |
 | test_skin_outline.lua | 19 |
@@ -4445,7 +4461,7 @@ Total.
 | test_skin_defs.lua | 35 |
 | test_skin_hud_tokens.lua | 6 |
 | test_skin_hud_members.lua | 27 |
-| test_skin_host_gaps.lua | 45 |
+| test_skin_host_gaps.lua | 46 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 39 |
@@ -4454,7 +4470,7 @@ Total.
 | test_skin_ace.lua | 28 |
 | test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
-| test_widgets_menu.lua | 16 |
+| test_widgets_menu.lua | 23 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 49 |
 | test_widgets_draghandle_place.lua | 10 |
@@ -4580,12 +4596,12 @@ Total.
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 20 |
 | test_kit_vendor_sync.lua | 25 |
-| test_kit_skin_values.lua | 27 |
-| test_kit_skin_switch.lua | 30 |
+| test_kit_skin_values.lua | 29 |
+| test_kit_skin_switch.lua | 35 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3886** |
+| **Total** | **3902** |

@@ -137,6 +137,40 @@ test("skin host gaps: S.BarBorder answers style, show and size in one read", fun
   assertEqual(style .. tostring(show) .. size, "Blizzard Tooltipfalse7", "a companion off stays stored")
 end)
 
+test("skin host gaps: every skin's bar border style resolves through LibSharedMedia alone", function()
+  -- red under: Media minor 11, which registered no "Solid" border. LSM's own border table is below,
+  -- so this holds with no host's own registration in the room, as AbsorbTracker's fetch needs.
+  local m, Skin = F.env()
+  local LSM_OWN = { None = "", ["Blizzard Dialog"] = "d", ["Blizzard Tooltip"] = "t" }
+  local fetched = {}
+  local LSM = m.LibStub:NewLibrary("LibSharedMedia-3.0", 1)
+  LSM.MediaType = { BORDER = "border" }
+  function LSM:Register(kind, key, path)
+    if kind == "border" and not LSM_OWN[key] then LSM_OWN[key] = path end
+    return true
+  end
+  function LSM:IsValid(kind, key) return kind == "border" and LSM_OWN[key] ~= nil end
+  function LSM:Fetch(_, key, noDefault)
+    local path = LSM_OWN[key]
+    if path == nil and not noDefault then path = LSM_OWN.None end
+    return path ~= "" and path or nil
+  end
+  dofile("tests/_kit/loader.lua").load("LibKa0s/Media.lua", nil, m)
+  m.LibStub("LibKa0s-Media-1.0").RegisterLSM("Host")
+  local S = F.owner(Skin, OWNER)
+  for _, key in ipairs(OTHERS) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    local style, show = S.BarBorder("None", false, 1, true)
+    if style ~= "None" then
+      assertTrue(show, key)
+      fetched[key] = LSM:Fetch("border", style)
+      assertTrue(fetched[key] ~= nil, key .. "'s " .. style .. " fetches LSM's empty None")
+    end
+  end
+  assertEqual(fetched.contrast, "Interface\\Buttons\\WHITE8X8", "a flat edge, not a fallback")
+  assertEqual(fetched.wow, "t")
+end)
+
 test("skin host gaps: S.BarBorder with the sentinel stored", function()
   -- red under: "@skin" reaching a caller as a style name.
   local _, Skin = F.env()

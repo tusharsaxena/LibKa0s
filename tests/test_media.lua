@@ -462,6 +462,7 @@ test("media: RegisterLSM never offers a key LibSharedMedia already holds", funct
   end
   for name in pairs(media.FONTS) do hold("font", name, media.Font("Other", name)) end
   for name in pairs(media.BORDERS) do hold("border", name, media.Border("Other", name)) end
+  hold("border", "Solid", "Interface\\Buttons\\WHITE8X8")
   for name in pairs(media.BACKGROUNDS) do hold("background", name, media.Background("Other", name)) end
   T.mocks.__libs["LibSharedMedia-3.0"] = {
     MediaType = { FONT = "font", STATUSBAR = "statusbar", BORDER = "border", BACKGROUND = "background" },
@@ -488,7 +489,7 @@ test("media: RegisterLSM never offers a key LibSharedMedia already holds", funct
   assertEqual(#calls, 15, "only the fifteen statusbars, which nobody held, are offered")
   assertEqual(fonts, FONT_COUNT, "a held face still counts")
   assertEqual(bars, 15)
-  assertEqual(borders, 1, "the held Glass border still counts")
+  assertEqual(borders, 2, "the held Glass and Solid borders still count")
   assertEqual(backgrounds, 1, "the held Glass fill still counts")
   assertEqual(held.font["Ka0s Nunito"], media.Font("Other", "Ka0s Nunito"), "the first registration stays")
   assertEqual(held.statusbar["Ka0s Gradient"], media.Texture("Later", "Ka0s Gradient"),
@@ -797,6 +798,24 @@ test("media: a ruRU client keeps every Cyrillic face and is refused the western-
   assertTrue(store.font["Ka0s Segoe UI Semibold"] ~= nil, "Segoe UI, whose cmap has Cyrillic, was refused on ruRU")
 end)
 
+test("media: RegisterLSM offers the flat Solid border LSM does not ship, unless it is held", function()
+  -- red under: minor 11, which took Solid for an LSM default: LSM has a background and a statusbar.
+  local held = {}
+  T.mocks.__libs["LibSharedMedia-3.0"] = {
+    MediaType = { BORDER = "border" },
+    Register = function(_, _, key, path) held[key] = held[key] or path; return true end,
+    IsValid = function(_, _, key) return held[key] ~= nil end,
+  }
+  local _, _, borders = media.RegisterLSM("X")
+  assertEqual(held.Solid, "Interface\\Buttons\\WHITE8X8")
+  assertEqual(borders, 2, "Glass and Solid")
+  held.Solid = "first"
+  media.RegisterLSM("X")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+  assertEqual(held.Solid, "first", "a key another addon holds stays theirs")
+  assertEqual(media.BORDERS.Solid, nil, "the catalog stays shipped art")
+end)
+
 test("media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless", function()
   -- red under: minor 5, which had neither catalog.
   local border, background = media.BORDERS and media.BORDERS["Ka0s Glass"],
@@ -964,7 +983,7 @@ test("media: RegisterLSM registers the Glass border and background, and counts t
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
   assertEqual(fonts, FONT_COUNT)
   assertEqual(bars, 15)
-  assertEqual(borders, 1)
+  assertEqual(borders, 2, "Glass and Solid")
   assertEqual(backgrounds, 1)
   assertEqual(byKind.border and byKind.border["Ka0s Glass"], media.Border("X", "Ka0s Glass"))
   assertEqual(byKind.background and byKind.background["Ka0s Glass"], media.Background("X", "Ka0s Glass"))

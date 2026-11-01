@@ -6,8 +6,9 @@
 -- WHAT IT LOOKS FOR. Two kinds of typed value, each with its shapes:
 --
 --   color    a numeric literal in a color position of a paint call (V.COLOR_ARGS, plus the host's
---            `calls`); a `|cff` escape in a string; a `{ text, r, g, b }` row of components, the
---            shape a tooltip line table feeds AddLine.
+--            `calls`) or of a CreateColor, typed outright or as a fallback (`c.r or 1`); a `|cff`
+--            escape in a string; a `{ text, r, g, b }` row of components, the shape a tooltip line
+--            table feeds AddLine.
 --   texture  a client path in a string, under Interface\ or Fonts\, wherever it stands; a literal
 --            handed to a texture setter or an atlas setter (V.TEXTURE_SETTERS): a path, a name or a
 --            file id. Fonts are here because a face is drawn from a path the same way a bar is.
@@ -20,7 +21,9 @@
 -- hit: each row is a category, named after the ruling that left that value alone. A hit a rule takes
 -- carries `category`; `check` answers the rest, after the host's own rows. A category is kept narrow
 -- on purpose: it reads what the line says, and a client default counts only in a fallback's shape, so
--- `bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")` is still a hit.
+-- `bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")` is still a hit. So is any
+-- path handed to SetStatusBarTexture, which is `bar.texture`'s place whatever the path, a font face
+-- for `font.body`'s, and white no tint follows on the same object, which is white under every skin.
 --
 -- It holds no state and loads nothing, so tests/test_kit_skin_values.lua can plant whatever it likes.
 
@@ -34,7 +37,7 @@ V.SCOPE = { "core/*.lua", "modules/*.lua", "settings/*.lua" }
 V.COLOR_ARGS = {
   SetTextColor = { 1, 2, 3 }, SetColorTexture = { 1, 2, 3 }, SetVertexColor = { 1, 2, 3 },
   SetBackdropColor = { 1, 2, 3 }, SetBackdropBorderColor = { 1, 2, 3 },
-  SetStatusBarColor = { 1, 2, 3 }, SetShadowColor = { 1, 2, 3 },
+  SetStatusBarColor = { 1, 2, 3 }, SetShadowColor = { 1, 2, 3 }, SetSwipeColor = { 1, 2, 3 },
   AddLine = { 2, 3, 4 }, AddDoubleLine = { 3, 4, 5, 6, 7, 8 },
 }
 
@@ -126,7 +129,15 @@ local function splitArgs(s)
   return args
 end
 
-local function isNumber(arg) return arg:match("^%s*%-?%d*%.?%d+%s*$") ~= nil end
+--- A numeric literal: `.5`, `1.`, `0x10`. The lead keeps out a name tonumber would read, `inf`.
+local function isNumber(arg) return arg:find("^%s*%-?%.?%d") ~= nil and tonumber(arg) ~= nil end
+
+--- A number typed in a color position: outright, or as the fallback of `c.r or 1`.
+local function isTyped(arg)
+  if isNumber(arg) then return true end
+  local tail = arg:match("%f[%a]or%s+(%S+)%s*$")
+  return tail ~= nil and isNumber(tail)
+end
 
 --- The 1-based line of byte `pos`, from the sorted line-start offsets.
 local function lineOf(starts, pos)
@@ -158,20 +169,25 @@ end
 
 -- ── the shapes ───────────────────────────────────────────────────────────────────────────────
 
---- Every call of `name` in the bare text: fn(pos, args list).
-local function eachCall(bare, name, fn)
+--- Every match of `pattern` in the bare text, its capture an argument list: fn(pos, args list).
+local function eachArgs(bare, pattern, fn)
   local init = 1
   while true do
-    local s, e, list = bare:find("[:%.]" .. name .. "%s*(%b())", init)
+    local s, e, list = bare:find(pattern, init)
     if not s then return end
     init = e + 1
     fn(s, splitArgs(list:sub(2, -2)))
   end
 end
 
+--- Every method or field call of `name` in the bare text: fn(pos, args list). `pos` is the `:`.
+local function eachCall(bare, name, fn)
+  eachArgs(bare, "[:%.]" .. name .. "%s*(%b())", fn)
+end
+
 local function numericAt(list, positions)
   for _, p in ipairs(positions) do
-    if list[p] and isNumber(list[p]) then return true end
+    if list[p] and isTyped(list[p]) then return true end
   end
   return false
 end
@@ -182,6 +198,10 @@ local function scanColorCalls(ctx, calls)
       if numericAt(list, positions) then ctx.add{ kind = "color", shape = "call", pos = pos, call = name, args = list } end
     end)
   end
+  -- A global, so no receiver to match on, and a gradient's stops are read here.
+  eachArgs(ctx.bare, "%f[%w_]CreateColor%s*(%b())", function(pos, list)
+    if numericAt(list, { 1, 2, 3 }) then ctx.add{ kind = "color", shape = "call", pos = pos, call = "CreateColor", args = list } end
+  end)
 end
 
 local function isComponent(arg)
@@ -260,11 +280,19 @@ local function words(line, set)
 end
 
 local CHAT_FILES = { "Slash%w*%.lua$", "DebugLogSetup%.lua$", "Diagnostics[%w_]*%.lua$" }
-local LINK_WORDS = { "[Qq]uality", "ITEM_QUALITY", "|H%l+:" }
+local QUALITY_LOOKUPS = { "[Qq]uality%w*%s*[%(%[]", "ITEM_QUALITY" }
 local MEANING_GLOBALS = { "RAID_CLASS_COLORS", "CUSTOM_CLASS_COLORS", "C_ClassColor", "GetClassColor",
   "DebuffTypeColor", "GetDebuffTypeColor" }
-local MEANING_NAME = { "CLASS", "QUALITY", "RARITY", "DISPEL", "DEBUFF", "SCHOOL", "POWER", "REACTION",
-  "STAT", "CATEGORY", "REGION", "ROLE", "CAST" }
+local function setOf(list)
+  local set = {}
+  for _, word in ipairs(list) do set[word] = true end
+  return set
+end
+
+local MEANING_WORDS = setOf({ "CLASS", "CLASSES", "QUALITY", "QUALITIES", "RARITY", "RARITIES", "DISPEL",
+  "DISPELS", "DEBUFF", "DEBUFFS", "SCHOOL", "SCHOOLS", "POWER", "POWERS", "REACTION", "REACTIONS", "STAT",
+  "STATS", "CATEGORY", "CATEGORIES", "REGION", "REGIONS", "ROLE", "ROLES", "CAST", "CASTS" })
+local COLOR_WORDS = setOf({ "COLOR", "COLORS", "HEX", "HEXES", "HUE", "HUES" })
 
 --- A chat line (L13): inside a print's parens, the chat prefix's assignment, or, for an escape, in
 --- a slash file, the debug seam or a diagnostics report, whose strings go to chat or the console.
@@ -273,10 +301,12 @@ local function isChat(hit, ctx)
   return hit.shape == "escape" and words(ctx.path, CHAT_FILES)
 end
 
---- A hyperlink's or an item quality's color: the client's byte for byte.
+--- A hyperlink's or an item quality's color: the client's byte for byte. A real link, or a quality
+--- looked up in the code: the word in a string, or a name that merely holds it, is neither.
 local function isLink(hit)
   if hit.shape ~= "escape" then return false end
-  return hit.body:find("|c%x%x%x%x%x%x%x%x|H") ~= nil or words(hit.text, LINK_WORDS)
+  if hit.body:find("|c%x%x%x%x%x%x%x%x|H") ~= nil or hit.text:find("|H%l+:") ~= nil then return true end
+  return words(hit.bareText, QUALITY_LOOKUPS)
 end
 
 --- An escape builder or a `|c` search pattern: `|cff%02x...`, `"|cff" .. hex`, `|cff(%x+)`. No
@@ -307,8 +337,23 @@ end
 local NEUTRAL_SETTERS = { SetVertexColor = true, SetStatusBarColor = true }
 local WHITE_SETTERS = { SetColorTexture = true }
 
+--- What tints a white texture, each followed by a `name` of the object it runs on.
+local TINT_CALLS = { ":SetVertexColor%s*%(", ":SetGradient%s*%(", ":Get%w*Texture%s*%(%s*%)%s*:SetVertexColor%s*%(" }
+
+--- True when the object `hit`'s call runs on is tinted later in the file. It reads the object's last
+--- name, so `self.fill` here and `b.fill` in a paint function are one object; a call on a call's
+--- answer names none, and a tint a host's helper does is a host row's to name.
+local function tintFollows(hit, ctx)
+  local name = ctx.bare:sub(math.max(1, hit.pos - 64), hit.pos - 1):match("([%a_][%w_]*)$")
+  if not name then return false end
+  for _, call in ipairs(TINT_CALLS) do
+    if ctx.bare:find("%f[%w_]" .. name .. call, hit.pos + 1) then return true end
+  end
+  return false
+end
+
 local function isNeutral(hit) return isWhiteCall(hit, NEUTRAL_SETTERS) end
-local function isWhiteBase(hit) return isWhiteCall(hit, WHITE_SETTERS) end
+local function isWhiteBase(hit, ctx) return isWhiteCall(hit, WHITE_SETTERS) and tintFollows(hit, ctx) end
 
 local function isPopup(hit, ctx)
   return hit.shape == "escape" and inSpans(ctx.popup, hit.pos)
@@ -371,16 +416,33 @@ local function hitPath(hit) return normPath(hit.value or "") end
 local function isIcon(hit) return hitPath(hit):find("^interface/icons/") ~= nil end
 local function isIconArt(hit) return hasAny(hitPath(hit), ICON_ART) end
 local function isBlizzardArt(hit) return hasAny(hitPath(hit), BLIZZARD_ART) end
-local function isTintBase(hit) return hitPath(hit) == "interface/buttons/white8x8" end
+
+--- A typed bar: whatever the path, it stands where `bar.texture` belongs.
+local function isBarTexture(hit)
+  return hit.call == "SetStatusBarTexture" or hit.text:find("[:%.]SetStatusBarTexture%s*%(") ~= nil
+end
+
+--- The white texture: a name for it anywhere, or a setter's when a tint on that object follows.
+local function isTintBase(hit, ctx)
+  if hitPath(hit) ~= "interface/buttons/white8x8" or isBarTexture(hit) then return false end
+  return hit.call == nil or tintFollows(hit, ctx)
+end
+
 local function isStock(hit) return hasAny(hitPath(hit), STOCK_ART) and isFallback(hit) end
 local function isMono(hit) return hitPath(hit):find("^fonts/arialn%.ttf") ~= nil end
 local function isLsm(hit) return hit.text:find("[%.:]Fetch%s*%(") ~= nil or hit.text:find("LSM[%.:]Register") ~= nil end
 local function isAcePage(hit) return hit.text:find("AceDBOptions", 1, true) ~= nil end
 
---- A path into an addon's own folder: its `media/`, or a prefix a name is joined to.
+--- A font face: `font.body`'s place, by its file or by the call it stands in.
+local function isFontFace(hit)
+  return hitPath(hit):find("%.[to]tf$") ~= nil or hit.text:find("[:%.]SetFont%s*%(") ~= nil
+end
+
+--- A path into an addon's own folder, its `media/` or a prefix a name is joined to, drawn as art: a
+--- bar or a face stands where a token belongs wherever the file lives.
 local function isMedia(hit)
   local p = hitPath(hit)
-  if not p:find("^interface/addons/") then return false end
+  if not p:find("^interface/addons/") or isBarTexture(hit) or isFontFace(hit) then return false end
   return p:find("/media/", 1, true) ~= nil or p == "interface/addons/"
 end
 
@@ -403,15 +465,29 @@ local function categoryOf(hit, ctx)
   return nil
 end
 
+--- The name's words, upper-cased: split at `_`, `.` and a lower-to-upper step, so STATUS is no STAT
+--- and BROADCAST no CAST, and ClassColors reads as DISPEL_COLORS does.
+local function nameWords(name)
+  local found = {}
+  for word in (name:gsub("(%l)(%u)", "%1_%2")):gmatch("[^_%.]+") do found[word:upper()] = true end
+  return found
+end
+
+local function hasWord(found, set)
+  for word in pairs(found) do
+    if set[word] then return true end
+  end
+  return false
+end
+
 --- The name a table is assigned to reads as a meaning table: a word of what it means, and a color.
 local function meaningSpans(bare)
   local spans, init = {}, 1
   while true do
     local s, e, name = bare:find("([%w_%.]+)%s*=%s*%b{}", init)
     if not s then return spans end
-    local upper = name:upper()
-    if (upper:find("COLOR", 1, true) or upper:find("HEX", 1, true) or upper:find("HUE", 1, true))
-      and words(upper, MEANING_NAME) then spans[#spans + 1] = { s, e } end
+    local found = nameWords(name)
+    if hasWord(found, COLOR_WORDS) and hasWord(found, MEANING_WORDS) then spans[#spans + 1] = { s, e } end
     init = bare:find("=", s, true) + 1
   end
 end
@@ -455,8 +531,9 @@ local function mergedCalls(extra)
   return calls
 end
 
---- Every typed value in `src`, sorted: `{ kind, shape, line, text, pos, value / body / call, category }`.
---- `text` is the line with its comment cut, and `category` nil is a value no ruling leaves alone.
+--- Every typed value in `src`, sorted: `{ kind, shape, line, text, bareText, pos, value / body / call,
+--- category }`. `text` is the line with its comment cut, `bareText` that with its string bodies
+--- blanked too, and `category` nil is a value no ruling leaves alone.
 --- `opts`: `path` (root-relative, which the file rules read) and `calls` (name -> color positions,
 --- on top of V.COLOR_ARGS).
 function V.scan(src, opts)
@@ -464,6 +541,7 @@ function V.scan(src, opts)
   src = src:gsub("\r\n", "\n")
   local code, bare, strings = lex(src)
   local lines, starts = lineTable(code)
+  local bareLines = lineTable(bare)
   local hits, stringAt = {}, {}
   for _, s in ipairs(strings) do stringAt[s.pos] = s.body end
   local ctx = {
@@ -473,7 +551,7 @@ function V.scan(src, opts)
   }
   function ctx.add(hit)
     hit.line = lineOf(starts, hit.pos)
-    hit.text = lines[hit.line]
+    hit.text, hit.bareText = lines[hit.line], bareLines[hit.line]
     hit.category = categoryOf(hit, ctx)
     hits[#hits + 1] = hit
   end

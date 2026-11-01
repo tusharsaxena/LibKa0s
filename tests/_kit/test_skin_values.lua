@@ -78,6 +78,8 @@ test("skin values: the check is falsifiable, a planted value of each shape is re
     'bar:SetStatusBarTexture("Interface\\\\TargetingFrame\\\\UI-StatusBar")',
     "icon:SetTexture(134400)",
     'local P = "Interface\\\\FrameGeneral\\\\UI-Frame"',
+    'bar:SetStatusBarTexture("Interface\\\\Buttons\\\\WHITE8X8")',
+    'bar:SetStatusBarTexture("Interface\\\\AddOns\\\\Foo\\\\media\\\\bar.tga")',
     'fs:SetTextColor(NS.SkinColor("text.body"))',
     "tex:SetColorTexture(r, g, b, 0.95)",
     "-- |cffffffff in a comment",
@@ -86,7 +88,7 @@ test("skin values: the check is falsifiable, a planted value of each shape is re
   for _, hit in ipairs(V.scan(planted, { path = "modules/Planted.lua" })) do
     if not hit.category then lines[#lines + 1] = hit.line end
   end
-  if table.concat(lines, ",") ~= "1,2,3,4,5,6,7" then
-    fail("the scanner reported lines " .. table.concat(lines, ",") .. ", not 1 to 7")
+  if table.concat(lines, ",") ~= "1,2,3,4,5,6,7,8,9" then
+    fail("the scanner reported lines " .. table.concat(lines, ",") .. ", not 1 to 9")
   end
 end)

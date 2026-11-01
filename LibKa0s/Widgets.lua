@@ -4,24 +4,17 @@
 --
 -- ── WHY THIS IS A LIBRARY AND NOT A COPY ──────────────────────────────────────────────────────
 --
--- It was BankLedger's, local to modules/Browser.lua, and it was about to be MultiMeters' too. Two
--- copies of a widget is two skins to keep in step, and the collection stops looking like one
--- author's work the first time one copy is restyled and the other is not. That is the argument the
--- icons were consolidated under at v1.9.0; a widget that DRAWS those icons is the same argument one
--- layer up.
+-- It was BankLedger's, local to modules/Browser.lua, and about to be MultiMeters' too. Two copies
+-- of a widget is two skins to keep in step, the argument the icons were consolidated under at v1.9.0.
 --
--- The test-mode strip (`lib.TestStrip`, #48) is here for the same reason. DropWatcher drew it, and
--- LootHistory, BankLedger and MultiMeters each marked test mode their own way: a red title-bar
--- word in two of them and a title suffix in the third, which a hidden header hides with it. The
--- owner's 2026-10-22 ruling promoted DropWatcher's strip so all four say "this is not your data"
--- with one band, in one color, at one height.
+-- The test-mode strip (`lib.TestStrip`, #48) is here for the same reason: DropWatcher drew it and
+-- three hosts each marked test mode their own way. The owner's 2026-10-22 ruling promoted it, so all
+-- four say "this is not your data" with one band, in one color, at one height.
 --
--- The same strip marks a simulation (`opts.kind = "sim"`, minor 14): a flavor of `TestStrip`, with
--- its own cyan tint, and not a new function. The owner's 2026-10-23 ruling asked for the strip to
--- be made generic so a simulation is marked the way test mode is. A `ModeStrip` constructor with
--- `TestStrip` kept as an alias was REJECTED: it is a second name for one function, a member added
--- purely for naming, and the four existing hosts would keep calling `TestStrip` anyway. Re-check
--- trigger: a third kind is asked for.
+-- The same strip marks a simulation (`opts.kind = "sim"`, minor 14, the owner's 2026-10-23 ruling): a
+-- flavor of `TestStrip`, with its own cyan tint. A `ModeStrip` constructor with `TestStrip` kept as an
+-- alias was REJECTED: a second name for one function, which the four hosts would not call anyway.
+-- Re-check trigger: a third kind is asked for.
 --
 -- ── WHY IT DOES NOT DEPEND ON LibKa0s-Media-1.0 ───────────────────────────────────────────────
 --
@@ -38,27 +31,22 @@
 --
 -- The dropdown's menu has no search box inside it (the filter bar's search box beside it is
 -- `lib.SearchBox`, below), no keyboard navigation, no scrolling for a long list, no sub-menus. None
--- of those is wanted by a shipped consumer, and every one of them is reachable later without a major
--- bump. A widget that grows features nobody asked for is a widget whose degraded behavior nobody has
--- tested. Row options and a public open arrived with the hosts that needed them (minor 21).
+-- of those is wanted by a shipped consumer, and each is reachable later without a major bump. Row
+-- options and a public open arrived with the hosts that needed them (minor 21).
 --
 -- Two flat controls were censused with the search box at minor 13 (#52) and REJECTED:
 --
---   * `W.Checkbox`, a flat checkbox. No consumer draws one today. Re-check trigger: a second addon
---     hand-builds a flat checkbox.
---   * An exported flat skin (the `SKIN` table below, or an applier that paints it). It stays
---     file-local: the dropdown and the search box are its only readers, and the autocomplete
---     publishes its own copy as `AUTOCOMPLETE.BORDER` / `.BG`. Re-check trigger: a third flat
---     control outside this file copies the literals.
+--   * `W.Checkbox`. No consumer draws one. Re-check trigger: a second addon hand-builds a flat one.
+--   * An exported flat skin (the `SKIN` table below, or an applier). The dropdown and the search box
+--     are its only readers, and the autocomplete publishes its own copy as `AUTOCOMPLETE.BORDER` /
+--     `.BG`. Re-check trigger: a third flat control outside this file copies the literals.
 --
--- The test-mode strip is a band, a mark and a line of text, and deliberately nothing more. It has
--- no tooltip option (three hosts, three tooltip renderers; a host enables the mouse and hooks
--- OnEnter itself), no color option (the sameness is the point: the two fixed flavors, test and
--- sim, are the library's, and a host still cannot pass a color), no wrap, no measuring and no
--- `Height()` (one host wraps, and one must never measure), no test-mode state (the host decides
--- when it shows and what it says), no placement and no body shift (that is host layout; a host
--- leaves its own gap around `TEST_STRIP.HEIGHT`), and no icon fallback (no icon is a valid state:
--- the text moves to the left edge). Re-check trigger for all six: a consumer needs a different
+-- The test-mode strip is a band, a mark and a line of text, and deliberately nothing more. No
+-- tooltip option (three hosts, three renderers; a host enables the mouse and hooks OnEnter), no color
+-- option (the sameness is the point: test and sim are the library's), no wrap, measuring or
+-- `Height()` (one host wraps, and one must never measure), no test-mode state (the host decides),
+-- no placement or body shift (host layout, around `TEST_STRIP.HEIGHT`), and no icon fallback (with no
+-- icon the text moves to the left edge). Re-check trigger for all six: a consumer needs a different
 -- color, a tooltip renderer or a measured height with the same semantics as another.
 --
 -- ── SKIN OWNERS (minor 16) ────────────────────────────────────────────────────────────────────
@@ -350,14 +338,16 @@ local function rowColor(dd, opt, selected, pal)
   return opt.color or pal.text
 end
 
---- A row's shape and tooltip (minor 21), every field written for the pool's sake, as below.
+--- A row's shape and tooltip (minor 21), every field written for the pool's sake, as below. An inert
+--- row takes the mouse too: the menu has none of its own and `__OutsideClick` exempts a press by
+--- geometry, so a press let through keeps the menu open and lands on whatever is under it.
 local function paintRowKind(b, dd, opt, pal)
   local tip = opt.tooltip
   b:SetHeight(opt.divider and MENU_DIVIDER_H or MENU_ROW_H)
   b.__rule:SetShown(opt.divider == true)
   if opt.divider then b.__rule:SetColorTexture(pal.rule[1], pal.rule[2], pal.rule[3], pal.rule[4]) end
   b.__hl:SetShown(not rowInert(dd, opt))
-  b:EnableMouse(not (opt.title or opt.divider) or tip ~= nil)
+  b:EnableMouse(true)
   b:SetScript("OnEnter", tip and function(self) lib.__rowTip(self, opt, pal) end or nil)
   b:SetScript("OnLeave", tip and function() lib.__rowTipOff() end or nil)
 end
@@ -418,7 +408,8 @@ end
 
 -- One row's click handler. The menu hides BEFORE the callback, which is contract (minor 21): a
 -- callback may open another menu, and hiding after it would close that one. `keepOpen` holds the menu
--- and repaints it after the callback, so a toggle row shows its new state.
+-- and repaints it after the callback, so a toggle row shows its new state, unless that callback closed
+-- the menu or opened another: the shared frame's rows then belong to someone else.
 local function rowOnClick(menu, dd, opt)
   return function()
     if dd.multi then
@@ -431,7 +422,7 @@ local function rowOnClick(menu, dd, opt)
     dd:SetValue(opt.value, opt.label)
     if not opt.keepOpen then menu:Hide() end
     if dd.onSelect then dd.onSelect(opt.value, opt) end
-    if opt.keepOpen then menu:Populate(dd) end
+    if opt.keepOpen and menu:IsShown() and menu.__dd == dd then menu:Populate(dd) end
   end
 end
 
@@ -544,7 +535,7 @@ end
 --- outside press.
 local function openMenu(owner, dd, place)
   local m = EnsureMenu()
-  m._owner = owner
+  m._owner, m.__dd = owner, dd
   skinMenu(m, dd)
   m:Populate(dd)
   m:ClearAllPoints()
@@ -596,6 +587,17 @@ local function summarizeSelection(labels, allLabel)
   if not n then return allLabel end
   if n == 1 then return firstLabel end
   return (allLabel:match("^(.-):") or allLabel) .. ": " .. n .. " selected"
+end
+
+--- The "all" sentinel's label, else the first row that is a value: a title or a divider, which may
+--- stand first (minor 21), names nothing.
+local function allRowLabel(dd)
+  local first
+  for _, o in ipairs(dd._options or {}) do
+    if o.value == "all" then return o.label or "All" end
+    if first == nil and not (o.title or o.divider) then first = o.label end
+  end
+  return first or "All"
 end
 
 --- The tick markup a multi-select row leads with (see MakeDropdown): the host's art, an owned
@@ -710,8 +712,7 @@ local function MakeDropdown(parent, width, opts)
   function dd:UpdateMultiLabel()
     local preset = activePresetLabel(self)
     if preset then self.text:SetText(preset); return end
-    local allLabel = (self._options and self._options[1] and self._options[1].label) or "All"
-    self.text:SetText(summarizeSelection(selectionLabels(self), allLabel))
+    self.text:SetText(summarizeSelection(selectionLabels(self), allRowLabel(self)))
   end
 
   dd:SetScript("OnClick", function(self2)
@@ -754,7 +755,7 @@ local function noop() end
 --- click does, unless `opts.cursor` opens at the pointer. `opts`: { owner, panel, glyphFont, width,
 --- cursor }. Answers the menu, or nil with no anchor or no rows. docs/api/Widgets has the table.
 function lib.ContextMenu(anchor, rows, opts)
-  if type(anchor) ~= "table" or type(rows) ~= "table" then return nil end
+  if type(anchor) ~= "table" or type(rows) ~= "table" or #rows == 0 then return nil end
   opts = type(opts) == "table" and opts or {}
   local m = EnsureMenu()
   if m:IsShown() and m._owner == anchor and not opts.cursor then

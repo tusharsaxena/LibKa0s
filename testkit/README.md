@@ -523,14 +523,18 @@ chat lines, hyperlink and quality colors, escape builders and search patterns, l
 color tables, neutral resets, white bases and StaticPopup text; spell and item icons, L10 art, A6
 Blizzard art, degraded or ignored-panel stock paths, L12 mono, LSM picks and client defaults, the Ace
 profile page and `media/` paths. A category reads what the line says and stops there, so a client
-path drawn outright is still a hit, and a host row that repeats a category goes stale and fails.
+path drawn outright is still a hit, and a host row that repeats a category goes stale and fails. White
+counts as a base only with a tint on that object after it, a path in `SetStatusBarTexture` is a hit,
+and a font face is never `media/`.
 
 ## `test_skin_switch.lua`
 
 The seventh, new in kit revision 50 (`skinning-§1`). A host declares its painted surfaces, and each
 must change when the skin does, read off spies on the drawing setters. It switches to a probe skin
-that gives every token its own value, because real skins share tokens and would fail falsely. It
-excludes Scope-ignored surfaces and companions off from its second pass.
+that gives every token its own value, because real skins share tokens and would fail falsely. A
+setter the two flips back to Ka0s Default disagree on is noise and is dropped, so a counter or a fade
+cannot pass a surface that draws only literals. It excludes Scope-ignored surfaces and companions off
+from its second pass.
 
 ### How a host adopts both
 

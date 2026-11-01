@@ -217,6 +217,98 @@ test("skin switch: a table argument is compared by contents", function()
   assertTrue(problem ~= nil, "two equal fresh tables read as a change")
 end)
 
+-- ── noise ────────────────────────────────────────────────────────────────────────────────────
+
+--- A surface that redraws a literal, and `noise(region, paint number)` beside it.
+local function noisy(name, noise)
+  local r = { SetVertexColor = function() end, SetText = function() end, SetAlpha = function() end,
+              SetFontObject = function() end, SetTexture = function() end }
+  local paints = 0
+  return {
+    name = name, build = function() return r end,
+    paint = function(o)
+      paints = paints + 1
+      o:SetVertexColor(0.5, 0.5, 0.5)
+      noise(o, paints)
+    end,
+  }
+end
+
+local NOISE = {
+  { "a counter", function(o, n) o:SetText(tostring(n)) end },
+  { "a formatted counter", function(o, n) o:SetFontObject({ tick = n }) end },
+  { "a toggling alpha", function(o, n) o:SetAlpha(n % 2) end },
+  { "a setter on even paints", function(o, n) if n % 2 == 0 then o:SetAlpha(1) end end },
+  { "a setter on odd paints", function(o, n) if n % 2 == 1 then o:SetAlpha(1) end end },
+}
+
+test("skin switch: a change the skin did not cause does not pass a literal surface", function()
+  -- red under: three flips compared once, where any setter that moved between them read as the skin.
+  local _, Skin = env()
+  for _, row in ipairs(NOISE) do
+    local problem = W.runSurface(facts(Skin), noisy(row[1], row[2]), "clear")
+    assertTrue(problem ~= nil, row[1] .. " read as the skin")
+    assertTrue(problem:find("did not change", 1, true) ~= nil, problem)
+  end
+end)
+
+test("skin switch: noise leaves a surface that does follow the skin passing", function()
+  local _, Skin = env()
+  for _, row in ipairs(NOISE) do
+    local s = noisy(row[1], row[2])
+    local paint = s.paint
+    s.paint = function(o)
+      paint(o)
+      o:SetVertexColor(Skin:Color(OWNER, "text.body"))
+    end
+    assertEqual(W.runSurface(facts(Skin), s, "clear"), nil, row[1])
+  end
+end)
+
+test("skin switch: a surface that only draws noise is told so", function()
+  local _, Skin = env()
+  local r = { SetText = function() end }
+  local n = 0
+  local problem = W.runSurface(facts(Skin), {
+    name = "ticker", build = function() return r end,
+    paint = function(o) n = n + 1; o:SetText(tostring(n)) end,
+  }, "clear")
+  assertTrue(problem ~= nil and problem:find("moved between two draws", 1, true) ~= nil, tostring(problem))
+  assertTrue(problem:find("SetText", 1, true) ~= nil, problem)
+end)
+
+test("skin switch: a setter only one skin draws is a change", function()
+  -- a skin-driven `if`: the key exists under the probe alone, in both home flips alike.
+  local _, Skin = env()
+  local r = region()
+  local problem = W.runSurface(facts(Skin), {
+    name = "conditional", build = function() return r end,
+    paint = function(o)
+      o:SetTextColor(0.5, 0.5, 0.5)
+      if Skin:GetChoice(OWNER) and select(2, Skin:GetChoice(OWNER)) == W.PROBE_KEY then
+        o:SetVertexColor(0.1, 0.2, 0.3)
+      end
+    end,
+  }, "clear")
+  assertEqual(problem, nil)
+end)
+
+test("skin switch: a host that skips an unchanged repaint still reads as changing", function()
+  -- the extra repaint under the probe draws nothing here, which must count for nothing.
+  local _, Skin = env()
+  local r = region()
+  local last
+  local problem = W.runSurface(facts(Skin), {
+    name = "cached", build = function() return r end,
+    paint = function(o)
+      local c = Skin:Color(OWNER, "text.body")
+      local key = table.concat({ c, select(2, Skin:Color(OWNER, "text.body")) }, ",")
+      if key ~= last then last = key; o:SetVertexColor(Skin:Color(OWNER, "text.body")) end
+    end,
+  }, "clear")
+  assertEqual(problem, nil)
+end)
+
 -- ── the exclusions ───────────────────────────────────────────────────────────────────────────
 
 test("skin switch: the first pass clears the Scope", function()

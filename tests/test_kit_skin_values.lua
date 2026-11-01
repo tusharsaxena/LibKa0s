@@ -108,6 +108,8 @@ local TAKEN = {
   { "hyperlink or quality color", 'local s = "|cffffd100|H" .. link' },
   { "hyperlink or quality color", 'local s = "|cff" .. qualityHex(q) .. name' },
   { "hyperlink or quality color", 'local hex = ITEM_QUALITY_COLORS[q].hex or "|cffffffff"' },
+  { "hyperlink or quality color", 'local s = "|cff" .. tostring(QualityColor[q]) .. "x"' },
+  { "hyperlink or quality color", 'local s = C_Item.GetItemQualityColor(q) or "|cffffffff"' },
   { "escape builder or search pattern", 'local s = ("|cff%02x%02x%02x"):format(r, g, b)' },
   { "escape builder or search pattern", 'local s = "|cff" .. hex(r)' },
   { "escape builder or search pattern", 'text = text:gsub("|cff%x%x%x%x%x%x.-|r", "")' },
@@ -116,10 +118,17 @@ local TAKEN = {
   { "meaning color table (MC)", 'local s = RAID_CLASS_COLORS[c] and "x" or "|cff808080"' },
   { "meaning color table (MC)", 'local CLASS_HEX = { WARRIOR = "|cffc79c6e" }' },
   { "meaning color table (MC)", 'NS.DISPEL_COLORS = { Magic = "|cff3399ff" }' },
+  { "meaning color table (MC)", 'local ClassColors = { WARRIOR = "|cffc79c6e" }' },
+  { "meaning color table (MC)", 'local dispelColor = { Magic = "|cff3399ff" }' },
+  { "meaning color table (MC)", 'local ROLES_HEX = { TANK = "|cff3399ff" }' },
   { "neutral 1,1,1 reset", "strip:SetVertexColor(1, 1, 1, 1)" },
   { "neutral 1,1,1 reset", "icon:SetVertexColor(1, 1, 1)" },
   { "neutral 1,1,1 reset", "bar:SetStatusBarColor(1.0, 1.0, 1.0)" },
-  { "white base for tinting", "fill:SetColorTexture(1, 1, 1, 1)" },
+  { "white base for tinting", "fill:SetColorTexture(1, 1, 1, 1)\nfill:SetVertexColor(r, g, b)" },
+  { "white base for tinting", "self.fill:SetColorTexture(1, 1, 1, 1)\nself.fill:SetGradient('VERTICAL', a, b)" },
+  { "white base for tinting", "fill:SetColorTexture(1, 1, 1, 1)\nlocal function p(b) b.fill:SetVertexColor(r, g, b) end" },
+  { "white base for tinting", 't:SetTexture("Interface\\\\Buttons\\\\WHITE8X8")\nt:SetVertexColor(r, g, b)' },
+  { "white base for tinting", 'b:SetHighlightTexture("Interface\\\\Buttons\\\\WHITE8X8")\nb:GetHighlightTexture():SetVertexColor(r, g, b)' },
   { "StaticPopup text", 'StaticPopupDialogs["X"] = { text = "|cffff0000Sure?|r", button1 = OKAY }' },
   { "StaticPopup text", 'StaticPopup_Show("X", "|cffff0000name|r")' },
   { "spell or item icon", 'local ICON = "Interface\\\\Icons\\\\INV_Misc_QuestionMark"' },
@@ -171,12 +180,57 @@ local KEPT = {
   { 'local P = "Interface\\\\AddOns\\\\MyAddon\\\\art\\\\logo.tga"', "an addon path outside media/" },
   { 'local P = "Interface\\\\Timer\\\\BigTimerNumbers"', "client art no ruling names" },
   { 'tex:SetAtlas("ui-hud-minimap-mail")', "an atlas no ruling names" },
+  { "hl:SetColorTexture(1, 1, 1, 0.15)", "white with no tint after it draws white under every skin" },
+  { "fill:SetColorTexture(1, 1, 1, 1)\nother:SetVertexColor(r, g, b)", "a tint on another object" },
+  { "fill:SetColorTexture(1, 1, 1, 1)\nsuperfill:SetVertexColor(r, g, b)", "a name that only ends the same" },
+  { "fill:SetVertexColor(r, g, b)\nfill:SetColorTexture(1, 1, 1, 1)", "a tint before the white is overdrawn by it" },
+  { "f:CreateTexture():SetColorTexture(1, 1, 1, 1)", "no object to tint" },
+  { 'bar:SetStatusBarTexture("Interface\\\\Buttons\\\\WHITE8X8")', "a typed bar ignores bar.texture" },
+  { 'bar:SetStatusBarTexture("Interface\\\\Buttons\\\\WHITE8X8")\nbar:SetStatusBarColor(r, g, b)', "tinted or not" },
+  { 'bar:SetStatusBarTexture("Interface\\\\AddOns\\\\Foo\\\\media\\\\bar.tga")', "and so does a media path" },
+  { 'bar:SetStatusBarTexture(x and "Interface\\\\AddOns\\\\Foo\\\\media\\\\bar.tga")', "in any argument shape" },
+  { 'b:SetHighlightTexture("Interface\\\\Buttons\\\\WHITE8X8")', "a white highlight nothing tints" },
+  { 'fs:SetFont("Interface\\\\AddOns\\\\Foo\\\\media\\\\fonts\\\\x.ttf", 12)', "a face ignores font.body" },
+  { 'local F = "Interface\\\\AddOns\\\\Foo\\\\media\\\\fonts\\\\x.otf"', "a face by its file" },
+  { 'fs:SetFont("Interface\\\\AddOns\\\\" .. name, 12)', "a face by its call" },
+  { 'local STATUS_COLORS = { a = "|cffff0000x|r" }', "STAT is no word of STATUS" },
+  { 'local BROADCAST_COLOR = { a = "|cffff0000x|r" }', "CAST is no word of BROADCAST" },
+  { 'local CONTROLE_HEX = { a = "|cffff0000x|r" }', "ROLE is no word of CONTROLE" },
+  { "local BROADCAST_COLOR = { paint = function(o) o:SetTextColor(1, 0, 0) end }", "a paint function in one" },
+  { 'fs:SetText("|cffff0000Quality:|r")', "a word in the text is no lookup" },
+  { 'local Quality = "|cffff0000x|r"', "nor is a name" },
+  { 'fs:SetText("|cffff0000Quality(x)|r")', "nor a lookup's shape in the string" },
+  { 'local s = "|cffff0000" .. item.quality', "nor a field read" },
+  { 'fs:SetText("|cffff0000see |Hitem is broken|r")', "half a link is no link" },
+  { 't:SetGradient("VERTICAL", CreateColor(1, 0, 0, 1), to)', "a gradient's stops" },
+  { "local c = CreateColor(0.2, 0.2, 0.2)", "a color object" },
+  { "cd:SetSwipeColor(0, 0, 0, 0.8)", "a swipe" },
+  { "fs:SetTextColor(1., 0., 0.)", "a trailing point" },
+  { "fs:SetTextColor(0x1, 0, 0)", "hex" },
+  { "t:SetTexture(0x123)", "a file id in hex" },
+  { "fs:SetTextColor(c.r or 1, g, b)", "a numeric fallback" },
+  { "fs:SetTextColor(c.r or 0.5, c.g or 0.5, c.b or 0.5)", "three of them" },
 }
+
+test("skin values: a numeric `or` past the color positions is no hit, nor is a token fallback", function()
+  assertEqual(#V.scan("tex:SetColorTexture(r, g, b, c.a or 1)"), 0, "alpha is the surface's")
+  assertEqual(#V.scan("fs:SetTextColor(c.r or r, c.g or g, c.b or b)"), 0)
+  assertEqual(#V.scan("fs:SetTextColor(f(a or 1), g, b)"), 0, "the or is inside a call")
+  assertEqual(#V.scan("local c = CreateColor(r, g, b, 1)"), 0, "an alpha over components")
+  assertEqual(#V.scan("local c = NotCreateColor(1, 0, 0)"), 0)
+  assertEqual(#V.scan("cd:SetSwipeColor(r, g, b, 0.8)"), 0)
+  assertEqual(#V.scan("fs:SetTextColor(inf, nan, g)"), 0, "names tonumber would read")
+end)
+
+test("skin values: a hit is reported once however many values share a CreateColor", function()
+  assertEqual(#V.scan('t:SetGradient("VERTICAL", CreateColor(1, 0, 0, 1), CreateColor(0, 1, 0, 1))'), 2)
+end)
 
 test("skin values: a category takes nothing past its ruling", function()
   for _, row in ipairs(KEPT) do
-    local hit = one(row[1], "modules/X.lua")
-    assertEqual(hit.category, nil, row[1] .. ": " .. row[2])
+    local hits = V.scan(row[1], { path = "modules/X.lua" })
+    assertTrue(#hits >= 1, "no hit in: " .. row[1])
+    assertEqual(hits[#hits].category, nil, row[1] .. ": " .. row[2])
   end
 end)
 

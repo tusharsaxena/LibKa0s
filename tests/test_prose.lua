@@ -380,7 +380,7 @@ local AUTHORED_LISTS = { ["tests/test_prose.lua"] = true }
 -- file quotes it, in backticks, asterisks or string quotes, so a stray use of the same spelling as
 -- prose elsewhere in it still reddens.
 local AUTHORED_RATIFIED = {
-  ["docs/api/Media/version-11.1-docs.md"] = { "minimise" },
+  ["docs/api/Media/version-12.1-docs.md"] = { "minimise" },
   ["tools/artwork/icon_cleaner.py"] = { "minimise" },
   ["tools/artwork/fonts.py"] = { "dialogueui" },
   ["CLAUDE.md"] = { "minimise", ".cancelled", "iscancelled", "dialogueui" },
