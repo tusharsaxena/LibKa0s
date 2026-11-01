@@ -207,6 +207,7 @@ test("options skin: an owned page's rail, drawer and cover paint from the skin",
   assertEqual(F.rgba(survey(m, head.__ka0sDrawerLabelFS).textColor), rgb(T["drawer.textSet"]))
   assertEqual(F.rgba(survey(m, head.__ka0sDrawerEdges.fill).vertex), F.rgba(T["drawer.bgOpen"]))
   local cover = ctx.__combatCover
+  cover:GetScript("OnShow")(cover)   -- it takes its skin as it goes up
   assertEqual(F.rgba(survey(m, cover.__dim).color), F.rgba(T["cover.dim"]))
   assertEqual(F.rgba(survey(m, cover.__line).textColor), rgb(T["cover.text"]))
 end)

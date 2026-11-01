@@ -37,10 +37,10 @@
 -- ── WHAT IT DELIBERATELY IS NOT ───────────────────────────────────────────────────────────────
 --
 -- The dropdown's menu has no search box inside it (the filter bar's search box beside it is
--- `lib.SearchBox`, below), no keyboard navigation, no scrolling for a long list, no sub-menus, no
--- per-row disable. None of those is wanted by either shipped consumer, and every one of them is
--- reachable later without a major bump. A widget that grows features nobody asked for is a widget
--- whose degraded behavior nobody has tested.
+-- `lib.SearchBox`, below), no keyboard navigation, no scrolling for a long list, no sub-menus. None
+-- of those is wanted by a shipped consumer, and every one of them is reachable later without a major
+-- bump. A widget that grows features nobody asked for is a widget whose degraded behavior nobody has
+-- tested. Row options and a public open arrived with the hosts that needed them (minor 21).
 --
 -- Two flat controls were censused with the search box at minor 13 (#52) and REJECTED:
 --
@@ -112,7 +112,10 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- A face a host names on an owned control (`opts.font`, `spec.labelFont`) is now its template.
 -- Minor 20 (FS-FIX of the same bundle): an owned dropdown's tick and arrow follow a skin switch and
 -- the Scope, live, where they were baked in the constructor.
-local MAJOR, MINOR = "LibKa0s-Widgets-1.0", 20
+-- Minor 21 (FS-FIX of the same bundle): `lib.ContextMenu`, the shared menu opened by a host; the row
+-- options `title`, `disabled`, `divider`, `tooltip` and `keepOpen`, for a dropdown too; onSelect takes
+-- the row; the dropdown's label is one line.
+local MAJOR, MINOR = "LibKa0s-Widgets-1.0", 21
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -142,7 +145,7 @@ local CHECK_FALLBACK   = "Interface\\Buttons\\UI-CheckBox-Check"
 -- back (minor 17).
 local SEARCH_ICON_TINT = { 0.7, 0.7, 0.72 }
 
-local MENU_ROW_H = 16
+local MENU_ROW_H, MENU_DIVIDER_H = 16, 8
 
 -- ── the skin owner (minor 16; the header's SKIN OWNERS) ──────────────────────────────────────
 
@@ -238,8 +241,10 @@ local function token(Skin, owner, name, fallback)
   return c
 end
 
--- The shared menu's row colors: selected, plain, and the highlight under the pointer.
-local MENU_PAL = { sel = { 1, 0.82, 0 }, text = { 0.9, 0.9, 0.9 }, hover = { 1, 0.82, 0, 0.15 } }
+-- The shared menu's row colors: selected, plain, the highlight under the pointer, and a title, a
+-- disabled row and a divider (minor 21).
+local MENU_PAL = { sel = { 1, 0.82, 0 }, text = { 0.9, 0.9, 0.9 }, hover = { 1, 0.82, 0, 0.15 },
+                   title = { 1, 0.82, 0 }, off = { 0.5, 0.5, 0.5 }, rule = { 0.24, 0.24, 0.27, 0.85 } }
 -- No addon registers this name, so its facade reads Ka0s Default: the menu is given back through it.
 local DEFAULT_OWNER = MAJOR
 
@@ -295,7 +300,18 @@ local function makeMenuRow(menu)
   hl:SetColorTexture(1, 0.82, 0, 0.15)
   -- Minor 16: kept, with the color it wears, so a skinned open repaints it (Populate).
   b.__hl, b.__hlc = hl, MENU_PAL.hover
+  b.__rule = b:CreateTexture(nil, "ARTWORK")   -- a divider row's line (minor 21), 1 high on its 8
+  b.__rule:SetPoint("TOPLEFT", 8, -4)
+  b.__rule:SetPoint("BOTTOMRIGHT", -8, 3)
   return b
+end
+
+--- True for a row that takes no click: a title, a divider, or a disabled row (`disabled`, true or a
+--- predicate of the dropdown, read on every open).
+local function rowInert(dd, opt)
+  if opt.title or opt.divider then return true end
+  if type(opt.disabled) == "function" then return opt.disabled(dd) and true or false end
+  return opt.disabled == true
 end
 
 -- Selection state: single-select highlights the one active value; multi-select highlights
@@ -309,6 +325,7 @@ end
 -- predicate is asked FIRST and its answer is final: an option that carries one is describing a
 -- state the value set alone does not express.
 local function rowSelected(dd, opt)
+  if opt.title or opt.divider then return false end
   if opt.isActive then return opt.isActive(dd) and true or false end
   if dd.multi then
     return (opt.value == "all") and (not next(dd._selected)) or (dd._selected[opt.value] or false)
@@ -326,12 +343,33 @@ local function menuGlyphFace(menu, dd)
   return Skin:For(owner).GetFont("mono") or host
 end
 
+--- A row's label color: a title's, a disabled row's, the selection's, the value's own, or plain.
+local function rowColor(dd, opt, selected, pal)
+  if opt.title then return pal.title end
+  if rowInert(dd, opt) then return pal.off end
+  if selected then return pal.sel end
+  return opt.color or pal.text
+end
+
+--- A row's shape and tooltip (minor 21), every field written for the pool's sake, as below.
+local function paintRowKind(b, dd, opt, pal)
+  local tip = opt.tooltip
+  b:SetHeight(opt.divider and MENU_DIVIDER_H or MENU_ROW_H)
+  b.__rule:SetShown(opt.divider == true)
+  if opt.divider then b.__rule:SetColorTexture(pal.rule[1], pal.rule[2], pal.rule[3], pal.rule[4]) end
+  b.__hl:SetShown(not rowInert(dd, opt))
+  b:EnableMouse(not (opt.title or opt.divider) or tip ~= nil)
+  b:SetScript("OnEnter", tip and function(self) lib.__rowTip(self, opt, pal) end or nil)
+  b:SetScript("OnLeave", tip and function() lib.__rowTipOff() end or nil)
+end
+
 -- Repaint one row from its option. EVERY field is written on every pass, including the blank ones:
 -- the rows are pooled across dropdowns, so a field left alone leaks the previous menu's glyph or
 -- color onto this one.
 local function paintMenuRow(b, dd, opt, selected, pal, glyphFace)
   local check = (dd.multi and selected) and dd.__check or ""
-  b.fs:SetText(check .. opt.label)
+  paintRowKind(b, dd, opt, pal)
+  b.fs:SetText(check .. (opt.label or ""))
   -- A glyphed row indents its text to clear the glyph; every other row starts at the margin.
   b.fs:ClearAllPoints()
   b.fs:SetPoint("LEFT", opt.glyph and 22 or 8, 0)
@@ -354,13 +392,8 @@ local function paintMenuRow(b, dd, opt, selected, pal, glyphFace)
   -- The selected row goes gold to mark the selection; otherwise the value keeps its own color
   -- (store / direction / class), so the menu reads like the column it filters. The glyph always
   -- keeps the direction's color — it IS the value, not a selection state.
-  if selected then
-    b.fs:SetTextColor(pal.sel[1], pal.sel[2], pal.sel[3])
-  elseif opt.color then
-    b.fs:SetTextColor(opt.color[1], opt.color[2], opt.color[3])
-  else
-    b.fs:SetTextColor(pal.text[1], pal.text[2], pal.text[3])
-  end
+  local c = rowColor(dd, opt, selected, pal)
+  b.fs:SetTextColor(c[1], c[2], c[3])
   -- The highlight only when the menu's colors changed since this row last wore them.
   if b.__hl and b.__hlc ~= pal.hover then
     b.__hl:SetColorTexture(pal.hover[1], pal.hover[2], pal.hover[3], pal.hover[4])
@@ -369,7 +402,24 @@ local function paintMenuRow(b, dd, opt, selected, pal, glyphFace)
   if opt.color then b.glyph:SetTextColor(opt.color[1], opt.color[2], opt.color[3]) end
 end
 
--- One row's click handler.
+--- A row's tooltip: a string, or the host's renderer `fn(rowFrame, opt)`, on GameTooltip either way.
+function lib.__rowTip(row, opt, pal)
+  if type(GameTooltip) ~= "table" then return end
+  lib.__tipUp = true
+  if type(opt.tooltip) == "function" then return opt.tooltip(row, opt) end
+  GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
+  GameTooltip:SetText(tostring(opt.tooltip), pal.text[1], pal.text[2], pal.text[3], 1, true)
+  GameTooltip:Show()
+end
+
+function lib.__rowTipOff()
+  if lib.__tipUp and type(GameTooltip) == "table" then GameTooltip:Hide() end
+  lib.__tipUp = nil
+end
+
+-- One row's click handler. The menu hides BEFORE the callback, which is contract (minor 21): a
+-- callback may open another menu, and hiding after it would close that one. `keepOpen` holds the menu
+-- and repaints it after the callback, so a toggle row shows its new state.
 local function rowOnClick(menu, dd, opt)
   return function()
     if dd.multi then
@@ -377,11 +427,12 @@ local function rowOnClick(menu, dd, opt)
       dd:ToggleSelected(opt.value)
       menu:Populate(dd)
       if dd.onMultiSelect then dd.onMultiSelect(dd._selected) end
-    else
-      dd:SetValue(opt.value, opt.label)
-      menu:Hide()
-      if dd.onSelect then dd.onSelect(opt.value) end
+      return
     end
+    dd:SetValue(opt.value, opt.label)
+    if not opt.keepOpen then menu:Hide() end
+    if dd.onSelect then dd.onSelect(opt.value, opt) end
+    if opt.keepOpen then menu:Populate(dd) end
   end
 end
 
@@ -399,7 +450,10 @@ local function skinMenu(m, dd)
     Skin:For(owner).MenuFrame(m)
     m.__pal = { sel = token(Skin, owner, "menu.textSel", MENU_PAL.sel),
                 text = token(Skin, owner, "menu.text", MENU_PAL.text),
-                hover = token(Skin, owner, "menu.hover", MENU_PAL.hover) }
+                hover = token(Skin, owner, "menu.hover", MENU_PAL.hover),
+                title = token(Skin, owner, "menu.textSel", MENU_PAL.title),
+                off = token(Skin, owner, "text.disabled", MENU_PAL.off),
+                rule = token(Skin, owner, "divider", MENU_PAL.rule) }
     return
   end
   if not m.__pal then return end
@@ -423,32 +477,26 @@ local function EnsureMenu()
 
   -- ── HOW AN OUTSIDE CLICK CLOSES THIS, AND WHY IT IS NOT A CATCHER ──────────────────────────
   --
-  -- Through minor 4 this was a full-screen `Button` at FULLSCREEN strata, shown alongside the menu,
-  -- whose OnClick hid it. That frame INTERCEPTED the click, and intercepting was the defect:
-  --
-  --   * A `Button` with no `RegisterForClicks` takes `LeftButtonUp` and nothing else. A right-click
-  --     anywhere while a menu was open landed on the catcher, found no handler for that button and
-  --     was SWALLOWED — the menu stayed open and whatever was underneath never heard the click. It
-  --     survived from minor 1 because neither shipped consumer had a right-click surface on the
-  --     same window as a dropdown; LootHistory was the first, and there a right-click on a history
-  --     row simply did nothing.
-  --   * Even the left-click it did handle was eaten. Dismissing the menu cost a click that did
-  --     nothing else, which is not how a menu should feel.
+  -- Through minor 4 this was a full-screen `Button` at FULLSCREEN strata whose OnClick hid it. That
+  -- frame INTERCEPTED the click, and intercepting was the defect: it swallowed a right-click whole,
+  -- and dismissing the menu cost a left-click that did nothing else.
   --
   -- So the menu no longer intercepts anything. It LISTENS: `GLOBAL_MOUSE_DOWN` fires for a press
   -- anywhere in the UI, on any button, whether or not something else consumed it — so the menu can
   -- react to a click it never touched, and the click goes on to reach whatever is under the cursor.
   -- One press now both dismisses the menu and does the thing the player pressed on.
   --
-  -- Registered while shown and dropped on hide, rather than for the life of the process: this is a
-  -- handler that would otherwise run on every mouse press in the game for the rest of the session,
-  -- in every host that ever vendored this file, and no host agreed to that.
+  -- Registered while shown and dropped on hide, rather than for the life of the process: a handler
+  -- that would otherwise run on every mouse press for the session, in every host.
   -- The button that was pressed arrives as the next argument and is deliberately not read: no
   -- button is enumerated anywhere in this widget, so a mouse with more of them behaves the same.
   menu:SetScript("OnEvent", function(self, event)
     if event == "GLOBAL_MOUSE_DOWN" then self:__OutsideClick() end
   end)
-  menu:SetScript("OnHide", function(self) self:UnregisterEvent("GLOBAL_MOUSE_DOWN") end)
+  menu:SetScript("OnHide", function(self)
+    self:UnregisterEvent("GLOBAL_MOUSE_DOWN")
+    lib.__rowTipOff()
+  end)
 
   -- Two presses are NOT outside, and both exemptions are load-bearing:
   --
@@ -471,6 +519,7 @@ local function EnsureMenu()
     local opts = dd._options or {}
     local w = menuWidth(self, dd, opts)
     local glyphFace = menuGlyphFace(self, dd)
+    local y = 4
     for i, opt in ipairs(opts) do
       local b = self.buttons[i]
       if not b then
@@ -481,14 +530,36 @@ local function EnsureMenu()
       lib.__skinFont(b.fs, self.__fontOwner, self.__fontSkin, "GameFontHighlightSmall")
       b:SetWidth(w)
       b:ClearAllPoints()
-      b:SetPoint("TOPLEFT", 0, -4 - (i - 1) * MENU_ROW_H)
+      b:SetPoint("TOPLEFT", 0, -y)
+      y = y + (opt.divider and MENU_DIVIDER_H or MENU_ROW_H)
       paintMenuRow(b, dd, opt, rowSelected(dd, opt), self.__pal or MENU_PAL, glyphFace)
-      b:SetScript("OnClick", rowOnClick(self, dd, opt))
+      b:SetScript("OnClick", not rowInert(dd, opt) and rowOnClick(self, dd, opt) or nil)
       b:Show()
     end
-    self:SetSize(w, #opts * MENU_ROW_H + 8)
+    self:SetSize(w, y + 4)
   end
   return menu
+end
+
+--- Open the shared menu for `dd`, placed by `place(menu)`, as `owner`'s: a press on `owner` is no
+--- outside press.
+local function openMenu(owner, dd, place)
+  local m = EnsureMenu()
+  m._owner = owner
+  skinMenu(m, dd)
+  m:Populate(dd)
+  m:ClearAllPoints()
+  place(m)
+  m:Show()
+  m:RegisterEvent("GLOBAL_MOUSE_DOWN")
+  return m
+end
+
+local function placeAtCursor(m)
+  local x, y = GetCursorPosition()
+  local scale = UIParent:GetEffectiveScale()
+  if type(scale) ~= "number" or scale <= 0 then scale = 1 end
+  m:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x / scale, y / scale)
 end
 
 -- A preset row that reports itself active NAMES THE WHOLE SELECTION, so its label is the collapsed
@@ -582,6 +653,7 @@ local function MakeDropdown(parent, width, opts)
   fs:SetPoint("LEFT", 6, 0)
   fs:SetPoint("RIGHT", -16, 0)
   fs:SetJustifyH("LEFT")
+  fs:SetWordWrap(false)   -- minor 21: a long pick truncates; it never wraps past the button's edge
   dd.text = fs
 
   -- The ▼ affordance. It is a texture rather than a character because the ▼ glyph is not in the
@@ -646,13 +718,7 @@ local function MakeDropdown(parent, width, opts)
   dd:SetScript("OnClick", function(self2)
     local m = EnsureMenu()
     if m:IsShown() and m._owner == self2 then m:Hide(); return end
-    m._owner = self2
-    skinMenu(m, self2)
-    m:Populate(self2)
-    m:ClearAllPoints()
-    m:SetPoint("TOPLEFT", self2, "BOTTOMLEFT", 0, -1)
-    m:Show()
-    m:RegisterEvent("GLOBAL_MOUSE_DOWN")
+    openMenu(self2, self2, function(menuFrame) menuFrame:SetPoint("TOPLEFT", self2, "BOTTOMLEFT", 0, -1) end)
   end)
   -- Minor 16: the skin owner, read by skinMenu on every open; its button wears the owner's skin.
   -- Minor 17: `opts.panel`, a dropdown on its owner's settings page (the header's SCOPE SWITCHES).
@@ -681,26 +747,44 @@ function lib.Dropdown(parent, width, opts)
   return MakeDropdown(parent, width, opts)
 end
 
+local function noop() end
+
+--- Open the shared popup menu on `rows` (minor 21), a dropdown's options, each with its row options
+--- (`title`, `divider`, `disabled`, `tooltip`, `keepOpen`) and `onClick(value, row)`, from `anchor`, a
+--- press on which is no outside press. A second call on it closes the menu, as a dropdown's second
+--- click does, unless `opts.cursor` opens at the pointer. `opts`: { owner, panel, glyphFont, width,
+--- cursor }. Answers the menu, or nil with no anchor or no rows. docs/api/Widgets has the table.
+function lib.ContextMenu(anchor, rows, opts)
+  if type(anchor) ~= "table" or type(rows) ~= "table" then return nil end
+  opts = type(opts) == "table" and opts or {}
+  local m = EnsureMenu()
+  if m:IsShown() and m._owner == anchor and not opts.cursor then
+    m:Hide()
+    return m
+  end
+  local ctx = { _options = rows, _selected = {}, __check = "", __owner = opts.owner, __panel = opts.panel == true,
+                __glyphFont = opts.glyphFont, SetValue = noop }
+  ctx._value = ctx   -- no row's value: a row with none is not the selection (rowSelected)
+  function ctx.GetWidth() return tonumber(opts.width) or 90 end
+  function ctx.onSelect(value, row)
+    if type(row.onClick) == "function" then row.onClick(value, row) end
+  end
+  return openMenu(anchor, ctx, opts.cursor and placeAtCursor or function(frame)
+    frame:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -1)
+  end)
+end
+
 --- Close the shared popup menu, if it is open. Safe to call when no dropdown has ever opened the
 --- menu (menu is still nil) and safe to call when the menu is already hidden — both are plain
 --- no-ops.
 ---
---- A HOST CANNOT DO THIS ITSELF: the popup is a process-wide singleton, built lazily on the first
---- click of any dropdown in the process and parented to `UIParent` at `FULLSCREEN_DIALOG` (see
---- EnsureMenu above), not to any one host's frame. It outlives every window that ever opened it,
---- so no host holds a reference to it and no host's own Hide/OnHide reaches it — the widget kept
---- that shape on purpose (see the header comment on `dd.__check`) precisely so that two addons'
---- dropdowns can share one pool. `menu:Hide()` is enough on this end: the menu's own `OnHide`
---- script (set in EnsureMenu) drops its `GLOBAL_MOUSE_DOWN` registration, so this function does not
---- unregister anything itself.
+--- A HOST CANNOT DO THIS ITSELF: the popup is a process-wide singleton parented to `UIParent` at
+--- `FULLSCREEN_DIALOG` (EnsureMenu), so it outlives every window that opened it and no host's own
+--- Hide reaches it. The menu's own `OnHide` drops its `GLOBAL_MOUSE_DOWN` registration.
 ---
---- Without this, a host that closes its own window by any route that is not a click on the
---- dropdown — Escape, a slash command, anything that is not a mouse press at all —
---- leaves the menu ORPHANED: still shown, still at FULLSCREEN_DIALOG, floating over the game with
---- no owner left to hide it. A host must call this from every non-click close path it has. Since
---- minor 5 the menu closes itself on a mouse press anywhere outside it, which narrows the window
---- but does not close it: a host window hidden by Escape or a slash command is hidden without any
---- click at all.
+--- A host that closes its window by any route that is not a mouse press (Escape, a slash command)
+--- leaves the menu ORPHANED, floating over the game with no owner to hide it, so it calls this from
+--- every such path. The outside-press close (minor 5) cannot help: no click happened.
 function lib.CloseMenu()
   if menu and menu:IsShown() then menu:Hide() end
 end

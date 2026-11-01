@@ -215,7 +215,7 @@ test("skin hud members: HudFont puts face, size, flags and a skin's shadow on a 
   local fs = fontString(m)
   local obj = S.HudFont(fs, { face = FACE, size = 14, flags = "OUTLINE" })
   assertTrue(obj ~= nil, "answers the object")
-  assertTrue(type(obj.name) == "string" and obj.name:find("My Addon", 1, true) ~= nil, "a named one")
+  assertTrue(type(obj.name) == "string" and obj.name:find("LibKa0sHud_", 1, true) ~= nil, "a named one")
   assertTrue(m.__paint(fs).fontObject == obj, "the string wears it")
   assertEqual(obj.font[1], FACE)
   assertEqual(obj.font[2], 14)
@@ -227,9 +227,10 @@ test("skin hud members: HudFont puts face, size, flags and a skin's shadow on a 
   assertNil(m.__paint(fs).shadowOffset, "nothing on the string")
 end)
 
-test("skin hud members: HudFont gives a string one object, and each string its own", function()
-  -- red under: a second object per call, which the client never frees, or a shared one, where
-  -- the last caller's face lands on every string.
+test("skin hud members: HudFont gives two looks two objects, and a repeat none", function()
+  -- red under: a second object for one look, which the client never frees, or one object shared by
+  -- two looks, where the last caller's face lands on every string (tests/test_skin_host_gaps.lua
+  -- counts the rest).
   local m, Skin = F.env()
   local S = F.owner(Skin, OWNER)
   local one, two = fontString(m), fontString(m)
@@ -237,8 +238,7 @@ test("skin hud members: HudFont gives a string one object, and each string its o
   local b = S.HudFont(two, { face = "Fonts\\B.ttf", size = 20 })
   assertTrue(a ~= b, "one each")
   assertTrue(a.name ~= b.name, "each its own name")
-  assertTrue(S.HudFont(one, { face = FACE, size = 13 }) == a, "the same one again")
-  assertEqual(a.font[2], 13)
+  assertTrue(S.HudFont(one, { face = FACE, size = 12 }) == a, "the same one again")
   assertEqual(#m.__fontsMade, 2)
 end)
 
@@ -251,7 +251,7 @@ test("skin hud members: HudFont's false draws no shadow, and clears the last one
   assertEqual(obj.shadow[1], 2, "High Contrast's")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
   assertEqual(S.HudShadow(), false)
-  S.HudFont(fs, { face = FACE, size = 12, shadow = true })
+  obj = S.HudFont(fs, { face = FACE, size = 12, shadow = true })
   assertEqual(obj.shadow[1], 0)
   assertEqual(obj.shadow[2], 0)
   assertEqual(obj.shadowColor[4], 0, "and clear")
@@ -268,14 +268,14 @@ test("skin hud members: HudFont's nil lets the host's stored shadow stand", func
   assertEqual(obj.shadow[1], 1, "true is the client's offset")
   assertEqual(obj.shadow[2], -1)
   assertEqual(F.rgba(obj.shadowColor), F.rgba({ 0, 0, 0, 1 }))
-  S.HudFont(fs, { face = FACE, size = 12, shadow = { 3, -2, 0.1, 0.2, 0.3, 0.5 } })
+  obj = S.HudFont(fs, { face = FACE, size = 12, shadow = { 3, -2, 0.1, 0.2, 0.3, 0.5 } })
   assertEqual(obj.shadow[1], 3, "a table is x, y, r, g, b, a")
   assertEqual(obj.shadow[2], -2)
   assertEqual(F.rgba(obj.shadowColor), F.rgba({ 0.1, 0.2, 0.3, 0.5 }))
-  S.HudFont(fs, { face = FACE, size = 12, shadow = false })
+  obj = S.HudFont(fs, { face = FACE, size = 12, shadow = false })
   assertEqual(obj.shadow[1], 0, "stored off")
   assertEqual(obj.shadowColor[4], 0)
-  S.HudFont(fs, { face = FACE, size = 12 })
+  obj = S.HudFont(fs, { face = FACE, size = 12 })
   assertEqual(obj.shadow[1], 0, "none stored")
 end)
 
@@ -286,7 +286,7 @@ test("skin hud members: a host's companion off draws its stored shadow under any
   local fs = fontString(m)
   local obj = S.HudFont(fs, { face = FACE, size = 12, shadow = true, shadowFromSkin = false })
   assertEqual(obj.shadow[1], 1, "stored, not High Contrast's 2")
-  S.HudFont(fs, { face = FACE, size = 12, shadow = false, shadowFromSkin = false })
+  obj = S.HudFont(fs, { face = FACE, size = 12, shadow = false, shadowFromSkin = false })
   assertEqual(obj.shadow[1], 0, "stored off")
 end)
 
@@ -318,13 +318,18 @@ test("skin hud members: HudFont never hands SetFont what it refuses", function()
   assertEqual(obj.font[3], S.FontFlags("@skin"))
   rawset(_G, "STANDARD_TEXT_FONT", "Fonts\\Standard.ttf")
   m.STANDARD_TEXT_FONT = "Fonts\\Standard.ttf"
-  local real = obj.SetFont
-  function obj:SetFont(path, ...)
-    if path == "Fonts\\Missing.ttf" then return false end
-    real(self, path, ...)
-    return true
+  local make = m.CreateFont
+  m.CreateFont = function(name)
+    local o = make(name)
+    local real = o.SetFont
+    function o:SetFont(path, ...)
+      if path == "Fonts\\Missing.ttf" then return false end
+      real(self, path, ...)
+      return true
+    end
+    return o
   end
-  S.HudFont(fs, { face = "Fonts\\Missing.ttf", size = 16 })
+  obj = S.HudFont(fs, { face = "Fonts\\Missing.ttf", size = 16 })
   assertEqual(obj.font[1], "Fonts\\Standard.ttf", "the client's face, not none")
   assertEqual(obj.font[2], 16)
   rawset(_G, "STANDARD_TEXT_FONT", nil)
@@ -384,15 +389,15 @@ test("skin hud members: a stored shadow's missing fields default, and a keyed ta
   assertEqual(obj.shadow[2], 0, "y defaults to 0")
   assertEqual(F.rgba(obj.shadowColor), F.rgba({ 0, 0, 0, 1 }), "opaque black")
   opts.shadow = { 3, -2, 0.5 }
-  S.HudFont(fs, opts)
+  obj = S.HudFont(fs, opts)
   assertEqual(obj.shadow[2], -2)
   assertEqual(F.rgba(obj.shadowColor), F.rgba({ 0.5, 0, 0, 1 }), "a partial color fills in")
   opts.shadow = { x = 2, y = -2 }
-  S.HudFont(fs, opts)
+  obj = S.HudFont(fs, opts)
   assertEqual(obj.shadow[1], 0, "a keyed table is no shadow")
   assertEqual(obj.shadowColor[4], 0)
   opts.shadow = { "2", -2 }
-  S.HudFont(fs, opts)
+  obj = S.HudFont(fs, opts)
   assertEqual(obj.shadow[1], 0, "nor a malformed one")
 end)
 

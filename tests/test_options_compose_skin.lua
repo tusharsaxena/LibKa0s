@@ -250,8 +250,9 @@ test("compose skin: the bar family is unchanged; the icon family also governs th
   assertNil(rowAt(bar, "b.borderSize").disabledIf, "fromSkin = true leaves the thickness the player's")
   assertNil(rowAt(bar, "b.borderSize").skinValue)
   assertEqual(rowAt(bar, "b.borderStyleFromSkin").tooltip,
-    "Draw this border in the skin's border style. The border picker is not read while this is on.",
-    "minor 12's words")
+    "Draw this border in the skin's border style. A skin with no border style of its own "
+      .. "leaves it to the border picker and Show border.",
+    "minor 18's words: None defers")
   local icon = O.BorderGroup({ prefix = "b.", fromSkin = "icon" })
   assertEqual(rowAt(icon, "b.borderSize").disabledIf, "b.borderStyleFromSkin", "the thickness follows too")
   assertTrue(type(rowAt(icon, "b.borderSize").skinValue) == "function")
@@ -274,7 +275,9 @@ test("compose skin: the icon family's pickers show the skin's icon border while 
   assertEqual(size.skinValue(size), Skin:ResolveSkin("obsidian")["icon.borderSize"], "read at call time")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
   local bar = rowAt(O.BorderGroup({ prefix = "i.", fromSkin = true }), "i.borderStyle")
+  Skin:SetChoice(OWNER, "ka0s", "wow")
   assertEqual(bar.skinValue(bar), Skin:Token(OWNER, "bar.borderStyle"), "fromSkin = true still reads the bar's")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
 end)
 
 test("compose skin: a rendered icon-family thickness slider is disabled with the style picker", function()
@@ -335,20 +338,65 @@ test("compose skin: the pickers start on Ka0s Default's own values, with or with
   end
 end)
 
+test("compose skin: a skin's None leaves the bar's rows live, showing the player's", function()
+  -- red under: a disabled row showing None over a stored style that draws.
+  local O, rec = host(OWNER)
+  if not Skin:IsOwner(OWNER) then Skin:RegisterOwner(OWNER) end
+  local rows = O.BorderGroup({ prefix = "n.", fromSkin = "bar", show = true })
+  local style, size, show = rowAt(rows, "n.borderStyle"), rowAt(rows, "n.borderSize"), rowAt(rows, "n.borderShow")
+  rec.store["n.borderStyleFromSkin"] = true
+  assertEqual(Skin:Token(OWNER, "bar.borderStyle"), "None")
+  assertFalse(style.disabledIf(style), "the picker is live")
+  assertFalse(size.disabledIf(size), "the thickness too")
+  assertFalse(show.disabledIf(show), "and Show border")
+  assertNil(style.skinValue(style), "the stored style shows")
+  assertNil(size.skinValue(size), "the stored size")
+  assertNil(show.skinValue(show), "the stored toggle")
+end)
+
+test("compose skin: a real style disables the bar's rows and Show border reads true", function()
+  -- red under: Show border offered while the skin's style draws whatever it says.
+  local O, rec = host(OWNER)
+  if not Skin:IsOwner(OWNER) then Skin:RegisterOwner(OWNER) end
+  local rows = O.BorderGroup({ prefix = "n.", fromSkin = "bar", show = true })
+  local style, show = rowAt(rows, "n.borderStyle"), rowAt(rows, "n.borderShow")
+  rec.store["n.borderStyleFromSkin"] = true
+  Skin:SetChoice(OWNER, "ka0s", "contrast")
+  local realDisabled, realShown = show.disabledIf(show), show.skinValue(show)
+  local styleOff = style.disabledIf(style)
+  rec.store["n.borderStyleFromSkin"] = false
+  local offDisabled = show.disabledIf(show)
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertTrue(realDisabled, "Show border is not read")
+  assertTrue(realShown, "and reads true")
+  assertTrue(styleOff, "the picker is disabled")
+  assertFalse(offDisabled, "a companion off leaves them the player's")
+end)
+
+test("compose skin: the icon family keeps its plain companion path", function()
+  -- red under: the None deferral reaching a family it was not ruled for.
+  local O = host(OWNER)
+  local rows = O.BorderGroup({ prefix = "i.", fromSkin = "icon", show = true })
+  assertEqual(rowAt(rows, "i.borderStyle").disabledIf, "i.borderStyleFromSkin")
+  assertNil(rowAt(rows, "i.borderShow").disabledIf)
+end)
+
 test("compose skin: the bar family governs the thickness, and fromSkin = true still does not", function()
   local O, rec = host(OWNER)
   if not Skin:IsOwner(OWNER) then Skin:RegisterOwner(OWNER) end
   local rows = O.BorderGroup({ prefix = "b.", fromSkin = "bar" })
   assertEqual(paths(rows), paths(O.BorderGroup({ prefix = "b.", fromSkin = true })), "the same rows")
   local style, size = rowAt(rows, "b.borderStyle"), rowAt(rows, "b.borderSize")
-  assertEqual(size.disabledIf, "b.borderStyleFromSkin")
   assertTrue(rowAt(rows, "b.borderStyleFromSkin").tooltip:find("thickness", 1, true) ~= nil,
     "the companion says it governs the thickness too")
   rec.store["b.borderStyle"], rec.store["b.borderSize"] = "Blizzard Tooltip", 6
   assertNil(size.skinValue(size), "companion unset: the stored size shows")
   rec.store["b.borderStyleFromSkin"] = true
+  Skin:SetChoice(OWNER, "ka0s", "wow")
   assertEqual(style.skinValue(style), Skin:Token(OWNER, "bar.borderStyle"))
   assertEqual(size.skinValue(size), Skin:Token(OWNER, "bar.borderSize"))
+  assertTrue(size.disabledIf(size), "a real style governs the thickness")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
   assertEqual(rec.store["b.borderSize"], 6, "the stored thickness is untouched")
   assertEqual(rowAt(O.FontGroup({ prefix = "t.", fromSkin = "bar" }), "t.fontFromSkin").label, "Use the skin's font",
     "a family that names no font leaf is the plain one")

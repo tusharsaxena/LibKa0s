@@ -71,6 +71,8 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 field `owner`, which no host passes: the tooltip reads the skin through `name` on all sixteen, and
 `owner` is for a host whose skin owner is not its folder name. It gets no row until the next run.
 
+**v1.85.0, not in the census (2026-11-01).** The owner's rulings of the same day add the skin facade's `S.BarBorder` and `S.HoverArt` (SkinPaintExtras minor 16) and `W.ContextMenu` (Widgets minor 21), and optional arguments on `S.HudFont`, `S.HudShadow`, `S.Mark` and `S.IconBorder`. No host calls them yet, and no public member is retired. `O.__hoverArt` stays private: QuickComms' `settings/IconBrowser.lua:373` is the one host call, and it moves to `S.HoverArt`. They get no rows until the next run.
+
 **v1.85.0, not in the census (2026-11-01).** Toast minor 2 adds the optional descriptor field
 `soundFile`, the file alternative to `soundKit`, which no host passes yet. It gets no row until the next run.
 

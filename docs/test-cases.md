@@ -773,7 +773,7 @@ Total.
 - skin hud members: BarGloss leaves a bar alone when the kit's bare stub makes no region
 - skin hud members: BarGloss shows under Glass, hides entering EllesmereUI and builds nothing there
 - skin hud members: HudFont puts face, size, flags and a skin's shadow on a named font object
-- skin hud members: HudFont gives a string one object, and each string its own
+- skin hud members: HudFont gives two looks two objects, and a repeat none
 - skin hud members: HudFont's false draws no shadow, and clears the last one
 - skin hud members: HudFont's nil lets the host's stored shadow stand
 - skin hud members: a host's companion off draws its stored shadow under any skin
@@ -788,6 +788,53 @@ Total.
 - skin hud members: FollowOnce creates only the record's table
 - skin hud members: FollowOnce answers false and writes nothing on bad input
 - skin hud members: FollowOnce passes opts on, and the colon form works
+
+### test_skin_host_gaps.lua (44)
+
+- skin host gaps: Ka0s Default's bar, icon, glow and cover values stand
+- skin host gaps: every other skin answers its own five values
+- skin host gaps: a skin's glow is its accent, and its dim sees the screen through it
+- skin host gaps: the skins whose palette calls for an edge state a real bar border
+- skin host gaps: the eui source answers its own values from EllesmereUI's looks
+- skin host gaps: S.Resolve hands back the stored bar border under a skin's None
+- skin host gaps: a real bar border style in a skin wins
+- skin host gaps: the deferral is the bar's alone
+- skin host gaps: S.BarBorder answers style, show and size in one read
+- skin host gaps: S.BarBorder with the sentinel stored
+- skin host gaps: HudFont's shadowToken gives a host its shipped shadow under Ka0s Default
+- skin host gaps: HudFont's shadowToken follows a skin, a skin's own entry and its false
+- skin host gaps: HudFont's shadowToken stands down for the companion and Ignore fonts
+- skin host gaps: a name no token carries draws hud.shadow and is logged once
+- skin host gaps: S.HudShadow takes the name too, and a non-color token is no shadow
+- skin hud count: forty strings of one look spend one font object
+- skin hud count: two owners with one look share it, and a new look makes one
+- skin hud count: a string moved to another look leaves the first object's look alone
+- skin hud count: going back to a look reuses its object
+- skin hud count: a repeat call writes an object once
+- skin hud count: a face the client refused is tried again on the next call
+- skin hud count: a replaced CreateFont starts a fresh table
+- skin host gaps: TitleBar's noBg on a frame with no backdrop draws no fill
+- skin host gaps: noBg hides a fill an earlier paint made
+- skin host gaps: noBg keeps the box's edge on a frame with no backdrop
+- skin host gaps: IconBorder on a Texture hangs its edge on a child of the parent
+- skin host gaps: IconBorder's child never writes to a secure parent
+- skin host gaps: IconBorder on a Texture follows a skin and one holder serves
+- skin host gaps: IconBorder follows its Texture's shown state
+- skin host gaps: IconBorder leaves a Texture with no parent alone
+- skin host gaps: ResetToSkin walks a numeric segment into a list
+- skin host gaps: FollowOnce reaches a numeric container, and a string key wins
+- skin host gaps: a numeric leaf lands on the list's own entry
+- skin host gaps: a missing numeric entry is still skipped
+- skin host gaps: S.HoverArt tints hover art in list.hoverArt and follows a skin
+- skin host gaps: S.HoverArt leaves the client's art where the skin says false
+- skin host gaps: S.HoverArt's panel scope and its back
+- skin host gaps: S.Mark on an AceGUI widget's texture gives itself back at release
+- skin host gaps: a repaint does not stack a second release
+- skin host gaps: a second acquire arms again
+- skin host gaps: S.Mark's opts.widget covers a texture a level down
+- skin host gaps: S.Mark's stock puts the client's art back at release
+- skin host gaps: a mark on a plain frame arms no release
+- skin host gaps: S.HoverArt on an AceGUI widget's texture gives itself back too
 
 ### test_skin_width_parity.lua (17)
 
@@ -1042,6 +1089,25 @@ Total.
 - widgets: anchorTo is consulted on EVERY show
 - widgets: CopyWindow names the scroll frame when asked (minor 7)
 - widgets: CopyWindow leaves the scroll frame anonymous when not asked
+
+### test_widgets_menu.lua (16)
+
+- menu: ContextMenu opens the shared menu on rows a host passes
+- menu: ContextMenu refuses no anchor and no rows
+- menu: a ContextMenu row's onClick runs after the menu has hidden
+- menu: a second ContextMenu on one anchor closes, as a dropdown's second click does
+- menu: opts.cursor opens at the pointer, and moves rather than closes
+- menu: a title row is gold, takes no click and shows no highlight
+- menu: a disabled row is gray and takes no click, a predicate read each open
+- menu: a divider row is short, drawn as a rule, and the height counts it
+- menu: a pooled row leaves its divider and its title behind
+- menu: a row's tooltip shows on enter and leaves with the row or the menu
+- menu: a tooltip function is the host's renderer
+- menu: a disabled row keeps its tooltip, which says why
+- menu: keepOpen holds the menu through the callback and repaints the row
+- menu: a dropdown takes the row options too, and onSelect its row
+- menu: the dropdown's own label is one line
+- menu: an owned menu reads its title, disabled and rule colors from the skin
 
 ### test_widgets_reorderlist.lua (24)
 
@@ -3088,7 +3154,7 @@ Total.
 - chrome skin: an owner-less popup and an ignored panel draw the client's suggestion rows
 - chrome skin: list.hoverArt is the client's art in Ka0s Default and WoW Default, the accent elsewhere
 
-### test_options_compose_skin.lua (22)
+### test_options_compose_skin.lua (25)
 
 - compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
 - compose skin: without fromSkin the three groups emit exactly the rows they did
@@ -3110,6 +3176,9 @@ Total.
 - compose skin: every family's companion starts on
 - compose skin: a host's own default still wins, which is how a row stays put until its addon moves
 - compose skin: the pickers start on Ka0s Default's own values, with or without a companion
+- compose skin: a skin's None leaves the bar's rows live, showing the player's
+- compose skin: a real style disables the bar's rows and Show border reads true
+- compose skin: the icon family keeps its plain companion path
 - compose skin: the bar family governs the thickness, and fromSkin = true still does not
 - compose skin: fromSkin alone leaves Font flags typed, because only a host on S.FontFlags reads @skin
 
@@ -4299,6 +4368,7 @@ Total.
 | test_skin_defs.lua | 35 |
 | test_skin_hud_tokens.lua | 6 |
 | test_skin_hud_members.lua | 27 |
+| test_skin_host_gaps.lua | 44 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 39 |
@@ -4307,6 +4377,7 @@ Total.
 | test_skin_ace.lua | 28 |
 | test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
+| test_widgets_menu.lua | 16 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 49 |
 | test_widgets_draghandle_place.lua | 10 |
@@ -4384,7 +4455,7 @@ Total.
 | test_options_skin.lua | 22 |
 | test_options_tooltip_skin.lua | 9 |
 | test_options_chrome_skin.lua | 15 |
-| test_options_compose_skin.lua | 22 |
+| test_options_compose_skin.lua | 25 |
 | test_options_compose_flags.lua | 5 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 78 |
@@ -4437,4 +4508,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3759** |
+| **Total** | **3822** |

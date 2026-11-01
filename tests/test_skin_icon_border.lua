@@ -156,6 +156,7 @@ test("skin icon border: under eui fromSkin is the library's, from the EllesmereU
   assertEqual(Skin:Token(OWNER, "icon.borderStyle"), "Solid", "EllesmereUI's look is Ka0s Default's here")
   assertEqual(Skin:Token(OWNER, "icon.borderSize"), 2)
   assertTrue(survey(m, F.region(Skin, f, "edgeTop")).shown, "drawn")
-  assertEqual(F.rgba(survey(m, F.region(Skin, f, "edgeTop")).color), "0,0,0,1")
+  assertEqual(F.rgba(survey(m, F.region(Skin, f, "edgeTop")).color), F.rgba(S.Token("icon.border")),
+    "SkinEUI minor 4's, half EllesmereUI's panel color")
   assertNil(Skin.euiRefused[OWNER], "nothing refused")
 end)
