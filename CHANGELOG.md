@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.26.8.17.16.16.4.9**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**, `LibKa0s-Media-1.0` key **12.1**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.26.8.17.16.16.4.9**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**, `LibKa0s-Media-1.0` key **12.1**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
 
 ### The owner's smoke feedback (`SF-L1` to `SF-L5`)
 
@@ -23,6 +23,7 @@ Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `
 - **SkinDefsOthers minor 8**: every skin's `list.stripe` stands at least 5% off its window. Obsidian's and High Contrast's did not show. Ka0s Default's stays.
 - **SkinDefs minor 26**, **SkinDefsOthers minor 8**: every skin's title band stands at least 5% off its window and its rule at least 10% off both. Ka0s Default's `title.bg` is black at 0.9, by the owner's ruling for every skin. Obsidian's rule is brighter and its band lifted; Glass, High Contrast and WoW Forever move too.
 - **SkinDefsOthers minor 8**: High Contrast's window, popup, menu and icon edges are 1px, where they were 2px.
+- **Core minor 15** (`SF-L6`, #72): `MakeResizable` puts a frame anchored to another frame (a cell, a parent) back on that anchor after a grip drag, with the size the drag made. A window anchored to the screen behaves as before. No host owes anything.
 - **What a consumer owes**: a host that colors its own sort marks reads `list.header.arrow`, and a host token table gains the row. BankLedger and LootHistory both do.
 
 ### The review of the rulings and the gate (`FS-FIX`)

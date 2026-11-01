@@ -357,3 +357,42 @@ test("resize: gripParent that is not a table falls back to the frame", function(
   local grip = core.MakeResizable(f, { gripParent = "art" })
   assertEqual(grip.__parent, f)
 end)
+
+-- A frame that keeps its anchors, as the client's does; the mock's frames drop SetPoint.
+local function withPoints(f)
+  local pts = {}
+  rawset(f, "SetPoint", function(_, ...) pts[#pts + 1] = { ... } end)
+  rawset(f, "ClearAllPoints", function() pts = {} end)
+  rawset(f, "GetNumPoints", function() return #pts end)
+  rawset(f, "GetPoint", function(_, i) return unpack(pts[i or 1] or {}) end)
+  rawset(f, "SetSize", function(self, w, h) self:__setGeom(w, h) end)
+  return f
+end
+
+-- Minor 15 (SF-L6, #72): a frame anchored to something other than the screen keeps that anchor.
+test("resize: a frame anchored to a cell comes back onto its anchor, with the new size", function()
+  -- red under: drop the restore after StopMovingOrSizing in wireGrip
+  local cell = mocks.CreateFrame("Frame", "ResizeCell", mocks.UIParent)
+  local f = withPoints(mocks.CreateFrame("Frame", "ResizeAnchored", cell))
+  f:SetPoint("TOPLEFT", cell, "TOPLEFT", 5, -7)
+  local grip = core.MakeResizable(f, { minWidth = 100, minHeight = 50 })
+  grip:__fire("OnMouseDown", "LeftButton")
+  f:ClearAllPoints(); f:SetPoint("TOPLEFT", mocks.UIParent, "BOTTOMLEFT", 900, 400)  -- the client's sizing
+  f:__setGeom(333, 222)
+  grip:__fire("OnMouseUp", "LeftButton")
+  local _, rel, relPoint, x, y = f:GetPoint(1)
+  assertEqual(rel, cell, "back on the cell"); assertEqual(relPoint, "TOPLEFT")
+  assertEqual(x, 5); assertEqual(y, -7)
+  assertEqual(f:GetWidth(), 333, "the size the drag made"); assertEqual(f:GetHeight(), 222)
+end)
+
+test("resize: a window anchored to the screen is left where the drag put it", function()
+  local f = withPoints(newWindow())
+  f:SetPoint("CENTER", mocks.UIParent, "CENTER", 0, 0)
+  local grip = core.MakeResizable(f, { minWidth = 100, minHeight = 50 })
+  grip:__fire("OnMouseDown", "LeftButton")
+  f:ClearAllPoints(); f:SetPoint("TOPLEFT", mocks.UIParent, "BOTTOMLEFT", 10, 20)
+  grip:__fire("OnMouseUp", "LeftButton")
+  local point, _, _, x, y = f:GetPoint(1)
+  assertEqual(point, "TOPLEFT"); assertEqual(x, 10); assertEqual(y, 20)
+end)

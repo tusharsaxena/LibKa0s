@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **14** |
 | Shipped in | v1.81.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 13](./version-13-docs.md) (shipped in v1.78.0 – v1.80.0) — the same members; `MakeResizable`'s grip was the client's art whatever the window's skin |
-| Superseded by | — |
+| Superseded by | [version 15](./version-15-docs.md) |
 | Requires | nothing new: `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 14 }` |
 
