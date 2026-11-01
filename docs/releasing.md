@@ -1125,7 +1125,8 @@ host: `SimPanel.lua` moved only as the pure split into `SimPanelRender.lua`, and
 **Step 8 for v1.85.0 (local tag `v1.85.0`, cut at the close, `FS-REL`) is the re-vendor of Ka0sAddonsCommonTasks
 `docs/2026-11-01-FULL_SKINNING/`**: every consumer on the same branch, one re-vendor, then each host's half of the causes. A consumer's
 degradation stubs owe `O.LabelFont` and, on Widgets, `ContextMenu`, and its skin facade `Mark`, `MarkText`, `HudTextColor`, `HudLabelColor`, `BarFillColor`, `HudShadow`, `BarGloss`, `HudFont`, `BarBorder` and `HoverArt`: `HudFont` must draw and `BarBorder` must answer its stored three, and the rest may be no-ops (the Options document's *Moving to this version*, section 7). Its
-`LibKa0s icons:` line owes `chevron-down, chevron-up, close, confirm, info, move, reset, volume-high`, or kit revision 49's vendor gate goes red. No
+`LibKa0s icons:` line owes `chevron-down, chevron-up, close, confirm, info, move, reset, volume-high`, or kit revision 49's vendor gate goes red. Its
+`tests/run.lua` owes `test_skin_values` and `test_skin_switch` by the pair, or the inventory goes red; adoption is kit revision 50's document. No
 composer row moves on the copy: each host opts its rows over in its flip commit. **Step 5 names hosts this time**: `SimPanel.lua`, `SimPanelRender.lua`
 and `Widgets.lua` moved, in the look only, so each report names the 30 high Steps title band, `gtip.title` on an owned tooltip title and `icon.tint` on
 an owned strip's icon. Strip and Sim: BankLedger, DropWatcher, LootHistory, MultiMeters. Sim only: KickCD. Strip only: DpsRace, LibKa0sSkinTester.

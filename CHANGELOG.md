@@ -14,7 +14,13 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.25.7.17.16.15.4.9**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**; every other file still at its v1.84.0 minor, and **test kit revision 49**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.25.7.17.16.15.4.9**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.7.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
+
+### The typed-value gate and the skin-switch test (`FS-GATE`)
+
+- **Test kit revision 50**: `test_skin_values.lua` and `skin_values.lua`, the color gate eight addons each carried as `tests/test_skin_literals.lua`, generalized to textures. Kit-shared categories replace most of the 61 allow rows; a stale row still fails, no git still fails, and a planted value of each shape still proves the check. A host's own row is `{ file, substring, why, cause }`, and the cause id is required.
+- **Test kit revision 50**: `test_skin_switch.lua` and `skin_switch.lua`. A host declares its painted surfaces, and each must change under a probe skin that gives every token its own value. It spies on the drawing setters, and fails a surface that draws the same or draws nothing. Scope-ignored surfaces and companions off are excluded from its second pass.
+- **What a consumer owes**: the re-vendor declares both suites by the pair, or the inventory goes red. Unwired, each is one declared skip. Adoption is `docs/api/testkit/version-50-docs.md`. No library file changes.
 
 ### The owner's rulings and the flips' gaps (`FS-FIX`)
 

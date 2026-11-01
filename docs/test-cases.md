@@ -4171,7 +4171,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 49
+- the kit is revision 50
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -4293,6 +4293,69 @@ Total.
 - prune-icons: none empties the folder; all and no line remove nothing
 - prune-icons: an unknown name is refused and nothing is removed
 
+### test_kit_skin_values.lua (27)
+
+- skin values: a planted color of each shape is reported, and only those lines
+- skin values: a planted texture of each shape is reported, and only those lines
+- skin values: a setter's path is one hit, not two
+- skin values: a parenthesis in a string does not end a call
+- skin values: a line's trailing comment is cut, and CRLF keeps the count
+- skin values: a host's own paint call is read at its named positions
+- skin values: a row of numbers past a color's range is data
+- skin values: each category takes what its ruling leaves alone
+- skin values: a category takes nothing past its ruling
+- skin values: the seam, defaults/ and the locales are out by file
+- skin values: chat by file is for escapes, never a numeric color
+- skin values: a host row excuses its line and is used
+- skin values: a row reaches only its own file
+- skin values: a stale row fails
+- skin values: a row that repeats a category is stale
+- skin values: a row needs its file, substring, why and cause id
+- skin values: it reads the tracked scope, without the seam or a file git does not track
+- skin values: a host's paths replace the scope
+- skin values: no git fails
+- skin values: no io.popen fails
+- skin values suite: unset facts are one declared skip that names the rule
+- skin values suite: facts that are no table fail at load
+- skin values suite: a clean tree passes, its planted value proving the check
+- skin values suite: a typed value fails, naming its line
+- skin values suite: a stale row fails
+- skin values suite: a causeless row fails
+- skin values suite: no git fails
+
+### test_kit_skin_switch.lua (30)
+
+- skin switch: the probe gives every token a value of its kind
+- skin switch: every probe color is its own, and none is Ka0s Default's
+- skin switch: the tokens a real skin shares are apart under the probe
+- skin switch: a number, a bool and a list move off Ka0s Default
+- skin switch: a string takes another skin's value where one exists
+- skin switch: the probe leaves no skin behind, and the owner keeps its choice
+- skin switch: a spy sees a frame's regions and children, and comes off again
+- skin switch: a spied setter still draws
+- skin switch: a run takes its spies off the surface
+- skin switch: a surface that follows a token passes
+- skin switch: a surface that redraws its literal fails, naming the setter
+- skin switch: a surface that draws nothing on a switch fails
+- skin switch: a surface built before the switch repaints with no host call
+- skin switch: a region made on the first repaint is compared on the later two
+- skin switch: only one surface's own draws count
+- skin switch: a table argument is compared by contents
+- skin switch: the first pass clears the Scope
+- skin switch: the first pass turns a companion on
+- skin switch: a Scope-ignored surface is excluded from the second pass
+- skin switch: a companion surface is excluded from the second pass
+- skin switch: a surface with neither still has to change in the second pass
+- skin switch: the second pass holds the Scope ignored while it switches
+- skin switch: a surface that raises is reported, and state comes back
+- skin switch: facts name a registered owner and at least one surface
+- skin switch: a surface needs a name, a build and a Scope it can mean
+- skin switch: two surfaces may not share a name
+- skin switch suite: unset facts are one declared skip that names the rule
+- skin switch suite: bad facts fail at load
+- skin switch suite: a surface gets a case per pass, and an excluded one its first only
+- skin switch suite: a surface that does not change fails its case
+
 ### test_eol.lua (2)
 
 - eol: every tracked file carries the terminator .gitattributes declares for it
@@ -4336,6 +4399,19 @@ Total.
 - lizard sighted: listedCounts reads the per-file table, once per file
 - lizard sighted: parity names every file whose counts differ, and only those
 - lizard sighted: lizard lists every function of a hazard fixture once it is sanitized
+
+### test_skin_values.lua (1)
+
+- skin values: skinning-§1 (skipped: Kit.skinValues is not set in the runner, so this repo's typed colors and textures are not gated yet. Every addon that adopted skins owes skinning-§1; wire Kit.skinValues to adopt it)
+
+### test_skin_switch.lua (6)
+
+- skin switch: the check is falsifiable, a surface that redraws a literal is reported
+- skin switch: a window's panel changes
+- skin switch: a window's panel changes with the Scope ignored
+- skin switch: a string changes
+- skin switch: a string changes with the Scope ignored
+- skin switch: a settings row changes
 
 ## Totals
 
@@ -4504,9 +4580,12 @@ Total.
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 20 |
 | test_kit_vendor_sync.lua | 25 |
+| test_kit_skin_values.lua | 27 |
+| test_kit_skin_switch.lua | 30 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
-| Skipped | 2 |
-| **Total** | **3823** |
+| test_skin_switch.lua | 6 |
+| Skipped | 3 |
+| **Total** | **3886** |
