@@ -409,9 +409,9 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
-### test_toast.lua (50)
+### test_toast.lua (54)
 
-- toast: the major loads at minor 1 and reports its one file
+- toast: the major loads at minor 2 and reports its one file
 - toast: without Core the major is absent (no NewLibrary)
 - toast: New refuses a descriptor without a builder, naming it
 - toast: a method called on something that is not an instance raises
@@ -441,6 +441,10 @@ Total.
 - toast: Attach wires a host control to the pause and the right-click, keeping its own script
 - toast: the frame is the T5 alert tier: HIGH, toplevel, mouse-enabled, clamped
 - toast: the alert sound plays when the host says so, on the host's kit or the default
+- toast: soundFile plays the host's file on Master, and nothing else plays
+- toast: soundFile may be a getter, read as each toast shows
+- toast: a soundFile that is no file falls to the kit path as it always did
+- toast: soundFile stays behind d.sound, and a client without PlaySoundFile plays nothing
 - toast: no sound when the host says no
 - toast: the frame takes the host's scale, read again on Refresh
 - toast: the saved position is applied in UIParent's units, divided by the scale
@@ -4280,7 +4284,7 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
-| test_toast.lua | 50 |
+| test_toast.lua | 54 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -4433,4 +4437,4 @@ Total.
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | Skipped | 2 |
-| **Total** | **3755** |
+| **Total** | **3759** |

@@ -71,6 +71,9 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 field `owner`, which no host passes: the tooltip reads the skin through `name` on all sixteen, and
 `owner` is for a host whose skin owner is not its folder name. It gets no row until the next run.
 
+**v1.85.0, not in the census (2026-11-01).** Toast minor 2 adds the optional descriptor field
+`soundFile`, the file alternative to `soundKit`, which no host passes yet. It gets no row until the next run.
+
 **v1.84.0, not in the census (2026-10-31, unreleased).** The release adds a major,
 `LibKa0s-Charts-1.0` (`Charts:New` and its nine lib-level members in
 `docs/api/Charts/members-1.1.json`, and the context's members in

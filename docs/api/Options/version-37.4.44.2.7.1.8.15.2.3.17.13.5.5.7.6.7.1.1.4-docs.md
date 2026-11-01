@@ -75,17 +75,43 @@ One step per addon, in its migration runner (`savedvariables`), appended to the 
 
 `S.HudFont` is not recorded, because the face and the size are the host's resolved values and a replay would draw them stale. A skin change reaches it only through the host's own pass, so a gate in that pass can keep the old shadow up. KickCD's `Castbar:OnSkinLooksChanged` calls a plain `Reskin`, which returns at `modules/Castbar_Skin.lua:371` while the structure signature is unchanged, and the signature signs `tostring(c.fontShadow)`, not the resolved shadow: two skins with the same face, size and flags but different shadows leave the old one up.
 
-So any signature or cache in front of the call signs the **resolved** shadow and the companion: `S.HudShadow()`'s six answers, `false` or nil included, beside `shadowFromSkin` and the stored value. Or the skin's looks-changed path forces the pass past the gate. Pin it with a skin-switch case between two such skins, on a string that had already drawn.
+So any signature or cache in front of the call signs the **resolved** shadow and the companion: `S.HudShadow()`'s six return values, or its lone `false` or nil, beside `shadowFromSkin` and the stored value. Or the skin's looks-changed path forces the pass past the gate. Pin it with a skin-switch case between two such skins, on a string that had already drawn.
 
 ### 6. Gloss
 
-`S.BarGloss(statusBar, fromSkin)`, once the bar has its texture, replaces a host's own gloss layer. Pass the bar's texture companion, `barTextureFromSkin`, or a per-state one such as KickCD's `statusBarTextureFromSkin`: the gloss belongs to the skin's texture, so a player's own texture stays plain, the AbsorbTracker pilot's rule (`core/Data.lua`'s `GetBarGloss`). Omitting it shines that bar under Glass, and `Untrack` will not take the layer down. Call again when the companion moves and when the bar gets a new fill Texture. A skin change needs no call.
+`S.BarGloss(statusBar, fromSkin)`, once the bar has its texture, replaces a host's own gloss layer. Pass the bar's texture companion, `barTextureFromSkin`, or a per-state one such as KickCD's `statusBarTextureFromSkin`: the gloss belongs to the skin's texture, so a player's own texture stays plain, the AbsorbTracker pilot's rule (`modules/Display.lua`'s `UpdateBarAppearance`). Omitting it shines that bar under Glass, and `Untrack` leaves the layer shown. Call again when the companion moves and when the bar gets a new fill Texture. A skin change needs no call.
 
 ### 7. The degradation facade
 
-The re-vendor is blocked until every Skin facade in the host answers `Mark`, `MarkText`, `HudTextColor`, `HudLabelColor`, `BarFillColor`, `HudShadow`, `BarGloss` and `HudFont`, or its parity case is red. Each may be a no-op but `HudFont`, which must draw: a no-op leaves the host with no face. A stub writes `fs:SetFont(opts.face, opts.size, opts.flags)` and, on the string, the stored shadow. `Skin.FollowOnce` is on the major, not the facade: see step 4's last item.
+The re-vendor is blocked until every Skin facade in the host answers `Mark`, `MarkText`, `HudTextColor`, `HudLabelColor`, `BarFillColor`, `HudShadow`, `BarGloss` and `HudFont`, or its parity case is red. Each may be a no-op but `HudFont`, which must draw: a no-op leaves the host with no face. `Skin.FollowOnce` is on the major, not the facade: see step 4's last item.
+
+A stub takes the same `opts` as `S.HudFont`, with no skin to read:
+
+```lua
+S.HudFont = function(fs, opts)
+  opts = type(opts) == "table" and opts or {}
+  local face = opts.face
+  if type(face) ~= "string" or face == "" then face = STANDARD_TEXT_FONT end
+  if type(face) ~= "string" then return nil end
+  fs:SetFont(face, S.HudFontSize(opts.size), S.FontFlags(opts.flags))
+  local on = opts.shadow and true or false
+  fs:SetShadowColor(0, 0, 0, on and 1 or 0)
+  fs:SetShadowOffset(on and 1 or 0, on and -1 or 0)
+end
+```
+
+- **Flags go through the stub's own `S.FontFlags`, never straight to `SetFont`.** With the library absent, a host from step 2 still stores and passes `"@skin"`, and `SetFont` takes that as a flag. The stub's `S.FontFlags` answers a picked flag as stored and `"OUTLINE"` for the sentinel, so it must be a real function here, not a vocabulary no-op, whose nil loses a picked flag.
+- **`face` is optional on both.** `S.HudFont` falls to the skin's `hud.font`, then the client's face; a stub has no skin, so it goes straight to `STANDARD_TEXT_FONT`. With no face at all, both leave the string alone and answer nil. `size` follows the same way, 12 when not above 0.
+- **With the library absent, a stored shadow does not draw on a 12.0.7 client, and that is accepted.** Step 3's rule stands: the client draws only a font object's shadow. A stub builds no font object, because a client never frees one and a degraded build has no shadow worth holding one per string for the session. The text still draws, the row keeps its stored value, and the look is what a host's own `SetShadow*` calls gave it. It still writes both arms on the string, as `S.HudFont` does on a client with no `CreateFont`, so the off arm clears. `shadowFromSkin` is unread: with no skin, the stored value stands. No suite or smoke check may claim the degraded shadow draws.
+
+**What the move costs each pass.** `S.BarGloss` and `S.HudFont` each ask their target's `GetObjectType` once (`P.kind`), so a surface that takes both adds two calls to its appearance pass: AbsorbTracker's three bars went from 81 to 87. A table literal at the call site adds one opts table per call, and nearly all of the pilot's 1166 bytes were that. `S.HudFont` keeps nothing of `opts`, so hold one file-local table and refill every field before each call, as AbsorbTracker's `applyValueFont` does (`modules/Display.lua`): a field left unset keeps the last surface's value. A byte ceiling then stays where it was. An exact call-count pin moves in the flip commit, with its derivation beside the new number, as in AbsorbTracker's `tests/perf.lua` (`appearancePass`): the measured count, what added it, and the sum. Never move a pin bare.
 
 **Tests the flip commit owes**, one suite per addon: a stored partial profile (some companions stored `false`, some absent, a color table with one key, a sub-table missing) goes through the step and every listed companion reads `true`, every stored pick and color is byte-identical, and no key holds `"@skin"` but the flags named; a class color, its toggle and the two `skin.ignore*` values are unchanged; a second run writes nothing; a companion turned off after the step stays off, through every Defaults path too; a unit list's companions move with no stray `skin` table on any entry; a skin switch changes what each flipped surface draws, a shadow behind a cache included; and a bar with a player's texture stays plain under Glass.
+
+Two kit facts decide whether those cases prove anything:
+
+- **A gloss test needs `tests/_kit/mock_paint.lua`.** The base mock's bars are not StatusBars: its frames answer `GetObjectType` with the frame, `P.kind` reads that as `"Frame"`, and `S.BarGloss` returns with nothing drawn, so a plain-under-Glass case passes on an empty bar. Install it with `dofile("tests/_kit/mock_paint.lua")(M)`, build the bar with `CreateFrame("StatusBar")` and call the restore it answers at the end. Pin the gloss drawn under Glass first, then its absence.
+- **`S.HudFont` keeps each string's object in `Skin.__hudFonts[fs]`.** A repeat call answers from it and never reaches `CreateFont`, so a suite faking `CreateFont` sets `Skin.__hudFonts[fs] = nil` first, or its fake sees nothing on a string that has already drawn.
 
 ## What changed at version 37.4.44.2.7.1.7.15.2.3.16.12.5.5.7.5.6.1.1.3: typed colors with the Scope cleared (`FS-L5`)
 

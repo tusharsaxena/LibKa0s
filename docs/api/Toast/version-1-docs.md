@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Toast-1.0` |
 | File | `Toast.lua` minor **1** |
 | Shipped in | v1.79.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | — |
+| Superseded by | [version 2](./version-2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`) |
 | Optional at call time | Core's `ApplySkin` and `MakeCloseButton`, each presence-checked; through them, `LibKa0s-Media-1.0` (the close icon) and `LibKa0s-Skin-1.0` (the owner's skin), neither read by this file |
 | Confirm in-game | `LibStub("LibKa0s-Toast-1.0").MODULES` → `{ Toast = 1 }` |
@@ -220,3 +220,7 @@ with no load-list change in the host. A host vendoring the file alone ahead of a
 - `lib.STRATA`: no consumer as of v1.83.0, kept because it is the alert tier the shell draws at.
 - `lib.WIDTH`: no consumer as of v1.83.0, kept because it is the default a host overrides with `width`.
 - `soundKit`: no consumer as of v1.83.0, kept because it is the numeric alternative to `sound` for a host that plays a sound kit id.
+
+## Moving to version 2
+
+Nothing is owed: `d.soundFile` is additive, and a host that does not pass it plays what it played here. A host that wants a file for its alert passes `soundFile`, a value or a getter, beside `sound`.
