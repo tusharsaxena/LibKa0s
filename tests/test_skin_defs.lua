@@ -607,7 +607,8 @@ test("skin defs: a hovered row is told apart from a selected one", function()
       local h, s = t["list.hover"], t["list.sel"]
       local same = math.abs(h[1] - s[1]) + math.abs(h[2] - s[2]) + math.abs(h[3] - s[3])
       assertTrue(same > 0.3, key .. ": list.hover is not list.sel's hue")
-      sameColor(h, { t["text.body"][1], t["text.body"][2], t["text.body"][3], 0.10 }, key .. " hover is the body text at .10")
+      -- .15 since R3-L5, so a hovered row still stands off the stripe that rose to 9% (.10 until then).
+      sameColor(h, { t["text.body"][1], t["text.body"][2], t["text.body"][3], 0.15 }, key .. " hover is the body text at .15")
     end
   end
 end)
@@ -688,15 +689,40 @@ end
 
 local BLACK = { 0, 0, 0 }
 
+-- How far a skin's alternate row stands off its window, in a channel (SF-L3 set 5%; R3-L5 of
+-- Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3 raises it to 8%, image 95).
+local STRIPE_STEP = 0.08
+
 test("skin defs: alternate rows show in every skin", function()
   -- SF-L3, images 53 and 54. red under: Obsidian's 2% white or High Contrast's #0D0D0D, which no
   -- eye separates from the window. Ka0s Default's own 3% stays: the item names the other two.
+  -- R3-L5, image 95: Obsidian's 6% white, 5.8% off its window, was still hardly visible, and every
+  -- dark skin on the same 6% (Glass, Ember, WoW Default, WoW Midnight, WoW Forever) or Azeroth's 7%
+  -- parchment sat as faint. red under any of them below a visible 8%.
   local Skin = skinLib()
   for _, key in ipairs(KEYS) do
     if key ~= "ka0s" then
       local t = Skin:ResolveSkin(key)
       local win = over(t["win.bg"], BLACK)
-      assertTrue(apart(over(t["list.stripe"], win), win) >= 0.05, key .. ": the stripe stands off the window")
+      local step = apart(over(t["list.stripe"], win), win)
+      assertTrue(step >= STRIPE_STEP, ("%s: the stripe stands %.1f%% off the window, want %d%%"):format(
+        key, step * 100, STRIPE_STEP * 100))
+    end
+  end
+  local o = Skin:ResolveSkin("obsidian")
+  assertEqual(colorKey(o["list.stripe"]), "1.000,1.000,1.000,0.090", "Obsidian's stripe, 9% white")
+end)
+
+test("skin defs: a hovered row still stands off an alternate row", function()
+  -- R3-L5. A hovered plain row is the body text at its alpha over the window; at 10% it stood 3% off
+  -- a 6% stripe. red under: a stripe raised to 9% under a 10% hover, which reads as a stripe.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    if key ~= "ka0s" then
+      local t = Skin:ResolveSkin(key)
+      local win = over(t["win.bg"], BLACK)
+      local step = apart(over(t["list.hover"], win), over(t["list.stripe"], win))
+      assertTrue(step >= 0.03, ("%s: a hovered row %.1f%% off a striped one"):format(key, step * 100))
     end
   end
 end)
