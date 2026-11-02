@@ -1229,28 +1229,65 @@ function lib.__AttachSkinPicker(O, d)
 
   --- The one-time skin notice (minor 9, SG-L3). `store` is { get = fn answering the version this
   --- addon recorded, or nil; set = fn(version) recording it, in the host's account-wide store }.
-  --- Recorded version at or past lib.SKIN_NOTICE_VERSION: nothing, "seen". Otherwise, when another
-  --- addon already claimed the notice this session: this addon records it, nothing, "claimed". Else
-  --- this addon claims it, records it and shows O.SkinPicker(spec) (the frame, or nil, "queued").
-  --- In combat nothing is claimed or recorded (nil, "combat"): the host asks again after it. The
-  --- claim lives on the library table, so every vendored copy of an addon shares it.
-  function O.SkinNotice(spec, store)
+  --- Recorded version at or past lib.SKIN_NOTICE_VERSION: nothing, "seen" -- and the claim is made,
+  --- so an addon that has not seen it cannot show it over one that has. Otherwise, when another
+  --- addon already claimed the notice this session: this addon records it, nothing, "claimed".
+  --- `recordOnly` (a stood-down host, which shows no window): those two answers, else nil,
+  --- "standdown", recording nothing. Else, in combat nothing is claimed or recorded (nil,
+  --- "combat"): the host asks again after it. Else the show waits for login to settle (nil,
+  --- "queued"): every addon's seen record is in by then, so the claim is re-checked first, then this
+  --- addon claims it, records it and shows O.SkinPicker(spec); combat in that moment asks again
+  --- every NOTICE_RETRY seconds. The claim lives on the library table, so every vendored copy of an
+  --- addon shares it.
+  local NOTICE_SETTLE, NOTICE_RETRY = 3, 5
+  local function noticeAttempt(spec, store, settled)
     local v = lib.SKIN_NOTICE_VERSION
-    if type(store) ~= "table" or type(store.get) ~= "function" or type(store.set) ~= "function" then
-      return nil, "unavailable"
-    end
     local seen = store.get()
-    if type(seen) == "number" and seen >= v then return nil, "seen" end
+    if type(seen) == "number" and seen >= v then
+      lib.__noticeClaimed = v
+      return nil, "seen"
+    end
     if lib.__noticeClaimed and lib.__noticeClaimed >= v then
       store.set(v)
       return nil, "claimed"
     end
     if inLockdown() then return nil, "combat" end
+    if not settled and type(C_Timer) == "table" and type(C_Timer.After) == "function" then
+      if O.__noticePending then return nil, "queued" end
+      O.__noticePending = true
+      local function fire()
+        local _, why = noticeAttempt(spec, store, true)
+        if why == "combat" then return C_Timer.After(NOTICE_RETRY, fire) end
+        O.__noticePending = nil
+      end
+      C_Timer.After(NOTICE_SETTLE, fire)
+      return nil, "queued"
+    end
     local f, why = O.SkinPicker(spec)
     if not f and why ~= "queued" then return nil, "unavailable" end
     lib.__noticeClaimed = v
     store.set(v)
     return f, why
+  end
+
+  function O.SkinNotice(spec, store, recordOnly)
+    if type(store) ~= "table" or type(store.get) ~= "function" or type(store.set) ~= "function" then
+      return nil, "unavailable"
+    end
+    if recordOnly then
+      local v = lib.SKIN_NOTICE_VERSION
+      local seen = store.get()
+      if type(seen) == "number" and seen >= v then
+        lib.__noticeClaimed = v
+        return nil, "seen"
+      end
+      if lib.__noticeClaimed and lib.__noticeClaimed >= v then
+        store.set(v)
+        return nil, "claimed"
+      end
+      return nil, "standdown"
+    end
+    return noticeAttempt(spec, store, false)
   end
 
   --- Take this instance's pickers down: its queued owners leave the queue (never seen: no onClose),

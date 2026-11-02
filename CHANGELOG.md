@@ -37,7 +37,7 @@ Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `
 
 ### The one-time skin notice (`SG-L3`)
 
-- **OptionsSkinPicker minor 9**: `O.SkinNotice(spec, store)` shows the skin picker once per account for a release that wants it known. The first addon to ask claims it and shows the picker, every other addon records the version in its own account-wide store and stays quiet, and `lib.SKIN_NOTICE_VERSION` (1) re-announces when raised. Hosts owe a login call and a `skinNotice` number in `db.global`.
+- **OptionsSkinPicker minor 9**: `O.SkinNotice(spec, store)` shows the skin picker once per account for a release that wants it known. The first addon to ask claims it and shows the picker, every other addon records the version in its own account-wide store and stays quiet, and `lib.SKIN_NOTICE_VERSION` (1) re-announces when raised. A `seen` answer claims too, the first show waits three seconds for login to settle (`nil, "queued"`) and re-checks the claim, and a stood-down host passes `recordOnly` as a third argument. Hosts owe a login call and a `skinNotice` number in `db.global`.
 
 ### The review of the rulings and the gate (`FS-FIX`)
 
