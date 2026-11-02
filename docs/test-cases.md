@@ -850,12 +850,13 @@ Total.
 - skin host gaps: a mark on a plain frame arms no release
 - skin host gaps: S.HoverArt on an AceGUI widget's texture gives itself back too
 
-### test_skin_width_parity.lua (17)
+### test_skin_width_parity.lua (18)
 
 - skin width parity: every skin's body, title and HUD sizes are the measured ones
 - skin width parity: every skin's text is as wide as Ka0s Default's, never more than 2% wider
 - skin width parity: every shipped face has a size for each role, as wide as Ka0s Default's
 - skin width parity: a skin's sizes are its faces' rows in the library's table
+- skin width parity: Loot History's Date, 02-Nov-2026, fits every skin's body as it fits Ka0s Default's
 - skin width parity: WoW Default's Friz is real Friz, not Prototype's bytes
 - skin width parity: High Contrast no longer promises larger type
 - skin hud size: HudFontSize is in the vocabulary and the facade
@@ -4511,7 +4512,7 @@ Total.
 | test_skin_hud_tokens.lua | 6 |
 | test_skin_hud_members.lua | 30 |
 | test_skin_host_gaps.lua | 46 |
-| test_skin_width_parity.lua | 17 |
+| test_skin_width_parity.lua | 18 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 43 |
 | test_skin_paint_controls.lua | 35 |
@@ -4655,4 +4656,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3945** |
+| **Total** | **3946** |

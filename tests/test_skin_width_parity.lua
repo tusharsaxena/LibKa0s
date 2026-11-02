@@ -18,7 +18,10 @@
 -- first) or more than 5% narrower; a skin given a face this table has no measurement for (re-run the
 -- script and add its row); a skin's size that is not its face's row in the library's table; a shipped
 -- face with no row there; High Contrast's description promising larger type again; the shipped Friz
--- turning into Prototype's bytes, the font replacement that left WoW Default unmeasured (LibKa0s#69).
+-- turning into Prototype's bytes, the font replacement that left WoW Default unmeasured (LibKa0s#69);
+-- a skin whose body draws Loot History's Date, "02-Nov-2026", wider than Ka0s Default does (R3-L4 of
+-- Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3, images 95, 96 and 98: the column fits Prototype
+-- at 12 and nothing wider, so Obsidian's 12.5 and WoW Default's Friz at 11 drew "02-Nov-20...").
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
@@ -67,7 +70,7 @@ local WIDTH = {
 
 -- The sizes the measurement picked (its section 8): { font.bodySize, font.titleSize, hud.fontSize }.
 local SIZES = {
-  ka0s = { 12, 14, 12 }, obsidian = { 12.5, 14.5, 13 }, azeroth = { 11, 12, 11 }, glass = { 11, 13, 11 },
+  ka0s = { 12, 14, 12 }, obsidian = { 12, 14.5, 13 }, azeroth = { 11, 12, 11 }, glass = { 11, 13, 11 },
   contrast = { 10.5, 12.5, 10.5 }, ember = { 11, 12.5, 11 }, wow = { 11, 13, 11 }, midnight = { 11.5, 13, 11.5 },
   forever = { 12, 13.5, 11.5 },
 }
@@ -79,6 +82,39 @@ local ROLES = {
   { "hud.font", "hud.fontSize", "hud" },
 }
 local WIDER, NARROWER = 0.02, 0.05
+
+-- The Date column (R3-L4): the shaped advance, in em, of "02-Nov-2026" in each skin's body face,
+-- HarfBuzz with kerning on, the method of the WIDTH table above, measured on the shipped bytes on
+-- 2026-11-02. Loot History's Date column fits it in Prototype at 12 and no wider, so a skin's body
+-- size times its face's advance must not pass Prototype's 12 x 6.0040. Expressway's digits are wider
+-- than its letters: at its parity size, 12.5, the Date runs 0.2% wide and truncates (image 95).
+local DATE_TEXT = "02-Nov-2026"
+local DATE = {
+  ["Ka0s Prototype"]          = 6.0040,
+  ["Ka0s Expressway"]         = 5.7740,
+  ["Ka0s Open Sans Semibold"] = 5.9775,
+  ["Ka0s Avant Garde"]        = 5.8180,
+  ["Ka0s Doris PP"]           = 6.1380,
+  ["Ka0s Emblem"]             = 5.8894,
+  ["Ka0s Friz Quadrata TT"]   = 6.5700,
+  ["Ka0s Segoe UI Semibold"]  = 6.0093,
+  ["Ka0s Fira Sans Medium"]   = 5.6950,
+}
+local DATE_LIMIT = 12 * DATE["Ka0s Prototype"]
+local STEP = 0.5
+
+--- True when a face's body row sits one step under its parity size because the step above draws the
+--- Date wider than Ka0s Default does: the one reason a body may run more than NARROWER narrow.
+local function dateStepped(face, size)
+  local d = DATE[face]
+  return d ~= nil and size * d <= DATE_LIMIT and (size + STEP) * d > DATE_LIMIT
+end
+
+--- A width error inside the band, or a body narrower than the band for the Date's sake.
+local function inBand(e, face, size, col)
+  if e > WIDER then return false end
+  return e >= -NARROWER or (col == "body" and dateStepped(face, size))
+end
 
 --- A skin's width error for one role against Ka0s Default's: size * advance over the reference's - 1.
 local function widthError(t, ref, role)
@@ -106,7 +142,7 @@ test("skin width parity: every skin's text is as wide as Ka0s Default's, never m
     local t = Skin:ResolveSkin(key)
     for _, role in ipairs(ROLES) do
       local e = widthError(t, ref, role)
-      assertTrue(e <= WIDER and e >= -NARROWER, ("%s %s: %+.1f%% against Ka0s Default"):format(
+      assertTrue(inBand(e, t[role[1]], t[role[2]], role[3]), ("%s %s: %+.1f%% against Ka0s Default"):format(
         key, role[3], e * 100))
     end
   end
@@ -126,7 +162,7 @@ test("skin width parity: every shipped face has a size for each role, as wide as
     assertTrue(w ~= nil, key .. " has a measured width")
     for i, col in ipairs({ "body", "title", "hud" }) do
       local e = row[i] * w[col] / (ref[i] * WIDTH["Ka0s Prototype"][col]) - 1
-      assertTrue(e <= WIDER and e >= -NARROWER, ("%s %s: %+.1f%%"):format(key, col, e * 100))
+      assertTrue(inBand(e, key, row[i], col), ("%s %s: %+.1f%%"):format(key, col, e * 100))
     end
     count = count + 1
   end
@@ -145,6 +181,28 @@ test("skin width parity: a skin's sizes are its faces' rows in the library's tab
       assertEqual(t[role[2]], Skin.__FACE_SIZES[t[role[1]]][i], key .. "'s " .. role[2])
     end
   end
+end)
+
+test("skin width parity: Loot History's Date, 02-Nov-2026, fits every skin's body as it fits Ka0s Default's", function()
+  -- R3-L4, images 95 and 96. red under: Obsidian's body at Expressway's parity 12.5 (+0.2%), the
+  -- step that drew "02-Nov-20..." where Ka0s Default draws the whole date.
+  local Skin = skinLib()
+  assertEqual(Skin:ResolveSkin("ka0s")["font.bodySize"] * DATE["Ka0s Prototype"], DATE_LIMIT, "the reference")
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    local d = DATE[t["font.body"]]
+    assertTrue(d ~= nil, key .. ": " .. tostring(t["font.body"]) .. " has a measured " .. DATE_TEXT)
+    -- WoW Default's Friz draws it 0.3% wide at 11 (image 98) and cannot shrink: R3-L6 replaces the face.
+    if key ~= "wow" and d then
+      local e = t["font.bodySize"] * d / DATE_LIMIT - 1
+      assertTrue(e <= 0, ("%s: %s at %g is %+.1f%% against Ka0s Default"):format(key, DATE_TEXT,
+        t["font.bodySize"], e * 100))
+    end
+  end
+  local o = Skin:ResolveSkin("obsidian")
+  assertEqual(o["font.bodySize"], 12, "Obsidian's body, one step under Expressway's parity 12.5")
+  assertEqual(o["font.titleSize"], 14.5, "its titles keep their size")
+  assertEqual(o["hud.fontSize"], 13, "and its HUD")
 end)
 
 test("skin width parity: WoW Default's Friz is real Friz, not Prototype's bytes", function()
@@ -254,9 +312,9 @@ test("skin hud size: an override of a shipped face draws at that face's sizes, H
   assertEqual(S.Token("font.titleSize"), 12.5, "Emblem's title")
   assertEqual(S.HudFontSize(24), 22, "Emblem's HUD scale")
   Skin:SetOverride(OWNER, false, nil)
-  assertEqual(S.Token("font.bodySize"), 12.5, "cleared: Obsidian's own")
+  assertEqual(S.Token("font.bodySize"), 12, "cleared: Obsidian's own")
   assertEqual(S.HudFontSize(12), 13, "and its HUD scale")
-  assertEqual(Skin:__BaseTokens(OWNER)["font.bodySize"], 12.5, "the base table never moved")
+  assertEqual(Skin:__BaseTokens(OWNER)["font.bodySize"], 12, "the base table never moved")
 end)
 
 test("skin hud size: a face the library did not measure draws unscaled, whatever the skin", function()
@@ -322,7 +380,7 @@ test("skin hud size: an override's sizes wait for it to resolve, and stay out of
   local Skin, S = overrideOwner("obsidian", { ["font:Ka0s Emblem"] = "Fonts\\Emblem.ttf" })
   Skin:SetOverride(OWNER, "Ka0s Doris PP", nil)
   assertEqual(S.Token("hud.font"), "Ka0s Expressway", "unresolved: the skin's face stands")
-  assertEqual(S.Token("font.bodySize"), 12.5, "at the skin's size")
+  assertEqual(S.Token("font.bodySize"), 12, "at the skin's size")
   Skin:SetOverride(OWNER, "Ka0s Emblem", nil)
   assertEqual(S.HudFontSize(24, false), 24, "fromSkin false: as stored")
 end)

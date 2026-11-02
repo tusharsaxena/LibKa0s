@@ -33,6 +33,9 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- `list.stripe` shows, at least 5% off its window in a channel. SF-L4: every title band stands 5%
 -- off the window and every rule 10% off both: Obsidian's, Glass's, High Contrast's and WoW Forever's move.
 -- SF-L5: High Contrast's window, popup, menu and icon edges are 1px.
+-- Then (R3-L4 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3, still minor 8, not yet shipped):
+-- Obsidian's body, and Expressway's body row in `__FACE_SIZES`, is 12, one step under the parity
+-- size 12.5, so Loot History's Date column draws "02-Nov-2026" whole, as Ka0s Default does.
 local OTHERS_MINOR = 8
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
@@ -307,7 +310,9 @@ local BAR_EDGE = {
 -- Measured by Ka0sAddonsCommonTasks docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES/plan-data/
 -- font_metrics_shipped.py, its section 10, and held to lib.FONTS and to each
 -- skin's own sizes by tests/test_skin_width_parity.lua. JetBrains Mono is the small one, monospace
--- being wide.
+-- being wide. A body row may sit one step under its parity size when the step above draws Loot
+-- History's Date, "02-Nov-2026", wider than Prototype at 12, the widest that column holds:
+-- Expressway's, whose digits are wider than its letters (R3-L4, 12.5 to 12).
 lib.__FACE_SIZES = {
   ["JetBrains Mono"]           = { 9, 11, 9.5 },
   ["Ka0s Atkinson"]            = { 12, 14, 12 },
@@ -317,7 +322,7 @@ lib.__FACE_SIZES = {
   ["Ka0s Bitter Bold"]         = { 11, 12.5, 11 },
   ["Ka0s Doris PP"]            = { 10.5, 12.5, 10.5 },
   ["Ka0s Emblem"]              = { 11, 12.5, 11 },
-  ["Ka0s Expressway"]          = { 12.5, 14.5, 13 },
+  ["Ka0s Expressway"]          = { 12, 14.5, 13 },
   ["Ka0s Fira Sans"]           = { 12, 13.5, 12 },
   ["Ka0s Fira Sans Medium"]    = { 12, 13.5, 11.5 },
   ["Ka0s Fira Sans SemiBold"]  = { 11.5, 13.5, 11.5 },
@@ -363,10 +368,11 @@ local function register(key, label, desc, swatches, mock, extra)
 end
 
 -- ── Obsidian ── mockup `obsidian`. Expressway, the owner's pick (minor 17, LK-A1; Inter, the
--- mockup's own face, from minor 11, Barlow before).
+-- mockup's own face, from minor 11, Barlow before). Its body is 12, a step under parity, for the Date
+-- column (R3-L4); its titles and HUD keep theirs.
 register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool blue accent.",
   { "#0a0a0b", "#202024", "#141416", "#4db8ff" }, {
-    font = "Ka0s Expressway", tfont = "Ka0s Expressway", fs = 12.5, titleSize = 14.5,
+    font = "Ka0s Expressway", tfont = "Ka0s Expressway", fs = 12, titleSize = 14.5,
     barTex = "Ka0s Matte",
     win = hex("#0A0A0B"), winBorder = edge(1, "flat", hex("#202024")), winInner = false, radius = 0,
     titleBg = hex("#1E1E22"), titleColor = hex("#2A86D1"), divider = hex("#4A4A54"),
