@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.26.8.17.16.16.4.9**, `LibKa0s-Launcher-1.0` **7**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**, `LibKa0s-Media-1.0` key **12.1**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.26.8.17.16.16.4.9**, `LibKa0s-Launcher-1.0` **7**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.9.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**, `LibKa0s-Media-1.0` key **12.1**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
 
 ### The owner's smoke feedback (`SF-L1` to `SF-L5`)
 
@@ -34,6 +34,10 @@ Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `
 
 - **Launcher minor 7** (`SG-L1`): the right-click menu gains **Sim mode** (descriptor `isSimMode` and `toggleSim`) and **Open settings** (every addon, never grayed), and one row rule: a toggle is a checkbox with a live tick, an action a plain button, a gated row of either kind grays with the note in its label. Hosts with a sim owe the two fields.
 - **`SG-L2`**, no library change: two entries for one addon in a button collector are not ours. The library makes one broker object and one LibDBIcon button, and never touches the addon compartment (a test pins it).
+
+### The one-time skin notice (`SG-L3`)
+
+- **OptionsSkinPicker minor 9**: `O.SkinNotice(spec, store)` shows the skin picker once per account for a release that wants it known. The first addon to ask claims it and shows the picker, every other addon records the version in its own account-wide store and stays quiet, and `lib.SKIN_NOTICE_VERSION` (1) re-announces when raised. Hosts owe a login call and a `skinNotice` number in `db.global`.
 
 ### The review of the rulings and the gate (`FS-FIX`)
 
