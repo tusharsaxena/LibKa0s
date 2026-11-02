@@ -465,7 +465,7 @@ test("skin host gaps: IconBorder follows its Texture's shown state", function()
   local hooks = 0
   m.hooksecurefunc = function(t, name, fn)
     local real = t[name]
-    hooks = hooks + 1
+    if name ~= "SetScale" then hooks = hooks + 1 end   -- the pixel edge's scale hook (R3-FIX) is not counted
     rawset(t, name, function(...) real(...); fn(...) end)
   end
   local S = F.owner(Skin, OWNER)

@@ -270,7 +270,7 @@ test("compose skin: the icon family's pickers show the skin's icon border while 
   rec.store["i.borderStyleFromSkin"] = true
   assertEqual(style.skinValue(style), Skin:Token(OWNER, "icon.borderStyle"), "the skin's icon border style")
   assertEqual(style.skinValue(style), "Solid", "Ka0s Default's")
-  assertEqual(size.skinValue(size), 2, "Ka0s Default's 2px")
+  assertEqual(size.skinValue(size), 1, "Ka0s Default's 1px (R3-FIX)")
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
   assertEqual(size.skinValue(size), Skin:ResolveSkin("obsidian")["icon.borderSize"], "read at call time")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")

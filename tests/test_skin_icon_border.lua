@@ -51,13 +51,14 @@ test("skin icon border: SkinDefs is at minor 15 and the schema's HUD group carri
   assertTrue(not style.nilable and not size.nilable, "every skin resolves both")
 end)
 
-test("skin icon border: Ka0s Default's is Drop Watcher's Window › Icons border, Solid 2px black", function()
-  -- DropWatcher defaults/Profile.lua icons.borderStyle "Solid" (WHITE8X8, modules/IconStyle.lua),
-  -- icons.borderSize 2, icons.borderColor { 0, 0, 0, 1 }.
+test("skin icon border: Ka0s Default's is Solid 1px black", function()
+  -- Drop Watcher's Window › Icons border was Solid 2px until R3-FIX of Ka0sAddonsCommonTasks
+  -- docs/2026-11-02-SMOKE_ROUND3: the owner's "exactly 1 px in every skin" reaches the hosts that
+  -- draw their own icon border from these tokens (KickCD, ConsumableMaster, DropWatcher).
   local _, Skin = F.env()
   local t = Skin:ResolveSkin("ka0s")
   assertEqual(t["icon.borderStyle"], "Solid")
-  assertEqual(t["icon.borderSize"], 2)
+  assertEqual(t["icon.borderSize"], 1)
   assertEqual(F.rgba(t["icon.border"]), "0,0,0,1")
 end)
 
@@ -72,6 +73,10 @@ test("skin icon border: every skin sets both tokens itself, each a style the lib
     assertTrue(type(style) == "string" and known[style], key .. ": icon.borderStyle " .. tostring(style))
     assertTrue(type(size) == "number" and size >= 1 and size <= 4 and size == math.floor(size),
       key .. ": icon.borderSize " .. tostring(size) .. " is a whole 1-4px")
+    -- red under: 2 in Azeroth, Ember, WoW Midnight and a Blizzard Tooltip nine-slice in WoW Default,
+    -- beside the 1 px S.IconBorder draws (R3-FIX: "exactly 1 px in every skin").
+    assertEqual(style, "Solid", key .. ": a flat edge")
+    assertEqual(size, 1, key .. ": 1 px")
   end
 end)
 
@@ -205,13 +210,102 @@ test("skin icon border: P.unpaint gives the icon its own coords back", function(
   local S = F.owner(Skin, OWNER)
   local f = m.CreateFrame("Frame", nil, m.UIParent)
   f.icon = f:CreateTexture()
-  f.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  f.icon:SetTexCoord(0.02, 0.98, 0.02, 0.98)
   S.IconBorder(f, { fromSkin = true })
   S.IconBorder(f, { fromSkin = true })
   assertEqual(texCoord(m, f.icon), inset(0.07))
   Skin.__P.unpaint(Skin.painted[f], f)
-  assertEqual(texCoord(m, f.icon), inset(0.08), "the host's crop, not the first zoom's")
+  assertEqual(texCoord(m, f.icon), inset(0.02), "the host's crop, not the first zoom's")
   assertTrue(not survey(m, F.region(Skin, f, "edgeTop")).shown, "and the outline hidden")
+end)
+
+test("skin icon border: the zoom only tightens, a host's tighter crop stands (SquareIcon crop, then IconBorder)", function()
+  -- red under: the zoom writing 0.07 over SquareIcon's 0.08, which loosened the host's crop and
+  -- showed the art's own edge (R3-FIX of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3; the
+  -- Skin Tester's ShowroomControls pairs the two).
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local sq = m.CreateFrame("Button", nil, m.UIParent)
+  sq.icon = sq:CreateTexture()
+  S.SquareIcon(sq, { crop = true })
+  S.IconBorder(sq, { fromSkin = true })
+  assertEqual(texCoord(m, sq.icon), inset(0.08), "SquareIcon's 0.08 stands")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(texCoord(m, sq.icon), inset(0.08), "and on every replay")
+  local loose = m.CreateFrame("Frame", nil, m.UIParent)
+  loose.icon = loose:CreateTexture()
+  loose.icon:SetTexCoord(0.02, 0.98, 0.1, 0.9)
+  S.IconBorder(loose, { fromSkin = true })
+  assertEqual(texCoord(m, loose.icon), table.concat({ 0.07, 0.1, 0.07, 0.9, 0.93, 0.1, 0.93, 0.9 }, ","),
+    "each axis takes the larger inset: 0.07 over 0.02, the host's 0.1 kept")
+end)
+
+-- ── one physical pixel after a scale change (R3-FIX: the size was taken once, at paint time) ──
+
+--- An environment whose frames answer `scale.v` as their effective scale and whose hooksecurefunc
+--- post-hooks for real, with PixelUtil's factor 1. A frame answers its parent and its last SetScale
+--- (the kit's base frame answers neither).
+local function scaledEnv()
+  local m, Skin = F.env()
+  local scale = { v = 1 }
+  m.PixelUtil = { GetPixelToUIUnitFactor = function() return 1 end }
+  m.hooksecurefunc = function(t, name, fn)
+    local orig = t[name]
+    rawset(t, name, function(...) local r = orig(...); fn(...); return r end)
+  end
+  local make = m.CreateFrame
+  m.CreateFrame = function(kind, name, parent, ...)
+    local f = make(kind, name, parent, ...)
+    rawset(f, "GetEffectiveScale", function() return scale.v end)
+    rawset(f, "GetParent", function() return parent end)
+    rawset(f, "GetScale", function(self) return rawget(self, "__s") or 1 end)
+    rawset(f, "SetScale", function(self, s) rawset(self, "__s", s) end)
+    return f
+  end
+  return m, Skin, scale
+end
+
+test("skin icon border: the outline and FadeNineSlice's ring re-size on UI_SCALE_CHANGED and DISPLAY_SIZE_CHANGED", function()
+  -- red under: P.px read once at paint time, so the edge drew 2 px after the player raised the UI scale.
+  local m, Skin, scale = scaledEnv()
+  local S = F.owner(Skin, OWNER, "midnight")
+  local f = m.CreateFrame("Frame", nil, m.UIParent)
+  local ns = m.CreateFrame("Frame", nil, m.UIParent)
+  ns.NineSlice = m.CreateFrame("Frame", nil, ns)
+  S.IconBorder(f, { fromSkin = true })
+  S.FadeNineSlice(ns)
+  assertEqual(F.region(Skin, f, "edgeTop"):GetHeight(), 1)
+  assertEqual(F.region(Skin, ns, "ringLeft"):GetWidth(), 1)
+  local ev = Skin.__pxEventFrame
+  assertTrue(ev ~= nil, "the events frame is made at the first pixel edge")
+  scale.v = 2
+  ev:__fire("OnEvent", "UI_SCALE_CHANGED")
+  assertEqual(F.region(Skin, f, "edgeTop"):GetHeight(), 0.5, "the icon outline: one pixel at scale 2")
+  assertEqual(F.region(Skin, f, "edgeRight"):GetWidth(), 0.5)
+  assertEqual(F.region(Skin, ns, "ringLeft"):GetWidth(), 0.5, "the ring too")
+  scale.v = 4
+  ev:__fire("OnEvent", "DISPLAY_SIZE_CHANGED")
+  assertEqual(F.region(Skin, ns, "ringTop"):GetHeight(), 0.25, "and on a display size change")
+end)
+
+test("skin icon border: a host's SetScale on an ancestor re-sizes the outline, an unchanged scale costs nothing", function()
+  -- red under: DpsRace's HUD (ui.frame:SetScale on every Refresh) keeping the edge sized for the old scale.
+  local m, Skin, scale = scaledEnv()
+  local S = F.owner(Skin, OWNER)
+  local win = m.CreateFrame("Frame", nil, m.UIParent)
+  local row = m.CreateFrame("Frame", nil, win)
+  local tex = row:CreateTexture()
+  S.IconBorder(tex, { fromSkin = true })
+  assertEqual(F.region(Skin, tex, "edgeTop"):GetHeight(), 1)
+  scale.v = 2
+  win:SetScale(2)
+  assertEqual(F.region(Skin, tex, "edgeTop"):GetHeight(), 0.5, "re-sized after the ancestor's SetScale")
+  local top = F.region(Skin, tex, "edgeTop")
+  local calls = 0
+  local set = top.SetHeight
+  rawset(top, "SetHeight", function(...) calls = calls + 1; return set(...) end)
+  win:SetScale(2)
+  assertEqual(calls, 0, "the same scale again re-sizes nothing")
 end)
 
 test("skin icon border: under eui fromSkin is the library's, from the EllesmereUI-derived tokens", function()
@@ -224,7 +318,7 @@ test("skin icon border: under eui fromSkin is the library's, from the EllesmereU
   S.IconBorder(f, { fromSkin = true })
   assertEqual(eui.count("IconBorder"), 0, "IconBorder is a Ka0s extra: never handed to EllesmereUI")
   assertEqual(Skin:Token(OWNER, "icon.borderStyle"), "Solid", "EllesmereUI's look is Ka0s Default's here")
-  assertEqual(Skin:Token(OWNER, "icon.borderSize"), 2)
+  assertEqual(Skin:Token(OWNER, "icon.borderSize"), 1)
   assertTrue(survey(m, F.region(Skin, f, "edgeTop")).shown, "drawn")
   assertEqual(F.rgba(survey(m, F.region(Skin, f, "edgeTop")).color), F.rgba(S.Token("icon.border")),
     "SkinEUI minor 4's, half EllesmereUI's panel color")
