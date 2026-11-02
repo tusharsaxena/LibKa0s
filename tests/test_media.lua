@@ -22,7 +22,8 @@ local FONT_DIR = "LibKa0s/media/fonts"
 -- Cyrillic, Friz Quadrata, Emblem and Doris PP do not. And the five minor 10 retired come back, since
 -- v1.81.0 shipped them and every older face stays: Inter's two and Fira Sans Regular draw Cyrillic.
 -- R3-L6 adds Ubuntu Regular, WoW Default's face, under the Ubuntu font license (UFL 1.0); it draws Cyrillic.
-local FONT_COUNT, RU_COUNT = 34, 26
+-- R3-L7 deletes Ka0s Friz Quadrata TT, western only: no skin draws it, and a stored pick moves to Ubuntu.
+local FONT_COUNT, RU_COUNT = 33, 26
 
 --- The basenames on disk under `dir`, as a set. Lua 5.1 has no directory API and this repo does not
 --- depend on LuaFileSystem, so the listing shells out — the same bargain tests/_kit/vendor_sync.lua
@@ -614,10 +615,9 @@ local NON_OFL = {
 -- that notice as the file's own name table spells it, so a different cut goes red. `ru` as above.
 local APACHE = "OpenSans-Apache-2.0.txt"
 local RECORD = "FONTS.md"
-local SEGOE, FRIZ_ITC = "Microsoft Corporation. All Rights Reserved", "International Typeface Corporation"
+local SEGOE = "Microsoft Corporation. All Rights Reserved"
 local OPEN_SANS = "Google Corporation"
 local RULED = {
-  ["Ka0s Friz Quadrata TT"]  = { file = "FrizQuadrataTT-Regular.ttf", license = RECORD, notice = FRIZ_ITC },
   ["Ka0s Segoe UI"]          = { file = "SegoeUI-Regular.ttf", license = RECORD, notice = SEGOE, ru = true },
   ["Ka0s Segoe UI Bold"]     = { file = "SegoeUI-Bold.ttf", license = RECORD, notice = SEGOE, ru = true },
   ["Ka0s Segoe UI Light"]    = { file = "SegoeUI-Semilight.ttf", license = RECORD, notice = SEGOE, ru = true },
@@ -744,6 +744,17 @@ test("media: Open Sans ships the Apache 2.0 text, and each new face's bytes carr
   end
 end)
 
+test("media: Ka0s Friz Quadrata TT is gone: no key, no file, no record", function()
+  -- R3-L7. red under: the face, its file or its record left behind, so a pick still lists it, or a
+  -- shipped file no key names.
+  assertTrue(media.FONTS["Ka0s Friz Quadrata TT"] == nil, "FONTS names it")
+  local files = listing(FONT_DIR) or {}
+  assertTrue(files["FrizQuadrataTT-Regular.ttf"] == nil, "its file ships")
+  local record = readFile(FONT_DIR .. "/" .. RECORD) or ""
+  assertTrue(record:find("FrizQuadrataTT", 1, true) == nil, RECORD .. " still records its file")
+  assertTrue(record:find("Ka0s Friz Quadrata TT", 1, true) == nil, RECORD .. " still names its key")
+end)
+
 test("media: FONTS.md records every shipped face by file, and the notice of each new one", function()
   -- red under: a face added without its record; D-12 moved this record out of the README
   local record = readFile(FONT_DIR .. "/" .. RECORD) or ""
@@ -803,7 +814,6 @@ test("media: a ruRU client keeps every Cyrillic face and is refused the western-
   assertTrue(store.font["Ka0s Prototype"] == nil, "Prototype, western only, landed on ruRU")
   assertTrue(store.font["Ka0s Nunito"] ~= nil, "a Cyrillic face was refused on ruRU")
   assertTrue(store.font["Ka0s Expressway"] ~= nil, "Expressway, whose cmap has Cyrillic, was refused on ruRU")
-  assertTrue(store.font["Ka0s Friz Quadrata TT"] == nil, "Friz Quadrata, western only, landed on ruRU")
   assertTrue(store.font["Ka0s Segoe UI Semibold"] ~= nil, "Segoe UI, whose cmap has Cyrillic, was refused on ruRU")
   assertTrue(store.font["Ka0s Ubuntu"] ~= nil, "Ubuntu, whose cmap has Cyrillic, was refused on ruRU")
 end)

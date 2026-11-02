@@ -64,7 +64,6 @@ From the add-ons in the owner's WoW install (LOCALS below), on the owner's rulin
     SegoeUI-Regular.ttf, -Bold, -Semilight, -Semibold  Sorted/Textures/segoeui, segoeuib, segoeuisl, seguisb
     OpenSans-Regular.ttf, -Bold, -CondBold, -Light,    Sorted/Textures/OpenSans-*
       -Semibold
-    FrizQuadrataTT-Regular.ttf                         DialogueUI/Fonts/frizqt__.ttf
     Emblem-Regular.ttf                                 AbstractFramework/Media/Fonts/Emblem.ttf
     DorisPP-Bold.ttf                                   SharedMedia/fonts/doris_pp/DorisPP.ttf
     AvantGarde-Regular.ttf                             EllesmereUI/media/fonts/Avant Garde Naowh.ttf
@@ -72,11 +71,12 @@ From the add-ons in the owner's WoW install (LOCALS below), on the owner's rulin
     OpenSans-Apache-2.0.txt                            the Apache 2.0 text the five faces' name tables
                                                        cite, from the system's common-licenses copy
 
-    Open Sans is Apache 2.0. Segoe UI (Microsoft), Friz Quadrata (ITC), Emblem (Weatherly Systems),
-    Doris PP (Ares Software) and Avant Garde (ParaType) carry no license that allows this and ship
-    only on those rulings; none has a license file, so `media/fonts/FONTS.md` quotes each notice.
-    Friz is taken from DialogueUI because the owner's client Fonts/FRIZQT__.TTF is Prototype's bytes
-    (D-01). Emblem is AbstractFramework's 233-glyph copy, over ChonkyCharacterSheet's 232.
+    Open Sans is Apache 2.0. Segoe UI (Microsoft), Emblem (Weatherly Systems), Doris PP (Ares
+    Software) and Avant Garde (ParaType) carry no license that allows this and ship only on those
+    rulings; none has a license file, so `media/fonts/FONTS.md` quotes each notice. Emblem is
+    AbstractFramework's 233-glyph copy, over ChonkyCharacterSheet's 232. Friz Quadrata (ITC), copied
+    the same way from 2026-10-31, left on the owner's ruling of 2026-11-02 (R3-L7), when WoW Default
+    moved to Ubuntu, so this file no longer records it.
 
 EXPRESSWAY SHIPS ON THE OWNER'S RULING, AGAINST ITS TERMS. LK-01 withheld it. The archive dafont.com
 serves (https://dl.dafont.com/dl/?f=expressway, fetched 2026-10-30, SHA-256
@@ -117,12 +117,13 @@ sturdy slab), Philosopher WoW Midnight's, Fira Sans WoW Forever's (Medium for bo
 owner's 2026-10-30 notes, SemiBold for titles and HUD) and Atkinson Hyperlegible High Contrast's.
 Ka0s Default draws Prototype and Obsidian Expressway (2026-10-30), WoW Default the client's Friz
 Quadrata. On 2026-10-31 the owner moved WoW Midnight to Segoe UI, Azeroth to Open Sans, Ember to
-Emblem, High Contrast to Doris PP, Glass to Avant Garde and WoW Default to the shipped Friz, and ruled
-that every older face stays in the payload whether or not a skin names it. Barlow and Cinzel, the
+Emblem, High Contrast to Doris PP, Glass to Avant Garde and WoW Default to a shipped Friz, and ruled
+that every older face stays in the payload whether or not a skin names it. On 2026-11-02 WoW Default
+moved to Ubuntu and that Friz left the payload. Barlow and Cinzel, the
 2026-10-25 run's faces, left the payload in round 5, before that ruling, and stay out. Oxanium, Ka0s
 Default's stand-in for Prototype from 2026-10-28, Fira Sans Regular, and Inter, Obsidian's from round
 5 until Expressway, left on 2026-10-30 and came back with the ruling, since v1.81.0 shipped them.
-Atkinson, Oxanium, Prototype, Friz, Emblem and Doris PP have no Cyrillic; the other families cover it, so Media.lua
+Atkinson, Oxanium, Prototype, Emblem and Doris PP have no Cyrillic; the other families cover it, so Media.lua
 registers them for ruRU too.
 
 Requires Python 3 and fontTools (`sudo apt install python3-fonttools`; see DEPENDENCIES.md), and
@@ -417,14 +418,6 @@ LOCALS = [
         "sha": "aa3b0ef53db12e3d45094030cac0e69d384e44cc5978643dd4390041cad546e2",
         "ship": "OpenSans-Semibold.ttf",
         "license": "OpenSans-Apache-2.0.txt",
-    },
-    {
-        "dir": "friz", "family": "Friz Quadrata TT",
-        "path": ADDONS + "DialogueUI/Fonts/frizqt__.ttf",
-        "name": "frizqt__.ttf",
-        "sha": "73de74d5d63690f29c7f97a9225edc8bd6f89e5103806af3714e4d7bfb9474e9",
-        "ship": "FrizQuadrataTT-Regular.ttf",
-        "license": "FONTS.md",
     },
     {
         "dir": "emblem", "family": "Emblem",

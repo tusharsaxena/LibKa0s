@@ -522,7 +522,7 @@ Total.
 - skin: Reskin works for a host with no owner, and a card keeps its caller's color
 - skin: setCard puts the owner's face back on the figure
 
-### test_media.lua (44)
+### test_media.lua (45)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -558,6 +558,7 @@ Total.
 - media: every OFL face ships with its license text beside it
 - media: a face off the OFL ships its author's terms verbatim, and the face says the same
 - media: Open Sans ships the Apache 2.0 text, and each new face's bytes carry the notice recorded for it
+- media: Ka0s Friz Quadrata TT is gone: no key, no file, no record
 - media: FONTS.md records every shipped face by file, and the notice of each new one
 - media: the README points at FONTS.md and carries no font license or credit of its own
 - media: RegisterLSM('X') registers 'Ka0s Nunito' under X's own libs folder, each face with its mask
@@ -605,7 +606,7 @@ Total.
 - skin: DrawsKey answers the key an owner draws by
 - skin: DrawsKey answers eui once EllesmereUI paints the owner, Ka0s Default before
 
-### test_skin_override.lua (27)
+### test_skin_override.lua (28)
 
 - skin override: an unregistered owner has none and cannot set one
 - skin override: a font and a texture reach every token read, and nothing else moves
@@ -617,6 +618,7 @@ Total.
 - skin override: one owner's override never reaches another owner
 - skin override: SetOverride while a reload is pending stores the pair and repaints nothing
 - skin override: WriteChoice hands media to the setter as its fourth argument, normalized
+- skin override: a stored Ka0s Friz Quadrata TT migrates to Ka0s Ubuntu, Blizzard's Friz does not
 - skin override: FROM_SKIN stored as an override means the skin's own
 - skin override: a key LibSharedMedia lacks leaves the skin's own, until a pack registers it
 - skin override: __BaseTokens is the owner's table without its overrides, EllesmereUI's when it paints
@@ -4501,9 +4503,9 @@ Total.
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
-| test_media.lua | 44 |
+| test_media.lua | 45 |
 | test_skin.lua | 33 |
-| test_skin_override.lua | 27 |
+| test_skin_override.lua | 28 |
 | test_skin_outline.lua | 19 |
 | test_skin_owner_tokens.lua | 17 |
 | test_skin_remap.lua | 12 |
@@ -4657,4 +4659,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3947** |
+| **Total** | **3949** |

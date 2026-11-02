@@ -10,8 +10,8 @@ library, and JetBrains Mono, the mono role: since LK-F01 of Ka0sAddonsCommonTask
 docs/2026-10-31-FONT_PICKERS_AND_SKIN_FACES a face a skin stops naming stays in the folder, so the
 set holds for a Ka0s face picked as an override too.
 
-Real Friz Quadrata is in the folder from LK-F01 (`FrizQuadrataTT-Regular.ttf`), so the set now
-measures it, which closes D-05's gap. A client's own Fonts/FRIZQT__.TTF is still not read.
+A real Friz Quadrata was in the folder from LK-F01 until R3-L7 (2026-11-02), when it left the payload
+and WoW Default drew Ubuntu. A client's own Fonts/FRIZQT__.TTF is not read.
 
 Usage, from the repo root (needs fontTools):
 

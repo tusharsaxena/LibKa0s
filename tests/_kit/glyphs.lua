@@ -17,9 +17,9 @@
 --   python3 tools/glyph_safe_set.py && cp -r testkit/. tests/_kit/      (in LibKa0s, needs fontTools)
 --
 -- LibKa0s's tests/test_glyph_guard.lua is red while FACES (each face's file name and byte size)
--- disagrees with the folder. Real Friz Quadrata is in the folder and measured from LibKa0s v1.83.0;
--- the client's own Fonts/FRIZQT__.TTF is not read. A font override to a face outside the folder (any
--- other LibSharedMedia face) guarantees nothing beyond ASCII.
+-- disagrees with the folder. A real Friz Quadrata was in the folder from LibKa0s v1.83.0 until R3-L7
+-- took it out; the client's own Fonts/FRIZQT__.TTF is not read. A font override to a face outside the
+-- folder (any other LibSharedMedia face) guarantees nothing beyond ASCII.
 --
 -- SURFACE, on the kit table and published by `Kit.expose`:
 --
@@ -93,7 +93,6 @@ local FACES = {
   { file = "FiraSans-Medium.ttf", bytes = 457248 },
   { file = "FiraSans-Regular.ttf", bytes = 456996 },
   { file = "FiraSans-SemiBold.ttf", bytes = 489028 },
-  { file = "FrizQuadrataTT-Regular.ttf", bytes = 37952 },
   { file = "Inter-Regular.ttf", bytes = 341404 },
   { file = "Inter-SemiBold.ttf", bytes = 342700 },
   { file = "JetBrainsMono-Regular.ttf", bytes = 273900 },

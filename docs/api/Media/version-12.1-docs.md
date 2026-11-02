@@ -24,6 +24,12 @@
 - Its cmap has the Russian alphabet (and Greek), so it reaches ruRU. Not Hangul or Han.
 - **What a consumer owes:** nothing in code. A new font file needs a **full client restart** to load; a `/reload` does not see it.
 
+**`FONTS` loses `Ka0s Friz Quadrata TT`, and `FrizQuadrataTT-Regular.ttf` leaves `media/fonts/`** (`R3-L7`, the owner's ruling of 2026-11-02). No skin draws it once WoW Default draws Ubuntu, so the exception to "every face stays" is the owner's. `FONTS` holds thirty-three entries again, twenty-six of them reaching ruRU.
+
+- A stored pick of it moves to `Ka0s Ubuntu`: `LibKa0s-Skin-1.0`'s `RETIRED_FONTS` maps the key as a font override enters the owner's store (`SetOverride`) and as a write hands it to the host (`WriteChoice`), so the host's profile holds Ubuntu from its next write.
+- LibSharedMedia's own `Friz Quadrata TT`, the client's face, is not this library's and is untouched.
+- **What a consumer owes:** an addon whose own font setting (outside the skin's override) can store `Ka0s Friz Quadrata TT` migrates it to `Ka0s Ubuntu` once in its own profile; until then LibSharedMedia answers its default face for the missing key.
+
 **`RegisterLSM` offers the LibSharedMedia `border` key `Solid`, `Interface\Buttons\WHITE8X8`.** Additive, and no signature moves. The full-skinning review of Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/` found what this document used to claim was false: LSM ships `Solid` as a `background` and a `statusbar`, and has no such `border`. Azeroth, High Contrast and WoW Midnight state `bar.borderStyle` `Solid`, and a host that fetches that key itself (AbsorbTracker, PartyFrameEnhanced, DpsRace) got LSM's default `None`, or its own fallback, unless another enabled addon happened to register the key.
 
 - It is offered like every other key: only when LSM does not hold it, so an addon that got there first keeps it. The four that register it offer this same path.
@@ -281,7 +287,7 @@ Read straight off the LibStub table. Every function is stateless.
 | `Font(addonName, name[, vendorPath])` | 1 | The font path for one registered face, or `nil` when `name` is not a key of `FONTS` or `addonName` is missing or empty. |
 | `RegisterLSM(addonName[, vendorPath])` | 1 (second return: 3; langmask and counted-only-if-held: 4; per-face mask, borders and backgrounds: **6**; a held key is never offered: **7**; the `Solid` border: **12**) | Register every shipped font, statusbar texture, border and background with LibSharedMedia under its catalog name, each font under the mask its `langmask` list builds. Returns `fonts, bars, borders, backgrounds`, each counting what LSM holds afterwards (`LSM:IsValid`); **`0, 0, 0, 0` when LSM is absent, which is not an error**. |
 | `ICONS` | 1 (three sets since **5**) | Array of every icon name: the set's prefix, then the file's own basename. The catalog — enumerate it rather than hard-coding a list. The 113 hand-written names come first, in version 4's order; `MediaIcons.lua` appends the rest at load. |
-| `FONTS` | 1 (six faces and `langmask`: **6**; Prototype, Fira Sans Medium and Expressway in, Oxanium, Fira Sans Regular and Inter out: **10**; eighteen in, those five among them: **11**) | Map of LSM name → `{ file, license, langmask }`: two basenames under `media/fonts/` and the array of LSM locale groups the face can draw (`"western"`, `"ruRU"`, ...). |
+| `FONTS` | 1 (six faces and `langmask`: **6**; Prototype, Fira Sans Medium and Expressway in, Oxanium, Fira Sans Regular and Inter out: **10**; eighteen in, those five among them: **11**; Ubuntu in, Friz Quadrata out: **12**) | Map of LSM name → `{ file, license, langmask }`: two basenames under `media/fonts/` and the array of LSM locale groups the face can draw (`"western"`, `"ruRU"`, ...). |
 | `VENDOR_PATH` | 1 | `"libs\\LibKa0s"` — where the collection vendors this library, and the default third argument above. |
 | `MODULES` | 1 | `{ Media = <minor>, MediaIcons = <minor> }` — the live minors, and the value that picks this document. |
 
@@ -410,12 +416,12 @@ is one row in its `GLYPHS` table plus a row in `ICONS` in `Media.lua`; every oth
 | `Ka0s Atkinson` / `Ka0s Atkinson Bold` | `AtkinsonHyperlegible-Regular.ttf` / `-Bold.ttf` | `AtkinsonHyperlegible-OFL.txt` | western | High Contrast |
 | `Ka0s Prototype` | `Prototype-Regular.ttf` | `Prototype.txt` (the author's terms, not the OFL) | western | Ka0s Default (body, titles and HUD), since **10** |
 | `Ka0s Expressway` | `Expressway-Bold.ttf` | `Expressway-EULA.pdf` and `Expressway-EULA-Guide.html` (Typodermic's EULA, overridden by the owner's ruling) | western, ruRU | Obsidian (body, titles and HUD), since **10**; Inter until then |
-| `Ka0s Friz Quadrata TT` | `FrizQuadrataTT-Regular.ttf` | `FONTS.md` | western | since **11** |
 | `Ka0s Segoe UI` / `Bold` / `Light` / `Semibold` | `SegoeUI-Regular.ttf` / `-Bold` / `-Semilight` / `-Semibold` | `FONTS.md` | western, ruRU | since **11** |
 | `Ka0s Open Sans` / `Bold` / `Condensed` / `Light` / `Semibold` | `OpenSans-Regular.ttf` / `-Bold` / `-CondBold` / `-Light` / `-Semibold` | `OpenSans-Apache-2.0.txt` | western, ruRU | since **11** |
 | `Ka0s Emblem` | `Emblem-Regular.ttf` | `FONTS.md` | western | since **11** |
 | `Ka0s Doris PP` | `DorisPP-Bold.ttf` | `FONTS.md` | western | since **11** |
 | `Ka0s Avant Garde` | `AvantGarde-Regular.ttf` | `FONTS.md` | western, ruRU | since **11** |
+| `Ka0s Ubuntu` | `Ubuntu-Regular.ttf` | `Ubuntu-UFL.txt` (the Ubuntu font license 1.0) | western, ruRU | WoW Default (body, titles and HUD), since **12** |
 
 The first of each pair is the skin's body face, the second its titles: one family per skin, since
 minor 8. Ka0s Default draws Prototype for body, titles and HUD text (since **10**; Oxanium at

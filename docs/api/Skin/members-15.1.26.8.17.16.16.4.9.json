@@ -39,6 +39,7 @@
     { "name": "PaintAce", "kind": "function" },
     { "name": "PaintAceTree", "kind": "function" },
     { "name": "PendingReload", "kind": "function" },
+    { "name": "RETIRED_FONTS", "kind": "table" },
     { "name": "RegisterOwner", "kind": "function" },
     { "name": "RegisterSkin", "kind": "function" },
     { "name": "Repaint", "kind": "function" },

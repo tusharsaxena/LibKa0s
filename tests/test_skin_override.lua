@@ -202,6 +202,30 @@ test("skin override: WriteChoice hands media to the setter as its fourth argumen
   assertNil((Skin:GetOverride(OWNER)), "WriteChoice never moves the applied overrides")
 end)
 
+test("skin override: a stored Ka0s Friz Quadrata TT migrates to Ka0s Ubuntu, Blizzard's Friz does not", function()
+  -- R3-L7 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3: the library no longer ships Ka0s
+  -- Friz Quadrata TT, and a stored pick of it would fall back to the skin's own face. It moves to
+  -- Ka0s Ubuntu, WoW Default's face since R3-L6, as it enters the owner's store, and every write of
+  -- the media pair carries the new key, so the host's profile holds it from its next write. LSM's
+  -- "Friz Quadrata TT" is the client's own face, not ours, and stays. red under: the retired key
+  -- kept (GetOverride answers it, the skin's face draws), or the client's Friz rewritten.
+  local _, Skin = F.env({ lsm = { ["font:Ka0s Ubuntu"] = "Fonts\\Ubuntu.ttf",
+                                  ["font:Friz Quadrata TT"] = "Fonts\\FRIZQT__.TTF" } })
+  local store = register(Skin, OWNER)
+  local S = Skin:For(OWNER)
+  assertTrue(Skin:SetOverride(OWNER, "Ka0s Friz Quadrata TT", nil), "the stored pick lands")
+  assertEqual((Skin:GetOverride(OWNER)), "Ka0s Ubuntu", "as Ka0s Ubuntu")
+  assertEqual(S.Token("font.body"), "Ka0s Ubuntu", "and draws it")
+  assertFalse(Skin:SetOverride(OWNER, "Ka0s Friz Quadrata TT", nil), "the same pick again is no change")
+  assertTrue(Skin:WriteChoice(OWNER, "ka0s", "wow", nil, { font = "Ka0s Friz Quadrata TT", texture = false }))
+  assertEqual(store.media.font, "Ka0s Ubuntu", "a write carries the new key to the profile")
+  assertTrue(Skin:SetOverride(OWNER, "Friz Quadrata TT", nil))
+  assertEqual((Skin:GetOverride(OWNER)), "Friz Quadrata TT", "the client's Friz is the player's own pick")
+  Skin:WriteChoice(OWNER, "ka0s", "wow", nil, { font = "Friz Quadrata TT" })
+  assertEqual(store.media.font, "Friz Quadrata TT", "and is written as it is")
+  assertEqual(Skin.RETIRED_FONTS["Ka0s Friz Quadrata TT"], "Ka0s Ubuntu", "the published map")
+end)
+
 test("skin override: FROM_SKIN stored as an override means the skin's own", function()
   -- red under: mediaKey storing "@skin" (Token answered "@skin", a face that resolves to nothing).
   local _, Skin = F.env({ lsm = LSM })

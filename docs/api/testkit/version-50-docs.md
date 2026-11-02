@@ -63,9 +63,9 @@ A host declares its painted surfaces, and each one must change on a skin switch.
 
 **What a consumer owes:** nothing, unless a suite gives a string `SetFont` and then reads the face a font object should have put on it. That suite now reads the string's own face, which is what the client draws, and the host code under it is the bug: create the string from a font-object template, or route its face through `S.HudFont`, which now holds its face on any string (Skin document, *What changed*).
 
-### `glyphs.lua`: the safe set lists Ubuntu Regular (`R3-L6`)
+### `glyphs.lua`: the safe set lists Ubuntu Regular and drops Friz Quadrata (`R3-L6`, `R3-L7`)
 
-The generated block's `FACES` gains `Ubuntu-Regular.ttf`, WoW Default's face from LibKa0s's `R3-L6`. `RANGES` does not move: Ubuntu draws every character the set already held.
+The generated block's `FACES` gains `Ubuntu-Regular.ttf`, WoW Default's face from LibKa0s's `R3-L6`, and loses `FrizQuadrataTT-Regular.ttf`, which left the payload at `R3-L7`. `RANGES` does not move: Ubuntu draws every character the set already held, and Friz limited none.
 
 **What a consumer owes:** nothing.
 

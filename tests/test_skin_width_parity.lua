@@ -45,7 +45,6 @@ local WIDTH = {
   ["Ka0s Fira Sans"]           = { body = 0.4727, title = 0.4829, hud = 0.4890 },
   ["Ka0s Fira Sans Medium"]    = { body = 0.4765, title = 0.4868, hud = 0.4952 },
   ["Ka0s Fira Sans SemiBold"]  = { body = 0.4779, title = 0.4883, hud = 0.4975 },
-  ["Ka0s Friz Quadrata TT"]    = { body = 0.5046, title = 0.5067, hud = 0.5333 },
   ["Ka0s Inter"]               = { body = 0.5077, title = 0.5139, hud = 0.5341 },
   ["Ka0s Inter SemiBold"]      = { body = 0.5206, title = 0.5273, hud = 0.5490 },
   ["Ka0s Nunito"]              = { body = 0.4850, title = 0.4882, hud = 0.5161 },
@@ -98,7 +97,6 @@ local DATE = {
   ["Ka0s Avant Garde"]        = 5.8180,
   ["Ka0s Doris PP"]           = 6.1380,
   ["Ka0s Emblem"]             = 5.8894,
-  ["Ka0s Friz Quadrata TT"]   = 6.5700,
   ["Ka0s Segoe UI Semibold"]  = 6.0093,
   ["Ka0s Fira Sans Medium"]   = 5.6950,
   ["Ka0s Ubuntu"]             = 5.7880,
@@ -169,7 +167,8 @@ test("skin width parity: every shipped face has a size for each role, as wide as
     end
     count = count + 1
   end
-  assertEqual(count, 34, "the shipped faces")
+  assertEqual(count, 33, "the shipped faces")
+  assertTrue(Skin.__FACE_SIZES["Ka0s Friz Quadrata TT"] == nil, "Friz's row left with the face (R3-L7)")
   for key in pairs(Skin.__FACE_SIZES) do
     assertTrue(Media.FONTS[key] ~= nil, key .. "'s row names a shipped face")
   end

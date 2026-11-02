@@ -370,8 +370,6 @@ local AUTHORED_LISTS = { ["tests/test_prose.lua"] = true }
 --     that pins the kit's fakes reads them as the fakes spell them, the register row names them,
 --     and the API index's row for kit revision 17, which added the `NewTimer` handle, names the
 --     method;
---   * `dialogueui`, a third-party add-on's folder name, spelled that way only here (register row 3):
---     `fonts.py` pins the Friz Quadrata it copies by that path.
 -- And one document whose subject is this rule, localization-§5's fourth exclusion: this file,
 -- whose comments quote the forbidden words in order to forbid them and whose tables spell out every
 -- identifier above. Kit revision 26's API document, which records word by word the list entry that
@@ -382,16 +380,14 @@ local AUTHORED_LISTS = { ["tests/test_prose.lua"] = true }
 local AUTHORED_RATIFIED = {
   ["docs/api/Media/version-12.1-docs.md"] = { "minimise" },
   ["tools/artwork/icon_cleaner.py"] = { "minimise" },
-  ["tools/artwork/fonts.py"] = { "dialogueui" },
-  ["CLAUDE.md"] = { "minimise", ".cancelled", "iscancelled", "dialogueui" },
+  ["CLAUDE.md"] = { "minimise", ".cancelled", "iscancelled" },
   ["tests/test_mock_ace.lua"] = { ".cancelled", "iscancelled" },
   ["docs/api/README.md"] = { "iscancelled" },
   ["tests/test_prose.lua"] = {
     '`cancelled`', '`colour`', '*coloured*', '*colours*', '`normalis`', '*normalise*',
     '*normalised*', '`analys`', '`programme`', '*analysed*', '`minimise`', '`minimise.tga`',
     '"minimise"', '`.cancelled`', '".cancelled"', '`iscancelled`', '"iscancelled"', '`synchronis`',
-    '*synchronis-*', '`synchronisation`', '*synchronisation*', '*neighbours*', '`dialogueui`',
-    '"dialogueui"',
+    '*synchronis-*', '`synchronisation`', '*synchronisation*', '*neighbours*',
   },
 }
 
