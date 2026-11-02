@@ -880,7 +880,7 @@ Total.
 - skin button contrast: a close button's glyph painted faded is drawn opaque on a hover and after it
 - skin button contrast: every skin's enabled button label holds 3:1 on its fill, well clear of disabled
 
-### test_skin_paint.lua (39)
+### test_skin_paint.lua (43)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
@@ -902,6 +902,10 @@ Total.
 - skin paint: Inset, noBg, noBorder and the nav rail's recolor
 - skin paint: FadeRegions fades the stock textures, records their alpha, and spares its own
 - skin paint: FadeNineSlice fades the nine pieces under every skin
+- skin paint: FadeNineSlice draws a 1 px edge in panel.border under every skin
+- skin paint: FadeNineSlice's edge is one physical pixel at any UI scale
+- skin paint: FadeNineSlice leaves a frame another primitive edged to that edge, and opts.noBorder
+- skin paint: FadeNineSlice's edge falls to divider, then a dim body text, where a skin sets no panel.border
 - skin paint: TitleBar on Ka0s Default fills its bar and centers its gold title
 - skin paint: TitleBar fills under its text, centers its title, and gives the alignment back
 - skin paint: Divider colors a texture in place, as Core's divider is colored
@@ -4496,7 +4500,7 @@ Total.
 | test_skin_host_gaps.lua | 46 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
-| test_skin_paint.lua | 39 |
+| test_skin_paint.lua | 43 |
 | test_skin_paint_controls.lua | 35 |
 | test_skin_eui.lua | 30 |
 | test_skin_ace.lua | 28 |
@@ -4637,4 +4641,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3931** |
+| **Total** | **3935** |

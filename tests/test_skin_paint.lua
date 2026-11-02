@@ -393,6 +393,78 @@ test("skin paint: FadeNineSlice fades the nine pieces under every skin", functio
   for _, k in ipairs(m.__nineSliceKeys) do assertEqual(f.NineSlice[k]:GetAlpha(), 0, "Ka0s Default: " .. k) end
 end)
 
+-- R3-L2 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3 (images 85 to 87, 93): the faded art
+-- left the frame with no edge at all, and a dark frame vanished on a dark skin.
+local SIDES = { "Top", "Bottom", "Left", "Right" }
+local SKINS = { "ka0s", "obsidian", "azeroth", "glass", "contrast", "ember", "wow", "midnight", "forever" }
+
+test("skin paint: FadeNineSlice draws a 1 px edge in panel.border under every skin", function()
+  -- red under: the fade alone, which leaves a frame with no edge (img 85 to 87).
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local f = m.CreateFrame("Frame", nil, m.UIParent, "InsetFrameTemplate")
+  S.FadeNineSlice(f)
+  for _, key in ipairs(SKINS) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    for _, side in ipairs(SIDES) do
+      local t = F.region(Skin, f, "ring" .. side)
+      assertTrue(t ~= nil, key .. ": the " .. side .. " edge exists")
+      local p = survey(m, t)
+      assertTrue(p.shown, key .. ": shown")
+      assertEqual(F.rgba(p.color), F.tok(Skin, key, "panel.border"), key .. ": " .. side .. " in panel.border")
+      local size = (side == "Top" or side == "Bottom") and t:GetHeight() or t:GetWidth()
+      assertEqual(size, 1, key .. ": one pixel")
+    end
+  end
+  assertEqual(F.region(Skin, f, "ringTop"):GetParent(), F.region(Skin, f, "holder"), "on the holder, over the art")
+end)
+
+test("skin paint: FadeNineSlice's edge is one physical pixel at any UI scale", function()
+  -- red under: a size of 1 UI unit, which draws 2 px where the UI scale is over one pixel per unit.
+  local m, Skin = F.env()
+  m.PixelUtil = { GetPixelToUIUnitFactor = function() return 0.75 end }
+  local make = m.CreateFrame
+  m.CreateFrame = function(...)
+    local f = make(...)
+    rawset(f, "GetEffectiveScale", function() return 1.5 end)
+    return f
+  end
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local f = m.CreateFrame("Frame", nil, m.UIParent, "InsetFrameTemplate")
+  S.FadeNineSlice(f)
+  assertEqual(F.region(Skin, f, "ringTop"):GetHeight(), 0.5, "0.75 / 1.5: one physical pixel")
+  assertEqual(F.region(Skin, f, "ringLeft"):GetWidth(), 0.5)
+end)
+
+test("skin paint: FadeNineSlice leaves a frame another primitive edged to that edge, and opts.noBorder", function()
+  -- red under: a second ring over a Shell's or a Panel's own edge, in another token.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "midnight")
+  local win = m.CreateFrame("Frame", nil, m.UIParent, "PortraitFrameTemplate")
+  S.Shell(win)
+  S.FadeNineSlice(win)
+  local ring = F.region(Skin, win, "ringTop")
+  assertTrue(ring == nil or not survey(m, ring).shown, "a Shell's window keeps the Shell's edge alone")
+  local plain = m.CreateFrame("Frame", nil, m.UIParent, "InsetFrameTemplate")
+  S.FadeNineSlice(plain, { noBorder = true })
+  ring = F.region(Skin, plain, "ringTop")
+  assertTrue(ring == nil or not survey(m, ring).shown, "noBorder draws none")
+end)
+
+test("skin paint: FadeNineSlice's edge falls to divider, then a dim body text, where a skin sets no panel.border", function()
+  -- red under: a skin with no border token drawing no edge, which is image 85's frame again.
+  local m, Skin = F.env()
+  Skin:RegisterSkin({ key = "bare", tokens = { ["panel.border"] = false } })
+  Skin:RegisterSkin({ key = "barer", tokens = { ["panel.border"] = false, divider = false,
+    ["text.body"] = { 0.9, 0.8, 0.7, 1 } } })
+  local S = F.owner(Skin, OWNER, "bare")
+  local f = m.CreateFrame("Frame", nil, m.UIParent, "InsetFrameTemplate")
+  S.FadeNineSlice(f)
+  assertEqual(F.rgba(survey(m, F.region(Skin, f, "ringTop")).color), F.tok(Skin, "bare", "divider"))
+  Skin:SetChoice(OWNER, "ka0s", "barer")
+  assertEqual(F.rgba(survey(m, F.region(Skin, f, "ringTop")).color), "0.900,0.800,0.700,0.400")
+end)
+
 -- ── the Ka0s extras ──────────────────────────────────────────────────────────────────────────
 
 test("skin paint: TitleBar on Ka0s Default fills its bar and centers its gold title", function()

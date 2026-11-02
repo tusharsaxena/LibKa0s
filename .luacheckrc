@@ -63,6 +63,9 @@ read_globals = {
   -- the client's standard face (S.GetFont when a skin names none) and the hook a checkbox's mark
   -- follows SetChecked through. Each read at call time and guarded for absence.
   "CreateColor", "CreateFont", "STANDARD_TEXT_FONT", "hooksecurefunc",
+  -- The client's pixel factor, which a 1 px skin edge is sized by (SkinPaintExtras' P.px), read at
+  -- call time and guarded for absence.
+  "PixelUtil",
   -- The Appearance tab (OptionsAppearance.lua): its copy confirmation and its reload popup are
   -- Blizzard StaticPopups, and the reload accept calls the client's reload. Each read at call time
   -- and guarded. The tab defines its two dialogs in StaticPopupDialogs, keyed LIBKA0S_SKIN_*, when
