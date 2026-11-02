@@ -16,6 +16,11 @@ Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every
 
 Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.26.8.17.16.16.4.9**, `LibKa0s-Launcher-1.0` **7**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.9.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**, `LibKa0s-Media-1.0` key **12.1**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
 
+### The owner's third smoke round (`R3-DR-1L`)
+
+- **SkinPaint minor 17**, **SkinPaintExtras minor 16**, not yet shipped, so no bump (`R3-DR-1L`): `S.HudFont`, `S.Text` and every primitive that gives a string the skin's face hold that face on a string that was given its own `SetFont` first, which the client lets beat any font object. DpsRace's Elapsed and Left clocks kept their creation face under every skin, and only the object's shadow followed. A string that never had a face of its own is not written. *Ignore fonts* gives such a string the face it showed. Hosts should still create a HUD string from a font-object template (Skin document).
+- **Test kit revision 50**, not yet shipped, so no bump: `mock_paint.lua`'s `SetFontObject` keeps a string's own font, and `GetFont` answers it, as the client does. A suite that read a font object's face off a string given `SetFont` passed what the client never drew.
+
 ### The owner's smoke feedback (`SF-L1` to `SF-L5`)
 
 - **OptionsSkinPicker minor 8**: every tooltip on the skin picker wraps, so Apply to all's long sentence takes several rows.

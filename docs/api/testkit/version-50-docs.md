@@ -57,6 +57,12 @@ A host declares its painted surfaces, and each one must change on a skin switch.
 
 `KIT_GATE_RULE` names `skinning-§1` for both suites, so a decline reads as one.
 
+### `mock_paint.lua`: a string's own font beats its font object (`R3-DR-1L`)
+
+`FontString:SetFontObject(obj)` keeps a font the string was given with `SetFont`, and `GetFont` still answers it, as the client does. Through the earlier steps of revision 50 it cleared that font, so a suite passed a string that drew its creation face in game under every skin: DpsRace's clocks, made with `SetFont` and then handed to `S.HudFont` (Ka0sAddonsCommonTasks `docs/2026-11-02-SMOKE_ROUND3/`, images 81 and 82). A string that never had its own font answers its object's, as before. Revision 50 is not yet shipped, so the revision does not move.
+
+**What a consumer owes:** nothing, unless a suite gives a string `SetFont` and then reads the face a font object should have put on it. That suite now reads the string's own face, which is what the client draws, and the host code under it is the bug: create the string from a font-object template, or route its face through `S.HudFont`, which now holds its face on any string (Skin document, *What changed*).
+
 ## What a consumer owes
 
 **Re-vendoring turns the inventory red until both suites are declared by the pair**, as with every kit suite. A declared suite with no facts is one declared skip, so that commit stays green. The rest is adoption.

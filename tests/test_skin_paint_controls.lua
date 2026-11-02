@@ -194,7 +194,12 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   rawset(eb, "SetFontObject", function(_, obj) objects[#objects + 1] = obj; current = obj end)
   rawset(eb, "GetFontObject", function() return current end)
   rawset(eb, "SetFont", function(_, path, size, flags) faces[#faces + 1] = { path, size, flags } end)
-  rawset(eb, "GetFont", function() return "Fonts\\FRIZQT__.TTF", 10, "" end)
+  -- The client's answer: its own face once it has one, else the font object's (kit revision 50).
+  rawset(eb, "GetFont", function()
+    if #faces > 0 then return unpack(faces[#faces]) end
+    if current ~= anon and current.GetFont then return current:GetFont() end
+    return "Fonts\\FRIZQT__.TTF", 10, ""
+  end)
   local shadows = {}
   rawset(eb, "GetShadowOffset", function() return 0, 0 end)
   rawset(eb, "GetShadowColor", function() return 0, 0, 0, 0 end)

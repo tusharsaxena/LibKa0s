@@ -409,6 +409,66 @@ test("skin hud members: HudFont leaves a table with no SetFont alone", function(
   assertEqual(#m.__fontsMade, 0, "no font object spent on it")
 end)
 
+-- ── a string that had a face of its own (R3-DR-1 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3) ──
+
+test("skin hud members: HudFont's face shows on a string given its own SetFont first", function()
+  -- red under: SetFontObject alone. The client lets a string-level font beat any font object, so
+  -- DpsRace's clocks, made with SetFont, drew their creation face under every skin (img 81, 82).
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "contrast")
+  local fs = fontString(m)
+  fs:SetFont("Fonts\\Mono.ttf", 26, "")
+  local obj = S.HudFont(fs, { face = FACE, size = 14, flags = "OUTLINE" })
+  local face, size, flags = fs:GetFont()
+  assertEqual(face, FACE, "the look's face, not the string's own")
+  assertEqual(size, 14)
+  assertEqual(flags, "OUTLINE")
+  assertTrue(m.__paint(fs).fontObject == obj, "still on the object, whose shadow is the one the client draws")
+  assertNil(m.__paint(fs).shadowOffset, "no shadow on the string")
+  S.HudFont(fs, { face = "Fonts\\B.ttf", size = 20 })
+  face, size = fs:GetFont()
+  assertEqual(face, "Fonts\\B.ttf", "the next skin's face reaches it too")
+  assertEqual(size, 20)
+end)
+
+test("skin hud members: HudFont gives no face of its own to a string that never had one", function()
+  -- red under: an unconditional SetFont on the string, which would pin its face in front of the
+  -- next font object anything hands it.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local fs = fontString(m)
+  S.HudFont(fs, { face = FACE, size = 14 })
+  assertNil(m.__paint(fs).font, "the object alone")
+  assertEqual((fs:GetFont()), FACE)
+end)
+
+test("skin hud members: S.Text's face shows on a string given its own SetFont first, and goes back", function()
+  -- red under: P.font's SetFontObject alone (the same client rule), or P.unfont handing back a
+  -- named object while the string's own font, the skin's by then, still beats it.
+  local m, Skin = F.env({ lsm = { ["font:Ka0s Prototype"] = "Fonts\\Proto.ttf" } })
+  local S = F.owner(Skin, OWNER)
+  local stock = m.CreateFont("GameFontStock")
+  function stock:GetName() return self.name end
+  stock:SetFont("Fonts\\Stock.ttf", 12, "")
+  local named, own = fontString(m), fontString(m)
+  named:SetFontObject(stock)
+  own:SetFont("Fonts\\Own.ttf", 13, "")
+  S.Text(named, "body")
+  S.Text(own, "body")
+  for _, fs in ipairs({ named, own }) do
+    assertEqual((fs:GetFont()), "Fonts\\Proto.ttf", "the skin's face shows")
+    assertEqual((fs:GetFont()), (fs:GetFontObject():GetFont()), "the one the skin's object carries")
+  end
+  Skin:SetIgnore(OWNER, nil, true)
+  assertTrue(named:GetFontObject() == stock, "the stock object back")
+  assertEqual((named:GetFont()), "Fonts\\Stock.ttf", "and its face shows")
+  local face, size = own:GetFont()
+  assertEqual(face, "Fonts\\Own.ttf", "the string's own face back")
+  assertEqual(size, 13)
+  Skin:SetIgnore(OWNER, nil, false)
+  assertEqual((own:GetFont()), "Fonts\\Proto.ttf", "and the skin's again")
+end)
+
 -- ── Skin.FollowOnce ──────────────────────────────────────────────────────────────────────────
 
 test("skin hud members: FollowOnce resets once and records it per profile", function()

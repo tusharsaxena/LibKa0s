@@ -20,26 +20,10 @@ local lib = LibStub and LibStub("LibKa0s-Skin-1.0", true)
 if not lib then return end   -- the shell refused (no Core, or below its floor): nothing to attach to
 if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no helpers from this copy
 
--- Minor 2 (the owner's notes, round 2): Footer, Card and Cover give the strings they color the
--- skin's face through P.label, so no labeled string keeps the client's font and its shadow.
--- Minor 3: a wash is a region of its frame at the bottom of BACKGROUND (SkinPaint minor 7's P.SUB),
--- not of the fill holder, which could tie the frame's parent for frame level.
--- Minor 4: BarTexture, the owner's bar texture (`bar.texture`, its texture override when it sets
--- one, Skin minor 6) on a Texture or a StatusBar, tinted and recorded (LibKa0s#63). A repaint and a
--- nil color keep the bar's live color (a host's own recolor included), never a first-paint snapshot.
--- Minor 5 (LK-02, LK-05 of Ka0sAddonsCommonTasks docs/2026-10-29-SKINNING_ROLLOUT): Card's `opts.tokens`
--- slot remap; the two faders, Panel and Inset, moved here unchanged from SkinPaint.lua; S.Text takes a
--- token NAME as well as a role.
--- Minor 6 (LK-01, LK-02, LK-05, LK-06a of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS):
--- BarStyle's font fields are nil while the owner ignores fonts; P.panelIgnored and S.Text's and
--- S.Strip's `opts.panel`; the stock look is retired, so a stale `opts.stockDefault` is ignored.
--- Minor 7 (LK-04 of Ka0sAddonsCommonTasks docs/2026-10-30-SKIN_FONTS_AND_FEEDBACK, the owner's ruling
--- D-07): S.FontFlags(value, where), the flags an element draws with from its stored Font flags: a
--- picked flag wins, and "From skin" (FROM_SKIN; nil too) resolves through the owner's Font outline
--- (Skin minor 9). OptionsCompose minor 14's `flagsFromSkin` offers the value. Then (LK-06 of the same
--- bundle, ruling D-09, still minor 7): S.HudFontSize(size, fromSkin), the size a HUD element stored at
--- `size` draws at: scaled by the skin's `hud.fontSize` over Ka0s Default's while it uses the skin's
--- face, the stored size while it draws its own (fromSkin false) or the owner ignores fonts.
+-- Minors 2 to 7 (the skin runs of 2026-10-26 to 2026-10-30; the Skin document has each): P.label on
+-- Footer, Card and Cover; washes at the bottom of BACKGROUND; BarTexture; Card's `opts.tokens`, the
+-- faders, Panel and Inset moved here, S.Text taking a token name; BarStyle's font fields nil while
+-- fonts are ignored, P.panelIgnored, the stock look retired; S.FontFlags and S.HudFontSize.
 -- Minor 8 (cause L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): a stated
 -- `popup.borderStyle` or `nav.borderStyle` boxes the suggestion popup or the rail in the skin's own
 -- edge and size, where both only recolored; `false`, Ka0s Default's, is the art the frame wears.
@@ -63,6 +47,9 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- shadow token; S.HudFont shares one font object per look; S.HoverArt, the public seam for hover art;
 -- S.Mark and S.HoverArt give themselves back when a pooled AceGUI widget is released. Additive, but
 -- for the font objects. Ka0s Default's look does not move.
+-- Then (R3-DR-1L of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3, still minor 16, not yet shipped):
+-- P.holdFace, so S.HudFont's face shows on a string given its own SetFont first, which the client
+-- lets beat any font object; SkinPaint's P.font and P.unfont call it too.
 local EXTRAS_MINOR = 16
 if lib.__extrasMinor and lib.__extrasMinor >= EXTRAS_MINOR
   and lib.__extrasShellMinor == lib.MINOR then return end
@@ -476,6 +463,19 @@ end
 
 -- ── text and fonts ───────────────────────────────────────────────────────────────────────────
 
+--- Make `fs` draw `face`, `size` and `flags` after it was handed a font object that carries them. The
+--- client lets a font a string was given with its own SetFont beat any font object, so a string
+--- that ever had one keeps that face through SetFontObject (DpsRace's clocks under every skin, R3-DR-1
+--- of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3). Only a string whose GetFont disagrees is
+--- written, so one that never had a face of its own stays on the object alone; the shadow stays the
+--- object's, the only one a 12.0.7 client draws. SkinPaint's P.font and P.unfont call it too.
+function P.holdFace(fs, face, size, flags)
+  if type(face) ~= "string" or type(size) ~= "number" or size <= 0 or type(fs.GetFont) ~= "function" then return end
+  local f, s, fl = fs:GetFont()
+  if f == face and (fl or "") == (flags or "") and type(s) == "number" and math.abs(s - size) < 0.05 then return end
+  fs:SetFont(face, size, flags or "")
+end
+
 local TEXT_ROLE = {
   body = "text.body", muted = "text.muted", heading = "text.heading", headingAlt = "text.headingAlt",
   accent = "text.accent", disabled = "text.disabled", link = "text.link", linkHot = "text.linkHot",
@@ -808,6 +808,7 @@ local function wearHudLook(fs, face, size, flags, ...)
   end
   lib.__hudFonts[fs] = look.obj
   fs:SetFontObject(look.obj)
+  P.holdFace(fs, look.obj:GetFont())
   return look.obj
 end
 

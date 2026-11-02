@@ -67,7 +67,7 @@ Total.
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
-### test_core_resize.lua (24)
+### test_core_resize.lua (26)
 
 - resize: MakeResizable makes the frame resizable and answers the grip it built
 - resize: the bounds are the options' minimum and the screen's size
@@ -93,6 +93,8 @@ Total.
 - resize: onResizeStop does not run for a right-click or a stray mouse-up
 - resize: gripParent builds the grip on another frame while sizing stays on frame
 - resize: gripParent that is not a table falls back to the frame
+- resize: a frame anchored to a cell comes back onto its anchor, with the new size
+- resize: a window anchored to the screen is left where the drag put it
 
 ### test_env.lua (9)
 
@@ -713,7 +715,7 @@ Total.
 - skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
 - skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (35)
+### test_skin_defs.lua (38)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -729,7 +731,7 @@ Total.
 - skin defs: the bind-state tokens inherit Ka0s Default unless a skin overrides for legibility
 - skin defs: every skin's split text, icon and signed colors read where they draw
 - skin defs: the split tokens inherit Ka0s Default unless a skin overrides for legibility
-- skin defs: High Contrast draws 1px control edges inside a 2px window and popup edge
+- skin defs: High Contrast's edges are one pixel, window and popup included
 - skin defs: Glass rounds its window and popups only, on the Ka0s Glass nine-slice
 - skin defs: WoW Default wears the Blizzard art docs/api/Skin names
 - skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art
@@ -747,6 +749,9 @@ Total.
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 - skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read in every other skin
+- skin defs: alternate rows show in every skin
+- skin defs: a window's header stands off its content, with a rule that shows
+- skin defs: a table header wears the skin's color, and its sort arrow another
 - skin defs: Ka0s Default states its settings art, and every other skin an edge and a rule
 - skin defs: the settings typed-color tokens keep Ka0s Default's yellow and read in every other skin
 - skin defs: a shell bump re-registers the eight other skins from the new copy
@@ -760,7 +765,7 @@ Total.
 - skin hud tokens: HudShadow tells no shadow from the host's own
 - skin hud tokens: an owner token keeps the addon's pixels under Ka0s Default and follows otherwise
 
-### test_skin_hud_members.lua (27)
+### test_skin_hud_members.lua (30)
 
 - skin hud members: BarGloss and HudFont are in the facade
 - skin hud members: BarGloss draws one look over the fill's top half, on the fill
@@ -785,6 +790,9 @@ Total.
 - skin hud members: HudFont with no skin face takes the client's, and reads an empty face as none
 - skin hud members: a stored shadow's missing fields default, and a keyed table is none
 - skin hud members: HudFont leaves a table with no SetFont alone
+- skin hud members: HudFont's face shows on a string given its own SetFont first
+- skin hud members: HudFont gives no face of its own to a string that never had one
+- skin hud members: S.Text's face shows on a string given its own SetFont first, and goes back
 - skin hud members: FollowOnce resets once and records it per profile
 - skin hud members: FollowOnce creates only the record's table
 - skin hud members: FollowOnce answers false and writes nothing on bad input
@@ -914,7 +922,7 @@ Total.
 - skin paint: a skin's size scales each string from its own, one font object per size
 - skin paint: a string reporting no usable size is painted at the token size, never at 0
 
-### test_skin_paint_controls.lua (34)
+### test_skin_paint_controls.lua (35)
 
 - skin controls: Button on Ka0s Default is LootHistory's flat button's paint
 - skin controls: Button repaints live, primary reads btnPrimary, and the icon is tinted
@@ -925,6 +933,7 @@ Total.
 - skin controls: EditBox fades a template's pieces and colors its text and hint in a skin
 - skin controls: leaving a skin font puts an EditBox's face back by path, never its anonymous font object
 - skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for call, but its arrow
+- skin controls: a WowStyle1DropdownTemplate dropdown is a flat control (#71)
 - skin controls: Checkbox draws a box and a mark that follows the check
 - skin controls: WoW Default's checkbox is the client's art; Ka0s Default draws a square box
 - skin controls: a disabled Button's label reads text.disabled, and comes back when enabled
@@ -1262,7 +1271,7 @@ Total.
 - chart math: ClipSegment handles vertical and horizontal segments on either side
 - chart math: ClipSegment keeps a degenerate point inside and drops one outside
 
-### test_widgets_linechart.lua (19)
+### test_widgets_linechart.lua (22)
 
 - line chart: Render draws the axis, one grid rule per y tick and one line per segment
 - line chart: a second Render of the same data creates no new Line objects
@@ -1283,6 +1292,9 @@ Total.
 - line chart: a segment wholly outside the plot draws nothing, and so does a one-point series there
 - line chart: a render under a resting cursor re-fires onHover and moves the crosshair to the new scale
 - line chart: a render that leaves no scale hides the crosshair, and a later clear still tells the host
+- line chart: a series with fill draws columns under its line; without it, none
+- line chart: the fill's alpha is published
+- line chart: a second Render of a filled series creates no new Lines
 
 ### test_widgets_autocomplete.lua (37)
 
@@ -1343,7 +1355,7 @@ Total.
 - SearchBox: W.Autocomplete composes on it, and the hint still toggles
 - SearchBox: the host rewrites the hint through box.hint:SetText
 
-### test_widgets_teststrip.lua (17)
+### test_widgets_teststrip.lua (21)
 
 - TestStrip: born hidden, unanchored and 18 tall, with its regions
 - TestStrip: the fill is the collection's amber at 12%, on all points
@@ -1362,6 +1374,10 @@ Total.
 - TestStrip: a sim strip has a test strip's height, icon, text, anchors, state and mouse
 - TestStrip: a test strip and a sim strip side by side share no regions
 - TestStrip: a write to strip.kind after birth does not repaint the fill
+- TestStrip: a test strip with onEnd takes the right-click and offers End test
+- TestStrip: a sim strip with a sim instance ends, steps and restarts it
+- TestStrip: a sim without steps offers only End sim; onEnd wins over the instance's Stop
+- TestStrip: with neither onEnd nor sim the mouse stays off, as before
 
 ### test_widgets_reorder.lua (7)
 
@@ -1867,7 +1883,7 @@ Total.
 - sl debug: a non-function debug field is ignored
 - sl debug: the chat is byte for byte the same with and without a debug sink
 
-### test_launcher.lua (50)
+### test_launcher.lua (56)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
 - launcher: ONE object, of type 'launcher', carrying the host's own icon
@@ -1919,6 +1935,12 @@ Total.
 - launcher: the descriptor's owner names the skin where it is not the folder
 - launcher: a host that is no skin owner draws what it drew, call for call
 - launcher: a skin that raises leaves the tooltip drawn, and the debug seam hears it
+- launcher: the menu ends with Open skin selector for a skin owner that passes openSkinPicker
+- launcher: Open skin selector is grayed with the note while the addon is disabled
+- launcher: it alone makes a menu, and a host that is no skin owner or passes nothing gets none
+- launcher: Sim mode is a live checkbox that toggles through toggleSim, once
+- launcher: Open settings opens the panel from the menu, enabled or not
+- launcher: one Register is one broker object and one minimap button, with no compartment entry (SG-L2)
 
 ### test_atenable.lua (21)
 
@@ -2614,9 +2636,9 @@ Total.
 - appearance: the copy has its own heading, Other Ka0s addons, after the Scope, the tab ending on it
 - appearance: the note leads the Look section, ahead of the first skin
 
-### test_options_skin_picker.lua (40)
+### test_options_skin_picker.lua (41)
 
-- skin picker: OptionsSkinPicker is minor 7, paired on the shell, and attaches three members
+- skin picker: OptionsSkinPicker is minor 9, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -2655,6 +2677,7 @@ Total.
 - skin picker: the gear after a clearing preview writes the skin, then every media half
 - skin picker: two clearing previews, then Apply, write the media once
 - skin picker: a tooltip title takes gtip.title, read at hover, Ignore settings panel or not
+- skin picker: a long tooltip wraps
 - skin picker: under Ka0s Default a tooltip title is the client's gold, written out
 
 ### test_options_skin_picker_shared.lua (10)
@@ -2753,6 +2776,15 @@ Total.
 - skin verb: a repeat while its own picker is up refreshes the one window
 - skin verb: without the Skin major, or for an unregistered owner, skins are unavailable
 - skin verb: spec.strings translate the verb's words
+
+### test_options_skin_notice.lua (6)
+
+- skin notice: the first addon claims it and shows the picker, the next records and stays quiet
+- skin notice: an addon that has seen it silences one that loads after it (SG-L3)
+- skin notice: a stood-down host records what it can and shows nothing
+- skin notice: a recorded version passes it by, and a higher notice version shows it again
+- skin notice: in combat nothing is claimed or recorded, and the next ask after it shows
+- skin notice: a store without both halves is refused
 
 ### test_options_idsuggest.lua (29)
 
@@ -4434,7 +4466,7 @@ Total.
 | Suite | Cases |
 |-------|------:|
 | test_core.lua | 52 |
-| test_core_resize.lua | 24 |
+| test_core_resize.lua | 26 |
 | test_env.lua | 9 |
 | test_compat.lua | 49 |
 | test_lifecycle.lua | 22 |
@@ -4458,14 +4490,14 @@ Total.
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 8 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 35 |
+| test_skin_defs.lua | 38 |
 | test_skin_hud_tokens.lua | 6 |
-| test_skin_hud_members.lua | 27 |
+| test_skin_hud_members.lua | 30 |
 | test_skin_host_gaps.lua | 46 |
 | test_skin_width_parity.lua | 17 |
 | test_skin_button_contrast.lua | 10 |
 | test_skin_paint.lua | 39 |
-| test_skin_paint_controls.lua | 34 |
+| test_skin_paint_controls.lua | 35 |
 | test_skin_eui.lua | 30 |
 | test_skin_ace.lua | 28 |
 | test_skin_ace_tree.lua | 14 |
@@ -4477,10 +4509,10 @@ Total.
 | test_widgets_draghandle_layers.lua | 11 |
 | test_widgets_draghandle_fit.lua | 10 |
 | test_widgets_linechart_math.lua | 21 |
-| test_widgets_linechart.lua | 19 |
+| test_widgets_linechart.lua | 22 |
 | test_widgets_autocomplete.lua | 37 |
 | test_widgets_searchbox.lua | 16 |
-| test_widgets_teststrip.lua | 17 |
+| test_widgets_teststrip.lua | 21 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
 | test_widgets_skin_scope.lua | 20 |
@@ -4499,7 +4531,7 @@ Total.
 | test_slash_refusal.lua | 7 |
 | test_slash_profile.lua | 30 |
 | test_slash_debug.lua | 14 |
-| test_launcher.lua | 50 |
+| test_launcher.lua | 56 |
 | test_atenable.lua | 21 |
 | test_options.lua | 57 |
 | test_options_render.lua | 27 |
@@ -4523,11 +4555,12 @@ Total.
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 36 |
 | test_options_appearance_overrides.lua | 25 |
-| test_options_skin_picker.lua | 40 |
+| test_options_skin_picker.lua | 41 |
 | test_options_skin_picker_shared.lua | 10 |
 | test_options_skin_picker_faces.lua | 15 |
 | test_options_skin_picker_rows.lua | 53 |
 | test_options_skin_verb.lua | 7 |
+| test_options_skin_notice.lua | 6 |
 | test_options_idsuggest.lua | 29 |
 | test_options_idsuggest_frames.lua | 15 |
 | test_options_idlist_remove.lua | 8 |
@@ -4604,4 +4637,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3902** |
+| **Total** | **3931** |
