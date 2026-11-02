@@ -293,6 +293,7 @@ Largest first:
   automated-tests RESULTS) — **accepted.** The minor is not yet shipped, and a peel is a release. The seam is the
   navigation, drawer and list-row section, to a file of its own paired on the Skin shell.
   **Re-check trigger: 1100 lines, or the next SkinPaintControls minor.**
+- `tests/test_media.lua` (1010, measured 2026-11-02 at v1.85.0's `R3-REL` re-cut, new to the band: 990 -> 1010 with `R3-L6`'s Ubuntu license and inventory cases and `R3-L7`'s retirement cases of Ka0sAddonsCommonTasks `docs/2026-11-02-SMOKE_ROUND3/`) -- **accepted.** A suite, not payload, so a peel is no release. The seam is the font inventory and license section (the OFL, variable-cut, other-terms and minor 11 face tables from about line 552), to a suite of its own beside it. **Re-check trigger: 1100 lines, or the next face added to `FONTS`.**
 
 **The v1.84.0 peels, 2026-10-31.** Each file below left the band on the seam its row named, as a pure move (step 1 of Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`), with no logic edited:
 
