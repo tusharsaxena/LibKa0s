@@ -180,7 +180,7 @@ Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `
 - **SkinPaintControls minor 12**: `S.Tab` draws `tab.border` at its size and style, around `opts.fill` when it names one and not on a tab in the skin's art, so window tabs take it too. `opts.glow` takes `tab.glow`.
 - **OptionsTabs minor 15** and **SkinPaint minor 14**: the settings tab names its two glows, and `P.unpaint` gives their stock gradient back.
 
-Release gate (`docs/automated-tests/20261103-035514/`): lint pass, 0/0 in 291 files;
+Release gate (`docs/automated-tests/20261103-040646/`): lint pass, 0/0 in 291 files;
 tests pass, 3955 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
