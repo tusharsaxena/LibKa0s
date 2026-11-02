@@ -1180,3 +1180,17 @@ test("launcher: Open settings opens the panel from the menu, enabled or not", fu
   assertEqual(menu:Click("Open settings"), MENU.RESPONSE.Close)
   assertEqual(rec.opened, before + 1)
 end)
+
+test("launcher: one Register is one broker object and one minimap button, with no compartment entry (SG-L2)", function()
+  -- Evidence for SG-L2: the library makes exactly one LDB object and one LibDBIcon Register, and
+  -- never touches the addon compartment; a collector showing two buttons draws one itself.
+  -- red under: a second Register or a compartment call from this module.
+  local rec = fixture()
+  local L = lib:New(rec.d)
+  L:Register(); L:Register()
+  local n = 0
+  for _ in pairs(ICON.__buttons) do n = n + 1 end
+  assertTrue(n >= 1)
+  assertEqual(ICON.__buttons[rec.name].calls, 1)
+  assertEqual(LDB.__objects[rec.name], L:Object())
+end)

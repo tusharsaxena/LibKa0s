@@ -30,9 +30,10 @@ Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `
 - **Launcher minor 6** (`SF-F2`): the right-click menu ends with **Open skin selector** where the descriptor passes `openSkinPicker` and its owner is a registered skin owner. Hosts owe one line: `openSkinPicker = NS.RunSkinVerb` (or the act of their `/<slash> skin` verb). The entry is grayed with the note "(enable the addon first)" while the addon is disabled, as every entry past Enabled is.
 - **What a consumer owes**: a host that colors its own sort marks reads `list.header.arrow`, and a host token table gains the row. BankLedger and LootHistory both do.
 
-### The owner's second smoke round (`SG-L1`)
+### The owner's second smoke round (`SG-L1`, `SG-L2`)
 
 - **Launcher minor 7** (`SG-L1`): the right-click menu gains **Sim mode** (descriptor `isSimMode` and `toggleSim`) and **Open settings** (every addon, never grayed), and one row rule: a toggle is a checkbox with a live tick, an action a plain button, a gated row of either kind grays with the note in its label. Hosts with a sim owe the two fields.
+- **`SG-L2`**, no library change: two entries for one addon in a button collector are not ours. The library makes one broker object and one LibDBIcon button, and never touches the addon compartment (a test pins it).
 
 ### The review of the rulings and the gate (`FS-FIX`)
 
