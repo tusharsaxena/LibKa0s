@@ -907,8 +907,9 @@ local function zoomIcon(rec, frame, opts)
   local z = type(opts.zoom) == "number" and opts.zoom or ICON_ZOOM
   local coords = P.saved(rec, "coords")
   if coords[icon] == nil then coords[icon] = { icon:GetTexCoord() } end
-  local ulx, uly, _, _, _, _, lrx, lry = icon:GetTexCoord()
-  icon:SetTexCoord(math.max(z, ulx or 0), math.min(1 - z, lrx or 1), math.max(z, uly or 0), math.min(1 - z, lry or 1))
+  local c = { icon:GetTexCoord() }
+  for i, d in ipairs({ 0, 0, 0, 1, 1, 0, 1, 1 }) do c[i] = type(c[i]) == "number" and c[i] or d end
+  icon:SetTexCoord(math.max(z, c[1]), math.min(1 - z, c[7]), math.max(z, c[2]), math.min(1 - z, c[8]))
 end
 
 --- S.IconBorder(frame, opts): a flat `icon.border` edge on the frame's holder, in physical pixels,

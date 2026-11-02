@@ -288,7 +288,7 @@ Largest first:
   six lines; 997 at minor 16 before them) — **accepted.** The minor is not yet shipped, and a peel is a release. The seam is
   the AceConfigDialog confirmation box (the section at the end of the file, about 160 lines), to a file of its own paired
   on the Skin shell. **Re-check trigger: 1100 lines, or the next SkinPaintExtras minor.**
-- `LibKa0s/SkinPaintControls.lua` (1059 at minor 16, measured 2026-11-03, `R3-FIX`'s tightening zoom and the outline's `P.pxWatch`; 1054 at minor 16, measured 2026-11-02, `R3-L1`'s `P.ddChevron`, the WowStyle1 chevron made shared; 1044 at minor 16, measured 2026-11-02, `R3-L3`'s 1 px outline and icon zoom in
+- `LibKa0s/SkinPaintControls.lua` (1060 at minor 16, measured 2026-11-03, `R3-FIX`'s tightening zoom, which reads only numeric coords, and the outline's `P.pxWatch`; 1054 at minor 16, measured 2026-11-02, `R3-L1`'s `P.ddChevron`, the WowStyle1 chevron made shared; 1044 at minor 16, measured 2026-11-02, `R3-L3`'s 1 px outline and icon zoom in
   `S.IconBorder` of Ka0sAddonsCommonTasks `docs/2026-11-02-SMOKE_ROUND3/`; 1027 at minor 16 before it, on notice in the
   automated-tests RESULTS) — **accepted.** The minor is not yet shipped, and a peel is a release. The seam is the
   navigation, drawer and list-row section, to a file of its own paired on the Skin shell.

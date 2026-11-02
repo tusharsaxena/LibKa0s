@@ -238,6 +238,11 @@ test("skin icon border: the zoom only tightens, a host's tighter crop stands (Sq
   S.IconBorder(loose, { fromSkin = true })
   assertEqual(texCoord(m, loose.icon), table.concat({ 0.07, 0.1, 0.07, 0.9, 0.93, 0.1, 0.93, 0.9 }, ","),
     "each axis takes the larger inset: 0.07 over 0.02, the host's 0.1 kept")
+  local stub = m.CreateFrame("Frame", nil, m.UIParent)
+  stub.icon = stub:CreateTexture()
+  rawset(stub.icon, "GetTexCoord", function(self) return self end)   -- a host's bare stub (WhatGroup's mock)
+  S.IconBorder(stub, { fromSkin = true })
+  assertEqual(texCoord(m, stub.icon), inset(0.07), "coords that are not numbers read as the full texture")
 end)
 
 -- ── one physical pixel after a scale change (R3-FIX: the size was taken once, at paint time) ──
