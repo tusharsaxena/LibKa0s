@@ -151,7 +151,8 @@ lib.ICONS = {
 -- Bitter (Ember), Philosopher (WoW Midnight), Fira Sans (WoW Forever: Medium for body text since
 -- minor 10, SemiBold for titles and HUD) and Atkinson Hyperlegible (High Contrast), each SIL OFL 1.1;
 -- Prototype (Ka0s Default) and Expressway (Obsidian) are not, each on a recorded owner ruling (below);
--- WoW Default draws the client's Friz Quadrata. The skins' faces move again with SkinDefs in this
+-- WoW Default draws Ubuntu (minor 12; the client's Friz Quadrata, then a shipped copy, until then).
+-- The skins' faces move again with SkinDefs in this
 -- release, so that list dates from minor 10. Barlow and Cinzel, minor 6's, left at minor 8, never
 -- released. `tools/artwork/fonts.py` is their provenance record: the pinned upstream commits, and the
 -- static weights it cuts from the three variable fonts. A skin names a face by this key and resolves
@@ -198,6 +199,13 @@ lib.ICONS = {
 -- rule minor 10 worked to, under which Oxanium SemiBold and Bold, Fira Sans Regular and Inter Regular
 -- and SemiBold left: v1.81.0 shipped those five, so they come back with the Oxanium and Inter texts,
 -- and a profile naming one keeps resolving.
+--
+-- UBUNTU IS WOW DEFAULT'S FACE (minor 12, not yet shipped; R3-L6 of Ka0sAddonsCommonTasks
+-- docs/2026-11-02-SMOKE_ROUND3, the owner's ruling of 2026-11-02), for body, titles and HUD text:
+-- Friz Quadrata could not shrink to fit Loot History's Date column and stay readable. The official
+-- static Ubuntu-Regular.ttf (0.83) from google/fonts' ufl/ubuntu, unchanged, under the Ubuntu font
+-- license 1.0, which allows redistribution; upstream's UFL.txt ships beside it as `Ubuntu-UFL.txt`.
+-- Its cmap has the Russian alphabet (and Greek), so western + ruRU.
 local WEST_RU = { "western", "ruRU" }
 lib.FONTS = {
   ["JetBrains Mono"]          = { file = "JetBrainsMono-Regular.ttf", license = "JetBrainsMono-OFL.txt",
@@ -246,6 +254,7 @@ lib.FONTS = {
   ["Ka0s Emblem"]             = { file = "Emblem-Regular.ttf", license = "FONTS.md", langmask = { "western" } },
   ["Ka0s Doris PP"]           = { file = "DorisPP-Bold.ttf", license = "FONTS.md", langmask = { "western" } },
   ["Ka0s Avant Garde"]        = { file = "AvantGarde-Regular.ttf", license = "FONTS.md", langmask = WEST_RU },
+  ["Ka0s Ubuntu"]             = { file = "Ubuntu-Regular.ttf", license = "Ubuntu-UFL.txt", langmask = WEST_RU },
 }
 
 -- Every statusbar texture in `media/textures/`, keyed by the LSM name it registers under -- which is

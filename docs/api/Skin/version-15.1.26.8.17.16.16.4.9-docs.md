@@ -16,12 +16,13 @@
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 15, SkinOwnerTokens = 1, SkinDefs = 26, SkinDefsOthers = 8, SkinPaint = 17, SkinPaintExtras = 16, SkinPaintControls = 16, SkinEUI = 4, SkinAce = 9 }` |
 
-## What changed at this version: the owner's third smoke round (`R3-DR-1L`, `R3-L1`, `R3-L2`, `R3-L3`, `R3-L4`, `R3-L5`)
+## What changed at this version: the owner's third smoke round (`R3-DR-1L`, `R3-L1`, `R3-L2`, `R3-L3`, `R3-L4`, `R3-L5`, `R3-L6`)
 
 No minor moves: `SkinPaint.lua` **17**, `SkinPaintExtras.lua` **16**, `SkinPaintControls.lua` **16**, `SkinDefsOthers.lua` **8** and `SkinAce.lua` **9** are not yet shipped (Ka0sAddonsCommonTasks `docs/2026-11-02-SMOKE_ROUND3/`).
 
 - **Obsidian's body is 12** (`R3-L4`, images 95 and 96), where it was 12.5, and so is Expressway's body row in `lib.__FACE_SIZES`, so an Expressway font override under any skin draws the same. Loot History's Date column holds "02-Nov-2026" in Prototype at 12 and nothing wider. The string's shaped advance is 5.7740 em in Expressway and 6.0040 in Prototype, so Expressway at its parity size 12.5 runs 0.2% wider than Ka0s Default and truncated, and at 12 runs 3.8% narrower. The body corpus at 12 is 6.1% narrower than Ka0s Default's, past the 5% band, which `tests/test_skin_width_parity.lua` allows for a body one step under parity for the Date's sake and for nothing else. Obsidian's `font.titleSize` (14.5) and `hud.fontSize` (13) keep their sizes.
 - **`list.stripe` stands at least 8% off the window** (`R3-L5`, image 95), where `SF-L3` asked 5%: Obsidian's 6% white, 5.8% off its window, was still hardly visible, and every dark skin on the same 6% sat as faint. Obsidian, Glass, Ember, WoW Default and WoW Midnight draw 9% white, WoW Forever 10% and Azeroth its parchment at 11%; High Contrast's `#222222` and Ka0s Default's 3% stand. **`list.hover`** follows: the body text at .15 where it was .10 (High Contrast keeps its yellow), so a hovered row still stands at least 3% off a striped one, as it did.
+- **WoW Default draws `Ka0s Ubuntu`** (`R3-L6`, images 98 and 99) for `font.body`, `font.title` (through `KEEP`) and `hud.font` (`HUD_FACE`), where it drew `Ka0s Friz Quadrata TT`. Friz drew Loot History's Date 0.3% wider than Ka0s Default at 11, and could not shrink half a point and stay readable. Ubuntu is the official static Regular (`LibKa0s-Media-1.0` 12.1). Its sizes are its parity row, 12 / 13.5 / 11.5 (11 / 13 / 11 for Friz), measured by the width-parity method on the shipped bytes: body +1.9%, title -1.9%, HUD -0.5% against Ka0s Default under the linear model, and the Date 3.6% narrower, so it needs no step down. `lib.__FACE_SIZES` gains the row and holds thirty-four.
 - **`S.HudFont`, `S.Text`, `S.Font`, `S.White` and every primitive that labels a string hold the face they hand over** (`R3-DR-1L`). The client lets a font a string was given with its own `SetFont` beat any font object, so a string made with `SetFont` and then handed to `S.HudFont` kept its creation face under every skin, and only the object's shadow followed: DpsRace's Elapsed and Left clocks (images 81, 82) and AbsorbTracker's value text. After `SetFontObject` the paint now reads the string's `GetFont`, and where it disagrees with the object's face, size or flags it writes the object's onto the string as well. A string that never had a face of its own is not written, so it stays on the object alone. The shadow stays the object's, the only one a 12.0.7 client draws. `P.unfont` holds the face the string showed before the skin reached it, so *Ignore fonts* gives a string with its own face that face back.
 - **`S.FadeNineSlice` draws a 1 px edge in every skin** (`R3-L2`, images 85 to 87): the faded art left the frame with no edge, and a dark frame vanished on Obsidian and the other dark skins. The edge is `panel.border`, as `S.Panel` edges a box (image 93, the `MakeResizable` specimen), else `divider`, else `text.body` at 0.4, four regions of its own on the holder, one physical pixel at any UI scale. A frame another primitive already edged keeps that edge, and `opts.noBorder` draws none. **This moves a look**: the one caller is LibKa0sSkinTester, whose Shell-painted window keeps the Shell's edge; no addon calls it.
 - **An AceGUI Dropdown and the media pickers wear the skinned dropdown** (`R3-L1`, images 83 and 84). SkinAce's Dropdown painter, which paints `Ka0sMedia_Font`, `Ka0sMedia_Statusbar` and every other picker type `AliasAceType` names a Dropdown, now matches `S.Dropdown` on a WowStyle1 dropdown (`SF-L7`): the flat box it drew already, the value left-aligned (AceGUI leaves the template's right alignment), AceGUI's gold button (`w.button`) faded under one Ka0s `chevron-down` at the bar's right in `icon.arrow` (`text.disabled` while the row is disabled; `P.ddChevron`, internal, the one mark both dropdowns draw), and a pull-out item's check in `check.mark`. The value's anchors are not touched, so a picker's font or texture preview stays where `OptionsMedia.lua` lays it, inside the box. Release gives the alignment, the button's art and the check back and hides the chevron; *Ignore settings panel* keeps the row stock as before. With no chevron art (no `LibKa0s-Media-1.0`) the gold button stays, so the row keeps an arrow. **This moves a look** on every Ka0s settings page with a dropdown.
@@ -1439,7 +1440,7 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
 - **Inheritance.** A key a mockup skin leaves out inherits **Ka0s Default's Lua value**, never the
   mockup's `BASE`, and so does every token the mockups do not draw, except the three `KEEP` holds
   (`font.body`, `font.title`, `bar.texture`: Friz Quadrata and `Blizzard`, since SkinDefs
-  minor 14, the face the shipped `Ka0s Friz Quadrata TT` since minor 18; every skin but WoW Default now sets its own `bar.texture` through `barTex`) and
+  minor 14, the face the shipped `Ka0s Friz Quadrata TT` from minor 18 and `Ka0s Ubuntu` since `R3-L6`; every skin but WoW Default now sets its own `bar.texture` through `barTex`) and
   `hud.font`, which every skin names itself (SkinDefs minor 16, `HUD_FACE`; `KEEP` held it until then). Ka0s Default itself stays today's constants and is not touched by the mockup.
 - **Extras.** Where the mockup draws nothing a surface needs (an opened drawer, KPI cards and
   list panels, disabled text, the hover wash on a primary button), a skin sets that token itself
@@ -1476,7 +1477,7 @@ into Lua, and one map (`MOCK_MAP`) carries every mockup key to the schema tokens
 - **Fonts.** Every skin draws one family of its own, for body and titles alike (SkinDefs minor 11,
   the owner's round-5 notes: titles that did not match the body, and faces three skins shared):
   Obsidian Expressway (the owner's pick since SkinDefs minor 17; Inter, its mockup's own face, until then), and since minor 18, the owner's picks, Glass Avant Garde (Nunito until then), Azeroth Open Sans (Vollkorn), Ember Emblem (Bitter), WoW Midnight Segoe UI (Philosopher) and High Contrast Doris PP (Atkinson Hyperlegible); WoW Forever Fira Sans (crisp at small sizes; Medium for body text since SkinDefs minor 17, SemiBold titles). WoW Default
-  draws the shipped Friz Quadrata (through `KEEP`, its HUD text explicitly; the client's own face until minor 18); Ka0s Default drew Friz too
+  draws Ubuntu since `R3-L6` (through `KEEP`, its HUD text explicitly; the shipped Friz Quadrata from minor 18, the client's own face until then); Ka0s Default drew Friz too
   until SkinDefs minor 14 gave it Oxanium (the owner's choice), and Prototype since minor 17 (the
   owner's choice of 2026-10-30, one face for body and titles). Until minor 11 Obsidian and Glass
   drew Barlow, and Azeroth, Ember and WoW Midnight titled in Cinzel, an all-capitals face no body text can share.
@@ -1519,10 +1520,10 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 
 | Token | Obsidian | Azeroth | Glass | High Contrast | Ember | WoW Default | WoW Midnight | WoW Forever |
 |---|---|---|---|---|---|---|---|---|
-| `font.body` | `Ka0s Expressway` | `Ka0s Open Sans Semibold` | `Ka0s Avant Garde` | `Ka0s Doris PP` | `Ka0s Emblem` | `Ka0s Friz Quadrata TT` | `Ka0s Segoe UI Semibold` | `Ka0s Fira Sans Medium` |
-| `font.title` | `Ka0s Expressway` | `Ka0s Open Sans Bold` | `Ka0s Avant Garde` | `Ka0s Doris PP` | `Ka0s Emblem` | `Ka0s Friz Quadrata TT` | `Ka0s Segoe UI Bold` | `Ka0s Fira Sans SemiBold` |
-| `font.bodySize` | `12` | `11` | `11` | `10.5` | `11` | `11` | `11.5` | `12` |
-| `font.titleSize` | `14.5` | `12` | `13` | `12.5` | `12.5` | `13` | `13` | `13.5` |
+| `font.body` | `Ka0s Expressway` | `Ka0s Open Sans Semibold` | `Ka0s Avant Garde` | `Ka0s Doris PP` | `Ka0s Emblem` | `Ka0s Ubuntu` | `Ka0s Segoe UI Semibold` | `Ka0s Fira Sans Medium` |
+| `font.title` | `Ka0s Expressway` | `Ka0s Open Sans Bold` | `Ka0s Avant Garde` | `Ka0s Doris PP` | `Ka0s Emblem` | `Ka0s Ubuntu` | `Ka0s Segoe UI Bold` | `Ka0s Fira Sans SemiBold` |
+| `font.bodySize` | `12` | `11` | `11` | `10.5` | `11` | `12` | `11.5` | `12` |
+| `font.titleSize` | `14.5` | `12` | `13` | `12.5` | `12.5` | `13.5` | `13` | `13.5` |
 
 #### Window
 
@@ -1735,8 +1736,8 @@ the charts apart from Azeroth's). Generated from the live tables, so this list i
 |---|---|---|---|---|---|---|---|---|
 | `bar.texture` | `Ka0s Matte` | `Ka0s Parchment` | `Ka0s Glass Bar` | `Ka0s Solid` | `Ka0s Forge` | `Blizzard` | `Ka0s Satin` | `Ka0s Classic` |
 | `bar.gloss` | none | · | `true` | none | · | · | · | none |
-| `hud.font` | `Ka0s Expressway` | `Ka0s Open Sans Semibold` | `Ka0s Avant Garde` | `Ka0s Doris PP` | `Ka0s Emblem` | `Ka0s Friz Quadrata TT` | `Ka0s Segoe UI Semibold` | `Ka0s Fira Sans SemiBold` |
-| `hud.fontSize` | `13` | `11` | `11` | `10.5` | `11` | `11` | `11.5` | `11.5` |
+| `hud.font` | `Ka0s Expressway` | `Ka0s Open Sans Semibold` | `Ka0s Avant Garde` | `Ka0s Doris PP` | `Ka0s Emblem` | `Ka0s Ubuntu` | `Ka0s Segoe UI Semibold` | `Ka0s Fira Sans SemiBold` |
+| `hud.fontSize` | `13` | `11` | `11` | `10.5` | `11` | `11.5` | `11.5` | `11.5` |
 | `hud.shadow` | `#000000` | `#1A110A` | `#000000 .6` | `#000000` | `#140A07` | `#000000` | `#08091A` | `#0A0908` |
 | `bar.bg` | `#141416 .8` | `#1A110A .8` | `#FFFFFF .08` | `#1A1A1A .85` | `#140A07 .8` | `#1E1C19 .7` | `#08091A .8` | `#0A0908 .8` |
 | `bar.border` | `#2A2A30` | `#6B4A22` | `#FFFFFF .22` | `#FFFFFF` | `#8A3C1C` | `#6E6E6E` | `#B08A3E` | `#48433D` |

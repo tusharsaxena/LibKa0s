@@ -38,6 +38,9 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- Midnight 9% white, WoW Forever 10%, Azeroth its parchment at 11%. High Contrast's #222222 stands.
 -- `list.hover` (TEXT_WASH) rises from the body text at .10 to .15, so a hovered row still stands off
 -- a striped one, as it did; High Contrast keeps its own yellow.
+-- Then (R3-L6, still minor 8): WoW Default draws Ka0s Ubuntu (Media minor 12) for body, titles and HUD
+-- at its parity row, 12 / 13.5 / 11.5, where it drew Ka0s Friz Quadrata TT at 11 / 13 / 11: Friz ran
+-- Loot History's Date 0.3% wide and could not shrink and stay readable (images 98, 99).
 -- Then (R3-L4 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3, still minor 8, not yet shipped):
 -- Obsidian's body, and Expressway's body row in `__FACE_SIZES`, is 12, one step under the parity
 -- size 12.5, so Loot History's Date column draws "02-Nov-2026" whole, as Ka0s Default does.
@@ -200,11 +203,11 @@ end
 
 -- What every other skin inherited from Ka0s Default before minor 14 gave it Oxanium and the Ka0s
 -- Default bar: Friz Quadrata and the client's Blizzard bar. A skin that sets its own keeps that; WoW
--- Default is the one skin that sets no face and no bar, so these are its. The face is the shipped
--- Friz since minor 18, since a client's own file need not be Friz at all (D-01). The HUD face left
--- KEEP in minor 16: every skin names its own (HUD_FACE below).
-local FRIZ = "Ka0s Friz Quadrata TT"
-local KEEP = { ["font.body"] = FRIZ, ["font.title"] = FRIZ, ["bar.texture"] = "Blizzard",
+-- Default is the one skin that sets no face and no bar, so these are its. The face was the shipped
+-- Friz from minor 18, since a client's own file need not be Friz at all (D-01), and is Ubuntu since
+-- R3-L6. The HUD face left KEEP in minor 16: every skin names its own (HUD_FACE below).
+local UBUNTU = "Ka0s Ubuntu"
+local KEEP = { ["font.body"] = UBUNTU, ["font.title"] = UBUNTU, ["bar.texture"] = "Blizzard",
   -- Minor 2, cause L1: Ka0s Default's gold lines and pure green and red are its own, so a skin with
   -- no `gtip.body` of its own to FOLLOW, and every skin's status words, take the value it inherits.
   ["gtip.line"] = KA0S["gtip.body"], ["gtip.on"] = KA0S["sem.on"], ["gtip.off"] = KA0S["sem.off"] }
@@ -246,7 +249,7 @@ local ICON_EDGE = {
 -- is its token above (Prototype, minor 17).
 local HUD_FACE = {
   obsidian = "Ka0s Expressway", azeroth = "Ka0s Open Sans Semibold", glass = "Ka0s Avant Garde",
-  contrast = "Ka0s Doris PP", ember = "Ka0s Emblem", wow = FRIZ,
+  contrast = "Ka0s Doris PP", ember = "Ka0s Emblem", wow = UBUNTU,
   midnight = "Ka0s Segoe UI Semibold", forever = "Ka0s Fira Sans SemiBold",
 }
 
@@ -254,7 +257,7 @@ local HUD_FACE = {
 -- Default's width at 12, measured as the body and title sizes are (tests/test_skin_width_parity.lua).
 -- A reference, not a size: S.HudFontSize draws a stored 24 at 24 * HUD_SIZE / 12.
 local HUD_SIZE = {
-  obsidian = 13, azeroth = 11, glass = 11, contrast = 10.5, ember = 11, wow = 11, midnight = 11.5, forever = 11.5,
+  obsidian = 13, azeroth = 11, glass = 11, contrast = 10.5, ember = 11, wow = 11.5, midnight = 11.5, forever = 11.5,
 }
 
 -- Each skin's HUD text shadow (minor 6, cause D6): the darkest color of its own palette, so the shadow
@@ -350,6 +353,7 @@ lib.__FACE_SIZES = {
   ["Ka0s Segoe UI Bold"]       = { 11, 13, 11 },
   ["Ka0s Segoe UI Light"]      = { 12.5, 14.5, 12.5 },
   ["Ka0s Segoe UI Semibold"]   = { 11.5, 13.5, 11.5 },
+  ["Ka0s Ubuntu"]              = { 12, 13.5, 11.5 },
   ["Ka0s Vollkorn"]            = { 12, 14, 12 },
   ["Ka0s Vollkorn Bold"]       = { 11.5, 12.5, 11 },
 }
@@ -624,12 +628,13 @@ register("ember", "Ember", "Charred browns lit by an orange accent, Emblem type.
 -- states (the InActiveTab art is drawn shorter, so idle tabs stood lower than the selected one; the
 -- owner's note, round 3), the selected tab told by its white label; the scroll thumb is UI-ScrollBar-Knob; the checkbox is UI-CheckBox-Up and -Check.
 -- An art token draws that art at its own colors; the color token beside it is the fallback when
--- the art does not load. Friz Quadrata (the shipped face since minor 18, D-01) and the client's
--- Blizzard bar, through KEEP: no font token and no bar texture.
+-- the art does not load. Ubuntu (R3-L6; the shipped Friz Quadrata from minor 18, D-01, until then)
+-- and the client's Blizzard bar, through KEEP: no font token and no bar texture. Sizes are Ubuntu's
+-- row, which draws Loot History's Date whole.
 local WOW_RED = grad(hex("#b3200f"), hex("#640c05"))
 register("wow", "WoW Default", "The vanilla client: dialog-box border, red buttons, gold text.",
   { "#1e1c19", "#a8a8a8", "#640c05", "#ffd100" }, {
-    fs = 11, titleSize = 13,
+    fs = 12, titleSize = 13.5,
     win = hex("#1e1c19"), winBorder = edge(32, "nine:Blizzard Dialog", hex("#FFFFFF")),
     winInner = false, radius = 0,
     titleBg = grad(hex("#4b4b4b"), hex("#252525")), titleColor = hex("#FFD100"),

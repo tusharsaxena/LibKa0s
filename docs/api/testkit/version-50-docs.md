@@ -63,6 +63,12 @@ A host declares its painted surfaces, and each one must change on a skin switch.
 
 **What a consumer owes:** nothing, unless a suite gives a string `SetFont` and then reads the face a font object should have put on it. That suite now reads the string's own face, which is what the client draws, and the host code under it is the bug: create the string from a font-object template, or route its face through `S.HudFont`, which now holds its face on any string (Skin document, *What changed*).
 
+### `glyphs.lua`: the safe set lists Ubuntu Regular (`R3-L6`)
+
+The generated block's `FACES` gains `Ubuntu-Regular.ttf`, WoW Default's face from LibKa0s's `R3-L6`. `RANGES` does not move: Ubuntu draws every character the set already held.
+
+**What a consumer owes:** nothing.
+
 ## What a consumer owes
 
 **Re-vendoring turns the inventory red until both suites are declared by the pair**, as with every kit suite. A declared suite with no facts is one declared skip, so that commit stays green. The rest is adoption.

@@ -17,8 +17,8 @@
 -- red under: a size changed so a skin runs more than 2% wider than Ka0s Default (wide truncates
 -- first) or more than 5% narrower; a skin given a face this table has no measurement for (re-run the
 -- script and add its row); a skin's size that is not its face's row in the library's table; a shipped
--- face with no row there; High Contrast's description promising larger type again; the shipped Friz
--- turning into Prototype's bytes, the font replacement that left WoW Default unmeasured (LibKa0s#69);
+-- face with no row there; High Contrast's description promising larger type again; WoW Default's
+-- Ubuntu turning into another file than the static Regular it was measured on (R3-L6);
 -- a skin whose body draws Loot History's Date, "02-Nov-2026", wider than Ka0s Default does (R3-L4 of
 -- Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3, images 95, 96 and 98: the column fits Prototype
 -- at 12 and nothing wider, so Obsidian's 12.5 and WoW Default's Friz at 11 drew "02-Nov-20...").
@@ -64,6 +64,8 @@ local WIDTH = {
   ["Ka0s Segoe UI Bold"]       = { body = 0.5015, title = 0.5065, hud = 0.5289 },
   ["Ka0s Segoe UI Light"]      = { body = 0.4537, title = 0.4579, hud = 0.4754 },
   ["Ka0s Segoe UI Semibold"]   = { body = 0.4815, title = 0.4872, hud = 0.5047 },
+  -- R3-L6: the official static Ubuntu-Regular.ttf, measured 2026-11-02 by the same script.
+  ["Ka0s Ubuntu"]              = { body = 0.4827, title = 0.4889, hud = 0.5097 },
   ["Ka0s Vollkorn"]            = { body = 0.4671, title = 0.4804, hud = 0.4923 },
   ["Ka0s Vollkorn Bold"]       = { body = 0.4989, title = 0.5165, hud = 0.5238 },
 }
@@ -71,7 +73,7 @@ local WIDTH = {
 -- The sizes the measurement picked (its section 8): { font.bodySize, font.titleSize, hud.fontSize }.
 local SIZES = {
   ka0s = { 12, 14, 12 }, obsidian = { 12, 14.5, 13 }, azeroth = { 11, 12, 11 }, glass = { 11, 13, 11 },
-  contrast = { 10.5, 12.5, 10.5 }, ember = { 11, 12.5, 11 }, wow = { 11, 13, 11 }, midnight = { 11.5, 13, 11.5 },
+  contrast = { 10.5, 12.5, 10.5 }, ember = { 11, 12.5, 11 }, wow = { 12, 13.5, 11.5 }, midnight = { 11.5, 13, 11.5 },
   forever = { 12, 13.5, 11.5 },
 }
 local KEYS = { "ka0s", "obsidian", "azeroth", "glass", "contrast", "ember", "wow", "midnight", "forever" }
@@ -99,6 +101,7 @@ local DATE = {
   ["Ka0s Friz Quadrata TT"]   = 6.5700,
   ["Ka0s Segoe UI Semibold"]  = 6.0093,
   ["Ka0s Fira Sans Medium"]   = 5.6950,
+  ["Ka0s Ubuntu"]             = 5.7880,
 }
 local DATE_LIMIT = 12 * DATE["Ka0s Prototype"]
 local STEP = 0.5
@@ -166,7 +169,7 @@ test("skin width parity: every shipped face has a size for each role, as wide as
     end
     count = count + 1
   end
-  assertEqual(count, 33, "the shipped faces")
+  assertEqual(count, 34, "the shipped faces")
   for key in pairs(Skin.__FACE_SIZES) do
     assertTrue(Media.FONTS[key] ~= nil, key .. "'s row names a shipped face")
   end
@@ -192,8 +195,7 @@ test("skin width parity: Loot History's Date, 02-Nov-2026, fits every skin's bod
     local t = Skin:ResolveSkin(key)
     local d = DATE[t["font.body"]]
     assertTrue(d ~= nil, key .. ": " .. tostring(t["font.body"]) .. " has a measured " .. DATE_TEXT)
-    -- WoW Default's Friz draws it 0.3% wide at 11 (image 98) and cannot shrink: R3-L6 replaces the face.
-    if key ~= "wow" and d then
+    if d then
       local e = t["font.bodySize"] * d / DATE_LIMIT - 1
       assertTrue(e <= 0, ("%s: %s at %g is %+.1f%% against Ka0s Default"):format(key, DATE_TEXT,
         t["font.bodySize"], e * 100))
@@ -203,25 +205,42 @@ test("skin width parity: Loot History's Date, 02-Nov-2026, fits every skin's bod
   assertEqual(o["font.bodySize"], 12, "Obsidian's body, one step under Expressway's parity 12.5")
   assertEqual(o["font.titleSize"], 14.5, "its titles keep their size")
   assertEqual(o["hud.fontSize"], 13, "and its HUD")
+  -- R3-L6, image 98: Friz drew it 0.3% wide at 11 and could not shrink and stay readable. Ubuntu at its
+  -- parity size 12 draws it 3.6% narrower than Ka0s Default, so it takes no step down.
+  local w = Skin:ResolveSkin("wow")
+  assertEqual(w["font.body"], "Ka0s Ubuntu", "WoW Default draws Ubuntu")
+  assertEqual(w["font.bodySize"], 12, "at its parity size")
 end)
 
-test("skin width parity: WoW Default's Friz is real Friz, not Prototype's bytes", function()
-  -- LibKa0s#69. The measurement above says nothing about WoW Default if these bytes are Prototype's,
-  -- as the owner's client file is. Its md5 is on record in media/fonts/FONTS.md.
-  -- red under: a Friz re-copied from a client with the font replacement.
-  local function bytes(name)
-    local fh = assert(io.open("LibKa0s/media/fonts/" .. name, "rb"))
-    local data = fh:read("*a")
-    fh:close()
-    return data
+--- The four-byte tags of a TrueType file's table directory.
+local function tableTags(data)
+  local n = data:byte(5) * 256 + data:byte(6)
+  local tags = {}
+  for i = 0, n - 1 do
+    local at = 13 + i * 16
+    tags[data:sub(at, at + 3)] = true
   end
-  local friz = bytes("FrizQuadrataTT-Regular.ttf")
-  assertTrue(friz ~= bytes("Prototype-Regular.ttf"), "the shipped Friz is not Prototype's bytes")
-  assertTrue(friz:find("Friz Quadrata TT", 1, true) ~= nil, "its name table names Friz Quadrata TT")
+  return tags
+end
+
+test("skin width parity: WoW Default draws the official static Ubuntu Regular in every role", function()
+  -- R3-L6 (images 98, 99). The measurement above holds only for the bytes it was taken on: google/fonts
+  -- ufl/ubuntu's static Ubuntu-Regular.ttf 0.83, never a variable font (whose default instance the
+  -- client would draw whatever weight was asked) and never EllesmereUI's copy, which is not ours to
+  -- ship. red under: a variable or another-weight file under the name, or WoW Default on another face.
+  local fh = assert(io.open("LibKa0s/media/fonts/Ubuntu-Regular.ttf", "rb"))
+  local data = fh:read("*a")
+  fh:close()
+  local tags = tableTags(data)
+  assertTrue(tags.glyf and tags.hmtx and tags.name, "a TrueType face")
+  assertTrue(not tags.fvar and not tags.gvar, "static: no variation tables")
+  assertTrue(data:find("Ubuntu Regular", 1, true) ~= nil, "its name table names Ubuntu Regular")
+  assertTrue(data:find("0.83;DAMA;Ubuntu-Regular", 1, true) ~= nil, "the 0.83 release")
+  assertEqual(#data, 351884, "google/fonts' bytes")
   local Skin = skinLib()
   local t = Skin:ResolveSkin("wow")
   for _, role in ipairs(ROLES) do
-    assertEqual(t[role[1]], "Ka0s Friz Quadrata TT", "WoW Default draws it: " .. role[1])
+    assertEqual(t[role[1]], "Ka0s Ubuntu", "WoW Default draws it: " .. role[1])
   end
 end)
 

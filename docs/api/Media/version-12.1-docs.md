@@ -17,6 +17,13 @@
 
 ## What changed at this version
 
+**`FONTS` gains `Ka0s Ubuntu`** (`R3-L6` of Ka0sAddonsCommonTasks `docs/2026-11-02-SMOKE_ROUND3/`, the owner's ruling of 2026-11-02): `{ file = "Ubuntu-Regular.ttf", license = "Ubuntu-UFL.txt", langmask = { "western", "ruRU" } }`, WoW Default's face for body, titles and HUD text, where Friz Quadrata could not shrink to fit Loot History's Date column and stay readable. Additive; no signature moves.
+
+- The file is google/fonts' static `ufl/ubuntu/Ubuntu-Regular.ttf`, version 0.83, unchanged, at commit `bed55e0de5cfa8f5fb94f9a1f49409b5ec504469` (SHA-256 `3128df86...`, pinned in `tools/artwork/fonts.py`). It is the same Regular as the copy EllesmereUI ships, which is not the source.
+- It is under the Ubuntu font license 1.0 (UFL), which allows redistribution: upstream's `UFL.txt` ships beside it as `Ubuntu-UFL.txt`, and `media/fonts/FONTS.md` records it.
+- Its cmap has the Russian alphabet (and Greek), so it reaches ruRU. Not Hangul or Han.
+- **What a consumer owes:** nothing in code. A new font file needs a **full client restart** to load; a `/reload` does not see it.
+
 **`RegisterLSM` offers the LibSharedMedia `border` key `Solid`, `Interface\Buttons\WHITE8X8`.** Additive, and no signature moves. The full-skinning review of Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/` found what this document used to claim was false: LSM ships `Solid` as a `background` and a `statusbar`, and has no such `border`. Azeroth, High Contrast and WoW Midnight state `bar.borderStyle` `Solid`, and a host that fetches that key itself (AbsorbTracker, PartyFrameEnhanced, DpsRace) got LSM's default `None`, or its own fallback, unless another enabled addon happened to register the key.
 
 - It is offered like every other key: only when LSM does not hold it, so an addon that got there first keeps it. The four that register it offer this same path.

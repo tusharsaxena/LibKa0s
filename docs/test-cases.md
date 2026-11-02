@@ -742,8 +742,8 @@ Total.
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
 - skin defs: every font, bar texture and border a skin names is shipped or an LSM default
 - skin defs: every skin draws one family of its own, for body and titles alike
-- skin defs: every skin names a HUD face of its own, its text's family; only WoW Default draws Friz
-- skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin naming neither keeps Friz and Blizzard
+- skin defs: every skin names a HUD face of its own, its text's family; no skin draws Friz
+- skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin naming neither keeps Ubuntu and Blizzard
 - skin defs: every skin draws its own bar texture, and WoW Default the client's
 - skin defs: every skin sets both sizes, within two points of Ka0s Default's
 - skin defs: a hovered row is told apart from a selected one
@@ -858,7 +858,7 @@ Total.
 - skin width parity: every shipped face has a size for each role, as wide as Ka0s Default's
 - skin width parity: a skin's sizes are its faces' rows in the library's table
 - skin width parity: Loot History's Date, 02-Nov-2026, fits every skin's body as it fits Ka0s Default's
-- skin width parity: WoW Default's Friz is real Friz, not Prototype's bytes
+- skin width parity: WoW Default draws the official static Ubuntu Regular in every role
 - skin width parity: High Contrast no longer promises larger type
 - skin hud size: HudFontSize is in the vocabulary and the facade
 - skin hud size: a stored size scales by the skin's HUD size over Ka0s Default's

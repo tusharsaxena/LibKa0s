@@ -113,6 +113,7 @@ local FACES = {
   { file = "SegoeUI-Regular.ttf", bytes = 955804 },
   { file = "SegoeUI-Semibold.ttf", bytes = 971080 },
   { file = "SegoeUI-Semilight.ttf", bytes = 854140 },
+  { file = "Ubuntu-Regular.ttf", bytes = 351884 },
   { file = "Vollkorn-Bold.ttf", bytes = 365096 },
   { file = "Vollkorn-Regular.ttf", bytes = 363616 },
 }

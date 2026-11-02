@@ -414,7 +414,7 @@ test("skin defs: WoW Forever is warm charcoal, black centered titles, tan accent
 
 -- LibSharedMedia's own default border keys a skin may name besides the shipped ones.
 local LSM_BORDERS = { ["Blizzard Dialog"] = true, ["Blizzard Tooltip"] = true }
--- ...and its default font keys: none since SkinDefs minor 18, when WoW Default took the shipped Friz.
+-- ...and its default font keys: none since SkinDefs minor 18, when WoW Default took a shipped face.
 local LSM_FONTS = {}
 -- ...and its default statusbar key: the client's Blizzard bar, WoW Default's through KEEP.
 local LSM_BARS = { ["Blizzard"] = true }
@@ -460,6 +460,9 @@ test("skin defs: every font, bar texture and border a skin names is shipped or a
 end)
 
 local FRIZ = "Ka0s Friz Quadrata TT"
+-- WoW Default's face since R3-L6 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3 (images 98, 99):
+-- Friz Quadrata could not shrink to fit Loot History's Date column and stay readable.
+local UBUNTU = "Ka0s Ubuntu"
 
 --- A face's family: its LSM key without the weight.
 local function family(face)
@@ -479,7 +482,7 @@ test("skin defs: every skin draws one family of its own, for body and titles ali
     obsidian = { "Ka0s Expressway", "Ka0s Expressway" }, glass = { "Ka0s Avant Garde", "Ka0s Avant Garde" },
     azeroth = { "Ka0s Open Sans Semibold", "Ka0s Open Sans Bold" }, contrast = { "Ka0s Doris PP", "Ka0s Doris PP" },
     ember = { "Ka0s Emblem", "Ka0s Emblem" }, midnight = { "Ka0s Segoe UI Semibold", "Ka0s Segoe UI Bold" },
-    forever = { "Ka0s Fira Sans Medium", "Ka0s Fira Sans SemiBold" }, wow = { FRIZ, FRIZ },
+    forever = { "Ka0s Fira Sans Medium", "Ka0s Fira Sans SemiBold" }, wow = { UBUNTU, UBUNTU },
     ka0s = { "Ka0s Prototype", "Ka0s Prototype" },
   }
   local owner = {}
@@ -513,13 +516,14 @@ end)
 local HUD_FACE = {
   ka0s = "Ka0s Prototype", obsidian = "Ka0s Expressway", azeroth = "Ka0s Open Sans Semibold",
   glass = "Ka0s Avant Garde", contrast = "Ka0s Doris PP", ember = "Ka0s Emblem",
-  wow = FRIZ, midnight = "Ka0s Segoe UI Semibold", forever = "Ka0s Fira Sans SemiBold",
+  wow = UBUNTU, midnight = "Ka0s Segoe UI Semibold", forever = "Ka0s Fira Sans SemiBold",
 }
 
-test("skin defs: every skin names a HUD face of its own, its text's family; only WoW Default draws Friz", function()
+test("skin defs: every skin names a HUD face of its own, its text's family; no skin draws Friz", function()
   -- SkinDefs minor 16 (R-4, D-11). red under: `hud.font` back in KEEP or a skin's entry dropped (that
-  -- skin's HUD text falls back to Friz Quadrata), a HUD face of another family than the skin's text,
-  -- or WoW Default's Friz left to a fallback instead of named in its own tokens.
+  -- skin's HUD text falls back to KEEP's face), a HUD face of another family than the skin's text,
+  -- or WoW Default's face left to a fallback instead of named in its own tokens. R3-L6: WoW Default's
+  -- HUD draws Ubuntu, so no skin draws Friz anywhere.
   local Skin = skinLib()
   for _, key in ipairs(KEYS) do
     local t = Skin:ResolveSkin(key)
@@ -528,11 +532,13 @@ test("skin defs: every skin names a HUD face of its own, its text's family; only
     assertEqual(family(t["hud.font"]), family(t["font.body"]), key .. ": its HUD face is its text's family")
     assertEqual(t["hud.outline"], "OUTLINE", key .. " outlines HUD text")
     assertEqual(t["hud.fontSize"], Skin.skins[key].tokens["hud.fontSize"], key .. " names its HUD size itself")
-    if key ~= "wow" then assertTrue(t["hud.font"] ~= FRIZ, key .. " does not draw Friz on the HUD") end
+    for _, role in ipairs({ "font.body", "font.title", "hud.font" }) do
+      assertTrue(t[role] ~= FRIZ, key .. " does not draw Friz: " .. role)
+    end
   end
 end)
 
-test("skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin naming neither keeps Friz and Blizzard", function()
+test("skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin naming neither keeps Ubuntu and Blizzard", function()
   -- SkinDefs minor 14 (Oxanium then; Prototype since minor 17). Every skin inherits Ka0s Default's
   -- tokens, so without KEEP that choice would have moved every skin's faces and bar texture with it.
   -- red under: a skin naming no body face or bar texture of its own that reads Prototype or the Ka0s
@@ -551,8 +557,8 @@ test("skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin n
     end
   end
   local wow = Skin:ResolveSkin("wow")
-  assertEqual(wow["font.body"], FRIZ, "WoW Default's body, through KEEP (shipped since minor 18)")
-  assertEqual(wow["font.title"], FRIZ, "WoW Default's titles, through KEEP")
+  assertEqual(wow["font.body"], UBUNTU, "WoW Default's body, through KEEP (Friz until R3-L6)")
+  assertEqual(wow["font.title"], UBUNTU, "WoW Default's titles, through KEEP")
 end)
 
 test("skin defs: every skin draws its own bar texture, and WoW Default the client's", function()

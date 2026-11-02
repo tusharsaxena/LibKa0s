@@ -21,7 +21,8 @@ local FONT_DIR = "LibKa0s/media/fonts"
 -- Cyrillic. Minor 11 adds thirteen (LK-F01): Segoe UI's four, Open Sans's five and Avant Garde draw
 -- Cyrillic, Friz Quadrata, Emblem and Doris PP do not. And the five minor 10 retired come back, since
 -- v1.81.0 shipped them and every older face stays: Inter's two and Fira Sans Regular draw Cyrillic.
-local FONT_COUNT, RU_COUNT = 33, 25
+-- R3-L6 adds Ubuntu Regular, WoW Default's face, under the Ubuntu font license (UFL 1.0); it draws Cyrillic.
+local FONT_COUNT, RU_COUNT = 34, 26
 
 --- The basenames on disk under `dir`, as a set. Lua 5.1 has no directory API and this repo does not
 --- depend on LuaFileSystem, so the listing shells out — the same bargain tests/_kit/vendor_sync.lua
@@ -580,8 +581,16 @@ local INSTANCED = { "Nunito-OFL.txt", "Vollkorn-OFL.txt", "Bitter-OFL.txt", "Oxa
 -- own name table says it is "freely distributed with Prototype.txt", so that text ships unchanged;
 -- and Expressway, on the owner's ruling of 2026-10-30 ("Ship it anyways"), which overrides the
 -- archive's EULA: the EULA and its quick guide ship beside it as the record of the terms it overrode.
--- `also` names a further terms file and its phrases; `ru` a face whose cmap has Cyrillic.
+-- `also` names a further terms file and its phrases; `ru` a face whose cmap has Cyrillic. R3-L6:
+-- Ubuntu Regular under the Ubuntu font license, UFL 1.0, which allows redistribution and ships
+-- verbatim. Its title is matched by a fragment: the license spells it the British way.
 local NON_OFL = {
+  ["Ubuntu-UFL.txt"] = {
+    face = "Ka0s Ubuntu", file = "Ubuntu-Regular.ttf", ru = true,
+    phrases = { "UBUNTU FONT LIC", "Version 1.0",
+                "Each copy of the Font Software must contain the above copyright" },
+    notice = "Copyright 2011 Canonical Ltd.",
+  },
   ["Prototype.txt"] = {
     face = "Ka0s Prototype", file = "Prototype-Regular.ttf",
     phrases = { "free for personal use", "Please include this Prototype.txt file with any redistribution." },
@@ -796,6 +805,7 @@ test("media: a ruRU client keeps every Cyrillic face and is refused the western-
   assertTrue(store.font["Ka0s Expressway"] ~= nil, "Expressway, whose cmap has Cyrillic, was refused on ruRU")
   assertTrue(store.font["Ka0s Friz Quadrata TT"] == nil, "Friz Quadrata, western only, landed on ruRU")
   assertTrue(store.font["Ka0s Segoe UI Semibold"] ~= nil, "Segoe UI, whose cmap has Cyrillic, was refused on ruRU")
+  assertTrue(store.font["Ka0s Ubuntu"] ~= nil, "Ubuntu, whose cmap has Cyrillic, was refused on ruRU")
 end)
 
 test("media: RegisterLSM offers the flat Solid border LSM does not ship, unless it is held", function()

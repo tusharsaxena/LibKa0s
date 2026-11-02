@@ -26,6 +26,18 @@ WHAT SHIPS, AND FROM WHERE. From google/fonts' ofl/ folder, SIL Open Font Licens
     and one license file per family beside them, `<Family>-OFL.txt`: upstream's OFL.txt verbatim,
     an instanced family's with a provenance note above it.
 
+From google/fonts' ufl/ folder, the Ubuntu font license 1.0 (UFL), which allows redistribution
+(R3-L6 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3, the owner's ruling of 2026-11-02):
+
+    Ubuntu-Regular.ttf                                 ubuntu, the static Regular (0.83), unchanged
+    Ubuntu-UFL.txt                                     upstream's UFL.txt, with CRLF line endings
+
+    WoW Default's face for body, titles and HUD, where Friz Quadrata could not shrink to fit Loot
+    History's Date column and stay readable. The owner's client draws EllesmereUI's
+    media/fonts/Ubuntu.ttf, the same 0.83 Regular (same advances, without the legacy kern, DSIG and
+    LTSH tables); that copy is never the source. Unchanged, so the UFL's naming condition binds
+    nothing: "Ka0s Ubuntu" is the LibSharedMedia key, not a font name.
+
 From an archive the author distributes (ARCHIVES below), under the terms the archive carries:
 
     Prototype-Regular.ttf, Prototype.txt               dafont.com/prototype.font, both unchanged
@@ -133,14 +145,16 @@ ROOT = os.path.abspath(os.path.join(HERE, os.pardir, os.pardir))
 OUT = os.path.join(ROOT, "LibKa0s", "media", "fonts")
 CACHE = os.path.join(HERE, ".cache", "fonts")
 
-RAW = "https://raw.githubusercontent.com/google/fonts/%s/ofl/%s/%s"
+RAW = "https://raw.githubusercontent.com/google/fonts/%s/%s/%s/%s"
 
 # PINNED, BY COMMIT: the last google/fonts commit to touch each family's folder on the day it was
 # added (Atkinson on 2026-10-25, the rest on 2026-10-28). A moving branch is not a provenance record;
 # the next --fetch would quietly ship different bytes.
 #
 # `ship` copies a static file unchanged. `instances` cuts a static face from a variable one: the
-# source file, the output file, the axis values, and the style name it is given.
+# source file, the output file, the axis values, and the style name it is given. `tree` is the
+# google/fonts license folder (default `ofl`) and `licenseSrc` upstream's license file in it
+# (default `OFL.txt`), which ships as `license`.
 FAMILIES = [
     {
         "dir": "inter", "family": "Inter",
@@ -252,6 +266,20 @@ FAMILIES = [
         },
         "license": "AtkinsonHyperlegible-OFL.txt",
         "ship": ["AtkinsonHyperlegible-Regular.ttf", "AtkinsonHyperlegible-Bold.ttf"],
+        "instances": [],
+    },
+    {
+        # WoW Default's face (R3-L6, 2026-11-02): the last google/fonts commit to touch ufl/ubuntu
+        # (2026-10-15). The static Regular, never the variable files google/fonts also serves.
+        "dir": "ubuntu", "family": "Ubuntu", "tree": "ufl",
+        "sha": "bed55e0de5cfa8f5fb94f9a1f49409b5ec504469",
+        "files": {
+            "Ubuntu-Regular.ttf": "3128df86a31805618436d0ae5651ba4285d0c9de0a39057d025f64ee33bceb64",
+            "UFL.txt": "2f0015108d68627bd788d313f529c21ff4da2c2c42a5e1f3883acc83480f9002",
+        },
+        "license": "Ubuntu-UFL.txt",
+        "licenseSrc": "UFL.txt",
+        "ship": ["Ubuntu-Regular.ttf"],
         "instances": [],
     },
 ]
@@ -468,7 +496,8 @@ def fetch():
             if os.path.isfile(dest) and _sha256(dest) == want:
                 _say("  cached  %s/%s" % (family["dir"], name))
                 continue
-            url = RAW % (family["sha"], family["dir"], name.replace("[", "%5B").replace("]", "%5D"))
+            url = RAW % (family["sha"], family.get("tree", "ofl"), family["dir"],
+                         name.replace("[", "%5B").replace("]", "%5D"))
             with urllib.request.urlopen(url, timeout=60) as resp, open(dest, "wb") as out:
                 shutil.copyfileobj(resp, out)
             got = _sha256(dest)
@@ -589,7 +618,7 @@ def build():
         for name in family["ship"]:
             shutil.copyfile(_cached(family, name), os.path.join(OUT, name))
             _say("  copied  %s" % name)
-        with open(_cached(family, "OFL.txt"), "r", encoding="utf-8") as fh:
+        with open(_cached(family, family.get("licenseSrc", "OFL.txt")), "r", encoding="utf-8") as fh:
             text = fh.read()
         for src, out, axes, style in family["instances"]:
             instance(_cached(family, src), os.path.join(OUT, out), axes, family["family"], style)

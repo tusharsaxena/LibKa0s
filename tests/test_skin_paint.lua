@@ -748,7 +748,7 @@ test("skin paint: the getters answer the owner's skin", function()
   local wow = F.owner(Skin, "Classic", "wow").BarStyle()
   assertEqual(wow.textureKey, "Blizzard", "WoW Default keeps the client's bar")
   assertEqual(wow.texture, "Interface\\TargetingFrame\\UI-StatusBar")
-  assertEqual(wow.fontKey, "Ka0s Friz Quadrata TT", "and the shipped Friz (SkinDefs minor 18)")
+  assertEqual(wow.fontKey, "Ka0s Ubuntu", "and the shipped Ubuntu (R3-L6; Friz from SkinDefs minor 18)")
   assertEqual(F.owner(Skin, "Modern", "obsidian").BarStyle().fontKey, "Ka0s Expressway",
     "Obsidian's own HUD face (SkinDefs minor 16)")
   assertNil(Skin.painted[S], "a getter records nothing")
