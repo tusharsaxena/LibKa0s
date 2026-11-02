@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.26.8.17.16.16.4.9**, `LibKa0s-Launcher-1.0` **6**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**, `LibKa0s-Media-1.0` key **12.1**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.26.8.17.16.16.4.9**, `LibKa0s-Launcher-1.0` **7**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**, `LibKa0s-Media-1.0` key **12.1**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
 
 ### The owner's smoke feedback (`SF-L1` to `SF-L5`)
 
@@ -29,6 +29,10 @@ Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `
 - **Widgets minor 21** (`SF-F1`): a right-click on `W.TestStrip` opens `W.ContextMenu` at the pointer. `opts.sim` (a Sim instance) gives **End sim**, **Step** and **Restart** with no host code; `opts.onEnd` is the host's end for a test mode, and `opts.L` the labels. A strip with neither takes no mouse, as before. Hosts owe one line each: a sim strip passes its Sim instance as `sim`, a test strip passes `onEnd`.
 - **Launcher minor 6** (`SF-F2`): the right-click menu ends with **Open skin selector** where the descriptor passes `openSkinPicker` and its owner is a registered skin owner. Hosts owe one line: `openSkinPicker = NS.RunSkinVerb` (or the act of their `/<slash> skin` verb). The entry is grayed with the note "(enable the addon first)" while the addon is disabled, as every entry past Enabled is.
 - **What a consumer owes**: a host that colors its own sort marks reads `list.header.arrow`, and a host token table gains the row. BankLedger and LootHistory both do.
+
+### The owner's second smoke round (`SG-L1`)
+
+- **Launcher minor 7** (`SG-L1`): the right-click menu gains **Sim mode** (descriptor `isSimMode` and `toggleSim`) and **Open settings** (every addon, never grayed), and one row rule: a toggle is a checkbox with a live tick, an action a plain button, a gated row of either kind grays with the note in its label. Hosts with a sim owe the two fields.
 
 ### The review of the rulings and the gate (`FS-FIX`)
 

@@ -337,7 +337,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [6](./Launcher/version-6-docs.md) | **`Launcher.lua` 6** (the status tooltip follows the host's skin; optional descriptor field `owner`) | v1.85.0 | **Current** |
+| [7](./Launcher/version-7-docs.md) | **`Launcher.lua` 7** (menu: Sim mode, Open settings, one row rule) | v1.85.0 | **Current** |
+| [6](./Launcher/version-6-docs.md) | `Launcher.lua` 6 (the status tooltip follows the host's skin; optional descriptor field `owner`) | v1.85.0 | Superseded |
 | [5](./Launcher/version-5-docs.md) | `Launcher.lua` 5 | v1.65.0 – v1.84.0 | Superseded |
 | [4](./Launcher/version-4-docs.md) | `Launcher.lua` 4 | v1.58.0 – v1.64.0 | Superseded |
 | [3](./Launcher/version-3-docs.md) | `Launcher.lua` 3 | v1.57.0 | Superseded |

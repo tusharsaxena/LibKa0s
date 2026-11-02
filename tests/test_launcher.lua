@@ -472,9 +472,9 @@ end)
 
 test("launcher: minor 6 is live", function()
   -- red under: a change that forgot its bump, which reaches no host holding an older minor.
-  -- Minor 6 is the tooltip following the skin; minor 5 the at-enable queue (tests/test_atenable.lua).
-  assertEqual(lib.MINOR, 6)
-  assertEqual(lib.MODULES.Launcher, 6)
+  -- Minor 7 is Sim mode, Open settings and one row rule; 6 the tooltip following the skin; minor 5 the at-enable queue (tests/test_atenable.lua).
+  assertEqual(lib.MINOR, 7)
+  assertEqual(lib.MODULES.Launcher, 7)
 end)
 
 -- ── click behavior (minor 4, launcher-§2 as of standard v2.67.0) ─────────────────────────────
@@ -572,10 +572,11 @@ test("launcher: the menu carries one checkbox per supplied toggle, in the one or
     { "Enabled",     "isEnabled",     "setEnabled" },
     { "Locked",      "isLocked",      "toggleLock" },
     { "Test mode",   "isTestMode",    "toggleTestMode" },
+    { "Sim mode",    "isSimMode",     "toggleSim" },
     { "Show window", "isWindowShown", "toggleWindow" },
   }
   local cells = 0
-  for mask = 0, 15 do
+  for mask = 0, 31 do
     local rec = fixture()
     local want = {}
     for i, p in ipairs(PAIRS) do
@@ -588,15 +589,11 @@ test("launcher: the menu carries one checkbox per supplied toggle, in the one or
     local L = lib:New(rec.d)
     L:Register()
     local menu = rightClick(L)
-    if #want == 0 then
-      assertNil(menu, "mask " .. mask .. ": no toggle, no menu")
-      assertEqual(rec.opened, 1, "mask " .. mask .. ": the panel opens instead")
-    else
-      assertEqual(table.concat(menu:Texts(), "|"), table.concat(want, "|"), "mask " .. mask)
-    end
+    want[#want + 1] = "Open settings"   -- every host, always last of the toggles (SG-L1)
+    assertEqual(table.concat(menu:Texts(), "|"), table.concat(want, "|"), "mask " .. mask)
     cells = cells + 1
   end
-  assertEqual(cells, 16)
+  assertEqual(cells, 32)
 end)
 
 test("launcher: an accessor without its toggle, or a toggle without its accessor, draws nothing", function()
@@ -612,7 +609,7 @@ test("launcher: an accessor without its toggle, or a toggle without its accessor
   }
   local L = lib:New(rec.d)
   L:Register()
-  assertEqual(table.concat(rightClick(L):Texts(), "|"), "Enabled")
+  assertEqual(table.concat(rightClick(L):Texts(), "|"), "Enabled|Open settings")
 end)
 
 test("launcher: each checkbox shows the state its accessor answers when the menu opens", function()
@@ -668,7 +665,9 @@ test("launcher: while disabled, Enabled stays live and the rest are grayed with 
     "Locked (enable the addon first)",
     "Test mode (enable the addon first)",
     "Show window (enable the addon first)",
+    "Open settings",
   }, "|"))
+  assertTrue(menu:Find("Open settings").enabled, "Open settings is never grayed")
   assertTrue(menu:Find("Enabled").enabled, "Enabled stays clickable")
   assertFalse(menu:Checked("Enabled"))
   for _, e in ipairs{ "Locked", "Test mode", "Show window" } do
@@ -678,7 +677,7 @@ test("launcher: while disabled, Enabled stays live and the rest are grayed with 
   menu:Click("Enabled")
   assertEqual(rec.calls.setEnabled[1], true, "Enabled turns the addon back on")
   menu = rightClick(L)
-  assertEqual(table.concat(menu:Texts(), "|"), "Enabled|Locked|Test mode|Show window",
+  assertEqual(table.concat(menu:Texts(), "|"), "Enabled|Locked|Test mode|Show window|Open settings",
     "and the next open is ungrayed")
   for _, e in ipairs{ "Locked", "Test mode", "Show window" } do
     assertTrue(menu:Find(e).enabled, e .. " is live again")
@@ -705,7 +704,7 @@ test("launcher: a host with no isEnabled has nothing grayed and no Enabled entry
   -- red under: treating a missing isEnabled as disabled, which grays every entry forever.
   local rec, L = fullHost{ isEnabled = false, setEnabled = false }
   local menu = rightClick(L)
-  assertEqual(table.concat(menu:Texts(), "|"), "Locked|Test mode|Show window")
+  assertEqual(table.concat(menu:Texts(), "|"), "Locked|Test mode|Show window|Open settings")
   menu:Click("Locked")
   assertEqual(rec.calls.toggleLock, 1)
 end)
@@ -753,7 +752,7 @@ test("launcher: a raising accessor costs its checkmark, not the menu", function(
   -- red under: an unguarded accessor in the generator, which opens no menu at all.
   local rec, L = fullHost{ isTestMode = function() error("test boom") end }
   local menu = rightClick(L)
-  assertEqual(#menu.entries, 4, "every entry still drawn")
+  assertEqual(#menu.entries, 5, "every entry still drawn")
   assertFalse(menu:Checked("Test mode"), "the raising one reads unchecked")
   assertTrue(table.concat(rec.logs, "|"):find("test boom", 1, true) ~= nil, "the debug seam heard it")
   assertEqual(#rec.lines, 0)
@@ -767,7 +766,7 @@ test("launcher: every menu string goes through the descriptor's L, rawget-guarde
   rec.state.enabled = false
   assertEqual(table.concat(rightClick(L):Texts(), "|"), table.concat({
     "Enabled", "Gesperrt (erst aktivieren)", "Test mode (erst aktivieren)",
-    "Show window (erst aktivieren)" }, "|"))
+    "Show window (erst aktivieren)", "Open settings" }, "|"))
 end)
 
 -- ── visibility (launcher-§3) ─────────────────────────────────────────────────────────────────
@@ -1142,13 +1141,42 @@ test("launcher: it alone makes a menu, and a host that is no skin owner or passe
   local owner = skinnedOwner("azeroth")
   local L = lib:New(skinnedFixture(owner, { openSkinPicker = function() end }).d)
   L:Register()
-  assertEqual(table.concat(rightClick(L):Texts(), "|"), "Open skin selector")
+  assertEqual(table.concat(rightClick(L):Texts(), "|"), "Open settings|Open skin selector")
   local rec2 = skinnedFixture("NoSuchSkinOwner" .. nextName(), { openSkinPicker = function() end, isLocked = function() return false end,
     toggleLock = function() end })
   local L2 = lib:New(rec2.d)
   L2:Register()
-  assertEqual(table.concat(rightClick(L2):Texts(), "|"), "Locked")
+  assertEqual(table.concat(rightClick(L2):Texts(), "|"), "Locked|Open settings")
   local L3 = lib:New(skinnedFixture((skinnedOwner("azeroth")), { isLocked = function() return false end, toggleLock = function() end }).d)
   L3:Register()
-  assertEqual(table.concat(rightClick(L3):Texts(), "|"), "Locked")
+  assertEqual(table.concat(rightClick(L3):Texts(), "|"), "Locked|Open settings")
+end)
+
+-- ── SG-L1: Sim mode, Open settings, one row rule ─────────────────────────────────────────────────
+
+test("launcher: Sim mode is a live checkbox that toggles through toggleSim, once", function()
+  -- red under: a frozen tick (the box shows the state at open), or a Sim entry with no gate.
+  local sim, calls = false, 0
+  local rec, L = fullHost{ isSimMode = function() return sim end,
+    toggleSim = function() calls = calls + 1; sim = not sim end }
+  local menu = rightClick(L)
+  assertFalse(menu:Checked("Sim mode"))
+  menu:Click("Sim mode")
+  assertEqual(calls, 1)
+  assertTrue(menu:Checked("Sim mode"), "the tick is asked at draw, not captured at open")
+  rec.state.enabled = false
+  local m2 = rightClick(L)
+  assertEqual(m2:Find("Sim mode").text, "Sim mode (enable the addon first)")
+  assertFalse(m2:Find("Sim mode").enabled)
+end)
+
+test("launcher: Open settings opens the panel from the menu, enabled or not", function()
+  -- red under: gating it (a disabled addon is re-enabled from the panel), or a menu without it.
+  local rec, L = fullHost()
+  rec.state.enabled = false
+  local menu = rightClick(L)
+  assertTrue(menu:Find("Open settings").enabled)
+  local before = rec.opened
+  assertEqual(menu:Click("Open settings"), MENU.RESPONSE.Close)
+  assertEqual(rec.opened, before + 1)
 end)

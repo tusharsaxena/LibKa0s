@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Launcher-1.0` |
 | Files and minors | `Launcher.lua` minor **6** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 5](./version-5-docs.md) — whose status tooltip ignored the skin |
-| Superseded by | — |
+| Superseded by | [version 7](./version-7-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **LibKa0s-Skin-1.0** is OPTIONAL and resolved with `LibStub(…, true)` on every tooltip show. **LibDataBroker-1.1** and **LibDBIcon-1.0** are OPTIONAL and are resolved with `LibStub(…, true)` at `Register` time, never at load. The client's context-menu API (`MenuUtil`, 11.0 and later) is OPTIONAL too, resolved on every right click. |
 | Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 6 }` |
 
