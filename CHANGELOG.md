@@ -165,8 +165,8 @@ Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `
 - **SkinPaintControls minor 12**: `S.Tab` draws `tab.border` at its size and style, around `opts.fill` when it names one and not on a tab in the skin's art, so window tabs take it too. `opts.glow` takes `tab.glow`.
 - **OptionsTabs minor 15** and **SkinPaint minor 14**: the settings tab names its two glows, and `P.unpaint` gives their stock gradient back.
 
-Release gate (`docs/automated-tests/20261102-020922/`): lint pass, 0/0 in 289 files;
-tests pass, 3921 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+Release gate (`docs/automated-tests/20261102-111553/`): lint pass, 0/0 in 290 files;
+tests pass, 3929 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
 Preview and simulation re-look: Current — SimPanel.lua minor 10 (954daaa), SimPanelRender.lua minor 2 (e6a6e3e) and Widgets.lua minors 18 to 20 (cda17e0, 5a29047, 153b906) moved; fixtures and suites re-read and green; no scenario, step, control or strip API moved, only the look: the Steps title band is 30 high, an owned tooltip title takes gtip.title, an owned strip icon wears icon.tint. Lead's call under the owner's run guidelines, recorded for the owner's smoke. At the last re-cut `Widgets.lua` moved to minor 21 (430354d, 229e388, 95b5252) in the shared menu and the dropdown only, look and new row options; `lib.TestStrip` and every Sim file did not move, and the Sim panel's two pickers take the one-line label. The smoke feedback's first re-cut moved no Sim file and no Widgets.lua. The second moved `Widgets.lua` minor 21 again: `lib.TestStrip` takes a right-click menu (`opts.sim`, `opts.onEnd`, `SF-F1`) and no Sim file moved, so the strip is unchanged for a host that passes neither, and the call stands.
