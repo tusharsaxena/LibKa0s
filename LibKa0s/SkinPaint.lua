@@ -806,7 +806,7 @@ local function restoreColors(rec, method)
   end
 end
 
---- The saved alpha, text alignment, gradient and fonts back, in that order (P.unpaint's first step,
+--- The saved alpha, text alignment, gradient, fonts and texcoords (S.IconBorder's zoom) back, in that order (P.unpaint's first step,
 --- out of it at minor 16 so it stays under CCN 15).
 local function restoreSaved(rec)
   local s = rec.regions.saved or {}
@@ -817,6 +817,10 @@ local function restoreSaved(rec)
   for tex, g in pairs(s.glow or {}) do tex:SetGradient("VERTICAL", g.bottom, g.top) end
   s.glow = nil
   for fs in pairs(s.font or {}) do P.unfont(rec, fs) end
+  for tex, c in pairs(s.coords or {}) do
+    if c[1] then tex:SetTexCoord(unpack(c)) end
+  end
+  s.coords = nil
 end
 
 --- Undo everything a primitive did to a target: faded art back to its alpha, fonts, text and vertex

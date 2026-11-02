@@ -692,15 +692,18 @@ Total.
 - skin remap: the record keeps the caller's remap, so a repaint replays it
 - skin remap: under eui a remapped call is the library's, from EllesmereUI's colors
 
-### test_skin_icon_border.lua (8)
+### test_skin_icon_border.lua (11)
 
 - skin icon border: SkinDefs is at minor 15 and the schema's HUD group carries the family
 - skin icon border: Ka0s Default's is Drop Watcher's Window › Icons border, Solid 2px black
 - skin icon border: every skin sets both tokens itself, each a style the library draws
 - skin icon border: without fromSkin IconBorder paints exactly what it did, flat at opts.size or 1
-- skin icon border: fromSkin draws Ka0s Default's Solid 2px in icon.border
-- skin icon border: fromSkin wins over opts.size, and a skin switch repaints style and size
-- skin icon border: a skin whose icon.borderStyle is None draws no border
+- skin icon border: fromSkin draws a 1 px outline in icon.border in every skin, never the skin's size
+- skin icon border: the 1 px is one physical pixel at any UI scale, with or without fromSkin
+- skin icon border: a skin whose icon.borderStyle is None still draws the outline
+- skin icon border: the icon is zoomed 0.07 by default, a frame's icon or a Texture itself
+- skin icon border: opts.zoom overrides the zoom, false leaves the coords alone, a frame with no icon is left
+- skin icon border: P.unpaint gives the icon its own coords back
 - skin icon border: under eui fromSkin is the library's, from the EllesmereUI-derived tokens
 
 ### test_skin_stock_default.lua (9)
@@ -4492,7 +4495,7 @@ Total.
 | test_skin_outline.lua | 19 |
 | test_skin_owner_tokens.lua | 17 |
 | test_skin_remap.lua | 12 |
-| test_skin_icon_border.lua | 8 |
+| test_skin_icon_border.lua | 11 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 38 |
 | test_skin_hud_tokens.lua | 6 |
@@ -4641,4 +4644,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3935** |
+| **Total** | **3938** |

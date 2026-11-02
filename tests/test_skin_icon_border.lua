@@ -6,9 +6,11 @@
 -- What it pins: the two tokens are in the schema's HUD group and every one of the nine skins sets
 -- both itself; Ka0s Default's are Drop Watcher's Window › Icons border today (Solid, 2px, in
 -- `icon.border`'s black); every style a skin names is one the library can draw; S.IconBorder WITHOUT
--- `fromSkin` paints exactly what it painted before (flat, `opts.size` or 1); WITH it, the skin's style
--- and size, repainted on a skin switch, "None" drawing nothing; and under the eui source it is
--- painted by the library from the EllesmereUI-derived tokens, never handed to EllesmereUI.
+-- `fromSkin` paints exactly what it painted before (flat, `opts.size` or 1); WITH it, since the
+-- owner's third smoke round (R3-L3 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3), a 1 px
+-- outline in `icon.border` in every skin whatever its style and size, one physical pixel; the icon
+-- zoomed 0.07 by default; and under the eui source it is painted by the library from the
+-- EllesmereUI-derived tokens, never handed to EllesmereUI.
 --
 -- Every case runs on a fresh environment (tests/fixture_skin_paint.lua, tests/fixture_skin_eui.lua).
 
@@ -92,56 +94,124 @@ test("skin icon border: without fromSkin IconBorder paints exactly what it did, 
   assertTrue(survey(m, F.region(Skin, two, "edgeTop")).shown, "still the flat edge")
 end)
 
-test("skin icon border: fromSkin draws Ka0s Default's Solid 2px in icon.border", function()
-  local m, Skin = F.env()
-  local S = F.owner(Skin, OWNER)
-  local f = m.CreateFrame("Frame", nil, m.UIParent)
-  S.IconBorder(f, { fromSkin = true })
-  assertEqual(edgeSizes(m, Skin, S, f, { fromSkin = true }),
-    "#2:SetHeight(2)\n#3:SetHeight(2)\n#4:SetWidth(2)\n#5:SetWidth(2)", "2px")
-  for _, side in ipairs({ "Top", "Bottom", "Left", "Right" }) do
-    local r = survey(m, F.region(Skin, f, "edge" .. side))
-    assertEqual(F.rgba(r.color), "0,0,0,1", side .. " black")
-    assertTrue(r.shown, side .. " shown")
-  end
-  assertNil(F.region(Skin, f, "nine"), "Solid is the flat edge, no nine-slice")
-end)
-
-test("skin icon border: fromSkin wins over opts.size, and a skin switch repaints style and size", function()
+test("skin icon border: fromSkin draws a 1 px outline in icon.border in every skin, never the skin's size", function()
+  -- red under: icon.borderSize, which drew 2 px in Ka0s Default, Azeroth, Ember, WoW Midnight and a
+  -- Blizzard Tooltip nine-slice in WoW Default (R3-L3 of Ka0sAddonsCommonTasks
+  -- docs/2026-11-02-SMOKE_ROUND3, images 91 and 92: "make it consistently 1px").
   local m, Skin = F.env({ lsm = { ["border:Blizzard Tooltip"] = "Interface\\Tooltips\\UI-Tooltip-Border" } })
   local S = F.owner(Skin, OWNER)
   local f = m.CreateFrame("Frame", nil, m.UIParent)
   S.IconBorder(f, { fromSkin = true, size = 5 })
-  assertEqual(edgeSizes(m, Skin, S, f, { fromSkin = true, size = 5 }),
-    "#2:SetHeight(2)\n#3:SetHeight(2)\n#4:SetWidth(2)\n#5:SetWidth(2)", "the skin's size, not opts.size")
-  Skin:SetChoice(OWNER, "ka0s", "wow")
-  local t = Skin:ResolveSkin("wow")
-  local nine = F.region(Skin, f, "nine")
-  assertTrue(nine ~= nil, "WoW Default's " .. t["icon.borderStyle"] .. " is a nine-slice")
-  local bd = survey(m, nine).backdrop
-  assertEqual(bd.edgeFile, "Interface\\Tooltips\\UI-Tooltip-Border")
-  assertEqual(bd.edgeSize, t["icon.borderSize"])
-  assertEqual(F.rgba(survey(m, nine).backdropBorderColor), F.tok(Skin, "wow", "icon.border"))
-  assertTrue(not survey(m, F.region(Skin, f, "edgeTop")).shown, "the flat edges hidden")
-  Skin:SetChoice(OWNER, "ka0s", "obsidian")
-  assertNil(F.region(Skin, f, "nine"), "back to flat")
-  assertEqual(edgeSizes(m, Skin, S, f, { fromSkin = true, size = 5 }),
-    ("#2:SetHeight(%d)\n#3:SetHeight(%d)\n#4:SetWidth(%d)\n#5:SetWidth(%d)"):format(
-      Skin:ResolveSkin("obsidian")["icon.borderSize"], Skin:ResolveSkin("obsidian")["icon.borderSize"],
-      Skin:ResolveSkin("obsidian")["icon.borderSize"], Skin:ResolveSkin("obsidian")["icon.borderSize"]),
-    "Obsidian's own size")
+  for _, key in ipairs(KEYS) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    assertEqual(edgeSizes(m, Skin, S, f, { fromSkin = true, size = 5 }),
+      "#2:SetHeight(1)\n#3:SetHeight(1)\n#4:SetWidth(1)\n#5:SetWidth(1)", key .. ": 1 px, not opts.size or the skin's")
+    for _, side in ipairs({ "Top", "Bottom", "Left", "Right" }) do
+      local r = survey(m, F.region(Skin, f, "edge" .. side))
+      assertEqual(F.rgba(r.color), F.tok(Skin, key, "icon.border"), key .. ": " .. side .. " in icon.border")
+      assertTrue(r.shown, key .. ": " .. side .. " shown")
+    end
+    assertNil(F.region(Skin, f, "nine"), key .. ": never a nine-slice")
+  end
 end)
 
-test("skin icon border: a skin whose icon.borderStyle is None draws no border", function()
+test("skin icon border: the 1 px is one physical pixel at any UI scale, with or without fromSkin", function()
+  -- red under: 1 UI unit, which draws 2 px where the UI scale is over one pixel per unit.
+  local m, Skin = F.env()
+  m.PixelUtil = { GetPixelToUIUnitFactor = function() return 0.75 end }
+  local make = m.CreateFrame
+  m.CreateFrame = function(...)
+    local f = make(...)
+    rawset(f, "GetEffectiveScale", function() return 1.5 end)
+    return f
+  end
+  local S = F.owner(Skin, OWNER, "midnight")
+  local f, g = m.CreateFrame("Frame", nil, m.UIParent), m.CreateFrame("Frame", nil, m.UIParent)
+  S.IconBorder(f, { fromSkin = true })
+  S.IconBorder(g, { size = 2 })
+  assertEqual(F.region(Skin, f, "edgeTop"):GetHeight(), 0.5, "0.75 / 1.5: one physical pixel")
+  assertEqual(F.region(Skin, g, "edgeLeft"):GetWidth(), 1, "opts.size in physical pixels too")
+end)
+
+test("skin icon border: a skin whose icon.borderStyle is None still draws the outline", function()
+  -- red under: None drawing nothing, which leaves the icon's own edge as its only frame.
   local m, Skin = F.env()
   Skin:RegisterSkin({ key = "bare", tokens = { ["icon.borderStyle"] = "None", ["icon.borderSize"] = 1 } })
-  local S = F.owner(Skin, OWNER)
+  Skin:RegisterSkin({ key = "barer", tokens = { ["icon.border"] = false, divider = { 0.5, 0.5, 0.5, 1 } } })
+  local S = F.owner(Skin, OWNER, "bare")
   local f = m.CreateFrame("Frame", nil, m.UIParent)
   S.IconBorder(f, { fromSkin = true })
-  assertTrue(survey(m, F.region(Skin, f, "edgeTop")).shown, "Ka0s Default draws it")
-  Skin:SetChoice(OWNER, "ka0s", "bare")
-  assertTrue(not survey(m, F.region(Skin, f, "edgeTop")).shown, "None hides it")
-  assertNil(F.region(Skin, f, "nine"))
+  local e = survey(m, F.region(Skin, f, "edgeTop"))
+  assertTrue(e.shown, "None draws it")
+  assertEqual(F.rgba(e.color), F.tok(Skin, "bare", "icon.border"))
+  Skin:SetChoice(OWNER, "ka0s", "barer")
+  e = survey(m, F.region(Skin, f, "edgeTop"))
+  assertTrue(e.shown, "a skin with no icon.border too")
+  assertEqual(F.rgba(e.color), "0.500,0.500,0.500,1", "in its divider")
+end)
+
+-- ── the zoom (R3-L3, images 88 to 90: the icon's own edge showed inside the border) ──────────
+
+local function texCoord(m, t) return table.concat(survey(m, t).texCoord or {}, ",") end
+
+--- A square inset's coords as the client answers them, the corners UL, LL, UR, LR (mock_paint.lua).
+local function inset(z) return table.concat({ z, z, z, 1 - z, 1 - z, z, 1 - z, 1 - z }, ",") end
+
+test("skin icon border: the icon is zoomed 0.07 by default, a frame's icon or a Texture itself", function()
+  -- red under: no zoom, which leaves the art's built-in border inside the outline (img 90).
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local f = m.CreateFrame("Frame", nil, m.UIParent)
+  f.icon = f:CreateTexture()
+  S.IconBorder(f, { fromSkin = true })
+  assertEqual(texCoord(m, f.icon), inset(0.07), "frame.icon")
+  local g = m.CreateFrame("Frame", nil, m.UIParent)
+  g.Icon = g:CreateTexture()
+  S.IconBorder(g)
+  assertEqual(texCoord(m, g.Icon), inset(0.07), "frame.Icon, without fromSkin too")
+  local tex = m.CreateFrame("Frame", nil, m.UIParent):CreateTexture()
+  S.IconBorder(tex, { fromSkin = true })
+  assertEqual(texCoord(m, tex), inset(0.07), "a Texture handed in is the icon")
+  local h = m.CreateFrame("Frame", nil, m.UIParent)
+  local other = h:CreateTexture()
+  S.IconBorder(h, { fromSkin = true, icon = other })
+  assertEqual(texCoord(m, other), inset(0.07), "opts.icon")
+end)
+
+test("skin icon border: opts.zoom overrides the zoom, false leaves the coords alone, a frame with no icon is left", function()
+  -- red under: a host's own crop overwritten, or a lone region of the frame guessed at.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local f = m.CreateFrame("Frame", nil, m.UIParent)
+  f.icon = f:CreateTexture()
+  S.IconBorder(f, { fromSkin = true, zoom = 0.1 })
+  assertEqual(texCoord(m, f.icon), inset(0.1))
+  local g = m.CreateFrame("Frame", nil, m.UIParent)
+  g.icon = g:CreateTexture()
+  g.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  S.IconBorder(g, { fromSkin = true, zoom = false })
+  assertEqual(texCoord(m, g.icon), inset(0.08), "the host's crop stands")
+  local bare = m.CreateFrame("Frame", nil, m.UIParent)
+  local lone = bare:CreateTexture()
+  S.IconBorder(bare, { fromSkin = true })
+  assertEqual(texCoord(m, lone), "", "no icon named: no region guessed at")
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  assertEqual(texCoord(m, f.icon), inset(0.1), "a replay keeps opts.zoom")
+end)
+
+test("skin icon border: P.unpaint gives the icon its own coords back", function()
+  -- red under: a zoom left on an icon the skin no longer paints (Ignore, a scope off).
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local f = m.CreateFrame("Frame", nil, m.UIParent)
+  f.icon = f:CreateTexture()
+  f.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  S.IconBorder(f, { fromSkin = true })
+  S.IconBorder(f, { fromSkin = true })
+  assertEqual(texCoord(m, f.icon), inset(0.07))
+  Skin.__P.unpaint(Skin.painted[f], f)
+  assertEqual(texCoord(m, f.icon), inset(0.08), "the host's crop, not the first zoom's")
+  assertTrue(not survey(m, F.region(Skin, f, "edgeTop")).shown, "and the outline hidden")
 end)
 
 test("skin icon border: under eui fromSkin is the library's, from the EllesmereUI-derived tokens", function()

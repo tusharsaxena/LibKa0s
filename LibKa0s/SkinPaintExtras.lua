@@ -446,14 +446,16 @@ end
 local RING = { Top = { "TOPLEFT", "TOPRIGHT", "SetHeight" }, Bottom = { "BOTTOMLEFT", "BOTTOMRIGHT", "SetHeight" },
                Left = { "TOPLEFT", "BOTTOMLEFT", "SetWidth" }, Right = { "TOPRIGHT", "BOTTOMRIGHT", "SetWidth" } }
 
---- The ring's color: `panel.border`, as S.Panel edges a box (image 93), else `divider`, else the body
---- text at 0.4, so a skin that sets no border still draws a visible edge.
-local function ringColor(T)
-  local c = T["panel.border"] or T["divider"]
+--- An edge's color: the token `first` (the ring's `panel.border`, as S.Panel edges a box, image 93;
+--- S.IconBorder's `icon.border`, R3-L3), else `divider`, else the body text at 0.4, so a skin that
+--- sets none still draws a visible edge.
+function P.edgeColor(T, first)
+  local c = T[first or "panel.border"] or T["divider"]
   if c then return c end
   local b = T["text.body"]
   return type(b) == "table" and { b[1], b[2], b[3], 0.4 } or nil
 end
+local ringColor = P.edgeColor
 
 --- A frame another primitive already edged (a Shell's or a Panel's edge, a backdrop a primitive
 --- dressed) keeps that edge, and the ring hides, as it does under `opts.noBorder`.
