@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261102-235338`](20261102-235338/) | `8582037` | clean | 1.85.0 → 1.85.0 | 0/0 | 291 | 3949/3/3952 | skip | 87214 | 12601 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261102-130954`](20261102-130954/) | `0d6babe` | clean | 1.85.0 → 1.85.0 | 0/0 | 290 | 3928/3/3931 | skip | 86744 | 12555 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261102-125359`](20261102-125359/) | `6516984` | clean | 1.85.0 → 1.85.0 | 0/0 | 290 | 3928/3/3931 | skip | 86787 | 12560 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261102-111553`](20261102-111553/) | `c5521e7` | clean | 1.85.0 → 1.85.0 | 0/0 | 290 | 3926/3/3929 | skip | 86707 | 12552 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -187,18 +188,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**3931 cases** — 3928 passed, 0 failed, 3 skipped. The generated inventory
-[`20261102-130954/test-cases.md`](20261102-130954/test-cases.md) is the authority on which cases existed at this run;
+**3952 cases** — 3949 passed, 0 failed, 3 skipped. The generated inventory
+[`20261102-235338/test-cases.md`](20261102-235338/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Unchanged from the previous run at 3931 cases.
+Moved **3931 → 3952** since the previous run.
 
 **3 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 290 files** (`luacheck .`).
+**0 warnings / 0 errors over 291 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -215,8 +216,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261102-130954`](20261102-130954/) — **this run's measurement, not its diff.** Max CCN **15** across 12555
-functions, **0** of them warned on; 11 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261102-235338`](20261102-235338/) — **this run's measurement, not its diff.** Max CCN **15** across 12601
+functions, **0** of them warned on; 13 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -240,12 +241,14 @@ None.
 | 1000–1500 (on notice) | `LibKa0s/OptionsSkinPicker.lua` | 1309 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4` (2026-10-31, `FX-LK-SIZE`).** The rows' section peeled to `LibKa0s/OptionsSkinPickerRows.lua` at minor 5. Seam now: the queue, to a file of its own. **Re-check trigger: 1400 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1293 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-03`) to `LibKa0s/OptionsCombat.lua`, then accepted at 1293; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. The tabbed page peeled to `LibKa0s/OptionsTabbed.lua` at minor 12. Seam now: `O.PageHeader` and `O.SubTabStrip`. **Re-check trigger: the next member added, or 1300 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsWidgets.lua` | 1116 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Came off the census (3852) when the id surface moved out; the flow engine peeled to `LibKa0s/OptionsFlow.lua` at minor 39. Seam now: the choice grid. **Re-check trigger: 1250 lines, or the next maker added.** |
-| 1000–1500 (on notice) | `LibKa0s/Skin.lua` | 1090 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4`, since v1.85.0's re-cut (2026-11-01); accepted in the band census at minor 11 until then.** The owner-token block peeled to `LibKa0s/SkinOwnerTokens.lua`. Seam now: the frame registry and the repaint. **Re-check trigger: 1100 lines.** |
-| 1000–1500 (on notice) | `LibKa0s/SkinPaint.lua` | 1023 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4` (2026-10-31, `FX-LK-SIZE`).** The next-minor trigger fired at minors 14, 15 and 16, and the peel waits, ruled in that row (2026-11-01). Seam: the window block, to `LibKa0s/SkinPaintExtras.lua`. **Re-check trigger: 1050 lines, or the next SkinPaint minor that adds a function, and that change peels first.** |
-| 1000–1500 (on notice) | `LibKa0s/SkinPaintControls.lua` | 1027 |  |
+| 1000–1500 (on notice) | `LibKa0s/Skin.lua` | 1097 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4`, since v1.85.0's re-cut (2026-11-01); accepted in the band census at minor 11 until then.** The owner-token block peeled to `LibKa0s/SkinOwnerTokens.lua`. Seam now: the frame registry and the repaint. **Re-check trigger: 1100 lines.** |
+| 1000–1500 (on notice) | `LibKa0s/SkinPaint.lua` | 1032 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4` (2026-10-31, `FX-LK-SIZE`).** The next-minor trigger fired at minors 14, 15 and 16, and the peel waits, ruled in that row (2026-11-01). Seam: the window block, to `LibKa0s/SkinPaintExtras.lua`. **Re-check trigger: 1050 lines, or the next SkinPaint minor that adds a function, and that change peels first.** |
+| 1000–1500 (on notice) | `LibKa0s/SkinPaintControls.lua` | 1054 | **Accepted, ruled in `CLAUDE.md`'s band census (2026-11-02, `R3-L1`, `R3-L3`).** The minor is not yet shipped, and a peel is a release. Seam: the navigation, drawer and list-row section, to a file of its own paired on the Skin shell. **Re-check trigger: 1100 lines, or the next SkinPaintControls minor.** |
+| 1000–1500 (on notice) | `LibKa0s/SkinPaintExtras.lua` | 1031 | **Newly crossed with `R3-DR-1L`, `R3-L1` to `R3-L3`. Accepted, ruled in `CLAUDE.md`'s band census (2026-11-02).** The minor is not yet shipped, and a peel is a release. Seam: the AceConfigDialog confirmation box, to a file of its own paired on the Skin shell. **Re-check trigger: 1100 lines, or the next SkinPaintExtras minor.** |
 | 1000–1500 (on notice) | `LibKa0s/Widgets.lua` | 1037 |  |
 | 1000–1500 (on notice) | `LibKa0s/WidgetsDragHandle.lua` | 1016 | **Newly crossed at minor 11 (the marks' art). Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row.** Seam: its tooltip half. **Re-check trigger: 1100 lines.** |
 | 1000–1500 (on notice) | `tests/test_launcher.lua` | 1196 | **Newly crossed, with `FS-L1`'s skin cases. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's close.** Seam: its *the tooltip follows the skin* section, to a suite of its own. **Re-check trigger: 1200 lines.** |
+| 1000–1500 (on notice) | `tests/test_media.lua` | 1010 | **Newly crossed with `R3-L6` and `R3-L7`. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's `R3-REL` re-cut.** A suite, so a peel is no release. Seam: the font inventory and license section, to a suite of its own. **Re-check trigger: 1100 lines, or the next face added to `FONTS`.** |
 
 `lizard` counts every `and`/`or` short-circuit as a decision, so in Lua a run of
 `t.k = rec.k or D.k` defaulting lines scores high with no visible branching at all: a large CCN
