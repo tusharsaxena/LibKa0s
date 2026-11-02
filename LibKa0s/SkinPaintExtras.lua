@@ -444,8 +444,10 @@ function P.px(frame, n)
 end
 
 -- Pixel edges stay one pixel (R3-FIX of docs/2026-11-02-SMOKE_ROUND3): each is recorded weakly and
--- re-sized, never repainted, on UI_SCALE_CHANGED, DISPLAY_SIZE_CHANGED and an ancestor's SetScale
--- that moves the scale (DpsRace's HUD, WhatGroup's and MultiMeters' windows).
+-- re-sized, never repainted, when UIParent's size moves (a UI scale or display size change) and on a
+-- SetScale of the holder or an ancestor, UIParent's included, that moves the scale (DpsRace's HUD,
+-- WhatGroup's and MultiMeters' windows). Hooks, never an event: a library-wide registration would
+-- outlive every host's stand-down.
 lib.__pxSized = lib.__pxSized or setmetatable({}, { __mode = "k" })    -- target -> { h, prim, prefix, n }
 lib.__pxScales = lib.__pxScales or setmetatable({}, { __mode = "k" })  -- hooked frame -> last scale
 local PX_SIDES = { Top = "SetHeight", Bottom = "SetHeight", Left = "SetWidth", Right = "SetWidth" }
@@ -469,24 +471,19 @@ local function refreshLive()
   if live and live.__RefreshPixels then live:__RefreshPixels() end
 end
 
-local function pxEvents()
-  if lib.__pxEventFrame or type(CreateFrame) ~= "function" then return end
-  local core = LibStub("LibKa0s-Core-1.0", true)
-  local register = core and core.SafeRegisterEvent
-  if type(register) ~= "function" then return end
-  local f = CreateFrame("Frame")
-  lib.__pxEventFrame = f
-  f:SetScript("OnEvent", refreshLive)
-  register(f, "UI_SCALE_CHANGED")
-  register(f, "DISPLAY_SIZE_CHANGED")
+local function pxScreen()
+  local ui = UIParent
+  if lib.__pxScreenHooked or type(ui) ~= "table" or type(ui.HookScript) ~= "function" then return end
+  lib.__pxScreenHooked = true
+  ui:HookScript("OnSizeChanged", refreshLive)
 end
 
---- Post-hook SetScale on `h` and each ancestor under UIParent, once each, so a scale that moves
---- re-sizes the edges; the same scale again costs one comparison.
+--- Post-hook SetScale on `h` and each ancestor, once each, so a scale that moves re-sizes the edges;
+--- the same scale again costs one comparison.
 local function hookScales(h)
   if type(hooksecurefunc) ~= "function" then return end
   local f, guard = h, 0
-  while P.isFrame(f) and f ~= UIParent and guard < 32 do
+  while P.isFrame(f) and guard < 32 do
     if lib.__pxScales[f] == nil and type(f.SetScale) == "function" then
       lib.__pxScales[f] = type(f.GetScale) == "function" and f:GetScale() or 1
       hooksecurefunc(f, "SetScale", function(self, s)
@@ -504,7 +501,7 @@ end
 --- `prefix .. side` on holder `h`, `n` physical pixels wide.
 function P.pxWatch(target, h, name, prefix, n)
   lib.__pxSized[target] = { h = h, prim = name, prefix = prefix, n = n }
-  pxEvents()
+  pxScreen()
   hookScales(h)
 end
 

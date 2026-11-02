@@ -707,7 +707,7 @@ Total.
 - skin icon border: opts.zoom overrides the zoom, false leaves the coords alone, a frame with no icon is left
 - skin icon border: P.unpaint gives the icon its own coords back
 - skin icon border: the zoom only tightens, a host's tighter crop stands (SquareIcon crop, then IconBorder)
-- skin icon border: the outline and FadeNineSlice's ring re-size on UI_SCALE_CHANGED and DISPLAY_SIZE_CHANGED
+- skin icon border: the outline and FadeNineSlice's ring re-size when UIParent's size moves, no event registered
 - skin icon border: a host's SetScale on an ancestor re-sizes the outline, an unchanged scale costs nothing
 - skin icon border: under eui fromSkin is the library's, from the EllesmereUI-derived tokens
 

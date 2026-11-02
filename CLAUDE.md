@@ -283,7 +283,7 @@ Largest first:
   the Skin document already records. The seam is the window block (the table `Shell` hands `Core.ApplySkin`, the
   inner rule and the edge holder), to `LibKa0s/SkinPaintExtras.lua` as Panel and Inset went at minor 11.
   **Re-check trigger: 1050 lines, or the next SkinPaint minor.**
-- `LibKa0s/SkinPaintExtras.lua` (1098 at minor 16, measured 2026-11-03, `R3-FIX`'s `P.pxWatch`, the pixel edges re-sized on a scale change, 2 under its trigger; 1031 at minor 16, measured 2026-11-02, `R3-L1`'s `P.justify` export; 1030 at minor 16, measured 2026-11-02, `R3-L3`'s `P.edgeColor`, the ring's color made shared; 1028 at minor 16, measured 2026-11-02, new to the band: `R3-DR-1L`'s `P.holdFace` and `R3-L2`'s `P.px` and
+- `LibKa0s/SkinPaintExtras.lua` (1095 at minor 16, measured 2026-11-03, `R3-FIX`'s `P.pxWatch`, the pixel edges re-sized on a scale change, 5 under its trigger; 1031 at minor 16, measured 2026-11-02, `R3-L1`'s `P.justify` export; 1030 at minor 16, measured 2026-11-02, `R3-L3`'s `P.edgeColor`, the ring's color made shared; 1028 at minor 16, measured 2026-11-02, new to the band: `R3-DR-1L`'s `P.holdFace` and `R3-L2`'s `P.px` and
   FadeNineSlice edge of Ka0sAddonsCommonTasks `docs/2026-11-02-SMOKE_ROUND3/`, its header notes for minors 2 to 16 condensed to
   six lines; 997 at minor 16 before them) — **accepted.** The minor is not yet shipped, and a peel is a release. The seam is
   the AceConfigDialog confirmation box (the section at the end of the file, about 160 lines), to a file of its own paired

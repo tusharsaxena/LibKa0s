@@ -265,8 +265,10 @@ local function scaledEnv()
   return m, Skin, scale
 end
 
-test("skin icon border: the outline and FadeNineSlice's ring re-size on UI_SCALE_CHANGED and DISPLAY_SIZE_CHANGED", function()
+test("skin icon border: the outline and FadeNineSlice's ring re-size when UIParent's size moves, no event registered", function()
   -- red under: P.px read once at paint time, so the edge drew 2 px after the player raised the UI scale.
+  -- Hooked, never an event: a library frame registered for UI_SCALE_CHANGED outlived every host's
+  -- stand-down (the hosts' slash-commands-§7 conformance suites).
   local m, Skin, scale = scaledEnv()
   local S = F.owner(Skin, OWNER, "midnight")
   local f = m.CreateFrame("Frame", nil, m.UIParent)
@@ -276,15 +278,14 @@ test("skin icon border: the outline and FadeNineSlice's ring re-size on UI_SCALE
   S.FadeNineSlice(ns)
   assertEqual(F.region(Skin, f, "edgeTop"):GetHeight(), 1)
   assertEqual(F.region(Skin, ns, "ringLeft"):GetWidth(), 1)
-  local ev = Skin.__pxEventFrame
-  assertTrue(ev ~= nil, "the events frame is made at the first pixel edge")
+  assertEqual(#m.__registrations(), 0, "no registration: a host's stand-down leaves none behind")
   scale.v = 2
-  ev:__fire("OnEvent", "UI_SCALE_CHANGED")
+  m.UIParent:__fire("OnSizeChanged", 1280, 720)   -- a UI scale change resizes UIParent
   assertEqual(F.region(Skin, f, "edgeTop"):GetHeight(), 0.5, "the icon outline: one pixel at scale 2")
   assertEqual(F.region(Skin, f, "edgeRight"):GetWidth(), 0.5)
   assertEqual(F.region(Skin, ns, "ringLeft"):GetWidth(), 0.5, "the ring too")
   scale.v = 4
-  ev:__fire("OnEvent", "DISPLAY_SIZE_CHANGED")
+  m.UIParent:__fire("OnSizeChanged", 640, 360)
   assertEqual(F.region(Skin, ns, "ringTop"):GetHeight(), 0.25, "and on a display size change")
 end)
 
