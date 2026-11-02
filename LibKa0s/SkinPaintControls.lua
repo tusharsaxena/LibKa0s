@@ -77,7 +77,8 @@ if lib.__paintShellMinor ~= lib.MINOR or not lib.__P then return end   -- no hel
 -- Minor 16 (SF-L2 of Ka0sAddonsCommonTasks docs/2026-11-01-SMOKE_FEEDBACK): a sort header's arrows
 -- take `list.header.arrow`, a color of their own, where they took `icon.arrow`. Still minor 16, not
 -- yet shipped (R3-L3 of docs/2026-11-02-SMOKE_ROUND3): S.IconBorder draws a flat 1 px outline in
--- every skin, one physical pixel, and zooms the icon 0.07 (`opts.zoom`).
+-- every skin, one physical pixel, and zooms the icon 0.07 (`opts.zoom`). Still minor 16 (R3-L1):
+-- the WowStyle1 chevron is P.ddChevron, which SkinAce's AceGUI Dropdown draws too.
 local CONTROLS_MINOR = 16
 if lib.__controlsMinor and lib.__controlsMinor >= CONTROLS_MINOR
   and lib.__controlsShellMinor == lib.MINOR then return end
@@ -369,17 +370,26 @@ local function wowStyle(dd)
   return nil
 end
 
-local function wowArrow(owner, rec, dd, arrow, T)
-  P.fade(rec, arrow)
+--- A dropdown's one chevron: the owner's `chevron-down` as region `key` of `rec` on `host`, 6px in
+--- from the right of `bar`, in `tok`. Nil, and nothing made, without Media or an addon name. S.Dropdown's
+--- WowStyle1 arrow, and since R3-L1 (Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3) SkinAce's
+--- AceGUI Dropdown, so the two dropdowns wear one mark.
+function P.ddChevron(owner, rec, key, host, bar, T, tok)
   local art = stepArt(owner, "chevron-down")
-  local t = art and P.tex(rec, "wowArrow", dd, "OVERLAY", 7)
-  if not t then return end
+  local t = art and P.tex(rec, key, host, "OVERLAY", 7)
+  if not t then return nil end
   t:ClearAllPoints()
-  t:SetPoint("RIGHT", dd, "RIGHT", -6, 0)
+  t:SetPoint("RIGHT", bar, "RIGHT", -6, 0)
   t:SetSize(STEP_ICON, STEP_ICON)
   t:SetTexture(art)
   t:Show()
-  P.glyph(rec, t, T, "icon.arrow")
+  P.glyph(rec, t, T, tok)
+  return t
+end
+
+local function wowArrow(owner, rec, dd, arrow, T)
+  P.fade(rec, arrow)
+  P.ddChevron(owner, rec, "wowArrow", dd, dd, T, "icon.arrow")
 end
 
 local function wowLabel(rec, dd)

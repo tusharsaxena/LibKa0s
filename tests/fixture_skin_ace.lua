@@ -148,21 +148,33 @@ local function releasePullout(m, po)
   list[#list + 1] = po
 end
 
---- One pull-out item: a frame with its text and highlight, as Dropdown-Item-* carry them.
+--- One pull-out item: a frame with its text, highlight and check, as Dropdown-Item-* carry them.
 function A.item(m, label)
   local f = m.CreateFrame("Button", nil, m.UIParent)
-  local item = { frame = f, text = fs(f), highlight = tex(f, "OVERLAY") }
+  local item = { frame = f, text = fs(f), highlight = tex(f, "OVERLAY"), check = tex(f, "OVERLAY") }
   item.text:SetTextColor(1, 1, 1)
   item.text:SetText(label)
   return item
+end
+
+--- UIDropDownMenuTemplate's gold button, its four state textures (`<name>Button`, AceGUI's `button`).
+local function goldButton(m, parent)
+  local b = m.CreateFrame("Button", nil, parent)
+  for _, g in ipairs({ "Normal", "Pushed", "Disabled", "Highlight" }) do
+    local t = tex(b)
+    rawset(b, "Get" .. g .. "Texture", function() return t end)
+  end
+  return b
 end
 
 function DRESS.Dropdown(m, w, f)
   local dd = m.CreateFrame("Frame", nil, f)
   pieces(dd)
   w.dropdown = dd
+  w.button = goldButton(m, dd)
   w.button_cover = m.CreateFrame("Button", nil, f)
   w.text, w.label = fs(dd), fs(f)
+  w.text:SetJustifyH("RIGHT")   -- the template's Text, which AceGUI leaves right-aligned
   w.SetDisabled = function(self, d)
     self.disabled = d
     if d then self.text:SetTextColor(0.5, 0.5, 0.5) else self.text:SetTextColor(1, 1, 1) end
@@ -261,6 +273,11 @@ DRESS[A.HOST_DROPDOWN] = function(m, w, f)
     self.text:SetJustifyH("LEFT")
   end
 end
+
+-- The library's media pickers (OptionsMedia.lua) are AceGUI's Dropdown under a type name of their
+-- own, aliased to it for the skin; their preview is OptionsMedia's, not the fixture's.
+A.MEDIA_TYPES = { "Ka0sMedia_Font", "Ka0sMedia_Statusbar" }
+for _, t in ipairs(A.MEDIA_TYPES) do DRESS[t] = DRESS.Dropdown end
 
 -- ── the TreeGroup (AceGUI's TreeGroup v49) ────────────────────────────────────────────────────
 

@@ -87,6 +87,7 @@ local function justify(rec, fs, align)
     priors[fs] = nil
   end
 end
+P.justify = justify   -- SkinAce's AceGUI Dropdown label (R3-L1); P.unpaint gives the prior back
 
 -- Where a placed title stands: the token's edge, in from it by what the host reserved for controls.
 local TITLE_INSET = 8

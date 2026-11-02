@@ -2905,6 +2905,16 @@ Total.
 - step arrows: an ignored settings panel keeps the client's buttons, live both ways
 - step arrows: a MultiLineEditBox's bar wears them
 
+### test_skin_ace_dropdown.lua (7)
+
+- skin ace dropdown: a Dropdown is the skinned dropdown, label left, one chevron, no gold button
+- skin ace dropdown: a disabled Dropdown's chevron reads in text.disabled, and back
+- skin ace dropdown: a released Dropdown is stock: right-aligned, the gold button back, no chevron
+- skin ace dropdown: the media pickers paint the same, their preview's anchors untouched
+- skin ace dropdown: Ignore settings panel keeps the stock row, gold button and all
+- skin ace dropdown: with no Media to draw a chevron, the gold button stays
+- skin ace dropdown: an open pull-out's check marks take check.mark, and are stock on close
+
 ### test_widgets_small_misses.lua (12)
 
 - small misses: Ka0s Default's new tokens draw what it drew, every other skin's its own role
@@ -4574,6 +4584,7 @@ Total.
 | test_skin_marks.lua | 18 |
 | test_skin_ace_confirm.lua | 13 |
 | test_skin_step_arrows.lua | 11 |
+| test_skin_ace_dropdown.lua | 7 |
 | test_widgets_small_misses.lua | 12 |
 | test_title_shape.lua | 10 |
 | test_options_switched.lua | 16 |
@@ -4644,4 +4655,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3938** |
+| **Total** | **3945** |
