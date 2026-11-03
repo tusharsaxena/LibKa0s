@@ -2662,7 +2662,7 @@ Total.
 
 ### test_options_skin_picker.lua (41)
 
-- skin picker: OptionsSkinPicker is minor 10, paired on the shell, and attaches three members
+- skin picker: OptionsSkinPicker is minor 11, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -2732,6 +2732,31 @@ Total.
 - skin picker close: an open list hidden with its window's parent listens again when shown
 - skin picker close: a press arriving after the list closed calls nothing and lets go
 - skin picker close: without Core's SafeRegisterEvent the list registers nothing and still toggles
+
+### test_options_skin_picker_preview.lua (22)
+
+- skin picker preview: OptionsSkinPicker is minor 11, with the eye's per-mode words
+- skin picker preview: a fresh show with the surface hidden and the mode off enters it, then raises
+- skin picker preview: a host with no isShown counts as hidden
+- skin picker preview: a shown surface, or a mode already on, is not entered and not undone
+- skin picker preview: a repeat call while up neither records again nor enters again
+- skin picker preview: the eye toggles the mode, lit while on, with an on and an off tooltip
+- skin picker preview: the tooltip is worded per mode, and the glyph dims without Media
+- skin picker preview: the eye refreshes the window's raise and survives a raising hook
+- skin picker preview: every close route turns off what the picker turned on, before onClose
+- skin picker preview: Apply to all restores this owner's mode too
+- skin picker preview: an eye that turned off a mode on at open turns it back on at the close
+- skin picker preview: the eye turned back to the opening state leaves nothing to undo
+- skin picker preview: a refused enter changes nothing, so the close undoes nothing
+- skin picker preview: a hide of UIParent (Alt-Z) is not a close
+- skin picker preview: a restore refused in combat runs when combat ends
+- skin picker preview: two owners: each records its own, and A restores before B enters
+- skin picker preview: Apply to all dismisses a queued owner without entering or restoring it
+- skin picker preview: HideSkinPicker on a queued owner's instance touches nothing of it
+- skin picker preview: a spec with only onPreview keeps the one-shot eye: no enter, no restore
+- skin picker preview: with both, spec.preview wins and onPreview is never called
+- skin picker preview: an incomplete spec.preview is ignored, and the eye hides without onPreview
+- skin picker preview: an eye dimmed under spec.preview is lit again for a later onPreview-only show
 
 ### test_options_skin_picker_faces.lua (15)
 
@@ -4675,6 +4700,7 @@ Total.
 | test_options_skin_picker.lua | 41 |
 | test_options_skin_picker_shared.lua | 10 |
 | test_options_skin_picker_close.lua | 13 |
+| test_options_skin_picker_preview.lua | 22 |
 | test_options_skin_picker_faces.lua | 15 |
 | test_options_skin_picker_rows.lua | 53 |
 | test_options_skin_verb.lua | 7 |
@@ -4760,4 +4786,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4030** |
+| **Total** | **4052** |
