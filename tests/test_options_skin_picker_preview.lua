@@ -402,3 +402,22 @@ test("skin picker preview: an eye dimmed under spec.preview is lit again for a l
   assertNil(f.preview.lit)
   assertEqual(f.preview.__tip, lib.SKIN_PICKER_STRINGS.PREVIEW_TIP)
 end)
+
+test("skin picker preview: a click on the hovered eye rewords the tooltip it shows", function()
+  -- red under: the eye repainted __tip but the tooltip up under the pointer kept the old words.
+  local h = host()
+  local f, _, _, m, lib = open(h)
+  local tip, text, owner = m.GameTooltip, nil, nil
+  rawset(tip, "SetOwner", function(_, o) owner = o end)
+  rawset(tip, "IsOwned", function(_, o) return o == owner end)
+  rawset(tip, "Show", function() end)
+  rawset(tip, "SetText", function(_, t) text = t end)
+  f.preview:__fire("OnEnter")
+  assertEqual(text, lib.SKIN_PICKER_STRINGS.PREVIEW_TEST_ON)
+  f.preview:__fire("OnClick")
+  assertEqual(text, lib.SKIN_PICKER_STRINGS.PREVIEW_TEST_OFF, "the shown tooltip follows the click")
+  owner = nil
+  text = nil
+  f.preview:__fire("OnClick")
+  assertNil(text, "a tooltip the eye does not own is left alone")
+end)

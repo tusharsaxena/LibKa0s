@@ -1036,6 +1036,8 @@ function lib.__AttachSkinPicker(O, d)
       p.previewWas = p.previewWas or previewState(h)
       previewCall(p, h, modeOn(h) and "exit" or "enter", "eye")
       paintEye(p)
+      local eye, tip = p.frame.preview, GameTooltip  -- a tooltip up under the pointer takes the new words
+      if tip and type(tip.IsOwned) == "function" and tip:IsOwned(eye) then eye:GetScript("OnEnter")(eye) end
     else
       safeCall(p.spec.onPreview)
     end

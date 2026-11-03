@@ -2733,7 +2733,7 @@ Total.
 - skin picker close: a press arriving after the list closed calls nothing and lets go
 - skin picker close: without Core's SafeRegisterEvent the list registers nothing and still toggles
 
-### test_options_skin_picker_preview.lua (22)
+### test_options_skin_picker_preview.lua (23)
 
 - skin picker preview: OptionsSkinPicker is minor 11, with the eye's per-mode words
 - skin picker preview: a fresh show with the surface hidden and the mode off enters it, then raises
@@ -2757,6 +2757,7 @@ Total.
 - skin picker preview: with both, spec.preview wins and onPreview is never called
 - skin picker preview: an incomplete spec.preview is ignored, and the eye hides without onPreview
 - skin picker preview: an eye dimmed under spec.preview is lit again for a later onPreview-only show
+- skin picker preview: a click on the hovered eye rewords the tooltip it shows
 
 ### test_options_skin_picker_faces.lua (15)
 
@@ -4700,7 +4701,7 @@ Total.
 | test_options_skin_picker.lua | 41 |
 | test_options_skin_picker_shared.lua | 10 |
 | test_options_skin_picker_close.lua | 13 |
-| test_options_skin_picker_preview.lua | 22 |
+| test_options_skin_picker_preview.lua | 23 |
 | test_options_skin_picker_faces.lua | 15 |
 | test_options_skin_picker_rows.lua | 53 |
 | test_options_skin_verb.lua | 7 |
@@ -4786,4 +4787,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4052** |
+| **Total** | **4053** |
