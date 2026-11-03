@@ -189,6 +189,9 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 --- `icon.arrow` is; the arrows elsewhere stay `icon.arrow`.
 --- Then (SF-L4, still minor 26): Ka0s Default's `title.bg` is black at 0.9, where it sat one step
 --- under its window, so its header stands off its content as the owner asked of every skin.
+--- Then (R4-L2 of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND4, still minor 26): that black
+--- read as one near-black with the body, so the band is the owner's dark gold gradient, opaque, and
+--- `title.bg` its blend; the picker's second swatch is the header.
 local DEFS_MINOR = 26
 if lib.__defsMinor and lib.__defsMinor >= DEFS_MINOR
   and lib.__defsShellMinor == lib.MINOR then return end
@@ -474,7 +477,12 @@ local KA0S = {
   -- palette, the client's quality colors written out, or `false`, the explicit "none" (a decoration
   -- Ka0s Default does not draw, which is a setting, not a fallback).
   ["win.bgTop"] = false, ["win.bgBottom"] = false, ["win.bgTexture"] = false,
-  ["title.bg"] = { 0, 0, 0, 0.9 }, ["title.bgTop"] = false, ["title.bgBottom"] = false,
+  -- The title band (R4-L2 of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND4, the owner's option
+  -- E): an opaque dark gold gradient, #3A2F0A at the top to #1F1905, lighter than the body and under
+  -- the gold title. `title.bg` is the blend, #2C2408, for a flat reader (MultiMeters' meter header).
+  ["title.bg"] = { 0x2c / 255, 0x24 / 255, 0x08 / 255, 1 },
+  ["title.bgTop"] = { 0x3a / 255, 0x2f / 255, 0x0a / 255, 1 },
+  ["title.bgBottom"] = { 0x1f / 255, 0x19 / 255, 0x05 / 255, 1 },
   ["title.align"] = "CENTER", ["foot.bg"] = { 0.04, 0.04, 0.05, 0.9 },
   ["btn.bgTop"] = false, ["btn.bgBottom"] = false, ["btnPrimary.bgTop"] = false, ["btnPrimary.bgBottom"] = false,
   ["input.text"] = BODY, ["input.placeholder"] = DIM,
@@ -507,6 +515,6 @@ lib:RegisterSkin({
   key = "ka0s",
   label = "Ka0s Default",
   desc = "Today's look: dark panels, hard 1px black edges, gold titles.",
-  swatches = { "#0f0f14", "#000000", "#3d3d45", "#ffd100" },
+  swatches = { "#0f0f14", "#2c2408", "#3d3d45", "#ffd100" },
   tokens = KA0S,
 })

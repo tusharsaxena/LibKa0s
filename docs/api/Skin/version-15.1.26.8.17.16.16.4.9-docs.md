@@ -16,7 +16,13 @@
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 15, SkinOwnerTokens = 1, SkinDefs = 26, SkinDefsOthers = 8, SkinPaint = 17, SkinPaintExtras = 16, SkinPaintControls = 16, SkinEUI = 4, SkinAce = 9 }` |
 
-## What changed at this version: the owner's third smoke round (`R3-DR-1L`, `R3-L1`, `R3-L2`, `R3-L3`, `R3-L4`, `R3-L5`, `R3-L6`, `R3-L7`)
+## What changed at this version: the owner's fourth smoke round (`R4-L2`)
+
+No minor moves: `SkinDefs.lua` **26** is not yet shipped (Ka0sAddonsCommonTasks `docs/2026-11-03-SMOKE_ROUND4/`, the owner's sign-off in `R4_SIGNOFF.md`).
+
+- **Ka0s Default's title band is a dark gold gradient** (`R4-L2`, the owner's option E, images 8 to 10): `title.bgTop` `#3A2F0A` over `title.bgBottom` `#1F1905`, both opaque, where `title.bg` was black at 0.9 and read as one near-black with the body (`#010102` on `#0E0E12`, composited). `title.bg` is the blend, `#2C2408`, which a flat reader draws: `P.fill` draws the gradient wherever both stops are set, so `S.Shell`'s top band and `S.TitleBar` draw it, and MultiMeters' meter header strip, which reads `title.bg` with a flat `SetColorTexture`, draws the blend. The picker's second Ka0s Default swatch is `#2c2408`, the header, where it was `#000000`. Every stop stands off the body (6.6% at the dark end) and under the gold title. **This moves a look** in every window under Ka0s Default; a host's copy of Ka0s Default's `title.bg` moves with it (MultiMeters' `NS.SKIN_FALLBACK`, pinned equal to the live value by its `tests/test_skinsetup.lua`).
+
+## What changed at an earlier step of this version: the owner's third smoke round (`R3-DR-1L`, `R3-L1`, `R3-L2`, `R3-L3`, `R3-L4`, `R3-L5`, `R3-L6`, `R3-L7`)
 
 No minor moves: `SkinPaint.lua` **17**, `SkinPaintExtras.lua` **16**, `SkinPaintControls.lua` **16**, `SkinDefsOthers.lua` **8** and `SkinAce.lua` **9** are not yet shipped (Ka0sAddonsCommonTasks `docs/2026-11-02-SMOKE_ROUND3/`).
 
@@ -703,9 +709,9 @@ eight skins*, below.
 | `win.inner` | color | yes | `0.24, 0.24, 0.27, 0.85` |
 | `win.inset` | number | no | `1` |
 | `win.radius` | number | no | `0` |
-| `title.bg` | color | yes | `0, 0, 0, 0.9` |
-| `title.bgTop` | color | yes | none (`false`) |
-| `title.bgBottom` | color | yes | none (`false`) |
+| `title.bg` | color | yes | `#2C2408`, opaque: the blend of the gradient below, for a flat reader (`R4-L2`) |
+| `title.bgTop` | color | yes | `#3A2F0A`, opaque (`R4-L2`) |
+| `title.bgBottom` | color | yes | `#1F1905`, opaque (`R4-L2`) |
 | `title.text` | color | no | `1, 0.82, 0, 1` |
 | `title.rule` | color | yes | `false` (the client's atlas, tinted `title.text`) |
 | `title.align` | string | yes | `"CENTER"` |
@@ -1236,7 +1242,7 @@ that code's call, the tokens carry that code's values:
 | `Divider(texture)` | Core.ApplySkin's divider |
 | `Strip(texture, opts)` | `W.TestStrip`'s fill (`STRIP_FILL`, test and sim) |
 | `Cover(texture, { text })` | OptionsCombat's dim and its line |
-| `TitleBar(bar)` | the gold title, centered, over Ka0s Default's `title.bg` (SkinDefs minor 8) |
+| `TitleBar(bar)` | the gold title, centered, over Ka0s Default's `title.bgTop` / `title.bgBottom` gradient (SkinDefs minor 8; a gradient since `R4-L2`) |
 | `Footer(frame)`, `Tooltip(frame)` | Ka0s Default's `foot.bg` band and `tooltip.bg` / `tooltip.border` (SkinDefs minor 8) |
 | `Button(btn)` | LootHistory's flat button (`modules/BrowserFilterBar.lua`), its gold-on-hover label |
 | `EditBox(eb)` | `W.SearchBox`, run for real: its backdrop, fill and edge |

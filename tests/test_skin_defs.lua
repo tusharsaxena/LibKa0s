@@ -733,18 +733,79 @@ test("skin defs: a hovered row still stands off an alternate row", function()
   end
 end)
 
+--- The colors a title band draws: its flat `title.bg`, and both stops of its gradient when it has
+--- one (P.fill draws the gradient then, and the flat token only reaches a flat reader).
+local function bandStops(t)
+  local stops = { { "title.bg", t["title.bg"] } }
+  if t["title.bgTop"] and t["title.bgBottom"] then
+    stops[2] = { "title.bgTop", t["title.bgTop"] }
+    stops[3] = { "title.bgBottom", t["title.bgBottom"] }
+  end
+  return stops
+end
+
 test("skin defs: a window's header stands off its content, with a rule that shows", function()
   -- SF-L4, images 65 to 69. red under: Obsidian's title band one step from its body under a rule
-  -- no brighter than either, or High Contrast's black band on black.
+  -- no brighter than either, or High Contrast's black band on black. R4-L2 of Ka0sAddonsCommonTasks
+  -- docs/2026-11-03-SMOKE_ROUND4: a gradient band's `title.bg` is held to be its blend (the next
+  -- case), so the 5% floor reads the band's mean as drawn, never a flat token the window does not
+  -- draw. Ka0s Default's band, which R4-L2 makes a gradient, is held at both stops as well. Ember's
+  -- and WoW Midnight's dark ends are not: they stand 4.5% and 1.6% off their bodies, signed off as
+  -- they are in R4_MOCKUP.html. red under: Ka0s Default's black band at 0.9, or a dark end of its
+  -- gradient that melts into the body while its blend passes.
   local Skin = skinLib()
   for _, key in ipairs(KEYS) do
     local t = Skin:ResolveSkin(key)
     local win = over(t["win.bg"], BLACK)
-    local band = over(t["title.bg"], win)
-    assertTrue(apart(band, win) >= 0.05, key .. ": the title band stands off the content")
     local rule = over(t["divider"], win)
-    assertTrue(apart(rule, win) >= 0.1 and apart(rule, band) >= 0.1, key .. ": the rule shows against both")
+    assertTrue(apart(rule, win) >= 0.1, key .. ": the rule shows against the content")
+    local stops = key == "ka0s" and bandStops(t) or { { "title.bg", t["title.bg"] } }
+    for _, stop in ipairs(stops) do
+      local band = over(stop[2], win)
+      assertTrue(apart(band, win) >= 0.05, ("%s: %s stands %.1f%% off the content, want 5%%"):format(
+        key, stop[1], apart(band, win) * 100))
+      assertTrue(apart(rule, band) >= 0.1, key .. ": the rule shows against " .. stop[1])
+    end
   end
+end)
+
+test("skin defs: a gradient title band's flat title.bg is its blend", function()
+  -- R4-L2. A flat reader (MultiMeters' meter header strip, a host's fallback copy) draws `title.bg`
+  -- where the window draws the gradient, so the two must read as one color. red under: a gradient
+  -- retuned with its flat token left on the old band, Ka0s Default's black among them.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    local top, bottom = t["title.bgTop"], t["title.bgBottom"]
+    if top and bottom then
+      for i = 1, 4 do
+        local mid = ((top[i] or 1) + (bottom[i] or 1)) / 2
+        assertTrue(math.abs((t["title.bg"][i] or 1) - mid) <= 1 / 255,
+          ("%s: title.bg channel %d is %.3f, the blend %.3f"):format(key, i, t["title.bg"][i] or 1, mid))
+      end
+    end
+  end
+end)
+
+test("skin defs: Ka0s Default's header is the owner's dark gold gradient, lighter than its body", function()
+  -- R4-L2, the owner's option E of R4_MOCKUP.html. red under: SF-L4's black band at 0.9, which passed
+  -- the 5% floor as #010102 on #0E0E12 and read as one near-black (images 8 to 10), or the picker's
+  -- second swatch left on the old black.
+  local Skin = skinLib()
+  local t = Skin:ResolveSkin("ka0s")
+  local function hex(c) return ("#%02X%02X%02X"):format(
+    math.floor(c[1] * 255 + 0.5), math.floor(c[2] * 255 + 0.5), math.floor(c[3] * 255 + 0.5)) end
+  assertEqual(hex(t["title.bgTop"]), "#3A2F0A", "the top stop")
+  assertEqual(hex(t["title.bgBottom"]), "#1F1905", "the bottom stop")
+  assertEqual(hex(t["title.bg"]), "#2C2408", "the flat blend")
+  for _, stop in ipairs(bandStops(t)) do
+    assertEqual(stop[2][4] or 1, 1, stop[1] .. " is opaque")
+  end
+  local win = over(t["win.bg"], BLACK)
+  for _, stop in ipairs(bandStops(t)) do
+    assertTrue(luminance(over(stop[2], win)) > luminance(win), stop[1] .. " is lighter than the body")
+  end
+  assertEqual(Skin:GetSkin("ka0s").swatches[2], "#2c2408", "the picker's second swatch is the header")
 end)
 
 test("skin defs: a table header wears the skin's color, and its sort arrow another", function()

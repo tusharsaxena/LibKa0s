@@ -723,7 +723,7 @@ Total.
 - skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
 - skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (39)
+### test_skin_defs.lua (41)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -760,6 +760,8 @@ Total.
 - skin defs: alternate rows show in every skin
 - skin defs: a hovered row still stands off an alternate row
 - skin defs: a window's header stands off its content, with a rule that shows
+- skin defs: a gradient title band's flat title.bg is its blend
+- skin defs: Ka0s Default's header is the owner's dark gold gradient, lighter than its body
 - skin defs: a table header wears the skin's color, and its sort arrow another
 - skin defs: Ka0s Default states its settings art, and every other skin an edge and a rule
 - skin defs: the settings typed-color tokens keep Ka0s Default's yellow and read in every other skin
@@ -4541,7 +4543,7 @@ Total.
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 14 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 39 |
+| test_skin_defs.lua | 41 |
 | test_skin_hud_tokens.lua | 6 |
 | test_skin_hud_members.lua | 30 |
 | test_skin_host_gaps.lua | 46 |
@@ -4690,4 +4692,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3976** |
+| **Total** | **3978** |

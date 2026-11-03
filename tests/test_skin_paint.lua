@@ -17,6 +17,18 @@ local OWNER = "LootHistory"
 
 local function survey(m, obj) return m.__paint(obj) end
 
+--- Ka0s Default's title band is a vertical gradient (R4-L2 of Ka0sAddonsCommonTasks
+--- docs/2026-11-03-SMOKE_ROUND4): white under `title.bgTop` over `title.bgBottom`, never its flat blend.
+local function assertKa0sBand(m, Skin, tex, msg)
+  local p = survey(m, tex)
+  assertEqual(F.rgba(p.color), "1,1,1,1", msg .. ": white under the gradient")
+  local g = p.gradient
+  assertTrue(g ~= nil, msg .. ": a gradient")
+  assertEqual(g.orientation, "VERTICAL", msg)
+  assertEqual(F.rgba({ g.max.r, g.max.g, g.max.b, g.max.a }), F.tok(Skin, "ka0s", "title.bgTop"), msg .. ": top")
+  assertEqual(F.rgba({ g.min.r, g.min.g, g.min.b, g.min.a }), F.tok(Skin, "ka0s", "title.bgBottom"), msg .. ": bottom")
+end
+
 --- Run `paint(target)` on a fresh window with the tracer on; answers the trace text.
 local function traceOn(m, names, build, paint)
   local tr = F.tracer(m, names)
@@ -132,8 +144,7 @@ test("skin paint: a skin switch repaints a Shell live, and back to Ka0s Default 
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
   assertEqual(F.rgba(survey(m, f).backdropColor), F.rgba(core.SKIN.bg), "Ka0s Default's fill again")
   assertFalse(grad:IsShown(), "the gradient is hidden")
-  assertEqual(F.rgba(survey(m, F.region(Skin, f, "top")).color), F.tok(Skin, "ka0s", "title.bg"),
-    "the title band wears Ka0s Default's title.bg (minor 8)")
+  assertKa0sBand(m, Skin, F.region(Skin, f, "top"), "the title band wears Ka0s Default's gradient (R4-L2)")
   assertEqual(F.rgba(survey(m, inner).color), F.rgba(core.SKIN.innerBorder))
   assertTrue(inner:IsShown(), "Ka0s Default's inner rule again")
 end)
@@ -477,7 +488,7 @@ test("skin paint: TitleBar on Ka0s Default fills its bar and centers its gold ti
   S.TitleBar(bar)
   assertEqual(F.rgba(survey(m, bar.title).textColor), F.tok(Skin, "ka0s", "title.text"), "the gold title")
   assertEqual(bar.title:GetJustifyH(), "CENTER", "centered")
-  assertEqual(F.rgba(survey(m, F.region(Skin, bar, "fill")).color), F.tok(Skin, "ka0s", "title.bg"), "the fill")
+  assertKa0sBand(m, Skin, F.region(Skin, bar, "fill"), "the fill")
 end)
 
 test("skin paint: TitleBar fills under its text, centers its title, and gives the alignment back", function()
@@ -494,7 +505,7 @@ test("skin paint: TitleBar fills under its text, centers its title, and gives th
   assertEqual(fs:GetJustifyH(), "CENTER", "WoW Forever centers its titles")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
   assertEqual(fs:GetJustifyH(), "CENTER", "so does Ka0s Default (minor 8)")
-  assertEqual(F.rgba(survey(m, fill).color), F.tok(Skin, "ka0s", "title.bg"), "in its own title fill")
+  assertKa0sBand(m, Skin, fill, "in its own title fill")
 end)
 
 test("skin paint: Divider colors a texture in place, as Core's divider is colored", function()
