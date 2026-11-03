@@ -29,6 +29,21 @@ added, removed or renamed, so `members-15.json` lists the same names as version 
   anchor after a drag, with the size the drag made. The anchors are read at mouse-down and restored at
   mouse-up. A window anchored to `UIParent` behaves as before: the drag's anchor stands.
 
+**`ApplySkin` hides the line under a window's title** (`Core.lua` minor **15**, not yet shipped, so no
+bump; `R4-SEP` of Ka0sAddonsCommonTasks `docs/2026-11-03-SMOKE_ROUND4/`, the owner's "no separator line
+below header" for every window of every addon, images 23 to 29). No member moves.
+
+- A `frame.divider` (a table with `Hide`) is hidden on every call, whatever `skin` says, where it was
+  tinted `skin.divider` and left shown. The title tint, the backdrop and the inner border are as they
+  were. Through `S.Shell`, which reaches this seam, no Shell-painted window draws the rule under any
+  skin: DpsRace's HUD and Results, Drop Watcher's main window, WhatGroup's popup and every debug
+  console (whose own divider `LibKa0s-DebugLog-1.0` no longer makes). `lib.SKIN.divider` keeps its
+  value, which Ka0s Default's `divider` token equals, for a body rule drawn in it.
+- **This moves a look** in every window that carried the convention. **Hosts owe**: a header line a
+  host draws itself, not as `frame.divider` (BankLedger's ledger and session window, Loot History's
+  browser, DpsRace's Gear and Timeline modals, MultiMeters' meter window), is the host's to remove; a
+  host test that pinned the divider's tint reads it hidden.
+
 ### Version 14, for the record
 
 **The resize grip takes a skin owner** (`Core.lua` minor **14**; LK-06b of Ka0sAddonsCommonTasks
@@ -451,7 +466,7 @@ Read straight off the LibStub table — `LibStub("LibKa0s-Core-1.0").SafeToStrin
 | `SafeToString(v)` | 1 | Concat-safe stringifier. Ordinary values → `tostring(v)`; an un-concatenable (secret) value → `lib.SECRET`. `nil` and booleans are answered up front, so they are never masked. |
 | `SECRET` | 1 | What an un-renderable value renders as (`"<secret>"`). Exported so a host's tests, its docs and this implementation cannot drift apart. |
 | `SKIN` | 1 | The one skin every Ka0s window wears. **Values changed at minor 3** and three keys were added — see [The skin table](#the-skin-table). Backdrop fields and every color travel in one table, because taking the backdrop without the colors is exactly the drift this prevents. |
-| `ApplySkin(frame[, skin[, owner]])` | 1 (2nd arg: 3; 3rd arg: **13**) | Wear the skin. Makes the three calls a table cannot describe as well as the backdrop: the inner-border child frame (built once, re-tinted after), the title tint and the divider tint — each guarded on the skin key AND the frame member, so a window with no divider is fine. `skin` defaults to `lib.SKIN`; it exists so DebugLog's `skin` override reaches one implementation. A no-op on a frame with no `SetBackdrop`: undecorated is not broken. `owner`, a registered skin owner, hands the window to that owner's facade after the paint (`S.Shell`), so it wears and follows the owner's skin; any other value changes nothing. See [What changed at this version](#what-changed-at-this-version). |
+| `ApplySkin(frame[, skin[, owner]])` | 1 (2nd arg: 3; 3rd arg: **13**) | Wear the skin. Makes the three calls a table cannot describe as well as the backdrop: the inner-border child frame (built once, re-tinted after), the title tint, and (until `R4-SEP`, at this version) the divider tint — each guarded on the skin key AND the frame member, so a window with no divider is fine. Since `R4-SEP` a `frame.divider` is hidden on every call, never tinted: no Ka0s window draws a line under its title. `skin` defaults to `lib.SKIN`; it exists so DebugLog's `skin` override reaches one implementation. A no-op on a frame with no `SetBackdrop`: undecorated is not broken. `owner`, a registered skin owner, hands the window to that owner's facade after the paint (`S.Shell`), so it wears and follows the owner's skin; any other value changes nothing. See [What changed at this version](#what-changed-at-this-version). |
 | `RGBA(c, dr, dg, db, da)` | 4 | Read a stored color in **either** shape the collection persists — keyed `{ r =, g =, b =, a = }` or positional `{ r, g, b, a }` — and return four **numbers**, never a table. See [Reading a stored color](#reading-a-stored-color). |
 | `ClassColor([unit])` | **7** | `r, g, b` for the unit's class, out of `RAID_CLASS_COLORS`, or **`nil`** where there is no class color to give. `unit` defaults to `"player"`, whose answer is memoized on success; no other unit is cached. See [The one class-color resolver](#the-one-class-color-resolver). |
 | `ResolveColor(stored, on[, unit])` | **7** | `r, g, b, a` for a stored swatch read through its *use class color* companion. The stored alpha always applies; an unresolvable class falls through to the stored rgb. See [`ResolveColor(stored, on, unit)` — three rules, ratified](#resolvecolorstored-on-unit--three-rules-ratified). |
@@ -485,7 +500,7 @@ backdrop instead of reading this table is the drift the table exists to prevent.
 | `bg` | `{ 0.06, 0.06, 0.08, 0.92 }` | **changed at 3** — was `{ 0.06, 0.06, 0.07, 0.95 }` |
 | `border` | `{ 0, 0, 0, 1 }` | unchanged since 1 |
 | `innerBorder` | `{ 0.24, 0.24, 0.27, 0.85 }` | **new at 3** |
-| `divider` | `{ 0.24, 0.24, 0.27, 0.85 }` | **new at 3** |
+| `divider` | `{ 0.24, 0.24, 0.27, 0.85 }` | **new at 3**; not drawn by `ApplySkin` since `R4-SEP` (minor 15), which hides `frame.divider` |
 | `title` | `{ 1.0, 0.82, 0.0 }` | **new at 3** |
 
 A host on Core 3 that passes its own `applySkin` to DebugLog is now overriding a default that

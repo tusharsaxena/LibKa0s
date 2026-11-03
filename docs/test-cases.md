@@ -34,7 +34,7 @@ Total.
 - core: SKIN is the flat 1px Ka0s edge, not the 12px tooltip border
 - core: ApplySkin synthesizes the inner highlight, exactly once
 - core: ApplySkin survives a frame whose metatable answers every key
-- core: ApplySkin tints a title and a divider when the frame carries them
+- core: ApplySkin tints a title and hides a divider when the frame carries them
 - core: ApplySkin lays the backdrop down before anything drawn on top of it
 - core: ApplySkin tolerates a frame with neither a title nor a divider
 - core: ApplySkin honors an explicit skin table
@@ -763,7 +763,7 @@ Total.
 - skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read in every other skin
 - skin defs: alternate rows show in every skin
 - skin defs: a hovered row still stands off an alternate row
-- skin defs: a window's header stands off its content, with a rule that shows
+- skin defs: a window's header stands off its content, and the divider rule shows against both
 - skin defs: a gradient title band's flat title.bg is its blend
 - skin defs: Ka0s Default's header is the owner's dark gold gradient, lighter than its body
 - skin defs: a table header wears the skin's color, and its sort arrow another
@@ -896,13 +896,14 @@ Total.
 - skin button contrast: a close button's glyph painted faded is drawn opaque on a hover and after it
 - skin button contrast: every skin's enabled button label holds 3:1 on its fill, well clear of disabled
 
-### test_skin_paint.lua (43)
+### test_skin_paint.lua (44)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
 - skin paint: with no skin registered a primitive paints nothing it has no token for
 - skin paint: Shell on Ka0s Default draws Core.SKIN's window from its tokens
 - skin paint: Shell paints a skin's window from its tokens
+- skin paint: no Shell-painted window draws a line under its title, through every skin switch
 - skin paint: a second Shell call makes no new region and paints the same
 - skin paint: a skin switch repaints a Shell live, and back to Ka0s Default exactly
 - skin paint: WoW Default's window is the dialog edge on the holder over the tiled art
@@ -4553,7 +4554,7 @@ Total.
 | test_skin_host_gaps.lua | 46 |
 | test_skin_width_parity.lua | 18 |
 | test_skin_button_contrast.lua | 10 |
-| test_skin_paint.lua | 43 |
+| test_skin_paint.lua | 44 |
 | test_skin_paint_controls.lua | 35 |
 | test_skin_eui.lua | 30 |
 | test_skin_ace.lua | 28 |
@@ -4696,4 +4697,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3982** |
+| **Total** | **3983** |

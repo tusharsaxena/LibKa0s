@@ -109,7 +109,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15](./Core/version-15-docs.md) | **`Core.lua` 15** (`MakeResizable` puts a frame anchored to another frame back on its anchor after a drag; no new member) | v1.85.0 | **Current** |
+| [15](./Core/version-15-docs.md) | **`Core.lua` 15** (`MakeResizable` puts a frame anchored to another frame back on its anchor after a drag; `ApplySkin` hides `frame.divider`, no line under a title; no new member) | v1.85.0 | **Current** |
 | [14](./Core/version-14-docs.md) | `Core.lua` 14 (`MakeResizable`'s `opts.owner`: a registered skin owner's `icon.grip` tints the grip's art, live; no new member) | v1.81.0 – v1.84.0 | Superseded |
 | [13](./Core/version-13-docs.md) | **`Core.lua` 13** (`ApplySkin`'s `owner` and `MakeCloseButton`'s `addonName` paint through a registered skin owner's facade; no new member) | v1.78.0 – v1.80.0 | Superseded |
 | [12](./Core/version-12-docs.md) | **`Core.lua` 12** (`RaiseStaticPopups`: the tool windows re-raise a shown StaticPopup) | v1.77.0 | Superseded |
@@ -285,7 +285,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.6.1.3](./DebugLog/version-22.6.1.3-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 3** (a 30 high title bar) | v1.85.0 | **Current** |
+| [22.6.1.3](./DebugLog/version-22.6.1.3-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 3** (a 30 high title bar; no divider under it) | v1.85.0 | **Current** |
 | [22.6.1.2](./DebugLog/version-22.6.1.2-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 6** (the identity header names Charts) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 2 | v1.84.0 | Superseded |
 | [22.5.1.2](./DebugLog/version-22.5.1.2-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 5 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 2** (an owned console's title-bar labels in its skin's body face, so *Ignore fonts* reaches them; its resize grip wears its skin; no new member) | v1.81.0 – v1.83.0 | Superseded |
 | [22.5.1.1](./DebugLog/version-22.5.1.1-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 5** (the identity header names Toast) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 1 | v1.79.0 – v1.80.0 | Superseded |

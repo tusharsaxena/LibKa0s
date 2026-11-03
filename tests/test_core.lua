@@ -331,14 +331,23 @@ test("core: ApplySkin survives a frame whose metatable answers every key", funct
   T.assertTrue(type(rawget(answersEverything, "innerBorder")) == "table",
     "and it must have replaced the synthesized answer with a real inner-border frame")
 end)
-test("core: ApplySkin tints a title and a divider when the frame carries them", function()
+test("core: ApplySkin tints a title and hides a divider when the frame carries them", function()
+  -- R4-SEP of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND4: no line under any window's title,
+  -- the Skin Tester's showroom being the reference. red under: the divider tinted gray and shown,
+  -- the line the owner saw under every console and window header (images 23 to 29).
   local frame = recorderFrame()
-  local tinted, drawn
+  local tinted, drawn, hidden
   frame.title = { SetTextColor = function(_, r, g, b) tinted = { r, g, b } end }
-  frame.divider = { SetColorTexture = function(_, r, g, b, a) drawn = { r, g, b, a } end }
+  frame.divider = { SetColorTexture = function(_, r, g, b, a) drawn = { r, g, b, a } end,
+                    Hide = function() hidden = true end }
   core.ApplySkin(frame)
   assertEqual(table.concat(tinted, ","), "1,0.82,0", "the title is Blizzard gold")
-  assertEqual(table.concat(drawn, ","), "0.24,0.24,0.27,0.85", "the divider is the gray line")
+  assertEqual(hidden, true, "the divider is hidden")
+  assertEqual(drawn, nil, "and never colored")
+  hidden = nil
+  core.ApplySkin(frame, { title = { 1, 1, 1 }, divider = { 1, 0, 0, 1 } })
+  assertEqual(hidden, true, "a host's own skin table hides it too")
+  assertEqual(drawn, nil, "its divider color is not drawn")
 end)
 
 test("core: ApplySkin lays the backdrop down before anything drawn on top of it", function()
@@ -357,7 +366,8 @@ test("core: ApplySkin lays the backdrop down before anything drawn on top of it"
     SetPoint = function(self, ...) self.points[#self.points + 1] = { ... } end,
   }
   frame.title   = { SetTextColor    = function() order[#order + 1] = "title" end }
-  frame.divider = { SetColorTexture = function() order[#order + 1] = "divider" end }
+  frame.divider = { SetColorTexture = function() order[#order + 1] = "divider" end,
+                    Hide = function() order[#order + 1] = "hide divider" end }
 
   local realCreateFrame = T.mocks.CreateFrame
   T.mocks.CreateFrame = function()
@@ -368,7 +378,7 @@ test("core: ApplySkin lays the backdrop down before anything drawn on top of it"
   T.mocks.CreateFrame = realCreateFrame
 
   assertEqual(table.concat(order, " "),
-    "backdrop bg border innerBorder title divider",
+    "backdrop bg border innerBorder title hide divider",
     "backdrop first, then the highlight inside it, then the accents on top")
 end)
 

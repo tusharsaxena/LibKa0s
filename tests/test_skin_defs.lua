@@ -744,7 +744,7 @@ local function bandStops(t)
   return stops
 end
 
-test("skin defs: a window's header stands off its content, with a rule that shows", function()
+test("skin defs: a window's header stands off its content, and the divider rule shows against both", function()
   -- SF-L4, images 65 to 69. red under: Obsidian's title band one step from its body under a rule
   -- no brighter than either, or High Contrast's black band on black. R4-L2 of Ka0sAddonsCommonTasks
   -- docs/2026-11-03-SMOKE_ROUND4: a gradient band's `title.bg` is held to be its blend (the next
@@ -753,6 +753,8 @@ test("skin defs: a window's header stands off its content, with a rule that show
   -- and WoW Midnight's dark ends are not: they stand 4.5% and 1.6% off their bodies, signed off as
   -- they are in R4_MOCKUP.html. red under: Ka0s Default's black band at 0.9, or a dark end of its
   -- gradient that melts into the body while its blend passes.
+  -- R4-SEP: no window draws `divider` under its header now; the rule holds for the body rules that
+  -- still draw it (S.Divider, the menu's divider row, a host's section rule).
   local Skin = skinLib()
   for _, key in ipairs(KEYS) do
     local t = Skin:ResolveSkin(key)

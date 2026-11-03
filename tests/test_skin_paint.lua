@@ -104,10 +104,27 @@ test("skin paint: Shell paints a skin's window from its tokens", function()
   assertEqual(F.rgba(s.backdropColor), F.tok(Skin, "obsidian", "win.bg"), "win.bg")
   assertEqual(F.rgba(survey(m, F.region(Skin, f, "edgeTop")).color), F.tok(Skin, "obsidian", "win.border"), "win.border")
   assertEqual(F.rgba(survey(m, f.title).textColor), F.tok(Skin, "obsidian", "title.text"), "title.text")
-  assertEqual(F.rgba(survey(m, f.divider).color), F.tok(Skin, "obsidian", "divider"), "divider")
+  assertFalse(f.divider:IsShown(), "no divider under the title (R4-SEP), whatever the skin's divider")
   assertNil(rawget(f, "innerBorder"), "Obsidian has no inner rule: Core makes none")
   local top = F.region(Skin, f, "top")
   assertEqual(F.rgba(survey(m, top).color), F.tok(Skin, "obsidian", "title.bg"), "the title band")
+end)
+
+test("skin paint: no Shell-painted window draws a line under its title, through every skin switch", function()
+  -- R4-SEP of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND4 (images 23 to 29): Shell reaches
+  -- Core.ApplySkin, which hid nothing and tinted `frame.divider` in the skin's `divider`, so every
+  -- window built on the convention (DpsRace's HUD and Results, Drop Watcher's main window, WhatGroup's
+  -- popup) drew a rule under its header. red under: the divider shown under any skin.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local f = F.window(m)
+  f.divider:Show()
+  S.Shell(f)
+  assertFalse(f.divider:IsShown(), "Ka0s Default")
+  for _, key in ipairs({ "obsidian", "glass", "contrast", "midnight", "ka0s" }) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    assertFalse(f.divider:IsShown(), key)
+  end
 end)
 
 test("skin paint: a second Shell call makes no new region and paints the same", function()
