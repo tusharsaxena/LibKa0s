@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **6** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **3** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 22.6.1.2](./version-22.6.1.2-docs.md) (shipped in v1.84.0) — its title bar was 26 high against a 30 band. |
-| Superseded by | — |
+| Superseded by | [version 22.6.1.4](./version-22.6.1.4-docs.md) (unreleased, a later step of v1.85.0) — an owned console's header was anchored to a drag bar fixed at 1,-1, a px off the band's middle under a 2 px edge. |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 22, DebugLogDiagnostics = 6, DebugLogGates = 1, DebugLogWindow = 3 }` |
 

@@ -133,7 +133,8 @@ if not lib then return end   -- the shell refused (no Core, or below its floor):
 -- window Shell's top band is BACKGROUND P.BAND_SUB, over the backdrop's Center (BACKGROUND 0), which hid
 -- the -5 band in every skin (DpsRace's windows, every library window); the bottom bar, the gradient and
 -- the art keep their sublevels. A bare Shell call (Core.ApplySkin's) on a frame its owner painted with
--- opts keeps those opts, so a host that paints twice keeps one band. No function is added.
+-- opts keeps those opts, so a host that paints twice keeps one band. Then (R5-L3, still minor 18): Shell
+-- lays S.Band's holder (SkinPaintExtras minor 17's P.layBand) on every paint. No function is added.
 local PAINT_MINOR = 18
 if lib.__paintMinor and lib.__paintMinor >= PAINT_MINOR
   and lib.__paintShellMinor == lib.MINOR then return end
@@ -1039,5 +1040,6 @@ prim.Shell = function(owner, frame, opts)
   shellBands(rec, frame, T, opts, inset or 1)
   local title = rawget(frame, "title")
   if P.isFS(title) then P.font(owner, rec, title, "title") end
+  if P.layBand then P.layBand(owner, rec, frame, T) end   -- S.Band's holder (SkinPaintExtras minor 17)
 end
 

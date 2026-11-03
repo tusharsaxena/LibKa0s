@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **21** · `WidgetsReorder.lua` **5** · `WidgetsDragHandle.lua` **12** · `WidgetsLineChart.lua` **6** · `WidgetsAutocomplete.lua` **6** · `WidgetsCopyWindow.lua` **4** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 20.5.12.6.6.4](./version-20.5.12.6.6.4-docs.md) (unreleased, an earlier step of v1.85.0) — the shared menu had no public open, no title, disabled or divider row and no per-row tooltip. |
-| Superseded by | — |
+| Superseded by | [version 21.5.12.6.6.5](./version-21.5.12.6.6.5-docs.md) (unreleased, a later step of v1.85.0) — a skinned copy window's title and close were anchored to a bar fixed at 1,-1. |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 21, WidgetsReorder = 5, WidgetsDragHandle = 12, WidgetsLineChart = 6, WidgetsAutocomplete = 6, WidgetsCopyWindow = 4 }` |
 

@@ -11,9 +11,9 @@
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **10** · `SimPanelRender.lua` **2** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `2.3.10.2` |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 2.3.10.1](./version-2.3.10.1-docs.md) (unreleased, an earlier step of v1.85.0) — its title band was 24 high against a 30 band. |
-| Superseded by | — |
+| Superseded by | [version 2.3.10.3](./version-2.3.10.3-docs.md) (unreleased, a later step of v1.85.0) — an owned panel's title and close were anchored to the window's top at -(1 + TITLE_H / 2), a px high under a 2 px edge. |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 10, SimPanelRender = 2 }` |
 

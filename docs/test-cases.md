@@ -2662,7 +2662,7 @@ Total.
 
 ### test_options_skin_picker.lua (41)
 
-- skin picker: OptionsSkinPicker is minor 9, paired on the shell, and attaches three members
+- skin picker: OptionsSkinPicker is minor 10, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -2970,6 +2970,20 @@ Total.
 - shell band: no frame the library paints with noTopBar draws a band
 - shell band: the skin picker shows the band
 - shell band: a toast draws no band, in any skin
+
+### test_header_band.lua (11)
+
+- header band: Shell lays the band at its own inset and title.height, in every skin
+- header band: the band is kept under noTopBar, and S.Band before Shell is the same frame
+- header band: under the EllesmereUI source the band is its 25 px bar, flush with the top
+- header: every child is on the band's middle, in every skin, through every switch
+- header: the controls chain in from the band's edges, and the title clears them
+- header: an entry may name its own width and offset
+- header: the title follows the skin's title.align, and the caller's align wins
+- header: a drag strip takes the band's whole rect
+- header: every library window's header is on its band, in every skin
+- header: the skin picker's title and close are on its band
+- header: a window with no skin owner keeps its own anchors
 
 ### test_options_switched.lua (16)
 
@@ -4643,6 +4657,7 @@ Total.
 | test_widgets_small_misses.lua | 12 |
 | test_title_shape.lua | 10 |
 | test_shell_band.lua | 8 |
+| test_header_band.lua | 11 |
 | test_options_switched.lua | 16 |
 | test_options_media.lua | 38 |
 | test_options_combat.lua | 33 |
@@ -4712,4 +4727,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3994** |
+| **Total** | **4005** |

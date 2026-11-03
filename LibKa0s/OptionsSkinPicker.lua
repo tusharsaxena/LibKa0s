@@ -152,7 +152,10 @@ if not lib then return end
 -- Minor 9 (SG-L3 of the same bundle): O.SkinNotice, the one-time announcement that skins exist.
 -- Once per account, keyed by lib.SKIN_NOTICE_VERSION: the first addon to ask in a session claims it
 -- and shows the picker, every other addon records the version in its own store and stays quiet.
-local PICKER_MINOR = 9
+-- Minor 10 (R5-L3 of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND5): the title and the close mark
+-- are anchored to the band S.Shell lays (the facade's Header) at y 0, where they sat TOP-anchored at
+-- -8 and -6, off the band's middle and font-dependent.
+local PICKER_MINOR = 10
 -- Paired on the SHELL's minor as well as this file's own -- see OptionsScroll.lua for why.
 if lib.__pickerMinor and lib.__pickerMinor >= PICKER_MINOR
   and lib.__pickerShellMinor == lib.MINOR then return end
@@ -1060,6 +1063,7 @@ function lib.__AttachSkinPicker(O, d)
         f.close = close
       end
     end
+    if P.Sk.Header then P.Sk.Header(f, { title = title, right = { f.close } }) end   -- minor 10
   end
 
   -- The Skin tab's rows live in OptionsSkinPickerRows.lua, which answers the three functions the

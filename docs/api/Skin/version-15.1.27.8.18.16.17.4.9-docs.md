@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **15** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **27** · `SkinDefsOthers.lua` **8** · `SkinPaint.lua` **18** · `SkinPaintExtras.lua` **16** · `SkinPaintControls.lua` **17** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 15.1.27.8.17.16.17.4.9](./version-15.1.27.8.17.16.17.4.9-docs.md) (unreleased, an earlier step of v1.85.0) — a backdrop window's top band was BACKGROUND -5, under the backdrop's own Center fill, so DpsRace's windows and every library window drew no header in any skin. |
-| Superseded by | — |
+| Superseded by | [version 16.1.27.8.18.17.17.4.9](./version-16.1.27.8.18.17.17.4.9-docs.md) (unreleased, a later step of v1.85.0) — a window had no frame for its title band, so each header child was anchored by hand to the window's top, and the title sat off the band's middle (Premade Groups Filter Extension's about 4 px high). |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 15, SkinOwnerTokens = 1, SkinDefs = 27, SkinDefsOthers = 8, SkinPaint = 18, SkinPaintExtras = 16, SkinPaintControls = 17, SkinEUI = 4, SkinAce = 9 }` |
 
