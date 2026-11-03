@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261103-123922`](20261103-123922/) | `f01e213` | clean | 1.85.0 → 1.85.0 | 0/0 | 292 | 3976/3/3979 | skip | 87769 | 12685 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261103-042609`](20261103-042609/) | `2f9eb05` | clean | 1.85.0 → 1.85.0 | 0/0 | 291 | 3952/3/3955 | skip | 87346 | 12621 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261103-040646`](20261103-040646/) | `0700199` | clean | 1.85.0 → 1.85.0 | 0/0 | 291 | 3952/3/3955 | skip | 87340 | 12620 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261103-035514`](20261103-035514/) | `3661a71` | clean | 1.85.0 → 1.85.0 | 0/0 | 291 | 3952/3/3955 | skip | 87346 | 12620 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -191,19 +192,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**3955 cases** — 3952 passed, 0 failed, 3 skipped. The generated inventory
-[`20261103-042609/test-cases.md`](20261103-042609/test-cases.md) is the authority on which cases existed at this run;
+**3979 cases** — 3976 passed, 0 failed, 3 skipped. The generated inventory
+[`20261103-123922/test-cases.md`](20261103-123922/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-The count has been **flat at 3955 across the last 3 runs**. A suite that stopped growing while
-the addon did is a coverage gap, and it is the one thing the table above cannot show.
+Moved **3955 → 3979** since the previous run.
 
 **3 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 291 files** (`luacheck .`).
+**0 warnings / 0 errors over 292 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -220,7 +220,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261103-042609`](20261103-042609/) — **this run's measurement, not its diff.** Max CCN **15** across 12621
+Current as of [`20261103-123922`](20261103-123922/) — **this run's measurement, not its diff.** Max CCN **15** across 12685
 functions, **0** of them warned on; 13 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
