@@ -3065,6 +3065,33 @@ Total.
 - opt combat debug: no debug on the descriptor is silent, and the chat is unchanged
 - opt combat debug: a debug that is not a function is ignored
 
+### test_options_pullout_close.lua (24)
+
+- pullout close: opening a dropdown on a Ka0s page listens for a press
+- pullout close: a press outside closes it, with any button
+- pullout close: a press on the pullout (a row) does not close it
+- pullout close: a press on the pullout's scrollbar does not close it
+- pullout close: a press on the owning dropdown does not close it
+- pullout close: a dropdown on a Ka0s window closes too
+- pullout close: an AceDBOptions Profiles dropdown under a Ka0s page closes
+- pullout close: another author's AceGUI dropdown keeps AceGUI's behavior
+- pullout close: focus moving to another author's dropdown lets go, closing nothing
+- pullout close: a focus taker with no pullout registers nothing
+- pullout close: a pullout closed by a pick or the toggle lets go on the next press
+- pullout close: the library's own closers leave a press that only lets go
+- pullout close: a widget released while open is not touched
+- pullout close: a widget released and acquired again, closed, is not touched
+- pullout close: the panel hiding closes the pullout, and the next press lets go
+- pullout close: a hidden page's dropdown left open is not a Ka0s surface
+- pullout close: a second dropdown opening reads the current focus
+- pullout close: arming twice hooks once
+- pullout close: a newer AceGUI minor is hooked again
+- pullout close: another addon's hook on SetFocus is not hooked over
+- pullout close: no AceGUI, nothing armed
+- pullout close: a ClearFocus that raises keeps the handler alive
+- pullout close: an outside press in combat still closes it
+- pullout close: the handler is looked up on lib when the press arrives
+
 ### test_options_compose.lua (39)
 
 - compose: the instance carries every composer and every published constant
@@ -4598,6 +4625,7 @@ Total.
 | test_options_media.lua | 38 |
 | test_options_combat.lua | 33 |
 | test_options_combat_debug.lua | 16 |
+| test_options_pullout_close.lua | 24 |
 | test_options_compose.lua | 39 |
 | test_options_compose_arm.lua | 12 |
 | test_options_compose_master.lua | 15 |
@@ -4662,4 +4690,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3952** |
+| **Total** | **3976** |
