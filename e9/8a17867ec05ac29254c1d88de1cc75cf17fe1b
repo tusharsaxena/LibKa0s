@@ -1,0 +1,7 @@
+R6-SIM-L independent adversarial review, 2026-11-04: PASS, no defects.
+- Gate re-run fresh: 4069 passed, 0 failed, 3 skipped; luacheck 0/0 in 298 files; OptionsCompose.lua 1073 lines, CRLF.
+- Red without the fix (scratch clone, OptionsCompose.lua at e98a178^): 14 sim cases fail (13 + minor pin).
+- Mutations caught: an unconditional toggle in set (3 failures, the reset case among them); the OnShow arm removed (live-state case fails).
+- Read: back-compat (no hooks, one hook or non-functions give the minor-18 golden; Debug console and Minimap startsLine unchanged when simBesideLock is nil); placement beside Test, below Test's line, beside Lock, in Test's slot; Schema S.Get/S.Set honor row get/set; RestoreAllDefaults' narrowed walk keeps sessionOnly rows, so reset stops the sim; combat refusal reaches no toggle; nothing stored.
+- Docs: CHANGELOG, api README row, new Options doc and manifest, releasing.md hosts-owe, CLAUDE.md census all agree with minor 19.
+- Gap, not a defect: the reset case calls row.set(row.default) directly rather than O.RestoreAllDefaults.
