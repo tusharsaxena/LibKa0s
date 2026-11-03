@@ -14,7 +14,11 @@ cannot drift. Release order is in
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
 
-Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.26.8.17.16.17.4.9**, `LibKa0s-Launcher-1.0` **7**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.4.18.13.5.5.7.6.9.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**, `LibKa0s-Media-1.0` key **12.1**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Core-1.0` **15**, `LibKa0s-Glow-1.0` **2**, `LibKa0s-Toast-1.0` **2**, `LibKa0s-Skin-1.0` key **15.1.27.8.17.16.17.4.9**, `LibKa0s-Launcher-1.0` **7**, `LibKa0s-Options-1.0` key **37.4.44.2.7.1.8.15.2.4.18.13.5.5.7.6.9.1.1.4**, `LibKa0s-Sim-1.0` key **2.3.10.2**, `LibKa0s-Widgets-1.0` key **21.5.12.6.6.4**, `LibKa0s-DebugLog-1.0` key **22.6.1.3**, `LibKa0s-Perf-1.0` key **15.1.1.12**, `LibKa0s-Media-1.0` key **12.1**; every other file still at its v1.84.0 minor, and **test kit revision 50**. No `NEEDS_*` floor rises.
+
+### The owner's fifth smoke round (`R5-L1`)
+
+- **SkinDefs minor 27** (`R5-L1`, Ka0sAddonsCommonTasks `docs/2026-11-03-SMOKE_ROUND5/`, the owner's option C in `R5_SIGNOFF.md`; feedback item 1, "make the header a bit darker"): Ka0s Default's title band is `title.bgTop` `#262006` over `title.bgBottom` `#141103`, opaque, where round 4's option E was `#3A2F0A` over `#1F1905`; `title.bg`, the blend a flat reader draws, is `#1D1805` (was `#2C2408`), and the picker's second swatch `#1d1805`. Both stops stay lighter than the body, 9.4% and 6.2% off it. No other skin moves; the `eui` source's derived look, which keeps Ka0s Default's flat `title.bg`, darkens with it. The minor moves although v1.85.0 is a local cut: minor 26 copies already sit in vendored trees, and of two copies at one minor the first loaded wins. **This moves a look** in every window under Ka0s Default. `tests/test_skin_defs.lua` pins the new hexes and that every stop is darker than option E's.
 
 ### The owner's fourth smoke round (`R4-L1`, `R4-L2`, `R4-L3`, `R4-SEP`, `R4-L4`)
 

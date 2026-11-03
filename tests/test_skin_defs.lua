@@ -792,14 +792,17 @@ end)
 test("skin defs: Ka0s Default's header is the owner's dark gold gradient, lighter than its body", function()
   -- R4-L2, the owner's option E of R4_MOCKUP.html. red under: SF-L4's black band at 0.9, which passed
   -- the 5% floor as #010102 on #0E0E12 and read as one near-black (images 8 to 10), or the picker's
-  -- second swatch left on the old black.
+  -- second swatch left on the old black. R5-L1 of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND5,
+  -- the owner's option C of R5_MOCKUP.html ("make the header a bit darker", images 31, 32, 38, 39
+  -- and 44): #262006 over #141103, the blend #1D1805. red under: option E's #3A2F0A over #1F1905,
+  -- blend #2C2408, or its swatch #2c2408.
   local Skin = skinLib()
   local t = Skin:ResolveSkin("ka0s")
   local function hex(c) return ("#%02X%02X%02X"):format(
     math.floor(c[1] * 255 + 0.5), math.floor(c[2] * 255 + 0.5), math.floor(c[3] * 255 + 0.5)) end
-  assertEqual(hex(t["title.bgTop"]), "#3A2F0A", "the top stop")
-  assertEqual(hex(t["title.bgBottom"]), "#1F1905", "the bottom stop")
-  assertEqual(hex(t["title.bg"]), "#2C2408", "the flat blend")
+  assertEqual(hex(t["title.bgTop"]), "#262006", "the top stop")
+  assertEqual(hex(t["title.bgBottom"]), "#141103", "the bottom stop")
+  assertEqual(hex(t["title.bg"]), "#1D1805", "the flat blend")
   for _, stop in ipairs(bandStops(t)) do
     assertEqual(stop[2][4] or 1, 1, stop[1] .. " is opaque")
   end
@@ -807,7 +810,14 @@ test("skin defs: Ka0s Default's header is the owner's dark gold gradient, lighte
   for _, stop in ipairs(bandStops(t)) do
     assertTrue(luminance(over(stop[2], win)) > luminance(win), stop[1] .. " is lighter than the body")
   end
-  assertEqual(Skin:GetSkin("ka0s").swatches[2], "#2c2408", "the picker's second swatch is the header")
+  -- Darker than option E at every stop, the owner's ask: each stop's luminance under E's.
+  local E = { ["title.bgTop"] = { 0x3a / 255, 0x2f / 255, 0x0a / 255, 1 },
+              ["title.bgBottom"] = { 0x1f / 255, 0x19 / 255, 0x05 / 255, 1 },
+              ["title.bg"] = { 0x2c / 255, 0x24 / 255, 0x08 / 255, 1 } }
+  for key, was in pairs(E) do
+    assertTrue(luminance(t[key]) < luminance(was), key .. " is darker than round 4's option E")
+  end
+  assertEqual(Skin:GetSkin("ka0s").swatches[2], "#1d1805", "the picker's second swatch is the header")
 end)
 
 test("skin defs: a table header wears the skin's color, and its sort arrow another", function()
