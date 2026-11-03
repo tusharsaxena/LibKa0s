@@ -413,7 +413,7 @@ Total.
 
 ### test_toast.lua (54)
 
-- toast: the major loads at minor 2 and reports its one file
+- toast: the major loads at minor 3 and reports its one file
 - toast: without Core the major is absent (no NewLibrary)
 - toast: New refuses a descriptor without a builder, naming it
 - toast: a method called on something that is not an instance raises
@@ -2960,6 +2960,17 @@ Total.
 - title shape: a live switch places the text again
 - title shape: placing a bar with no text still takes the height
 
+### test_shell_band.lua (8)
+
+- shell band: on a backdrop window the top band draws above the backdrop's fill, in every skin
+- shell band: the window gradient, its art and the bottom bar keep their sublevels
+- shell band: a window with no backdrop keeps its band at -5 over its own fill
+- shell band: a host that paints Shell twice ends with its own title bar as the one band
+- shell band: every library window shows the band, through every skin switch
+- shell band: no frame the library paints with noTopBar draws a band
+- shell band: the skin picker shows the band
+- shell band: a toast draws no band, in any skin
+
 ### test_options_switched.lua (16)
 
 - switched: only the subsection the selector names is drawn, its heading with it
@@ -4631,6 +4642,7 @@ Total.
 | test_skin_ace_dropdown.lua | 7 |
 | test_widgets_small_misses.lua | 12 |
 | test_title_shape.lua | 10 |
+| test_shell_band.lua | 8 |
 | test_options_switched.lua | 16 |
 | test_options_media.lua | 38 |
 | test_options_combat.lua | 33 |
@@ -4700,4 +4712,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3986** |
+| **Total** | **3994** |

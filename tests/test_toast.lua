@@ -84,11 +84,11 @@ local function live(m) return #m.__timers() end
 
 -- ── load and construction ────────────────────────────────────────────────────────────────────
 
-test("toast: the major loads at minor 2 and reports its one file", function()
+test("toast: the major loads at minor 3 and reports its one file", function()
   local _, Toast = env()
   assertEqual(Toast.MAJOR, MAJOR)
-  assertEqual(Toast.MINOR, 2)
-  assertEqual(Toast.MODULES.Toast, 2)
+  assertEqual(Toast.MINOR, 3)
+  assertEqual(Toast.MODULES.Toast, 3)
   assertEqual(T.toast, T.mocks.LibStub(MAJOR), "the runner's whole-payload load carries it too")
 end)
 

@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Toast-1.0` |
 | File | `Toast.lua` minor **2** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 1](./version-1-docs.md) |
-| Superseded by | — |
+| Superseded by | [version 3](./version-3-docs.md) (unreleased, a later step of v1.85.0) — an owned toast wore the bare `S.Shell` that `Core.ApplySkin` hands it, so once the Skin major drew its top band over a backdrop window's fill a toast would have shown a 30 px band. |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`) |
 | Optional at call time | Core's `ApplySkin` and `MakeCloseButton`, each presence-checked; through them, `LibKa0s-Media-1.0` (the close icon) and `LibKa0s-Skin-1.0` (the owner's skin), neither read by this file |
 | Confirm in-game | `LibStub("LibKa0s-Toast-1.0").MODULES` → `{ Toast = 2 }` |
