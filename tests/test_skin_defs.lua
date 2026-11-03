@@ -302,15 +302,16 @@ end)
 
 local CONTROLS = { "btn", "btnPrimary", "input", "check", "tab", "nav", "drawer", "popup", "menu" }
 
-test("skin defs: High Contrast draws 1px control edges inside a 2px window and popup edge", function()
-  -- SkinDefs minor 7, the owner's note of 2026-10-26: "borders are too thick on most elements".
-  -- red under: a control edge back at 2px, or the window or popup losing its heavier frame.
+test("skin defs: High Contrast's edges are one pixel, window and popup included", function()
+  -- SkinDefs minor 7, the owner's note of 2026-10-26: "borders are too thick on most elements". SF-L5
+  -- of the smoke feedback took the window, popup, menu and icon edges down too: image 61's heavy
+  -- cells are MultiMeters' cell borders, not these. red under: any edge back at 2px.
   local t = skinLib():ResolveSkin("contrast")
   for _, ctl in ipairs(CONTROLS) do
-    local want = (ctl == "popup" or ctl == "menu") and 2 or 1
-    assertEqual(t[ctl .. ".borderSize"], want, "contrast: " .. ctl .. ".borderSize")
+    assertEqual(t[ctl .. ".borderSize"], 1, "contrast: " .. ctl .. ".borderSize")
   end
-  assertEqual(t["win.borderSize"], 2, "contrast: the window edge is 2px")
+  assertEqual(t["win.borderSize"], 1, "contrast: the window edge")
+  assertEqual(t["icon.borderSize"], 1, "contrast: the icon edge")
 end)
 
 test("skin defs: Glass rounds its window and popups only, on the Ka0s Glass nine-slice", function()
@@ -413,7 +414,7 @@ test("skin defs: WoW Forever is warm charcoal, black centered titles, tan accent
 
 -- LibSharedMedia's own default border keys a skin may name besides the shipped ones.
 local LSM_BORDERS = { ["Blizzard Dialog"] = true, ["Blizzard Tooltip"] = true }
--- ...and its default font keys: none since SkinDefs minor 18, when WoW Default took the shipped Friz.
+-- ...and its default font keys: none since SkinDefs minor 18, when WoW Default took a shipped face.
 local LSM_FONTS = {}
 -- ...and its default statusbar key: the client's Blizzard bar, WoW Default's through KEEP.
 local LSM_BARS = { ["Blizzard"] = true }
@@ -459,6 +460,9 @@ test("skin defs: every font, bar texture and border a skin names is shipped or a
 end)
 
 local FRIZ = "Ka0s Friz Quadrata TT"
+-- WoW Default's face since R3-L6 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3 (images 98, 99):
+-- Friz Quadrata could not shrink to fit Loot History's Date column and stay readable.
+local UBUNTU = "Ka0s Ubuntu"
 
 --- A face's family: its LSM key without the weight.
 local function family(face)
@@ -478,7 +482,7 @@ test("skin defs: every skin draws one family of its own, for body and titles ali
     obsidian = { "Ka0s Expressway", "Ka0s Expressway" }, glass = { "Ka0s Avant Garde", "Ka0s Avant Garde" },
     azeroth = { "Ka0s Open Sans Semibold", "Ka0s Open Sans Bold" }, contrast = { "Ka0s Doris PP", "Ka0s Doris PP" },
     ember = { "Ka0s Emblem", "Ka0s Emblem" }, midnight = { "Ka0s Segoe UI Semibold", "Ka0s Segoe UI Bold" },
-    forever = { "Ka0s Fira Sans Medium", "Ka0s Fira Sans SemiBold" }, wow = { FRIZ, FRIZ },
+    forever = { "Ka0s Fira Sans Medium", "Ka0s Fira Sans SemiBold" }, wow = { UBUNTU, UBUNTU },
     ka0s = { "Ka0s Prototype", "Ka0s Prototype" },
   }
   local owner = {}
@@ -512,13 +516,14 @@ end)
 local HUD_FACE = {
   ka0s = "Ka0s Prototype", obsidian = "Ka0s Expressway", azeroth = "Ka0s Open Sans Semibold",
   glass = "Ka0s Avant Garde", contrast = "Ka0s Doris PP", ember = "Ka0s Emblem",
-  wow = FRIZ, midnight = "Ka0s Segoe UI Semibold", forever = "Ka0s Fira Sans SemiBold",
+  wow = UBUNTU, midnight = "Ka0s Segoe UI Semibold", forever = "Ka0s Fira Sans SemiBold",
 }
 
-test("skin defs: every skin names a HUD face of its own, its text's family; only WoW Default draws Friz", function()
+test("skin defs: every skin names a HUD face of its own, its text's family; no skin draws Friz", function()
   -- SkinDefs minor 16 (R-4, D-11). red under: `hud.font` back in KEEP or a skin's entry dropped (that
-  -- skin's HUD text falls back to Friz Quadrata), a HUD face of another family than the skin's text,
-  -- or WoW Default's Friz left to a fallback instead of named in its own tokens.
+  -- skin's HUD text falls back to KEEP's face), a HUD face of another family than the skin's text,
+  -- or WoW Default's face left to a fallback instead of named in its own tokens. R3-L6: WoW Default's
+  -- HUD draws Ubuntu, so no skin draws Friz anywhere.
   local Skin = skinLib()
   for _, key in ipairs(KEYS) do
     local t = Skin:ResolveSkin(key)
@@ -527,11 +532,13 @@ test("skin defs: every skin names a HUD face of its own, its text's family; only
     assertEqual(family(t["hud.font"]), family(t["font.body"]), key .. ": its HUD face is its text's family")
     assertEqual(t["hud.outline"], "OUTLINE", key .. " outlines HUD text")
     assertEqual(t["hud.fontSize"], Skin.skins[key].tokens["hud.fontSize"], key .. " names its HUD size itself")
-    if key ~= "wow" then assertTrue(t["hud.font"] ~= FRIZ, key .. " does not draw Friz on the HUD") end
+    for _, role in ipairs({ "font.body", "font.title", "hud.font" }) do
+      assertTrue(t[role] ~= FRIZ, key .. " does not draw Friz: " .. role)
+    end
   end
 end)
 
-test("skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin naming neither keeps Friz and Blizzard", function()
+test("skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin naming neither keeps Ubuntu and Blizzard", function()
   -- SkinDefs minor 14 (Oxanium then; Prototype since minor 17). Every skin inherits Ka0s Default's
   -- tokens, so without KEEP that choice would have moved every skin's faces and bar texture with it.
   -- red under: a skin naming no body face or bar texture of its own that reads Prototype or the Ka0s
@@ -550,8 +557,8 @@ test("skin defs: Ka0s Default's Prototype and its own bar stay its own; a skin n
     end
   end
   local wow = Skin:ResolveSkin("wow")
-  assertEqual(wow["font.body"], FRIZ, "WoW Default's body, through KEEP (shipped since minor 18)")
-  assertEqual(wow["font.title"], FRIZ, "WoW Default's titles, through KEEP")
+  assertEqual(wow["font.body"], UBUNTU, "WoW Default's body, through KEEP (Friz until R3-L6)")
+  assertEqual(wow["font.title"], UBUNTU, "WoW Default's titles, through KEEP")
 end)
 
 test("skin defs: every skin draws its own bar texture, and WoW Default the client's", function()
@@ -606,7 +613,8 @@ test("skin defs: a hovered row is told apart from a selected one", function()
       local h, s = t["list.hover"], t["list.sel"]
       local same = math.abs(h[1] - s[1]) + math.abs(h[2] - s[2]) + math.abs(h[3] - s[3])
       assertTrue(same > 0.3, key .. ": list.hover is not list.sel's hue")
-      sameColor(h, { t["text.body"][1], t["text.body"][2], t["text.body"][3], 0.10 }, key .. " hover is the body text at .10")
+      -- .15 since R3-L5, so a hovered row still stands off the stripe that rose to 9% (.10 until then).
+      sameColor(h, { t["text.body"][1], t["text.body"][2], t["text.body"][3], 0.15 }, key .. " hover is the body text at .15")
     end
   end
 end)
@@ -653,6 +661,221 @@ test("skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's g
       local t = Skin:ResolveSkin(key)
       assertEqual(colorKey(t["gtip.footer"]), colorKey(t["gtip.muted"]), key .. ": the footer is its tooltip gray")
     end
+  end
+end)
+
+test("skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read in every other skin", function()
+  -- SkinDefs minor 20 (FS-L1 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING, cause L1). red
+  -- under: any token missing from the schema or Ka0s Default (the launcher would fall back to the
+  -- client's color), Ka0s Default's moved off the client's gold and the launcher's pure green and
+  -- red, or a skin leaving a status word in that green, which no other skin draws anywhere.
+  local Skin = skinLib()
+  local k = Skin:ResolveSkin("ka0s")
+  assertEqual(colorKey(k["gtip.line"]), "1.000,0.820,0.000,1.000", "the client's gold")
+  assertEqual(colorKey(k["gtip.on"]), "0.000,1.000,0.000,1.000", "the launcher's green")
+  assertEqual(colorKey(k["gtip.off"]), "1.000,0.000,0.000,1.000", "the launcher's red")
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    if key ~= "ka0s" then
+      assertEqual(colorKey(t["gtip.line"]), colorKey(t["gtip.body"]), key .. ": the lines are its tooltip body")
+      assertEqual(colorKey(t["gtip.on"]), colorKey(t["sem.on"]), key .. ": Yes is its on color")
+      assertEqual(colorKey(t["gtip.off"]), colorKey(t["sem.off"]), key .. ": No is its off color")
+    end
+    for _, name in ipairs({ "gtip.line", "gtip.on", "gtip.off" }) do
+      local ratio = contrast(t[name], TOOLTIP_DARK)
+      assertTrue(ratio >= 4.5, ("%s: %s contrast %.2f, want >= 4.5"):format(key, name, ratio))
+    end
+  end
+end)
+
+--- The largest channel difference of two opaque colors.
+local function apart(x, y)
+  return math.max(math.abs(x[1] - y[1]), math.abs(x[2] - y[2]), math.abs(x[3] - y[3]))
+end
+
+local BLACK = { 0, 0, 0 }
+
+-- How far a skin's alternate row stands off its window, in a channel (SF-L3 set 5%; R3-L5 of
+-- Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3 raises it to 8%, image 95).
+local STRIPE_STEP = 0.08
+
+test("skin defs: alternate rows show in every skin", function()
+  -- SF-L3, images 53 and 54. red under: Obsidian's 2% white or High Contrast's #0D0D0D, which no
+  -- eye separates from the window. Ka0s Default's own 3% stays: the item names the other two.
+  -- R3-L5, image 95: Obsidian's 6% white, 5.8% off its window, was still hardly visible, and every
+  -- dark skin on the same 6% (Glass, Ember, WoW Default, WoW Midnight, WoW Forever) or Azeroth's 7%
+  -- parchment sat as faint. red under any of them below a visible 8%.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    if key ~= "ka0s" then
+      local t = Skin:ResolveSkin(key)
+      local win = over(t["win.bg"], BLACK)
+      local step = apart(over(t["list.stripe"], win), win)
+      assertTrue(step >= STRIPE_STEP, ("%s: the stripe stands %.1f%% off the window, want %d%%"):format(
+        key, step * 100, STRIPE_STEP * 100))
+    end
+  end
+  local o = Skin:ResolveSkin("obsidian")
+  assertEqual(colorKey(o["list.stripe"]), "1.000,1.000,1.000,0.090", "Obsidian's stripe, 9% white")
+end)
+
+test("skin defs: a hovered row still stands off an alternate row", function()
+  -- R3-L5. A hovered plain row is the body text at its alpha over the window; at 10% it stood 3% off
+  -- a 6% stripe. red under: a stripe raised to 9% under a 10% hover, which reads as a stripe.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    if key ~= "ka0s" then
+      local t = Skin:ResolveSkin(key)
+      local win = over(t["win.bg"], BLACK)
+      local step = apart(over(t["list.hover"], win), over(t["list.stripe"], win))
+      assertTrue(step >= 0.03, ("%s: a hovered row %.1f%% off a striped one"):format(key, step * 100))
+    end
+  end
+end)
+
+--- The colors a title band draws: its flat `title.bg`, and both stops of its gradient when it has
+--- one (P.fill draws the gradient then, and the flat token only reaches a flat reader).
+local function bandStops(t)
+  local stops = { { "title.bg", t["title.bg"] } }
+  if t["title.bgTop"] and t["title.bgBottom"] then
+    stops[2] = { "title.bgTop", t["title.bgTop"] }
+    stops[3] = { "title.bgBottom", t["title.bgBottom"] }
+  end
+  return stops
+end
+
+test("skin defs: a window's header stands off its content, and the divider rule shows against both", function()
+  -- SF-L4, images 65 to 69. red under: Obsidian's title band one step from its body under a rule
+  -- no brighter than either, or High Contrast's black band on black. R4-L2 of Ka0sAddonsCommonTasks
+  -- docs/2026-11-03-SMOKE_ROUND4: a gradient band's `title.bg` is held to be its blend (the next
+  -- case), so the 5% floor reads the band's mean as drawn, never a flat token the window does not
+  -- draw. Ka0s Default's band, which R4-L2 makes a gradient, is held at both stops as well. Ember's
+  -- and WoW Midnight's dark ends are not: they stand 4.5% and 1.6% off their bodies, signed off as
+  -- they are in R4_MOCKUP.html. red under: Ka0s Default's black band at 0.9, or a dark end of its
+  -- gradient that melts into the body while its blend passes.
+  -- R4-SEP: no window draws `divider` under its header now; the rule holds for the body rules that
+  -- still draw it (S.Divider, the menu's divider row, a host's section rule).
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    local win = over(t["win.bg"], BLACK)
+    local rule = over(t["divider"], win)
+    assertTrue(apart(rule, win) >= 0.1, key .. ": the rule shows against the content")
+    local stops = key == "ka0s" and bandStops(t) or { { "title.bg", t["title.bg"] } }
+    for _, stop in ipairs(stops) do
+      local band = over(stop[2], win)
+      assertTrue(apart(band, win) >= 0.05, ("%s: %s stands %.1f%% off the content, want 5%%"):format(
+        key, stop[1], apart(band, win) * 100))
+      assertTrue(apart(rule, band) >= 0.1, key .. ": the rule shows against " .. stop[1])
+    end
+  end
+end)
+
+test("skin defs: a gradient title band's flat title.bg is its blend", function()
+  -- R4-L2. A flat reader (MultiMeters' meter header strip, a host's fallback copy) draws `title.bg`
+  -- where the window draws the gradient, so the two must read as one color. red under: a gradient
+  -- retuned with its flat token left on the old band, Ka0s Default's black among them.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    local top, bottom = t["title.bgTop"], t["title.bgBottom"]
+    if top and bottom then
+      for i = 1, 4 do
+        local mid = ((top[i] or 1) + (bottom[i] or 1)) / 2
+        assertTrue(math.abs((t["title.bg"][i] or 1) - mid) <= 1 / 255,
+          ("%s: title.bg channel %d is %.3f, the blend %.3f"):format(key, i, t["title.bg"][i] or 1, mid))
+      end
+    end
+  end
+end)
+
+test("skin defs: Ka0s Default's header is the owner's dark gold gradient, lighter than its body", function()
+  -- R4-L2, the owner's option E of R4_MOCKUP.html. red under: SF-L4's black band at 0.9, which passed
+  -- the 5% floor as #010102 on #0E0E12 and read as one near-black (images 8 to 10), or the picker's
+  -- second swatch left on the old black. R5-L1 of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND5,
+  -- the owner's option C of R5_MOCKUP.html ("make the header a bit darker", images 31, 32, 38, 39
+  -- and 44): #262006 over #141103, the blend #1D1805. red under: option E's #3A2F0A over #1F1905,
+  -- blend #2C2408, or its swatch #2c2408.
+  local Skin = skinLib()
+  local t = Skin:ResolveSkin("ka0s")
+  local function hex(c) return ("#%02X%02X%02X"):format(
+    math.floor(c[1] * 255 + 0.5), math.floor(c[2] * 255 + 0.5), math.floor(c[3] * 255 + 0.5)) end
+  assertEqual(hex(t["title.bgTop"]), "#262006", "the top stop")
+  assertEqual(hex(t["title.bgBottom"]), "#141103", "the bottom stop")
+  assertEqual(hex(t["title.bg"]), "#1D1805", "the flat blend")
+  for _, stop in ipairs(bandStops(t)) do
+    assertEqual(stop[2][4] or 1, 1, stop[1] .. " is opaque")
+  end
+  local win = over(t["win.bg"], BLACK)
+  for _, stop in ipairs(bandStops(t)) do
+    assertTrue(luminance(over(stop[2], win)) > luminance(win), stop[1] .. " is lighter than the body")
+  end
+  -- Darker than option E at every stop, the owner's ask: each stop's luminance under E's.
+  local E = { ["title.bgTop"] = { 0x3a / 255, 0x2f / 255, 0x0a / 255, 1 },
+              ["title.bgBottom"] = { 0x1f / 255, 0x19 / 255, 0x05 / 255, 1 },
+              ["title.bg"] = { 0x2c / 255, 0x24 / 255, 0x08 / 255, 1 } }
+  for key, was in pairs(E) do
+    assertTrue(luminance(t[key]) < luminance(was), key .. " is darker than round 4's option E")
+  end
+  assertEqual(Skin:GetSkin("ka0s").swatches[2], "#1d1805", "the picker's second swatch is the header")
+end)
+
+test("skin defs: a table header wears the skin's color, and its sort arrow another", function()
+  -- SF-L2, images 24 to 26. red under: Obsidian or Glass heading a table in its muted gray, or a
+  -- skin whose arrow matches its header. Ka0s Default keeps its gold on gold.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    assertTrue(t["list.header.arrow"] ~= nil, key .. ": states a sort arrow")
+    if key ~= "ka0s" then
+      assertTrue(colorKey(t["list.header.text"]) ~= colorKey(t["list.header.arrow"]), key .. ": the arrow is another color")
+    end
+  end
+  for _, key in ipairs({ "obsidian", "glass", "forever" }) do
+    local t = Skin:ResolveSkin(key)
+    assertEqual(colorKey(t["list.header.text"]), colorKey(t["text.accent"]), key .. ": the header in its accent")
+  end
+end)
+
+test("skin defs: Ka0s Default states its settings art, and every other skin an edge and a rule", function()
+  -- SkinDefs minor 21 (FS-L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING, cause L3): `false`
+  -- is the art the frame wears, as `list.hoverArt`'s is. red under: Ka0s Default stating a style, so
+  -- its rail, popup and tabs change look with the Scope cleared, or a skin left on the client's art.
+  local Skin = skinLib()
+  local k = Skin:ResolveSkin("ka0s")
+  for _, name in ipairs({ "title.rule", "tab.border", "nav.borderStyle", "popup.borderStyle" }) do
+    assertEqual(Skin:GetSkin("ka0s").tokens[name], false, "Ka0s Default states " .. name)
+    assertTrue(not k[name], "and it resolves to none: " .. name)
+  end
+  for _, key in ipairs(KEYS) do
+    if key ~= "ka0s" then
+      local t = Skin:ResolveSkin(key)
+      assertEqual(colorKey(t["title.rule"]), colorKey(t["divider"]), key .. ": the header rule is its divider")
+      assertTrue(type(t["nav.borderStyle"]) == "string", key .. ": a rail edge style")
+      assertTrue(type(t["popup.borderStyle"]) == "string", key .. ": a popup edge style")
+      assertTrue(type(t["tab.border"]) == "table", key .. ": a tab edge")
+    end
+  end
+end)
+
+test("skin defs: the settings typed-color tokens keep Ka0s Default's yellow and read in every other skin", function()
+  -- SkinDefs minor 22 (FS-L5 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING, cause L5). red
+  -- under: either token missing (a landing row stays typed), Ka0s Default's moved off the yellow
+  -- Slash's FormatRow types, or a skin leaving it in that yellow while it has an accent of its own.
+  local Skin = skinLib()
+  local k = Skin:ResolveSkin("ka0s")
+  assertEqual(colorKey(k["text.command"]), "1.000,1.000,0.000,1.000", "the row's yellow")
+  assertEqual(colorKey(k["gtip.emphasis"]), "1.000,1.000,0.000,1.000", "the tooltip's yellow")
+  assertEqual(colorKey(k["text.strong"]), "1.000,1.000,1.000,1.000", "the row's white")
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    if key ~= "ka0s" then
+      assertEqual(colorKey(t["text.command"]), colorKey(t["text.accent"]), key .. ": a command is its accent")
+      assertEqual(colorKey(t["text.strong"]), colorKey(t["text.body"]), key .. ": strong text is its body")
+      assertEqual(colorKey(t["gtip.emphasis"]), colorKey(t["text.accent"]), key .. ": so is tooltip emphasis")
+    end
+    local ratio = contrast(t["gtip.emphasis"], TOOLTIP_DARK)
+    assertTrue(ratio >= 4.5, ("%s: gtip.emphasis contrast %.2f, want >= 4.5"):format(key, ratio))
   end
 end)
 

@@ -79,7 +79,11 @@ test("paint mock: font string text, color, font, font object and shadow are reco
   local obj = { GetFont = function() return "Fonts\\ARIALN.TTF", 10, "" end }
   fs:SetFontObject(obj)
   assertTrue(fs:GetFontObject() == obj)
-  assertEqual(rgba(fs:GetFont()), "Fonts\\ARIALN.TTF,10,", "a font object answers GetFont")
+  assertEqual(rgba(fs:GetFont()), "Fonts\\FRIZQT__.TTF,12,OUTLINE",
+    "the string's own font beats the object, as in the client (revision 50)")
+  local bare = M.CreateFrame("Frame"):CreateFontString()
+  bare:SetFontObject(obj)
+  assertEqual(rgba(bare:GetFont()), "Fonts\\ARIALN.TTF,10,", "a font object answers GetFont")
   fs:SetShadowOffset(1, -1); fs:SetShadowColor(0, 0, 0, 0.5)
   assertEqual(rgba(fs:GetShadowOffset()), "1,-1")
   assertEqual(rgba(fs:GetShadowColor()), "0,0,0,0.5")

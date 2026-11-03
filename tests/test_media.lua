@@ -21,7 +21,9 @@ local FONT_DIR = "LibKa0s/media/fonts"
 -- Cyrillic. Minor 11 adds thirteen (LK-F01): Segoe UI's four, Open Sans's five and Avant Garde draw
 -- Cyrillic, Friz Quadrata, Emblem and Doris PP do not. And the five minor 10 retired come back, since
 -- v1.81.0 shipped them and every older face stays: Inter's two and Fira Sans Regular draw Cyrillic.
-local FONT_COUNT, RU_COUNT = 33, 25
+-- R3-L6 adds Ubuntu Regular, WoW Default's face, under the Ubuntu font license (UFL 1.0); it draws Cyrillic.
+-- R3-L7 deletes Ka0s Friz Quadrata TT, western only: no skin draws it, and a stored pick moves to Ubuntu.
+local FONT_COUNT, RU_COUNT = 33, 26
 
 --- The basenames on disk under `dir`, as a set. Lua 5.1 has no directory API and this repo does not
 --- depend on LuaFileSystem, so the listing shells out — the same bargain tests/_kit/vendor_sync.lua
@@ -462,6 +464,7 @@ test("media: RegisterLSM never offers a key LibSharedMedia already holds", funct
   end
   for name in pairs(media.FONTS) do hold("font", name, media.Font("Other", name)) end
   for name in pairs(media.BORDERS) do hold("border", name, media.Border("Other", name)) end
+  hold("border", "Solid", "Interface\\Buttons\\WHITE8X8")
   for name in pairs(media.BACKGROUNDS) do hold("background", name, media.Background("Other", name)) end
   T.mocks.__libs["LibSharedMedia-3.0"] = {
     MediaType = { FONT = "font", STATUSBAR = "statusbar", BORDER = "border", BACKGROUND = "background" },
@@ -488,7 +491,7 @@ test("media: RegisterLSM never offers a key LibSharedMedia already holds", funct
   assertEqual(#calls, 15, "only the fifteen statusbars, which nobody held, are offered")
   assertEqual(fonts, FONT_COUNT, "a held face still counts")
   assertEqual(bars, 15)
-  assertEqual(borders, 1, "the held Glass border still counts")
+  assertEqual(borders, 2, "the held Glass and Solid borders still count")
   assertEqual(backgrounds, 1, "the held Glass fill still counts")
   assertEqual(held.font["Ka0s Nunito"], media.Font("Other", "Ka0s Nunito"), "the first registration stays")
   assertEqual(held.statusbar["Ka0s Gradient"], media.Texture("Later", "Ka0s Gradient"),
@@ -579,8 +582,16 @@ local INSTANCED = { "Nunito-OFL.txt", "Vollkorn-OFL.txt", "Bitter-OFL.txt", "Oxa
 -- own name table says it is "freely distributed with Prototype.txt", so that text ships unchanged;
 -- and Expressway, on the owner's ruling of 2026-10-30 ("Ship it anyways"), which overrides the
 -- archive's EULA: the EULA and its quick guide ship beside it as the record of the terms it overrode.
--- `also` names a further terms file and its phrases; `ru` a face whose cmap has Cyrillic.
+-- `also` names a further terms file and its phrases; `ru` a face whose cmap has Cyrillic. R3-L6:
+-- Ubuntu Regular under the Ubuntu font license, UFL 1.0, which allows redistribution and ships
+-- verbatim. Its title is matched by a fragment: the license spells it the British way.
 local NON_OFL = {
+  ["Ubuntu-UFL.txt"] = {
+    face = "Ka0s Ubuntu", file = "Ubuntu-Regular.ttf", ru = true,
+    phrases = { "UBUNTU FONT LIC", "Version 1.0",
+                "Each copy of the Font Software must contain the above copyright" },
+    notice = "Copyright 2011 Canonical Ltd.",
+  },
   ["Prototype.txt"] = {
     face = "Ka0s Prototype", file = "Prototype-Regular.ttf",
     phrases = { "free for personal use", "Please include this Prototype.txt file with any redistribution." },
@@ -604,10 +615,9 @@ local NON_OFL = {
 -- that notice as the file's own name table spells it, so a different cut goes red. `ru` as above.
 local APACHE = "OpenSans-Apache-2.0.txt"
 local RECORD = "FONTS.md"
-local SEGOE, FRIZ_ITC = "Microsoft Corporation. All Rights Reserved", "International Typeface Corporation"
+local SEGOE = "Microsoft Corporation. All Rights Reserved"
 local OPEN_SANS = "Google Corporation"
 local RULED = {
-  ["Ka0s Friz Quadrata TT"]  = { file = "FrizQuadrataTT-Regular.ttf", license = RECORD, notice = FRIZ_ITC },
   ["Ka0s Segoe UI"]          = { file = "SegoeUI-Regular.ttf", license = RECORD, notice = SEGOE, ru = true },
   ["Ka0s Segoe UI Bold"]     = { file = "SegoeUI-Bold.ttf", license = RECORD, notice = SEGOE, ru = true },
   ["Ka0s Segoe UI Light"]    = { file = "SegoeUI-Semilight.ttf", license = RECORD, notice = SEGOE, ru = true },
@@ -734,6 +744,17 @@ test("media: Open Sans ships the Apache 2.0 text, and each new face's bytes carr
   end
 end)
 
+test("media: Ka0s Friz Quadrata TT is gone: no key, no file, no record", function()
+  -- R3-L7. red under: the face, its file or its record left behind, so a pick still lists it, or a
+  -- shipped file no key names.
+  assertTrue(media.FONTS["Ka0s Friz Quadrata TT"] == nil, "FONTS names it")
+  local files = listing(FONT_DIR) or {}
+  assertTrue(files["FrizQuadrataTT-Regular.ttf"] == nil, "its file ships")
+  local record = readFile(FONT_DIR .. "/" .. RECORD) or ""
+  assertTrue(record:find("FrizQuadrataTT", 1, true) == nil, RECORD .. " still records its file")
+  assertTrue(record:find("Ka0s Friz Quadrata TT", 1, true) == nil, RECORD .. " still names its key")
+end)
+
 test("media: FONTS.md records every shipped face by file, and the notice of each new one", function()
   -- red under: a face added without its record; D-12 moved this record out of the README
   local record = readFile(FONT_DIR .. "/" .. RECORD) or ""
@@ -793,8 +814,26 @@ test("media: a ruRU client keeps every Cyrillic face and is refused the western-
   assertTrue(store.font["Ka0s Prototype"] == nil, "Prototype, western only, landed on ruRU")
   assertTrue(store.font["Ka0s Nunito"] ~= nil, "a Cyrillic face was refused on ruRU")
   assertTrue(store.font["Ka0s Expressway"] ~= nil, "Expressway, whose cmap has Cyrillic, was refused on ruRU")
-  assertTrue(store.font["Ka0s Friz Quadrata TT"] == nil, "Friz Quadrata, western only, landed on ruRU")
   assertTrue(store.font["Ka0s Segoe UI Semibold"] ~= nil, "Segoe UI, whose cmap has Cyrillic, was refused on ruRU")
+  assertTrue(store.font["Ka0s Ubuntu"] ~= nil, "Ubuntu, whose cmap has Cyrillic, was refused on ruRU")
+end)
+
+test("media: RegisterLSM offers the flat Solid border LSM does not ship, unless it is held", function()
+  -- red under: minor 11, which took Solid for an LSM default: LSM has a background and a statusbar.
+  local held = {}
+  T.mocks.__libs["LibSharedMedia-3.0"] = {
+    MediaType = { BORDER = "border" },
+    Register = function(_, _, key, path) held[key] = held[key] or path; return true end,
+    IsValid = function(_, _, key) return held[key] ~= nil end,
+  }
+  local _, _, borders = media.RegisterLSM("X")
+  assertEqual(held.Solid, "Interface\\Buttons\\WHITE8X8")
+  assertEqual(borders, 2, "Glass and Solid")
+  held.Solid = "first"
+  media.RegisterLSM("X")
+  T.mocks.__libs["LibSharedMedia-3.0"] = nil
+  assertEqual(held.Solid, "first", "a key another addon holds stays theirs")
+  assertEqual(media.BORDERS.Solid, nil, "the catalog stays shipped art")
 end)
 
 test("media: BORDERS and BACKGROUNDS hold the Glass art, and their paths are extensionless", function()
@@ -964,7 +1003,7 @@ test("media: RegisterLSM registers the Glass border and background, and counts t
   T.mocks.__libs["LibSharedMedia-3.0"] = nil
   assertEqual(fonts, FONT_COUNT)
   assertEqual(bars, 15)
-  assertEqual(borders, 1)
+  assertEqual(borders, 2, "Glass and Solid")
   assertEqual(backgrounds, 1)
   assertEqual(byKind.border and byKind.border["Ka0s Glass"], media.Border("X", "Ka0s Glass"))
   assertEqual(byKind.background and byKind.background["Ka0s Glass"], media.Background("X", "Ka0s Glass"))

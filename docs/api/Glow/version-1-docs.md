@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Glow-1.0` |
 | File | `Glow.lua` minor **1** |
 | Shipped in | v1.75.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | — |
+| Superseded by | [version 2](./version-2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called) |
 | Optional at call time | `LibCustomGlow-1.0`, no floor: resolved with `LibStub("LibCustomGlow-1.0", true)` on every call |
 | Confirm in-game | `LibStub("LibKa0s-Glow-1.0").MODULES` → `{ Glow = 1 }` |
@@ -191,3 +191,7 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 
 `Glow.lua` is an entry in `LibKa0s.xml`, after `Item.lua`, so the whole-folder copy brings it in with
 no load-list change in the host.
+
+## Moving to 2
+
+No code change. To draw the skin's glow color, pass `owner` in the knobs and no `color`.

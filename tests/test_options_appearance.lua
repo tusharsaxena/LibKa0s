@@ -27,6 +27,7 @@ local test, assertEqual, assertTrue, assertFalse, assertNil =
   K.test, K.assertEqual, K.assertTrue, K.assertFalse, K.assertNil
 local F = dofile("tests/fixture_skin_paint.lua")
 
+local Loader = dofile("tests/_kit/loader.lua")
 local Bench = dofile("tests/fixture_appearance.lua")
 local OWNER, OTHER, THIRD = Bench.OWNER, Bench.OTHER, Bench.THIRD
 local ELLIPSIS = Bench.ELLIPSIS
@@ -285,6 +286,23 @@ test("appearance: the EllesmereUI choice is disabled while the gate is closed, e
   end
   view.source.eui:__fire("OnValueChanged", true)
   assertEqual(Skin:GetChoice(OWNER), "ka0s", "a disabled choice moves nothing")
+end)
+
+test("appearance: with Media and the Scope cleared the gate's marks are Ka0s icons in their meaning", function()
+  local m, Skin, lib = env({ eui = { masterOff = true } })
+  Loader.load("LibKa0s/Media.lua", nil, m)
+  local store = register(Skin, OWNER)
+  local O, ctx = page(lib, OWNER)
+  local view = O.AppearanceRows(ctx, specFor(store))
+  local Media = m.LibStub("LibKa0s-Media-1.0")
+  local T = Skin:__Tokens(OWNER)
+  for i, c in ipairs(Skin:GetEUIStatus(OWNER).conditions) do
+    local line = view.conditions[i].text
+    assertTrue(line:find(Media.Icon(OWNER, c.ok and "confirm" or "close"), 1, true) ~= nil, c.key)
+    assertTrue(line:find("ReadyCheck", 1, true) == nil, c.key .. " has no client art")
+    local want = T[c.ok and "sem.good" or "sem.bad"]
+    assertTrue(line:find(":" .. math.floor(want[1] * 255 + 0.5) .. ":", 1, true) ~= nil, c.key .. "'s color")
+  end
 end)
 
 test("appearance: with no Skin EllesmereUI provider the choice is disabled with one line", function()

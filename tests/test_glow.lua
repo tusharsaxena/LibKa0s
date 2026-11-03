@@ -316,5 +316,5 @@ test("glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resol
   end
   assertEqual(#hits, 2, "two LibStub(...) calls in code")
   assertTrue(hits[1]:find('LibStub%("LibKa0s%-Core%-1%.0", true%)') ~= nil, "the Core probe")
-  assertTrue(hits[2]:find("local function lcg%(%)") ~= nil, "the call-time resolver")
+  assertTrue(hits[2]:find("local function resolve%(major%)") ~= nil, "the call-time resolver")
 end)

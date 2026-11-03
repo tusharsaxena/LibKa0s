@@ -10,9 +10,9 @@
 | Version | **47** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.84.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 46](version-46-docs.md) — the same surface, with the Ace fakes in `mock_base.lua` |
-| Superseded by | — |
+| Superseded by | [version 48](version-48-docs.md) |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `47` |
 

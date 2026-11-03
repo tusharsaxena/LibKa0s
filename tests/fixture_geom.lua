@@ -45,6 +45,7 @@ local function geomFrame()
   function f:SetTexture(p) self.__texture = p; return self end
   -- The handle's tint, which is what the hover cases read.
   function f:SetVertexColor(r, g, b, a) self.__vertexColor = { r, g, b, a or 1 }; return self end
+  function f:SetTextColor(r, g, b) self.__textColor = { r, g, b }; return self end
   function f:SetFont(p, s, fl) self.__font = { p, s, fl }; return self end
   -- A FONTSTRING WITH NO FONT RAISES ON SetText, exactly as the client does — and a FontString
   -- built FROM A TEMPLATE has one, which is why the check keys on `__font or __template` rather

@@ -194,7 +194,12 @@ test("skin controls: leaving a skin font puts an EditBox's face back by path, ne
   rawset(eb, "SetFontObject", function(_, obj) objects[#objects + 1] = obj; current = obj end)
   rawset(eb, "GetFontObject", function() return current end)
   rawset(eb, "SetFont", function(_, path, size, flags) faces[#faces + 1] = { path, size, flags } end)
-  rawset(eb, "GetFont", function() return "Fonts\\FRIZQT__.TTF", 10, "" end)
+  -- The client's answer: its own face once it has one, else the font object's (kit revision 50).
+  rawset(eb, "GetFont", function()
+    if #faces > 0 then return unpack(faces[#faces]) end
+    if current ~= anon and current.GetFont then return current:GetFont() end
+    return "Fonts\\FRIZQT__.TTF", 10, ""
+  end)
   local shadows = {}
   rawset(eb, "GetShadowOffset", function() return 0, 0 end)
   rawset(eb, "GetShadowColor", function() return 0, 0, 0, 0 end)
@@ -250,6 +255,23 @@ test("skin controls: Dropdown on Ka0s Default is Widgets' dropdown, call for cal
   assertEqual(F.rgba(survey(m, dd.arrow).vertex), F.tok(Skin, "glass", "icon.arrow"), "repainted in Glass's accent")
   Skin.__P.unpaint(Skin.painted[dd], dd)
   assertTrue(not survey(m, dd.arrow).desaturated, "given back, the art's own color")
+end)
+
+test("skin controls: a WowStyle1DropdownTemplate dropdown is a flat control (#71)", function()
+  -- red under: drop the wowStyle branch in prim.Dropdown (SkinPaintControls.lua)
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local dd = m.CreateFrame("DropdownButton", nil, m.UIParent, "BackdropTemplate")
+  dd.Background, dd.Arrow = dd:CreateTexture(), dd:CreateTexture()
+  dd.Text = dd:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  Skin:SetChoice(OWNER, "ka0s", "glass")
+  S.Dropdown(dd)
+  assertEqual(dd.Background:GetAlpha(), 0, "the template's background is faded")
+  assertEqual(dd.Arrow:GetAlpha(), 0, "and so is its gold button, which is the Arrow")
+  assertTrue(survey(m, dd.Arrow).vertex == nil or F.rgba(survey(m, dd.Arrow).vertex) == "1,1,1,1", "the Arrow is not tinted")
+  dd.Text:SetTextColor(1, 1, 1, 1)   -- OnButtonStateChanged on hover
+  dd:__fire("OnEnter")
+  assertEqual(F.rgba(survey(m, dd.Text).textColor), F.tok(Skin, "glass", "input.text"), "the label stays input.text")
 end)
 
 -- ── checkboxes ───────────────────────────────────────────────────────────────────────────────
@@ -442,6 +464,66 @@ test("skin controls: WoW Default's tabs are the client's tab art; a stock tab is
   assertEqual(art:GetAlpha(), 0, "a skin fades the art the caller named")
 end)
 
+test("skin controls: Tab draws the skin's edge, Ka0s Default none and a tab art its own", function()
+  -- Cause L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING: tab.border, tab.borderSize and
+  -- tab.borderStyle had no reader. red under: S.Tab reading none of them, Ka0s Default's false
+  -- turning into an edge, or the edge staying when the skin's tab art draws its own.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "azeroth")
+  local tab = m.CreateFrame("Button", nil, m.UIParent)
+  S.Tab(tab, { selected = false })
+  local top = F.region(Skin, tab, "edgeTop")
+  assertTrue(top ~= nil and top:IsShown(), "the skin's edge is drawn")
+  assertEqual(F.rgba(survey(m, top).color), F.tok(Skin, "azeroth", "tab.border"))
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertFalse(top:IsShown(), "Ka0s Default draws no tab edge")
+  Skin:SetChoice(OWNER, "ka0s", "contrast")
+  assertTrue(top:IsShown(), "a switch brings it back")
+  assertEqual(F.rgba(survey(m, top).color), F.tok(Skin, "contrast", "tab.border"))
+  Skin:SetChoice(OWNER, "ka0s", "wow")
+  assertFalse(top:IsShown(), "WoW Default's tab art is its own edge")
+end)
+
+test("skin controls: a Tab with a named fill wears its edge around that fill, not the button", function()
+  -- The settings strip's button is taller than its face (OptionsTabs' newTabArt), so an edge on the
+  -- button would box the empty strip above the tab. red under: the edge holder left on the button.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "azeroth")
+  local tab = m.CreateFrame("Button", nil, m.UIParent)
+  local fill = tab:CreateTexture()
+  S.Tab(tab, { selected = false, fill = fill })
+  local over = F.region(Skin, tab, "over")
+  assertTrue(over ~= nil, "the edge has its own holder")
+  local anchor
+  rawset(over, "SetAllPoints", function(_, rel) anchor = rel end)
+  Skin:SetChoice(OWNER, "ka0s", "ember")
+  assertTrue(anchor == fill, "anchored on the fill")
+end)
+
+test("skin controls: Tab's glow textures take tab.glow, and P.unpaint gives the stock gradient back", function()
+  -- tab.glow had no reader. red under: the glows keeping the white stock gradient under every skin,
+  -- or a chrome handed back keeping the skin's.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "contrast")
+  local tab = m.CreateFrame("Button", nil, m.UIParent)
+  local hl, sel = tab:CreateTexture(), tab:CreateTexture()
+  local stock = { r = 1, g = 1, b = 1, a = 0.15 }
+  local glow = { hover = hl, sel = sel, bottom = stock, top = { r = 0, g = 0, b = 0, a = 0 } }
+  S.Tab(tab, { selected = false, glow = glow })
+  local want = Skin:ResolveSkin("contrast")["tab.glow"]
+  for _, tex in ipairs({ hl, sel }) do
+    local g = survey(m, tex).gradient
+    assertEqual(g.orientation, "VERTICAL")
+    assertEqual(F.rgba({ g.min.r, g.min.g, g.min.b, g.min.a }), F.rgba(want), "the skin's glow")
+    assertEqual(g.max.a, 0, "fading to nothing, as the stock gradient does")
+  end
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertEqual(survey(m, hl).gradient.min.a, Skin:ResolveSkin("ka0s")["tab.glow"][4], "Ka0s Default's is the stock one")
+  Skin:SetChoice(OWNER, "ka0s", "contrast")
+  Skin.__P.unpaint(Skin.painted[tab], tab)
+  assertEqual(survey(m, sel).gradient.min.a, 0.15, "given back")
+end)
+
 -- ── small buttons ────────────────────────────────────────────────────────────────────────────
 
 test("skin controls: CloseButton on Ka0s Default is Core's close button, call for call", function()
@@ -555,12 +637,13 @@ test("skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and Apply
   icon.icon = icon:CreateTexture()
   S.SquareIcon(icon, { crop = true })
   assertEqual(select(1, icon.icon:GetTexCoord()), 0.08, "cropped")
-  Skin:RegisterSkin({ key = "framed", tokens = { ["icon.border"] = { 1, 1, 0, 1 },
-                                                 ["list.header.bg"] = { 0, 0, 0.2, 1 } } })
+  Skin:RegisterSkin({ key = "framed", tokens = { ["icon.outline"] = { 1, 1, 0, 1 },
+                                                 ["list.header.bg"] = { 0, 0, 0.2, 1 },
+                                                 ["list.header.arrow"] = { 0, 1, 0, 1 } } })
   local ib = m.CreateFrame("Frame", nil, m.UIParent)
   S.IconBorder(ib, { size = 2 })
-  assertEqual(F.rgba(survey(m, F.region(Skin, ib, "edgeTop")).color), F.tok(Skin, "contrast", "icon.border"),
-    "Contrast inherits Ka0s Default's black icon border (SkinDefs minor 8)")
+  assertEqual(F.rgba(survey(m, F.region(Skin, ib, "edgeTop")).color), F.tok(Skin, "contrast", "icon.outline"),
+    "High Contrast's own outline (R4-L3)")
   Skin:SetChoice(OWNER, "ka0s", "framed")
   assertEqual(F.rgba(survey(m, F.region(Skin, ib, "edgeTop")).color), "1,1,0,1", "repainted with one")
   local bar = m.CreateFrame("Frame", nil, m.UIParent)
@@ -568,7 +651,7 @@ test("skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and Apply
   local h1, a1 = bar:CreateFontString(), bar:CreateTexture()
   S.SortHeaderBar(bar, { texts = { h1 }, arrows = { a1 } })
   assertEqual(F.rgba(survey(m, h1).textColor), F.tok(Skin, "framed", "list.header.text"))
-  assertEqual(F.rgba(survey(m, a1).vertex), F.tok(Skin, "framed", "icon.arrow"))
+  assertEqual(F.rgba(survey(m, a1).vertex), "0,1,0,1", "list.header.arrow (SF-L2), not icon.arrow")
   assertTrue(survey(m, a1).desaturated == true, "the sort arrow desaturated")
   assertEqual(F.rgba(survey(m, F.region(Skin, bar, "fill")).color), "0,0,0.200,1", "the header fill")
   local fill = m.CreateFrame("Frame"):CreateTexture()

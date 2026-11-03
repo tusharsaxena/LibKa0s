@@ -1,0 +1,450 @@
+# `LibKa0s-Launcher-1.0` — version 7
+
+> **This document is the source of truth for this version of this major.** Anything else in this
+> repo that describes the Launcher surface points here rather than restating it. It describes the
+> contract *as it is at this version* — not as it is now, unless this version is also the current
+> one.
+
+| | |
+|---|---|
+| Major | `LibKa0s-Launcher-1.0` |
+| Files and minors | `Launcher.lua` minor **7** |
+| Shipped in | v1.85.0 |
+| Status | **Current** |
+| Supersedes | [version 6](./version-6-docs.md) — whose menu had no Open settings and no Sim mode |
+| Superseded by | — |
+| Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **LibKa0s-Skin-1.0** is OPTIONAL and resolved with `LibStub(…, true)` on every tooltip show. **LibDataBroker-1.1** and **LibDBIcon-1.0** are OPTIONAL and are resolved with `LibStub(…, true)` at `Register` time, never at load. The client's context-menu API (`MenuUtil`, 11.0 and later) is OPTIONAL too, resolved on every right click. |
+| Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 7 }` |
+
+## What changed at this version
+
+**The menu gains Sim mode and Open settings, and every row follows one rule** (`SG-L1`).
+
+- **Sim mode**: a checkbox where the descriptor passes `isSimMode` and `toggleSim` (the act of the addon's
+  `/<slash> sim` verb), after Test mode and before Show window, grayed while disabled.
+- **Open settings**: a plain button on every addon, after the toggles and before Open skin selector. It
+  calls `openSettings("RightButton")` and is never grayed, because the panel is where a disabled addon is
+  re-enabled. A host with no toggle at all now gets a menu of this one entry.
+- **One row rule.** A toggle is a checkbox whose tick is asked live, when the client draws it, not captured
+  when the menu opens. An action is a plain button. A gated row of either kind grays the same way, with the
+  note in its label. Every click closes the menu. Hover is the client's.
+- **`lib.STRINGS`** gains `MENU_SIM_MODE` and `MENU_SETTINGS`.
+- **Hosts owe**: `isSimMode` and `toggleSim` where the addon has a sim.
+- **Not changed, `SG-L2`**: the module makes one broker object and one LibDBIcon button per addon and never
+  touches the addon compartment; a button collector that shows two entries for one addon draws the second
+  itself.
+
+## What changed at version 6
+
+**The status tooltip follows the host's skin** (`FS-L1`, cause L1 of Ka0sAddonsCommonTasks
+`docs/2026-11-01-FULL_SKINNING/`). `skinning-§7` says the lines an addon writes on `GameTooltip` take
+their colors from the skin, and this tooltip took none, because the launcher had no owner to read.
+
+- **Every addon gets it by re-vendoring.** The owner is the descriptor's `name`, which is what every
+  addon registers its skin under. The new optional field `owner` names it where the two differ.
+- **The title takes `gtip.title`, every other library line `gtip.line`, and the status words
+  `gtip.on` and `gtip.off`** (`LibKa0s-Skin-1.0` SkinDefs minor 20). They are read on every show, so
+  a skin switch reaches the next hover with no rebuild and nothing to repaint.
+- **Ka0s Default keeps its look.** Its `gtip.title` and `gtip.line` are the client's gold, and its
+  `gtip.on` and `gtip.off` are the pure green and red, `|cFF00FF00` and `|cFFFF0000`.
+- **A name that is no skin owner, or a client with no Skin major, draws version 5's tooltip, call for
+  call:** no line color, and the two typed status colors.
+- **The Scope does not apply.** The tooltip is no settings page, so *Ignore settings panel* leaves it
+  skinned. A skin that raises is reported to `debug` as `tooltip: skin raised: …` and the tooltip
+  draws plain.
+- **Not changed:** the frame, which is the client's, the menu, which the client draws, and the
+  host's own `onTooltipShow` lines, which are the host's.
+
+## What changed at version 5
+
+**The launcher's state lines can be held for the enable edge** (`debugAtEnable`). Gap G4 of the
+2026-09-30 debug-gaps run. A host calls `Register` from `OnEnable`, and the session-only logging
+flag is off at login by design, so the lines `Register` writes through `debug` (a broker library
+absent, no minimap table, `registered`) were gated off and never landed, and debug-logging-§8's
+"dependencies once at enable" was not visible anywhere.
+
+- **One new optional descriptor field, `debugAtEnable(tag, message)`**, called with the tag
+  `"Launcher"` for the four **state** lines `Register` writes: `LibDataBroker-1.1 absent; no
+  launcher`, `LibDBIcon-1.0 absent; broker plugin only`, `descriptor.minimap answered no table; no
+  minimap button` and `registered`. A host passes the console's `D.DebugAtEnable`
+  ([DebugLog version 18.2.1](../DebugLog/version-18.2.1-docs.md)), which writes at once when logging
+  is on and otherwise holds the line and writes it when logging is next turned on.
+- **Events stay on `debug`**: `shown`, `hidden`, a menu refusal, a raising accessor or hook, and the
+  degraded right click. An event held for later would land out of time.
+- **Absent `debugAtEnable`, the four lines go to `debug`, exactly as version 4 wrote them.** With
+  neither field, nothing is written, as before. No text, member, string or floor moves, and nothing
+  printed to chat changes.
+
+## What changed at version 4
+
+The owner's M6 ruling of 2026-09-24, made a MUST by the standard's v2.67.0 (`launcher-§2`, WS-11).
+
+- **Left-click opens the settings panel**, on every addon, in either state. It calls `openSettings`
+  and nothing else. The three left-click rungs are retired, and so is version 2's disabled
+  left-click refusal: the panel is setup, not a feature, and it is where a disabled addon is
+  re-enabled.
+- **Right-click opens the options menu**: the client's own context menu,
+  `MenuUtil.CreateContextMenu`, titled with the label, with one checkbox per toggle the
+  descriptor supplies, in this order and no other:
+
+  ```
+  <label>
+  [x] Enabled         isEnabled + setEnabled(bool)
+  [ ] Locked          isLocked + toggleLock           grayed while disabled
+  [ ] Test mode       isTestMode + toggleTestMode     grayed while disabled
+  [ ] Sim mode        isSimMode + toggleSim           grayed while disabled   (version 7)
+  [ ] Show window     isWindowShown + toggleWindow    grayed while disabled
+  ```
+
+- **Four new optional descriptor fields**, each the toggle half of a pair: `setEnabled`,
+  `toggleLock`, `toggleTestMode`, `toggleWindow`; and one new accessor, `isWindowShown`. The other
+  three accessors (`isEnabled`, `isLocked`, `isTestMode`) are the ones the tooltip already reads.
+- **Four descriptor fields are retired** and ignored if passed, with no error: `onClick` and
+  `leftClickLabel` (the left button has one meaning now), and `disabledLine` and `slash`, which
+  served only the retired refusal and its tooltip hint. Version 2's rule that `isEnabled` needs a
+  `disabledLine` is gone with them.
+- **The tooltip's click hints are fixed**: `Left-click: Open settings` and
+  `Right-click: Options menu`, in either state. The rest of version 3's tooltip is unchanged.
+- **`lib.STRINGS`** gains `TOOLTIP_OPTIONS_MENU` and seven `MENU_*` keys, and loses
+  `TOOLTIP_LEFT_DEFAULT`, `TOOLTIP_DISABLED_HINT` and `TOOLTIP_DISABLED_BARE`. A host `d.L` still
+  carrying the three is read by nothing.
+
+## What this major is
+
+**The minimap button and the broker plugin, as one object registered twice** (`launcher-§1`). The
+addon creates a single **LibDataBroker-1.1** object of `type = "launcher"` and hands that object to
+**LibDBIcon-1.0**; LibDBIcon draws the minimap button from it, and any broker display that is
+installed draws its own row from the very same object. One `OnClick`, one icon, one label, one
+identity.
+
+It is not two features, and an addon that builds a minimap button with its own click handler and a
+broker object with a second one has written the same feature twice and will drift on the next
+behavior change — **anti-pattern #81**. Eleven addons were about to write that wiring eleven times.
+
+The **host** supplies what is genuinely its own: its folder name, its logo, how its settings panel
+opens, and the accessor-and-toggle pairs for the states it has. This module owns the rest: what each
+button does, the tooltip, the menu, and when an entry is grayed.
+
+## What it deliberately does NOT own
+
+**The toggles' effects.** Every menu entry calls the host's own handler, the one its slash verb and
+its settings row already use, so the refusals, the combat rules and the chat messages are the
+addon's. The menu holds no state and writes nothing itself.
+
+**The settings row.** The minimap button's visibility is a Master-controls row (`options-ui-§15`),
+emitted by `LibKa0s-Options-1.0`'s `MasterControls` composer from its **`minimapPath`** spec key.
+This module registers no row and reads no settings store.
+
+**The inversion.** `launcher-§3` stores the visibility as LibDBIcon's **own** `hide` boolean and the
+row's label says *shown*, so the row's `get`/`set` invert at the **host's single write seam**
+(`options-ui-§1`). This module offers `SetShown` / `IsShown` for that seam to call.
+
+**The scope.** The `minimap` table is `db.global.minimap`, and the standard fixes it there for two
+stated reasons: a profile switch must not move a player's buttons, and `options-ui-§12`'s *Reset all
+settings* — a profile reset by definition — must not un-hide a button the player deliberately hid.
+The host hands the table in; this module does not know what a profile is.
+
+**The icon file.** `launcher-§4` and `layout-§4` own it: `media/logos/<addon>.logo.128.tga`, 128×128,
+uncompressed 32-bit, the same file the TOC's `## IconTexture` names. A launcher registered with no
+icon file behind it draws **nothing**, which is worse than the state before adoption.
+
+## What is not here
+
+[LibKa0s#58](https://github.com/tusharsaxena/LibKa0s/issues/58) asked for the *Show window* entry to
+owe a key binding. The owner made that a `launcher-§6` MUST in the standard; the library parts were
+judged against `library-stack-§7` on 2026-10-22 and are recorded here, where the next author will
+look. A row is reopened when its trigger fires, not before.
+
+| Not here | Consumers counted | Why | Re-check trigger |
+|---|---|---|---|
+| A binding helper — a member that names the binding header and label and builds the `CLICK` button routed to the descriptor's `toggleWindow` (**rejected**) | **1** shipped: QuickComms. BankLedger, LootHistory, MultiMeters, DropWatcher and WhatGroup owe the binding but had written none, so they are future consumers, not verified ones. | `Bindings.xml` must stay per addon (the client reads it only from the addon's root), and the library can neither generate it nor check that the button name it creates matches the static file. What is left is about six lines (a named frame, `RegisterForClicks`, `OnClick`, a label and a header global): the high-frequency, low-content shape `library-stack-§7` keeps inline. Bar 2 fails as well: QuickComms writes its binding header from its dial module for four other bindings, so a helper that set the header would collide or need an "owns header?" flag. The refusal and down-edge rules are enforced as well by the standard clause and each addon's own test. | After the `launcher-§6` rollout, two or more addons' binding buttons diverge in a correctness way (a missing stand-down refusal, a double toggle from up and down clicks, a secure template, a default key); or a second `CLICK` binding per addon is ruled in and the per-addon code stops being trivial. |
+| A kit check that a consumer with a *Show window* entry ships a conforming `Bindings.xml` (**deferred**) | **1**: QuickComms' own static and behavioral assertions (`tests/test_dial.lua`), on its own mock. | A kit suite cannot tell on its own that an addon owes a binding (`ADDONS.md` is not vendored and this major's instance does not expose its descriptor), so each consumer would declare it, and an undeclared one is exactly the miss the check exists to catch; the audit catches that better. The behavioral half needs button click support the kit's mock does not have. The static half is generic but has one consumer today, and the kit's bar for a shared gate is the many hand copies it replaces. | Three or more addons ship `Bindings.xml` tests after the rollout: if their static assertions are identical, promote the static half alone as a kit revision. Re-check the behavioral half only if the kit's mock gains button click support for another reason. |
+
+## Neither broker library is a dependency
+
+LibDataBroker-1.1 and LibDBIcon-1.0 are resolved with `LibStub(…, true)` **at `Register` time**, and
+a host that has neither gets a launcher that reports itself absent rather than one that raises. That
+is the same bargain LibSharedMedia strikes in `Media.lua` and AceGUI-3.0 in `Options.lua`: this
+library is vendored into eleven addons whose `libs/` folders are not identical.
+
+Call time rather than load time is deliberate too. `LibKa0s.xml` is one entry in a TOC's
+`# Libraries` block and the broker libraries are others; nothing fixes their relative order, and a
+lookup taken at load would answer `nil` for a host that happens to list LibKa0s first.
+
+| State | `Register()` | `Object()` | Minimap button | `SetShown` / `IsShown` |
+|---|---|---|---|---|
+| Both libraries present | `true` | the object | drawn | act on the button and the store |
+| LibDBIcon absent | `false` | the object | none; a broker display still shows the plugin | `SetShown` returns `false`, still records `hide`; `IsShown` reads the store |
+| LibDataBroker absent | `false` | `nil` | none | `SetShown` returns `false`, still records `hide` |
+| `descriptor.minimap` answers no table | `false` | the object | none | `IsShown` answers `true` |
+
+Every one of those reports one line naming the addon and the missing piece, through
+`descriptor.print` or the chat frame — **once per instance** since version 2, however many times
+`Register` is called.
+
+## The descriptor
+
+`lib:New(d)` raises on a missing `name`, `icon` or `openSettings`, and on nothing else. None of the
+three has a defensible default: the folder name keys LibDBIcon's saved position, the icon is the
+addon's face in three places, and left-click **always** opens the panel.
+
+| Field | Since | Required | What it is |
+|---|---|---|---|
+| `name` | **L1** | yes | The addon's **folder name**, used for **both** registrations (`BankLedger`, `PartyFrameEnhanced`). Not cosmetic: LibDBIcon keys the button's saved position by it, so a second spelling drops the angle the player dragged the button to and labels the broker plugin with the other name. |
+| `icon` | **L1** | yes | The addon's own logo — the same file `## IconTexture` names. Never a Blizzard path and never a numeric file id (**anti-pattern #82**). |
+| `label` | **L1** | no | What a broker display labels the plugin, and the title of the tooltip and of the menu. Defaults to `name`. |
+| `minimap` | **L1** | yes | LibDBIcon's own table, `db.global.minimap`, **or a function answering it**. A function is the usual shape: `db.global.minimap` does not exist when the host builds its descriptor at file load, and a table captured then is one AceDB later replaces. Resolved at `Register` time. |
+| `openSettings` | **L1**, meaning changed at **L4** | yes | Opens the addon's settings panel. **Left-click always** calls it, in either state (version 4); so does right-click where the client has no context-menu API or the descriptor supplies no toggle. Handed the button name. |
+| `isEnabled` | **L2** | no | Whether the addon is enabled, asked on every show and every menu open, never cached. The tooltip's `Enabled` line; with `setEnabled`, the menu's *Enabled* entry; and while it answers false (or nil), the menu's other entries are grayed. A host without it is always enabled. Since version 4 it gates no click. |
+| `setEnabled` | **L4** | no | `setEnabled(bool)` — the addon's own enable/disable path, the one `/<slash> enable` / `disable` write (`slash-commands-§2`). Handed the state the addon is moving **to** (`not isEnabled()`, read at the click). With `isEnabled`, draws *Enabled*. |
+| `isLocked` | **L3** | no | Where the addon has a lock (the *Lock frame* row): answers whether it is locked. The tooltip's `Locked` line; with `toggleLock`, the menu's *Locked* entry. |
+| `toggleLock` | **L4** | no | The addon's own lock/unlock toggle, the one `/<slash> lock` / `unlock` and the *Lock frame* row use. Called with no argument. |
+| `isTestMode` | **L3** | no | Where the addon has a test mode: answers whether it is on. The tooltip's `Test mode` line; with `toggleTestMode`, the menu's *Test mode* entry. |
+| `toggleTestMode` | **L4** | no | The addon's own test-mode toggle, the one `/<slash> test` and the *Test mode* row use. Called with no argument. |
+| `isSimMode` | **L7** | no | Where the addon has a simulation: answers whether it is running. With `toggleSim`, the menu's *Sim mode* entry. |
+| `toggleSim` | **L7** | no | The addon's own sim toggle, the one `/<slash> sim` runs. Called with no argument. |
+| `isWindowShown` | **L4** | no | Where the addon has a **primary window** (standalone-windows — the browser, ledger, meter window or group popup the addon exists to show, not a settings or export dialog): answers whether it is shown. With `toggleWindow`, the menu's *Show window* entry. |
+| `toggleWindow` | **L4** | no | The primary window's own toggle. Called with no argument. |
+| `onTooltipShow` | **L1**, meaning changed at **L3** | no | Called **once per show**, handed the tooltip, to **append** the addon's own lines between the status block and the click hints. It draws no title, version, status line or click hint (**anti-pattern #89**). A non-function is dropped; a raising one costs its lines and nothing else. |
+| `version` | **L3** | no | A string (or a function answering one) drawn after the label in the tooltip's title, `<label>  v<version>`. A leading `v` is not doubled; `nil` or `""` draws the label alone. |
+| `print` | **L1** | no | Where this module's own reports go. Defaults to `DEFAULT_CHAT_FRAME`. |
+| `debug` | **L1** | no | `debug(tag, message)` — the host's log seam, called with the tag `"Launcher"`. Every event line, and the state lines too where `debugAtEnable` is absent. |
+| `debugAtEnable` | **L5** | no | `debugAtEnable(tag, message)` — where `Register`'s four state lines go (a broker library absent, no minimap table, `registered`), with the tag `"Launcher"`: the console's `D.DebugAtEnable`, so they land when logging is first turned on rather than being gated off at `OnEnable`. Absent, they go to `debug`. |
+| `owner` | **L6** | no | The `LibKa0s-Skin-1.0` owner the tooltip reads. Defaults to `name`, so a host passes it only where the two differ. See *The status tooltip*. |
+| `openSkinPicker` | **L6** (SF-F2) | no | `function()`: opens the addon's skin picker, the act of its `/<slash> skin` verb. With it, and while `owner` (default `name`) is a registered skin owner, the right-click menu ends with **Open skin selector** (`MENU_SKIN`); on its own it makes a menu where the host supplied no toggle. A raise is caught and printed through the host's printer. |
+| `L` | **L1** | no | Locale override, keyed to `lib.STRINGS`. Read with `rawget`, so a host table that answers an unknown key **with the key** (which every Ka0s locale table does — **anti-pattern #2**) falls through to the library's English rather than printing `MENU_LOCKED` at the player. |
+
+**Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `lib.STRINGS`: no consumer as of v1.67.0, kept because it is the English fallback for the menu and tooltip; a host overrides by key through the descriptor's `L`.
+- `L`: no consumer as of v1.67.0, kept because no host localizes the launcher's strings yet; it is the only route for one that does.
+- `owner` (new at version 6): no consumer yet, kept because a host's skin owner need not be its folder name; every host today defaults through `name`.
+
+### Retired at version 4
+
+Ignored if passed; `New` raises on none of them, so a host that has not yet re-vendored its setup
+file keeps working and is carrying dead configuration (`launcher-§5`).
+
+| Field | Was | Why it went |
+|---|---|---|
+| `onClick` | **L1** — the left click's action, and so the addon's rung | Left-click opens the settings panel on every addon; the rungs are retired (`launcher-§2`, v2.67.0). The action it ran is now a menu entry: pass its toggle as `toggleWindow`, `toggleTestMode` or `toggleLock`. |
+| `leftClickLabel` | **L3** — `Left-click: <label>` on rungs (a)/(b) | The hint is fixed, `Left-click: Open settings`. |
+| `disabledLine` | **L2** — the line the disabled left-click refusal printed | There is no refusal: the left button opens the panel in either state, and a grayed menu entry calls nothing. |
+| `slash` | **L3** — the command the disabled hint named | The disabled hint is gone. |
+
+## The two buttons
+
+| Button | Does | Gated while disabled? |
+|---|---|---|
+| **Left** | `openSettings(button)` | no — the panel is setup, and where the addon is re-enabled |
+| **Right** | opens the options menu (below) | no — *Enabled* is live; the other entries are grayed |
+
+There is **no setting** that reassigns either button, and a host MUST NOT build its own menu or
+route clicks itself (`launcher-§2`, anti-pattern #81).
+
+## The options menu
+
+Built by `MenuUtil.CreateContextMenu(owner, generator)`, where `owner` is the frame the client
+handed `OnClick` (the minimap button, or the broker display's row), falling back to `UIParent`. The
+generator runs when the menu opens:
+
+1. `root:CreateTitle(label)` — the plain-text `label`, else `name`.
+2. One `root:CreateCheckbox(text, isSelected, setSelected)` per supplied entry, in the order
+   *Enabled*, *Locked*, *Test mode*, *Show window*. An entry is supplied when the descriptor passes
+   **both** its accessor and its toggle as functions; half a pair draws nothing, since a checkbox
+   that can show a state but not change it, or change one it cannot show, is not an entry.
+3. **Each state is read at that moment**, once per open, and never cached: `isSelected` answers the
+   value read when the menu opened. A raising accessor reads unchecked and is reported to `debug`.
+4. **While `isEnabled()` answers false**, *Locked*, *Test mode* and *Show window* are grayed with
+   `SetEnabled(false)` and their text reads `<entry> (enable the addon first)`. The note is in the
+   label rather than in an entry tooltip because the client does not run a disabled button's
+   motion scripts by default, and a note in a tooltip nobody can raise is no note. *Enabled* stays
+   live.
+
+**A click** calls the host's handler **once** — `setEnabled(not isEnabled())` for *Enabled*, the
+toggle with no argument for the rest — and answers `MenuResponse.Close`, so the next open reads
+every state afresh. A gated entry clicked while the addon is disabled (a client that dispatched a
+grayed entry anyway) calls no handler and writes nothing. A raising handler prints one line,
+`MENU_FAILED`, naming the addon, the entry and what raised, and never escapes into the client's
+menu dispatch.
+
+**Degrading.** The right click resolves `MenuUtil` on every click. Where it is absent, or has no
+`CreateContextMenu`, or the descriptor supplies no entry at all, the right click calls
+`openSettings("RightButton")` instead — the panel holds every toggle the menu would have — and the
+`debug` seam hears which. A raising `CreateContextMenu` is reported with `CLICK_FAILED` like any
+other raising click.
+
+## The status tooltip
+
+Drawn by `drawTooltip`, which is the LDB object's `OnTooltipShow` on every host (version 3). LibDBIcon
+calls it on hover with `GameTooltip`, a broker display with its own tooltip; an argument with no
+`AddLine` is left alone.
+
+| Line | Drawn when | Reads |
+|---|---|---|
+| `<label>  v<version>` | always | `label` (else `name`), `version` |
+| `Enabled: Yes\|No` | always | `isEnabled()`; a host with no `isEnabled` is always Yes. On color Yes, off color No. |
+| `Locked: Yes\|No` | `isLocked` passed | `isLocked()`, on color Yes, off color No |
+| `Test mode: On\|Off` | `isTestMode` passed | `isTestMode()`, on color On, off color Off |
+| the host's lines | `onTooltipShow` passed | whatever it adds, once |
+| `Left-click: Open settings` | always | nothing; fixed since version 4 |
+| `Right-click: Options menu` | always | nothing; fixed since version 4 |
+
+- **Never cached.** Every accessor is asked on every show, so the tooltip reads what the settings
+  panel reads the moment it changes.
+- **The colors are the host's skin's** (version 6), read on every show, the frame staying the
+  client's. For an owner, `gtip.title` colors the title, `gtip.line` every other library line, and
+  `gtip.on` and `gtip.off` the status value, wrapped by the code around the localized word. With no
+  owner the lines name no color, so the client's stands, and the words are the green `|cFF00FF00`
+  and the red `|cFFFF0000`. No `lib.STRINGS` value carries an escape, and the title carries none.
+- **Nothing a hover does goes to chat.** A raising accessor is reported to `debug` and answers nil.
+- The tooltip draws no *Show window* line: its shape is version 3's, unchanged but for the hints.
+
+## The instance surface
+
+`lib:New(d)` returns an instance. Nothing is registered until `Register` is called. Unchanged since
+version 1.
+
+| Member | Since | What it does |
+|---|---|---|
+| `Lb:Register()` | **L1** | Builds the one LDB object and registers it with LibDBIcon. **Idempotent** — a host may call it from `OnInitialize` and again from a login handler, and a second `LibDBIcon:Register` on a name it already holds would otherwise build a second button over the first. Returns whether the launcher is **fully** wired. |
+| `Lb:IsRegistered()` | **L1** | Whether both halves are wired. `false` while only the broker object exists. |
+| `Lb:Object()` | **L1** | The one LDB object, or `nil` before `Register` (or where LibDataBroker is absent). Published so a host with a live value to show can update the object's own fields, and so a suite can drive the one click both surfaces share. It is **not** an invitation to register a second one, or to replace its `OnClick` or `OnTooltipShow`. |
+| `Lb:IsShown()` | **L1** | Whether the button is shown — `not minimap.hide`. Answers from the **store**, so it is still right on a host where LibDBIcon never loaded, and the Master-controls checkbox reflects what the player chose. |
+| `Lb:SetShown(shown)` | **L1** | Writes `minimap.hide` and calls LibDBIcon's `Show` / `Hide`, so the button follows the checkbox immediately rather than at the next reload. Returns whether the **button** could be moved; the store is updated either way. |
+
+**Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
+
+- `Object`: no consumer as of v1.67.0, kept because it is published for a suite to drive the shared click, and for a host with a live value to show.
+
+`lib.STRINGS` carries the four reports (`NO_BROKER`, `NO_ICON`, `NO_MINIMAP`, `CLICK_FAILED`); the
+twelve tooltip strings (`TOOLTIP_TITLE_VERSION`, `TOOLTIP_ENABLED`, `TOOLTIP_LOCKED`,
+`TOOLTIP_TEST_MODE`, `TOOLTIP_YES`, `TOOLTIP_NO`, `TOOLTIP_ON`, `TOOLTIP_OFF`, `TOOLTIP_LEFT`,
+`TOOLTIP_RIGHT`, `TOOLTIP_OPEN_SETTINGS` and, since version 4, `TOOLTIP_OPTIONS_MENU`); and, since
+version 4, the seven menu strings (`MENU_ENABLED`, `MENU_LOCKED`, `MENU_TEST_MODE`,
+`MENU_SHOW_WINDOW`, `MENU_SKIN`, `MENU_NEEDS_ENABLE`, `MENU_GRAYED` — the `<entry> (<note>)` shape — and
+`MENU_FAILED`), as a literal table, exactly as every other major's does: the library carries no
+locale, and a host that wants its own words passes `d.L`. None carries a `[LibKa0s] ` tag; each
+report begins with the addon's folder name, and the host's printer adds the host's own tag.
+
+## The one click implementation
+
+Both surfaces dispatch into it, so `launcher-§2` is satisfied on the minimap and in a broker display
+**by construction** rather than by two implementations agreeing. A `RightButton` opens the menu;
+every other button opens the settings panel.
+
+It is `pcall`'d, so a raising `openSettings` or `CreateContextMenu` is reported with one line naming
+the addon, the button and what raised (`CLICK_FAILED`), and the launcher keeps working. This runs
+inside the client's click dispatch, where a raise is a red error box over the player's minimap with
+nothing naming the addon that caused it.
+
+## Wiring it, end to end
+
+```lua
+local addonName, NS = ...
+
+local Launcher = LibStub and LibStub("LibKa0s-Launcher-1.0", true)
+
+-- core/LauncherSetup.lua
+if Launcher then
+    NS.Launcher = Launcher:New{
+        name = addonName,                                   -- the FOLDER name
+        icon = "Interface\\AddOns\\" .. addonName .. "\\media\\logos\\" .. lowerName .. ".logo.128.tga",
+        label = "Ka0s Bank Ledger",
+        version = NS.VERSION,
+        minimap = function() return NS.db.global.minimap end,
+        openSettings = function() NS.OpenSettings() end,    -- left-click, always
+        -- the options menu (version 4): each pair only where the addon has the state, and each
+        -- toggle is the SAME handler the slash verb and the settings row use
+        isEnabled = function() return not NS.IsDisabled() end,
+        setEnabled = function(on) NS.SetEnabled(on) end,    -- what /bl enable|disable call
+        isLocked = function() return NS.db.profile.locked end,
+        toggleLock = function() NS.ToggleLock() end,        -- what /bl lock|unlock call
+        isWindowShown = function() return NS.Browser:IsShown() end,
+        toggleWindow = function() NS.ToggleBrowser() end,
+        onTooltipShow = function(tt) tt:AddLine(NS.EntryCountLine()) end,  -- the addon's own lines
+        debug = NS.Debug,
+        debugAtEnable = NS.DebugAtEnable,                   -- the console's D.DebugAtEnable (version 5)
+    }
+    NS.Launcher:Register()
+end
+
+-- settings/Schema.lua — the row is COMPOSED, never hand-written (options-ui-§15/§16)
+local rows = H.MasterControls{
+    addonName    = "Bank Ledger",
+    minimapPath  = "global.minimap.hide",   -- verbatim: the GLOBAL store, outside the profile prefix
+    onResetAll   = NS.ResetAll,
+    onResetPosition = NS.ResetPosition,
+}
+
+-- settings/OptionsSetup.lua — the single write seam does the inversion, once
+function NS.SetValue(path, value)
+    if path == "global.minimap.hide" then
+        NS.db.global.minimap.hide = not value           -- the row says SHOWN
+        if NS.Launcher then NS.Launcher:SetShown(value) end
+        return
+    end
+    -- … every other row
+end
+```
+
+**A host with no LibKa0s** (the degraded install every Ka0s addon models) gets `nil` from the
+`LibStub` lookup and keeps no launcher at all. There is nothing to stub: nothing in the addon calls
+back into this module except its own setup file and its write seam, both of which already guard on
+`NS.Launcher`.
+
+**Testing a host.** This repository's `MenuUtil` stand-in is `tests/mock_menu.lua`: it records
+the title and each checkbox, honors `SetEnabled(false)` by refusing the click, and runs the
+generator once per open, as the client does. It is repo-local, **not** in the kit, so a consumer
+does not receive it; a host suite that pins its menu entries installs its own fake `MenuUtil` in
+its harness, modeled on that file, and drives the menu through
+`NS.Launcher:Object().OnClick(frame, "RightButton")`. With no fake installed the right click takes
+the degraded path and opens the settings panel, which is itself a checkable fact.
+
+## Compatibility
+
+**Version 6 is additive.** One optional descriptor field, `owner`; no member is added or removed, so
+no degradation stub moves. What changes without adopting anything is the tooltip's colors under any
+skin but Ka0s Default, for a host that registers its folder name as a skin owner. A consumer test
+that fakes `AddLine` with one parameter still reads the same text. The next paragraphs are version
+5's and 4's.
+
+**Version 5 is additive.** One optional descriptor field, `debugAtEnable`; a host that does not pass
+it sees version 4's behavior byte for byte, and no member is added or removed, so no degradation stub
+moves. The next paragraphs are version 4's.
+
+The API was additive-only through version 3. **Version 4 is the first to retire descriptor fields**
+— `onClick`, `leftClickLabel`, `disabledLine` and `slash` — on the owner's ruling and the standard's
+v2.67.0, and it does so without breaking a host that still passes them: they are ignored, and `New`
+raises on none of them. What **changes without adopting anything**:
+
+- **The left button opens the settings panel** on every host. A rung (a)/(b) host's `onClick` stops
+  running, so its window or preview toggle is unreachable from the button until the host passes the
+  matching pair for the menu.
+- **The right button opens the menu** where the host passes at least one pair — which a version 3
+  host with `isEnabled` alone does not, since it has no `setEnabled` yet — and otherwise still opens
+  the panel. So a host that re-vendors and adopts nothing sees left and right both open the panel,
+  under hints that already say `Options menu`, until it passes its pairs.
+- **The disabled refusal is gone.** A consumer test that clicked left while disabled and expected
+  `disabledLine` printed and nothing opened now sees the panel open and nothing printed.
+- **The hints change** to `Left-click: Open settings` / `Right-click: Options menu`; a consumer test
+  that pinned minor 3's hints re-pins them.
+
+No member is added or removed, so no degradation stub moves: the member manifest lists the same
+surface as version 3's.
+
+## Vendoring
+
+Whole-folder, exactly as every other major in this payload:
+
+```sh
+cp -r LibKa0s/. <Addon>/libs/LibKa0s/
+diff -r --strip-trailing-cr LibKa0s <Addon>/libs/LibKa0s   # content — MUST be empty
+diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD be empty
+```
+
+**LibDataBroker-1.1 and LibDBIcon-1.0 are the consumer's to vendor**, under its own `libs/` and
+listed in the TOC's `# Libraries` section (`toc-file-§4`). They are not part of this payload and
+never will be: they are third-party libraries with their own release cadence, and bundling them
+inside a folder that is itself copied into eleven addons would give each of them two copies to
+reconcile. `MenuUtil` is the client's own and needs nothing vendored.

@@ -261,7 +261,8 @@ test("skin owner: a registered addon's CopyWindow wears its skin, dense fill and
   assertEqual(closes, 1, "its close button is the owner's")
   local g = W.CopyWindow({ addonName = OWNER, name = "HostBackdrop", backdrop = { 0.2, 0.2, 0.2, 0.5 } }):Show("x")
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
-  assertEqual(rgba(survey(m, g).backdropColor), "0.200,0.200,0.200,0.500", "a host's own backdrop stays")
+  assertEqual(rgba(survey(m, g).backdropColor), tok(Skin, "obsidian", "win.bgDense"),
+    "a skinned window's fill is the skin's (minor 3, row 697)")
 end)
 
 -- ── the autocomplete ─────────────────────────────────────────────────────────────────────────

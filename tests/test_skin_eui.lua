@@ -417,6 +417,18 @@ test("skin eui: another owner's frames and tokens never see EllesmereUI", functi
   assertTrue(Skin.euiFacade.AddonA ~= Skin.euiFacade.AddonB, "one facade per owner")
 end)
 
+test("skin eui: every token a Ka0s skin follows from a driven token follows it here too", function()
+  local _, Skin, eui = E.env()
+  local S = E.owner(Skin, OWNER, "eui", "ka0s")
+  eui.login()
+  eui.accent, eui.panel = { 1, 0, 1 }, { 0, 0.2, 0, 1 }
+  for _, fn in ipairs(eui.looks) do fn() end
+  for _, name in ipairs({ "hud.label", "bar.fill", "text.command", "gtip.emphasis" }) do
+    assertEqual(F.rgba(S.Token(name)), F.rgba(eui.accent), name)
+  end
+  assertEqual(F.rgba(S.Token("menu.suggestBg")), F.rgba(eui.panel), "an autocomplete list beside an EllesmereUI menu")
+end)
+
 test("skin eui: EllesmereUI's live looks change repaints the Ka0s extras", function()
   local m, Skin, eui = E.env()
   local S = E.owner(Skin, OWNER, "eui", "ka0s")

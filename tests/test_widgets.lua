@@ -166,6 +166,12 @@ local function fakeRow()
   -- mirror the real ones rather than improve on them: the case that pins the template itself is
   -- "A pooled row survives a paint with no face at all", which builds REAL rows.
   local b = { fs = fakeFS(ROW_TEMPLATE), glyph = fakeFS(ROW_TEMPLATE), points = {}, scripts = {} }
+  local region = {}
+  function region.SetShown() end
+  function region.SetColorTexture() end
+  b.__rule, b.__hl = region, region   -- minor 21's row shape, written on every paint
+  function b:SetHeight(h) self.height = h end
+  function b:EnableMouse(on) self.mouse = on end
   function b:SetWidth(w) self.width = w end
   function b:ClearAllPoints() self.points = {} end
   function b:SetPoint(p, x, y) self.points[#self.points + 1] = { p, x, y } end

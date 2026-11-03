@@ -743,7 +743,10 @@ test("dbg: the default chrome IS the Ka0s window edge, on both windows", functio
   D:Show()
   local frame = D._frameForTest
   T.assertTrue(frame ~= nil, "the console frame must exist")
-  T.assertTrue(frame.divider ~= nil, "and carry the divider the skin tints")
+  -- R4-SEP of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND4, image 28: no line under the title.
+  -- red under: the 1px divider the console drew under its title bar until then.
+  T.assertTrue(frame.divider == nil, "and carry no divider under its title")
+  T.assertTrue(frame.statusDivider ~= nil, "the footer's status rule stays")
   T.assertTrue(frame.innerBorder ~= nil,
     "the 1px inner highlight must be synthesized by the default skin, not only by a host hook")
 end)

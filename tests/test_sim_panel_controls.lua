@@ -9,7 +9,7 @@ local test, assertEqual, assertTrue, assertFalse, assertNil =
 local F = dofile("tests/fixture_sim_panel.lua")
 
 local HOST_CHECK = F.HOST_CHECK
-local ROW_H, GAP, TITLE_H, PAD, BAR_H = 22, 4, 24, 8, 22
+local ROW_H, GAP, TITLE_H, PAD, BAR_H = 22, 4, 30, 8, 22
 local bench, joined, linesOf, shown, buttons = F.bench, F.joined, F.linesOf, F.shown, F.buttons
 
 -- ── the frame, the picker and the controls ───────────────────────────────────────────────

@@ -80,17 +80,21 @@ Kit.layoutCap = { hub = "CLAUDE.md" }
 -- and Slash; see tests/fixture_diagnostics.lua.
 Kit.diagnostics = dofile("tests/fixture_diagnostics.lua")(_G.LK_TEST)
 
+-- The consumer facts for the kit's skin-switch test (skinning-§1): a fixture host on this repo's
+-- real Skin major, for the same reason; see tests/fixture_skin_switch.lua.
+Kit.skinSwitch = dofile("tests/fixture_skin_switch.lua")
+
 Kit.run{
   dir = "tests/",
   suites = {
-    "test_core", "test_core_resize", "test_env", "test_compat", "test_lifecycle", "test_lifecycle_debug", "test_bus", "test_schema", "test_schema_write", "test_schema_batch", "test_pool", "test_item", "test_glow", "test_toast", "test_charts", "test_charts_draw", "test_charts_host", "test_media", "test_skin", "test_skin_override", "test_skin_outline", "test_skin_owner_tokens", "test_skin_remap", "test_skin_icon_border", "test_skin_stock_default", "test_skin_defs", "test_skin_width_parity", "test_skin_button_contrast", "test_skin_paint", "test_skin_paint_controls", "test_skin_eui", "test_skin_ace", "test_skin_ace_tree", "test_widgets", "test_widgets_reorderlist", "test_widgets_draghandle", "test_widgets_draghandle_place", "test_widgets_draghandle_layers", "test_widgets_draghandle_fit", "test_widgets_linechart_math", "test_widgets_linechart", "test_widgets_autocomplete", "test_widgets_searchbox", "test_widgets_teststrip", "test_widgets_reorder", "test_widgets_skin", "test_widgets_skin_scope", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_debuglog_gates", "test_debuglog_descriptor", "test_resize_windows", "test_tool_windows_layering", "test_tool_windows_skin", "test_tool_windows_scope", "test_slash", "test_slash_parse", "test_slash_disabled", "test_slash_refusal", "test_slash_profile", "test_slash_debug",
+    "test_core", "test_core_resize", "test_env", "test_compat", "test_lifecycle", "test_lifecycle_debug", "test_bus", "test_schema", "test_schema_write", "test_schema_batch", "test_pool", "test_item", "test_glow", "test_toast", "test_charts", "test_charts_draw", "test_charts_host", "test_media", "test_skin", "test_skin_override", "test_skin_outline", "test_skin_owner_tokens", "test_skin_remap", "test_skin_icon_border", "test_skin_stock_default", "test_skin_defs", "test_skin_hud_tokens", "test_skin_hud_members", "test_skin_host_gaps", "test_skin_width_parity", "test_skin_button_contrast", "test_skin_paint", "test_skin_paint_controls", "test_skin_eui", "test_skin_ace", "test_skin_ace_tree", "test_widgets", "test_widgets_menu", "test_widgets_reorderlist", "test_widgets_draghandle", "test_widgets_draghandle_place", "test_widgets_draghandle_layers", "test_widgets_draghandle_fit", "test_widgets_linechart_math", "test_widgets_linechart", "test_widgets_autocomplete", "test_widgets_searchbox", "test_widgets_teststrip", "test_widgets_reorder", "test_widgets_skin", "test_widgets_skin_scope", "test_debuglog", "test_debuglog_copytiming", "test_debuglog_diagnostics", "test_debuglog_gates", "test_debuglog_descriptor", "test_resize_windows", "test_tool_windows_layering", "test_tool_windows_skin", "test_tool_windows_scope", "test_slash", "test_slash_parse", "test_slash_disabled", "test_slash_refusal", "test_slash_profile", "test_slash_debug",
     "test_launcher", "test_atenable",
     "test_options", "test_options_render", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_choicegrid", "test_options_flow", "test_options_flow_seams", "test_options_landing",
     "test_options_ids", "test_options_idlist", "test_options_idlist_layout",
     "test_options_tabs", "test_options_tabbed", "test_options_banner_acts",
-    "test_options_nav", "test_options_drawer", "test_options_keybinds_model", "test_options_keybinds", "test_options_keybinds_sync", "test_options_appearance", "test_options_appearance_overrides", "test_options_skin_picker", "test_options_skin_picker_shared", "test_options_skin_picker_faces", "test_options_skin_picker_rows", "test_options_skin_verb",
-    "test_options_idsuggest", "test_options_idsuggest_frames", "test_options_idlist_remove", "test_options_switched", "test_options_media", "test_options_combat", "test_options_combat_debug", "test_options_compose", "test_options_compose_arm", "test_options_compose_master", "test_options_compose_tooltips", "test_options_reset_tooltip", "test_options_skin", "test_options_tooltip_skin", "test_options_chrome_skin", "test_options_compose_skin", "test_options_compose_flags",
+    "test_options_nav", "test_options_drawer", "test_options_keybinds_model", "test_options_keybinds", "test_options_keybinds_sync", "test_options_appearance", "test_options_appearance_overrides", "test_options_skin_picker", "test_options_skin_picker_shared", "test_options_skin_picker_close", "test_options_skin_picker_preview", "test_options_skin_picker_faces", "test_options_skin_picker_rows", "test_options_skin_verb", "test_options_skin_notice",
+    "test_options_idsuggest", "test_options_idsuggest_frames", "test_options_idlist_remove", "test_skin_marks", "test_skin_ace_confirm", "test_skin_step_arrows", "test_skin_ace_dropdown", "test_widgets_small_misses", "test_title_shape", "test_shell_band", "test_header_band", "test_options_switched", "test_options_media", "test_options_combat", "test_options_combat_debug", "test_options_pullout_close", "test_options_compose", "test_options_compose_arm", "test_options_compose_master", "test_options_compose_sim", "test_options_compose_tooltips", "test_options_reset_tooltip", "test_options_skin", "test_options_tooltip_skin", "test_options_chrome_skin", "test_icon_rule", "test_options_compose_skin", "test_options_compose_flags",
     "test_options_throttle",
     "test_perf_core", "test_perf_run", "test_perf_panel", "test_perf_command", "test_perf_budget", "test_perf_toplevel", "test_perf_isolation",
     "test_sim_seam", "test_sim_session", "test_sim_timeline", "test_sim_verbs", "test_sim_autoplay", "test_sim_panel", "test_sim_panel_controls", "test_sim_panel_render",
@@ -99,7 +103,7 @@ Kit.run{
     "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events", "test_mock_resize", "test_mock_lines", "test_mock_bindings", "test_mock_layers", "test_mock_paint",
     "test_surface_parity",
     "test_versioning", "test_kitsync", "test_prose",
-    "test_register", "test_kit_inventory", "test_kit_eol", "test_kit_prose", "test_kit_runner", "test_kit_vendor_sync",
+    "test_register", "test_kit_inventory", "test_kit_eol", "test_kit_prose", "test_kit_runner", "test_kit_vendor_sync", "test_kit_skin_values", "test_kit_skin_switch",
     -- Shipped in the kit, so every consumer inherits the gate instead of re-typing it; the
     -- inventory assertion goes red in any repo that vendors it and leaves it undeclared.
     -- Declared by the PAIR (basename, directory) from kit revision 25: a bare name here wires
@@ -111,5 +115,9 @@ Kit.run{
     { name = "test_layout_cap", dir = "tests/_kit/" },
     { name = "test_diagnostics_contract", dir = "tests/_kit/" },
     { name = "test_lizard_sighted", dir = "tests/_kit/" },
+    -- A library draws no addon's surfaces: `Kit.skinValues` stays unset, so that gate is its one
+    -- declared skip here. Its cases run in tests/test_kit_skin_values.lua against fixture trees.
+    { name = "test_skin_values", dir = "tests/_kit/" },
+    { name = "test_skin_switch", dir = "tests/_kit/" },
   },
 }

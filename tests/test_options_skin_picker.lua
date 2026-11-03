@@ -60,10 +60,10 @@ local pickRow = Bench.pickRow
 
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
-test("skin picker: OptionsSkinPicker is minor 5, paired on the shell, and attaches three members", function()
+test("skin picker: OptionsSkinPicker is minor 11, paired on the shell, and attaches three members", function()
   local _, _, lib = env()
-  assertEqual(lib.MODULES.OptionsSkinPicker, 5)
-  assertEqual(lib.__pickerMinor, 5)
+  assertEqual(lib.MODULES.OptionsSkinPicker, 11)
+  assertEqual(lib.__pickerMinor, 11)
   assertTrue(lib.SKIN_PICKER_STRINGS.APPLY_ALL_TIP:find("skin source, skin, scope, font, texture and font outline", 1, true) ~= nil,
     "the tooltip words it as the Skin tab's copy does")
   assertEqual(lib.__pickerShellMinor, lib.MINOR, "paired on the shell's minor")
@@ -655,6 +655,20 @@ end)
 
 -- ── icons, strings, degradation ──────────────────────────────────────────────────────────────
 
+test("skin picker: the reset buttons and the arrow are Media's, and client art without it", function()
+  local m, Skin, lib = env({ media = true })
+  local store = register(Skin, OWNER)
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { onPreview = function() end }))
+  local Media = m.LibStub("LibKa0s-Media-1.0")
+  assertEqual(m.__paint(f.reset.font.icon).texture, Media.Icon(OWNER, "reset"))
+  assertEqual(m.__paint(f.dd.arrow).texture, Media.Icon(OWNER, "chevron-down"))
+  local m2, Skin2, lib2 = env()
+  local store2 = register(Skin2, OWNER)
+  local f2 = instance(lib2, OWNER).SkinPicker(specFor(store2, { onPreview = function() end }))
+  assertEqual(m2.__paint(f2.reset.font.icon).texture, "Interface\\Buttons\\UI-RefreshButton")
+  assertEqual(m2.__paint(f2.dd.arrow).texture, "Interface\\ChatFrame\\ChatFrameExpandArrow")
+end)
+
 test("skin picker: the icons come from LibKa0s-Media-1.0, and are glyphs without it", function()
   local m, Skin, lib = env({ media = true })
   local store = register(Skin, OWNER)
@@ -861,4 +875,64 @@ test("skin picker: two clearing previews, then Apply, write the media once", fun
   assertEqual(#store.calls, 2, "one skin write, one media write")
   assertEqual(store.calls[1][2], "glass")
   assertEqual(store.calls[2][4].font, false)
+end)
+
+-- ── the tooltips (OptionsSkinPicker minor 6, cause L2) ───────────────────────────────────────
+
+--- Hover `btn`: what SetText received, its text and color (the color "nil" when it named none).
+local function tipOf(m, btn)
+  local tip, text, color = m.GameTooltip, nil, nil
+  local saved = { SetOwner = rawget(tip, "SetOwner"), SetText = rawget(tip, "SetText"), Show = rawget(tip, "Show") }
+  rawset(tip, "SetOwner", function() end)
+  rawset(tip, "Show", function() end)
+  rawset(tip, "SetText", function(_, t, r, g, b)
+    text, color = t, r == nil and "nil" or F.rgba({ r, g, b })
+  end)
+  local ok, err = pcall(btn.__fire, btn, "OnEnter")
+  for k, v in pairs(saved) do rawset(tip, k, v) end
+  assertTrue(ok, tostring(err))
+  return text, color
+end
+
+local function rgb3(c) return F.rgba({ c[1], c[2], c[3] }) end
+
+test("skin picker: a tooltip title takes gtip.title, read at hover, Ignore settings panel or not", function()
+  -- red under: SetText with no color, a color captured at build, or a window that stands down.
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER, "azeroth")
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
+  local text, color = tipOf(m, f.settings)
+  assertEqual(text, "Keep these choices and open the Skin settings")
+  assertEqual(color, rgb3(Skin:ResolveSkin("azeroth")["gtip.title"]))
+  assertEqual(select(2, tipOf(m, f.apply)), color, "a text button")
+  assertEqual(select(2, tipOf(m, f.dd)), color, "the dropdown")
+  Skin:SetIgnore(OWNER, true, nil)
+  assertEqual(select(2, tipOf(m, f.settings)), color, "a window keeps its skin")
+  Skin:SetIgnore(OWNER, false, nil)
+  pickRow(f, "ember")
+  assertEqual(select(2, tipOf(m, f.settings)), rgb3(Skin:ResolveSkin("ember")["gtip.title"]), "a preview reaches the next hover")
+end)
+
+test("skin picker: a long tooltip wraps", function()
+  -- SF-L1. red under: SetText with no wrap argument, so the Apply to all sentence draws as one
+  -- line as wide as the screen.
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER, "azeroth")
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
+  local tip, wrap = m.GameTooltip, nil
+  local saved = { SetOwner = rawget(tip, "SetOwner"), SetText = rawget(tip, "SetText"), Show = rawget(tip, "Show") }
+  rawset(tip, "SetOwner", function() end)
+  rawset(tip, "Show", function() end)
+  rawset(tip, "SetText", function(_, _, _, _, _, _, w) wrap = w end)
+  local ok, err = pcall(f.applyAll.__fire, f.applyAll, "OnEnter")
+  for k, v in pairs(saved) do rawset(tip, k, v) end
+  assertTrue(ok, tostring(err))
+  assertEqual(wrap, true, "SetText's wrap argument")
+end)
+
+test("skin picker: under Ka0s Default a tooltip title is the client's gold, written out", function()
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
+  assertEqual(select(2, tipOf(m, f.settings)), "1,0.820,0,1")
 end)

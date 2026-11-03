@@ -17,6 +17,18 @@ local OWNER = "LootHistory"
 
 local function survey(m, obj) return m.__paint(obj) end
 
+--- Ka0s Default's title band is a vertical gradient (R4-L2 of Ka0sAddonsCommonTasks
+--- docs/2026-11-03-SMOKE_ROUND4): white under `title.bgTop` over `title.bgBottom`, never its flat blend.
+local function assertKa0sBand(m, Skin, tex, msg)
+  local p = survey(m, tex)
+  assertEqual(F.rgba(p.color), "1,1,1,1", msg .. ": white under the gradient")
+  local g = p.gradient
+  assertTrue(g ~= nil, msg .. ": a gradient")
+  assertEqual(g.orientation, "VERTICAL", msg)
+  assertEqual(F.rgba({ g.max.r, g.max.g, g.max.b, g.max.a }), F.tok(Skin, "ka0s", "title.bgTop"), msg .. ": top")
+  assertEqual(F.rgba({ g.min.r, g.min.g, g.min.b, g.min.a }), F.tok(Skin, "ka0s", "title.bgBottom"), msg .. ": bottom")
+end
+
 --- Run `paint(target)` on a fresh window with the tracer on; answers the trace text.
 local function traceOn(m, names, build, paint)
   local tr = F.tracer(m, names)
@@ -92,10 +104,27 @@ test("skin paint: Shell paints a skin's window from its tokens", function()
   assertEqual(F.rgba(s.backdropColor), F.tok(Skin, "obsidian", "win.bg"), "win.bg")
   assertEqual(F.rgba(survey(m, F.region(Skin, f, "edgeTop")).color), F.tok(Skin, "obsidian", "win.border"), "win.border")
   assertEqual(F.rgba(survey(m, f.title).textColor), F.tok(Skin, "obsidian", "title.text"), "title.text")
-  assertEqual(F.rgba(survey(m, f.divider).color), F.tok(Skin, "obsidian", "divider"), "divider")
+  assertFalse(f.divider:IsShown(), "no divider under the title (R4-SEP), whatever the skin's divider")
   assertNil(rawget(f, "innerBorder"), "Obsidian has no inner rule: Core makes none")
   local top = F.region(Skin, f, "top")
   assertEqual(F.rgba(survey(m, top).color), F.tok(Skin, "obsidian", "title.bg"), "the title band")
+end)
+
+test("skin paint: no Shell-painted window draws a line under its title, through every skin switch", function()
+  -- R4-SEP of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND4 (images 23 to 29): Shell reaches
+  -- Core.ApplySkin, which hid nothing and tinted `frame.divider` in the skin's `divider`, so every
+  -- window built on the convention (DpsRace's HUD and Results, Drop Watcher's main window, WhatGroup's
+  -- popup) drew a rule under its header. red under: the divider shown under any skin.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local f = F.window(m)
+  f.divider:Show()
+  S.Shell(f)
+  assertFalse(f.divider:IsShown(), "Ka0s Default")
+  for _, key in ipairs({ "obsidian", "glass", "contrast", "midnight", "ka0s" }) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    assertFalse(f.divider:IsShown(), key)
+  end
 end)
 
 test("skin paint: a second Shell call makes no new region and paints the same", function()
@@ -132,8 +161,7 @@ test("skin paint: a skin switch repaints a Shell live, and back to Ka0s Default 
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
   assertEqual(F.rgba(survey(m, f).backdropColor), F.rgba(core.SKIN.bg), "Ka0s Default's fill again")
   assertFalse(grad:IsShown(), "the gradient is hidden")
-  assertEqual(F.rgba(survey(m, F.region(Skin, f, "top")).color), F.tok(Skin, "ka0s", "title.bg"),
-    "the title band wears Ka0s Default's title.bg (minor 8)")
+  assertKa0sBand(m, Skin, F.region(Skin, f, "top"), "the title band wears Ka0s Default's gradient (R4-L2)")
   assertEqual(F.rgba(survey(m, inner).color), F.rgba(core.SKIN.innerBorder))
   assertTrue(inner:IsShown(), "Ka0s Default's inner rule again")
 end)
@@ -393,6 +421,78 @@ test("skin paint: FadeNineSlice fades the nine pieces under every skin", functio
   for _, k in ipairs(m.__nineSliceKeys) do assertEqual(f.NineSlice[k]:GetAlpha(), 0, "Ka0s Default: " .. k) end
 end)
 
+-- R3-L2 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3 (images 85 to 87, 93): the faded art
+-- left the frame with no edge at all, and a dark frame vanished on a dark skin.
+local SIDES = { "Top", "Bottom", "Left", "Right" }
+local SKINS = { "ka0s", "obsidian", "azeroth", "glass", "contrast", "ember", "wow", "midnight", "forever" }
+
+test("skin paint: FadeNineSlice draws a 1 px edge in panel.border under every skin", function()
+  -- red under: the fade alone, which leaves a frame with no edge (img 85 to 87).
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local f = m.CreateFrame("Frame", nil, m.UIParent, "InsetFrameTemplate")
+  S.FadeNineSlice(f)
+  for _, key in ipairs(SKINS) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    for _, side in ipairs(SIDES) do
+      local t = F.region(Skin, f, "ring" .. side)
+      assertTrue(t ~= nil, key .. ": the " .. side .. " edge exists")
+      local p = survey(m, t)
+      assertTrue(p.shown, key .. ": shown")
+      assertEqual(F.rgba(p.color), F.tok(Skin, key, "panel.border"), key .. ": " .. side .. " in panel.border")
+      local size = (side == "Top" or side == "Bottom") and t:GetHeight() or t:GetWidth()
+      assertEqual(size, 1, key .. ": one pixel")
+    end
+  end
+  assertEqual(F.region(Skin, f, "ringTop"):GetParent(), F.region(Skin, f, "holder"), "on the holder, over the art")
+end)
+
+test("skin paint: FadeNineSlice's edge is one physical pixel at any UI scale", function()
+  -- red under: a size of 1 UI unit, which draws 2 px where the UI scale is over one pixel per unit.
+  local m, Skin = F.env()
+  m.PixelUtil = { GetPixelToUIUnitFactor = function() return 0.75 end }
+  local make = m.CreateFrame
+  m.CreateFrame = function(...)
+    local f = make(...)
+    rawset(f, "GetEffectiveScale", function() return 1.5 end)
+    return f
+  end
+  local S = F.owner(Skin, OWNER, "obsidian")
+  local f = m.CreateFrame("Frame", nil, m.UIParent, "InsetFrameTemplate")
+  S.FadeNineSlice(f)
+  assertEqual(F.region(Skin, f, "ringTop"):GetHeight(), 0.5, "0.75 / 1.5: one physical pixel")
+  assertEqual(F.region(Skin, f, "ringLeft"):GetWidth(), 0.5)
+end)
+
+test("skin paint: FadeNineSlice leaves a frame another primitive edged to that edge, and opts.noBorder", function()
+  -- red under: a second ring over a Shell's or a Panel's own edge, in another token.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER, "midnight")
+  local win = m.CreateFrame("Frame", nil, m.UIParent, "PortraitFrameTemplate")
+  S.Shell(win)
+  S.FadeNineSlice(win)
+  local ring = F.region(Skin, win, "ringTop")
+  assertTrue(ring == nil or not survey(m, ring).shown, "a Shell's window keeps the Shell's edge alone")
+  local plain = m.CreateFrame("Frame", nil, m.UIParent, "InsetFrameTemplate")
+  S.FadeNineSlice(plain, { noBorder = true })
+  ring = F.region(Skin, plain, "ringTop")
+  assertTrue(ring == nil or not survey(m, ring).shown, "noBorder draws none")
+end)
+
+test("skin paint: FadeNineSlice's edge falls to divider, then a dim body text, where a skin sets no panel.border", function()
+  -- red under: a skin with no border token drawing no edge, which is image 85's frame again.
+  local m, Skin = F.env()
+  Skin:RegisterSkin({ key = "bare", tokens = { ["panel.border"] = false } })
+  Skin:RegisterSkin({ key = "barer", tokens = { ["panel.border"] = false, divider = false,
+    ["text.body"] = { 0.9, 0.8, 0.7, 1 } } })
+  local S = F.owner(Skin, OWNER, "bare")
+  local f = m.CreateFrame("Frame", nil, m.UIParent, "InsetFrameTemplate")
+  S.FadeNineSlice(f)
+  assertEqual(F.rgba(survey(m, F.region(Skin, f, "ringTop")).color), F.tok(Skin, "bare", "divider"))
+  Skin:SetChoice(OWNER, "ka0s", "barer")
+  assertEqual(F.rgba(survey(m, F.region(Skin, f, "ringTop")).color), "0.900,0.800,0.700,0.400")
+end)
+
 -- ── the Ka0s extras ──────────────────────────────────────────────────────────────────────────
 
 test("skin paint: TitleBar on Ka0s Default fills its bar and centers its gold title", function()
@@ -405,7 +505,7 @@ test("skin paint: TitleBar on Ka0s Default fills its bar and centers its gold ti
   S.TitleBar(bar)
   assertEqual(F.rgba(survey(m, bar.title).textColor), F.tok(Skin, "ka0s", "title.text"), "the gold title")
   assertEqual(bar.title:GetJustifyH(), "CENTER", "centered")
-  assertEqual(F.rgba(survey(m, F.region(Skin, bar, "fill")).color), F.tok(Skin, "ka0s", "title.bg"), "the fill")
+  assertKa0sBand(m, Skin, F.region(Skin, bar, "fill"), "the fill")
 end)
 
 test("skin paint: TitleBar fills under its text, centers its title, and gives the alignment back", function()
@@ -422,7 +522,7 @@ test("skin paint: TitleBar fills under its text, centers its title, and gives th
   assertEqual(fs:GetJustifyH(), "CENTER", "WoW Forever centers its titles")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
   assertEqual(fs:GetJustifyH(), "CENTER", "so does Ka0s Default (minor 8)")
-  assertEqual(F.rgba(survey(m, fill).color), F.tok(Skin, "ka0s", "title.bg"), "in its own title fill")
+  assertKa0sBand(m, Skin, fill, "in its own title fill")
 end)
 
 test("skin paint: Divider colors a texture in place, as Core's divider is colored", function()
@@ -499,6 +599,49 @@ test("skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for c
   assertEqual(survey(m, pop).backdrop.bgFile, "art", "popup keeps its art")
   assertEqual(F.rgba(survey(m, pop).backdropColor), F.tok(Skin, "ka0s", "popup.bg"))
 end)
+
+-- Cause L3 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING: the rail's and the suggestion
+-- popup's edge style and size reached neither frame. A skin that states a style replaces their art;
+-- Ka0s Default's `false` is the frame's own art, recolored, which keeps its look.
+local function artFrame(m)
+  local f = backdropFrame(m)
+  f:SetBackdrop({ bgFile = "tile", edgeFile = "tooltip-edge", edgeSize = 16 })
+  f:SetBackdropColor(0, 0, 0, 0.92)
+  f:SetBackdropBorderColor(0.4, 0.4, 0.4)
+  return f
+end
+
+for _, case in ipairs({
+  { name = "the nav rail", opts = { nav = true }, prim = "Panel", stem = "nav", bg = "nav.bg" },
+  { name = "the suggestion popup", opts = { popup = true }, prim = "MenuFrame", stem = "popup", bg = "popup.bg" },
+}) do
+  test("skin paint: " .. case.name .. " takes a skin's edge and keeps its art under Ka0s Default", function()
+    -- red under: the style or size token unread, an art replaced under Ka0s Default, or a switch
+    -- back leaving the flat backdrop or a nine-slice on the frame.
+    local m, Skin = F.env()
+    local S = F.owner(Skin, OWNER)
+    local f = artFrame(m)
+    S[case.prim](f, case.opts)
+    assertEqual(survey(m, f).backdrop.edgeFile, "tooltip-edge", "Ka0s Default keeps the art")
+    assertEqual(F.rgba(survey(m, f).backdropColor), F.tok(Skin, "ka0s", case.bg), "recolored")
+    Skin:SetChoice(OWNER, "ka0s", "azeroth")
+    local az = Skin:ResolveSkin("azeroth")
+    local bd = survey(m, f).backdrop
+    assertTrue(bd.edgeFile ~= "tooltip-edge", "the skin's edge replaces the tooltip art")
+    assertEqual(bd.edgeSize, az[case.stem .. ".borderSize"], "at the skin's size")
+    assertEqual(F.rgba(survey(m, f).backdropBorderColor), F.tok(Skin, "azeroth", case.stem .. ".border"))
+    Skin:SetChoice(OWNER, "ka0s", "wow")
+    local U = Skin:ResolveSkin("wow")
+    if U[case.stem .. ".borderStyle"] ~= "flat" then
+      assertTrue(survey(m, f).backdrop.edgeFile ~= "tooltip-edge", "a non-flat style replaces it too")
+    end
+    Skin:SetChoice(OWNER, "ka0s", "ka0s")
+    assertEqual(survey(m, f).backdrop.edgeFile, "tooltip-edge", "back to the art")
+    assertEqual(survey(m, f).backdrop.edgeSize, 16, "at its own size")
+    assertEqual(F.rgba(survey(m, f).backdropColor), F.tok(Skin, "ka0s", case.bg), "and recolored again")
+    assertFalse((F.region(Skin, f, "edgeTop") or { IsShown = function() return false end }):IsShown(), "no edge left")
+  end)
+end
 
 test("skin paint: Tooltip colors a library tooltip in every skin, its art kept", function()
   local m, Skin = F.env()
@@ -633,7 +776,7 @@ test("skin paint: the getters answer the owner's skin", function()
   local wow = F.owner(Skin, "Classic", "wow").BarStyle()
   assertEqual(wow.textureKey, "Blizzard", "WoW Default keeps the client's bar")
   assertEqual(wow.texture, "Interface\\TargetingFrame\\UI-StatusBar")
-  assertEqual(wow.fontKey, "Ka0s Friz Quadrata TT", "and the shipped Friz (SkinDefs minor 18)")
+  assertEqual(wow.fontKey, "Ka0s Ubuntu", "and the shipped Ubuntu (R3-L6; Friz from SkinDefs minor 18)")
   assertEqual(F.owner(Skin, "Modern", "obsidian").BarStyle().fontKey, "Ka0s Expressway",
     "Obsidian's own HUD face (SkinDefs minor 16)")
   assertNil(Skin.painted[S], "a getter records nothing")

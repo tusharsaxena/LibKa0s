@@ -10,10 +10,12 @@
 --   * the titles `gtip.value` (white in all nine skins, so Ka0s Default draws exactly what it drew);
 --   * the help mark's lines `gtip.body` (Ka0s Default's 0.9: the recorded shift D-14 accepts in
 --     exchange for one tooltip palette across the collection);
---   * lines that named no color stay the client's (nil), as D-14 rules.
+--   * the body lines that named no color take `gtip.line` (cause L2 of Ka0sAddonsCommonTasks
+--     docs/2026-11-01-FULL_SKINNING, which reverses D-14's "stay the client's"): Ka0s Default's is the
+--     client's gold, so its look stands, and every other skin's is its `gtip.body`.
 --
 -- Only while the chrome is skinned: an owner-less page and an owner that ignores its settings panel
--- draw the literals the previous minors drew.
+-- draw the literals the previous minors drew, and name no color for those body lines.
 
 local K = _G.LK_TEST
 local test, assertEqual, assertTrue =
@@ -26,7 +28,7 @@ local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow",
                   "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
                   "OptionsKeybinds" }
 
-local WHITE, GRAY = "1,1,1,1", "0.800,0.800,0.800,1"
+local WHITE, GRAY, GOLD = "1,1,1,1", "0.800,0.800,0.800,1", "1,0.820,0,1"
 
 local function env()
   local files = {}
@@ -115,6 +117,7 @@ local function hover(m, fire)
 end
 
 local TITLED = { "row", "drawer", "nav", "tab", "key", "help" }
+local BODIED = { "row", "drawer", "nav", "tab", "key" }
 
 --- Every site's first line (the title) and, for the help mark, its note line.
 local function colors(m, s)
@@ -139,6 +142,7 @@ test("tooltip skin: an owner-less page writes the previous minors' tooltip liter
   local c = colors(m, sites(instance(lib, OTHER)))
   for _, name in ipairs(TITLED) do assertEqual(c[name], WHITE, name .. "'s title") end
   assertEqual(c.note, GRAY, "the help mark's 0.8 lines")
+  for _, name in ipairs(BODIED) do assertEqual(c[name .. "Body"], "nil", name .. "'s body line") end
 end)
 
 test("tooltip skin: an owner ignoring its settings panel gets the literals back", function()
@@ -153,6 +157,7 @@ test("tooltip skin: an owner ignoring its settings panel gets the literals back"
   local c = colors(m, s)
   for _, name in ipairs(TITLED) do assertEqual(c[name], WHITE, name .. "'s title") end
   assertEqual(c.note, GRAY, "the help mark's lines")
+  for _, name in ipairs(BODIED) do assertEqual(c[name .. "Body"], "nil", name .. "'s body line") end
   Skin:SetIgnore(OWNER, false, nil)
   assertEqual(colors(m, s).help, "0.200,0.400,0.600,1", "and the skin back with the switch off")
 end)
@@ -182,15 +187,47 @@ test("tooltip skin: an owned page's titles take gtip.value and the help lines gt
   assertTrue(c.note ~= GRAY, "not the literal")
 end)
 
-test("tooltip skin: lines that named no color stay the client's", function()
-  -- D-14. red under: coloring a nil-colored line (the tooltip body of a row, drawer, nav entry, tab
-  -- and key button).
+test("tooltip skin: an owned page's body lines take gtip.line", function()
+  -- cause L2. red under: a nil-colored line (the body of a row, drawer, nav entry, tab and key button).
   local m, Skin, lib = env()
   F.owner(Skin, OWNER, "ember")
+  local T = Skin:ResolveSkin("ember")
   local c = colors(m, sites(instance(lib, OWNER)))
-  for _, name in ipairs({ "row", "drawer", "nav", "tab", "key" }) do
-    assertEqual(c[name .. "Body"], "nil", name .. "'s body line")
+  for _, name in ipairs(BODIED) do
+    assertEqual(c[name .. "Body"], rgb(T["gtip.line"]), name .. "'s body line")
+    assertTrue(c[name .. "Body"] == rgb(T["gtip.body"]), name .. ": gtip.body, in any skin but Ka0s Default")
   end
+end)
+
+test("tooltip skin: under Ka0s Default a body line is the client's gold, written out", function()
+  -- red under: gtip.body, whose 0.9 gray would move Ka0s Default's look.
+  local m, Skin, lib = env()
+  F.owner(Skin, OWNER)
+  local c = colors(m, sites(instance(lib, OWNER)))
+  for _, name in ipairs(BODIED) do assertEqual(c[name .. "Body"], GOLD, name .. "'s body line") end
+end)
+
+test("tooltip skin: the key button's every body line takes gtip.line", function()
+  -- red under: the slot's line colored and the two "keys" lines left the client's.
+  local m, Skin, lib = env()
+  F.owner(Skin, OWNER, "ember")
+  m.GetBindingKey = function() return "F5", "F6" end
+  local O = instance(lib, OWNER)
+  seq = seq + 1
+  local ctx = O.CreatePanel("TipKeys" .. seq, "Tip keys", {})
+  local key = O.KeybindRows(ctx, { bindings = { { command = "LKTIP_TOGGLE" } } })[1].slots[1]
+  local seen = hover(m, function() key.callbacks.OnEnter(key) end)
+  assertEqual(#seen, 4, "the title, the slot and the two keys lines")
+  for i = 2, 4 do assertEqual(seen[i].color, rgb(Skin:ResolveSkin("ember")["gtip.line"]), seen[i].text) end
+end)
+
+test("tooltip skin: a skin with no gtip.line leaves a body line the client's", function()
+  -- red under: a vendored older Skin major (LibStub picks each major on its own) raising here.
+  local m, Skin, lib = env()
+  F.owner(Skin, OWNER, "ember")
+  Skin:ResolveSkin("ember")["gtip.line"] = nil
+  local c = colors(m, sites(instance(lib, OWNER)))
+  for _, name in ipairs(BODIED) do assertEqual(c[name .. "Body"], "nil", name .. "'s body line") end
 end)
 
 test("tooltip skin: a skin switch reaches the next hover with no rebuild", function()
@@ -203,4 +240,5 @@ test("tooltip skin: a skin switch reaches the next hover with no rebuild", funct
   local c = colors(m, s)
   for _, name in ipairs(TITLED) do assertEqual(c[name], "0.100,0.300,0.500,1", name .. " after the switch") end
   assertEqual(c.note, rgb(Skin:ResolveSkin("contrast")["gtip.body"]))
+  assertEqual(c.rowBody, rgb(Skin:ResolveSkin("contrast")["gtip.line"]), "and a body line")
 end)

@@ -26,7 +26,7 @@ local HOST_CHECK = F.HOST_CHECK
 
 -- Perf's geometry and palette (LibKa0s/PerfPanel.lua), restated here on purpose: the renderer copies
 -- them, and a drift between the two copies is what these numbers catch.
-local ROW_W, ROW_H, GAP, DOT_X, DOT, LABEL_X, CMD_PAD, TITLE_H, PAD = 360, 22, 4, 8, 8, 26, 10, 24, 8
+local ROW_W, ROW_H, GAP, DOT_X, DOT, LABEL_X, CMD_PAD, TITLE_H, PAD = 360, 22, 4, 8, 8, 26, 10, 30, 8
 local COLORS = {
   done   = { 0.30, 0.85, 0.30 },
   used   = { 0.30, 0.85, 0.30 },
@@ -129,10 +129,10 @@ test("sim panel render: the frame's chrome is Perf's", function()
     for _, n in ipairs(mocks.UISpecialFrames) do if n == d.name then found = true end end
     assertTrue(found, "Escape closes it (UISpecialFrames)")
     assertEqual(f.title.__text, "Steps")
-    assertEqual(f.title.__pts[1].point, "TOP"); assertEqual(f.title.__pts[1].y, -6)
+    assertEqual(f.title.__pts[1].point, "CENTER"); assertEqual(f.title.__pts[1].y, -(1 + TITLE_H / 2))
     assertTrue(f.closeButton ~= nil, "the close mark is drawn by default")
     local cp = f.closeButton.__pts[1]
-    assertEqual(cp.point, "TOPRIGHT"); assertEqual(cp.x, -6); assertEqual(cp.y, -3)
+    assertEqual(cp.point, "TOPRIGHT"); assertEqual(cp.x, -6); assertEqual(cp.y, -(1 + (TITLE_H - 18) / 2))
     assertTrue(f.resizeGrip ~= nil, "resizable through Core.MakeResizable")
     assertTrue(p.Frame() == f, "built once")
   end)

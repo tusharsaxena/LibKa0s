@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **11** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.83.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 10.1](./version-10.1-docs.md) (shipped in v1.82.0) — the same surface without the eighteen faces below |
-| Superseded by | — |
+| Superseded by | [version 12.1](./version-12.1-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 11, MediaIcons = 1 }` |
 
 ## What changed at this version
@@ -553,3 +553,7 @@ and normalized line endings on everything, which is right for Lua and wrong for 
 - `lib.BORDERS`: no consumer as of v1.83.0, kept because it is the catalog `Border` reads.
 - `lib.Background`: no consumer as of v1.83.0, kept because the Skin major reaches it, so no host names it; the name-only hits are host functions of the same name.
 - `lib.Border`: no consumer as of v1.83.0, kept because the Skin major reaches it, so no host names it; the name-only hits are host functions of the same name.
+
+## Moving to 12.1
+
+Nothing to do. `RegisterLSM` also offers the `Solid` border, so its third return reads 2, and the line above that calls `Solid` an LSM default is true of the `background` and `statusbar` kinds only.

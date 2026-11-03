@@ -26,6 +26,18 @@ WHAT SHIPS, AND FROM WHERE. From google/fonts' ofl/ folder, SIL Open Font Licens
     and one license file per family beside them, `<Family>-OFL.txt`: upstream's OFL.txt verbatim,
     an instanced family's with a provenance note above it.
 
+From google/fonts' ufl/ folder, the Ubuntu font license 1.0 (UFL), which allows redistribution
+(R3-L6 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3, the owner's ruling of 2026-11-02):
+
+    Ubuntu-Regular.ttf                                 ubuntu, the static Regular (0.83), unchanged
+    Ubuntu-UFL.txt                                     upstream's UFL.txt, with CRLF line endings
+
+    WoW Default's face for body, titles and HUD, where Friz Quadrata could not shrink to fit Loot
+    History's Date column and stay readable. The owner's client draws EllesmereUI's
+    media/fonts/Ubuntu.ttf, the same 0.83 Regular (same advances, without the legacy kern, DSIG and
+    LTSH tables); that copy is never the source. Unchanged, so the UFL's naming condition binds
+    nothing: "Ka0s Ubuntu" is the LibSharedMedia key, not a font name.
+
 From an archive the author distributes (ARCHIVES below), under the terms the archive carries:
 
     Prototype-Regular.ttf, Prototype.txt               dafont.com/prototype.font, both unchanged
@@ -52,7 +64,6 @@ From the add-ons in the owner's WoW install (LOCALS below), on the owner's rulin
     SegoeUI-Regular.ttf, -Bold, -Semilight, -Semibold  Sorted/Textures/segoeui, segoeuib, segoeuisl, seguisb
     OpenSans-Regular.ttf, -Bold, -CondBold, -Light,    Sorted/Textures/OpenSans-*
       -Semibold
-    FrizQuadrataTT-Regular.ttf                         DialogueUI/Fonts/frizqt__.ttf
     Emblem-Regular.ttf                                 AbstractFramework/Media/Fonts/Emblem.ttf
     DorisPP-Bold.ttf                                   SharedMedia/fonts/doris_pp/DorisPP.ttf
     AvantGarde-Regular.ttf                             EllesmereUI/media/fonts/Avant Garde Naowh.ttf
@@ -60,11 +71,12 @@ From the add-ons in the owner's WoW install (LOCALS below), on the owner's rulin
     OpenSans-Apache-2.0.txt                            the Apache 2.0 text the five faces' name tables
                                                        cite, from the system's common-licenses copy
 
-    Open Sans is Apache 2.0. Segoe UI (Microsoft), Friz Quadrata (ITC), Emblem (Weatherly Systems),
-    Doris PP (Ares Software) and Avant Garde (ParaType) carry no license that allows this and ship
-    only on those rulings; none has a license file, so `media/fonts/FONTS.md` quotes each notice.
-    Friz is taken from DialogueUI because the owner's client Fonts/FRIZQT__.TTF is Prototype's bytes
-    (D-01). Emblem is AbstractFramework's 233-glyph copy, over ChonkyCharacterSheet's 232.
+    Open Sans is Apache 2.0. Segoe UI (Microsoft), Emblem (Weatherly Systems), Doris PP (Ares
+    Software) and Avant Garde (ParaType) carry no license that allows this and ship only on those
+    rulings; none has a license file, so `media/fonts/FONTS.md` quotes each notice. Emblem is
+    AbstractFramework's 233-glyph copy, over ChonkyCharacterSheet's 232. Friz Quadrata (ITC), copied
+    the same way from 2026-10-31, left on the owner's ruling of 2026-11-02 (R3-L7), when WoW Default
+    moved to Ubuntu, so this file no longer records it.
 
 EXPRESSWAY SHIPS ON THE OWNER'S RULING, AGAINST ITS TERMS. LK-01 withheld it. The archive dafont.com
 serves (https://dl.dafont.com/dl/?f=expressway, fetched 2026-10-30, SHA-256
@@ -105,12 +117,13 @@ sturdy slab), Philosopher WoW Midnight's, Fira Sans WoW Forever's (Medium for bo
 owner's 2026-10-30 notes, SemiBold for titles and HUD) and Atkinson Hyperlegible High Contrast's.
 Ka0s Default draws Prototype and Obsidian Expressway (2026-10-30), WoW Default the client's Friz
 Quadrata. On 2026-10-31 the owner moved WoW Midnight to Segoe UI, Azeroth to Open Sans, Ember to
-Emblem, High Contrast to Doris PP, Glass to Avant Garde and WoW Default to the shipped Friz, and ruled
-that every older face stays in the payload whether or not a skin names it. Barlow and Cinzel, the
+Emblem, High Contrast to Doris PP, Glass to Avant Garde and WoW Default to a shipped Friz, and ruled
+that every older face stays in the payload whether or not a skin names it. On 2026-11-02 WoW Default
+moved to Ubuntu and that Friz left the payload. Barlow and Cinzel, the
 2026-10-25 run's faces, left the payload in round 5, before that ruling, and stay out. Oxanium, Ka0s
 Default's stand-in for Prototype from 2026-10-28, Fira Sans Regular, and Inter, Obsidian's from round
 5 until Expressway, left on 2026-10-30 and came back with the ruling, since v1.81.0 shipped them.
-Atkinson, Oxanium, Prototype, Friz, Emblem and Doris PP have no Cyrillic; the other families cover it, so Media.lua
+Atkinson, Oxanium, Prototype, Emblem and Doris PP have no Cyrillic; the other families cover it, so Media.lua
 registers them for ruRU too.
 
 Requires Python 3 and fontTools (`sudo apt install python3-fonttools`; see DEPENDENCIES.md), and
@@ -133,14 +146,16 @@ ROOT = os.path.abspath(os.path.join(HERE, os.pardir, os.pardir))
 OUT = os.path.join(ROOT, "LibKa0s", "media", "fonts")
 CACHE = os.path.join(HERE, ".cache", "fonts")
 
-RAW = "https://raw.githubusercontent.com/google/fonts/%s/ofl/%s/%s"
+RAW = "https://raw.githubusercontent.com/google/fonts/%s/%s/%s/%s"
 
 # PINNED, BY COMMIT: the last google/fonts commit to touch each family's folder on the day it was
 # added (Atkinson on 2026-10-25, the rest on 2026-10-28). A moving branch is not a provenance record;
 # the next --fetch would quietly ship different bytes.
 #
 # `ship` copies a static file unchanged. `instances` cuts a static face from a variable one: the
-# source file, the output file, the axis values, and the style name it is given.
+# source file, the output file, the axis values, and the style name it is given. `tree` is the
+# google/fonts license folder (default `ofl`) and `licenseSrc` upstream's license file in it
+# (default `OFL.txt`), which ships as `license`.
 FAMILIES = [
     {
         "dir": "inter", "family": "Inter",
@@ -252,6 +267,20 @@ FAMILIES = [
         },
         "license": "AtkinsonHyperlegible-OFL.txt",
         "ship": ["AtkinsonHyperlegible-Regular.ttf", "AtkinsonHyperlegible-Bold.ttf"],
+        "instances": [],
+    },
+    {
+        # WoW Default's face (R3-L6, 2026-11-02): the last google/fonts commit to touch ufl/ubuntu
+        # (2026-10-15). The static Regular, never the variable files google/fonts also serves.
+        "dir": "ubuntu", "family": "Ubuntu", "tree": "ufl",
+        "sha": "bed55e0de5cfa8f5fb94f9a1f49409b5ec504469",
+        "files": {
+            "Ubuntu-Regular.ttf": "3128df86a31805618436d0ae5651ba4285d0c9de0a39057d025f64ee33bceb64",
+            "UFL.txt": "2f0015108d68627bd788d313f529c21ff4da2c2c42a5e1f3883acc83480f9002",
+        },
+        "license": "Ubuntu-UFL.txt",
+        "licenseSrc": "UFL.txt",
+        "ship": ["Ubuntu-Regular.ttf"],
         "instances": [],
     },
 ]
@@ -391,14 +420,6 @@ LOCALS = [
         "license": "OpenSans-Apache-2.0.txt",
     },
     {
-        "dir": "friz", "family": "Friz Quadrata TT",
-        "path": ADDONS + "DialogueUI/Fonts/frizqt__.ttf",
-        "name": "frizqt__.ttf",
-        "sha": "73de74d5d63690f29c7f97a9225edc8bd6f89e5103806af3714e4d7bfb9474e9",
-        "ship": "FrizQuadrataTT-Regular.ttf",
-        "license": "FONTS.md",
-    },
-    {
         "dir": "emblem", "family": "Emblem",
         "path": ADDONS + "AbstractFramework/Media/Fonts/Emblem.ttf",
         "name": "Emblem.ttf",
@@ -468,7 +489,8 @@ def fetch():
             if os.path.isfile(dest) and _sha256(dest) == want:
                 _say("  cached  %s/%s" % (family["dir"], name))
                 continue
-            url = RAW % (family["sha"], family["dir"], name.replace("[", "%5B").replace("]", "%5D"))
+            url = RAW % (family["sha"], family.get("tree", "ofl"), family["dir"],
+                         name.replace("[", "%5B").replace("]", "%5D"))
             with urllib.request.urlopen(url, timeout=60) as resp, open(dest, "wb") as out:
                 shutil.copyfileobj(resp, out)
             got = _sha256(dest)
@@ -589,7 +611,7 @@ def build():
         for name in family["ship"]:
             shutil.copyfile(_cached(family, name), os.path.join(OUT, name))
             _say("  copied  %s" % name)
-        with open(_cached(family, "OFL.txt"), "r", encoding="utf-8") as fh:
+        with open(_cached(family, family.get("licenseSrc", "OFL.txt")), "r", encoding="utf-8") as fh:
             text = fh.read()
         for src, out, axes, style in family["instances"]:
             instance(_cached(family, src), os.path.join(OUT, out), axes, family["family"], style)

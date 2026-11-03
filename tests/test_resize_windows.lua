@@ -139,7 +139,7 @@ test("resize console: it has a grip and bounds that keep the title bar's control
   -- No addonName, so the text controls: Copy's left edge is 78 + 40 = 118 from the right, wider than
   -- the 8 + 80 toggle on the left; the title "Test Host - Debug" is 19 bytes at 7px each.
   assertEqual(minW, 2 * (118 + 6) + 19 * 7, "every control plus the centered title fits")
-  assertEqual(minH, 26 + 6 + 4 * (10 + 2) + 16 + 4, "the bars and four lines fit")
+  assertEqual(minH, 30 + 6 + 4 * (10 + 2) + 16 + 4, "the bars and four lines fit")
   assertTrue(maxW >= 700 and maxH >= 344, "the default is inside the bounds")
 end)
 
@@ -373,8 +373,8 @@ end)
 
 -- ── the perf panel ─────────────────────────────────────────────────────────────────────────
 
--- ROW_W 360 + PAD 8 on each side, and TITLE_H 24 + PAD 8 twice + six rows of ROW_H 22 + GAP 4.
-local PANEL_W, PANEL_H = 360 + 8 * 2, 24 + 8 * 2 + 6 * (22 + 4)
+-- ROW_W 360 + PAD 8 on each side, and TITLE_H 30 + PAD 8 twice + six rows of ROW_H 22 + GAP 4.
+local PANEL_W, PANEL_H = 360 + 8 * 2, 30 + 8 * 2 + 6 * (22 + 4)
 
 test("resize panel: the panel opens at today's computed size", function()
   local p = Fixture.new()

@@ -53,6 +53,8 @@ local function env(fakeCore)
   end
   m.__sounds = {}
   m.PlaySound = function(id, channel) m.__sounds[#m.__sounds + 1] = { id = id, channel = channel } end
+  m.__files = {}
+  m.PlaySoundFile = function(file, channel) m.__files[#m.__files + 1] = { file = file, channel = channel } end
   m.SOUNDKIT = { RAID_WARNING = 8959, UI_EPICLOOT_TOAST = 31578 }
   m.__errors = {}
   m.geterrorhandler = function() return function(e) m.__errors[#m.__errors + 1] = e end end
@@ -82,11 +84,11 @@ local function live(m) return #m.__timers() end
 
 -- ── load and construction ────────────────────────────────────────────────────────────────────
 
-test("toast: the major loads at minor 1 and reports its one file", function()
+test("toast: the major loads at minor 3 and reports its one file", function()
   local _, Toast = env()
   assertEqual(Toast.MAJOR, MAJOR)
-  assertEqual(Toast.MINOR, 1)
-  assertEqual(Toast.MODULES.Toast, 1)
+  assertEqual(Toast.MINOR, 3)
+  assertEqual(Toast.MODULES.Toast, 3)
   assertEqual(T.toast, T.mocks.LibStub(MAJOR), "the runner's whole-payload load carries it too")
 end)
 
@@ -445,6 +447,63 @@ test("toast: the alert sound plays when the host says so, on the host's kit or t
   m3.SOUNDKIT = { RAID_WARNING = 8959 }
   t3:Show("a")
   assertEqual(m3.__sounds[1].id, 8959, "the raid warning when the loot toast's entry is absent")
+end)
+
+test("toast: soundFile plays the host's file on Master, and nothing else plays", function()
+  -- red under: the kit path alone, which plays the default alert and ignores the file.
+  local t, m = newToast({ sound = true, soundFile = "Interface\\Host\\Ding.ogg", soundKit = 12345 })
+  t:Show("a")
+  assertEqual(#m.__files, 1)
+  assertEqual(m.__files[1].file, "Interface\\Host\\Ding.ogg")
+  assertEqual(m.__files[1].channel, "Master")
+  assertEqual(#m.__sounds, 0, "the file wins over the kit")
+  local t2, m2 = newToast({ sound = true, soundFile = 567890 })
+  t2:Show("a")
+  assertEqual(m2.__files[1].file, 567890, "a file data id")
+  assertEqual(#m2.__sounds, 0)
+end)
+
+test("toast: soundFile may be a getter, read as each toast shows", function()
+  local file = "Interface\\Host\\One.ogg"
+  local t, m = newToast({ sound = true, soundFile = function() return file end })
+  t:Show("a")
+  t:Dismiss()
+  file = "Interface\\Host\\Two.ogg"
+  t:Show("b")
+  assertEqual(#m.__files, 2)
+  assertEqual(m.__files[1].file, "Interface\\Host\\One.ogg")
+  assertEqual(m.__files[2].file, "Interface\\Host\\Two.ogg")
+  file = nil
+  t:Dismiss()
+  t:Show("c")
+  assertEqual(#m.__files, 2, "a getter that answers nothing plays no file")
+  assertEqual(m.__sounds[1].id, m.SOUNDKIT.UI_EPICLOOT_TOAST, "and the kit path plays")
+end)
+
+test("toast: a soundFile that is no file falls to the kit path as it always did", function()
+  -- Hoisted out of the for header: lizard 1.24.0 does not see a function literal there.
+  local blank = function() return "" end
+  for _, bad in ipairs({ "", blank, true, {} }) do
+    local t, m = newToast({ sound = true, soundFile = bad, soundKit = 12345 })
+    t:Show("a")
+    assertEqual(#m.__files, 0)
+    assertEqual(#m.__sounds, 1)
+    assertEqual(m.__sounds[1].id, 12345)
+    assertEqual(m.__sounds[1].channel, "Master")
+  end
+end)
+
+test("toast: soundFile stays behind d.sound, and a client without PlaySoundFile plays nothing", function()
+  for _, off in ipairs({ false, "yes" }) do
+    local t, m = newToast({ sound = off, soundFile = "Interface\\Host\\Ding.ogg" })
+    t:Show("a")
+    assertEqual(#m.__files, 0, "the host said no")
+    assertEqual(#m.__sounds, 0)
+  end
+  local t, m = newToast({ sound = true, soundFile = "Interface\\Host\\Ding.ogg" })
+  m.PlaySoundFile = nil
+  t:Show("a")
+  assertEqual(#m.__sounds, 0, "a named file never turns into the default alert")
 end)
 
 test("toast: no sound when the host says no", function()

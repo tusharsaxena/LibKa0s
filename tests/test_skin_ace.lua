@@ -239,6 +239,105 @@ test("skin ace: a Label keeps the skin's font through its host's SetFontObject, 
   assertEqual(Skin.__ace[lbl].owner, nil)
 end)
 
+-- Cause L4 (SkinAce minor 7, OptionsWidgets minor 43): a font set on a text widget's FontString
+-- never reached the widget's SetFontObject, so it ran after the paint and took the skin's face away.
+
+--- A named client font of `size`, in the shape P.font reads, published as _G[name] for one call.
+local function withClientFont(name, size, fn)
+  local had = rawget(_G, name)
+  _G[name] = { GetName = function() return name end,
+               GetFont = function() return "Fonts\\Client.ttf", size, "" end }
+  local ok, err = pcall(fn, _G[name])
+  _G[name] = had
+  if not ok then error(err, 0) end
+end
+
+local function roleFont(fs, role)
+  local obj = fs:GetFontObject()
+  return type(obj) == "table" and tostring(obj.name):find("LibKa0sSkin_LootHistory_" .. role, 1, true) ~= nil
+end
+
+--- `stock` at obsidian's `token` over Ka0s Default's, as P.fontSize scales it.
+local function scaled(Skin, stock, token)
+  return stock * Skin:ResolveSkin("obsidian")[token] / Skin:ResolveSkin(Skin.DEFAULT)[token]
+end
+
+local function panelCleared(skin, opts)
+  local m, Skin, O = owned(skin, opts)
+  local ctx = O.CreatePanel("FontPage", "Font page", {})
+  return m, Skin, O, ctx
+end
+
+test("skin ace: a Heading wears the title role, and its text the heading color", function()
+  local _, Skin, O = owned("obsidian", { lsm = true })
+  local h = O.AceGUI:Create("Heading")
+  assertTrue(roleFont(h.label, "title"), "font.title, not the body face")
+  assertEqual(textColor(h.label), rgb(Skin:ResolveSkin("obsidian")["text.heading"]))
+end)
+
+test("skin ace: O.Section keeps the title face over its large font, and gives the large font back", function()
+  -- red under: O.Section setting GameFontNormalLarge on the FontString after the Create paint.
+  withClientFont("GameFontNormalLarge", 16, function(large)
+    local _, Skin, O, ctx = panelCleared("obsidian", { lsm = true })
+    local h = O.Section(ctx, "Size")
+    assertTrue(roleFont(h.label, "title"), "the skin's face survives the heading's font object")
+    local _, drawn = h.label:GetFontObject():GetFont()
+    assertEqual(drawn, scaled(Skin, 16, "font.titleSize"), "scaled from the large font, not the Heading's own")
+    O.AceGUI:Release(h)
+    assertTrue(h.label:GetFontObject() == large, "released: the host's large font, not the Heading's")
+  end)
+end)
+
+test("skin ace: O.TextRow and a note keep the body face over the font they name", function()
+  -- red under: applyLabelFont setting the FontString with no word to the skin.
+  withClientFont("GameFontHighlightLarge", 16, function()
+    local _, Skin, O, ctx = panelCleared("obsidian", { lsm = true })
+    local w = O.TextRow(ctx, "Portal", { fontObject = "GameFontHighlightLarge" })
+    assertTrue(roleFont(w.label, "body"), "the skin's face survives the row's font object")
+    local _, drawn = w.label:GetFontObject():GetFont()
+    assertEqual(drawn, scaled(Skin, 16, "font.bodySize"), "scaled from the font the row named")
+    local n = O.__renderNote(ctx, { text = "A note" }, ctx.scroll or O.EnsureScroll(ctx))
+    assertTrue(roleFont(n.label, "body"), "a note row goes the same way")
+  end)
+end)
+
+test("skin ace: O.LabelFont is the same seam for a heading a host built, and a second call moves the stock", function()
+  withClientFont("GameFontNormalLarge", 16, function(large)
+    withClientFont("GameFontHighlight", 12, function(small)
+      local _, _, O = owned("obsidian", { lsm = true })
+      local h = O.AceGUI:Create("Heading")
+      h:SetText("Editor")
+      O.LabelFont(h, "GameFontNormalLarge")
+      assertTrue(roleFont(h.label, "title"), "painted over the host's font")
+      O.LabelFont(h, "GameFontHighlight")
+      assertTrue(roleFont(h.label, "title"), "and over the next")
+      O.AceGUI:Release(h)
+      assertTrue(h.label:GetFontObject() == small, "the last font set is the stock one")
+      assertTrue(h.label:GetFontObject() ~= large)
+    end)
+  end)
+end)
+
+test("skin ace: under the Scope a section stays on the client's large font", function()
+  withClientFont("GameFontNormalLarge", 16, function(large)
+    local _, Skin, O, ctx = panelCleared("obsidian", { lsm = true })
+    Skin:SetIgnore(OWNER, nil, true)
+    local h = O.Section(ctx, "Size")
+    assertTrue(h.label:GetFontObject() == large, "Ignore fonts: the client's font, not a snap back")
+  end)
+end)
+
+test("skin ace: a font name the client lacks, and a widget with no label, cost nothing", function()
+  local m, _, O = owned("obsidian", { lsm = true })
+  local h = O.AceGUI:Create("Heading")
+  local before = h.label:GetFontObject()
+  O.LabelFont(h, "NoSuchFontAnywhere")
+  O.LabelFont(h, nil)
+  O.LabelFont({}, "GameFontNormalLarge")
+  assertTrue(h.label:GetFontObject() == before)
+  assertEqual(#m.__errors, 0)
+end)
+
 -- ── the release chain ────────────────────────────────────────────────────────────────────────
 
 test("skin ace: a raising restore still returns the widget to the pool, logged once", function()

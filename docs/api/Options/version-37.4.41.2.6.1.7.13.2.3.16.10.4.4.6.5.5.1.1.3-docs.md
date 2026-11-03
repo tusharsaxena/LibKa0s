@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **37** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **41** · `OptionsFlow.lua` **2** · `OptionsIds.lua` **6** · `OptionsIdSuggest.lua` **1** · `OptionsIdList.lua` **7** · `OptionsTabs.lua` **13** · `OptionsTabbed.lua` **2** · `OptionsCombat.lua` **3** · `OptionsCompose.lua` **16** · `OptionsScroll.lua` **10** · `OptionsNav.lua` **4** · `OptionsDrawer.lua` **4** · `OptionsKeybinds.lua` **6** · `OptionsAppearance.lua` **5** · `OptionsSkinPicker.lua` **5** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **3** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `35.4.40.2.6.1.7.13.2.3.15.9.4.3.6.5.5.1.1.1` |
 | Shipped in | v1.84.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 36.4.41.2.6.1.7.13.2.3.16.10.4.3.6.5.5.1.1.2](./version-36.4.41.2.6.1.7.13.2.3.16.10.4.3.6.5.5.1.1.2-docs.md) (never pushed; the second local cut of v1.84.0) — the same surface, with `lib.__PatchLSM30Border` still there as a no-op. |
-| Superseded by | — |
+| Superseded by | [version 37.4.42.2.6.1.7.14.2.3.16.11.5.5.7.5.6.1.1.3](./version-37.4.42.2.6.1.7.14.2.3.16.11.5.5.7.5.6.1.1.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 37, OptionsRegistry = 4, OptionsWidgets = 41, OptionsFlow = 2, OptionsIds = 6, OptionsIdSuggest = 1, OptionsIdList = 7, OptionsTabs = 13, OptionsTabbed = 2, OptionsCombat = 3, OptionsCompose = 16, OptionsScroll = 10, OptionsNav = 4, OptionsDrawer = 4, OptionsKeybinds = 6, OptionsAppearance = 5, OptionsSkinPicker = 5, OptionsSkinPickerRows = 1, OptionsSwitch = 1, OptionsMedia = 3 }` |
 
@@ -37,6 +37,10 @@ park's library-level names are `OptionsRegistry.lua`'s from 26.1.32.1.1.6.1.7.4.
 citations still name the `Options.lua` minors that introduced them. The minor that introduced a
 member is a fact about when a consumer got it, not about which file holds it today. Minors 1 and 2 of each file were never tagged, so
 `O1`/`W1`/`S1` means "present for as long as any consumer could have had this major".
+
+## Moving to 37.4.42.2.6.1.7.14.2.3.16.11.5.5.7.5.6.1.1.3
+
+No host change. The chrome's tooltip body lines and the skin picker's tooltips follow the skin; Ka0s Default's look does not move, and no member moves. See [version 37.4.42.2.6.1.7.14.2.3.16.11.5.5.7.5.6.1.1.3](./version-37.4.42.2.6.1.7.14.2.3.16.11.5.5.7.5.6.1.1.3-docs.md).
 
 ## What changed at this version: `lib.__PatchLSM30Border` deleted (`LK-M4`)
 

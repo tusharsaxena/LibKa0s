@@ -67,6 +67,15 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.85.0, not in the census (2026-11-01).** Launcher minor 6 adds the optional descriptor
+field `owner`, which no host passes: the tooltip reads the skin through `name` on all sixteen, and
+`owner` is for a host whose skin owner is not its folder name. It gets no row until the next run.
+
+**v1.85.0, not in the census (2026-11-01).** The owner's rulings of the same day add the skin facade's `S.BarBorder` and `S.HoverArt` (SkinPaintExtras minor 16) and `W.ContextMenu` (Widgets minor 21), and optional arguments on `S.HudFont`, `S.HudShadow`, `S.Mark` and `S.IconBorder`. No host calls them yet, and no public member is retired. `O.__hoverArt` stays private: QuickComms' `settings/IconBrowser.lua:373` is the one host call, and it moves to `S.HoverArt`. They get no rows until the next run.
+
+**v1.85.0, not in the census (2026-11-01).** Toast minor 2 adds the optional descriptor field
+`soundFile`, the file alternative to `soundKit`, which no host passes yet. It gets no row until the next run.
+
 **v1.84.0, not in the census (2026-10-31, unreleased).** The release adds a major,
 `LibKa0s-Charts-1.0` (`Charts:New` and its nine lib-level members in
 `docs/api/Charts/members-1.1.json`, and the context's members in
@@ -88,6 +97,8 @@ are stubs or comments. `applySkin` on Widgets and DebugLog fell to zero, because
 rollout for the skin owner path, so the two rows are documented rather than retired. The nine rows the page carried as
 *planned at v1.77.0* are measured now, and the Sim `by-hand` rows carry KickCD's and MultiMeters' sites. The entries
 below stay as the record of what each release added.
+
+**v1.85.0, not in the census (2026-11-01).** The release adds the skin facade's `S.BarGloss` and `S.HudFont` (SkinPaintExtras minors 14 and 15) and `Skin.FollowOnce` (Skin minor 14), for the flips of Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`. No host calls them yet, and no public member is retired. The stamp and its numbers stand until the next census re-run measures them.
 
 **v1.83.0, first recorded (2026-10-31).** The release adds Options' `Ka0sMedia_*` AceGUI picker types
 (`OptionsMedia.lua`, new at minor 1), an unregistered `LSM30_*` row's fall back to them (OptionsWidgets
@@ -965,6 +976,7 @@ here are uncapped.
 | Options | `KeybindRows` (instance) | none | call 0 · stub 28 · test 27 | zero — kept, documented |
 | Options | `KeybindingsTab` (instance) | 8: BankLedger, DpsRace, DropWatcher, LibKa0sSkinTester, LootHistory, MultiMeters, QuickComms, WhatGroup | call 8 · stub 29 · test 9 | consumed (8) |
 | Options | `LSMValues` (instance) | AbsorbTracker `settings/Appearance.lua:250`; LibKa0sSkinTester `settings/Schema.lua:229`; MultiMeters `settings/Schema_Compose.lua:258` | call 3 · name-only 1 · def 1 · stub 13 · test 56 | consumed (3) |
+| Options | `LabelFont` (instance) | none yet: new in v1.85.0 (`FS-L4`), for PanelMaster's editor heading | call 0 · test 1 | zero — new |
 | Options | `MASTER_GROUP` (instance) | 12: AbsorbTracker, AuraMaster, DpsRace, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, WhatGroup | call 13 · name-only 2 · stub 13 · test 55 | consumed (12) |
 | Options | `MasterControls` (instance) | 11: AbsorbTracker, AuraMaster, DpsRace, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, PartyFrameEnhanced, PremadeGroupsFilterExtension, QuickComms, WhatGroup | call 11 · name-only 6 · def 1 · stub 24 · test 52 | consumed (11) |
 | Options | `NavRail` (instance) | AuraMaster `settings/OptionsSetup.lua:644`; KickCD `settings/Panel_Render.lua:432`; MultiMeters `settings/OptionsSetup.lua:643` | call 3 · stub 24 · test 20 | consumed (3) |

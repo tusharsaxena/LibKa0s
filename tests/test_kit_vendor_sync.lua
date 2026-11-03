@@ -95,6 +95,21 @@ local CATALOG_PATHS = {
   "game-icons/AUTHORS.txt", "game-icons/LICENSE-game-icons.txt", "game-icons/skull.tga",
 }
 
+test("missingMarks: a list must name what the library draws, and only what the catalog carries", function()
+  local cat = VendorSync.iconCatalog(CATALOG_PATHS)
+  local missing = VendorSync.missingMarks(VendorSync.parseIconLine("settings."), cat)
+  assertEqual(table.concat(missing, ","), "close", "of the marks, this catalog holds only close")
+  assertEqual(#VendorSync.missingMarks(VendorSync.parseIconLine("close, settings."), cat), 0)
+  assertEqual(#VendorSync.missingMarks(VendorSync.parseIconLine("none."), cat), 0, "none ships nothing")
+  assertEqual(#VendorSync.missingMarks(VendorSync.parseIconLine("all (icon picker)."), cat), 0)
+end)
+
+test("the library-drawn marks are all real Media icons", function()
+  for _, name in ipairs(VendorSync.LIBRARY_MARKS) do
+    assertTrue(io.open("LibKa0s/media/icons/" .. name .. ".tga", "rb") ~= nil, name)
+  end
+end)
+
 test("iconCatalog: names and attribution by set folder", function()
   local cat = VendorSync.iconCatalog(CATALOG_PATHS)
   assertEqual(cat.names.close, "close.tga")
@@ -296,8 +311,8 @@ test("vendor sync: `none.` ships no icon and no icon license", function()
 end)
 
 test("vendor sync: a list ships exactly its icons and their sets' attribution", function()
-  withFixture("LibKa0s icons: settings, gi:skull.", function(addon)
-    local exact = { "settings.tga", "LICENSE-open-iconic.txt", "game-icons/skull.tga",
+  withFixture("LibKa0s icons: close, settings, gi:skull.", function(addon)
+    local exact = { "close.tga", "settings.tga", "LICENSE-open-iconic.txt", "game-icons/skull.tga",
       "game-icons/LICENSE-game-icons.txt", "game-icons/AUTHORS.txt" }
     prune(addon, exact)
     local ok, err = gate(addon)
@@ -309,20 +324,31 @@ test("vendor sync: a list ships exactly its icons and their sets' attribution", 
   end)
 end)
 
-test("vendor sync: an undeclared icon fails, counted and named", function()
+test("vendor sync: a list that leaves out a library-drawn icon fails, and says which", function()
   withFixture("LibKa0s icons: settings.", function(addon)
-    prune(addon, { "settings.tga", "LICENSE-open-iconic.txt", "close.tga", "phosphor/sword.tga" })
+    prune(addon, { "settings.tga", "LICENSE-open-iconic.txt" })
+    local ok, err = gate(addon)
+    assertTrue(not ok, "close draws blank")
+    assertTrue(err:find("leaves out 1 icon(s)", 1, true) ~= nil, err)
+    assertTrue(err:find(": close.", 1, true) ~= nil, err)
+  end)
+end)
+
+test("vendor sync: an undeclared icon fails, counted and named", function()
+  withFixture("LibKa0s icons: close, settings.", function(addon)
+    prune(addon, { "settings.tga", "LICENSE-open-iconic.txt", "close.tga", "game-icons/skull.tga",
+      "phosphor/sword.tga" })
     local ok, err = gate(addon)
     assertTrue(not ok, "two undeclared icons ship")
     assertTrue(err:find("2 undeclared file(s)", 1, true) ~= nil, err)
-    assertTrue(err:find("close.tga, phosphor/sword.tga", 1, true) ~= nil, err)
+    assertTrue(err:find("game-icons/skull.tga, phosphor/sword.tga", 1, true) ~= nil, err)
     assertTrue(err:find("prune-icons.lua", 1, true) ~= nil, "says how to fix it: " .. err)
   end)
 end)
 
 test("vendor sync: a name the tag does not carry fails, even if a stray file vouches for it", function()
-  withFixture("LibKa0s icons: settings, ph:axe.", function(addon)
-    prune(addon, { "settings.tga", "LICENSE-open-iconic.txt" })
+  withFixture("LibKa0s icons: close, settings, ph:axe.", function(addon)
+    prune(addon, { "close.tga", "settings.tga", "LICENSE-open-iconic.txt" })
     write(addon .. "/libs/LibKa0s/media/icons/phosphor/axe.tga", ART)
     local ok, err = gate(addon)
     assertTrue(not ok and err:find("1 icon name(s)", 1, true) ~= nil, err)
@@ -374,12 +400,12 @@ local function present(addon)
 end
 
 test("prune-icons: a list keeps its icons and attribution, and the gate then passes", function()
-  withFixture("LibKa0s icons: settings, ph:sword.", function(addon)
+  withFixture("LibKa0s icons: close, settings, ph:sword.", function(addon)
     local out = tool(addon)
     assertTrue(out:find("exit=0", 1, true) ~= nil, out)
     assertTrue(out:find("removed libs/LibKa0s/media/icons/game-icons/AUTHORS.txt", 1, true) ~= nil, out)
-    assertTrue(out:find("kept 4 file(s), removed 4", 1, true) ~= nil, out)
-    assertEqual(present(addon), "LICENSE-open-iconic.txt,phosphor/LICENSE-phosphor.txt,phosphor/sword.tga,settings.tga")
+    assertTrue(out:find("kept 5 file(s), removed 3", 1, true) ~= nil, out)
+    assertEqual(present(addon), "LICENSE-open-iconic.txt,close.tga,phosphor/LICENSE-phosphor.txt,phosphor/sword.tga,settings.tga")
     local ok, err = gate(addon)
     assertTrue(ok, err)
   end)
