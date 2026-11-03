@@ -502,52 +502,10 @@ local function armSimShow(O, ctx)
   end)
 end
 
---- The canonical rows of the Master controls tab, in order, then the host's extras.
----
---- THE FRAMELESS PACKING (compose minor 9, options-ui-§15, U-09c). With Lock frame omitted -- the
---- frameless set, or a host that omits it -- Minimap button leaves the first column and sits beside
---- Debug console, so no line holds a lone control; Test mode then opens a line of its own. With Lock
---- frame present, minor 7's shape stands: Minimap button opens the line and Test mode pairs beside
---- it. The composer lays out the rows the spec asks for and does not police which ones it asks for.
-local function masterRows(ms, spec, notes)
-  local rows = {}
-  emitNoted(ms, rows, notes, "enabled", {
-    type = "bool", label = "Enable " .. tostring(spec.addonName or "this addon"),
-    tooltip = "Turn the addon off without unloading it.", default = true, startsLine = true,
-  })
-  emitNoted(ms, rows, notes, "visibility", {
-    type = "string", label = "General visibility",
-    tooltip = "When this addon's display is shown at all.",
-    values = VISIBILITY_VALUES, sorting = VISIBILITY_SORT, default = "always",
-  })
-  emitNoted(ms, rows, notes, "scale", {
-    type = "number", label = "Master scale", tooltip = "Scales the whole addon's display.",
-    min = 0.5, max = 2, step = 0.05, default = 1, startsLine = true,
-  })
-  -- Labeled Master opacity since compose minor 9 (owner call CALL-02, options-ui-§21): only the
-  -- label moved, so the stored leaf is still `alpha` and nothing migrates.
-  emitNoted(ms, rows, notes, "alpha", {
-    type = "number", label = "Master opacity", tooltip = "Opacity of the whole addon's display.",
-    isPercent = true, min = 0, max = 1, step = 0.05, default = 1,
-  })
-  local lockRow = emitNoted(ms, rows, notes, "locked", {
-    type = "bool", label = "Lock frame",
-    tooltip = spec.lockIsPreview and LOCK_PREVIEW_TIP or "Stop the frame being dragged.",
-    default = false, startsLine = true,
-  })
-  -- Sim mode BESIDE LOCK FRAME (compose minor 19): a host with a sim and no Test mode row -- most
-  -- often one whose unlocked view is its preview, `lockIsPreview` -- has Lock frame as the switch
-  -- nearest a test mode, so the sim pairs there and Debug console opens the next line, Minimap
-  -- button beside it. With a Test mode row it sits beside Test mode instead (below).
-  local simBesideLock = (lockRow and not spec.testModePath) and emitSim(ms, rows, notes, spec, nil) or nil
-  local consoleRow = emitNoted(ms, rows, notes, "debugConsole", {
-    path = spec.debugConsolePath or "state.debugConsole",
-    type = "bool", label = "Debug console", tooltip = "Show this session's developer log window.",
-    -- Session state, never persisted: a console left open is not a setting the next character
-    -- inherits.
-    sessionOnly = true,
-    startsLine = simBesideLock and true or nil,
-  })
+--- The Master controls tab's last rows, Minimap button, Test mode and Sim mode beside Test mode,
+--- appended to `rows` (a split of `masterRows`, v1.85.0's `R6-REL2` re-cut, to keep it at CCN 15;
+--- no behavior change). `consoleRow` and `simBesideLock` are the rows `masterRows` emitted.
+local function masterTail(ms, rows, notes, spec, consoleRow, simBesideLock)
   -- THE FOURTH LINE OF THE CANONICAL SET: [Minimap button] [Test mode] (options-ui-§15, compose
   -- minor 7). Which of the two opens the line is not a preference and not a tidy-up: EVERY addon
   -- has a minimap button and only SOME have a test mode, so the always-present row takes column 1
@@ -600,6 +558,55 @@ local function masterRows(ms, spec, notes)
     else opens = (not minimapRow or not minimapRow.startsLine) or nil end
     emitSim(ms, rows, notes, spec, opens)
   end
+end
+
+--- The canonical rows of the Master controls tab, in order, then the host's extras.
+---
+--- THE FRAMELESS PACKING (compose minor 9, options-ui-§15, U-09c). With Lock frame omitted -- the
+--- frameless set, or a host that omits it -- Minimap button leaves the first column and sits beside
+--- Debug console, so no line holds a lone control; Test mode then opens a line of its own. With Lock
+--- frame present, minor 7's shape stands: Minimap button opens the line and Test mode pairs beside
+--- it. The composer lays out the rows the spec asks for and does not police which ones it asks for.
+local function masterRows(ms, spec, notes)
+  local rows = {}
+  emitNoted(ms, rows, notes, "enabled", {
+    type = "bool", label = "Enable " .. tostring(spec.addonName or "this addon"),
+    tooltip = "Turn the addon off without unloading it.", default = true, startsLine = true,
+  })
+  emitNoted(ms, rows, notes, "visibility", {
+    type = "string", label = "General visibility",
+    tooltip = "When this addon's display is shown at all.",
+    values = VISIBILITY_VALUES, sorting = VISIBILITY_SORT, default = "always",
+  })
+  emitNoted(ms, rows, notes, "scale", {
+    type = "number", label = "Master scale", tooltip = "Scales the whole addon's display.",
+    min = 0.5, max = 2, step = 0.05, default = 1, startsLine = true,
+  })
+  -- Labeled Master opacity since compose minor 9 (owner call CALL-02, options-ui-§21): only the
+  -- label moved, so the stored leaf is still `alpha` and nothing migrates.
+  emitNoted(ms, rows, notes, "alpha", {
+    type = "number", label = "Master opacity", tooltip = "Opacity of the whole addon's display.",
+    isPercent = true, min = 0, max = 1, step = 0.05, default = 1,
+  })
+  local lockRow = emitNoted(ms, rows, notes, "locked", {
+    type = "bool", label = "Lock frame",
+    tooltip = spec.lockIsPreview and LOCK_PREVIEW_TIP or "Stop the frame being dragged.",
+    default = false, startsLine = true,
+  })
+  -- Sim mode BESIDE LOCK FRAME (compose minor 19): a host with a sim and no Test mode row -- most
+  -- often one whose unlocked view is its preview, `lockIsPreview` -- has Lock frame as the switch
+  -- nearest a test mode, so the sim pairs there and Debug console opens the next line, Minimap
+  -- button beside it. With a Test mode row it sits beside Test mode instead (below).
+  local simBesideLock = (lockRow and not spec.testModePath) and emitSim(ms, rows, notes, spec, nil) or nil
+  local consoleRow = emitNoted(ms, rows, notes, "debugConsole", {
+    path = spec.debugConsolePath or "state.debugConsole",
+    type = "bool", label = "Debug console", tooltip = "Show this session's developer log window.",
+    -- Session state, never persisted: a console left open is not a setting the next character
+    -- inherits.
+    sessionOnly = true,
+    startsLine = simBesideLock and true or nil,
+  })
+  masterTail(ms, rows, notes, spec, consoleRow, simBesideLock)
   return appendExtra(ms, rows)
 end
 
