@@ -903,6 +903,13 @@ function lib.__AttachSkinPicker(O, d)
     if modeOn(h) ~= was then p.previewMoved = true end
   end
 
+  --- The eye's words for hook `h` with the mode `on`: PREVIEW_<MODE>_ON or _OFF, an unknown mode as TEST.
+  local function eyeTip(p, h, on)
+    local mode = tostring(h.mode or "test"):upper()
+    if not p.S["PREVIEW_" .. mode .. "_ON"] then mode = "TEST" end
+    return p.S["PREVIEW_" .. mode .. (on and "_ON" or "_OFF")]
+  end
+
   --- The eye from the mode now: lit with the _ON words while on, dimmed and grayed with _OFF while off;
   --- lit, with applySpec's PREVIEW_TIP, under onPreview alone.
   local function paintEye(p)
@@ -910,11 +917,7 @@ function lib.__AttachSkinPicker(O, d)
     if not btn then return end
     local on = not h or modeOn(h)
     btn.lit = h and on or nil
-    if h then
-      local mode = tostring(h.mode or "test"):upper()
-      if not p.S["PREVIEW_" .. mode .. "_ON"] then mode = "TEST" end
-      btn.__tip = p.S["PREVIEW_" .. mode .. (on and "_ON" or "_OFF")]
-    end
+    if h then btn.__tip = eyeTip(p, h, on) end
     local art = btn.icon or btn.text
     if art and type(art.SetAlpha) == "function" then art:SetAlpha(on and 1 or 0.45) end
     if btn.icon and type(btn.icon.SetDesaturated) == "function" then btn.icon:SetDesaturated(not on) end
