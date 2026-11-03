@@ -10,7 +10,10 @@
 -- owner's third smoke round (R3-L3 of Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3), a 1 px
 -- outline in `icon.border` in every skin whatever its style and size, one physical pixel; the icon
 -- zoomed 0.07 by default; and under the eui source it is painted by the library from the
--- EllesmereUI-derived tokens, never handed to EllesmereUI.
+-- EllesmereUI-derived tokens, never handed to EllesmereUI. Since the owner's fourth smoke round
+-- (R4-L3 of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND4, option 2) the outline is
+-- `icon.outline`, else `icon.border`: a window's icon outline that shows in every skin, while
+-- `icon.border`, the HUD hosts' edge, keeps its value (Ka0s Default's black).
 --
 -- Every case runs on a fresh environment (tests/fixture_skin_paint.lua, tests/fixture_skin_eui.lua).
 
@@ -51,15 +54,85 @@ test("skin icon border: SkinDefs is at minor 15 and the schema's HUD group carri
   assertTrue(not style.nilable and not size.nilable, "every skin resolves both")
 end)
 
-test("skin icon border: Ka0s Default's is Solid 1px black", function()
+test("skin icon border: Ka0s Default's is Solid 1px, its HUD edge black and its outline #4D4D57", function()
   -- Drop Watcher's Window › Icons border was Solid 2px until R3-FIX of Ka0sAddonsCommonTasks
   -- docs/2026-11-02-SMOKE_ROUND3: the owner's "exactly 1 px in every skin" reaches the hosts that
-  -- draw their own icon border from these tokens (KickCD, ConsumableMaster, DropWatcher).
+  -- draw their own icon border from these tokens (KickCD, ConsumableMaster, DropWatcher). R4-L3: the
+  -- HUD edge stays black (the owner's scope answer), and the window outline is a gray that shows.
   local _, Skin = F.env()
   local t = Skin:ResolveSkin("ka0s")
   assertEqual(t["icon.borderStyle"], "Solid")
   assertEqual(t["icon.borderSize"], 1)
   assertEqual(F.rgba(t["icon.border"]), "0,0,0,1")
+  assertEqual(F.rgba(t["icon.outline"]), F.rgba({ 0x4d / 255, 0x4d / 255, 0x57 / 255, 1 }))
+end)
+
+test("skin icon border: icon.outline is a nilable HUD color in the schema", function()
+  -- R4-L3. red under: the token missing from the schema, which RegisterSkin's validation and the
+  -- override editors read, so a skin stating it would name an unknown token.
+  local _, Skin = F.env()
+  local e = Skin.__schemaIndex["icon.outline"]
+  assertTrue(e ~= nil, "in the schema")
+  assertEqual(e.kind, "color")
+  assertEqual(e.group, "HUD")
+  assertTrue(e.nilable, "nilable, as icon.border is")
+end)
+
+-- WCAG 2 relative luminance and contrast ratio, alpha ignored (a composited color).
+local function channel(c)
+  if c <= 0.03928 then return c / 12.92 end
+  return ((c + 0.055) / 1.055) ^ 2.4
+end
+local function luminance(c) return 0.2126 * channel(c[1]) + 0.7152 * channel(c[2]) + 0.0722 * channel(c[3]) end
+local function contrast(a, b)
+  local la, lb = luminance(a), luminance(b)
+  if la < lb then la, lb = lb, la end
+  return (la + 0.05) / (lb + 0.05)
+end
+local function over(top, under)
+  local a = top[4] or 1
+  return { top[1] * a + under[1] * (1 - a), top[2] * a + under[2] * (1 - a), top[3] * a + under[3] * (1 - a), 1 }
+end
+local BLACK = { 0, 0, 0, 1 }
+
+test("skin icon border: every skin's icon outline shows against its window and the icon's dark art", function()
+  -- R4-L3, images 19 to 21: the outline sits between the window (outside) and the icon's art, whose
+  -- own field is near-black after the zoom, so it shows only if it stands off both. Obsidian's
+  -- measures 1.60, the owner's reference for visible. red under: Ka0s Default's black (1.09 / 1.00),
+  -- Glass's white at 0.18, WoW Forever's #3a3530 or Ember's #6a2e17, the outlines that did not show.
+  local _, Skin = F.env()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    local win = over(t["win.bg"], BLACK)
+    local edge = over(t["icon.outline"], win)
+    local onWin, onArt = contrast(edge, win), contrast(edge, BLACK)
+    assertTrue(onWin >= 1.6, ("%s: the outline %.2f against the window, want >= 1.6"):format(key, onWin))
+    assertTrue(onArt >= 1.6, ("%s: the outline %.2f against black art, want >= 1.6"):format(key, onArt))
+  end
+end)
+
+test("skin icon border: icon.outline is the owner's value in every skin, and icon.border kept its own", function()
+  -- R4-L3, the owner's scope answer (R4_SIGNOFF.md, mockup option 2). red under: a lift landed on
+  -- icon.border, which moves every HUD host's icon edge (AuraMaster, KickCD, DropWatcher, QuickComms,
+  -- DpsRace, ConsumableMaster's button border), or an outline left on the edge that did not show.
+  local _, Skin = F.env()
+  local function hx(s, a)
+    return F.rgba({ tonumber(s:sub(2, 3), 16) / 255, tonumber(s:sub(4, 5), 16) / 255, tonumber(s:sub(6, 7), 16) / 255, a or 1 })
+  end
+  local BORDER = {
+    ka0s = "0,0,0,1", obsidian = hx("#34343b"), azeroth = hx("#8a6a36"), glass = hx("#ffffff", 0.18),
+    contrast = hx("#E0E0E0"), ember = hx("#6a2e17"), wow = hx("#9a9a9a"), midnight = hx("#5a4a26"),
+    forever = hx("#3a3530"),
+  }
+  local OUTLINE = {
+    ka0s = hx("#4d4d57"), obsidian = BORDER.obsidian, azeroth = BORDER.azeroth, glass = hx("#ffffff", 0.35),
+    contrast = BORDER.contrast, ember = hx("#8a3c1c"), wow = BORDER.wow, midnight = hx("#7a6532"),
+    forever = hx("#5a5048"),
+  }
+  for _, key in ipairs(KEYS) do
+    assertEqual(F.tok(Skin, key, "icon.border"), BORDER[key], key .. ": icon.border is unchanged")
+    assertEqual(F.tok(Skin, key, "icon.outline"), OUTLINE[key], key .. ": icon.outline")
+  end
 end)
 
 test("skin icon border: every skin sets both tokens itself, each a style the library draws", function()
@@ -92,14 +165,14 @@ test("skin icon border: without fromSkin IconBorder paints exactly what it did, 
   S.IconBorder(two, { size = 2 })
   assertEqual(edgeSizes(m, Skin, S, two, { size = 3 }),
     "#2:SetHeight(3)\n#3:SetHeight(3)\n#4:SetWidth(3)\n#5:SetWidth(3)", "opts.size")
-  assertEqual(F.rgba(survey(m, F.region(Skin, one, "edgeTop")).color), F.tok(Skin, "ka0s", "icon.border"))
+  assertEqual(F.rgba(survey(m, F.region(Skin, one, "edgeTop")).color), F.tok(Skin, "ka0s", "icon.outline"))
   assertNil(F.region(Skin, one, "nine"), "never a nine-slice")
   Skin:SetChoice(OWNER, "ka0s", "wow")
   assertNil(F.region(Skin, two, "nine"), "WoW Default's Blizzard Tooltip is not read without fromSkin")
   assertTrue(survey(m, F.region(Skin, two, "edgeTop")).shown, "still the flat edge")
 end)
 
-test("skin icon border: fromSkin draws a 1 px outline in icon.border in every skin, never the skin's size", function()
+test("skin icon border: fromSkin draws a 1 px outline in icon.outline in every skin, never the skin's size", function()
   -- red under: icon.borderSize, which drew 2 px in Ka0s Default, Azeroth, Ember, WoW Midnight and a
   -- Blizzard Tooltip nine-slice in WoW Default (R3-L3 of Ka0sAddonsCommonTasks
   -- docs/2026-11-02-SMOKE_ROUND3, images 91 and 92: "make it consistently 1px").
@@ -113,7 +186,7 @@ test("skin icon border: fromSkin draws a 1 px outline in icon.border in every sk
       "#2:SetHeight(1)\n#3:SetHeight(1)\n#4:SetWidth(1)\n#5:SetWidth(1)", key .. ": 1 px, not opts.size or the skin's")
     for _, side in ipairs({ "Top", "Bottom", "Left", "Right" }) do
       local r = survey(m, F.region(Skin, f, "edge" .. side))
-      assertEqual(F.rgba(r.color), F.tok(Skin, key, "icon.border"), key .. ": " .. side .. " in icon.border")
+      assertEqual(F.rgba(r.color), F.tok(Skin, key, "icon.outline"), key .. ": " .. side .. " in icon.outline")
       assertTrue(r.shown, key .. ": " .. side .. " shown")
     end
     assertNil(F.region(Skin, f, "nine"), key .. ": never a nine-slice")
@@ -142,17 +215,40 @@ test("skin icon border: a skin whose icon.borderStyle is None still draws the ou
   -- red under: None drawing nothing, which leaves the icon's own edge as its only frame.
   local m, Skin = F.env()
   Skin:RegisterSkin({ key = "bare", tokens = { ["icon.borderStyle"] = "None", ["icon.borderSize"] = 1 } })
-  Skin:RegisterSkin({ key = "barer", tokens = { ["icon.border"] = false, divider = { 0.5, 0.5, 0.5, 1 } } })
+  Skin:RegisterSkin({ key = "plain", tokens = { ["icon.outline"] = false, ["icon.border"] = { 1, 0, 0, 1 } } })
+  Skin:RegisterSkin({ key = "barer", tokens = { ["icon.outline"] = false, ["icon.border"] = false,
+    divider = { 0.5, 0.5, 0.5, 1 } } })
   local S = F.owner(Skin, OWNER, "bare")
   local f = m.CreateFrame("Frame", nil, m.UIParent)
   S.IconBorder(f, { fromSkin = true })
   local e = survey(m, F.region(Skin, f, "edgeTop"))
   assertTrue(e.shown, "None draws it")
-  assertEqual(F.rgba(e.color), F.tok(Skin, "bare", "icon.border"))
+  assertEqual(F.rgba(e.color), F.tok(Skin, "bare", "icon.outline"))
+  -- R4-L3: a skin with no outline draws its icon.border. red under: the outline read alone.
+  Skin:SetChoice(OWNER, "ka0s", "plain")
+  e = survey(m, F.region(Skin, f, "edgeTop"))
+  assertTrue(e.shown, "a skin with no icon.outline draws one")
+  assertEqual(F.rgba(e.color), "1,0,0,1", "in its icon.border")
   Skin:SetChoice(OWNER, "ka0s", "barer")
   e = survey(m, F.region(Skin, f, "edgeTop"))
-  assertTrue(e.shown, "a skin with no icon.border too")
+  assertTrue(e.shown, "a skin with neither token too")
   assertEqual(F.rgba(e.color), "0.500,0.500,0.500,1", "in its divider")
+end)
+
+test("skin icon border: SquareIcon's edge is icon.outline, else icon.border", function()
+  -- R4-L3: S.SquareIcon draws its own edge, under IconBorder's in the Skin Tester's pairing, so it
+  -- reads the same token. red under: icon.border alone, a black edge beneath the gray outline.
+  local m, Skin = F.env()
+  Skin:RegisterSkin({ key = "plain", tokens = { ["icon.outline"] = false, ["icon.border"] = { 1, 0, 0, 1 } } })
+  local S = F.owner(Skin, OWNER)
+  local b = m.CreateFrame("Button", nil, m.UIParent)
+  b.icon = b:CreateTexture()
+  S.SquareIcon(b, { crop = true })
+  assertEqual(F.rgba(survey(m, F.region(Skin, b, "edgeTop")).color), F.tok(Skin, "ka0s", "icon.outline"))
+  Skin:SetChoice(OWNER, "ka0s", "glass")
+  assertEqual(F.rgba(survey(m, F.region(Skin, b, "edgeTop")).color), F.tok(Skin, "glass", "icon.outline"))
+  Skin:SetChoice(OWNER, "ka0s", "plain")
+  assertEqual(F.rgba(survey(m, F.region(Skin, b, "edgeTop")).color), "1,0,0,1", "a skin with no outline: icon.border")
 end)
 
 -- ── the zoom (R3-L3, images 88 to 90: the icon's own edge showed inside the border) ──────────
@@ -326,7 +422,7 @@ test("skin icon border: under eui fromSkin is the library's, from the EllesmereU
   assertEqual(Skin:Token(OWNER, "icon.borderStyle"), "Solid", "EllesmereUI's look is Ka0s Default's here")
   assertEqual(Skin:Token(OWNER, "icon.borderSize"), 1)
   assertTrue(survey(m, F.region(Skin, f, "edgeTop")).shown, "drawn")
-  assertEqual(F.rgba(survey(m, F.region(Skin, f, "edgeTop")).color), F.rgba(S.Token("icon.border")),
-    "SkinEUI minor 4's, half EllesmereUI's panel color")
+  assertEqual(F.rgba(survey(m, F.region(Skin, f, "edgeTop")).color), F.rgba(S.Token("icon.outline")),
+    "SkinEUI minor 4's, half EllesmereUI's panel color (icon.outline since R4-L3)")
   assertNil(Skin.euiRefused[OWNER], "nothing refused")
 end)

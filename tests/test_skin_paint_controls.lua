@@ -637,13 +637,13 @@ test("skin controls: PageButton, SquareIcon, IconBorder, SortHeaderBar and Apply
   icon.icon = icon:CreateTexture()
   S.SquareIcon(icon, { crop = true })
   assertEqual(select(1, icon.icon:GetTexCoord()), 0.08, "cropped")
-  Skin:RegisterSkin({ key = "framed", tokens = { ["icon.border"] = { 1, 1, 0, 1 },
+  Skin:RegisterSkin({ key = "framed", tokens = { ["icon.outline"] = { 1, 1, 0, 1 },
                                                  ["list.header.bg"] = { 0, 0, 0.2, 1 },
                                                  ["list.header.arrow"] = { 0, 1, 0, 1 } } })
   local ib = m.CreateFrame("Frame", nil, m.UIParent)
   S.IconBorder(ib, { size = 2 })
-  assertEqual(F.rgba(survey(m, F.region(Skin, ib, "edgeTop")).color), F.tok(Skin, "contrast", "icon.border"),
-    "Contrast inherits Ka0s Default's black icon border (SkinDefs minor 8)")
+  assertEqual(F.rgba(survey(m, F.region(Skin, ib, "edgeTop")).color), F.tok(Skin, "contrast", "icon.outline"),
+    "High Contrast's own outline (R4-L3)")
   Skin:SetChoice(OWNER, "ka0s", "framed")
   assertEqual(F.rgba(survey(m, F.region(Skin, ib, "edgeTop")).color), "1,1,0,1", "repainted with one")
   local bar = m.CreateFrame("Frame", nil, m.UIParent)

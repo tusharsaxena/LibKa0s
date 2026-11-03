@@ -429,7 +429,7 @@ test("skin host gaps: IconBorder on a Texture hangs its edge on a child of the p
   assertTrue(bounds == tex, "on the Texture's bounds")
   local e = F.region(Skin, tex, "edgeTop")
   assertTrue(e ~= nil and e:IsShown(), "the edge is drawn")
-  assertEqual(F.rgba(survey(m, e).color), F.tok(Skin, "ka0s", "icon.border"))
+  assertEqual(F.rgba(survey(m, e).color), F.tok(Skin, "ka0s", "icon.outline"))
 end)
 
 test("skin host gaps: IconBorder's child never writes to a secure parent", function()
@@ -456,7 +456,7 @@ test("skin host gaps: IconBorder on a Texture follows a skin and one holder serv
   local h = Skin.painted[tex].regions.holder
   Skin:SetChoice(OWNER, "ka0s", "contrast")
   assertTrue(Skin.painted[tex].regions.holder == h)
-  assertEqual(F.rgba(survey(m, F.region(Skin, tex, "edgeTop")).color), F.tok(Skin, "contrast", "icon.border"))
+  assertEqual(F.rgba(survey(m, F.region(Skin, tex, "edgeTop")).color), F.tok(Skin, "contrast", "icon.outline"))
 end)
 
 test("skin host gaps: IconBorder follows its Texture's shown state", function()

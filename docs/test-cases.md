@@ -694,15 +694,19 @@ Total.
 - skin remap: the record keeps the caller's remap, so a repaint replays it
 - skin remap: under eui a remapped call is the library's, from EllesmereUI's colors
 
-### test_skin_icon_border.lua (14)
+### test_skin_icon_border.lua (18)
 
 - skin icon border: SkinDefs is at minor 15 and the schema's HUD group carries the family
-- skin icon border: Ka0s Default's is Solid 1px black
+- skin icon border: Ka0s Default's is Solid 1px, its HUD edge black and its outline #4D4D57
+- skin icon border: icon.outline is a nilable HUD color in the schema
+- skin icon border: every skin's icon outline shows against its window and the icon's dark art
+- skin icon border: icon.outline is the owner's value in every skin, and icon.border kept its own
 - skin icon border: every skin sets both tokens itself, each a style the library draws
 - skin icon border: without fromSkin IconBorder paints exactly what it did, flat at opts.size or 1
-- skin icon border: fromSkin draws a 1 px outline in icon.border in every skin, never the skin's size
+- skin icon border: fromSkin draws a 1 px outline in icon.outline in every skin, never the skin's size
 - skin icon border: the 1 px is one physical pixel at any UI scale, with or without fromSkin
 - skin icon border: a skin whose icon.borderStyle is None still draws the outline
+- skin icon border: SquareIcon's edge is icon.outline, else icon.border
 - skin icon border: the icon is zoomed 0.07 by default, a frame's icon or a Texture itself
 - skin icon border: opts.zoom overrides the zoom, false leaves the coords alone, a frame with no icon is left
 - skin icon border: P.unpaint gives the icon its own coords back
@@ -4541,7 +4545,7 @@ Total.
 | test_skin_outline.lua | 19 |
 | test_skin_owner_tokens.lua | 17 |
 | test_skin_remap.lua | 12 |
-| test_skin_icon_border.lua | 14 |
+| test_skin_icon_border.lua | 18 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 41 |
 | test_skin_hud_tokens.lua | 6 |
@@ -4692,4 +4696,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3978** |
+| **Total** | **3982** |
