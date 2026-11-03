@@ -2717,6 +2717,22 @@ Total.
 - skin picker: a skin registered after the first show gains its row on the next
 - skin picker: onClose runs once per showing, by every route
 
+### test_options_skin_picker_close.lua (13)
+
+- skin picker close: the list listens for GLOBAL_MOUSE_DOWN only while it is open
+- skin picker close: a press outside the window closes the list, the window stays up
+- skin picker close: a press on a row or the gutter between rows does not close before the pick
+- skin picker close: a press on the dropdown button leaves it to the button's own toggle
+- skin picker close: a press on the window's body or title closes the list
+- skin picker close: a press on the eye closes the list and the eye still runs
+- skin picker close: a press on the gear closes the list and the gear still runs
+- skin picker close: two open pickers' lists close independently
+- skin picker close: Escape still closes the window, the open list and its listener with it
+- skin picker close: a list hidden by another route lets go and closes nothing on the next press
+- skin picker close: an open list hidden with its window's parent listens again when shown
+- skin picker close: a press arriving after the list closed calls nothing and lets go
+- skin picker close: without Core's SafeRegisterEvent the list registers nothing and still toggles
+
 ### test_options_skin_picker_faces.lua (15)
 
 - skin picker faces: a SetFont answering false keeps a named row in the template's face
@@ -4643,6 +4659,7 @@ Total.
 | test_options_appearance_overrides.lua | 25 |
 | test_options_skin_picker.lua | 41 |
 | test_options_skin_picker_shared.lua | 10 |
+| test_options_skin_picker_close.lua | 13 |
 | test_options_skin_picker_faces.lua | 15 |
 | test_options_skin_picker_rows.lua | 53 |
 | test_options_skin_verb.lua | 7 |
@@ -4727,4 +4744,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4005** |
+| **Total** | **4018** |
