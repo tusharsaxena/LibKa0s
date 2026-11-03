@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **21** · `WidgetsReorder.lua` **5** · `WidgetsDragHandle.lua` **12** · `WidgetsLineChart.lua` **6** · `WidgetsAutocomplete.lua` **6** · `WidgetsCopyWindow.lua` **5** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 21.5.12.6.6.4](./version-21.5.12.6.6.4-docs.md) (unreleased, an earlier step of v1.85.0) — a skinned copy window's title and close were anchored to a bar fixed at 1,-1. |
-| Superseded by | — |
+| Superseded by | [version 22.5.12.6.7.5](./version-22.5.12.6.7.5-docs.md) (unreleased, a later step of v1.85.0) — the autocomplete's row icons drew Blizzard's art whole and unedged, and a host wrote its own uncropped inline icon markup. |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 21, WidgetsReorder = 5, WidgetsDragHandle = 12, WidgetsLineChart = 6, WidgetsAutocomplete = 6, WidgetsCopyWindow = 5 }` |
 

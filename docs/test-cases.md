@@ -3298,6 +3298,21 @@ Total.
 - chrome skin: an owner-less popup and an ignored panel draw the client's suggestion rows
 - chrome skin: list.hoverArt is the client's art in Ka0s Default and WoW Default, the accent elsewhere
 
+### test_icon_rule.lua (12)
+
+- icon rule: the minors move with the icon rule
+- icon rule: an id list entry's icon is cropped 0.07 a side through SetImage's own texcoords
+- icon rule: an owned id list entry's icon is edged 1 px in icon.outline, over the image
+- icon rule: a released id list label hands its edge back, so a pooled label shows none
+- icon rule: an owner-less id list entry is cropped and draws no edge
+- icon rule: an id suggestion row's icon is cropped 0.07 a side, owned or not
+- icon rule: an owned id suggestion row's icon is edged in icon.outline, an owner-less one is not
+- icon rule: an autocomplete row's icon is cropped 0.07 a side, owned or not
+- icon rule: an owned autocomplete row's icon is edged in icon.outline, live, and hidden with its icon
+- icon rule: an autocomplete row reused for an item with no icon keeps no visible edge
+- icon rule: W.IconText is inline markup cropped 5..59 of 64, at a size or the line's height
+- icon rule: the inline crop is what MarkText's full-art markup is not
+
 ### test_options_compose_skin.lua (25)
 
 - compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
@@ -4688,6 +4703,7 @@ Total.
 | test_options_skin.lua | 22 |
 | test_options_tooltip_skin.lua | 9 |
 | test_options_chrome_skin.lua | 15 |
+| test_icon_rule.lua | 12 |
 | test_options_compose_skin.lua | 25 |
 | test_options_compose_flags.lua | 5 |
 | test_options_throttle.lua | 4 |
@@ -4744,4 +4760,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4018** |
+| **Total** | **4030** |

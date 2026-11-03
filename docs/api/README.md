@@ -253,7 +253,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [21.5.12.6.6.5](./Widgets/version-21.5.12.6.6.5-docs.md) | `Widgets.lua` 21 · `WidgetsReorder.lua` 5 · `WidgetsDragHandle.lua` 12 · `WidgetsLineChart.lua` 6 · `WidgetsAutocomplete.lua` 6 · **`WidgetsCopyWindow.lua` 5** (a skinned header on the band, `R5-L3`) | v1.85.0 | **Current** |
+| [22.5.12.6.7.5](./Widgets/version-22.5.12.6.7.5-docs.md) | **`Widgets.lua` 22** (`W.IconText`, inline icon markup cropped 5..59 of 64, `R5-L5`) · `WidgetsReorder.lua` 5 · `WidgetsDragHandle.lua` 12 · `WidgetsLineChart.lua` 6 · **`WidgetsAutocomplete.lua` 7** (row icons cropped 0.07 and an owned list's edged in `icon.outline`, `R5-L5`) · `WidgetsCopyWindow.lua` 5 | v1.85.0 | **Current** |
+| [21.5.12.6.6.5](./Widgets/version-21.5.12.6.6.5-docs.md) | `Widgets.lua` 21 · `WidgetsReorder.lua` 5 · `WidgetsDragHandle.lua` 12 · `WidgetsLineChart.lua` 6 · `WidgetsAutocomplete.lua` 6 · **`WidgetsCopyWindow.lua` 5** (a skinned header on the band, `R5-L3`) | v1.85.0 | Superseded |
 | [21.5.12.6.6.4](./Widgets/version-21.5.12.6.6.4-docs.md) | **`Widgets.lua` 21** (`W.ContextMenu`, the row options) · `WidgetsReorder.lua` 5 · `WidgetsDragHandle.lua` 12 · `WidgetsLineChart.lua` 6 · `WidgetsAutocomplete.lua` 6 · `WidgetsCopyWindow.lua` 4 | v1.85.0 | Superseded |
 | [20.5.12.6.6.4](./Widgets/version-20.5.12.6.6.4-docs.md) | **`Widgets.lua` 20** (an owned dropdown's tick and arrow follow a skin change and the Scope) · `WidgetsReorder.lua` 5 · `WidgetsDragHandle.lua` 12 · `WidgetsLineChart.lua` 6 · `WidgetsAutocomplete.lua` 6 · `WidgetsCopyWindow.lua` 4 | v1.85.0 | Superseded |
 | [19.5.12.6.6.4](./Widgets/version-19.5.12.6.6.4-docs.md) | `Widgets.lua` 19 · `WidgetsReorder.lua` 5 · `WidgetsDragHandle.lua` 12 · `WidgetsLineChart.lua` 6 · `WidgetsAutocomplete.lua` 6 · **`WidgetsCopyWindow.lua` 4** (a 30 high title bar) | v1.85.0 | Superseded |
@@ -356,7 +357,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [37.4.44.2.7.1.8.15.2.4.18.13.5.5.7.6.10.1.1.4](./Options/version-37.4.44.2.7.1.8.15.2.4.18.13.5.5.7.6.10.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 4 · `OptionsWidgets.lua` 44 · `OptionsFlow.lua` 2 · `OptionsIds.lua` 7 · `OptionsIdSuggest.lua` 1 · `OptionsIdList.lua` 8 · `OptionsTabs.lua` 15 · `OptionsTabbed.lua` 2 · `OptionsCombat.lua` 4 · `OptionsCompose.lua` 18 (a bar border row under a skin's None) · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · `OptionsKeybinds.lua` 7 · `OptionsAppearance.lua` 6 · **`OptionsSkinPicker.lua` 10** (its header on the band, `R5-L3`; its open list closes on an outside press, `R5-L4`) (the one-time skin notice, `O.SkinNotice`) · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.85.0 | **Current** |
+| [37.4.44.2.7.2.9.15.2.4.18.13.5.5.7.6.10.1.1.4](./Options/version-37.4.44.2.7.2.9.15.2.4.18.13.5.5.7.6.10.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 4 · `OptionsWidgets.lua` 44 · `OptionsFlow.lua` 2 · `OptionsIds.lua` 7 · **`OptionsIdSuggest.lua` 2** (a row's icon cropped 0.07 and on an owned page edged in `icon.outline`, `R5-L5`) · **`OptionsIdList.lua` 9** (an entry's icon cropped 0.07 and on an owned page edged in `icon.outline`, on a frame the list owns, `R5-L5`) · `OptionsTabs.lua` 15 · `OptionsTabbed.lua` 2 · `OptionsCombat.lua` 4 · `OptionsCompose.lua` 18 (a bar border row under a skin's None) · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · `OptionsKeybinds.lua` 7 · `OptionsAppearance.lua` 6 · `OptionsSkinPicker.lua` 10 (its header on the band, `R5-L3`; its open list closes on an outside press, `R5-L4`) (the one-time skin notice, `O.SkinNotice`) · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.85.0 | **Current** |
+| [37.4.44.2.7.1.8.15.2.4.18.13.5.5.7.6.10.1.1.4](./Options/version-37.4.44.2.7.1.8.15.2.4.18.13.5.5.7.6.10.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 4 · `OptionsWidgets.lua` 44 · `OptionsFlow.lua` 2 · `OptionsIds.lua` 7 · `OptionsIdSuggest.lua` 1 · `OptionsIdList.lua` 8 · `OptionsTabs.lua` 15 · `OptionsTabbed.lua` 2 · `OptionsCombat.lua` 4 · `OptionsCompose.lua` 18 (a bar border row under a skin's None) · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · `OptionsKeybinds.lua` 7 · `OptionsAppearance.lua` 6 · **`OptionsSkinPicker.lua` 10** (its header on the band, `R5-L3`; its open list closes on an outside press, `R5-L4`) (the one-time skin notice, `O.SkinNotice`) · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.85.0 | Superseded |
 | [37.4.44.2.7.1.8.15.2.4.18.13.5.5.7.6.9.1.1.4](./Options/version-37.4.44.2.7.1.8.15.2.4.18.13.5.5.7.6.9.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 4 · `OptionsWidgets.lua` 44 · `OptionsFlow.lua` 2 · `OptionsIds.lua` 7 · `OptionsIdSuggest.lua` 1 · `OptionsIdList.lua` 8 · `OptionsTabs.lua` 15 · `OptionsTabbed.lua` 2 · **`OptionsCombat.lua` 4** (an AceGUI pullout on a Ka0s surface closes on a press outside it) · `OptionsCompose.lua` 18 (a bar border row under a skin's None) · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · `OptionsKeybinds.lua` 7 · `OptionsAppearance.lua` 6 · `OptionsSkinPicker.lua` 9 (the one-time skin notice, `O.SkinNotice`) · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.85.0 | Superseded |
 | [37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.9.1.1.4](./Options/version-37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.9.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 4 · `OptionsWidgets.lua` 44 · `OptionsFlow.lua` 2 · `OptionsIds.lua` 7 · `OptionsIdSuggest.lua` 1 · `OptionsIdList.lua` 8 · `OptionsTabs.lua` 15 · `OptionsTabbed.lua` 2 · `OptionsCombat.lua` 3 · `OptionsCompose.lua` 18 (a bar border row under a skin's None) · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · `OptionsKeybinds.lua` 7 · `OptionsAppearance.lua` 6 · `OptionsSkinPicker.lua` 9 (the one-time skin notice, `O.SkinNotice`) · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.85.0 | Superseded |
 | [37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4](./Options/version-37.4.44.2.7.1.8.15.2.3.18.13.5.5.7.6.8.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 4 · `OptionsWidgets.lua` 44 · `OptionsFlow.lua` 2 · `OptionsIds.lua` 7 · `OptionsIdSuggest.lua` 1 · `OptionsIdList.lua` 8 · `OptionsTabs.lua` 15 · `OptionsTabbed.lua` 2 · `OptionsCombat.lua` 3 · `OptionsCompose.lua` 18 (a bar border row under a skin's None) · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · `OptionsKeybinds.lua` 7 · `OptionsAppearance.lua` 6 · `OptionsSkinPicker.lua` 8 (a skin picker tooltip draws one line however long) · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.85.0 | Superseded |
@@ -571,6 +573,34 @@ A minor bump is not released until its API document exists. The full order is in
 
 Never edit a superseded document to describe new behavior. The point of the folder is that an
 adopter on an old copy reads what their copy actually does.
+
+## Icon art: the rule
+
+Every Blizzard icon art a Ka0s surface draws (an item, spell, spec, class or currency fileID or path)
+follows one rule, the owner's for the fifth smoke round of the full skinning run (Ka0sAddonsCommonTasks
+`docs/2026-11-03-SMOKE_ROUND5/`, the lead's call 9). The library's own sites follow it from Options
+37.4.44.2.7.2.9.15.2.4.18.13.5.5.7.6.10.1.1.4 and Widgets 22.5.12.6.7.5; a host's sites are the host's.
+
+| Where the icon is | Crop | Edge |
+|---|---|---|
+| A window, or a settings page | at least 0.07 a side | 1 physical px in `icon.outline`: `S.IconBorder(target, { fromSkin = true })`, no `hud` |
+| The HUD, and a toast (Drop Watcher's included) | at least 0.07 a side | 1 physical px in `icon.border`: `S.IconBorder(target, { fromSkin = true, hud = true })`, or a host's own edge from `icon.border` |
+| Inline `\|T` markup in a tooltip or chat line | 5..59 of 64 a side (0.078): `W.IconText(icon, size)`, or `:0:0:64:64:5:59:5:59` | none: markup cannot take one |
+| An atlas glyph, a Ka0s catalog mark (`Media.Icon`, `S.Mark`, `S.MarkText`), round art (class circles, ReadyCheck and raid-marker art) | exempt | exempt |
+
+- **The crop.** `S.IconBorder` zooms its icon to 0.07 itself (`opts.zoom`), and only ever tightens a
+  host's crop, so a host's 0.08 stands. A Texture the host crops itself passes `zoom = false` or
+  leaves the zoom to agree with it.
+- **An icon that stands alone in a window** is a framed texture: a Texture with `S.IconBorder` on it
+  (or on its frame), never bare art. That is what the id list entry, the id suggestion rows and the
+  autocomplete rows are.
+- **A pooled widget's image is never the edge's target.** AceGUI pools a `Label`'s or an `Icon`'s
+  image Texture across every addon and never hides it, so an edge recorded on it outlives the widget.
+  Crop through the widget's own texcoords (`SetImage(icon, 0.07, 0.93, 0.07, 0.93)`, which AceGUI
+  resets on its next `SetImage`), and edge a frame of the host's own laid over the image, handed back
+  on the widget's release, as `O.IdList` does.
+- A host's optional extra edge, such as Drop Watcher's quality border, is the host's and is not this
+  rule's.
 
 ## Related contracts that are not API
 
