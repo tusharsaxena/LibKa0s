@@ -694,7 +694,7 @@ Total.
 - skin remap: the record keeps the caller's remap, so a repaint replays it
 - skin remap: under eui a remapped call is the library's, from EllesmereUI's colors
 
-### test_skin_icon_border.lua (18)
+### test_skin_icon_border.lua (21)
 
 - skin icon border: SkinDefs is at minor 15 and the schema's HUD group carries the family
 - skin icon border: Ka0s Default's is Solid 1px, its HUD edge black and its outline #4D4D57
@@ -707,6 +707,9 @@ Total.
 - skin icon border: the 1 px is one physical pixel at any UI scale, with or without fromSkin
 - skin icon border: a skin whose icon.borderStyle is None still draws the outline
 - skin icon border: SquareIcon's edge is icon.outline, else icon.border
+- skin icon border: opts.hud draws icon.border in every skin, black under Ka0s Default, never icon.outline
+- skin icon border: without opts.hud, or hud false, the edge is still icon.outline
+- skin icon border: opts.hud survives a replay and skin flips, and a skin with no icon.border falls past the outline
 - skin icon border: the icon is zoomed 0.07 by default, a frame's icon or a Texture itself
 - skin icon border: opts.zoom overrides the zoom, false leaves the coords alone, a frame with no icon is left
 - skin icon border: P.unpaint gives the icon its own coords back
@@ -4546,7 +4549,7 @@ Total.
 | test_skin_outline.lua | 19 |
 | test_skin_owner_tokens.lua | 17 |
 | test_skin_remap.lua | 12 |
-| test_skin_icon_border.lua | 18 |
+| test_skin_icon_border.lua | 21 |
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 41 |
 | test_skin_hud_tokens.lua | 6 |
@@ -4697,4 +4700,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **3983** |
+| **Total** | **3986** |

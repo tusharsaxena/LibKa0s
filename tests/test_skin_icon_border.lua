@@ -251,6 +251,83 @@ test("skin icon border: SquareIcon's edge is icon.outline, else icon.border", fu
   assertEqual(F.rgba(survey(m, F.region(Skin, b, "edgeTop")).color), "1,0,0,1", "a skin with no outline: icon.border")
 end)
 
+-- ── opts.hud (R4-L4 of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND4, R4_ADDENDUM_HUD_ICON_EDGE.md) ──
+-- The owner's scope answer ("I prefer the HUD icons to keep black edges", R4_SIGNOFF.md): an icon a
+-- HUD edges through S.IconBorder draws `icon.border`, the HUD token R4-L3 left alone, and never
+-- `icon.outline`, the window outline.
+
+--- The four edges' colors of `f`, each checked against `want`.
+local function edgesAre(m, Skin, f, want, label)
+  for _, side in ipairs({ "Top", "Bottom", "Left", "Right" }) do
+    local r = survey(m, F.region(Skin, f, "edge" .. side))
+    assertEqual(F.rgba(r.color), want, label .. ": " .. side)
+    assertTrue(r.shown, label .. ": " .. side .. " shown")
+  end
+end
+
+test("skin icon border: opts.hud draws icon.border in every skin, black under Ka0s Default, never icon.outline", function()
+  -- red under: drawIconEdge reading icon.outline first for every caller, which turned DpsRace's race
+  -- HUD rows, MultiMeters' row icons and PartyFrameEnhanced's cast icon #4D4D57 under Ka0s Default.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local f, g = m.CreateFrame("Frame", nil, m.UIParent), m.CreateFrame("Frame", nil, m.UIParent)
+  S.IconBorder(f, { hud = true })
+  S.IconBorder(g, { hud = true, fromSkin = true })
+  for _, key in ipairs(KEYS) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    local want = F.tok(Skin, key, "icon.border")
+    assertTrue(want ~= "nil", key .. ": the skin states its HUD edge")
+    edgesAre(m, Skin, f, want, key .. " hud")
+    edgesAre(m, Skin, g, want, key .. " hud fromSkin")
+  end
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  local top = F.rgba(survey(m, F.region(Skin, f, "edgeTop")).color)
+  assertEqual(top, "0,0,0,1", "Ka0s Default's HUD edge is black")
+  assertTrue(top ~= F.tok(Skin, "ka0s", "icon.outline"), "not the window outline")
+  assertEqual(edgeSizes(m, Skin, S, g, { hud = true, fromSkin = true }),
+    "#2:SetHeight(1)\n#3:SetHeight(1)\n#4:SetWidth(1)\n#5:SetWidth(1)", "still the 1 px outline")
+end)
+
+test("skin icon border: without opts.hud, or hud false, the edge is still icon.outline", function()
+  -- red under: hud read as a truthy default, or the window outline moved with the HUD's.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, OWNER)
+  local f, g = m.CreateFrame("Frame", nil, m.UIParent), m.CreateFrame("Frame", nil, m.UIParent)
+  S.IconBorder(f, { fromSkin = true })
+  S.IconBorder(g, { hud = false })
+  for _, key in ipairs(KEYS) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    edgesAre(m, Skin, f, F.tok(Skin, key, "icon.outline"), key .. " window")
+    edgesAre(m, Skin, g, F.tok(Skin, key, "icon.outline"), key .. " hud false")
+  end
+end)
+
+test("skin icon border: opts.hud survives a replay and skin flips, and a skin with no icon.border falls past the outline", function()
+  -- red under: the flag dropped from the recorded call, so a repaint or a skin switch drew the
+  -- outline; or a hud edge with no icon.border reading icon.outline before divider.
+  local m, Skin = F.env()
+  Skin:RegisterSkin({ key = "nohud", tokens = { ["icon.outline"] = { 1, 0, 0, 1 }, ["icon.border"] = false,
+    divider = { 0.5, 0.5, 0.5, 1 } } })
+  local S = F.owner(Skin, OWNER)
+  local f = m.CreateFrame("Frame", nil, m.UIParent)
+  local tex = f:CreateTexture()
+  S.IconBorder(f, { hud = true, fromSkin = true })
+  S.IconBorder(tex, { hud = true })
+  Skin:Repaint(OWNER)
+  edgesAre(m, Skin, f, "0,0,0,1", "after a replay")
+  edgesAre(m, Skin, tex, "0,0,0,1", "a Texture after a replay")
+  for _, key in ipairs({ "glass", "ember", "ka0s", "midnight", "forever", "ka0s" }) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    edgesAre(m, Skin, f, F.tok(Skin, key, "icon.border"), key .. " after a flip")
+    edgesAre(m, Skin, tex, F.tok(Skin, key, "icon.border"), key .. " a Texture after a flip")
+  end
+  Skin:SetChoice(OWNER, "ka0s", "nohud")
+  edgesAre(m, Skin, f, "0.500,0.500,0.500,1", "no icon.border: divider, never the outline")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  Skin:Repaint(OWNER)
+  edgesAre(m, Skin, f, "0,0,0,1", "back to black")
+end)
+
 -- ── the zoom (R3-L3, images 88 to 90: the icon's own edge showed inside the border) ──────────
 
 local function texCoord(m, t) return table.concat(survey(m, t).texCoord or {}, ",") end
