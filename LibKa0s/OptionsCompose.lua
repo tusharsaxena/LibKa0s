@@ -26,7 +26,7 @@
 local lib = LibStub and LibStub("LibKa0s-Options-1.0", true)
 if not lib then return end
 
-local COMPOSE_MINOR = 18
+local COMPOSE_MINOR = 19
 -- Minor 8: O.StrataTooltip(values[, strings]), the one tooltip every player strata row carries
 -- (frame-layering-§1, options-ui-§16).
 -- Minor 9: MasterControls takes `notes`, `resetPositionTooltip` and `lockIsPreview`, the only ways a
@@ -65,6 +65,10 @@ local COMPOSE_MINOR = 18
 -- Minor 18 (FS-FIX of the same bundle, the owner's rulings of 2026-11-01): a skin's None leaves the bar
 -- border's rows the player's and live, Skin:Resolve deferring with them; a real style in a skin
 -- disables them, Show border included, which reads true meanwhile.
+-- Minor 19 (R6-SIM-L of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND6, the owner's "a sim checkbox
+-- in settings (next to test)"): MasterControls takes `isSimMode` and `toggleSim`, the launcher
+-- descriptor's own pair, and with both draws a session-only Sim mode row beside Test mode, or beside
+-- Lock frame where the host has no Test mode row (THE SIM ROW, below). Without them nothing moves.
 -- Paired on the SHELL's minor as well as this file's own — see OptionsScroll.lua for why the
 -- file's own counter is not enough.
 if lib.__composeMinor and lib.__composeMinor >= COMPOSE_MINOR
@@ -448,6 +452,56 @@ local function emitNoted(ms, rows, notes, leaf, row)
   return out
 end
 
+-- THE SIM ROW (compose minor 19, options-ui-§15). An addon with a simulation shows a Sim mode checkbox
+-- beside Test mode. The host hands in the pair its launcher already carries (Launcher minor 7):
+-- `isSimMode()`, whether the sim runs, and `toggleSim()`, the act of its `/<slash> sim` verb, so the
+-- box, the launcher's Sim mode entry and the slash verb are one act. The row is a SESSION row with
+-- the host's hooks as its own get / set: nothing is stored, and a reload ends the sim as it always
+-- did. Its set takes a VALUE, never a bare toggle: Reset all settings walks the session rows and
+-- writes each one's default, so a set that toggled unconditionally would START a sim on a reset.
+-- set(v) calls toggleSim() only when v differs from isSimMode(), and the flow engine's write then
+-- re-reads the row (`set` -> RefreshScalars), so a start the host refused -- in combat, or a prepare
+-- step that failed -- leaves the box unticked rather than echoing the click.
+local SIM_TIP = "Run the addon's simulation, the same as its sim slash command, so the display plays scripted data. Untick it to stop the simulation. Session state: a reload ends it."
+
+--- The host's two sim hooks, or nil unless BOTH are functions: a box that could tick but not read,
+--- or read but not act, is a dead control that looks alive.
+local function simHooks(spec)
+  if type(spec.isSimMode) == "function" and type(spec.toggleSim) == "function" then
+    return spec.isSimMode, spec.toggleSim
+  end
+end
+
+--- Emit the Sim mode row when the host passed its hooks, at `startsLine` (true or nil). The get / set
+--- are attached AFTER emit, so a `bind` spec cannot turn them into a record field's.
+local function emitSim(ms, rows, notes, spec, startsLine)
+  local isSim, toggle = simHooks(spec)
+  if not isSim then return nil end
+  local row = emitNoted(ms, rows, notes, "simMode", {
+    path = spec.simPath or "state.sim",
+    type = "bool", label = "Sim mode", tooltip = SIM_TIP,
+    sessionOnly = true, default = false, startsLine = startsLine,
+  })
+  if not row then return nil end
+  local function get() return isSim() and true or false end
+  row.get = get
+  row.set = function(value)
+    if (value and true or false) ~= get() then toggle() end
+  end
+  return row
+end
+
+--- Arm `ctx`'s panel to refresh its widgets in place on every show, once per ctx (THE SIM ROW). A
+--- ctx with no hookable panel, the button recorder's `{}` among them, is left alone.
+local function armSimShow(O, ctx)
+  local panel = type(ctx) == "table" and rawget(ctx, "panel") or nil
+  if not (panel and panel.HookScript) or rawget(ctx, "__simShowArmed") then return end
+  rawset(ctx, "__simShowArmed", true)
+  panel:HookScript("OnShow", function()
+    if O.RefreshPanel then pcall(O.RefreshPanel, ctx, false) end
+  end)
+end
+
 --- The canonical rows of the Master controls tab, in order, then the host's extras.
 ---
 --- THE FRAMELESS PACKING (compose minor 9, options-ui-§15, U-09c). With Lock frame omitted -- the
@@ -476,17 +530,23 @@ local function masterRows(ms, spec, notes)
     type = "number", label = "Master opacity", tooltip = "Opacity of the whole addon's display.",
     isPercent = true, min = 0, max = 1, step = 0.05, default = 1,
   })
-  emitNoted(ms, rows, notes, "locked", {
+  local lockRow = emitNoted(ms, rows, notes, "locked", {
     type = "bool", label = "Lock frame",
     tooltip = spec.lockIsPreview and LOCK_PREVIEW_TIP or "Stop the frame being dragged.",
     default = false, startsLine = true,
   })
+  -- Sim mode BESIDE LOCK FRAME (compose minor 19): a host with a sim and no Test mode row -- most
+  -- often one whose unlocked view is its preview, `lockIsPreview` -- has Lock frame as the switch
+  -- nearest a test mode, so the sim pairs there and Debug console opens the next line, Minimap
+  -- button beside it. With a Test mode row it sits beside Test mode instead (below).
+  local simBesideLock = (lockRow and not spec.testModePath) and emitSim(ms, rows, notes, spec, nil) or nil
   local consoleRow = emitNoted(ms, rows, notes, "debugConsole", {
     path = spec.debugConsolePath or "state.debugConsole",
     type = "bool", label = "Debug console", tooltip = "Show this session's developer log window.",
     -- Session state, never persisted: a console left open is not a setting the next character
     -- inherits.
     sessionOnly = true,
+    startsLine = simBesideLock and true or nil,
   })
   -- THE FOURTH LINE OF THE CANONICAL SET: [Minimap button] [Test mode] (options-ui-§15, compose
   -- minor 7). Which of the two opens the line is not a preference and not a tidy-up: EVERY addon
@@ -510,15 +570,17 @@ local function masterRows(ms, spec, notes)
       tooltip = "Show this addon's button on the minimap.",
       default = true,
       -- The frameless packing: beside Debug console when Lock frame is omitted and the console
-      -- row was emitted; otherwise the first column of its own line, as at minor 7.
-      startsLine = not (ms.omit.locked and consoleRow) or nil,
+      -- row was emitted; otherwise the first column of its own line, as at minor 7. Sim mode beside
+      -- Lock frame moves the console to the first column, so Minimap button packs beside it too.
+      startsLine = not ((ms.omit.locked or simBesideLock) and consoleRow) or nil,
     })
   end
   -- The test mode, for an addon whose preview has a switch of its own (options-ui-§15, compose
   -- minor 6). Session state like the console row, and absent unless the host names its path: a
   -- checkbox shows whether the mode is on, which a button beside the resets could not.
+  local testRow
   if spec.testModePath then
-    emitNoted(ms, rows, notes, "testMode", {
+    testRow = emitNoted(ms, rows, notes, "testMode", {
       path = spec.testModePath,
       type = "bool", label = "Test mode",
       tooltip = "Show placeholder content, so the display can be seen and placed without waiting for the real thing.",
@@ -528,6 +590,15 @@ local function masterRows(ms, spec, notes)
       -- is no minimap row, or when the minimap row has packed beside the console.
       sessionOnly = true, startsLine = (not minimapRow or not minimapRow.startsLine) or nil,
     })
+  end
+  -- Sim mode BESIDE TEST MODE (compose minor 19): straight after it, pairing when Test mode opened
+  -- its own line and opening the next one when Test mode sits in the second column. With no Test
+  -- mode row and no Lock frame to pair with, it takes Test mode's slot, by Test mode's own rule.
+  if not simBesideLock then
+    local opens
+    if testRow then opens = not testRow.startsLine or nil
+    else opens = (not minimapRow or not minimapRow.startsLine) or nil end
+    emitSim(ms, rows, notes, spec, opens)
   end
   return appendExtra(ms, rows)
 end
@@ -861,6 +932,7 @@ function lib.__AttachCompose(O, d)
   ---   [Master scale]         [Master opacity]
   ---   [Lock frame]           [Debug console]
   ---   [Minimap button]       [Test mode]
+  ---   [Sim mode]
   ---   [Reset position]       [Reset all settings]
   ---
   --- `spec` additionally takes:
@@ -891,12 +963,32 @@ function lib.__AttachCompose(O, d)
   ---                              minimapPath (options-ui-§15). Taken VERBATIM, like the console path.
   ---                              Omit it when the addon has no test mode: most have none, and a
   ---                              one-shot test action is not one. The host binds get/set.
+  ---   isSimMode        function  since compose minor 19, with `toggleSim`: the addon's simulation,
+  ---   toggleSim        function  as a session-only "Sim mode" checkbox. The SAME pair the launcher
+  ---                              descriptor takes (Launcher minor 7): isSimMode() answers whether
+  ---                              the sim runs, toggleSim() is the act of `/<slash> sim`. The row's
+  ---                              get / set are these hooks, so the host binds nothing; its
+  ---                              descriptor's get / set must answer a row's own get / set, as
+  ---                              LibKa0s-Schema's S.Get / S.Set do. Ticking starts the sim,
+  ---                              unticking stops it, a refused start re-reads as unticked, and
+  ---                              Reset all settings stops a running sim (default false). Without
+  ---                              both functions there is no row and nothing else moves. Placed
+  ---                              straight after Test mode (pairing beside it, or opening the next
+  ---                              line when Test mode is in the second column), or beside Lock
+  ---                              frame when there is no testModePath; with neither, in Test
+  ---                              mode's slot. The box re-reads the sim on every RefreshScalars, so
+  ---                              the host calls O.RefreshScalars() from its sim's listener
+  ---                              (Sim:AddListener), and on each show of the panel the tail is
+  ---                              drawn on. Leaf `simMode` (omit, notes).
+  ---   simPath          string    since compose minor 19: the Sim mode row's path, VERBATIM, like the
+  ---                              console path. Defaults to "state.sim". Nothing is stored there.
   ---   leadButton       table     { text, tooltip, onClick } — ONE act of the host's own, closing
   ---                              the tab beside the resets. Since compose minor 2.
   ---   notes            table     since compose minor 9: { <leaf> = "One sentence." }, appended after
   ---                              the canonical tooltip of that row or button, with one space. The
   ---                              leaves are enabled, visibility, scale, alpha, locked, debugConsole,
-  ---                              minimap and testMode, and the buttons resetPosition and resetAll.
+  ---                              minimap, testMode and simMode (minor 19), and the buttons
+  ---                              resetPosition and resetAll.
   ---                              Keyed by the CANONICAL leaf, so a `keys` rename keeps its note. A
   ---                              note for an omitted row, or one that is not a non-empty string,
   ---                              does nothing; `extra` rows are the host's and take none. This is
@@ -919,7 +1011,9 @@ function lib.__AttachCompose(O, d)
   ---                         [Debug console]      [Minimap button]
   ---                         [Reset all settings]
   ---   framed, omit.locked:  ... [Debug console] [Minimap button]
-  ---                         [Test mode]
+  ---                         [Test mode]          [Sim mode]
+  ---   no Test mode, a sim:  ... [Lock frame]    [Sim mode]
+  ---                         [Debug console]      [Minimap button]
   ---
   --- `leadButton` exists because §15 fixes the reset buttons' WORDING. An addon with a verb of its
   --- own to put beside them could not draw the pair itself without keeping a second copy of "Reset
@@ -963,7 +1057,12 @@ function lib.__AttachCompose(O, d)
     -- forbids splitting or reordering the canonical two, so there the verb takes its own row ABOVE
     -- rather than displacing a reset. Nothing here invents a third button on one line.
     local lead = spec.leadButton
+    -- The Sim mode box re-reads the sim on each show of its panel (compose minor 19): a sim started
+    -- or ended while the page was hidden, with no host signal, would otherwise show stale until the
+    -- next write. Armed once per ctx, however often the page renders.
+    local simShown = simHooks(spec) ~= nil and not omit.simMode
     return rows, function(ctx)
+      if simShown then armSimShow(O, ctx) end
       if lead and not resetPosition then
         return O.InlineButtonPair(ctx, lead, resetAll)
       end

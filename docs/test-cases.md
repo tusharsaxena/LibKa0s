@@ -3244,6 +3244,25 @@ Total.
 - compose master: the flow engine draws Debug console and Minimap button on one line
 - compose master: OptionsCompose is at minor 9 or later
 
+### test_options_compose_sim.lua (16)
+
+- compose sim: without isSimMode and toggleSim the tab is byte for byte what it was
+- compose sim: with both hooks the tab gains one session-only Sim mode row
+- compose sim: simPath moves the row, notes.simMode follows the tooltip
+- compose sim: it follows Test mode and opens its own line when Test pairs beside Minimap
+- compose sim: it pairs beside Test mode when Test opens its own line
+- compose sim: with no Test mode row it pairs beside Lock frame
+- compose sim: with neither Test mode nor Lock frame it takes Test mode's slot
+- compose sim: the flow engine draws it beside Test mode and beside Lock frame
+- compose sim: the row reads the live sim and toggles only on a change
+- compose sim: ticking starts the sim, unticking stops it
+- compose sim: a refused start leaves the box unticked
+- compose sim: the combat lock's refusal reaches no toggle and leaves the box as it was
+- compose sim: a sim started elsewhere shows on the next refresh and on the panel's show
+- compose sim: Reset all settings stops a running sim and starts none
+- compose sim: the spec is never written and two calls agree
+- compose sim: OptionsCompose is at minor 19
+
 ### test_options_compose_tooltips.lua (12)
 
 - compose tooltips: an entry replaces exactly its leaf's tooltip, every other row byte-identical
@@ -4725,6 +4744,7 @@ Total.
 | test_options_compose.lua | 39 |
 | test_options_compose_arm.lua | 12 |
 | test_options_compose_master.lua | 15 |
+| test_options_compose_sim.lua | 16 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
 | test_options_skin.lua | 22 |
@@ -4787,4 +4807,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4053** |
+| **Total** | **4069** |
