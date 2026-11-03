@@ -992,10 +992,17 @@ local function shellRegions(rec, frame, T)
   P.fill(rec, t, T, "win.bg")
 end
 
--- A frame with a backdrop: Core.ApplySkin with the skin's table, its edge clear (shellEdges draws it).
-local function shellBackdrop(owner, frame, T, style)
+-- The window's body and title face. A frame with a backdrop: Core.ApplySkin with the skin's table, its
+-- edge clear (shellEdges draws it); a frame with none: the fill region. Then `frame.title`'s font.
+local function shellBody(owner, rec, frame, T, style)
   local c = core()
-  if c and type(c.ApplySkin) == "function" then c.ApplySkin(frame, shellSkin(owner, T, style == "flat")) end
+  if not P.hasBackdrop(frame) then
+    shellRegions(rec, frame, T)
+  elseif c and type(c.ApplySkin) == "function" then
+    c.ApplySkin(frame, shellSkin(owner, T, style == "flat"))
+  end
+  local title = rawget(frame, "title")
+  if P.isFS(title) then P.font(owner, rec, title, "title") end
 end
 
 -- The slots `opts.tokens` remaps on a window (minor 11), and the fill slots among every box's.
@@ -1030,16 +1037,9 @@ prim.Shell = function(owner, frame, opts)
   T = P.remap(owner, T, opts.tokens, SHELL_SLOTS, FILL_SLOTS, "Shell")
   local style = T["win.borderStyle"] or "flat"
   if rec.regions.stock then P.fadeAll(rec, P.stockRegions(frame, opts)) end
-  if P.hasBackdrop(frame) then
-    shellBackdrop(owner, frame, T, style)
-  else
-    shellRegions(rec, frame, T)
-  end
+  shellBody(owner, rec, frame, T, style)
   shellEdges(rec, frame, T, opts, style)
-  local inset = style == "flat" and T["win.borderSize"] or 1
-  shellBands(rec, frame, T, opts, inset or 1)
-  local title = rawget(frame, "title")
-  if P.isFS(title) then P.font(owner, rec, title, "title") end
+  shellBands(rec, frame, T, opts, style == "flat" and T["win.borderSize"] or 1)
   if P.layBand then P.layBand(owner, rec, frame, T) end   -- S.Band's holder (SkinPaintExtras minor 17)
 end
 

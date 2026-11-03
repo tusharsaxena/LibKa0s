@@ -224,6 +224,23 @@ local function chain(band, list, side, pad, gap)
   return reach
 end
 
+--- `bars` (drag strips) take the band's whole rect.
+local function layBars(band, bars)
+  for _, bar in ipairs(type(bars) == "table" and bars or {}) do
+    if P.isFrame(bar) then bar:ClearAllPoints(); bar:SetAllPoints(band) end
+  end
+end
+
+--- `spec.title` on the band by `spec.align`, else `title.align`, clear of the controls that reach
+--- `left` and `right` in from its edges (`spec.inset` with none), and justified to it.
+local function headerTitle(rec, band, T, spec, left, right, gap)
+  local fs = spec.title
+  if not P.isFS(fs) then return end
+  local align = spec.align or T["title.align"] or "CENTER"
+  anchorTitle(band, fs, align, left > 0 and left + gap or spec.inset, right > 0 and right + gap or spec.inset)
+  justify(rec, fs, align)
+end
+
 --- S.Header(frame, spec): a window's header on its band (S.Band). `spec.right` and `spec.left` are its
 --- controls, outermost first, each anchored RIGHT or LEFT to the band at y 0, `spec.pad` (6) in and
 --- `spec.gap` (4) apart, an entry `{ frame, width, x }` naming its own; `spec.title` is anchored by
@@ -237,17 +254,11 @@ prim.Header = function(owner, frame, spec)
   local T = P.T(owner)
   local band = P.layBand(owner, rec, frame, T)
   if not band then return end
-  for _, bar in ipairs(type(spec.bars) == "table" and spec.bars or {}) do
-    if P.isFrame(bar) then bar:ClearAllPoints(); bar:SetAllPoints(band) end
-  end
+  layBars(band, spec.bars)
   local pad, gap = spec.pad or HEADER_PAD, spec.gap or HEADER_GAP
   local right = chain(band, spec.right, "RIGHT", pad, gap)
   local left = chain(band, spec.left, "LEFT", pad, gap)
-  local fs = spec.title
-  if not P.isFS(fs) then return end
-  local align = spec.align or T["title.align"] or "CENTER"
-  anchorTitle(band, fs, align, left > 0 and left + gap or spec.inset, right > 0 and right + gap or spec.inset)
-  justify(rec, fs, align)
+  headerTitle(rec, band, T, spec, left, right, gap)
 end
 
 --- S.Divider(target, opts): a rule. A texture is colored in place (`SetColorTexture`, four
