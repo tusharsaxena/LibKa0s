@@ -1040,6 +1040,22 @@ test("toast stack: stack and stackGrow may be getters, read again on Refresh", f
   assertEqual(t:FrameFor("c").__point[1], "BOTTOM")
 end)
 
+test("toast stack: Refresh hands the stack back to the descriptor after a SetStack", function()
+  local n, grow = 2, "DOWN"
+  local t = newToast({ stack = function() return n end, stackGrow = function() return grow end })
+  showKeys(t, { "a", "b", "c" })
+  t:SetStack(3, "UP")
+  assertEqual(t:Stats().stack, 3)
+  n, grow = 1, "DOWN"   -- a profile switch: the getters answer the new profile
+  assertEqual(t:Stats().stack, 3, "SetStack holds until the next Refresh")
+  t:Refresh()
+  local s = t:Stats()
+  assertEqual(s.stack, 1, "the getter answers again")
+  assertEqual(s.grow, "DOWN")
+  assertEqual(joined(t:Visible()), "a")
+  assertEqual(joined(s.keys), "b,c")
+end)
+
 test("toast stack: a stack that is not a count of at least one is one", function()
   for _, bad in ipairs({ 0, -2, "3", true }) do
     local t = newToast({ stack = bad })

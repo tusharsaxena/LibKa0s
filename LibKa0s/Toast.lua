@@ -619,12 +619,17 @@ function METHODS:Attach(widget)
 end
 
 --- Re-read the scale, the saved position and the stack (after the host's settings rows or a
---- profile switch).
-function METHODS:Refresh() fitStack(state(self)) end
+--- profile switch). The descriptor answers again: an earlier SetStack lasts until this call.
+function METHODS:Refresh()
+  local S = state(self)
+  S.stackN, S.stackGrow = nil, nil
+  fitStack(S)
+end
 
 --- How many toasts show at once and the way they grow, at runtime (the host's settings rows):
---- `n` replaces d.stack and `grow` ("DOWN" or "UP") d.stackGrow; a nil argument leaves that half as
---- it is. A smaller stack sends its tail back to the head of the queue; a larger one fills.
+--- `n` replaces d.stack and `grow` ("DOWN" or "UP") d.stackGrow until the next Refresh; a nil
+--- argument leaves that half as it is. A smaller stack sends its tail back to the head of the queue;
+--- a larger one fills.
 --- Answers the stack and the direction now in force.
 function METHODS:SetStack(n, grow)
   local S = state(self)

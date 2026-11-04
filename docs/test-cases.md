@@ -411,7 +411,7 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
-### test_toast.lua (86)
+### test_toast.lua (87)
 
 - toast: the major loads at minor 4 and reports its one file
 - toast: without Core the major is absent (no NewLibrary)
@@ -484,6 +484,7 @@ Total.
 - toast stack: Stats keeps every v1 field and adds the stack's
 - toast stack: SetStack shrinks the stack, sending the tail back to the head of the queue
 - toast stack: stack and stackGrow may be getters, read again on Refresh
+- toast stack: Refresh hands the stack back to the descriptor after a SetStack
 - toast stack: a stack that is not a count of at least one is one
 - toast stack: dragging any toast moves the head, and the saved point is the head's
 - toast stack: a head closed mid-drag stops moving and the next head takes the saved point
@@ -4774,7 +4775,7 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
-| test_toast.lua | 86 |
+| test_toast.lua | 87 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -4945,4 +4946,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4191** |
+| **Total** | **4192** |
