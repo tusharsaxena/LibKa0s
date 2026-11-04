@@ -144,10 +144,10 @@ end
 
 -- ── the records ──────────────────────────────────────────────────────────────────────────────
 --
--- Each frame the shell builds is a record R = { S, frame, entry, timer, dueAt, remaining, watch },
--- kept in S.pool in build order and reused. S.shown lists the records on screen, head first; a
--- record not in it has no entry and is free. Without d.stack there is one record, and the shell is
--- the version 3 toast.
+-- Each frame the shell builds is a record R = { S, frame, entry, timer, dueAt, remaining, watch,
+-- dragHeld }, kept in S.pool in build order and reused. S.shown lists the records on screen, head
+-- first; a record not in it has no entry and is free. Without d.stack there is one record, and the
+-- shell is the version 3 toast. S.moving names the record a drag moves, while one does.
 
 -- ── the timer ────────────────────────────────────────────────────────────────────────────────
 
@@ -178,6 +178,7 @@ end
 
 local function pause(R)
   cancelWatch(R)   -- the control the pointer entered now owns the resume
+  R.dragHeld = nil  -- a hover or a host's Pause owns it now, not the drag (onDragStart)
   if not (R.entry and R.dueAt) then return end
   R.remaining = math.max(R.dueAt - GetTime(), 0)
   cancelTimer(R)
@@ -186,6 +187,7 @@ end
 local function resume(R)
   cancelWatch(R)
   if not (R.entry and R.remaining) then return end
+  if R.S.moving then R.dragHeld = true; return end   -- a drag holds it; endDrag resumes it
   local left = R.remaining
   R.remaining = nil
   startTimer(R, math.max(left, MIN_RESUME))
@@ -210,10 +212,14 @@ end
 
 -- ── placement ────────────────────────────────────────────────────────────────────────────────
 
+local function savedPoint(S)
+  return validPoint(read(S.d.getPosition)) or validPoint(S.d.defaultPosition) or lib.POINT
+end
+
 --- The scale first, then the saved point in the toast's own units at that scale, so the anchor the
 --- player placed stays where it is whatever the scale. Answers the point's name.
 local function anchorHead(S, f, s)
-  local pt = validPoint(read(S.d.getPosition)) or validPoint(S.d.defaultPosition) or lib.POINT
+  local pt = savedPoint(S)
   f:SetScale(s)
   f:ClearAllPoints()
   f:SetPoint(pt[1], UIParent, pt[2] or pt[1], (tonumber(pt[3]) or 0) / s, (tonumber(pt[4]) or 0) / s)
@@ -238,19 +244,6 @@ local function anchorFollower(f, prev, s, side, grow, gap)
   end
 end
 
---- The head (or, with nothing on screen, the first frame) at the saved point; each toast after it
---- hangs off the one before.
-local function applyLayout(S)
-  local shown = S.shown
-  local head = shown[1] or S.pool[1]
-  if not head then return end
-  local s = scaleOf(S)
-  local side = sideOf(anchorHead(S, head.frame, s))
-  if #shown < 2 then return end
-  local grow, gap = growOf(S), gapOf(S)
-  for i = 2, #shown do anchorFollower(shown[i].frame, shown[i - 1].frame, s, side, grow, gap) end
-end
-
 --- GetPoint answers in the toast's (scaled) units; the host is handed UIParent's.
 local function savePosition(S, f)
   local point, _, relativePoint, x, y = f:GetPoint(1)
@@ -260,25 +253,59 @@ local function savePosition(S, f)
     (tonumber(x) or 0) * s, (tonumber(y) or 0) * s })
 end
 
+--- The drag ends, whatever ended it: the point the player dragged to is saved, and every countdown
+--- the drag held resumes (or, under the pointer, waits for it to leave, as a hover does).
+local function endDrag(S)
+  local moving = S.moving
+  if not moving then return end
+  S.moving = nil
+  moving.frame:StopMovingOrSizing()
+  savePosition(S, moving.frame)
+  for _, R in ipairs(S.shown) do
+    if R.dragHeld then
+      R.dragHeld = nil
+      local f = R.frame
+      if f.IsMouseOver and f:IsMouseOver() == true then watchLeave(R) else resume(R) end
+    end
+  end
+end
+
+--- The head (or, with nothing on screen, the first frame) at the saved point; each toast after it
+--- hangs off the one before. A head mid-drag is left where the pointer has it and only the rest are
+--- anchored; a drag on a frame that is no longer the head ends first, keeping its point.
+local function applyLayout(S)
+  local shown = S.shown
+  local head = shown[1] or S.pool[1]
+  if not head then return end
+  if S.moving and S.moving ~= head then endDrag(S) end
+  local s = scaleOf(S)
+  local side
+  if S.moving == head then side = sideOf(savedPoint(S)[1]) else side = sideOf(anchorHead(S, head.frame, s)) end
+  if #shown < 2 then return end
+  local grow, gap = growOf(S), gapOf(S)
+  for i = 2, #shown do anchorFollower(shown[i].frame, shown[i - 1].frame, s, side, grow, gap) end
+end
+
 -- ── the frame ────────────────────────────────────────────────────────────────────────────────
 
---- A drag on any toast moves the head, and the rest follow it; the saved point is the head's.
+--- A drag on any toast moves the head, and the rest follow it; the saved point is the head's. The
+--- drag holds every countdown on screen, so no toast closes under it (a hover pauses only the toast
+--- the pointer is over, and the head it moves may be another).
 local function onDragStart(R)
   local S = R.S
-  if read(S.d.draggable) ~= true then return end
+  if read(S.d.draggable) ~= true or S.moving then return end
   local head = S.shown[1] or R
   S.moving = head
+  for _, shown in ipairs(S.shown) do
+    if shown.dueAt then
+      pause(shown)
+      shown.dragHeld = true
+    end
+  end
   head.frame:StartMoving()
 end
 
-local function onDragStop(R)
-  local S = R.S
-  local head = S.moving
-  if not head then return end
-  S.moving = nil
-  head.frame:StopMovingOrSizing()
-  savePosition(S, head.frame)
-end
+local function onDragStop(R) endDrag(R.S) end
 
 --- Hover pauses the countdown, leaving resumes it, and a right-click closes: on the frame and on
 --- every control the host attaches, so a pointer moving from the frame onto a button keeps it held.
@@ -400,12 +427,16 @@ end
 local function present(S, entry, at)
   local R = acquire(S)
   if not draw(S, R, entry) then return false end
-  R.entry, R.remaining = entry, nil
+  R.entry, R.remaining, R.dragHeld = entry, nil, nil
   table.insert(S.shown, at or #S.shown + 1, R)
   applyLayout(S)
   R.frame:Show()
   playSound(S)
-  if not entry.sticky then startTimer(R, durationOf(S)) end
+  if S.moving and not entry.sticky then
+    R.remaining, R.dragHeld = durationOf(S), true   -- shown mid-drag: its countdown starts at endDrag
+  elseif not entry.sticky then
+    startTimer(R, durationOf(S))
+  end
   debugOut(S, "toast shown (%d waiting)", #S.queue)
   return true
 end
@@ -420,14 +451,11 @@ end
 --- Take one toast down, without showing the next. Answers the entry it held.
 local function takeDown(R)
   local S = R.S
+  if S.moving == R then endDrag(S) end   -- the drag's point is kept, not lost with the toast
   cancelTimer(R)
   cancelWatch(R)
   local entry = R.entry
-  if S.moving == R then
-    R.frame:StopMovingOrSizing()
-    S.moving = nil
-  end
-  R.entry, R.remaining = nil, nil
+  R.entry, R.remaining, R.dragHeld = nil, nil, nil
   R.frame:Hide()
   for i = #S.shown, 1, -1 do
     if S.shown[i] == R then table.remove(S.shown, i) end

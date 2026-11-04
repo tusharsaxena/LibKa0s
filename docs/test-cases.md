@@ -411,7 +411,7 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
-### test_toast.lua (80)
+### test_toast.lua (86)
 
 - toast: the major loads at minor 4 and reports its one file
 - toast: without Core the major is absent (no NewLibrary)
@@ -487,6 +487,12 @@ Total.
 - toast stack: a stack that is not a count of at least one is one
 - toast stack: dragging any toast moves the head, and the saved point is the head's
 - toast stack: a head closed mid-drag stops moving and the next head takes the saved point
+- toast stack: a drag from a follower holds every countdown, so the head it moves cannot expire
+- toast stack: a leave mid-drag does not restart a countdown; the drag's end does
+- toast stack: a toast pumped in mid-drag does not yank the moving head, and waits to count
+- toast stack: a head taken down mid-drag saves the drag's point, and the next head takes it
+- toast stack: a preview put at the head mid-drag ends the drag where the player left it
+- toast stack: a host's Pause before a drag is not undone when the drag ends
 - toast stack: frames are pooled: a closed toast's frame carries the next one
 - toast stack: each frame has its own close mark, closing only its toast
 - toast stack: Attach from the builder wires the control to the toast it was drawn on
@@ -4768,7 +4774,7 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
-| test_toast.lua | 80 |
+| test_toast.lua | 86 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -4939,4 +4945,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4185** |
+| **Total** | **4191** |

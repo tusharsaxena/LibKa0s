@@ -1077,6 +1077,102 @@ test("toast stack: a head closed mid-drag stops moving and the next head takes t
   assertEqual(fb.__point[2], m.UIParent)
 end)
 
+test("toast stack: a drag from a follower holds every countdown, so the head it moves cannot expire", function()
+  local t, m = newToast({ stack = 2, draggable = true, duration = 8 })
+  m.__now = 0
+  showKeys(t, { "a", "b" })
+  local fa, fb = t:FrameFor("a"), t:FrameFor("b")
+  fb:__fire("OnEnter")
+  fb.__over = true
+  fb:__fire("OnDragStart")
+  assertEqual(live(m), 0, "the head's countdown is held too, not only the hovered follower's")
+  m.__fireTimers()
+  assertEqual(joined(t:Visible()), "a,b", "nothing expired under the drag")
+  fa.__point = { "CENTER", m.UIParent, "CENTER", 10, 20 }
+  fb:__fire("OnDragStop")
+  assertFalse(fa.__moving)
+  assertEqual(live(m), 1, "the head resumes; the follower under the pointer stays paused")
+  assertEqual(lastTimer(m).delay, 8, "with the time it had left")
+  fb.__over = false
+  fb:__fire("OnLeave")
+  assertEqual(live(m), 2, "the follower resumes once the pointer leaves it")
+end)
+
+test("toast stack: a leave mid-drag does not restart a countdown; the drag's end does", function()
+  local t, m = newToast({ stack = 2, draggable = true })
+  showKeys(t, { "a", "b" })
+  local fb = t:FrameFor("b")
+  fb:__fire("OnEnter")
+  fb:__fire("OnDragStart")
+  fb:__fire("OnLeave")
+  assertEqual(live(m), 0, "the drag still holds both")
+  fb:__fire("OnDragStop")
+  assertEqual(live(m), 2)
+end)
+
+test("toast stack: a toast pumped in mid-drag does not yank the moving head, and waits to count", function()
+  local stored
+  local t, m = newToast({ stack = 3, draggable = true,
+    getPosition = function() return stored end, setPosition = function(pt) stored = pt end })
+  showKeys(t, { "a", "b" })
+  local fa, fb = t:FrameFor("a"), t:FrameFor("b")
+  fb:__fire("OnDragStart")
+  fa.__point = { "CENTER", m.UIParent, "CENTER", 10, 20 }
+  t:Show("c", { key = "c" })
+  assertEqual(joined(fa.__point), joined({ "CENTER", m.UIParent, "CENTER", 10, 20 }),
+    "the head is left where the drag has it")
+  assertTrue(fa.__moving)
+  assertEqual(t:FrameFor("c").__point[2], fb, "the new toast hangs off the tail")
+  assertEqual(live(m), 0, "its countdown waits for the drag to end")
+  fb:__fire("OnDragStop")
+  assertEqual(joined(stored), "CENTER,CENTER,10,20")
+  assertEqual(live(m), 3)
+end)
+
+test("toast stack: a head taken down mid-drag saves the drag's point, and the next head takes it", function()
+  local stored
+  local t, m = newToast({ stack = 2, draggable = true,
+    getPosition = function() return stored end, setPosition = function(pt) stored = pt end })
+  showKeys(t, { "a", "b" })
+  local fa, fb = t:FrameFor("a"), t:FrameFor("b")
+  fb:__fire("OnDragStart")
+  fa.__point = { "CENTER", m.UIParent, "CENTER", 10, 20 }
+  t:Remove("a")
+  assertFalse(fa.__moving, "the drag ended with its toast")
+  assertEqual(joined(stored), "CENTER,CENTER,10,20", "the player's placement is kept")
+  assertEqual(joined({ fb.__point[1], fb.__point[3], fb.__point[4], fb.__point[5] }), "CENTER,CENTER,10,20")
+  assertEqual(fb.__point[2], m.UIParent, "the new head sits at the saved point")
+  assertEqual(live(m), 1, "its countdown runs again")
+  fb:__fire("OnDragStop")   -- the button's release, after the drag already ended: nothing more
+  assertEqual(joined(stored), "CENTER,CENTER,10,20")
+end)
+
+test("toast stack: a preview put at the head mid-drag ends the drag where the player left it", function()
+  local stored
+  local t, m = newToast({ stack = 2, draggable = true,
+    getPosition = function() return stored end, setPosition = function(pt) stored = pt end })
+  showKeys(t, { "a", "b" })
+  local fa = t:FrameFor("a")
+  fa:__fire("OnDragStart")
+  fa.__point = { "CENTER", m.UIParent, "CENTER", 10, 20 }
+  t:Preview("sample")
+  assertFalse(fa.__moving)
+  assertEqual(joined(stored), "CENTER,CENTER,10,20")
+  local head = t:Frame()
+  assertEqual(head.__point[2], m.UIParent)
+  assertEqual(head.__point[4], 10, "the preview sits where the drag left the stack")
+  assertEqual(fa.__point[2], head, "the old head hangs off it")
+end)
+
+test("toast stack: a host's Pause before a drag is not undone when the drag ends", function()
+  local t, m = newToast({ stack = 2, draggable = true })
+  showKeys(t, { "a", "b" })
+  t:Pause()
+  t:FrameFor("a"):__fire("OnDragStart")
+  t:FrameFor("a"):__fire("OnDragStop")
+  assertEqual(live(m), 0)
+end)
+
 test("toast stack: frames are pooled: a closed toast's frame carries the next one", function()
   local t, m = newToast({ stack = 2, name = "HostToast" })
   showKeys(t, { "a", "b" })
