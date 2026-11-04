@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-IconBrowser-1.0` |
 | Files and minors | `IconBrowserSources.lua` minor **1** · `IconBrowserWindow.lua` minor **1** · `IconBrowser.lua` minor **1** |
-| Shipped in | v1.86.0 (unreleased) |
+| Shipped in | v1.86.0 |
 | Status | **Current** |
 | Supersedes | [version 1](./version-1-docs.md) (never shipped) — the sources alone, before the browser window joined the major. |
 | Superseded by | — |

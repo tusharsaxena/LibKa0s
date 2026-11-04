@@ -67,6 +67,18 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.86.0, not in the census (2026-11-04).** The release adds a major,
+`LibKa0s-IconBrowser-1.0` (its twelve lib-level members in
+`docs/api/IconBrowser/members-1.1.1.json`, the `spec` fields, the tab descriptor's fields and the
+browser's members in [its document](IconBrowser/version-1.1.1-docs.md)), promoted from Ka0s Quick
+Comms' icon browser for Quick Comms and Outfitter Reborn (OutfitterReborn
+`docs/superpowers/plans/2026-11-04-sheet-window-feedback.md`, M1). None gets a row here yet. **No host
+has adopted it.** Quick Comms (its re-vendor turns `settings/IconBrowser.lua` into the adapter that
+calls `IB:New`) and Outfitter Reborn (its outfit icon picker) are its two intended consumers, both
+**pending**, so the major's verdict is *zero — planned at v1.86.0* until both call `IB:New`.
+DebugLogDiagnostics minor 7 names the major on the report's `LibKa0s running:` line and moves no
+member.
+
 **v1.85.0, not in the census (2026-11-01).** Launcher minor 6 adds the optional descriptor
 field `owner`, which no host passes: the tooltip reads the skin through `name` on all sixteen, and
 `owner` is for a host whose skin owner is not its folder name. It gets no row until the next run.

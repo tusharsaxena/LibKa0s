@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-IconBrowser-1.0` |
 | File | `IconBrowserSources.lua` minor **1** |
-| Shipped in | v1.86.0 (unreleased; the browser window joins the major before the tag) |
+| Shipped in | never shipped: the browser window joined the major before the tag, so v1.86.0 carries [version 1.1.1](./version-1.1.1-docs.md) |
 | Status | Superseded (never shipped) |
 | Supersedes | — |
 | Superseded by | [version 1.1.1](./version-1.1.1-docs.md) — the browser window joined the major before the tag. |

@@ -10,11 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.86.0 — unreleased
+## v1.86.0 — 2026-11-04
 
 Opened 2026-11-04, on `feat/2026-11-04-icon-browser`: Quick Comms' icon browser promoted into the library, for Quick Comms and Outfitter Reborn (OutfitterReborn `docs/superpowers/plans/2026-11-04-sheet-window-feedback.md`, M1).
 
-Versions in this release so far: `LibKa0s-IconBrowser-1.0` key **1.1.1** (new), `LibKa0s-DebugLog-1.0` key **22.7.1.4**; every other file still at its v1.85.0 minor. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-IconBrowser-1.0` key **1.1.1** (new: `IconBrowserSources.lua` **1**, `IconBrowserWindow.lua` **1**, `IconBrowser.lua` **1**), `LibKa0s-DebugLog-1.0` key **22.7.1.4** (`DebugLogDiagnostics.lua` **7**); every other file at its v1.85.0 minor, and the test kit at revision **50**. No `NEEDS_*` floor rises. The tag is cut on `feat/2026-11-04-icon-browser`; the merge to master waits for the owner.
 
 ### The icon browser's sources (Task 1.1)
 
@@ -24,6 +24,12 @@ Versions in this release so far: `LibKa0s-IconBrowser-1.0` key **1.1.1** (new), 
 ### The icon browser's window (Task 1.2)
 
 - **IconBrowser minor 1** and **IconBrowserWindow minor 1**, two new files of `LibKa0s-IconBrowser-1.0`, each paired on the shell's minor ([docs](docs/api/IconBrowser/version-1.1.1-docs.md)): Quick Comms' `settings/IconBrowser.lua`, the part of its `settings/ModalWindow.lua` the browser uses and its window icon edge, as a library member a host configures. `IB:New(spec)` builds a browser per host: `owner` (its folder: skin owner and glyph path), `title` (its brand), `layers` (`strata`, `level`, `over`, `popup`), `helpers` (its Options instance), `tabs` (its own tabs, first), `hide` (built-ins it does not offer), `L`, and the host's `print`, `inCombat`, `schedule`, `copyWindow`, `trackPicker` and `releasePicker`. The browser: `Open`, `Choose` (false and `"notOpen"`, `"combat"` or `"noSelection"`), `Cancel(owner?)`, `Revalidate`, `IsOpen`, `Select`, `SetTab` (a hidden built-in refused), `SetFilter`, `SetGlyphSet`, `SetSearch`, `SetColor`, `ScrollTo`, `State`, `Widgets`, `LinkWindow`, `StandDown` / `StandUp`. Each browser holds its own state, so two hosts never share a selection or a search. The library registers no bus message. Quick Comms' `qc.selStrong`, `qc.note`, `qc.markGray` and `qc.modalDim` become the library's owner tokens `ib.selStrong`, `ib.note`, `ib.markGray` and `ib.modalDim` (`SKIN_TOKENS`, the same values), laid onto the host's skin owner on the first build. Words in `lib.STRINGS`, the same English as Quick Comms'; the link window's title is now `"<title>: Wowhead icons"`. `tests/test_icon_browser.lua` carries Quick Comms' browser cases, re-pointed at the library, and the host-tab, hidden-tab, combat and two-instance cases.
+
+### The release (Task 1.3)
+
+- **Docs**: `README.md` lists the twenty-first major and its current version, and its standards pointer moves from v2.97.0 to **v2.101.0** (v2.98.0 to v2.101.0 add the skin picker's preview contract, the Sim mode box and its rule, the README skin verb and `events-frames-taint-§9`'s wow-ui-source rule: host rules all, which the library already expresses or does not touch). `docs/releasing.md` names the three new minor constants in step 2, counts sixty-seven payload files and twenty-one `tests/majors.lua` rows, gives the icon browser's `search` and `close` marks rows in *Library-drawn icons* and the major a row in *Consumers*, and moves its provenance template and semver to v1.86.0. `docs/api/CONSUMERS.md` records the major as *zero — planned at v1.86.0*, Quick Comms and Outfitter Reborn pending. `docs/test-cases.md` regenerated.
+- **Step 9's re-sweep** (seventeen repos, Outfitter Reborn among them): no host looks up `LibKa0s-IconBrowser-1.0` yet, and one lookup the *Consumers* table did not carry, DpsRace's `core/ChartsSetup.lua` (its Charts adoption), now names DpsRace in the Charts row.
+- **Step 8's re-vendors** are this run's own milestones: Quick Comms (M2) and Outfitter Reborn (M3) take the tag; no other host's surface moved (DebugLogDiagnostics minor 7 changes one report line), so the rest take v1.86.0 at their next re-vendor.
 
 ## v1.85.0 — 2026-11-01
 

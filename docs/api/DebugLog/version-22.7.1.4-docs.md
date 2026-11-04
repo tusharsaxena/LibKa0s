@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **7** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **4** |
-| Shipped in | v1.86.0 (unreleased) |
+| Shipped in | v1.86.0 |
 | Status | **Current** |
 | Supersedes | [version 22.6.1.4](./version-22.6.1.4-docs.md) (shipped in v1.85.0) — the identity header did not name `LibKa0s-IconBrowser-1.0`. |
 | Superseded by | — |

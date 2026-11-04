@@ -570,6 +570,83 @@ Total.
 - media: every skin's own bar is in TEXTURES, opaque and gray, and tiles along the bar
 - media: RegisterLSM registers the Glass border and background, and counts them
 
+### test_icon_browser_sources.lua (26)
+
+- sources: the major registers with the three built-in tabs, in order
+- sources: the module is absent without the Media major
+- sources: a host tab owns its fileIDs before game does
+- sources: hidden built-in tabs are not offered
+- sources: a host tab with a built-in's key replaces it; a malformed host tab is skipped
+- sources: the built-in descriptors carry label, tooltip and the swatch on glyphs only
+- sources: a host's L overrides the built-ins' words, and an L answering its key does not
+- sources: TabFor answers each built-in's icons, and nil for a path no tab lists
+- sources: List hands the tab's list and filter on, loaded true when the descriptor says nothing
+- sources: Markers is the eight raid markers, in order, each named
+- sources: Label names a game icon by its texture id, and a host tab by its own name
+- sources: Glyphs is every catalog icon at the owner's path, labeled from its key
+- sources: a set's prefix is not in its label; the set and its credit are named
+- sources: the Glyphs filter lists the library's sets and narrows to one
+- sources: Glyphs is built once per owner and set: the same table across reads
+- sources: Game icons is both macro lists, filtered All / Spells / Items, each icon once
+- sources: a filtered game list holds each icon once (the loose lists overlap the full ones)
+- sources: the game list not loaded yet says so, and an empty answer is asked again
+- sources: MacroIcons reads both lists, plain texture ids only, never raising
+- sources: MacroIcons reads the loose lists first, as the macro icon selector does
+- sources: Search matches a marker by name, a glyph by key or label, a game icon by id
+- sources: Search narrows its last results, and stays correct when the query widens or the list grows
+- sources: a host tab is searched by its search text, else its names, else the ids
+- sources: IsGlyph names a catalog glyph by its path, for any owner, and nothing else
+- sources: ColorFrom gives false for white and lowercase hex otherwise
+- sources: ValidColor takes none or six lowercase hex digits; Tint reads one as r, g, b
+
+### test_icon_browser.lua (28)
+
+- browser: the major gains New, its two files and the four owner tokens
+- browser: New needs the host's folder and its Options instance
+- browser: without the window file the browser does not attach
+- browser: the window is the template's chrome, titled by the host, above its own catcher
+- browser: the window sits in the host's strata and band; its transients go one strata up
+- browser: a client without the template gets the plain window, the host's title on its band
+- browser: the catcher's dim and the selected cell are the owner tokens, at Quick Comms' pixels
+- browser: a host with no skin owner still draws, in the tokens' Ka0s Default values
+- browser: tabs in order; the stored icon is preselected and its tab opened
+- browser: a host tab is listed first and preselected for its icon
+- browser: a hidden built-in tab has no strip button and SetTab refuses it
+- browser: a host's words replace the library's, and a locale that answers its key does not
+- browser: a click selects, a double-click chooses; Choose hands the opener the icon
+- browser: hovering an icon names it, or gives a game icon's texture id
+- browser: a long name in the footer stops at the Choose button, on one line
+- browser: the grid sits a section gap under the toolbar's row
+- browser: Glyphs is every catalog icon at the host's folder
+- browser: Game icons is both macro lists, filtered All / Spells / Items
+- browser: a filtered game list holds each icon once (the loose lists overlap the full ones)
+- browser: the game list not loaded yet says so, and loads on a later visit
+- browser: the grid is virtualized: a fixed set of cells re-dressed as it scrolls
+- browser: game icon art is cropped and edged; a glyph and a marker are drawn whole
+- browser: a scroll under the pointer re-says the hovered cell's tooltip, or hides it
+- browser: the wheel over the scrollbar scrolls the grid too
+- browser: the area follows the tab band when the chrome learns its width (first open)
+- browser: the swatch tints every glyph; Choose hands a glyph its color, white as none
+- browser: the color picker its swatch opened closes with the browser, and only that one
+- browser: a host's picker tracking is used in place of the browser's
+
+### test_icon_browser_search.lua (14)
+
+- browser: the search box filters the tab as you type; the count says N of M
+- browser: the search box keeps its text inset clear of the magnifier after AceGUI resets it
+- browser: the search is kept across tabs and the session's opens, and re-filters each tab
+- browser: Game icons carries the Wowhead hint; its button shows the address in a copy window
+- browser: a host's copy window is used when it passes one
+- browser: [sets] the glyph tab reads the session's list on every keystroke
+- browser: [sets] the Glyphs filter lists the library's sets and narrows to one
+- browser: [sets] a glyph's tooltip names its set, and a Game-icons mark its author
+- browser: Escape over an opener closes the browser only; the opener's Escape comes back after
+- browser: Cancel(owner) closes only that owner's browser; Revalidate closes a gone opener's
+- browser: Choose in combat answers false, "combat" and calls nothing
+- browser: without inCombat the client's combat lockdown refuses Choose
+- browser: a stand-down closes it and refuses an open until the stand-up
+- browser: two instances do not share selection or search
+
 ### test_skin.lua (33)
 
 - skin: the major registers both files and the sentinel
@@ -4649,6 +4726,9 @@ Total.
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
 | test_media.lua | 45 |
+| test_icon_browser_sources.lua | 26 |
+| test_icon_browser.lua | 28 |
+| test_icon_browser_search.lua | 14 |
 | test_skin.lua | 33 |
 | test_skin_override.lua | 28 |
 | test_skin_outline.lua | 19 |
@@ -4811,4 +4891,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4073** |
+| **Total** | **4141** |

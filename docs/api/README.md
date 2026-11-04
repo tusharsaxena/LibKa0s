@@ -293,7 +293,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 (unreleased) | **Current** |
+| [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 | **Current** |
 | [22.6.1.4](./DebugLog/version-22.6.1.4-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 4** (an owned console's header on the band, `R5-L3`) | v1.85.0 | Superseded |
 | [22.6.1.3](./DebugLog/version-22.6.1.3-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 3** (a 30 high title bar; no divider under it) | v1.85.0 | Superseded |
 | [22.6.1.2](./DebugLog/version-22.6.1.2-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 6** (the identity header names Charts) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 2 | v1.84.0 | Superseded |
@@ -440,7 +440,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1.1.1](./IconBrowser/version-1.1.1-docs.md) | `IconBrowserSources.lua` 1 · **`IconBrowserWindow.lua` 1** · **`IconBrowser.lua` 1** (new: the browser window, `IB:New(spec)`, promoted from Quick Comms) | v1.86.0 (unreleased) | **Current** |
+| [1.1.1](./IconBrowser/version-1.1.1-docs.md) | `IconBrowserSources.lua` 1 · **`IconBrowserWindow.lua` 1** · **`IconBrowser.lua` 1** (new: the browser window, `IB:New(spec)`, promoted from Quick Comms) | v1.86.0 | **Current** |
 | [1](./IconBrowser/version-1-docs.md) | **`IconBrowserSources.lua` 1** (new: the icon browser's sources as tab descriptors, promoted from Quick Comms) | never shipped | Superseded |
 
 ### `LibKa0s-Perf-1.0`
