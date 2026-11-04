@@ -188,7 +188,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [3](./Toast/version-3-docs.md) | **`Toast.lua` 3** (no title band on a toast, `R5-L2`) | v1.85.0 | **Current** |
+| [4](./Toast/version-4-docs.md) | **`Toast.lua` 4** (the stack, opt-in: `stack`, `stackGrow`, `stackGap`, `SetStack`, `Visible`, `FrameFor`) | v1.88.0 (unreleased) | **Current** |
+| [3](./Toast/version-3-docs.md) | **`Toast.lua` 3** (no title band on a toast, `R5-L2`) | v1.85.0 – v1.87.0 | Superseded |
 | [2](./Toast/version-2-docs.md) | **`Toast.lua` 2** (`soundFile`, additive) | v1.85.0 | Superseded |
 | [1](./Toast/version-1-docs.md) | **`Toast.lua` 1** (new: the alert-toast shell, LibKa0s#60) | v1.79.0 – v1.84.0 | Superseded |
 

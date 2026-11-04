@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Toast-1.0` |
 | File | `Toast.lua` minor **3** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 2](./version-2-docs.md) (unreleased, an earlier step of v1.85.0) — an owned toast wore the bare `S.Shell` that `Core.ApplySkin` hands it, so once the Skin major drew its top band over a backdrop window's fill (SkinPaint minor 18) a toast would have shown a 30 px band across its top. |
-| Superseded by | — |
+| Superseded by | [version 4](./version-4-docs.md) (v1.88.0, unreleased) — the stack: `stack`, `stackGrow`, `stackGap`, `SetStack`, `Visible` and `FrameFor`, all opt-in. |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`) |
 | Optional at call time | Core's `ApplySkin` and `MakeCloseButton`, each presence-checked; through them, `LibKa0s-Media-1.0` (the close icon) and `LibKa0s-Skin-1.0` (the owner's skin), neither read by this file |
 | Confirm in-game | `LibStub("LibKa0s-Toast-1.0").MODULES` → `{ Toast = 3 }` |
@@ -229,3 +229,7 @@ with no load-list change in the host. A host vendoring the file alone ahead of a
 - `lib.STRATA`: no consumer as of v1.83.0, kept because it is the alert tier the shell draws at.
 - `lib.WIDTH`: no consumer as of v1.83.0, kept because it is the default a host overrides with `width`.
 - `soundKit`: no consumer as of v1.83.0, kept because it is the numeric alternative to `sound` for a host that plays a sound kit id.
+
+## Moving to version 4
+
+Nothing is owed: a descriptor without `stack` is this toast, and every member answers what it answers here. A host that wants several toasts on screen at once passes `stack` (and, if it likes, `stackGrow` and `stackGap`), or calls `SetStack(n, grow)` from its settings rows. A host carrying a degradation stub of the instance adds `SetStack`, `Visible` and `FrameFor` to it, since its parity case against a live version 4 instance names them.

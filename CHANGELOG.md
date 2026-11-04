@@ -10,6 +10,16 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.88.0 — unreleased
+
+Opened 2026-11-05, on `feat/2026-11-05-toast-stack`: stacked toasts for Ka0s Drop Watcher (its issue #14, `LK-T1` of that run's plan). The version is not bumped and no tag is cut; this block is the record `tests/test_versioning.lua` reads for the minor that moved.
+
+Versions so far: `LibKa0s-Toast-1.0` **4**; every other file at its v1.87.0 minor, and the test kit at revision **50**. No `NEEDS_*` floor rises.
+
+### The stack (`LK-T1`)
+
+- **Toast minor 4** ([docs](docs/api/Toast/version-4-docs.md)): the stack, opt-in. Three descriptor fields, each a value or a getter: `stack` (how many toasts show at once, floored, anything but a number of at least 1 is 1), `stackGrow` (`"DOWN"`, the default, or `"UP"`) and `stackGap` (the space between two toasts in the toast's own units, else `lib.STACK_GAP`, `6`, new). Each toast on screen has its own frame from a pool the instance builds as it needs and reuses, its own countdown, hover pause, close mark and right-click; the head sits at the saved point and each toast after it hangs off the one before, on the saved point's side. A toast that closes re-flows the rest onto the head and the next waiting payload comes up at the tail; `maxQueue` still bounds only what waits. `Hold()` puts every toast on screen back at the head of the queue in its order, `Remove(key)` closes every visible toast under `key` and drops every waiting one, `Dismiss` closes the head, `Preview` shows at the head and sends a full stack's tail back to wait, and a drag on any toast moves the head, whose point is the one saved. Three instance members: **`SetStack(n, grow)`** (the host's settings rows; a smaller stack sends its tail back to the head of the queue, a larger one fills), **`Visible()`** (the keys on screen, head first) and **`FrameFor(key)`**. `Stats()` keeps every field and adds `visible`, `visibleKeys`, `stack` and `grow`; `Current()` and `Frame()` answer the head. `Refresh()` re-reads the stack fields with the scale and the position. **Without `stack`, or with 1, the toast is the minor 3 toast**: the existing cases in `tests/test_toast.lua` pass unchanged but for the minor they pin, and the new `toast stack:` cases pin the stack. A host's instance stub gains `SetStack`, `Visible` and `FrameFor` at its re-vendor. Drop Watcher takes the stack; DpsRace stays one at a time.
+
 ## v1.87.0 — 2026-11-05
 
 Opened 2026-11-05, on `feat/2026-11-05-cascading-menus`: true cascading menus for Outfitter Reborn's outfit menu (OutfitterReborn `docs/superpowers/plans/2026-11-05-smoke-round-2.md`, Task 1; its design's G4). The tag is cut on `feat/2026-11-05-cascading-menus`; the merge to master waits for the owner.

@@ -411,9 +411,9 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
-### test_toast.lua (54)
+### test_toast.lua (80)
 
-- toast: the major loads at minor 3 and reports its one file
+- toast: the major loads at minor 4 and reports its one file
 - toast: without Core the major is absent (no NewLibrary)
 - toast: New refuses a descriptor without a builder, naming it
 - toast: a method called on something that is not an instance raises
@@ -467,6 +467,32 @@ Total.
 - toast: on a Core with no ApplySkin or MakeCloseButton it still shows and closes
 - toast: a close mark Core cannot build (no frame) leaves the toast without one
 - toast: two instances keep separate queues and frames
+- toast stack: with stack = 3, three of five show at once and two wait
+- toast stack: each visible toast has its own countdown
+- toast stack: closing one re-flows the rest and pulls the next from the queue
+- toast stack: the head sits at the saved point and the rest grow DOWN by default
+- toast stack: stackGrow = UP stacks above the head, with the host's gap
+- toast stack: a saved point on a side keeps the stack aligned to that side
+- toast stack: a gap that is not a number of pixels is STACK_GAP
+- toast stack: hovering one pauses only that one, and its leave resumes only it
+- toast stack: Pause and Resume hold and free every visible countdown
+- toast stack: Hold puts every visible toast back at the head of the queue, in order
+- toast stack: Hold(true) keeps the stack up and holds what follows
+- toast stack: Remove closes a visible toast and drops a waiting one
+- toast stack: Remove counts a key both visible and waiting
+- toast stack: maxQueue still bounds only what waits
+- toast stack: Stats keeps every v1 field and adds the stack's
+- toast stack: SetStack shrinks the stack, sending the tail back to the head of the queue
+- toast stack: stack and stackGrow may be getters, read again on Refresh
+- toast stack: a stack that is not a count of at least one is one
+- toast stack: dragging any toast moves the head, and the saved point is the head's
+- toast stack: a head closed mid-drag stops moving and the next head takes the saved point
+- toast stack: frames are pooled: a closed toast's frame carries the next one
+- toast stack: each frame has its own close mark, closing only its toast
+- toast stack: Attach from the builder wires the control to the toast it was drawn on
+- toast stack: Preview shows at the head, and a full stack sends its tail back to wait
+- toast stack: Clear takes the whole stack down
+- toast stack: without the stack field (or with 1) it is the v1 toast: one frame, one at a time
 
 ### test_charts.lua (15)
 
@@ -4742,7 +4768,7 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
-| test_toast.lua | 54 |
+| test_toast.lua | 80 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -4913,4 +4939,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4159** |
+| **Total** | **4185** |
