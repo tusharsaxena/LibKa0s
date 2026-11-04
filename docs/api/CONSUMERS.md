@@ -67,7 +67,7 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
-**v1.87.0, not in the census (2026-11-05, unreleased).** Widgets minor 23 adds `W.ContextMenu`'s cascading menus: the row options
+**v1.87.0, not in the census (2026-11-05).** Widgets minor 23 adds `W.ContextMenu`'s cascading menus: the row options
 `submenu`, `radio` and `selected` and the open's `opts.check` ([its document](Widgets/version-23.5.12.6.7.5-docs.md)). No lib-level
 member moves, so `docs/api/Widgets/members-23.5.12.6.7.5.json` lists the same surface as minor 22's. **No host passes them yet.**
 Outfitter Reborn is the intended consumer (`core/WidgetsSetup.lua`'s `NS.OpenMenu`, its outfit menu's Key binding, Title,

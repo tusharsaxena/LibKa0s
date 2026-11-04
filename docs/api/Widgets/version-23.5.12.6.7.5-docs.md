@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **23** · `WidgetsReorder.lua` **5** · `WidgetsDragHandle.lua` **12** · `WidgetsLineChart.lua` **6** · `WidgetsAutocomplete.lua` **7** · `WidgetsCopyWindow.lua` **5** |
-| Shipped in | v1.87.0 (unreleased) |
+| Shipped in | v1.87.0 |
 | Status | **Current** |
 | Supersedes | [version 22.5.12.6.7.5](./version-22.5.12.6.7.5-docs.md) (v1.85.0) — the shared menu had no sub-menus, so a host faked one by reopening the one frame with the child's rows, and the parent was gone. |
 | Superseded by | — |
