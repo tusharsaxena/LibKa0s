@@ -35,7 +35,8 @@
 -- ── WHAT THE SHELL DOES ──────────────────────────────────────────────────────────────────────
 --
 -- * One toast at a time, or up to d.stack at once. `Show` queues; the next shows when the stack has
---   room. Past the cap (d.maxQueue, default MAX_QUEUE) the oldest waiting payload is dropped.
+--   room. Past the cap (d.maxQueue, default MAX_QUEUE) a Show drops the oldest waiting payload; a
+--   toast sent back from the screen to wait (Hold, a smaller stack) is never dropped for it.
 -- * Lifetime. A toast closes after its duration; the countdown pauses while the pointer is over the
 --   toast (or over a control the host attached) and resumes with the time it had left, never less
 --   than a second. It also closes on its close mark or on a right-click anywhere on it. A sticky
@@ -373,11 +374,19 @@ end
 
 -- ── the queue ────────────────────────────────────────────────────────────────────────────────
 
+--- Show appends and trims the oldest past the cap. A toast sent back from the screen (`front`: Hold,
+--- a shrinking stack, a preview's full stack) goes to the head and trims nothing, so sending it back
+--- never costs a payload; the queue may then hold up to the stack's size over the cap until the next
+--- Show trims the oldest.
 local function enqueue(S, entry, front)
   local q = S.queue
-  if front then table.insert(q, 1, entry) else q[#q + 1] = entry end
+  if front then
+    table.insert(q, 1, entry)
+    return
+  end
+  q[#q + 1] = entry
   local cap = math.max(1, math.floor(positive(S.d.maxQueue) or lib.MAX_QUEUE))
-  while #q > cap do table.remove(q, front and #q or 1) end
+  while #q > cap do table.remove(q, 1) end
 end
 
 --- A file PlaySoundFile takes: a non-empty path or a file data id.
