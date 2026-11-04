@@ -28,6 +28,12 @@ Versions in this release: `LibKa0s-Widgets-1.0` key **23.5.12.6.7.5** (`Widgets.
 - **Step 9's re-sweep** (the sixteen listed hosts, and Outfitter Reborn): eight lookups the *Consumers* table did not carry now have their rows: PremadeGroupsFilterExtension `core/WidgetsSetup.lua`, MultiMeters `modules/Window_Header.lua` and Ka0s Skin Tester `modules/Selector.lua` and `modules/ShowroomControls.lua` (Widgets), Ka0s Skin Tester `modules/ShowroomControls.lua` (Options), PrettyChat `core/SkinSetup.lua` (DebugLog), AbsorbTracker `modules/Sim.lua` and DpsRace `core/SimSetup.lua` (Sim). The IconBrowser row names Quick Comms' and Outfitter Reborn's lookups on their unmerged branches. Outfitter Reborn's other lookups get no rows: it is not on step 9's host list.
 - **Step 8's re-vendors**: Outfitter Reborn takes the tag in its own run (OutfitterReborn `docs/superpowers/plans/2026-11-05-smoke-round-2.md`, Task 3.1); every other host's menus are flat, so the rest take v1.87.0 at their next re-vendor.
 
+Release gate (`docs/automated-tests/20261105-030351/`): lint pass, 0/0 in 306 files;
+tests pass, 4162 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Current — `Widgets.lua` minor 23 moved; re-read `tests/test_widgets_teststrip.lua`, `SimPanel.lua`'s `closeMenu`, `tests/test_sim_panel.lua`, `tests/fixture_sim_panel.lua` and the Widgets 23 document: the strip's and the picker's menus are flat and close through `W.CloseMenu`, so no host's scenarios or test-mode strips change.
+
 ## v1.86.0 — 2026-11-04
 
 Opened 2026-11-04, on `feat/2026-11-04-icon-browser`: Quick Comms' icon browser promoted into the library, for Quick Comms and Outfitter Reborn (OutfitterReborn `docs/superpowers/plans/2026-11-04-sheet-window-feedback.md`, M1).
