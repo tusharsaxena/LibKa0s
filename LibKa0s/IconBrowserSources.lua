@@ -432,14 +432,17 @@ local BUILD = {
   glyphs = glyphTab,
 }
 
--- owner -> L (or the NO_L sentinel) -> key -> descriptor; L weak, so a dropped locale is collected.
+-- owner -> L (or the NO_L sentinel) -> key -> descriptor, kept for the session. Not weak: the game
+-- and glyph descriptors close over L, and Lua 5.1 has no ephemerons, so a weak key would be held by
+-- its own value anyway. A host passes one locale table for the session, so this stays one slot per
+-- owner.
 local builtins = {}
 local NO_L = {}
 
 local function builtin(key, owner, L)
   local byOwner = builtins[owner]
   if not byOwner then
-    byOwner = setmetatable({}, { __mode = "k" })
+    byOwner = {}
     builtins[owner] = byOwner
   end
   local slot = byOwner[L or NO_L]
