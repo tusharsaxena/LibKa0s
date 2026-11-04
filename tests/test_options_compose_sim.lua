@@ -312,6 +312,94 @@ test("compose sim: the spec is never written and two calls agree", function()
   assertNil(spec.omit)
 end)
 
+-- ── the window rule (R7-L1) ──────────────────────────────────────────────────────────────────
+--
+-- The owner's round 7 rule (Ka0sAddonsCommonTasks docs/2026-11-04-SMOKE_ROUND7, call 2): the box
+-- is ticked while the sim window is shown OR a sim runs, and unticked otherwise. The library needs
+-- no change for it: the row's get is the host's isSimMode() verbatim and its set calls toggleSim()
+-- only on a difference, so a host whose isSimMode answers `windowShown or running` gets exactly
+-- that box. These cases pin the composer against such a host, so a later minor that read "running"
+-- out of the Sim major, cached the tick, or toggled bare would go red here.
+
+--- A host whose sim has a window. isSimMode() answers "shown or running"; toggleSim() is the bare
+--- `/<slash> sim` verb: from off it opens the window idle (DpsRace's step panel), and from anything
+--- else, "window open, idle" included, it stops a running sim and closes the window.
+local function newWindowSim()
+  local h = { shown = false, running = false, toggles = 0 }
+  h.isSimMode = function() return h.shown or h.running end
+  h.toggleSim = function()
+    h.toggles = h.toggles + 1
+    if h.shown or h.running then
+      h.running, h.shown = false, false
+    else
+      h.shown = true
+    end
+  end
+  return h
+end
+
+test("compose sim: an open, idle sim window reads ticked and one untick closes it (R7-L1)", function()
+  -- red under: a get that asks the Sim major whether a scenario runs instead of the host's
+  -- isSimMode, or a set that toggles twice (close, then reopen) or not at all.
+  local h = newWindowSim()
+  local row = rowAt(O.MasterControls(withSim(full(), h)), SIM_PATH)
+  h.shown = true                          -- `/xx sim` opened the window; nothing runs yet
+  assertEqual(row.get(), true, "window shown, sim idle: ticked")
+  row.set(true)
+  assertEqual(h.toggles, 0, "ticking an already ticked box asks nothing")
+  row.set(false)
+  assertEqual(h.toggles, 1, "one toggle")
+  assertEqual(h.shown, false, "the window closed")
+  assertEqual(row.get(), false)
+  h.running = true                        -- a sim running with its window hidden
+  assertEqual(row.get(), true, "running, window hidden: ticked")
+  row.set(false)
+  assertEqual(h.toggles, 2)
+  assertEqual(h.running, false, "unticking stops it")
+  assertEqual(row.get(), false)
+end)
+
+test("compose sim: ticking opens the sim window, the box stays ticked and follows show and hide (R7-L1)", function()
+  -- red under: the box re-reading "running" after the write, so a tick that opened an idle window
+  -- snaps back to unticked; or a box that reads only on its own writes, so a window opened or closed
+  -- from the slash verb, the launcher or the window's own close button leaves it stale on an open
+  -- page. One render for both halves: the suite runs close to the kit's leak budget.
+  local h = newWindowSim()
+  local Oi, ctx = render("ComposeSimWindow", O.MasterControls(withSim(full(), h)))
+  local cb = checkbox(ctx.scroll, "Sim mode")
+  cb:SetValue(true)
+  cb:__fire("OnValueChanged", true)
+  assertEqual(h.toggles, 1)
+  assertEqual(h.shown, true, "the bare verb opened the window")
+  assertEqual(h.running, false, "and started nothing")
+  assertEqual(cb:GetValue(), true, "window shown: the box stays ticked")
+  cb:SetValue(false)
+  cb:__fire("OnValueChanged", false)
+  assertEqual(h.toggles, 2, "one toggle to untick")
+  assertEqual(h.shown, false, "the window closed")
+  assertEqual(cb:GetValue(), false)
+
+  h.shown = true;  Oi.RefreshScalars()    -- the host's window OnShow (`/xx sim`, the launcher)
+  assertEqual(cb:GetValue(), true)
+  h.running = true; Oi.RefreshScalars()   -- the sim starts from the window
+  assertEqual(cb:GetValue(), true)
+  h.running = false; Oi.RefreshScalars()  -- the sim ends, the window stays open
+  assertEqual(cb:GetValue(), true, "window still shown: still ticked")
+  h.shown = false; Oi.RefreshScalars()    -- the window's own close button, its OnHide
+  assertEqual(cb:GetValue(), false)
+  assertEqual(h.toggles, 2, "a refresh never acts")
+end)
+
+test("compose sim: Reset all settings closes an open, idle sim window (R7-L1)", function()
+  -- red under: the reset walk skipping a row whose sim is idle, which would leave the window up.
+  local h = newWindowSim()
+  local row = rowAt(O.MasterControls(withSim(full(), h)), SIM_PATH)
+  h.shown = true
+  row.set(row.default)
+  assertEqual(h.toggles, 1)
+  assertEqual(h.shown, false)
+end)
+
 -- ── the minor ────────────────────────────────────────────────────────────────────────────────
 
 test("compose sim: OptionsCompose is at minor 19", function()

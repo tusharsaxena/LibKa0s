@@ -1170,6 +1170,28 @@ test("launcher: Sim mode is a live checkbox that toggles through toggleSim, once
   assertFalse(m2:Find("Sim mode").enabled)
 end)
 
+test("launcher: Sim mode reads the host's 'window shown or running' and one click closes an idle window (R7-L1)", function()
+  -- The owner's round 7 rule: the entry is ticked while the sim window is shown OR a sim runs. The
+  -- entry's tick is the host's isSimMode() asked at draw, so a host answering `shown or running`
+  -- gets that entry with no library change.
+  -- red under: a tick that asks whether a scenario runs, or one captured once and never re-asked.
+  local st = { shown = true, running = false }      -- window open, sim idle
+  local calls = 0
+  local _, L = fullHost{ isSimMode = function() return st.shown or st.running end,
+    toggleSim = function()
+      calls = calls + 1
+      if st.shown or st.running then st.shown, st.running = false, false else st.shown = true end
+    end }
+  local menu = rightClick(L)
+  assertTrue(menu:Checked("Sim mode"), "window open, sim idle: ticked")
+  menu:Click("Sim mode")
+  assertEqual(calls, 1, "one toggle")
+  assertFalse(st.shown, "the window closed")
+  assertFalse(rightClick(L):Checked("Sim mode"), "the next open reads it unticked")
+  st.running = true
+  assertTrue(rightClick(L):Checked("Sim mode"), "running with the window hidden: ticked")
+end)
+
 test("launcher: Open settings opens the panel from the menu, enabled or not", function()
   -- red under: gating it (a disabled addon is re-enabled from the panel), or a menu without it.
   local rec, L = fullHost()

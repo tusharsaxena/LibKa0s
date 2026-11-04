@@ -1907,7 +1907,7 @@ Total.
 - sl debug: a non-function debug field is ignored
 - sl debug: the chat is byte for byte the same with and without a debug sink
 
-### test_launcher.lua (56)
+### test_launcher.lua (57)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
 - launcher: ONE object, of type 'launcher', carrying the host's own icon
@@ -1963,6 +1963,7 @@ Total.
 - launcher: Open skin selector is grayed with the note while the addon is disabled
 - launcher: it alone makes a menu, and a host that is no skin owner or passes nothing gets none
 - launcher: Sim mode is a live checkbox that toggles through toggleSim, once
+- launcher: Sim mode reads the host's 'window shown or running' and one click closes an idle window (R7-L1)
 - launcher: Open settings opens the panel from the menu, enabled or not
 - launcher: one Register is one broker object and one minimap button, with no compartment entry (SG-L2)
 
@@ -3244,7 +3245,7 @@ Total.
 - compose master: the flow engine draws Debug console and Minimap button on one line
 - compose master: OptionsCompose is at minor 9 or later
 
-### test_options_compose_sim.lua (16)
+### test_options_compose_sim.lua (19)
 
 - compose sim: without isSimMode and toggleSim the tab is byte for byte what it was
 - compose sim: with both hooks the tab gains one session-only Sim mode row
@@ -3261,6 +3262,9 @@ Total.
 - compose sim: a sim started elsewhere shows on the next refresh and on the panel's show
 - compose sim: Reset all settings stops a running sim and starts none
 - compose sim: the spec is never written and two calls agree
+- compose sim: an open, idle sim window reads ticked and one untick closes it (R7-L1)
+- compose sim: ticking opens the sim window, the box stays ticked and follows show and hide (R7-L1)
+- compose sim: Reset all settings closes an open, idle sim window (R7-L1)
 - compose sim: OptionsCompose is at minor 19
 
 ### test_options_compose_tooltips.lua (12)
@@ -4693,7 +4697,7 @@ Total.
 | test_slash_refusal.lua | 7 |
 | test_slash_profile.lua | 30 |
 | test_slash_debug.lua | 14 |
-| test_launcher.lua | 56 |
+| test_launcher.lua | 57 |
 | test_atenable.lua | 21 |
 | test_options.lua | 57 |
 | test_options_render.lua | 27 |
@@ -4744,7 +4748,7 @@ Total.
 | test_options_compose.lua | 39 |
 | test_options_compose_arm.lua | 12 |
 | test_options_compose_master.lua | 15 |
-| test_options_compose_sim.lua | 16 |
+| test_options_compose_sim.lua | 19 |
 | test_options_compose_tooltips.lua | 12 |
 | test_options_reset_tooltip.lua | 7 |
 | test_options_skin.lua | 22 |
@@ -4807,4 +4811,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4069** |
+| **Total** | **4073** |
