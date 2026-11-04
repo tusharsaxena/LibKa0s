@@ -10,6 +10,17 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.87.0 — unreleased
+
+Opened 2026-11-05, on `feat/2026-11-05-cascading-menus`: true cascading menus for Outfitter Reborn's outfit menu (OutfitterReborn `docs/superpowers/plans/2026-11-05-smoke-round-2.md`, Task 1; its design's G4). Not tagged: the release steps (the version pointers, the release run's record, the tag) wait for the run's go-ahead.
+
+Versions in this release: `LibKa0s-Widgets-1.0` key **23.5.12.6.7.5** (`Widgets.lua` **23**); every other file at its v1.86.0 minor, and the test kit at revision **50**. No `NEEDS_*` floor rises.
+
+### Cascading menus (Task 1)
+
+- **Widgets minor 23** ([docs](docs/api/Widgets/version-23.5.12.6.7.5-docs.md)): a `W.ContextMenu` row's **`submenu = rows`** opens a child menu beside the row, on a hover or a click, and the parent stays drawn. Each depth is one pooled frame, opened at its row's top-right (its top-left when the right would leave the screen) and clamped. Opening a sibling's submenu, or hovering a plain row, closes the levels below; a press on any shown level closes none, a press outside closes all, and so do `W.CloseMenu()` and the root's `OnHide`. A plain pick at any depth hides every level before its callback; a `keepOpen` pick repaints its own level and every level above it. **`radio`** and **`selected`** (`true` or a predicate of the row) draw the menu's tick in a leading column; **`opts.check`** is that tick's art. A dropdown's rows ignore all three, and every flat menu draws what minor 22 drew. Outfitter Reborn faked its nested levels by reopening the one frame with the child's rows, so the parent vanished; nothing else nests.
+- **Tests**: `tests/fixture_skin_paint.lua` and `tests/fixture_sim_panel.lua` share the runner's source loader (`LK_TEST.loader`) instead of each suite's dofile building its own. Every such loader held a compiled copy of each file it loaded for the whole run, eighteen suites' worth, and Widgets minor 23's larger chunk took the run past the kit's 256 MB leak gate (291 MB after `test_eol.lua`, measured). No case changes.
+
 ## v1.86.0 — 2026-11-04
 
 Opened 2026-11-04, on `feat/2026-11-04-icon-browser`: Quick Comms' icon browser promoted into the library, for Quick Comms and Outfitter Reborn (OutfitterReborn `docs/superpowers/plans/2026-11-04-sheet-window-feedback.md`, M1).

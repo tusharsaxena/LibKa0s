@@ -1229,6 +1229,27 @@ Total.
 - menu: the dropdown's own label is one line
 - menu: an owned menu reads its title, disabled and rule colors from the skin
 
+### test_widgets_submenu.lua (18)
+
+- submenu: a click on a submenu row opens its rows beside the row, and the parent stays
+- submenu: hovering a submenu row opens it, and hovering it again does not repaint
+- submenu: a child that would leave the screen's right edge opens to the row's left, clamped
+- submenu: opening a sibling submenu closes every deeper level
+- submenu: hovering a plain row closes the levels below its own
+- submenu: a disabled submenu row opens nothing
+- submenu: a press on none of the levels closes them all, a press on any of them closes none
+- submenu: CloseMenu closes every level
+- submenu: the root menu's OnHide closes every level
+- submenu: a new menu opened while a cascade is up closes the old levels
+- submenu: a plain pick in a child closes every level before its callback
+- submenu: a keepOpen pick in a child repaints the child and every ancestor
+- submenu: a keepOpen pick whose callback closed the menu repaints no level
+- submenu: radio and selected rows draw a tick column, a predicate read on every paint
+- submenu: a submenu row carries an arrow and its label stops short of it
+- submenu: a pooled row leaves its arrow, its tick and its hover behind
+- submenu: a dropdown's rows ignore submenu, radio and selected
+- submenu: a child wears the opener's skin
+
 ### test_widgets_reorderlist.lua (24)
 
 - widgets: ReorderList reports where a drag landed
@@ -4749,6 +4770,7 @@ Total.
 | test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
 | test_widgets_menu.lua | 23 |
+| test_widgets_submenu.lua | 18 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 49 |
 | test_widgets_draghandle_place.lua | 10 |
@@ -4891,4 +4913,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4141** |
+| **Total** | **4159** |

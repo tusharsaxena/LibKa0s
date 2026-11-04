@@ -67,6 +67,13 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.87.0, not in the census (2026-11-05, unreleased).** Widgets minor 23 adds `W.ContextMenu`'s cascading menus: the row options
+`submenu`, `radio` and `selected` and the open's `opts.check` ([its document](Widgets/version-23.5.12.6.7.5-docs.md)). No lib-level
+member moves, so `docs/api/Widgets/members-23.5.12.6.7.5.json` lists the same surface as minor 22's. **No host passes them yet.**
+Outfitter Reborn is the intended consumer (`core/WidgetsSetup.lua`'s `NS.OpenMenu`, its outfit menu's Key binding, Title,
+Bank and Automation levels; OutfitterReborn `docs/superpowers/plans/2026-11-05-smoke-round-2.md`, Task 3.1), so the
+options' verdict is *zero — planned at v1.87.0* until it re-vendors. They get no rows until the next run.
+
 **v1.86.0, not in the census (2026-11-04).** The release adds a major,
 `LibKa0s-IconBrowser-1.0` (its twelve lib-level members in
 `docs/api/IconBrowser/members-1.1.1.json`, the `spec` fields, the tab descriptor's fields and the

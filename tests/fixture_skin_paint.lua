@@ -12,7 +12,10 @@
 -- and the trace of the library code it stands for compare as two lists. Getters are not logged:
 -- reading a frame is not painting it.
 
-local Loader = dofile("tests/_kit/loader.lua")
+-- The runner's loader when there is one: this fixture is dofile'd by every suite that uses it, and
+-- a loader of its own per suite kept a compiled copy of each file it loads for the whole run, which
+-- the leak gate counts (Widgets minor 23 tipped it).
+local Loader = (_G.LK_TEST and _G.LK_TEST.loader) or dofile("tests/_kit/loader.lua")
 local buildMocks = dofile("tests/wow_mock.lua")
 local installPaint = dofile("tests/_kit/mock_paint.lua")
 
