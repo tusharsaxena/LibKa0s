@@ -30,6 +30,14 @@
   note in its label. Every click closes the menu. Hover is the client's.
 - **`lib.STRINGS`** gains `MENU_SIM_MODE` and `MENU_SETTINGS`.
 - **Hosts owe**: `isSimMode` and `toggleSim` where the addon has a sim.
+- **What `isSimMode` answers is the host's** (`R7-L1`, Ka0sAddonsCommonTasks `docs/2026-11-04-SMOKE_ROUND7/`, call 2; no minor
+  moved). The entry's tick is `isSimMode()`, asked when the client draws the menu, so it shows the host's predicate and
+  nothing else. The owner's round 7 rule is that it is ticked while the sim window is shown **or** a sim runs: a host answers
+  `simWindowShown or simRunning`, and passes its bare `/<slash> sim` verb as `toggleSim`. That verb opens the window from
+  off and, from any other state (*window open, idle* included), stops a running sim and closes the window, so one click
+  on a ticked entry closes an idle window. The menu needs no refresh call from the host: every open asks again. The
+  settings row needs `O.RefreshScalars()` on the window's show and hide (Options C19). Case: `tests/test_launcher.lua`,
+  *Sim mode reads the host's 'window shown or running'*.
 - **Not changed, `SG-L2`**: the module makes one broker object and one LibDBIcon button per addon and never
   touches the addon compartment; a button collector that shows two entries for one addon draws the second
   itself.
@@ -201,7 +209,7 @@ addon's face in three places, and left-click **always** opens the panel.
 | `toggleLock` | **L4** | no | The addon's own lock/unlock toggle, the one `/<slash> lock` / `unlock` and the *Lock frame* row use. Called with no argument. |
 | `isTestMode` | **L3** | no | Where the addon has a test mode: answers whether it is on. The tooltip's `Test mode` line; with `toggleTestMode`, the menu's *Test mode* entry. |
 | `toggleTestMode` | **L4** | no | The addon's own test-mode toggle, the one `/<slash> test` and the *Test mode* row use. Called with no argument. |
-| `isSimMode` | **L7** | no | Where the addon has a simulation: answers whether it is running. With `toggleSim`, the menu's *Sim mode* entry. |
+| `isSimMode` | **L7** | no | Where the addon has a simulation: answers whether it is running, or, under the owner's round 7 rule (`R7-L1`), whether the sim window is shown or a sim runs. The library reads it as given. With `toggleSim`, the menu's *Sim mode* entry. |
 | `toggleSim` | **L7** | no | The addon's own sim toggle, the one `/<slash> sim` runs. Called with no argument. |
 | `isWindowShown` | **L4** | no | Where the addon has a **primary window** (standalone-windows — the browser, ledger, meter window or group popup the addon exists to show, not a settings or export dialog): answers whether it is shown. With `toggleWindow`, the menu's *Show window* entry. |
 | `toggleWindow` | **L4** | no | The primary window's own toggle. Called with no argument. |
