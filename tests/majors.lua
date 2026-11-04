@@ -156,8 +156,12 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-IconBrowser-1.0",
-    files = { "IconBrowserSources" },
+    files = { "IconBrowserSources", "IconBrowserWindow", "IconBrowser" },
     primary = "IconBrowserSources",
+    paired = {
+      { file = "IconBrowserWindow", minorField = "__windowMinor", probeField = "__windowShellMinor" },
+      { file = "IconBrowser", minorField = "__browserMinor", probeField = "__browserShellMinor" },
+    },
   },
   {
     major = "LibKa0s-Perf-1.0",

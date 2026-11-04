@@ -75,7 +75,7 @@ the file you need:
 | `LibKa0s-Slash-1.0` | `<Slash>.<SlashParse>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
 | `LibKa0s-Options-1.0` | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
-| `LibKa0s-IconBrowser-1.0` | `<IconBrowserSources>` | `LibStub("LibKa0s-IconBrowser-1.0").MODULES` |
+| `LibKa0s-IconBrowser-1.0` | `<IconBrowserSources>.<IconBrowserWindow>.<IconBrowser>` (one number at version 1, never shipped) | `LibStub("LibKa0s-IconBrowser-1.0").MODULES` |
 | `LibKa0s-Perf-1.0` | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
 | `LibKa0s-Sim-1.0` | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` | `LibStub("LibKa0s-Sim-1.0").MODULES` |
 
@@ -440,7 +440,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./IconBrowser/version-1-docs.md) | **`IconBrowserSources.lua` 1** (new: the icon browser's sources as tab descriptors, promoted from Quick Comms) | v1.86.0 (unreleased) | **Current** |
+| [1.1.1](./IconBrowser/version-1.1.1-docs.md) | `IconBrowserSources.lua` 1 · **`IconBrowserWindow.lua` 1** · **`IconBrowser.lua` 1** (new: the browser window, `IB:New(spec)`, promoted from Quick Comms) | v1.86.0 (unreleased) | **Current** |
+| [1](./IconBrowser/version-1-docs.md) | **`IconBrowserSources.lua` 1** (new: the icon browser's sources as tab descriptors, promoted from Quick Comms) | never shipped | Superseded |
 
 ### `LibKa0s-Perf-1.0`
 

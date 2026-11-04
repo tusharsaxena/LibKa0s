@@ -10,9 +10,9 @@
 | Major | `LibKa0s-IconBrowser-1.0` |
 | File | `IconBrowserSources.lua` minor **1** |
 | Shipped in | v1.86.0 (unreleased; the browser window joins the major before the tag) |
-| Status | **Current** |
+| Status | Superseded (never shipped) |
 | Supersedes | — |
-| Superseded by | — |
+| Superseded by | [version 1.1.1](./version-1.1.1-docs.md) — the browser window joined the major before the tag. |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called) and `LibKa0s-Media-1.0` ≥ 5 (the icon sets and their prefixes) |
 | Optional at call time | `LibKa0s-Compat-1.0`, no floor: its `IsSecret` guards the macro icon lists when it is present |
 | Confirm in-game | `LibStub("LibKa0s-IconBrowser-1.0").MODULES` → `{ IconBrowserSources = 1 }` |
