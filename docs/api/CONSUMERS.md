@@ -67,6 +67,12 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.88.0, not in the census (2026-11-05, unreleased).** Toast minor 4 adds the stack: the optional descriptor
+fields `stack`, `stackGrow` and `stackGap`, the lib-level `STACK_GAP` and the instance members `SetStack`, `Visible` and
+`FrameFor` ([its document](Toast/version-4-docs.md)). Ka0s Drop Watcher is the one planned consumer (its issue #14: `stack`,
+`stackGrow` and `SetStack` behind its settings rows); Ka0s DPS Race stays one toast at a time and passes none of them. They
+get no rows until the next run, when Drop Watcher's re-vendor has landed.
+
 **v1.87.0, not in the census (2026-11-05).** Widgets minor 23 adds `W.ContextMenu`'s cascading menus: the row options
 `submenu`, `radio` and `selected` and the open's `opts.check` ([its document](Widgets/version-23.5.12.6.7.5-docs.md)). No lib-level
 member moves, so `docs/api/Widgets/members-23.5.12.6.7.5.json` lists the same surface as minor 22's. **No host passes them yet.**
