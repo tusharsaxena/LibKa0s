@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261104-185100`](20261104-185100/) | `d78f4d1` | clean | 1.85.0 → 1.86.0 | 0/0 | 305 | 4141/3/4144 | skip | 92401 | 13321 | 6.8 | 2.1 | 17 | 1 | **green** |
 | [`20261104-024106`](20261104-024106/) | `0dfe377` | clean | 1.85.0 → 1.85.0 | 0/0 | 298 | 4069/3/4072 | skip | 89793 | 12977 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261104-023511`](20261104-023511/) | `d71df6f` | clean | 1.85.0 → 1.85.0 | 0/0 | 298 | 4069/3/4072 | skip | 89790 | 12976 | 6.8 | 2.1 | 22 | 1 | **green** |
 | [`20261104-002816`](20261104-002816/) | `4fd5b47` | clean | 1.85.0 → 1.85.0 | 0/0 | 297 | 4053/3/4056 | skip | 89503 | 12937 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -200,18 +201,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**4072 cases** — 4069 passed, 0 failed, 3 skipped. The generated inventory
-[`20261104-024106/test-cases.md`](20261104-024106/test-cases.md) is the authority on which cases existed at this run;
+**4144 cases** — 4141 passed, 0 failed, 3 skipped. The generated inventory
+[`20261104-185100/test-cases.md`](20261104-185100/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Unchanged from the previous run at 4072 cases.
+Moved **4072 → 4144** since the previous run.
 
 **3 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 298 files** (`luacheck .`).
+**0 warnings / 0 errors over 305 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -228,8 +229,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261104-024106`](20261104-024106/) — **this run's measurement, not its diff.** Max CCN **15** across 12977
-functions, **0** of them warned on; 15 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261104-185100`](20261104-185100/) — **this run's measurement, not its diff.** Max CCN **17** across 13321
+functions, **1** of them warned on; 15 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -241,8 +242,7 @@ cell is this file saying something crossed and nobody has ruled on it yet.
 
 | Function | CCN | Location | Disposition |
 |---|---|---|---|
-
-None.
+| `Src.Tabs` | 17 | `LibKa0s/IconBrowserSources.lua` |  |
 
 ### Files by `layout-§1` band
 
@@ -261,7 +261,7 @@ None.
 | 1000–1500 (on notice) | `LibKa0s/Widgets.lua` | 1058 |  |
 | 1000–1500 (on notice) | `LibKa0s/WidgetsDragHandle.lua` | 1016 | **Newly crossed at minor 11 (the marks' art). Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row.** Seam: its tooltip half. **Re-check trigger: 1100 lines.** |
 | 1000–1500 (on notice) | `tests/test_debuglog.lua` | 1000 | **Newly crossed with `R4-SEP`'s console cases. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's `R4-REL2` re-cut.** A suite, so a peel is no release. Seam: the close-button factory across a Core upgrade section, to a suite of its own. **Re-check trigger: 1100 lines, or the next console case added.** |
-| 1000–1500 (on notice) | `tests/test_launcher.lua` | 1196 | **Newly crossed, with `FS-L1`'s skin cases. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's close.** Seam: its *the tooltip follows the skin* section, to a suite of its own. **Re-check trigger: 1200 lines.** |
+| 1000–1500 (on notice) | `tests/test_launcher.lua` | 1218 | **Newly crossed, with `FS-L1`'s skin cases. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's close.** Seam: its *the tooltip follows the skin* section, to a suite of its own. **Re-check trigger: 1200 lines.** |
 | 1000–1500 (on notice) | `tests/test_media.lua` | 1010 | **Newly crossed with `R3-L6` and `R3-L7`. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's `R3-REL` re-cut.** A suite, so a peel is no release. Seam: the font inventory and license section, to a suite of its own. **Re-check trigger: 1100 lines, or the next face added to `FONTS`.** |
 
 `lizard` counts every `and`/`or` short-circuit as a decision, so in Lua a run of

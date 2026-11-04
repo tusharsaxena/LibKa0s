@@ -458,6 +458,19 @@ local function validTab(t)
   return type(t) == "table" and type(t.key) == "string" and t.key ~= "" and type(t.list) == "function"
 end
 
+-- The host's own tabs, in order: a malformed descriptor is skipped and a repeated key keeps the
+-- first. Answers the list and the set of keys it took.
+local function hostTabs(tabs)
+  local out, taken = {}, {}
+  for _, t in ipairs(type(tabs) == "table" and tabs or {}) do
+    if validTab(t) and not taken[t.key] then
+      taken[t.key] = true
+      out[#out + 1] = t
+    end
+  end
+  return out, taken
+end
+
 --- The tabs a host is offered, in order: `spec.tabs` (its own descriptors; a malformed one is
 --- skipped, a repeated key keeps the first), then the built-ins `spec.hide` does not name and no
 --- host tab replaced. `spec.owner` is the host's folder (the glyph tab's paths); `spec.L` its
@@ -468,13 +481,7 @@ function Src.Tabs(spec)
   local owner = type(spec.owner) == "string" and spec.owner or ""
   local L = type(spec.L) == "table" and spec.L or nil
   local hide = type(spec.hide) == "table" and spec.hide or {}
-  local out, taken = {}, {}
-  for _, t in ipairs(type(spec.tabs) == "table" and spec.tabs or {}) do
-    if validTab(t) and not taken[t.key] then
-      taken[t.key] = true
-      out[#out + 1] = t
-    end
-  end
+  local out, taken = hostTabs(spec.tabs)
   for _, key in ipairs(lib.BUILTIN_TABS) do
     if not taken[key] and not hide[key] then
       taken[key] = true
