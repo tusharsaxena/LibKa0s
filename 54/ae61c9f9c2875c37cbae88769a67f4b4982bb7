@@ -1,0 +1,6 @@
+Independent review (R7 reviewer, 2026-11-04): PASS.
+- codeChanged=false is true: git diff --stat master..feat/2026-11-04-smoke-round7 -- LibKa0s tests/_kit is empty; only docs and two test files moved. No v1.86.0, R7-REL/R7-RV not needed.
+- Red check redone in a scratch worktree: freezing OptionsCompose emitSim's get and caching the Launcher menu tick turns all four new R7-L1 cases red (plus the older sim cases); worktree removed.
+- Fresh gate: ka0s-bounded lua tests/run.lua 4073 passed, 0 failed, 3 skipped (4076); ka0s-bounded luacheck . 0/0 in 298 files; largest Lua file 1493 lines.
+- Contract agrees with the standard v2.100.0. Hosts hook the documented <name>SimPanel frame's OnShow/OnHide (after their first ShowPanel) to call O.RefreshScalars.
+- Follow-ups (not fixed, library code would move): OptionsCompose.lua:457 and :975 comments and SIM_TIP still describe isSimMode as 'whether the sim runs' / 'Untick it to stop the simulation'; suite is close to the kit's leak budget.
