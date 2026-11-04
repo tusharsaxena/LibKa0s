@@ -32,6 +32,12 @@ Versions in this release: `LibKa0s-IconBrowser-1.0` key **1.1.1** (new: `IconBro
 - **IconBrowserSources minor 1, not yet shipped, so no bump**: `Src.Tabs` peels its host-tab pass into a local `hostTabs`, from CCN 17 to under the cap, after the first release run (`docs/automated-tests/20261104-185100/`) recorded it as the one function over CCN 15. No behavior moves.
 - **Step 8's re-vendors** are this run's own milestones: Quick Comms (M2) and Outfitter Reborn (M3) take the tag; no other host's surface moved (DebugLogDiagnostics minor 7 changes one report line), so the rest take v1.86.0 at their next re-vendor.
 
+Release gate (`docs/automated-tests/20261104-190021/`): lint pass, 0/0 in 305 files;
+tests pass, 4144 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua`, `SimPanelRender.lua` or `Widgets.lua` minor moved in this release.
+
 ## v1.85.0 — 2026-11-01
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
