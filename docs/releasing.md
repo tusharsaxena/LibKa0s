@@ -358,7 +358,7 @@ the host's behalf, so the art comes out of the host's copy and its name must be 
 | `clear`, `copy` | the DebugLog console's title-bar buttons (`DebugLog.lua`) |
 | `info` | the Options id list's help mark, unless the spec passes its own `helpIcon` (`OptionsIdList.lua`); an owned drag handle's help mark with no `helpIcon` (`WidgetsDragHandle.lua`) |
 | `close` also | the id list's X, the EllesmereUI gate's cross, an owned drag handle's close mark with no `closeIcon` |
-| `confirm` | the EllesmereUI gate's check (`OptionsAppearance.lua`), an owned multi-select dropdown's tick with no `check` (`Widgets.lua`) |
+| `confirm` | the EllesmereUI gate's check (`OptionsAppearance.lua`), an owned multi-select dropdown's tick with no `check`, and from Widgets minor 23 an owned `W.ContextMenu`'s `radio` / `selected` tick with no `opts.check` (`Widgets.lua`) |
 | `chevron-down` | the skin picker's dropdown (`OptionsSkinPicker.lua`), an owned dropdown with no `chevron` (`Widgets.lua`) |
 | `chevron-down`, `chevron-up` | every skinned scroll bar's step buttons (`SkinPaintControls.lua`'s `P.stepArrows`, through `S.ScrollBar` and `SkinAce.lua`) |
 | `reset` | the skin picker's two reset buttons (`OptionsSkinPicker.lua`) |
