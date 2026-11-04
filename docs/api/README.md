@@ -75,6 +75,7 @@ the file you need:
 | `LibKa0s-Slash-1.0` | `<Slash>.<SlashParse>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
 | `LibKa0s-Options-1.0` | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` | `LibStub("LibKa0s-Options-1.0").MODULES` |
+| `LibKa0s-IconBrowser-1.0` | `<IconBrowserSources>` | `LibStub("LibKa0s-IconBrowser-1.0").MODULES` |
 | `LibKa0s-Perf-1.0` | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>` | `LibStub("LibKa0s-Perf-1.0").MODULES` |
 | `LibKa0s-Sim-1.0` | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` | `LibStub("LibKa0s-Sim-1.0").MODULES` |
 
@@ -292,7 +293,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.6.1.4](./DebugLog/version-22.6.1.4-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 4** (an owned console's header on the band, `R5-L3`) | v1.85.0 | **Current** |
+| [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 (unreleased) | **Current** |
+| [22.6.1.4](./DebugLog/version-22.6.1.4-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 4** (an owned console's header on the band, `R5-L3`) | v1.85.0 | Superseded |
 | [22.6.1.3](./DebugLog/version-22.6.1.3-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 3** (a 30 high title bar; no divider under it) | v1.85.0 | Superseded |
 | [22.6.1.2](./DebugLog/version-22.6.1.2-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 6** (the identity header names Charts) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 2 | v1.84.0 | Superseded |
 | [22.5.1.2](./DebugLog/version-22.5.1.2-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 5 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 2** (an owned console's title-bar labels in its skin's body face, so *Ignore fonts* reaches them; its resize grip wears its skin; no new member) | v1.81.0 – v1.83.0 | Superseded |
@@ -433,6 +435,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [5.5.2](./Options/version-5.5.2-docs.md) | `Options.lua` 5 · `OptionsWidgets.lua` 5 · `OptionsScroll.lua` 2 | v1.2.0 – v1.6.3 | Superseded |
 | [4.4.2](./Options/version-4.4.2-docs.md) | `Options.lua` 4 · `OptionsWidgets.lua` 4 · `OptionsScroll.lua` 2 | v1.1.0, v1.1.1 | Superseded |
 | [3.3.2](./Options/version-3.3.2-docs.md) | `Options.lua` 3 · `OptionsWidgets.lua` 3 · `OptionsScroll.lua` 2 | v1.0.0 | Superseded |
+
+### `LibKa0s-IconBrowser-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./IconBrowser/version-1-docs.md) | **`IconBrowserSources.lua` 1** (new: the icon browser's sources as tab descriptors, promoted from Quick Comms) | v1.86.0 (unreleased) | **Current** |
 
 ### `LibKa0s-Perf-1.0`
 

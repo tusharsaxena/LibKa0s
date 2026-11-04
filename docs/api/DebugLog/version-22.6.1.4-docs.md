@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **6** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **4** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 22.6.1.3](./version-22.6.1.3-docs.md) (unreleased, an earlier step of v1.85.0) — an owned console's header was anchored to a drag bar fixed at 1,-1, a px off the band's middle under a 2 px edge. |
-| Superseded by | — |
+| Superseded by | [version 22.7.1.4](./version-22.7.1.4-docs.md) (v1.86.0) — the identity header names `LibKa0s-IconBrowser-1.0`. |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 22, DebugLogDiagnostics = 6, DebugLogGates = 1, DebugLogWindow = 4 }` |
 

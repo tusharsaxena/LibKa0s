@@ -48,6 +48,9 @@ read_globals = {
   -- The client's context menu (11.0+), which LibKa0s-Launcher-1.0's right click opens (minor 4).
   -- Read at call time and guarded: a client without it degrades to opening the settings panel.
   "MenuUtil", "MenuResponse",
+  -- The macro icon selector's lists, which LibKa0s-IconBrowser-1.0 reads (IconBrowserSources.lua,
+  -- IB.MacroIcons). Read at call time, presence-checked and pcall'd.
+  "GetLooseMacroIcons", "GetMacroIcons", "GetLooseMacroItemIcons", "GetMacroItemIcons",
   -- The client's key-binding API and its words, for LibKa0s-Options-1.0's Keybindings tab
   -- (OptionsKeybinds.lua). Every one read bare, at call time, and guarded for absence; the tab
   -- writes no BINDING_* global and never reads Bindings.xml.

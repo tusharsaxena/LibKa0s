@@ -155,6 +155,11 @@ local MAJORS = {
     },
   },
   {
+    major = "LibKa0s-IconBrowser-1.0",
+    files = { "IconBrowserSources" },
+    primary = "IconBrowserSources",
+  },
+  {
     major = "LibKa0s-Perf-1.0",
     files = { "Perf", "PerfSampler", "PerfCommands", "PerfPanel" },
     primary = "Perf",

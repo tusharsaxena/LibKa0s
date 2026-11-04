@@ -1,0 +1,19 @@
+{
+  "major": "LibKa0s-IconBrowser-1.0",
+  "versionKey": "1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "IconBrowserSources", "minor": 1 }
+  ],
+  "members": [
+    { "name": "BUILTIN_TABS", "kind": "table" },
+    { "name": "ColorFrom", "kind": "function" },
+    { "name": "GLYPH_LABELS", "kind": "table" },
+    { "name": "IsGlyph", "kind": "function" },
+    { "name": "MacroIcons", "kind": "function" },
+    { "name": "STRINGS", "kind": "table" },
+    { "name": "Sources", "kind": "table" },
+    { "name": "Tint", "kind": "function" },
+    { "name": "ValidColor", "kind": "function" }
+  ]
+}

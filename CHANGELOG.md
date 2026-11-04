@@ -10,6 +10,17 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.86.0 — unreleased
+
+Opened 2026-11-04, on `feat/2026-11-04-icon-browser`: Quick Comms' icon browser promoted into the library, for Quick Comms and Outfitter Reborn (OutfitterReborn `docs/superpowers/plans/2026-11-04-sheet-window-feedback.md`, M1).
+
+Versions in this release so far: `LibKa0s-IconBrowser-1.0` **1** (new), `LibKa0s-DebugLog-1.0` key **22.7.1.4**; every other file still at its v1.85.0 minor. No `NEEDS_*` floor rises.
+
+### The icon browser's sources (Task 1.1)
+
+- **IconBrowserSources minor 1**, a new major, `LibKa0s-IconBrowser-1.0` ([docs](docs/api/IconBrowser/version-1-docs.md)): Quick Comms' `settings/IconBrowser_Sources.lua`, its glyph helpers and its `Compat.MacroIcons`, with each tab a **descriptor** (`key`, `label`, `tooltip`, `list(filter)`, `name`, `search`, `owns`, `swatch`). `Sources.Tabs(spec)` offers a host's own tabs first, then the built-ins (`markers`, `game`, `glyphs`) its `spec.hide` does not name; `Sources.TabFor(icon, tabs)` asks host tabs first, so a host tab owns its fileIDs before Game icons does. The glyph tab's paths carry `spec.owner`, the host's folder. `IB.IsGlyph(path)` reads a glyph path at any host's folder back to its catalog name; `IB.ValidColor`, `IB.ColorFrom` (false for white) and `IB.Tint` are the stored color; `IB.MacroIcons(kind)` the macro icon selector's lists. Words in `lib.STRINGS`, the same English as Quick Comms', overridable through `spec.L`. Pure: Core, Media and, at call time, Compat. `tests/test_icon_browser_sources.lua` carries the moved Quick Comms cases and the descriptor cases.
+- **DebugLogDiagnostics minor 7**: the report's `LibKa0s running:` line names `IconBrowser`, in `tests/majors.lua` order. No member moves.
+
 ## v1.85.0 — 2026-11-01
 
 Opened 2026-11-01, on `feat/2026-11-01-full-skinning`: change the skin and every Ka0s addon changes with it (Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/`). The tag stays local until the owner's go-ahead.
