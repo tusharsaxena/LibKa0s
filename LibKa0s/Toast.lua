@@ -610,12 +610,13 @@ end
 --- Wire a control the builder made: hovering it holds its toast's countdown, and a right-click on it
 --- closes that toast. Its own scripts are kept (HookScript). Called from the builder, the control
 --- belongs to the toast being drawn; otherwise to the toast whose frame is among its parents, else
---- the head.
+--- the head, else the first frame, which an Attach before the first Show builds (as version 3 wired
+--- a control at any time).
 function METHODS:Attach(widget)
   local S = state(self)
   if type(widget) ~= "table" or type(widget.HookScript) ~= "function" then return end
-  local R = S.building or recordFor(S, widget) or S.shown[1] or S.pool[1]
-  if R then hookPointer(R, widget, false) end
+  local R = S.building or recordFor(S, widget) or S.shown[1] or S.pool[1] or build(S)
+  hookPointer(R, widget, false)
 end
 
 --- Re-read the scale, the saved position and the stack (after the host's settings rows or a

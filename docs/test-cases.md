@@ -411,7 +411,7 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
-### test_toast.lua (87)
+### test_toast.lua (88)
 
 - toast: the major loads at minor 4 and reports its one file
 - toast: without Core the major is absent (no NewLibrary)
@@ -441,6 +441,7 @@ Total.
 - toast: a right-click anywhere closes it; a left-click does not
 - toast: hovering the close mark pauses, and a right-click on it closes
 - toast: Attach wires a host control to the pause and the right-click, keeping its own script
+- toast: Attach before the first Show builds the frame and wires the control to it
 - toast: the frame is the T5 alert tier: HIGH, toplevel, mouse-enabled, clamped
 - toast: the alert sound plays when the host says so, on the host's kit or the default
 - toast: soundFile plays the host's file on Master, and nothing else plays
@@ -4775,7 +4776,7 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
-| test_toast.lua | 87 |
+| test_toast.lua | 88 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -4946,4 +4947,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4192** |
+| **Total** | **4193** |

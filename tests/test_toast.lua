@@ -418,6 +418,20 @@ test("toast: Attach wires a host control to the pause and the right-click, keepi
   t:Attach(nil)   -- not a widget: ignored
 end)
 
+test("toast: Attach before the first Show builds the frame and wires the control to it", function()
+  local t, m = newToast()
+  local button = m.CreateFrame("Button")
+  t:Attach(button)
+  assertTrue(t:Stats().built, "the first frame is built for it")
+  assertFalse(t:Frame():IsShown(), "and stays hidden until a payload is drawn")
+  t:Show("a")
+  assertEqual(live(m), 1)
+  button:__fire("OnEnter")
+  assertEqual(live(m), 0, "hovering the control holds the countdown")
+  button:__fire("OnMouseUp", "RightButton")
+  assertNil(t:Current(), "a right-click on it closes the toast")
+end)
+
 -- ── chrome ───────────────────────────────────────────────────────────────────────────────────
 
 test("toast: the frame is the T5 alert tier: HIGH, toplevel, mouse-enabled, clamped", function()
