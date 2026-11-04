@@ -754,7 +754,7 @@ end
 --- level, over, popup? }), helpers (the host's LibKa0s Options instance), tabs (host tab
 --- descriptors, shown first), hide ({ markers, game, glyphs } = true to hide), L (the host's
 --- overrides of lib.STRINGS), name (the window's global name), print(line), inCombat() -> bool,
---- schedule(sec, fn) -> handle, cancel(handle), copyWindow(d) -> window, trackPicker(swatch),
+--- schedule(sec, fn), copyWindow(d) -> window, trackPicker(swatch),
 --- releasePicker(swatch) }. Only `owner` and `helpers` are required.
 --- @return table browser
 function lib:New(spec)
