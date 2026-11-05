@@ -10,15 +10,21 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.89.0 — unreleased
+## v1.89.0 — 2026-11-05
 
-Opened 2026-11-05, on `feat/2026-11-05-kit-unregister-guard`: a test-kit flake Outfitter Reborn's `tests/test_bar.lua` hit, its profile-switch case failing about one run in six (`LK-K1`).
+Opened 2026-11-05, on `feat/2026-11-05-kit-unregister-guard`: a test-kit flake Outfitter Reborn's `tests/test_bar.lua` hit, its profile-switch case failing about one run in six (`LK-K1`), released as `LK-K2`.
 
-Versions so far: every file at its v1.88.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises.
+Versions in this release: every file at its v1.88.0 minor (no LibStub minor moves), and the test kit at revision **51**. No `NEEDS_*` floor rises.
 
 ### The kit's unregister guard (`LK-K1`)
 
 - **Test kit revision 51** ([docs](docs/api/testkit/version-51-docs.md)): `mock_ace.lua`'s CallbackHandler registry clears a target's entry, live or queued, only where one exists, as CallbackHandler-1.0's `if callbacks[self] then` does. Through revision 50 `Callbacks:unregister` and `Callbacks:unregisterAll` assigned nil unconditionally; in Lua 5.1 that inserts an absent key and can rehash the list, so an `Unregister*` of a target with no registration, made while a dispatch walked the list, raised `invalid key to 'next'` or skipped a registrant, depending on the run's hash order. The new `tests/test_mock_ace.lua` case *unregistering targets that hold no registration leaves a send in flight intact* is red without the guard, on both paths. No member moves and no case name changes; a consumer owes only the re-vendor.
+
+### The release (`LK-K2`)
+
+- **Docs**: `docs/releasing.md` moves its provenance template and semver to v1.89.0 and says in step 8 that v1.89.0 adds no Skin facade member and no instance member; `README.md`'s kit line names v1.89.0 and revision 51; the testkit version 51 document and `docs/api/README.md`'s testkit row drop *unreleased*. The standards pointer stays at **v2.101.0**, the standard's live version.
+- **Step 9's re-sweep** (the sixteen listed hosts, and Outfitter Reborn; 324 lookup lines): every file the sixteen print is named in the *Consumers* table, so no row moves. Outfitter Reborn's lookups other than its `modules/IconBrowserSetup.lua` still get no rows: it is not on step 9's host list.
+- **Step 8's re-vendor** is Outfitter Reborn's first, the consumer whose flake this fixes. No library surface moved, so every other host takes v1.89.0 at its next re-vendor.
 
 ## v1.88.0 — 2026-11-05
 

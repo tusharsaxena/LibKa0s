@@ -9,7 +9,7 @@
 | Payload | `testkit/`, the files version 50 lists |
 | Version | **51** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.89.0 (unreleased) |
+| First released in | v1.89.0 |
 | Status | **Current** |
 | Supersedes | [version 50](version-50-docs.md) — the same surface, with an unregister that could disturb a dispatch in flight |
 | Superseded by | — |
