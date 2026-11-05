@@ -10,6 +10,16 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.89.0 — unreleased
+
+Opened 2026-11-05, on `feat/2026-11-05-kit-unregister-guard`: a test-kit flake Outfitter Reborn's `tests/test_bar.lua` hit, its profile-switch case failing about one run in six (`LK-K1`).
+
+Versions so far: every file at its v1.88.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises.
+
+### The kit's unregister guard (`LK-K1`)
+
+- **Test kit revision 51** ([docs](docs/api/testkit/version-51-docs.md)): `mock_ace.lua`'s CallbackHandler registry clears a target's entry, live or queued, only where one exists, as CallbackHandler-1.0's `if callbacks[self] then` does. Through revision 50 `Callbacks:unregister` and `Callbacks:unregisterAll` assigned nil unconditionally; in Lua 5.1 that inserts an absent key and can rehash the list, so an `Unregister*` of a target with no registration, made while a dispatch walked the list, raised `invalid key to 'next'` or skipped a registrant, depending on the run's hash order. The new `tests/test_mock_ace.lua` case *unregistering targets that hold no registration leaves a send in flight intact* is red without the guard, on both paths. No member moves and no case name changes; a consumer owes only the re-vendor.
+
 ## v1.88.0 — 2026-11-05
 
 Opened 2026-11-05, on `feat/2026-11-05-toast-stack`: stacked toasts for Ka0s Drop Watcher (its issue #14, `LK-T1` of that run's plan), released as `LK-T2`.

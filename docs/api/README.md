@@ -497,7 +497,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [50](./testkit/version-50-docs.md) | same files **plus `skin_values.lua`, `skin_switch.lua`, `test_skin_values.lua` and `test_skin_switch.lua`**: the typed-value gate (`Kit.skinValues`) and the skin-switch test (`Kit.skinSwitch`), each a declared skip until a host adopts it | v1.85.0 | **Current** |
+| [51](./testkit/version-51-docs.md) | same files; **`mock_ace.lua`**: an unregister clears only a registration that exists, as CallbackHandler does, so one made during a dispatch no longer breaks its walk | v1.89.0 (unreleased) | **Current** |
+| [50](./testkit/version-50-docs.md) | same files **plus `skin_values.lua`, `skin_switch.lua`, `test_skin_values.lua` and `test_skin_switch.lua`**: the typed-value gate (`Kit.skinValues`) and the skin-switch test (`Kit.skinSwitch`), each a declared skip until a host adopts it | v1.85.0 | Superseded |
 | [49](./testkit/version-49-docs.md) | same files; **`vendor_sync.lua`**: `chevron-up` joins `VendorSync.LIBRARY_MARKS` | v1.85.0 | Superseded |
 | [48](./testkit/version-48-docs.md) | same files; **`vendor_sync.lua`**: `VendorSync.LIBRARY_MARKS`, `VendorSync.missingMarks`, and the gate goes red on a list that leaves one out | v1.85.0 | Superseded |
 | [47](./testkit/version-47-docs.md) | same files, and `mock_ace.lua`, the Ace fakes moved out of `mock_base.lua` unchanged; a comment in `glyphs.lua` | v1.84.0 | Superseded |

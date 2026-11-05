@@ -4271,7 +4271,7 @@ Total.
 - mock: installIdSuggestions gives an AceGUI EditBox its editbox frame, and nothing else
 - mock: an AceGUI widget answers GetText and records SetType and DisableButton
 
-### test_mock_ace.lua (39)
+### test_mock_ace.lua (40)
 
 - ace: NewAddon with a name embeds exactly the libraries it lists
 - ace: NewAddon refuses what AceAddon refuses
@@ -4291,6 +4291,7 @@ Total.
 - ace: UnregisterAllMessages drops this target's messages and nobody else's
 - ace: the library's own SendMessage fans out, and the registry holds a function as given
 - ace: a registration made while a message is being sent waits for the send to finish
+- ace: unregistering targets that hold no registration leaves a send in flight intact
 - ace: __fireEvent dispatches a game event the way CallbackHandler does
 - ace: an event the client does not know raises on its first registration
 - ace: ScheduleTimer queues a timer __fireTimers runs, with its arguments
@@ -4513,7 +4514,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 50
+- the kit is revision 51
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -4924,7 +4925,7 @@ Total.
 | test_kit_bindings.lua | 17 |
 | test_glyph_guard.lua | 12 |
 | test_mock_base.lua | 33 |
-| test_mock_ace.lua | 39 |
+| test_mock_ace.lua | 40 |
 | test_mock_record.lua | 42 |
 | test_mock_events.lua | 14 |
 | test_mock_resize.lua | 6 |
@@ -4950,4 +4951,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4196** |
+| **Total** | **4197** |

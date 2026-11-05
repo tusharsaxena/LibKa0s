@@ -334,6 +334,45 @@ test("ace: a registration made while a message is being sent waits for the send 
   assertEqual(lateHeard, 1, "and hears the next one")
 end)
 
+test("ace: unregistering targets that hold no registration leaves a send in flight intact", function()
+  -- CallbackHandler clears a registration only where one exists (`if callbacks[self] then`). In Lua
+  -- 5.1 assigning nil to an ABSENT key still inserts it, and once the table's free nodes run out it
+  -- rehashes, dropping the dead key of a handler that just unregistered itself, so the dispatch's
+  -- next(list, key) raises "invalid key to 'next'" or skips a registrant (kit revision 51; through
+  -- revision 50 a consumer's profile-switch case failed about one run in six). Forty absent targets
+  -- are more than the list's free nodes, so the rehash is certain without the guard.
+  local M = buildMocks()
+  local AceEvent = M.LibStub("AceEvent-3.0")
+  local ghosts = {}
+  for i = 1, 40 do ghosts[i] = AceEvent:Embed({}) end
+  local heard = {}
+  for i = 1, 3 do
+    local t = AceEvent:Embed({})
+    t:RegisterMessage("WAVE", function()
+      heard[#heard + 1] = i
+      t:UnregisterMessage("WAVE")
+      for _, g in ipairs(ghosts) do g:UnregisterMessage("WAVE") end
+    end)
+    t:RegisterMessage("SURF", function()
+      heard[#heard + 1] = i
+      t:UnregisterAllMessages()
+      AceEvent.UnregisterAllMessages(unpack(ghosts))
+    end)
+  end
+  local ok, err = pcall(AceEvent.SendMessage, AceEvent, "WAVE")
+  assertTrue(ok, "UnregisterMessage of absent targets mid-send did not break the walk: " .. tostring(err))
+  assertEqual(#heard, 3, "and every registrant heard the message once")
+  for _, g in ipairs(ghosts) do
+    assertEqual(rawget(M.__msgRegistry.WAVE, g), nil, "no absent target was given a registration")
+  end
+  heard = {}
+  ok, err = pcall(AceEvent.SendMessage, AceEvent, "SURF")
+  assertTrue(ok, "UnregisterAllMessages of absent targets mid-send did not break the walk: " .. tostring(err))
+  assertEqual(#heard, 3, "and every registrant heard that one once too")
+  assertNil(next(M.__msgRegistry.SURF), "each registrant took itself off as it ran")
+  assertNil(next(M.__msgRegistry.WAVE), "and the other list is as empty")
+end)
+
 -- ── AceEvent: firing game events, and the events the client does not know ──────────────────────
 
 test("ace: __fireEvent dispatches a game event the way CallbackHandler does", function()
