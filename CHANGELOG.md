@@ -26,6 +26,12 @@ Versions in this release: every file at its v1.88.0 minor (no LibStub minor move
 - **Step 9's re-sweep** (the sixteen listed hosts, and Outfitter Reborn; 324 lookup lines): every file the sixteen print is named in the *Consumers* table, so no row moves. Outfitter Reborn's lookups other than its `modules/IconBrowserSetup.lua` still get no rows: it is not on step 9's host list.
 - **Step 8's re-vendor** is Outfitter Reborn's first, the consumer whose flake this fixes. No library surface moved, so every other host takes v1.89.0 at its next re-vendor.
 
+Release gate (`docs/automated-tests/20261105-234356/`): lint pass, 0/0 in 306 files;
+tests pass, 4200 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua`, `SimPanelRender.lua` or `Widgets.lua` minor moved in this release; no `LibKa0s/` file moved at all.
+
 ## v1.88.0 — 2026-11-05
 
 Opened 2026-11-05, on `feat/2026-11-05-toast-stack`: stacked toasts for Ka0s Drop Watcher (its issue #14, `LK-T1` of that run's plan), released as `LK-T2`.
