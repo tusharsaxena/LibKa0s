@@ -27,6 +27,12 @@ Versions in this release: `LibKa0s-Toast-1.0` key **4** (`Toast.lua` **4**); eve
 - **Step 9's re-sweep** (the sixteen listed hosts, and Outfitter Reborn; 323 lookup lines): every file the sixteen print is named in the *Consumers* table, so no row moves. The Toast lookups are unchanged, DpsRace's and Drop Watcher's `core/ToastSetup.lua`. Outfitter Reborn's lookups other than its `modules/IconBrowserSetup.lua` still get no rows: it is not on step 9's host list.
 - **Step 8's re-vendor** is Drop Watcher's, the stack's one consumer (its issue #14). DpsRace's surface did not move (it passes no stack field), so it and the rest take v1.88.0 at their next re-vendor.
 
+Release gate (`docs/automated-tests/20261105-064630/`): lint pass, 0/0 in 306 files;
+tests pass, 4199 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua`, `SimPanelRender.lua` or `Widgets.lua` minor moved in this release.
+
 ## v1.87.0 — 2026-11-05
 
 Opened 2026-11-05, on `feat/2026-11-05-cascading-menus`: true cascading menus for Outfitter Reborn's outfit menu (OutfitterReborn `docs/superpowers/plans/2026-11-05-smoke-round-2.md`, Task 1; its design's G4). The tag is cut on `feat/2026-11-05-cascading-menus`; the merge to master waits for the owner.
