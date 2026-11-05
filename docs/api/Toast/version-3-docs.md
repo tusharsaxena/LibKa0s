@@ -12,7 +12,7 @@
 | Shipped in | v1.85.0 |
 | Status | Superseded |
 | Supersedes | [version 2](./version-2-docs.md) (unreleased, an earlier step of v1.85.0) — an owned toast wore the bare `S.Shell` that `Core.ApplySkin` hands it, so once the Skin major drew its top band over a backdrop window's fill (SkinPaint minor 18) a toast would have shown a 30 px band across its top. |
-| Superseded by | [version 4](./version-4-docs.md) (v1.88.0, unreleased) — the stack: `stack`, `stackGrow`, `stackGap`, `SetStack`, `Visible` and `FrameFor`, all opt-in. |
+| Superseded by | [version 4](./version-4-docs.md) (v1.88.0) — the stack: `stack`, `stackGrow`, `stackGap`, `SetStack`, `Visible` and `FrameFor`, all opt-in. |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`) |
 | Optional at call time | Core's `ApplySkin` and `MakeCloseButton`, each presence-checked; through them, `LibKa0s-Media-1.0` (the close icon) and `LibKa0s-Skin-1.0` (the owner's skin), neither read by this file |
 | Confirm in-game | `LibStub("LibKa0s-Toast-1.0").MODULES` → `{ Toast = 3 }` |

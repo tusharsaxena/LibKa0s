@@ -67,7 +67,7 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
-**v1.88.0, not in the census (2026-11-05, unreleased).** Toast minor 4 adds the stack: the optional descriptor
+**v1.88.0, not in the census (2026-11-05).** Toast minor 4 adds the stack: the optional descriptor
 fields `stack`, `stackGrow` and `stackGap`, the lib-level `STACK_GAP` and the instance members `SetStack`, `Visible` and
 `FrameFor` ([its document](Toast/version-4-docs.md)). Ka0s Drop Watcher is the one planned consumer (its issue #14: `stack`,
 `stackGrow` and `SetStack` behind its settings rows); Ka0s DPS Race stays one toast at a time and passes none of them. They

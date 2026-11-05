@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Toast-1.0` |
 | File | `Toast.lua` minor **4** |
-| Shipped in | v1.88.0 (unreleased) |
+| Shipped in | v1.88.0 |
 | Status | **Current** |
 | Supersedes | [version 3](./version-3-docs.md) (v1.85.0 – v1.87.0) — one toast on screen at a time, with no way to show several at once. |
 | Superseded by | — |

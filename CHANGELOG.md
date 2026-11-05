@@ -10,15 +10,22 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.88.0 — unreleased
+## v1.88.0 — 2026-11-05
 
-Opened 2026-11-05, on `feat/2026-11-05-toast-stack`: stacked toasts for Ka0s Drop Watcher (its issue #14, `LK-T1` of that run's plan). The version is not bumped and no tag is cut; this block is the record `tests/test_versioning.lua` reads for the minor that moved.
+Opened 2026-11-05, on `feat/2026-11-05-toast-stack`: stacked toasts for Ka0s Drop Watcher (its issue #14, `LK-T1` of that run's plan), released as `LK-T2`.
 
-Versions so far: `LibKa0s-Toast-1.0` **4**; every other file at its v1.87.0 minor, and the test kit at revision **50**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Toast-1.0` key **4** (`Toast.lua` **4**); every other file at its v1.87.0 minor, and the test kit at revision **50**. No `NEEDS_*` floor rises. The tag is cut at the merge, on the owner's go-ahead.
 
 ### The stack (`LK-T1`)
 
 - **Toast minor 4** ([docs](docs/api/Toast/version-4-docs.md)): the stack, opt-in. Three descriptor fields, each a value or a getter: `stack` (how many toasts show at once, floored, anything but a number of at least 1 is 1), `stackGrow` (`"DOWN"`, the default, or `"UP"`) and `stackGap` (the space between two toasts in the toast's own units, else `lib.STACK_GAP`, `6`, new). Each toast on screen has its own frame from a pool the instance builds as it needs and reuses, its own countdown, hover pause, close mark and right-click; the head sits at the saved point and each toast after it hangs off the one before, on the saved point's side. A toast that closes re-flows the rest onto the head and the next waiting payload comes up at the tail; `maxQueue` still bounds only what waits, and a toast sent back from the screen to wait (`Hold()`, a smaller stack, a preview's full stack) drops nothing, where minor 3 trimmed the newest waiting payload for it. `Hold()` puts every toast on screen back at the head of the queue in its order, `Remove(key)` closes every visible toast under `key` and drops every waiting one, `Dismiss` closes the head, `Preview` shows at the head and sends a full stack's tail back to wait, and a drag on any toast moves the head, whose point is the one saved; a drag holds every countdown on screen and keeps the point it reached however it ends. Three instance members: **`SetStack(n, grow)`** (the host's settings rows; a smaller stack sends its tail back to the head of the queue, a larger one fills), **`Visible()`** (the keys on screen, head first) and **`FrameFor(key)`**. `Stats()` keeps every field and adds `visible`, `visibleKeys`, `stack` and `grow`; `Current()` and `Frame()` answer the head. `Refresh()` re-reads the stack fields with the scale and the position, dropping an earlier `SetStack` so the descriptor answers again. **Without `stack`, or with 1, the toast is the minor 3 toast**: the existing cases in `tests/test_toast.lua` pass unchanged but for the minor they pin, and the new `toast stack:` cases pin the stack. A host's instance stub gains `SetStack`, `Visible` and `FrameFor` at its re-vendor. Drop Watcher takes the stack; DpsRace stays one at a time.
+- **Attach before the first Show** builds the stack's first frame, hidden, and wires the control to it, where version 4 had first wired nothing with an empty pool; a toast case pins it.
+
+### The release (`LK-T2`)
+
+- **Docs**: `docs/releasing.md` moves its provenance template and semver to v1.88.0 and says in step 8 that v1.88.0 adds no Skin facade member (a host's Toast instance stub gains `SetStack`, `Visible` and `FrameFor`); `README.md`'s kit line names v1.88.0; the Toast version 4 document, the version 3 document's *Superseded by*, `docs/api/README.md`'s Toast row, `docs/api/CONSUMERS.md` and the release guide's Toast consumers row drop *unreleased*. The standards pointer stays at **v2.101.0**, the standard's live version. `docs/test-cases.md` regenerated.
+- **Step 9's re-sweep** (the sixteen listed hosts, and Outfitter Reborn; 323 lookup lines): every file the sixteen print is named in the *Consumers* table, so no row moves. The Toast lookups are unchanged, DpsRace's and Drop Watcher's `core/ToastSetup.lua`. Outfitter Reborn's lookups other than its `modules/IconBrowserSetup.lua` still get no rows: it is not on step 9's host list.
+- **Step 8's re-vendor** is Drop Watcher's, the stack's one consumer (its issue #14). DpsRace's surface did not move (it passes no stack field), so it and the rest take v1.88.0 at their next re-vendor.
 
 ## v1.87.0 — 2026-11-05
 
