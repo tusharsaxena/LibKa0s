@@ -25,7 +25,7 @@ local OWNER, OTHER = "LootHistory", "BankLedger"
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest",
                   "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsCombat", "OptionsCompose",
                   "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds" }
-local WFILES = { "Widgets", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
+local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
                  "WidgetsCopyWindow" }
 local SPELL, SPELL_ICON = 21562, 135987
 

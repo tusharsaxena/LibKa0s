@@ -27,7 +27,10 @@ function F.env(opts)
   opts = opts or {}
   local m = buildMocks()
   Loader.load("LibKa0s/Core.lua", nil, m)
-  if not opts.noWidgets then Loader.load("LibKa0s/Widgets.lua", nil, m) end
+  if not opts.noWidgets then
+    Loader.load("LibKa0s/Widgets.lua", nil, m)
+    Loader.load("LibKa0s/WidgetsDropdown.lua", nil, m)
+  end
   Loader.load("LibKa0s/Sim.lua", nil, m)
   Loader.load("LibKa0s/SimTimeline.lua", nil, m)
   local core = m.LibStub("LibKa0s-Core-1.0")

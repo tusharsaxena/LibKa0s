@@ -411,7 +411,7 @@ Total.
 - glow: stateless -- Start never stops, and repeated Starts all reach LCG
 - glow: Glow.lua names LibStub(...) only in the Core probe and the LCG resolver
 
-### test_toast.lua (91)
+### test_toast.lua (55)
 
 - toast: the major loads at minor 4 and reports its one file
 - toast: without Core the major is absent (no NewLibrary)
@@ -468,6 +468,9 @@ Total.
 - toast: on a Core with no ApplySkin or MakeCloseButton it still shows and closes
 - toast: a close mark Core cannot build (no frame) leaves the toast without one
 - toast: two instances keep separate queues and frames
+
+### test_toast_stack.lua (36)
+
 - toast stack: with stack = 3, three of five show at once and two wait
 - toast stack: each visible toast has its own countdown
 - toast stack: closing one re-flows the rest and pulls the next from the queue
@@ -1603,7 +1606,7 @@ Total.
 - skin scope: the outline setting re-fits a fitted strip as a skin switch does
 - skin scope: a label set by path that still answers its template object lends the path
 
-### test_widgets_pixel_edges.lua (11)
+### test_widgets_pixel_edges.lua (13)
 
 - pixel edges: the dropdown, the search box and the shared menu are one physical pixel with no skin
 - pixel edges: the autocomplete list is one physical pixel
@@ -1616,6 +1619,8 @@ Total.
 - pixel lines: a ReorderList row box's edges are one physical pixel, and re-size on a scale change
 - pixel lines: a DragHandle strip's edges are one physical pixel, and re-size on a scale change
 - pixel lines: under a skin the three lines stay one physical pixel through a paint and a switch
+- pixel lines: the line chart's axis, grid, markers, crosshair and series are physical pixels, re-sized
+- pixel lines: an owned line chart keeps physical pixels through a skin switch
 
 ### test_debuglog.lua (75)
 
@@ -4795,7 +4800,8 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_glow.lua | 15 |
-| test_toast.lua | 91 |
+| test_toast.lua | 55 |
+| test_toast_stack.lua | 36 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -4837,7 +4843,7 @@ Total.
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
 | test_widgets_skin_scope.lua | 20 |
-| test_widgets_pixel_edges.lua | 11 |
+| test_widgets_pixel_edges.lua | 13 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -4967,4 +4973,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4209** |
+| **Total** | **4211** |

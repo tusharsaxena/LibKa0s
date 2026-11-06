@@ -37,6 +37,7 @@ end
 
 local function withWidgets(m)
   Loader.load("LibKa0s/Widgets.lua", nil, m)
+  Loader.load("LibKa0s/WidgetsDropdown.lua", nil, m)
   return m.LibStub("LibKa0s-Widgets-1.0")
 end
 

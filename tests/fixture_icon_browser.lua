@@ -25,7 +25,7 @@ local OWNER = "TestHost"
 local SKULL = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8"
 local OPENER = "TestHostOpener"
 
-local SKIN = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintControls" }
+local SKIN = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls" }
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest",
   "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav",
   "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows",
@@ -72,6 +72,7 @@ local function env(opts)
   for _, f in ipairs(SKIN) do files[#files + 1] = f end
   files[#files + 1] = "Pool"
   files[#files + 1] = "Widgets"
+  files[#files + 1] = "WidgetsDropdown"
   files[#files + 1] = "WidgetsCopyWindow"
   for _, f in ipairs(OPTIONS) do files[#files + 1] = f end
   for _, f in ipairs(opts.files or { "IconBrowserSources", "IconBrowserWindow", "IconBrowser" }) do

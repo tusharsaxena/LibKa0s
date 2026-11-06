@@ -45,7 +45,7 @@ end)
 
 test("skin eui: without SkinEUI the engine keeps eui a stored choice on the owner's Ka0s skin", function()
   local m2, Skin2 = F.env({ files = { "Core", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras",
-                                     "SkinPaintControls" } })
+                                     "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls" } })
   E.install(m2)
   local S = E.owner(Skin2, OWNER, "eui", "ka0s")
   m2.eui.login()

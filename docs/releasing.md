@@ -4,8 +4,8 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.90.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
-| File minor (integer) | `MINOR` / `PARSE_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
+| Repo semver (`v1.91.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
 is offered for a major and discards the rest, so of the copies vendored across every installed addon,
@@ -25,11 +25,11 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   sixty-seven, by their exact constant names: `MINOR` in `Core.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   seventy-one, by their exact constant names: `MINOR` in `Core.lua`, `PIXEL_MINOR` in `CorePixel.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Glow.lua`, `MINOR` in `Toast.lua`, `MINOR` in `Charts.lua`, `RENDER_MINOR` in `ChartsRender.lua`, `MINOR` in `Media.lua`, `ICONS_MINOR` in `MediaIcons.lua` (a generated file: change the
-   constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `TOKENS_MINOR` in `SkinOwnerTokens.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `OTHERS_MINOR` in `SkinDefsOthers.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
-   `Slash.lua`, `PARSE_MINOR` in `SlashParse.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `REORDER_MINOR` in
+   constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `TOKENS_MINOR` in `SkinOwnerTokens.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `OTHERS_MINOR` in `SkinDefsOthers.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `HUD_MINOR` in `SkinPaintHud.lua`, `CONFIRM_MINOR` in `SkinAceConfirm.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
+   `Slash.lua`, `PARSE_MINOR` in `SlashParse.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `DROPDOWN_MINOR` in `WidgetsDropdown.lua`, `REORDER_MINOR` in
    `WidgetsReorder.lua`, `DRAG_MINOR` in
    `WidgetsDragHandle.lua`, `CHART_MINOR` in `WidgetsLineChart.lua`, `AUTOCOMPLETE_MINOR` in `WidgetsAutocomplete.lua`, `COPY_MINOR` in `WidgetsCopyWindow.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WINDOW_MINOR` in `DebugLogWindow.lua`, `WIDGETS_MINOR` in
    `OptionsWidgets.lua`, `FLOW_MINOR` in `OptionsFlow.lua`, `IDS_MINOR` in `OptionsIds.lua`, `SUGGEST_MINOR` in `OptionsIdSuggest.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
@@ -267,6 +267,16 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    it moves the test kit alone (revision 51), and no LibStub minor. Nor does v1.90.0: Core minor 16's
    pixel edges and Widgets minor 25's `__pixelLine` are internal, Skin minor 17's `keepScope` is a `RegisterOwner` option, and no member
    moves on the major, a facade or an instance. Ka0s Skin Tester registers with `keepScope = true`.
+   Nor does v1.91.0: WidgetsLineChart minor 7 changes how thick the chart's lines draw, and the four
+   peels move code between files with every member where it was. **What the peels do owe is a test
+   loader line.** v1.91.0 adds four payload files — `CorePixel.lua`, `WidgetsDropdown.lua`,
+   `SkinPaintHud.lua` and `SkinAceConfirm.lua`, each loaded by `LibKa0s.xml` directly after its
+   shell or sibling — so a consumer whose tests load library files by name (a `tests/loader.lua`, a
+   suite's own file list, a surface-parity or budget suite) adds each new file beside the one it was
+   peeled from, in the re-vendor commit. A list that keeps the old file alone loads a Core with no
+   pixel members, a Widgets with no `Dropdown`, `ContextMenu` or `CloseMenu`, and a Skin major
+   with no `BarGloss` or `HudFont`; a host suite that reaches for them goes red, and one that
+   does not silently tests the degraded payload instead of the shipped one.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 
@@ -285,7 +295,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the sixty-seven `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the seventy-one `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
@@ -332,7 +342,7 @@ Three traps in the kit-40 sequence, one rule each:
 the copy. The tool reads the declaration under it, and on a consumer that has no line yet it finds
 none, removes nothing and the copy is committed whole:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.90.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.91.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
@@ -1181,6 +1191,8 @@ The tag moves once more for the Sim mode checkbox (`R6-SIM-L`, Ka0sAddonsCommonT
 The tag does **not** move for the owner's seventh smoke round's Sim mode rule (`R7-L1`, Ka0sAddonsCommonTasks `docs/2026-11-04-SMOKE_ROUND7/`, call 2: "checked while the sim window is open and/or a sim is running"). The library already expresses it. The Master controls row's get is the host's `isSimMode()` verbatim, its `set(v)` calls `toggleSim()` only when `v` differs, and it re-reads after every write, on every `O.RefreshScalars()` and on each show of its panel. The Launcher menu's Sim mode entry asks `isSimMode()` every time the client draws it. No file under `LibKa0s/` or `tests/_kit/` moved, so there is no re-cut, no re-vendor and no minor. The contract is now stated in the current Options and Launcher documents, and pinned by the *R7-L1* cases in `tests/test_options_compose_sim.lua` and `tests/test_launcher.lua`. **Hosts owe, in one list** (every host with a simulation: AbsorbTracker, BankLedger, DpsRace, DropWatcher, KickCD, LootHistory and MultiMeters): (1) `isSimMode` answers `simWindowShown or simRunning`, read from the same state the sim window and the session report, and both the `MasterControls` spec and the Launcher descriptor carry that one function; (2) `toggleSim` stays the bare `/<slash> sim` verb. From off it opens the sim window, so the box stays ticked after a tick. From *window open, idle* it closes the window, and from running it stops the sim and closes the window, so one untick, or one click on the launcher's entry, leaves the box unticked. A host whose bare verb today only toggles a running sim, or only opens the window, changes the verb's off branch, not the composer's; (3) the host calls `O.RefreshScalars()` from the sim window's `OnShow` and `OnHide` as well as from its sim's listener, so an open settings page follows a window opened or closed from the slash verb, the launcher or the window's own close button. The launcher's menu needs nothing: it asks again on every open; (4) **one smoke check per host**: with Master controls open, `/<slash> sim` opens the window idle and the box is ticked; untick it: the window closes and the box is unticked; tick it: the window opens and the box stays ticked; start a run from the window, close the window with its close button while it runs (where the host lets a run outlive its window): the box stays ticked until the run ends; with the window open and idle, the launcher's right-click menu shows Sim mode ticked, and clicking it closes the window. Hosts without a simulation owe nothing.
 
 The local tag `v1.90.0` moves once, before any push, for the three lines its first cut left on one UI unit (`SF2-L1`, folded in as `SF2-L2`, Ka0sAddonsCommonTasks `docs/2026-11-06-REVENDOR_LIBKA0S_V1_89/SF2_REMAINING_EDGES.md`), so a re-vendor of the first cut comes again. Widgets moves to minor 25, WidgetsReorder to 6 and WidgetsDragHandle to 13 (Widgets key 25.6.13.6.8.5, whose document replaces the unreleased 24.5.12.6.8.5 one): the shared menu's divider rule at every depth, a ReorderList row box's edges and a DragHandle strip's own edges are one physical pixel at any UI scale, re-sized on a scale change, through Core minor 16's pixel size and watch. **Hosts owe, in one list**: (1) a re-vendor, nothing else in code: no member, option, facade or stub moves, and no `NEEDS_*` floor rises; (2) a host suite that pins a row box's or a strip's edge thickness reads physical pixels, which the kit's mocks answer as 1 where no `PixelUtil` is stubbed; (3) a host's own `spec.edge` painter is still called with `size = 1`. Step 5 names no host: `Widgets.lua` moved, but `W.TestStrip` draws none of the three lines, and no Sim file moved. The release run is taken again (`docs/automated-tests/20261106-155947/`).
+
+**Step 9 was run for v1.91.0 on 2026-11-06** (`FU-L3`), over the sixteen listed hosts: 305 lookup lines in 284 files, Outfitter Reborn's 19 aside. Every file the sixteen print is named in the Consumers table, so no row moves. The line chart's pixel lines and the four peels add no lookup: a host still finds Core, Widgets and Skin by their majors.
 
 **Step 9 was run for v1.90.0 on 2026-11-06** (`SF1-L3`), over the sixteen listed hosts: 305 lookup lines, Outfitter Reborn's 19 aside. Every file the sixteen print is named in the Consumers table, so no row moves. The pixel edges and `keepScope` add no lookup, and neither do the refresh's three lines (`SF2-L2`).
 

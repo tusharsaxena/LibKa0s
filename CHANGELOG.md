@@ -10,6 +10,38 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.91.0 — 2026-11-06
+
+Opened 2026-11-06, on `feat/2026-11-06-followups-v1-91`: the follow-ups v1.90.0's run left open (Ka0sAddonsCommonTasks `docs/2026-11-06-FOLLOWUPS_V1_91/00_PLAN.md`), `FU-L1` and `FU-L2` of that run, released as `FU-L3`.
+
+Versions in this release: `LibKa0s-Core-1.0` key **17.1** (Core minor 17, CorePixel minor 1); `LibKa0s-Widgets-1.0` key **26.1.6.13.7.8.5** (Widgets minor 26, WidgetsDropdown minor 1, WidgetsLineChart minor 7); `LibKa0s-Skin-1.0` key **17.1.27.8.19.19.1.1.17.4.9** (SkinPaintExtras minor 19, SkinPaintHud minor 1, SkinAceConfirm minor 1); every other file at its v1.90.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises. The tag is cut locally and pushed only at the run's finalize.
+
+### The line chart's lines in physical pixels (`FU-L1`)
+
+- **WidgetsLineChart minor 7** ([docs](docs/api/Widgets/version-26.1.6.13.7.8.5-docs.md)): the chart's axis, grid rules, markers (dashed and solid) and hover crosshair are one PHYSICAL pixel at any UI scale, and a series is `series[i].thickness` physical pixels, `1.5` by default; a host's thickness is read as pixels too. Each was a `Line:SetThickness` in UI units, 1 or 2 px by the UI scale. Every pooled Line and the crosshair of every chart is laid again when the UI scale, the display size or a `SetScale` of the chart or an ancestor moves the pixel size, with no render, through Core minor 16's `__PixelSize`, `__WatchPixels` and `__OnPixelScale`: the mechanism v1.90.0's edges use, not a second one. The area fill's columns are a spacing (`LINE_CHART.FILL_STEP`) and stay in UI units. Feature-detected: under a Core older than minor 16 a thickness is UI units, as before. No member, option or data field moves.
+- **Tests**: two cases in `tests/test_widgets_pixel_edges.lua`, at a pixel of 0.5 UI units (every line kind, a host thickness and the fill, re-sized on a UI scale change and a window's `SetScale` with no render; an owned chart through a skin switch), red under v1.90.0.
+
+### The band files peeled (`FU-L2`)
+
+Each a pure move on the seam `CLAUDE.md`'s census named, so that no payload file the owner ruled on stays in `layout-§1`'s 1000–1500 band. No member, option or behavior changes; the existing suites pass unchanged apart from the file lists that load the moved code.
+
+- **Core minor 17, CorePixel minor 1** ([docs](docs/api/Core/version-17.1-docs.md)): the pixel edges section (`__PixelSize`, `__OnPixelScale`, `__WatchPixels`, `__PixelBackdrop`, `__RefreshPixelBackdrops` and their state) moved to the new `CorePixel.lua`, loaded after `Core.lua` and paired on its minor. `Core.lua` 1080 -> 949. A payload without the file has no pixel members, and Widgets and the Skin major draw in UI units, as under a Core older than minor 16.
+- **Widgets minor 26, WidgetsDropdown minor 1** ([docs](docs/api/Widgets/version-26.1.6.13.7.8.5-docs.md)): the dropdown and the one popup menu every instance of it drops (`lib.Dropdown`, `lib.ContextMenu`, `lib.CloseMenu`, the cascading levels and their rows) moved to the new `WidgetsDropdown.lua`, loaded after `Widgets.lua`, paired on its minor and with its `NEEDS_CORE = 1` floor. The shell keeps the search box, the mode strip and `lib.IconText`, and hands the new file `lib.__dropdownKit`. `Widgets.lua` 1312 -> 559. A payload without the file has no dropdown and no shared menu.
+- **SkinPaintExtras minor 19, SkinPaintHud minor 1, SkinAceConfirm minor 1** ([docs](docs/api/Skin/version-17.1.27.8.19.19.1.1.17.4.9-docs.md)): AceConfigDialog's confirmation box for a Ka0s profile page (`__AceConfirmArm`, `__AceConfirmRaised`, `__AceConfirmHidden`, the `__aceConfirm` registry), the seam the census named, moved to the new `SkinAceConfirm.lua`; that alone left the file at 1058, so the HUD's two shared looks (`S.BarGloss`, `S.HudFont` and their font-object registry) moved to the new `SkinPaintHud.lua`. Both load after `SkinPaintExtras.lua`, are paired on the Skin shell and attach only beside `SkinPaint.lua`'s helpers, as the extras do. `SkinPaintExtras.lua` 1217 -> 922. A payload without them has no `BarGloss` or `HudFont`, and the profile delete box stays stock.
+- **Tests**: `tests/test_toast.lua` 1302 -> 760, its stack cases moved unchanged to the new `tests/test_toast_stack.lua` and its bench to `tests/fixture_toast.lua`. The suites and fixtures that load the peeled files by name load the new ones beside them; no case changes otherwise, and the total stays at 4214.
+
+### The release (`FU-L3`)
+
+- **Docs**: `docs/releasing.md` moves its provenance template and semver to v1.91.0; step 8 says v1.91.0 adds no Skin facade, major or instance member, and that a consumer whose tests load library files by name adds the four new files (`CorePixel.lua`, `WidgetsDropdown.lua`, `SkinPaintHud.lua`, `SkinAceConfirm.lua`) beside the files they were peeled from, in its re-vendor commit; step 9's sweep is recorded. `README.md`'s kit line names v1.91.0 (kit revision 51, unchanged); its standards pointer stays at v2.102.2, the standard's live version. The three new API documents' *Shipped in* and `docs/api/README.md`'s rows drop *unreleased*; their predecessors' *Superseded by* already name v1.91.0. `docs/test-cases.md` regenerated.
+- **Step 9's re-sweep** (the sixteen listed hosts: 305 lookup lines): every file the sixteen print is named in the *Consumers* table, so no row moves.
+- **Step 8's re-vendor** is every roster addon's, Outfitter Reborn included (`FU-RV-<X>` of the run). Each host owes the copy and its provenance line; a host test loader or file list that names library files adds the four new ones. Loot History and Ka0s Skin Tester draw a line chart, so their charts' lines draw one physical pixel after the re-vendor. No host owes a facade or stub member.
+
+Release gate (`docs/automated-tests/20261106-191446/`): lint pass, 0/0 in 313 files;
+tests pass, 4214 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Current — `Widgets.lua` (minor 26, which defines `W.TestStrip`) re-read with `tests/test_widgets_teststrip.lua`, `tests/fixture_sim_panel.lua`, `tests/test_sim_isolation.lua` and the Widgets 26.1.6.13.7.8.5 document: the strip's code is unchanged by the dropdown peel, and the two Sim test files only load `WidgetsDropdown.lua` beside `Widgets.lua`; no Sim file moved, and no host's scenarios or strips are affected.
+
 ## v1.90.0 — 2026-11-06
 
 Opened 2026-11-06, on `feat/2026-11-06-revendor-libka0s-v1-89`: the owner's first smoke feedback on the v1.89.0 re-vendor (Ka0sAddonsCommonTasks `docs/2026-11-06-REVENDOR_LIBKA0S_V1_89/SF1_SMOKE_FEEDBACK.md`), `SF1-L1` and `SF1-L2` of that run, released as `SF1-L3`. Refreshed before any push for the owner's second request (`SF2_REMAINING_EDGES.md` of the same bundle): `SF2-L1`, folded in as `SF2-L2`, and the local tag moved to the refresh.

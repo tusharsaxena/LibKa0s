@@ -10,7 +10,7 @@ local test, assertEqual, assertTrue, assertNil = K.test, K.assertEqual, K.assert
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER = "LootHistory"
-local WFILES = { "Widgets", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
+local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
                  "WidgetsCopyWindow", "Glow" }
 
 local LSM = setmetatable({}, { __index = function(_, k)

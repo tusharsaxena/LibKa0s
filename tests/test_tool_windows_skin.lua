@@ -19,7 +19,7 @@ local test, assertEqual, assertTrue, assertNil = T.test, T.assertEqual, T.assert
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER, OTHER = "LootHistory", "BankLedger"
-local TOOL_FILES = { "Widgets", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
+local TOOL_FILES = { "Widgets", "WidgetsDropdown", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
   "DebugLogWindow", "Lifecycle", "Perf", "PerfSampler", "PerfCommands", "PerfPanel", "Sim", "SimTimeline",
   "SimPanel", "SimPanelRender" }
 
@@ -36,7 +36,7 @@ end
 --- majors. Named frames are kept in m.__named (the kit's CreateFrame sets no global).
 local function env(noSkin)
   local files = {}
-  for _, f in ipairs(noSkin and { "Core" } or F.FILES) do files[#files + 1] = f end
+  for _, f in ipairs(noSkin and { "Core", "CorePixel" } or F.FILES) do files[#files + 1] = f end
   for _, f in ipairs(TOOL_FILES) do files[#files + 1] = f end
   local m, Skin = F.env({ files = files })
   m.__named = {}

@@ -17,7 +17,7 @@ local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER = "LootHistory"
-local WFILES = { "Widgets", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
+local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
                  "WidgetsCopyWindow" }
 local PIECES = { "TopLeftCorner", "TopRightCorner", "BottomLeftCorner", "BottomRightCorner",
                  "TopEdge", "BottomEdge", "LeftEdge", "RightEdge", "Center" }
@@ -27,7 +27,7 @@ local PIECES = { "TopLeftCorner", "TopRightCorner", "BottomLeftCorner", "BottomR
 --- last SetScale, and its last SetParent. `noSkin` loads Core and Widgets alone. Answers m, Skin (nil without it), W, scale.
 local function env(noSkin)
   local files = {}
-  for _, f in ipairs(noSkin and { "Core" } or F.FILES) do files[#files + 1] = f end
+  for _, f in ipairs(noSkin and { "Core", "CorePixel" } or F.FILES) do files[#files + 1] = f end
   for _, f in ipairs(WFILES) do files[#files + 1] = f end
   local m, Skin = F.env({ files = files })
   m.__cursorX, m.__cursorY = 100, 100
@@ -257,4 +257,94 @@ test("pixel lines: under a skin the three lines stay one physical pixel through 
   assertEdges(h.__edges, 0.5, "the owned drag handle after a skin switch")
   menu = W.ContextMenu(m.UIParent, { { label = "One" }, { divider = true } }, { owner = OWNER })
   assertEqual(menu.buttons[2].__rule:GetHeight(), 0.5, "the owned menu's rule after a skin switch")
+end)
+
+-- ── the line chart's Lines (FU-L1, WidgetsLineChart minor 7) ──────────────────────────────────
+--
+-- Ka0sAddonsCommonTasks docs/2026-11-06-FOLLOWUPS_V1_91, section 1: the axis, the grid, the markers,
+-- the crosshair and a series drew `Line:SetThickness(1)` (1.5 for a series), which is UI UNITS. A Line's
+-- thickness is now read as PHYSICAL pixels, a host's `series[i].thickness` too, and every pooled Line
+-- and the crosshair re-size on a pixel-scale change without a render. The area fill's columns are a
+-- spacing in UI units (`FILL_STEP`), so they stay in UI units. Red under minor 6: every line reads 1
+-- (1.5, 3) whatever the scale.
+
+local AXIS_C = "0.450,0.450,0.500,0.800"
+
+--- The chart's shown pooled Lines, keyed by their color, each a list of thicknesses.
+local function chartLines(c)
+  local by = {}
+  for _, l in ipairs(c.__linePool) do
+    if l:IsShown() then
+      local k = rgba(l.__color)
+      by[k] = by[k] or {}
+      by[k][#by[k] + 1] = l:GetThickness()
+    end
+  end
+  return by
+end
+
+--- Every Line of color `key` is `th` thick (at least one drawn).
+local function assertThick(by, key, th, what)
+  local list = by[key]
+  assertTrue(list ~= nil and #list > 0, what .. ": drawn")
+  for i, v in ipairs(list) do assertEqual(v, th, what .. " #" .. i) end
+end
+
+local SERIES_A, SERIES_B, MARK, FILL = { 0.1, 0.2, 0.3, 1 }, { 0.3, 0.2, 0.1, 1 }, { 0.5, 0.5, 0.5, 1 },
+  { 0.9, 0.8, 0.7, 0.25 }
+
+local function chartData()
+  local a, b = {}, {}
+  for i = 1, 4 do a[i] = { x = i * 100, y = i * 10 }; b[i] = { x = i * 100, y = 50 - i * 5 } end
+  return { xMin = 100, xMax = 400,
+           markers = { { x = 200, color = MARK }, { x = 300, color = MARK, dashed = false } },
+           series = { { points = a, color = SERIES_A, fill = FILL },
+                      { points = b, color = SERIES_B, thickness = 3 } } }
+end
+
+--- The chart drawn at physical pixel `px` (UI units): axis, grid, markers and crosshair one pixel,
+--- the default series 1.5 pixels, the host's 3 pixels, the fill columns FILL_STEP UI units.
+local function assertChartAt(W, c, px, what, gridKey)
+  local by = chartLines(c)
+  assertThick(by, AXIS_C, px, what .. ": the axis")
+  assertThick(by, gridKey, px, what .. ": the grid")
+  assertThick(by, rgba(MARK), px, what .. ": the markers, dashed and solid")
+  assertThick(by, rgba(SERIES_A), 1.5 * px, what .. ": a series at its default thickness")
+  assertThick(by, rgba(SERIES_B), 3 * px, what .. ": a host's thickness, read as physical pixels")
+  assertThick(by, rgba(FILL), W.LINE_CHART.FILL_STEP, what .. ": the fill columns stay in UI units")
+  assertEqual(c.__cross:GetThickness(), px, what .. ": the crosshair")
+end
+
+test("pixel lines: the line chart's axis, grid, markers, crosshair and series are physical pixels, re-sized", function()
+  local m, _, W, scale = env(true)
+  local win = m.CreateFrame("Frame", nil, m.UIParent)
+  local c = W.LineChart(win, {})
+  c:SetData(chartData())
+  c:Render(400, 200)
+  local grid = rgba(W.LINE_CHART.GRID)
+  assertChartAt(W, c, 0.5, "drawn", grid)
+  scale.v = 3
+  m.UIParent:__fire("OnSizeChanged", 1280, 720)
+  assertChartAt(W, c, 0.25, "after the UI scale moved, with no render", grid)
+  scale.v = 0.75
+  win:SetScale(0.5)
+  assertChartAt(W, c, 1, "after its window's SetScale", grid)
+  c:Render(400, 200)
+  assertChartAt(W, c, 1, "a render at the new scale", grid)
+  assertEqual(#m.__registrations(), 0, "hooks, never an event registration")
+end)
+
+test("pixel lines: an owned line chart keeps physical pixels through a skin switch", function()
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "obsidian")
+  local c = W.LineChart(m.UIParent, { owner = OWNER })
+  c:SetData(chartData())
+  c:Render(400, 200)
+  local by = chartLines(c)
+  assertThick(by, rgba(SERIES_B), 1.5, "an owned chart's host thickness")
+  assertEqual(c.__cross:GetThickness(), 0.5, "an owned chart's crosshair")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  by = chartLines(c)
+  assertThick(by, rgba(SERIES_A), 0.75, "a default series after a skin switch")
+  assertThick(by, rgba(MARK), 0.5, "the markers after a skin switch")
 end)

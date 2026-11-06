@@ -16,8 +16,11 @@
 local MAJORS = {
   {
     major = "LibKa0s-Core-1.0",
-    files = { "Core" },
+    files = { "Core", "CorePixel" },
     primary = "Core",
+    paired = {
+      { file = "CorePixel", minorField = "__pixelMinor", probeField = "__pixelShellMinor" },
+    },
   },
   {
     major = "LibKa0s-Env-1.0",
@@ -82,7 +85,7 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Skin-1.0",
-    files = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintControls", "SkinEUI", "SkinAce" },
+    files = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls", "SkinEUI", "SkinAce" },
     primary = "Skin",
     paired = {
       { file = "SkinOwnerTokens", minorField = "__tokensMinor", probeField = "__tokensShellMinor" },
@@ -90,6 +93,8 @@ local MAJORS = {
       { file = "SkinDefsOthers", minorField = "__othersMinor", probeField = "__othersShellMinor" },
       { file = "SkinPaint", minorField = "__paintMinor", probeField = "__paintShellMinor" },
       { file = "SkinPaintExtras", minorField = "__extrasMinor", probeField = "__extrasShellMinor" },
+      { file = "SkinPaintHud", minorField = "__hudMinor", probeField = "__hudShellMinor" },
+      { file = "SkinAceConfirm", minorField = "__confirmMinor", probeField = "__confirmShellMinor" },
       { file = "SkinPaintControls", minorField = "__controlsMinor", probeField = "__controlsShellMinor" },
       { file = "SkinEUI", minorField = "__euiMinor", probeField = "__euiShellMinor" },
       { file = "SkinAce", minorField = "__aceMinor", probeField = "__aceShellMinor" },
@@ -97,9 +102,10 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Widgets-1.0",
-    files = { "Widgets", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete", "WidgetsCopyWindow" },
+    files = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete", "WidgetsCopyWindow" },
     primary = "Widgets",
     paired = {
+      { file = "WidgetsDropdown",   minorField = "__dropdownMinor", probeField = "__dropdownShellMinor" },
       { file = "WidgetsReorder",    minorField = "__reorderMinor", probeField = "__reorderShellMinor" },
       { file = "WidgetsDragHandle", minorField = "__dragMinor",    probeField = "__dragShellMinor" },
       { file = "WidgetsLineChart",  minorField = "__chartMinor",   probeField = "__chartShellMinor" },

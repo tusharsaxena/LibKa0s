@@ -10,7 +10,7 @@ local test, assertEqual, assertTrue, assertNil = K.test, K.assertEqual, K.assert
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER = "LootHistory"
-local TOOL_FILES = { "Widgets", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
+local TOOL_FILES = { "Widgets", "WidgetsDropdown", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
   "DebugLogWindow", "Lifecycle", "Perf", "PerfSampler", "PerfCommands", "PerfPanel", "Sim", "SimTimeline",
   "SimPanel", "SimPanelRender" }
 
