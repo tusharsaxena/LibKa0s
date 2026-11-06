@@ -57,7 +57,7 @@ the file you need:
 
 | Major | Key shape | In-game check |
 |---|---|---|
-| `LibKa0s-Core-1.0` | `<Core>` | `LibStub("LibKa0s-Core-1.0").MODULES` |
+| `LibKa0s-Core-1.0` | `<Core>.<CorePixel>` (one number through 16) | `LibStub("LibKa0s-Core-1.0").MODULES` |
 | `LibKa0s-Env-1.0` | `<Env>` | `LibStub("LibKa0s-Env-1.0").MODULES` |
 | `LibKa0s-Compat-1.0` | `<Compat>` | `LibStub("LibKa0s-Compat-1.0").MODULES` |
 | `LibKa0s-Lifecycle-1.0` | `<Lifecycle>` | `LibStub("LibKa0s-Lifecycle-1.0").MODULES` |
@@ -110,7 +110,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [16](./Core/version-16-docs.md) | **`Core.lua` 16** (pixel edges, internal: `__PixelSize`, `__WatchPixels`, `__OnPixelScale`, `__PixelBackdrop`, shared by Widgets and the Skin major, `SF1-L1`; no new member) | v1.90.0 | **Current** |
+| [17.1](./Core/version-17.1-docs.md) | **`Core.lua` 17** (the pixel edges section moved out) · **`CorePixel.lua` 1** (new: that section, unchanged, `FU-L2`; no new member) | v1.91.0 | **Current** |
+| [16](./Core/version-16-docs.md) | **`Core.lua` 16** (pixel edges, internal: `__PixelSize`, `__WatchPixels`, `__OnPixelScale`, `__PixelBackdrop`, shared by Widgets and the Skin major, `SF1-L1`; no new member) | v1.90.0 | Superseded |
 | [15](./Core/version-15-docs.md) | **`Core.lua` 15** (`MakeResizable` puts a frame anchored to another frame back on its anchor after a drag; `ApplySkin` hides `frame.divider`, no line under a title; no new member) | v1.85.0 – v1.89.0 | Superseded |
 | [14](./Core/version-14-docs.md) | `Core.lua` 14 (`MakeResizable`'s `opts.owner`: a registered skin owner's `icon.grip` tints the grip's art, live; no new member) | v1.81.0 – v1.84.0 | Superseded |
 | [13](./Core/version-13-docs.md) | **`Core.lua` 13** (`ApplySkin`'s `owner` and `MakeCloseButton`'s `addonName` paint through a registered skin owner's facade; no new member) | v1.78.0 – v1.80.0 | Superseded |

@@ -16,8 +16,11 @@
 local MAJORS = {
   {
     major = "LibKa0s-Core-1.0",
-    files = { "Core" },
+    files = { "Core", "CorePixel" },
     primary = "Core",
+    paired = {
+      { file = "CorePixel", minorField = "__pixelMinor", probeField = "__pixelShellMinor" },
+    },
   },
   {
     major = "LibKa0s-Env-1.0",

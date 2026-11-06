@@ -36,7 +36,7 @@ end
 --- file. Answers m, Skin (nil without it), the Options major.
 local function env(noSkin)
   local files = {}
-  for _, f in ipairs(noSkin and { "Core" } or F.FILES) do files[#files + 1] = f end
+  for _, f in ipairs(noSkin and { "Core", "CorePixel" } or F.FILES) do files[#files + 1] = f end
   files[#files + 1] = "Pool"
   for _, f in ipairs(OPTIONS) do files[#files + 1] = f end
   local m, Skin = F.env({ files = files })

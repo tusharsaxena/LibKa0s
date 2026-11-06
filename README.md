@@ -97,7 +97,7 @@ modules and points you there. It does not restate them.
    `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua`, `OptionsSkinPicker.lua`, `OptionsSkinPickerRows.lua`, `OptionsSwitch.lua` and `OptionsMedia.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole twenty-file module
    is absent instead of half-attached. `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua` and `WidgetsCopyWindow.lua` do the same
    behind `Widgets.lua`, `SkinOwnerTokens.lua`, `SkinDefs.lua`, `SkinDefsOthers.lua`, `SkinPaint.lua`, `SkinPaintExtras.lua`, `SkinPaintControls.lua`, `SkinEUI.lua` and `SkinAce.lua` behind `Skin.lua` (the extras, the controls and the AceGUI rows also behind `SkinPaint.lua`, whose painter helpers they use), `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
-   `PerfPanel.lua` behind `Perf.lua`, and `SimTimeline.lua`, `SimPanel.lua` and `SimPanelRender.lua` behind `Sim.lua`, and `IconBrowserWindow.lua` and `IconBrowser.lua` behind
+   `PerfPanel.lua` behind `Perf.lua`, `CorePixel.lua` behind `Core.lua`, and `SimTimeline.lua`, `SimPanel.lua` and `SimPanelRender.lua` behind `Sim.lua`, and `IconBrowserWindow.lua` and `IconBrowser.lua` behind
    `IconBrowserSources.lua`, which also returns when Media is absent or older than the minor it needs.
    `SimPanel.lua` and `SimPanelRender.lua` also return when Widgets is absent, since its scenario picker is a
    `W.Dropdown`; the simulator then runs headless from its slash verb, with no panel.
@@ -133,7 +133,7 @@ here restates a signature, because a second copy of a contract is a contract tha
 
 | Major | What it is | Files | Current version |
 |---|---|---|---|
-| `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. It depends on LibStub and nothing else, and that is what keeps the rest adoptable by non-Ace addons. | `Core.lua` | [16](docs/api/Core/version-16-docs.md) |
+| `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. It depends on LibStub and nothing else, and that is what keeps the rest adoptable by non-Ace addons. | `Core.lua`, `CorePixel.lua` | [17.1](docs/api/Core/version-17.1-docs.md) |
 | `LibKa0s-Env-1.0` | The handful of client facts every Ka0s addon reads, read one way: the TOC manifest, the player's map id and the player's zone labels. It has no state, no frames and no events. | `Env.lua` | [2](docs/api/Env/version-2-docs.md) |
 | `LibKa0s-Compat-1.0` | The version-variant client readers that two or more Ka0s addons wrote the same way: `GetSpellInfo`, `GetSpellName`, `GetSpellTexture`, `GetSpellCooldown`, `GetSpecialization` and `GetSpecializationInfo`, each a ladder from the namespaced API down to the deprecated global. Add the secret-value seam every guard asks before it compares (`IsSecret`, `CanAccess`, `IsSafeKey`) and you have nine stateless functions, with no frames, no events and no addon framework. | `Compat.lua` | [1](docs/api/Compat/version-1-docs.md) |
 | `LibKa0s-Lifecycle-1.0` | The stand-down latch: a hold set, an edge, and two host callbacks. `standDown` fires only when the set goes from empty to non-empty and `standUp` only when it goes back to empty, so a perf run that ends under a `disabled` hold does not bring the addon back. There is deliberately no `StandUp()` member, because a bare stand-up is the bug the latch exists to prevent. Persists nothing. | `Lifecycle.lua` | [3](docs/api/Lifecycle/version-3-docs.md) |
@@ -309,6 +309,7 @@ same way for their modules.
 LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs/LibKa0s/
   LibKa0s.xml        -- lib load list, referenced from the host addon's TOC lib block; Core first
   Core.lua           -- LibKa0s-Core-1.0, MINOR at the top of the file
+  CorePixel.lua      -- pixel edges, shared by Widgets and the Skin major, same module, PIXEL_MINOR of its own
   Env.lua            -- LibKa0s-Env-1.0, MINOR at the top of the file; needs Core
   Compat.lua         -- LibKa0s-Compat-1.0, MINOR at the top of the file; needs Core
   Lifecycle.lua      -- LibKa0s-Lifecycle-1.0, MINOR at the top of the file; needs Core

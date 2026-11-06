@@ -57,7 +57,7 @@ end
 --- named frames kept in m.__named. Answers m, Skin.
 local function env(noSkin)
   local files = {}
-  for _, f in ipairs(noSkin and { "Core" } or F.FILES) do files[#files + 1] = f end
+  for _, f in ipairs(noSkin and { "Core", "CorePixel" } or F.FILES) do files[#files + 1] = f end
   for _, f in ipairs(TOOL_FILES) do files[#files + 1] = f end
   local m, Skin = F.env({ files = files, lsm = LSM })
   m.__named = {}

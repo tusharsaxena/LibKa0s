@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **16** |
 | Shipped in | v1.90.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 15](./version-15-docs.md) (shipped in v1.85.0 – v1.89.0) — the same members; a backdrop edge of 1 UI unit drew 1 or 2 px by a frame's sub-pixel position, and the Skin major alone could size an edge in physical pixels |
-| Superseded by | — |
+| Superseded by | [version 17.1](./version-17.1-docs.md) (v1.91.0) — the same members, the pixel edges section moved to `CorePixel.lua` (FU-L2) |
 | Requires | nothing new: `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 16 }` |
 

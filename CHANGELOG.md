@@ -14,12 +14,18 @@ cannot drift. Release order is in
 
 Opened 2026-11-06, on `feat/2026-11-06-followups-v1-91`: the follow-ups v1.90.0's run left open (Ka0sAddonsCommonTasks `docs/2026-11-06-FOLLOWUPS_V1_91/00_PLAN.md`). The version is not bumped and no tag is cut; this block is the record `tests/test_versioning.lua` reads for the minors that moved.
 
-Versions so far: `LibKa0s-Widgets-1.0` key **25.6.13.7.8.5** (WidgetsLineChart minor 7); every other file at its v1.90.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-Core-1.0` key **17.1** (Core minor 17, CorePixel minor 1); `LibKa0s-Widgets-1.0` key **25.6.13.7.8.5** (WidgetsLineChart minor 7); every other file at its v1.90.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises.
 
 ### The line chart's lines in physical pixels (`FU-L1`)
 
 - **WidgetsLineChart minor 7** ([docs](docs/api/Widgets/version-25.6.13.7.8.5-docs.md)): the chart's axis, grid rules, markers (dashed and solid) and hover crosshair are one PHYSICAL pixel at any UI scale, and a series is `series[i].thickness` physical pixels, `1.5` by default; a host's thickness is read as pixels too. Each was a `Line:SetThickness` in UI units, 1 or 2 px by the UI scale. Every pooled Line and the crosshair of every chart is laid again when the UI scale, the display size or a `SetScale` of the chart or an ancestor moves the pixel size, with no render, through Core minor 16's `__PixelSize`, `__WatchPixels` and `__OnPixelScale`: the mechanism v1.90.0's edges use, not a second one. The area fill's columns are a spacing (`LINE_CHART.FILL_STEP`) and stay in UI units. Feature-detected: under a Core older than minor 16 a thickness is UI units, as before. No member, option or data field moves.
 - **Tests**: two cases in `tests/test_widgets_pixel_edges.lua`, at a pixel of 0.5 UI units (every line kind, a host thickness and the fill, re-sized on a UI scale change and a window's `SetScale` with no render; an owned chart through a skin switch), red under v1.90.0.
+
+### The band files peeled (`FU-L2`)
+
+Each a pure move on the seam `CLAUDE.md`'s census named, so that no payload file the owner ruled on stays in `layout-§1`'s 1000–1500 band. No member, option or behavior changes; the existing suites pass unchanged apart from the file lists that load the moved code.
+
+- **Core minor 17, CorePixel minor 1** ([docs](docs/api/Core/version-17.1-docs.md)): the pixel edges section (`__PixelSize`, `__OnPixelScale`, `__WatchPixels`, `__PixelBackdrop`, `__RefreshPixelBackdrops` and their state) moved to the new `CorePixel.lua`, loaded after `Core.lua` and paired on its minor. `Core.lua` 1080 -> 949. A payload without the file has no pixel members, and Widgets and the Skin major draw in UI units, as under a Core older than minor 16.
 
 ## v1.90.0 — 2026-11-06
 
