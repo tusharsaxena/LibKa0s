@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 24.5.12.6.8.5
+# `LibKa0s-Widgets-1.0` — version 25.6.13.6.8.5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,23 +8,24 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` **24** · `WidgetsReorder.lua` **5** · `WidgetsDragHandle.lua` **12** · `WidgetsLineChart.lua` **6** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **5** |
+| Files and minors | `Widgets.lua` **25** · `WidgetsReorder.lua` **6** · `WidgetsDragHandle.lua` **13** · `WidgetsLineChart.lua` **6** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **5** |
 | Shipped in | v1.90.0 |
 | Status | **Current** |
-| Supersedes | [version 23.5.12.6.7.5](./version-23.5.12.6.7.5-docs.md) (v1.87.0 – v1.89.0) — the dropdown, the search box, the menus and the autocomplete list drew a backdrop edge of 1 UI unit, 1 or 2 px by the frame's sub-pixel position. |
+| Supersedes | [version 23.5.12.6.7.5](./version-23.5.12.6.7.5-docs.md) (v1.87.0 – v1.89.0) — the dropdown, the search box, the menus and the autocomplete list drew a backdrop edge of 1 UI unit, 1 or 2 px by the frame's sub-pixel position, and the menu's divider rule, the ReorderList row boxes and the DragHandle strips drew lines of 1 UI unit. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 24, WidgetsReorder = 5, WidgetsDragHandle = 12, WidgetsLineChart = 6, WidgetsAutocomplete = 8, WidgetsCopyWindow = 5 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 25, WidgetsReorder = 6, WidgetsDragHandle = 13, WidgetsLineChart = 6, WidgetsAutocomplete = 8, WidgetsCopyWindow = 5 }` |
 
-## What changed at this version: one physical pixel (SF1-L1)
+## What changed at this version: one physical pixel (SF1-L1, SF2-L1)
 
-**`Widgets.lua` moves to minor 24 and `WidgetsAutocomplete.lua` to minor 8** (Ka0sAddonsCommonTasks `docs/2026-11-06-REVENDOR_LIBKA0S_V1_89/SF1_SMOKE_FEEDBACK.md`, feedback items 3 and 4). No member, option or row field is added, removed or renamed.
+**`Widgets.lua` moves to minor 25, `WidgetsReorder.lua` to 6, `WidgetsDragHandle.lua` to 13 and `WidgetsAutocomplete.lua` to 8** (Ka0sAddonsCommonTasks `docs/2026-11-06-REVENDOR_LIBKA0S_V1_89/SF1_SMOKE_FEEDBACK.md`, feedback items 3 and 4, and `SF2_REMAINING_EDGES.md`). No member, option or row field is added, removed or renamed. v1.90.0's first local cut carried this document as version 24.5.12.6.8.5 (`Widgets.lua` 24, the backdrops below). Its refresh, before any push, added the three texture lines and moved `Widgets.lua` to 25, and this document replaced that one under the new key. No copy of 24.5.12.6.8.5 was released.
 
 - **Every edge these controls draw is one physical pixel**, at any UI scale and any sub-pixel position, with no skin and under every skin: `W.Dropdown`'s box, `W.SearchBox`, the shared menu and every cascading level (one frame per depth), and `W.Autocomplete`'s list. Each was a BackdropTemplate `edgeSize = 1`, which is one UI **unit**: at the owner's UI scale it drew 1 or 2 px by where the frame landed, so DropWatcher's dropdown measured 2 px on top and 1 at the bottom where LootHistory's, the same widget with the same options, read 1 and 1. Each now passes its frame to Core minor 16's `__PixelBackdrop` after laying its backdrop: the edge and the fill's insets are read as physical pixels, the pieces are snapped to the pixel grid, and the backdrop is laid again, its colors kept, when the UI scale, the display size or an ancestor's `SetScale` moves the pixel size, and on each show.
 - **A skin's paint keeps it.** The Skin major lays its flat-control backdrop through the frame's own `SetBackdrop`, so `input.borderSize` and `menu.borderSize` are physical pixels on these controls, the focus line and every recolor included; a non-flat edge on the holder (WoW Default's `bevelIn`) is sized the same way (SkinPaintExtras minor 18's `P.pxEdge`).
 - **`GetBackdrop()` answers the table as given** (`edgeSize = 1`), not the drawn size, so a host or a skin that saves and restores a backdrop restores the same pixel count.
-- **Internal**: `lib.__pixelEdged(frame)` (minor 24), the one call each constructor makes. Not host contract.
-- **What a host owes**: nothing. A host's own `edgeSize = 1` backdrops are its own; the scope is the library's controls in addon windows, and a settings panel's AceGUI rows are left alone (the owner's ruling).
+- **The three lines drawn as textures are one physical pixel too** (`SF2-L1`), and each is re-sized when the UI scale, the display size or a `SetScale` of its holder or an ancestor moves the pixel size: the shared menu's **divider rule**, at every cascade depth (one physical pixel high, 4 down its row of 8, where it was 1 UI unit), the **ReorderList row box**'s four edges (`lib.ROW_BOX.EDGE_SIZE`, still `1`, is now read as physical pixels; `WidgetsReorder` 6), and a **DragHandle strip**'s own four edges (`WidgetsDragHandle` 13). A row box is sized again on each paint, so a pooled box that moves to a row at another scale takes that row's pixel. No skin painter sizes any of the three: a skin recolors them, and the size holds through a paint and a switch.
+- **Internal**: `lib.__pixelEdged(frame)` (minor 24), the one call each constructor makes, and `lib.__pixelLine(texture, holder, horizontal, n)` (minor 25), which sizes a line `n` physical pixels on its holder through Core minor 16's `__PixelSize` and keeps it sized through Core's pixel watch (`__WatchPixels`, `__OnPixelScale`). The two secondaries call the shell's. Under a shell or a Core without it, a line is `n` UI units, as before. Not host contract.
+- **What a host owes**: nothing. A host's own `edgeSize = 1` backdrops are its own, and so is the edge a host's `spec.edge` painter draws on a DragHandle (still called with `size = 1`); the scope is the library's controls in addon windows, and a settings panel's AceGUI rows are left alone (the owner's ruling).
 
 ## What changed at version 23.5.12.6.7.5: cascading menus (G4)
 
@@ -71,7 +72,7 @@ Cases: `tests/test_icon_rule.lua`.
 | Field | Meaning |
 |---|---|
 | `title` | A heading in `menu.textSel`. No click, no highlight. |
-| `divider` | A rule in `divider`, on a row 8 high. No label needed. |
+| `divider` | A rule in `divider`, on a row 8 high. No label needed. The rule is one physical pixel high (**Since 25**; one UI unit before it). |
 | `disabled` | `true`, or a predicate of the opener read on every open. `text.disabled`, no click, no highlight. It keeps its tooltip, which is where it says why. |
 | `tooltip` | A string, or `fn(rowFrame, row)` drawing on GameTooltip. Taken off with the row and with the menu. |
 | `keepOpen` | The menu stays, and repaints after the callback, so a toggle row shows its new state. It does not repaint a menu the callback closed or replaced. |
@@ -1286,7 +1287,7 @@ Every field is optional except the ones a working list needs.
 | `handleHoverColor` | `{ r, g, b }` under the pointer. A host whose list has its own palette says so; one that says nothing matches every other list in the collection. | gold, `{ 1, 0.82, 0 }` |
 | `handleTooltip` | One line shown on hover, e.g. "Drag to reorder". From Reorder 3 a skinned list draws it in its owner's `gtip.value` (white in all nine skins), read from the list's palette; an unskinned one in white, as before. | no tooltip at all |
 | `iconSize` | The art drawn inside the handle. | `16` |
-| `rowBox` | **New at 9.** `false` suppresses the bounded box behind every row. Defaults **ON**: the box is half of what makes a list read as blocks you can pick up, and a host that draws its own has to say so — and should instead delete its own, or the two fills stack. | `true` |
+| `rowBox` | **New at 9.** `false` suppresses the bounded box behind every row. Defaults **ON**: the box is half of what makes a list read as blocks you can pick up, and a host that draws its own has to say so — and should instead delete its own, or the two fills stack. Its four edges are `lib.ROW_BOX.EDGE_SIZE` physical pixels at any UI scale (**Since `WidgetsReorder` 6**; UI units before it). | `true` |
 | `rowBoxInset` | **New at 9.** Pixels the box is inset from the row frame's edges. | `0` |
 | `lineColor` | `{ r, g, b, a }` for the insertion line. | gold, `{ 1, 0.82, 0, 0.9 }` |
 | `owner` | **New at Reorder 2.** A registered skin owner: the row boxes, the handle's two tints, the insertion line and the ghost take that owner's skin wherever the options above are absent (*Skin owners*). From Reorder 3, not while the owner ignores its settings panel, unless `panel` is `false`. | the defaults above |
@@ -1431,7 +1432,7 @@ also spends it in its clamp reach, `HEIGHT + GAP`.
 | `tooltipOwner` | the default for both descriptors: `"cursor"` owns by `UIParent` at `ANCHOR_CURSOR`; anything else owns by the frame hovered | by the frame hovered |
 | `tooltipAnchor` | the default anchor point used when owning by the frame | `"ANCHOR_TOP"` |
 | `tooltipPlace` | **Since 4.** `function(tip, frame) -> true` when it placed the tooltip. Set, every hover owns by `UIParent` at `"ANCHOR_NONE"`, draws the lines, shows, then calls it under `pcall` with the frame hovered; a raise or any answer but `true` falls back to the `"cursor"` owner with the same lines redrawn. Owner and anchor are not read while it is in force. A descriptor's own `place` wins; a non-function is ignored | the owner and anchor above |
-| `edge` | `function(frame, size, r, g, b, a)` — the host's own 1px edge painter | the widget's four strips |
+| `edge` | `function(frame, size, r, g, b, a)` — the host's own 1px edge painter, called with `size = 1` | the widget's four strips, one physical pixel each (**Since 13**; one UI unit before it) |
 | `number` | `function(v, fallback) -> number` — a secret-safe numeric guard | `tonumber(v) or fallback` |
 | `labelFont` | the font object the label is **drawn in and measured in**; on an owned strip the skin's body face goes over it (DragHandle 12) | `"GameFontNormalSmall"` |
 | `level` | **Since 5.** a number: the handle's frame level as an **offset** over `parent:GetFrameLevel()` (read through `number`; a secret or non-number reads 0), applied at birth before the help and close marks are built, so the marks are born at handle + 1. Re-applied by `handle:ApplyLevel()` | no level written; the handle is the parent + 1 |
@@ -1574,7 +1575,8 @@ matters.
 
 ### Chrome: a plain `Button`, never a `BackdropTemplate`
 
-A fill texture at `0, 0, 0, 0.75` and four 1px edge strips at `1, 0.82, 0, 0.6`. Under an anchor
+A fill texture at `0, 0, 0, 0.75` and four 1px edge strips at `1, 0.82, 0, 0.6`, one physical pixel each
+at any UI scale since minor 13 (`lib.__pixelLine`; one UI unit before it). Under an anchor
 attached to another frame the strip's size can read secret, and `SetBackdrop` does arithmetic on the
 size on every set and every resize; four rectangles read nothing. ConsumableMaster's handle **was** a
 `BackdropTemplate` and loses it on adoption — the pixels are the same, the hazard is not, and

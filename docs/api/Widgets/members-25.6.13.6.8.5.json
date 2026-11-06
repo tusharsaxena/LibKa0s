@@ -1,11 +1,11 @@
 {
   "major": "LibKa0s-Widgets-1.0",
-  "versionKey": "24.5.12.6.8.5",
+  "versionKey": "25.6.13.6.8.5",
   "generator": "tools/gen-api-members.lua",
   "modules": [
-    { "file": "Widgets", "minor": 24 },
-    { "file": "WidgetsReorder", "minor": 5 },
-    { "file": "WidgetsDragHandle", "minor": 12 },
+    { "file": "Widgets", "minor": 25 },
+    { "file": "WidgetsReorder", "minor": 6 },
+    { "file": "WidgetsDragHandle", "minor": 13 },
     { "file": "WidgetsLineChart", "minor": 6 },
     { "file": "WidgetsAutocomplete", "minor": 8 },
     { "file": "WidgetsCopyWindow", "minor": 5 }

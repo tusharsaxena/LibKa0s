@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-06, on `feat/2026-11-06-revendor-libka0s-v1-89`: the owner's first smoke feedback on the v1.89.0 re-vendor (Ka0sAddonsCommonTasks `docs/2026-11-06-REVENDOR_LIBKA0S_V1_89/SF1_SMOKE_FEEDBACK.md`), `SF1-L1` and `SF1-L2` of that run, released as `SF1-L3`.
 
-Versions in this release: `LibKa0s-Core-1.0` key **16** (Core minor 16); `LibKa0s-Widgets-1.0` key **24.5.12.6.8.5** (Widgets minor 24, WidgetsAutocomplete minor 8); `LibKa0s-Skin-1.0` key **17.1.27.8.19.18.17.4.9** (Skin minor 17, SkinPaint minor 19, SkinPaintExtras minor 18); `LibKa0s-Options-1.0` key **37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4** (OptionsAppearance minor 7); every other file at its v1.89.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises: Widgets and Skin resolve Core's new members at call time and draw as before without them. The tag is cut locally; it is pushed only at the owner's go-ahead.
+Versions in this release: `LibKa0s-Core-1.0` key **16** (Core minor 16); `LibKa0s-Widgets-1.0` key **25.6.13.6.8.5** (Widgets minor 25, WidgetsReorder minor 6, WidgetsDragHandle minor 13, WidgetsAutocomplete minor 8); `LibKa0s-Skin-1.0` key **17.1.27.8.19.18.17.4.9** (Skin minor 17, SkinPaint minor 19, SkinPaintExtras minor 18); `LibKa0s-Options-1.0` key **37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4** (OptionsAppearance minor 7); every other file at its v1.89.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises: Widgets and Skin resolve Core's new members at call time and draw as before without them. The tag is cut locally; it is pushed only at the owner's go-ahead.
 
 ### One physical pixel (`SF1-L1`)
 

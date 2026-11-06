@@ -24,7 +24,7 @@ local PIECES = { "TopLeftCorner", "TopRightCorner", "BottomLeftCorner", "BottomR
 
 --- A client whose frames answer `scale.v` as their effective scale (1.5 to start), PixelUtil's
 --- factor 0.75, and a hooksecurefunc that post-hooks for real. A frame answers its parent and its
---- last SetScale. `noSkin` loads Core and Widgets alone. Answers m, Skin (nil without it), W, scale.
+--- last SetScale, and its last SetParent. `noSkin` loads Core and Widgets alone. Answers m, Skin (nil without it), W, scale.
 local function env(noSkin)
   local files = {}
   for _, f in ipairs(noSkin and { "Core" } or F.FILES) do files[#files + 1] = f end
@@ -41,7 +41,12 @@ local function env(noSkin)
   m.CreateFrame = function(kind, name, parent, ...)
     local f = make(kind, name, parent, ...)
     rawset(f, "GetEffectiveScale", function() return scale.v end)
-    rawset(f, "GetParent", function() return parent end)
+    local setParent = f.SetParent
+    rawset(f, "GetParent", function(self) return rawget(self, "__lkParent") or parent end)
+    rawset(f, "SetParent", function(self, p, ...)
+      rawset(self, "__lkParent", p)
+      if setParent then return setParent(self, p, ...) end
+    end)
     rawset(f, "GetScale", function(self) return rawget(self, "__s") or 1 end)
     rawset(f, "SetScale", function(self, s) rawset(self, "__s", s) end)
     return f
@@ -160,4 +165,96 @@ test("pixel edges: under a non-flat skin the holder's edge is one physical pixel
   scale.v = 3
   m.UIParent:__fire("OnSizeChanged", 1280, 720)
   assertEqual(F.region(Skin, dd, "edgeTop"):GetHeight(), 0.25 * n, "re-sized on a UI scale change")
+end)
+
+-- ── the three lines drawn as textures (SF2-L1, Widgets minor 25, WidgetsReorder minor 6,
+-- WidgetsDragHandle minor 13) ─────────────────────────────────────────────────────────────────
+--
+-- The SF1-L1 review left three lines on one UI unit: the shared menu's divider rule, the ReorderList
+-- row boxes (ROW_BOX.EDGE_SIZE = 1) and the DragHandle strips. Each is a texture, not a backdrop, so
+-- its thickness is its height (a horizontal line) or its width (a vertical one). Red under the old
+-- code: every one reads 1, and stays 1 after the scale moves.
+
+--- A box's or a strip's four edges, top, bottom, left, right: the two across are `px` high and the
+--- two down are `px` wide.
+local function assertEdges(edges, px, what)
+  assertEqual(#edges, 4, what .. ": four edges")
+  assertEqual(edges[1]:GetHeight(), px, what .. ": the top edge is one physical pixel high")
+  assertEqual(edges[2]:GetHeight(), px, what .. ": the bottom edge is one physical pixel high")
+  assertEqual(edges[3]:GetWidth(), px, what .. ": the left edge is one physical pixel wide")
+  assertEqual(edges[4]:GetWidth(), px, what .. ": the right edge is one physical pixel wide")
+end
+
+test("pixel lines: the menu's divider rule is one physical pixel high at every cascade depth, and re-sizes", function()
+  local m, _, W, scale = env(true)
+  local rows = { { label = "One" }, { divider = true },
+                 { label = "More", submenu = { { label = "Two" }, { divider = true }, { label = "Three" } } } }
+  local menu = W.ContextMenu(m.UIParent, rows)
+  local rule = menu.buttons[2].__rule
+  assertTrue(rule:IsShown(), "the divider row draws its rule")
+  assertEqual(rule:GetHeight(), 0.5, "the rule is one physical pixel, not one UI unit")
+  menu.buttons[3]:__fire("OnClick")
+  local child = menu.__child
+  assertTrue(child ~= nil, "the cascade opened a level")
+  local deep = child.buttons[2].__rule
+  assertTrue(deep:IsShown(), "the cascading level's divider draws its rule")
+  assertEqual(deep:GetHeight(), 0.5, "a cascading level's rule is one physical pixel")
+  scale.v = 3
+  m.UIParent:__fire("OnSizeChanged", 1280, 720)
+  assertEqual(rule:GetHeight(), 0.25, "the rule re-sized on a UI scale change")
+  assertEqual(deep:GetHeight(), 0.25, "the cascading level's rule re-sized too")
+end)
+
+test("pixel lines: a ReorderList row box's edges are one physical pixel, and re-size on a scale change", function()
+  local m, _, W, scale = env(true)
+  local win = m.CreateFrame("Frame", nil, m.UIParent)
+  local list = W.ReorderList({ stride = 30 })
+  local row = m.CreateFrame("Frame", nil, win)
+  row:SetSize(200, 30)
+  list:AddRow(row, {})
+  local box = list.boxes[1]
+  assertTrue(box ~= nil, "the row has a box")
+  assertEqual(W.ROW_BOX.EDGE_SIZE, 1, "the published edge size is unchanged")
+  assertEdges(box.edges, 0.5, "row box")
+  scale.v = 3
+  m.UIParent:__fire("OnSizeChanged", 1280, 720)
+  assertEdges(box.edges, 0.25, "row box after the UI scale moved")
+  scale.v = 0.75
+  win:SetScale(0.5)
+  assertEdges(box.edges, 1, "row box after its window's SetScale")
+  assertEqual(rgba(box.edges[1].__color), rgba(W.ROW_BOX.EDGE), "the edge color kept")
+end)
+
+test("pixel lines: a DragHandle strip's edges are one physical pixel, and re-size on a scale change", function()
+  local m, _, W, scale = env(true)
+  local win = m.CreateFrame("Frame", nil, m.UIParent)
+  local h = W.DragHandle(win, { label = "Buffs", moveFrame = m.CreateFrame("Frame", nil, m.UIParent) })
+  assertTrue(h ~= nil and h.__edges ~= nil, "the strip drew its own edges")
+  assertEdges(h.__edges, 0.5, "drag handle")
+  scale.v = 3
+  m.UIParent:__fire("OnSizeChanged", 1280, 720)
+  assertEdges(h.__edges, 0.25, "drag handle after the UI scale moved")
+  scale.v = 0.75
+  win:SetScale(0.5)
+  assertEdges(h.__edges, 1, "drag handle after its parent's SetScale")
+end)
+
+test("pixel lines: under a skin the three lines stay one physical pixel through a paint and a switch", function()
+  -- No skin painter re-sizes these: a skin recolors the rule, the box edges and the strip edges.
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "obsidian")
+  local menu = W.ContextMenu(m.UIParent, { { label = "One" }, { divider = true } }, { owner = OWNER })
+  assertEqual(menu.buttons[2].__rule:GetHeight(), 0.5, "the owned menu's rule")
+  local list = W.ReorderList({ stride = 30, owner = OWNER })
+  local row = m.CreateFrame("Frame", nil, m.UIParent)
+  row:SetSize(200, 30)
+  list:AddRow(row, {})
+  assertEdges(list.boxes[1].edges, 0.5, "an owned row box")
+  local h = W.DragHandle(m.UIParent, { label = "Buffs", moveFrame = m.CreateFrame("Frame", nil, m.UIParent),
+                                       owner = OWNER })
+  assertEdges(h.__edges, 0.5, "an owned drag handle")
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  assertEdges(h.__edges, 0.5, "the owned drag handle after a skin switch")
+  menu = W.ContextMenu(m.UIParent, { { label = "One" }, { divider = true } }, { owner = OWNER })
+  assertEqual(menu.buttons[2].__rule:GetHeight(), 0.5, "the owned menu's rule after a skin switch")
 end)
