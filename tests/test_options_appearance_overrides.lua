@@ -170,6 +170,36 @@ test("appearance: the other owners and one owner's skin copy are library-level, 
   assertEqual(select(1, Skin:GetIgnore(OTHER)), true, "its scope still left alone")
 end)
 
+test("appearance: a copy carries skin and media to an owner registered keepScope, never its Scope", function()
+  -- red under: lib.__copySkinTo writing the source's Scope over every target (SF1-L2 of
+  -- Ka0sAddonsCommonTasks docs/2026-11-06-REVENDOR_LIBKA0S_V1_89): the Skin Tester's documented
+  -- ignorePanel = false was turned on by an Apply to all from an addon that ignores its panel.
+  local _, Skin, lib = env()
+  register(Skin, OWNER)
+  local kept = register(Skin, OTHER)
+  Skin:RegisterOwner(OTHER, { keepScope = true })
+  local plain = register(Skin, THIRD)
+  Skin:SetIgnore(OTHER, false, false)
+  lib.__copySkinTo(Skin, OTHER, "ka0s", "ember", { panel = true, fonts = true },
+    { font = "Ka0s Expressway", texture = "Ka0s Flat" })
+  lib.__copySkinTo(Skin, THIRD, "ka0s", "ember", { panel = true, fonts = true })
+  assertEqual(select(2, Skin:GetChoice(OTHER)), "ember", "the skin is copied")
+  assertEqual(kept.skin, "ember", "and written through its own setter")
+  local font, texture = Skin:GetOverride(OTHER)
+  assertEqual(font, "Ka0s Expressway", "the media is copied"); assertEqual(texture, "Ka0s Flat")
+  local panel, fonts = Skin:GetIgnore(OTHER)
+  assertFalse(panel, "its panel half is never written"); assertFalse(fonts, "nor its fonts half")
+  assertNil(kept.ignore, "and no scope half reaches its setter")
+  assertEqual(select(1, Skin:GetIgnore(THIRD)), true, "an owner without keepScope takes the Scope, as before")
+  assertEqual(plain.ignore.panel, true)
+  Skin:RegisterOwner(OTHER, { label = "Again" })
+  lib.__copySkinTo(Skin, OTHER, "ka0s", "glass", { panel = true, fonts = false })
+  assertFalse((Skin:GetIgnore(OTHER)), "a second RegisterOwner that does not name keepScope keeps it")
+  Skin:RegisterOwner(OTHER, { keepScope = false })
+  lib.__copySkinTo(Skin, OTHER, "ka0s", "glass", { panel = true, fonts = false })
+  assertTrue((Skin:GetIgnore(OTHER)), "keepScope = false gives the copy the Scope back")
+end)
+
 test("appearance: a font pick stores no outline the owner never chose, and keeps one it did", function()
   -- red under: the write sending GetOutline, which stored v1.82.0's "all" for every owner that
   -- picked a font, so the owner's item 5 never reached them.

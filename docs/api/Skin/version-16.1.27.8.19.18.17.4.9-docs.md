@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **16** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **27** · `SkinDefsOthers.lua` **8** · `SkinPaint.lua` **19** · `SkinPaintExtras.lua` **18** · `SkinPaintControls.lua` **17** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
 | Shipped in | v1.90.0 (unreleased) |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 16.1.27.8.18.17.17.4.9](./version-16.1.27.8.18.17.17.4.9-docs.md) (v1.85.0 – v1.89.0) — the pixel size and its watch were the Skin major's own, so Widgets could not size an edge in physical pixels, and a non-flat edge on a Widgets control was 1 UI unit. |
-| Superseded by | — |
+| Superseded by | [version 17.1.27.8.19.18.17.4.9](./version-17.1.27.8.19.18.17.4.9-docs.md) (v1.90.0, unreleased) — `RegisterOwner`'s `keepScope`, a Scope another addon's skin copy never writes (SF1-L2). |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). Core members are used optionally, resolved at call time: `SkinEUI.lua`'s `SafeRegisterEvent` (with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner`), and from `SkinPaintExtras.lua` 18 Core 16's pixel edges (with a Core that lacks them `P.px` answers its `n` and no edge is re-sized on a scale change) |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 16, SkinOwnerTokens = 1, SkinDefs = 27, SkinDefsOthers = 8, SkinPaint = 19, SkinPaintExtras = 18, SkinPaintControls = 17, SkinEUI = 4, SkinAce = 9 }` |
 
