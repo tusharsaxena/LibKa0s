@@ -56,7 +56,7 @@ test("skin paint: the three files attach to the shell and fill every vocabulary 
 end)
 
 test("skin paint: the extras and controls attach to nothing without SkinPaint's helpers", function()
-  local _, Skin = F.env({ files = { "Core", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaintExtras", "SkinPaintControls" } })
+  local _, Skin = F.env({ files = { "Core", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls" } })
   assertNil(Skin.prim.Card, "no extras")
   assertNil(Skin.prim.Button, "no controls")
   assertNil(Skin.MODULES.SkinPaintControls)
@@ -65,7 +65,7 @@ end)
 
 test("skin paint: with no skin registered a primitive paints nothing it has no token for", function()
   -- A payload with no SkinDefs.lua: no token resolves, so nothing is painted, the window included.
-  local m, Skin = F.env({ files = { "Core", "Skin", "SkinPaint", "SkinPaintExtras", "SkinPaintControls" } })
+  local m, Skin = F.env({ files = { "Core", "Skin", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls" } })
   local S = F.owner(Skin, OWNER)
   local f = F.window(m)
   local before = survey(m, f).backdrop

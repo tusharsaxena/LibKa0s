@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-06, on `feat/2026-11-06-followups-v1-91`: the follow-ups v1.90.0's run left open (Ka0sAddonsCommonTasks `docs/2026-11-06-FOLLOWUPS_V1_91/00_PLAN.md`). The version is not bumped and no tag is cut; this block is the record `tests/test_versioning.lua` reads for the minors that moved.
 
-Versions so far: `LibKa0s-Core-1.0` key **17.1** (Core minor 17, CorePixel minor 1); `LibKa0s-Widgets-1.0` key **26.1.6.13.7.8.5** (Widgets minor 26, WidgetsDropdown minor 1, WidgetsLineChart minor 7); every other file at its v1.90.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-Core-1.0` key **17.1** (Core minor 17, CorePixel minor 1); `LibKa0s-Widgets-1.0` key **26.1.6.13.7.8.5** (Widgets minor 26, WidgetsDropdown minor 1, WidgetsLineChart minor 7); `LibKa0s-Skin-1.0` key **17.1.27.8.19.19.1.1.17.4.9** (SkinPaintExtras minor 19, SkinPaintHud minor 1, SkinAceConfirm minor 1); every other file at its v1.90.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises.
 
 ### The line chart's lines in physical pixels (`FU-L1`)
 
@@ -27,6 +27,7 @@ Each a pure move on the seam `CLAUDE.md`'s census named, so that no payload file
 
 - **Core minor 17, CorePixel minor 1** ([docs](docs/api/Core/version-17.1-docs.md)): the pixel edges section (`__PixelSize`, `__OnPixelScale`, `__WatchPixels`, `__PixelBackdrop`, `__RefreshPixelBackdrops` and their state) moved to the new `CorePixel.lua`, loaded after `Core.lua` and paired on its minor. `Core.lua` 1080 -> 949. A payload without the file has no pixel members, and Widgets and the Skin major draw in UI units, as under a Core older than minor 16.
 - **Widgets minor 26, WidgetsDropdown minor 1** ([docs](docs/api/Widgets/version-26.1.6.13.7.8.5-docs.md)): the dropdown and the one popup menu every instance of it drops (`lib.Dropdown`, `lib.ContextMenu`, `lib.CloseMenu`, the cascading levels and their rows) moved to the new `WidgetsDropdown.lua`, loaded after `Widgets.lua`, paired on its minor and with its `NEEDS_CORE = 1` floor. The shell keeps the search box, the mode strip and `lib.IconText`, and hands the new file `lib.__dropdownKit`. `Widgets.lua` 1312 -> 559. A payload without the file has no dropdown and no shared menu.
+- **SkinPaintExtras minor 19, SkinPaintHud minor 1, SkinAceConfirm minor 1** ([docs](docs/api/Skin/version-17.1.27.8.19.19.1.1.17.4.9-docs.md)): AceConfigDialog's confirmation box for a Ka0s profile page (`__AceConfirmArm`, `__AceConfirmRaised`, `__AceConfirmHidden`, the `__aceConfirm` registry), the seam the census named, moved to the new `SkinAceConfirm.lua`; that alone left the file at 1058, so the HUD's two shared looks (`S.BarGloss`, `S.HudFont` and their font-object registry) moved to the new `SkinPaintHud.lua`. Both load after `SkinPaintExtras.lua`, are paired on the Skin shell and attach only beside `SkinPaint.lua`'s helpers, as the extras do. `SkinPaintExtras.lua` 1217 -> 922. A payload without them has no `BarGloss` or `HudFont`, and the profile delete box stays stock.
 
 ## v1.90.0 — 2026-11-06
 

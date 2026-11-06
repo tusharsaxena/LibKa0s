@@ -20,6 +20,8 @@
 	<Script file="SkinDefsOthers.lua"/>
 	<Script file="SkinPaint.lua"/>
 	<Script file="SkinPaintExtras.lua"/>
+	<Script file="SkinPaintHud.lua"/>
+	<Script file="SkinAceConfirm.lua"/>
 	<Script file="SkinPaintControls.lua"/>
 	<Script file="SkinEUI.lua"/>
 	<Script file="SkinAce.lua"/>
