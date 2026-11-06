@@ -36,6 +36,12 @@ Each a pure move on the seam `CLAUDE.md`'s census named, so that no payload file
 - **Step 9's re-sweep** (the sixteen listed hosts: 305 lookup lines): every file the sixteen print is named in the *Consumers* table, so no row moves.
 - **Step 8's re-vendor** is every roster addon's, Outfitter Reborn included (`FU-RV-<X>` of the run). Each host owes the copy and its provenance line; a host test loader or file list that names library files adds the four new ones. Loot History and Ka0s Skin Tester draw a line chart, so their charts' lines draw one physical pixel after the re-vendor. No host owes a facade or stub member.
 
+Release gate (`docs/automated-tests/20261106-191446/`): lint pass, 0/0 in 313 files;
+tests pass, 4214 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Current — `Widgets.lua` (minor 26, which defines `W.TestStrip`) re-read with `tests/test_widgets_teststrip.lua`, `tests/fixture_sim_panel.lua`, `tests/test_sim_isolation.lua` and the Widgets 26.1.6.13.7.8.5 document: the strip's code is unchanged by the dropdown peel, and the two Sim test files only load `WidgetsDropdown.lua` beside `Widgets.lua`; no Sim file moved, and no host's scenarios or strips are affected.
+
 ## v1.90.0 — 2026-11-06
 
 Opened 2026-11-06, on `feat/2026-11-06-revendor-libka0s-v1-89`: the owner's first smoke feedback on the v1.89.0 re-vendor (Ka0sAddonsCommonTasks `docs/2026-11-06-REVENDOR_LIBKA0S_V1_89/SF1_SMOKE_FEEDBACK.md`), `SF1-L1` and `SF1-L2` of that run, released as `SF1-L3`. Refreshed before any push for the owner's second request (`SF2_REMAINING_EDGES.md` of the same bundle): `SF2-L1`, folded in as `SF2-L2`, and the local tag moved to the refresh.
