@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **37** · `OptionsRegistry.lua` **4** · `OptionsWidgets.lua` **44** · `OptionsFlow.lua` **2** · `OptionsIds.lua` **7** · `OptionsIdSuggest.lua` **2** · `OptionsIdList.lua` **9** · `OptionsTabs.lua` **15** · `OptionsTabbed.lua` **2** · `OptionsCombat.lua` **4** · `OptionsCompose.lua` **19** · `OptionsScroll.lua` **13** · `OptionsNav.lua` **5** · `OptionsDrawer.lua` **5** · `OptionsKeybinds.lua` **7** · `OptionsAppearance.lua` **7** · `OptionsSkinPicker.lua` **11** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **4** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4` |
-| Shipped in | v1.90.0 (unreleased) |
+| Shipped in | v1.90.0 |
 | Status | **Current** |
 | Supersedes | [version 37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.6.11.1.1.4](./version-37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.6.11.1.1.4-docs.md) (v1.85.0 – v1.89.0) — the Skin tab's copy and the skin picker's Apply to all wrote the source owner's Scope over every target, a host's documented Scope deviation included. |
 | Superseded by | — |

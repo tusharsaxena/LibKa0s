@@ -10,11 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.90.0 — unreleased
+## v1.90.0 — 2026-11-06
 
-Opened 2026-11-06, on `feat/2026-11-06-revendor-libka0s-v1-89`: the owner's first smoke feedback on the v1.89.0 re-vendor (Ka0sAddonsCommonTasks `docs/2026-11-06-REVENDOR_LIBKA0S_V1_89/SF1_SMOKE_FEEDBACK.md`), `SF1-L1` and `SF1-L2` of that run. The version is not bumped and no tag is cut; this block is the record `tests/test_versioning.lua` reads for the minors that moved.
+Opened 2026-11-06, on `feat/2026-11-06-revendor-libka0s-v1-89`: the owner's first smoke feedback on the v1.89.0 re-vendor (Ka0sAddonsCommonTasks `docs/2026-11-06-REVENDOR_LIBKA0S_V1_89/SF1_SMOKE_FEEDBACK.md`), `SF1-L1` and `SF1-L2` of that run, released as `SF1-L3`.
 
-Versions so far: `LibKa0s-Core-1.0` key **16** (Core minor 16); `LibKa0s-Widgets-1.0` key **24.5.12.6.8.5** (Widgets minor 24, WidgetsAutocomplete minor 8); `LibKa0s-Skin-1.0` key **17.1.27.8.19.18.17.4.9** (Skin minor 17, SkinPaint minor 19, SkinPaintExtras minor 18); `LibKa0s-Options-1.0` key **37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4** (OptionsAppearance minor 7); every other file at its v1.89.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises: Widgets and Skin resolve Core's new members at call time and draw as before without them.
+Versions in this release: `LibKa0s-Core-1.0` key **16** (Core minor 16); `LibKa0s-Widgets-1.0` key **24.5.12.6.8.5** (Widgets minor 24, WidgetsAutocomplete minor 8); `LibKa0s-Skin-1.0` key **17.1.27.8.19.18.17.4.9** (Skin minor 17, SkinPaint minor 19, SkinPaintExtras minor 18); `LibKa0s-Options-1.0` key **37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4** (OptionsAppearance minor 7); every other file at its v1.89.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises: Widgets and Skin resolve Core's new members at call time and draw as before without them. The tag is cut locally; it is pushed only at the owner's go-ahead.
 
 ### One physical pixel (`SF1-L1`)
 
@@ -29,6 +29,13 @@ Versions so far: `LibKa0s-Core-1.0` key **16** (Core minor 16); `LibKa0s-Widgets
 - **Skin minor 17** ([docs](docs/api/Skin/version-17.1.27.8.19.18.17.4.9-docs.md)): `RegisterOwner(owner, { keepScope = true })`, an opt-out kept on the registration as `owners[owner].keepScope`. A later `RegisterOwner` that names it replaces it (`false` turns it off); one that does not keeps it. No member moves, so a host's Skin facade owes nothing.
 - **OptionsAppearance minor 7** ([docs](docs/api/Options/version-37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4-docs.md)): `lib.__copySkinTo`, which the Skin tab's *Copy to all Ka0s addons* and the skin picker's *Apply to all Ka0s addons* both run per target, gives a `keepScope` target the source, the skin and the media (font, texture and font outline), but never its Scope: no `SetIgnore` for it, and its setter is handed `ignore = nil`. Every other target takes the Scope as before. Feedback item 2: an Apply to all from an addon that ignores its panel turned on Ka0s Skin Tester's documented `ignorePanel = false`, and its three *PaintAce (Scope: panel)* cells drew stock AceGUI chrome. The Skin Tester registers with it at its re-vendor (`SF1-ST`).
 - **Tests**: `tests/test_options_appearance_overrides.lua`'s *a copy carries skin and media to an owner registered keepScope, never its Scope*, red under v1.89.0.
+
+### The release (`SF1-L3`)
+
+- **Docs**: `docs/releasing.md` moves its provenance template and semver to v1.90.0 and says in step 8 that v1.90.0 adds no Skin facade, major or instance member; `README.md`'s kit line names v1.90.0 (kit revision 51, unchanged); the five new API documents, their predecessors' *Superseded by* and `docs/api/README.md`'s rows drop *unreleased*. `docs/test-cases.md` regenerated.
+- **The standards pointer** moves from v2.101.0 to **v2.102.2**, the standard's live version. Read between the two: client-quirks (new, vendored into addons), documentation-§5/§6's in-repo citations in an addon's own docs, packaging's `media/screenshots/`, the shape of `docs/superpowers/`, events-frames-taint-§2's combat-start erratum and library-stack-§7's recount of what v1.89.0 ships. None binds this repo differently: library-stack-§7's counts (twenty-one majors, sixty-seven files) are unchanged at this release. Per events-frames-taint-§9, the backdrop internals `__PixelBackdrop` relies on were read at `wow-ui-source@297d7aa`: `Interface/AddOns/Blizzard_SharedXML/Backdrop.lua` (the nine piece names, `SetBackdrop` returning early on the same table, `ApplyBackdrop` resetting both colors to white, corners and edges sized by `edgeSize`) and `Blizzard_SharedXML/NineSlice.lua` (snapping is turned off only by `NineSliceUtil.DisableSharpening`).
+- **Step 9's re-sweep** (the sixteen listed hosts: 305 lookup lines): every file the sixteen print is named in the *Consumers* table, so no row moves.
+- **Step 8's re-vendor** is every roster addon's, Outfitter Reborn included (`SF1-RV-<X>` of the run). Ka0s Skin Tester registers with `keepScope = true` (`SF1-ST`). No host owes a facade or stub member.
 
 ## v1.89.0 — 2026-11-05
 

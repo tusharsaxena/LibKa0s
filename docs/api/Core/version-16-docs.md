@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **16** |
-| Shipped in | v1.90.0 (unreleased) |
+| Shipped in | v1.90.0 |
 | Status | **Current** |
 | Supersedes | [version 15](./version-15-docs.md) (shipped in v1.85.0 – v1.89.0) — the same members; a backdrop edge of 1 UI unit drew 1 or 2 px by a frame's sub-pixel position, and the Skin major alone could size an edge in physical pixels |
 | Superseded by | — |

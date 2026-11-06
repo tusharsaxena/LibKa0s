@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **24** · `WidgetsReorder.lua` **5** · `WidgetsDragHandle.lua` **12** · `WidgetsLineChart.lua` **6** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **5** |
-| Shipped in | v1.90.0 (unreleased) |
+| Shipped in | v1.90.0 |
 | Status | **Current** |
 | Supersedes | [version 23.5.12.6.7.5](./version-23.5.12.6.7.5-docs.md) (v1.87.0 – v1.89.0) — the dropdown, the search box, the menus and the autocomplete list drew a backdrop edge of 1 UI unit, 1 or 2 px by the frame's sub-pixel position. |
 | Superseded by | — |

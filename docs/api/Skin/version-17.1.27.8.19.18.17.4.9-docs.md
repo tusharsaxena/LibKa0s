@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **17** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **27** · `SkinDefsOthers.lua` **8** · `SkinPaint.lua` **19** · `SkinPaintExtras.lua` **18** · `SkinPaintControls.lua` **17** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
-| Shipped in | v1.90.0 (unreleased) |
+| Shipped in | v1.90.0 |
 | Status | **Current** |
 | Supersedes | [version 16.1.27.8.19.18.17.4.9](./version-16.1.27.8.19.18.17.4.9-docs.md) (unreleased, an earlier step of v1.90.0) — an owner had no way to keep its Scope through another addon's skin copy. |
 | Superseded by | — |
