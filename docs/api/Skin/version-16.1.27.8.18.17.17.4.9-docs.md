@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **16** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **27** · `SkinDefsOthers.lua` **8** · `SkinPaint.lua` **18** · `SkinPaintExtras.lua` **17** · `SkinPaintControls.lua` **17** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 15.1.27.8.18.16.17.4.9](./version-15.1.27.8.18.16.17.4.9-docs.md) (unreleased, an earlier step of v1.85.0) — a window had no frame for its title band, so each header child was anchored by hand to the window's top, and the title sat off the band's middle (Premade Groups Filter Extension's about 4 px high). |
-| Superseded by | — |
+| Superseded by | [version 16.1.27.8.19.18.17.4.9](./version-16.1.27.8.19.18.17.4.9-docs.md) (v1.90.0, unreleased) — the pixel size and watch are Core minor 16's, shared with Widgets, and a non-flat edge on a pixel-exact Widgets control is in physical pixels (SF1-L1). |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). One Core member is used, optionally: `SkinEUI.lua` resolves `SafeRegisterEvent` at call time; with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner` |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 16, SkinOwnerTokens = 1, SkinDefs = 27, SkinDefsOthers = 8, SkinPaint = 18, SkinPaintExtras = 17, SkinPaintControls = 17, SkinEUI = 4, SkinAce = 9 }` |
 

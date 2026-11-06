@@ -10,6 +10,20 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.90.0 — unreleased
+
+Opened 2026-11-06, on `feat/2026-11-06-revendor-libka0s-v1-89`: the owner's first smoke feedback on the v1.89.0 re-vendor (Ka0sAddonsCommonTasks `docs/2026-11-06-REVENDOR_LIBKA0S_V1_89/SF1_SMOKE_FEEDBACK.md`), `SF1-L1` and `SF1-L2` of that run. The version is not bumped and no tag is cut; this block is the record `tests/test_versioning.lua` reads for the minors that moved.
+
+Versions so far: `LibKa0s-Core-1.0` key **16** (Core minor 16); `LibKa0s-Widgets-1.0` key **24.5.12.6.8.5** (Widgets minor 24, WidgetsAutocomplete minor 8); `LibKa0s-Skin-1.0` key **16.1.27.8.19.18.17.4.9** (SkinPaint minor 19, SkinPaintExtras minor 18); every other file at its v1.89.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises: Widgets and Skin resolve Core's new members at call time and draw as before without them.
+
+### One physical pixel (`SF1-L1`)
+
+- **Core minor 16** ([docs](docs/api/Core/version-16-docs.md)): pixel edges, the one mechanism Widgets and the Skin major now share, all internal (`__`), so no member manifest moves. `__PixelSize(frame, n)` is `n` physical pixels in `frame`'s UI units (PixelUtil's factor over its effective scale), the body Skin's `P.px` had. `__WatchPixels(frame)` hooks UIParent's `OnSizeChanged` once and `SetScale` on the frame and each ancestor once, and runs every `__OnPixelScale(key, fn)` listener on a change: the watch Skin's `P.pxWatch` had, moved, never an event. `__PixelBackdrop(frame)` makes a BackdropTemplate frame's backdrop pixel-exact: every later `SetBackdrop` on it, a skin's included, reads `edgeSize` and `insets` as physical pixels, `GetBackdrop` answers the table as given, the backdrop's pieces are snapped to the pixel grid (the template turns snapping off, which smears a 1 px edge at a fractional position over two), and it is laid again, both colors kept, on a pixel-scale change and on each show.
+- **Widgets minor 24, WidgetsAutocomplete minor 8** ([docs](docs/api/Widgets/version-24.5.12.6.8.5-docs.md)): `W.Dropdown`'s box, `W.SearchBox`, the shared menu and every cascading level, and the autocomplete's list take that backdrop, so each edge is one physical pixel at any UI scale and sub-pixel position, with no skin and under every skin. A backdrop's `edgeSize = 1` was one UI unit, which at the owner's UI scale drew 1 or 2 px by the frame's position: DropWatcher's dropdown measured 2 px on top and 1 at the bottom, where LootHistory's, the same widget, read 1 and 1 (feedback item 4; item 3's Skin Tester EditBox edge is the same shape). No member or option moves.
+- **SkinPaint minor 19, SkinPaintExtras minor 18** ([docs](docs/api/Skin/version-16.1.27.8.19.18.17.4.9-docs.md)): `P.px` and the pixel watch call Core's; `P.pxEdge`, new and internal, sizes the non-flat edge `P.box` draws on the holder of a frame Core keeps pixel-exact (WoW Default's 1 px `bevelIn` input edge) in physical pixels, watched; a nine-slice's art and every other frame keep their size. A flat skin's edge is the backdrop's, so the dropdown's focus line and every recolor stay one pixel with no painter change. The scope is the Widgets controls: a settings panel's AceGUI rows are left alone, per the owner's ruling.
+- **Not changed**: the copy window's border (Core's window chrome, every window's), the reorder list's row boxes and the drag handle's strips (four 1 UI-unit textures each, not backdrops; outside the owner's report).
+- **Tests**: `tests/test_widgets_pixel_edges.lua` (7 cases), each at PixelUtil's factor 0.75 over an effective scale of 1.5, so a pixel is 0.5 UI units; red under v1.89.0.
+
 ## v1.89.0 — 2026-11-05
 
 Opened 2026-11-05, on `feat/2026-11-05-kit-unregister-guard`: a test-kit flake Outfitter Reborn's `tests/test_bar.lua` hit, its profile-switch case failing about one run in six (`LK-K1`), released as `LK-K2`.

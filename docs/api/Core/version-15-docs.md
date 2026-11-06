@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **15** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 14](./version-14-docs.md) (shipped in v1.81.0 – v1.84.0) — the same members; `MakeResizable` left a frame anchored to another frame on the screen after a drag |
-| Superseded by | — |
+| Superseded by | [version 16](./version-16-docs.md) (v1.90.0, unreleased) — pixel edges: the internal size, watch and pixel-exact backdrop Widgets and the Skin major share (SF1-L1) |
 | Requires | nothing new: `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 15 }` |
 
