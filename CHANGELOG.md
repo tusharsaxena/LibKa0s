@@ -10,11 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.91.0 — unreleased
+## v1.91.0 — 2026-11-06
 
-Opened 2026-11-06, on `feat/2026-11-06-followups-v1-91`: the follow-ups v1.90.0's run left open (Ka0sAddonsCommonTasks `docs/2026-11-06-FOLLOWUPS_V1_91/00_PLAN.md`). The version is not bumped and no tag is cut; this block is the record `tests/test_versioning.lua` reads for the minors that moved.
+Opened 2026-11-06, on `feat/2026-11-06-followups-v1-91`: the follow-ups v1.90.0's run left open (Ka0sAddonsCommonTasks `docs/2026-11-06-FOLLOWUPS_V1_91/00_PLAN.md`), `FU-L1` and `FU-L2` of that run, released as `FU-L3`.
 
-Versions so far: `LibKa0s-Core-1.0` key **17.1** (Core minor 17, CorePixel minor 1); `LibKa0s-Widgets-1.0` key **26.1.6.13.7.8.5** (Widgets minor 26, WidgetsDropdown minor 1, WidgetsLineChart minor 7); `LibKa0s-Skin-1.0` key **17.1.27.8.19.19.1.1.17.4.9** (SkinPaintExtras minor 19, SkinPaintHud minor 1, SkinAceConfirm minor 1); every other file at its v1.90.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Core-1.0` key **17.1** (Core minor 17, CorePixel minor 1); `LibKa0s-Widgets-1.0` key **26.1.6.13.7.8.5** (Widgets minor 26, WidgetsDropdown minor 1, WidgetsLineChart minor 7); `LibKa0s-Skin-1.0` key **17.1.27.8.19.19.1.1.17.4.9** (SkinPaintExtras minor 19, SkinPaintHud minor 1, SkinAceConfirm minor 1); every other file at its v1.90.0 minor, and the test kit at revision **51**. No `NEEDS_*` floor rises. The tag is cut locally and pushed only at the run's finalize.
 
 ### The line chart's lines in physical pixels (`FU-L1`)
 
@@ -29,6 +29,12 @@ Each a pure move on the seam `CLAUDE.md`'s census named, so that no payload file
 - **Widgets minor 26, WidgetsDropdown minor 1** ([docs](docs/api/Widgets/version-26.1.6.13.7.8.5-docs.md)): the dropdown and the one popup menu every instance of it drops (`lib.Dropdown`, `lib.ContextMenu`, `lib.CloseMenu`, the cascading levels and their rows) moved to the new `WidgetsDropdown.lua`, loaded after `Widgets.lua`, paired on its minor and with its `NEEDS_CORE = 1` floor. The shell keeps the search box, the mode strip and `lib.IconText`, and hands the new file `lib.__dropdownKit`. `Widgets.lua` 1312 -> 559. A payload without the file has no dropdown and no shared menu.
 - **SkinPaintExtras minor 19, SkinPaintHud minor 1, SkinAceConfirm minor 1** ([docs](docs/api/Skin/version-17.1.27.8.19.19.1.1.17.4.9-docs.md)): AceConfigDialog's confirmation box for a Ka0s profile page (`__AceConfirmArm`, `__AceConfirmRaised`, `__AceConfirmHidden`, the `__aceConfirm` registry), the seam the census named, moved to the new `SkinAceConfirm.lua`; that alone left the file at 1058, so the HUD's two shared looks (`S.BarGloss`, `S.HudFont` and their font-object registry) moved to the new `SkinPaintHud.lua`. Both load after `SkinPaintExtras.lua`, are paired on the Skin shell and attach only beside `SkinPaint.lua`'s helpers, as the extras do. `SkinPaintExtras.lua` 1217 -> 922. A payload without them has no `BarGloss` or `HudFont`, and the profile delete box stays stock.
 - **Tests**: `tests/test_toast.lua` 1302 -> 760, its stack cases moved unchanged to the new `tests/test_toast_stack.lua` and its bench to `tests/fixture_toast.lua`. The suites and fixtures that load the peeled files by name load the new ones beside them; no case changes otherwise, and the total stays at 4214.
+
+### The release (`FU-L3`)
+
+- **Docs**: `docs/releasing.md` moves its provenance template and semver to v1.91.0; step 8 says v1.91.0 adds no Skin facade, major or instance member, and that a consumer whose tests load library files by name adds the four new files (`CorePixel.lua`, `WidgetsDropdown.lua`, `SkinPaintHud.lua`, `SkinAceConfirm.lua`) beside the files they were peeled from, in its re-vendor commit; step 9's sweep is recorded. `README.md`'s kit line names v1.91.0 (kit revision 51, unchanged); its standards pointer stays at v2.102.2, the standard's live version. The three new API documents' *Shipped in* and `docs/api/README.md`'s rows drop *unreleased*; their predecessors' *Superseded by* already name v1.91.0. `docs/test-cases.md` regenerated.
+- **Step 9's re-sweep** (the sixteen listed hosts: 305 lookup lines): every file the sixteen print is named in the *Consumers* table, so no row moves.
+- **Step 8's re-vendor** is every roster addon's, Outfitter Reborn included (`FU-RV-<X>` of the run). Each host owes the copy and its provenance line; a host test loader or file list that names library files adds the four new ones. Loot History and Ka0s Skin Tester draw a line chart, so their charts' lines draw one physical pixel after the re-vendor. No host owes a facade or stub member.
 
 ## v1.90.0 — 2026-11-06
 

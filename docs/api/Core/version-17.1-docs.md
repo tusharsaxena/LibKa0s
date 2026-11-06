@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **17** · `CorePixel.lua` minor **1** |
-| Shipped in | v1.91.0 (unreleased) |
+| Shipped in | v1.91.0 |
 | Status | **Current** |
 | Supersedes | [version 16](./version-16-docs.md) (shipped in v1.90.0) — the same members, with the pixel edges section in `Core.lua` |
 | Superseded by | — |

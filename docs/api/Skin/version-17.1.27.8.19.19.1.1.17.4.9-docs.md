@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **17** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **27** · `SkinDefsOthers.lua` **8** · `SkinPaint.lua` **19** · `SkinPaintExtras.lua` **19** · `SkinPaintHud.lua` **1** · `SkinAceConfirm.lua` **1** · `SkinPaintControls.lua` **17** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
-| Shipped in | v1.91.0 (unreleased) |
+| Shipped in | v1.91.0 |
 | Status | **Current** |
 | Supersedes | [version 17.1.27.8.19.18.17.4.9](./version-17.1.27.8.19.18.17.4.9-docs.md) (v1.90.0) — the same surface, with the HUD's shared looks and AceConfigDialog's confirmation box in `SkinPaintExtras.lua`. |
 | Superseded by | — |

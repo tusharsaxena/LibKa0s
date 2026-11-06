@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **26** · `WidgetsDropdown.lua` **1** · `WidgetsReorder.lua` **6** · `WidgetsDragHandle.lua` **13** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **5** |
-| Shipped in | v1.91.0 (unreleased) |
+| Shipped in | v1.91.0 |
 | Status | **Current** |
 | Supersedes | [version 25.6.13.6.8.5](./version-25.6.13.6.8.5-docs.md) (v1.90.0) — the line chart's axis, grid, markers, crosshair and series drew `Line` thicknesses in UI units, so a 1 UI-unit line was 1 or 2 px by the UI scale, and the dropdown and its shared menu were in `Widgets.lua`. |
 | Superseded by | — |
