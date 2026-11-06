@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 25.6.13.7.8.5
+# `LibKa0s-Widgets-1.0` — version 26.1.6.13.7.8.5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,15 +8,21 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` **25** · `WidgetsReorder.lua` **6** · `WidgetsDragHandle.lua` **13** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **5** |
+| Files and minors | `Widgets.lua` **26** · `WidgetsDropdown.lua` **1** · `WidgetsReorder.lua` **6** · `WidgetsDragHandle.lua` **13** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **5** |
 | Shipped in | v1.91.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 25.6.13.6.8.5](./version-25.6.13.6.8.5-docs.md) (v1.90.0) — the line chart's axis, grid, markers, crosshair and series drew `Line` thicknesses in UI units, so a 1 UI-unit line was 1 or 2 px by the UI scale. |
+| Supersedes | [version 25.6.13.6.8.5](./version-25.6.13.6.8.5-docs.md) (v1.90.0) — the line chart's axis, grid, markers, crosshair and series drew `Line` thicknesses in UI units, so a 1 UI-unit line was 1 or 2 px by the UI scale, and the dropdown and its shared menu were in `Widgets.lua`. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 25, WidgetsReorder = 6, WidgetsDragHandle = 13, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 5 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 26, WidgetsDropdown = 1, WidgetsReorder = 6, WidgetsDragHandle = 13, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 5 }` |
 
-## What changed at this version: the line chart's lines in physical pixels (FU-L1)
+## What changed at this version: the dropdown peel (FU-L2)
+
+A pure move, for the owner's ruling on the band files (FU-L2 of Ka0sAddonsCommonTasks `docs/2026-11-06-FOLLOWUPS_V1_91/`); no public member, option or behavior changes, so the member manifest lists the same names.
+
+**`WidgetsDropdown.lua` minor 1** (new, loaded after `Widgets.lua`) carries the dropdown and the one popup menu every instance of it drops out of `Widgets.lua`, which moves to **minor 26**: `lib.Dropdown`, `lib.ContextMenu`, `lib.CloseMenu`, the cascading levels and their rows, `lib.__rowTip` and `lib.__rowTipOff`, unchanged. It is paired on the shell's minor (`__dropdownMinor`, `__dropdownShellMinor`), with the shell's attach floor (`NEEDS_CORE = 1`). The shell keeps the search box, the mode strip and `lib.IconText`, and hands the file the locals the two share as `lib.__dropdownKit` (the house flat skin, its edge art, the panel opts and the token reader). The mode strip's right-click reads `lib.ContextMenu` at call time. A payload without the file has no dropdown and no shared menu; copy the whole folder.
+
+## The line chart's lines in physical pixels (FU-L1)
 
 **`WidgetsLineChart.lua` moves to minor 7** (Ka0sAddonsCommonTasks `docs/2026-11-06-FOLLOWUPS_V1_91/00_PLAN.md`, section 1, the one item v1.90.0's pixel work left open). No member, option or data field is added, removed or renamed.
 

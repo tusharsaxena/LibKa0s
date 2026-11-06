@@ -13,7 +13,7 @@ local OWNER = "LootHistory"
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest",
                   "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsCombat", "OptionsScroll", "OptionsNav",
                   "OptionsDrawer", "OptionsCompose" }
-local WIDGETS = { "Widgets", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
+local WIDGETS = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
                   "WidgetsCopyWindow" }
 
 local function env(extra)

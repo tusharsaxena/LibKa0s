@@ -24,6 +24,7 @@
 	<Script file="SkinEUI.lua"/>
 	<Script file="SkinAce.lua"/>
 	<Script file="Widgets.lua"/>
+	<Script file="WidgetsDropdown.lua"/>
 	<Script file="WidgetsReorder.lua"/>
 	<Script file="WidgetsDragHandle.lua"/>
 	<Script file="WidgetsLineChart.lua"/>

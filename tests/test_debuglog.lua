@@ -487,6 +487,7 @@ test("dbg: the window degrades to nothing when CreateFrame is unavailable", func
   -- than degraded. That is the floor working — the case under test here is the one where the
   -- payload is whole and the CLIENT is missing, which is what `m.CreateFrame = nil` models.
   Loader.load("LibKa0s/Widgets.lua", nil, m)
+  Loader.load("LibKa0s/WidgetsDropdown.lua", nil, m)
   Loader.load("LibKa0s/DebugLog.lua", nil, m)
   local isolated = m.LibStub("LibKa0s-DebugLog-1.0")
   local D = isolated:New{
@@ -621,6 +622,7 @@ local function loadSkewed()
   -- floor is read at ITS load and Widgets needs a Core of its own to attach to. The skew under
   -- test is Core's, not Widgets'.
   Loader.load("LibKa0s/Widgets.lua", nil, env)
+  Loader.load("LibKa0s/WidgetsDropdown.lua", nil, env)
   Loader.load("LibKa0s/DebugLog.lua", nil, env)
   Loader.loadSource(coreCopy("NEW", 2), "NEW/Core.lua", nil, env)
   return env.LibStub("LibKa0s-Core-1.0"), env.LibStub("LibKa0s-DebugLog-1.0")

@@ -19,7 +19,7 @@ local test, assertEqual, assertTrue, assertNil =
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER, OTHER = "LootHistory", "BankLedger"
-local WFILES = { "Widgets", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
+local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
                  "WidgetsCopyWindow" }
 
 local function survey(m, obj) return m.__paint(obj) end

@@ -19,7 +19,7 @@ local test, assertEqual, assertTrue, assertNil = T.test, T.assertEqual, T.assert
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER, OTHER = "LootHistory", "BankLedger"
-local TOOL_FILES = { "Widgets", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
+local TOOL_FILES = { "Widgets", "WidgetsDropdown", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
   "DebugLogWindow", "Lifecycle", "Perf", "PerfSampler", "PerfCommands", "PerfPanel", "Sim", "SimTimeline",
   "SimPanel", "SimPanelRender" }
 

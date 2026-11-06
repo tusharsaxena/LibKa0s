@@ -12,7 +12,7 @@
 | Shipped in | v1.90.0 |
 | Status | Superseded |
 | Supersedes | [version 23.5.12.6.7.5](./version-23.5.12.6.7.5-docs.md) (v1.87.0 – v1.89.0) — the dropdown, the search box, the menus and the autocomplete list drew a backdrop edge of 1 UI unit, 1 or 2 px by the frame's sub-pixel position, and the menu's divider rule, the ReorderList row boxes and the DragHandle strips drew lines of 1 UI unit. |
-| Superseded by | [version 25.6.13.7.8.5](./version-25.6.13.7.8.5-docs.md) (v1.91.0) — the line chart's axis, grid, markers, crosshair and series are physical pixels at any UI scale (FU-L1). |
+| Superseded by | [version 26.1.6.13.7.8.5](./version-26.1.6.13.7.8.5-docs.md) (v1.91.0) — the line chart's axis, grid, markers, crosshair and series are physical pixels at any UI scale (FU-L1), and the dropdown and its shared menu moved to `WidgetsDropdown.lua` (FU-L2). |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 25, WidgetsReorder = 6, WidgetsDragHandle = 13, WidgetsLineChart = 6, WidgetsAutocomplete = 8, WidgetsCopyWindow = 5 }` |
 

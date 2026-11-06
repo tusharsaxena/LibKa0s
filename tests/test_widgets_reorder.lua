@@ -249,6 +249,7 @@ rawTest("reorder: a payload without WidgetsReorder.lua loads whole, with no Reor
   local ok, err = pcall(function()
     Loader.load("LibKa0s/Core.lua", nil, fresh)
     Loader.load("LibKa0s/Widgets.lua", nil, fresh)
+    Loader.load("LibKa0s/WidgetsDropdown.lua", nil, fresh)
     Loader.load("LibKa0s/WidgetsDragHandle.lua", nil, fresh)
   end)
   assertTrue(ok, tostring(err))

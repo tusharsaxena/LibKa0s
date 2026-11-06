@@ -206,6 +206,7 @@ local function loadCopies(...)
   local env = buildMocks()
   Loader.load("LibKa0s/Core.lua", nil, env)
   Loader.load("LibKa0s/Widgets.lua", nil, env)
+  Loader.load("LibKa0s/WidgetsDropdown.lua", nil, env)
   for _, c in ipairs({ ... }) do
     Loader.loadSource(c.sim, c.tag .. "/Sim.lua", nil, env)
     Loader.loadSource(c.timeline, c.tag .. "/SimTimeline.lua", nil, env)
