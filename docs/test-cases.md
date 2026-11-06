@@ -1603,7 +1603,7 @@ Total.
 - skin scope: the outline setting re-fits a fitted strip as a skin switch does
 - skin scope: a label set by path that still answers its template object lends the path
 
-### test_widgets_pixel_edges.lua (7)
+### test_widgets_pixel_edges.lua (11)
 
 - pixel edges: the dropdown, the search box and the shared menu are one physical pixel with no skin
 - pixel edges: the autocomplete list is one physical pixel
@@ -1612,6 +1612,10 @@ Total.
 - pixel edges: a re-laid backdrop's pieces are snapped to the pixel grid
 - pixel edges: an owned dropdown and search box keep one physical pixel through a flat skin's paint
 - pixel edges: under a non-flat skin the holder's edge is one physical pixel and re-sizes
+- pixel lines: the menu's divider rule is one physical pixel high at every cascade depth, and re-sizes
+- pixel lines: a ReorderList row box's edges are one physical pixel, and re-size on a scale change
+- pixel lines: a DragHandle strip's edges are one physical pixel, and re-size on a scale change
+- pixel lines: under a skin the three lines stay one physical pixel through a paint and a switch
 
 ### test_debuglog.lua (75)
 
@@ -4833,7 +4837,7 @@ Total.
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
 | test_widgets_skin_scope.lua | 20 |
-| test_widgets_pixel_edges.lua | 7 |
+| test_widgets_pixel_edges.lua | 11 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -4963,4 +4967,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4205** |
+| **Total** | **4209** |
