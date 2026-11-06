@@ -1603,6 +1603,20 @@ Total.
 - skin scope: the outline setting re-fits a fitted strip as a skin switch does
 - skin scope: a label set by path that still answers its template object lends the path
 
+### test_widgets_pixel_edges.lua (11)
+
+- pixel edges: the dropdown, the search box and the shared menu are one physical pixel with no skin
+- pixel edges: the autocomplete list is one physical pixel
+- pixel edges: a UI scale change and an ancestor's SetScale re-size the edge, colors kept
+- pixel edges: the shared menu re-sizes on a UI scale change
+- pixel edges: a re-laid backdrop's pieces are snapped to the pixel grid
+- pixel edges: an owned dropdown and search box keep one physical pixel through a flat skin's paint
+- pixel edges: under a non-flat skin the holder's edge is one physical pixel and re-sizes
+- pixel lines: the menu's divider rule is one physical pixel high at every cascade depth, and re-sizes
+- pixel lines: a ReorderList row box's edges are one physical pixel, and re-size on a scale change
+- pixel lines: a DragHandle strip's edges are one physical pixel, and re-size on a scale change
+- pixel lines: under a skin the three lines stay one physical pixel through a paint and a switch
+
 ### test_debuglog.lua (75)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
@@ -2768,7 +2782,7 @@ Total.
 - appearance: a stored key LibSharedMedia lacks stays listed, and the skin's own names the worn face
 - appearance: the skins' heading does not repeat the tab's name (options-ui-§7)
 
-### test_options_appearance_overrides.lua (25)
+### test_options_appearance_overrides.lua (26)
 
 - appearance: the Font outline dropdown sits in the Font and texture section, All text first
 - appearance: an outline pick moves the Skin major first, then writes every media half
@@ -2778,6 +2792,7 @@ Total.
 - appearance: copy gives every other owner this owner's font outline
 - appearance: the copy helper keeps a target's own half for a media half left out
 - appearance: the other owners and one owner's skin copy are library-level, for the skin picker
+- appearance: a copy carries skin and media to an owner registered keepScope, never its Scope
 - appearance: a font pick stores no outline the owner never chose, and keeps one it did
 - appearance: the copy gives a target the source's applied outline, the default included
 - appearance: a skin pick with both overrides set resets both, live and through the seam
@@ -4822,6 +4837,7 @@ Total.
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
 | test_widgets_skin_scope.lua | 20 |
+| test_widgets_pixel_edges.lua | 11 |
 | test_debuglog.lua | 75 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
@@ -4860,7 +4876,7 @@ Total.
 | test_options_keybinds.lua | 30 |
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 36 |
-| test_options_appearance_overrides.lua | 25 |
+| test_options_appearance_overrides.lua | 26 |
 | test_options_skin_picker.lua | 41 |
 | test_options_skin_picker_shared.lua | 10 |
 | test_options_skin_picker_close.lua | 13 |
@@ -4951,4 +4967,4 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
 | Skipped | 3 |
-| **Total** | **4197** |
+| **Total** | **4209** |
