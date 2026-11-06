@@ -37,6 +37,12 @@ Versions in this release: `LibKa0s-Core-1.0` key **16** (Core minor 16); `LibKa0
 - **Step 9's re-sweep** (the sixteen listed hosts: 305 lookup lines): every file the sixteen print is named in the *Consumers* table, so no row moves.
 - **Step 8's re-vendor** is every roster addon's, Outfitter Reborn included (`SF1-RV-<X>` of the run). Ka0s Skin Tester registers with `keepScope = true` (`SF1-ST`). No host owes a facade or stub member.
 
+Release gate (`docs/automated-tests/20261106-142901/`): lint pass, 0/0 in 307 files;
+tests pass, 4208 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Current — `Widgets.lua` (minor 24, which defines `W.TestStrip`) re-read with `tests/test_widgets_teststrip.lua` and the Widgets 24.5.12.6.8.5 document: the strip draws no backdrop and `SF1-L1` does not reach it; no Sim file moved, and no host's scenarios or strips are affected.
+
 ## v1.89.0 — 2026-11-05
 
 Opened 2026-11-05, on `feat/2026-11-05-kit-unregister-guard`: a test-kit flake Outfitter Reborn's `tests/test_bar.lua` hit, its profile-switch case failing about one run in six (`LK-K1`), released as `LK-K2`.
