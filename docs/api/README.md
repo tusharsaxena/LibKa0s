@@ -138,7 +138,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Compat/version-1-docs.md) | `Compat.lua` 1 | v1.55.0 | **Current** |
+| [2](./Compat/version-2-docs.md) | `Compat.lua` 2 | v1.92.0 | **Current** |
+| [1](./Compat/version-1-docs.md) | `Compat.lua` 1 | v1.55.0 – v1.91.0 | Superseded |
 
 ### `LibKa0s-Lifecycle-1.0`
 

@@ -10,6 +10,15 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## Unreleased
+
+Opened 2026-11-07, on `feat/2026-11-07-wow-forever-port` (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT/`). This block is the in-flight record; the release step (`WFP-LK-07`) turns it into the dated `v1.92.0` entry.
+
+### Client profiles and the client helpers (`WFP-LK-01`, `WFP-LK-02`)
+
+- **Test kit revision 52** ([docs](docs/api/testkit/version-52-docs.md)): `testkit/mock_client.lua`, the `retail` (default) and `forever` client profiles, selected by `KA0S_KIT_CLIENT` and stamped on every mock set by `loader.lua`.
+- **Compat minor 2** ([docs](docs/api/Compat/version-2-docs.md)): `IsForever`, `IsRetail`, `ClientKey` and `ForClient`, read from `WOW_PROJECT_ID` against the project constants at call time.
+
 ## v1.91.0 — 2026-11-06
 
 Opened 2026-11-06, on `feat/2026-11-06-followups-v1-91`: the follow-ups v1.90.0's run left open (Ka0sAddonsCommonTasks `docs/2026-11-06-FOLLOWUPS_V1_91/00_PLAN.md`), `FU-L1` and `FU-L2` of that run, released as `FU-L3`.

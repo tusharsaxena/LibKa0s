@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Compat-1.0` |
 | Files and minors | `Compat.lua` minor **1** |
 | Shipped in | v1.55.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | — |
+| Superseded by | [version 2](version-2-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Compat-1.0").MODULES` → `{ Compat = 1 }` |
 
 ## What this major is

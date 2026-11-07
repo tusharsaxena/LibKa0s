@@ -106,17 +106,18 @@ local INERT = pack(0, 0, false, 1, false)
 
 -- -- registration and shape (3) -----------------------------------------------------------------
 
-test("compat: registers minor 1 with exactly the nine public members", function()
+test("compat: registers minor 2 with exactly the thirteen public members", function()
   assertEqual(compat.MAJOR, "LibKa0s-Compat-1.0")
-  assertEqual(compat.MINOR, 1)
-  assertEqual(compat.MODULES.Compat, 1)
+  assertEqual(compat.MINOR, 2)
+  assertEqual(compat.MODULES.Compat, 2)
   local names = {}
   for _, member in ipairs(T.publicMembers(compat)) do
     assertEqual(member.kind, "function", member.name .. " kind")
     names[#names + 1] = member.name
   end
-  assertEqual(table.concat(names, ","), "CanAccess,GetSpecialization,GetSpecializationInfo,"
-    .. "GetSpellCooldown,GetSpellInfo,GetSpellName,GetSpellTexture,IsSafeKey,IsSecret")
+  assertEqual(table.concat(names, ","), "CanAccess,ClientKey,ForClient,GetSpecialization,"
+    .. "GetSpecializationInfo,GetSpellCooldown,GetSpellInfo,GetSpellName,GetSpellTexture,IsForever,"
+    .. "IsRetail,IsSafeKey,IsSecret")
 end)
 
 test("compat: the Core floor keeps the major absent from a payload without Core", function()
@@ -130,7 +131,7 @@ test("compat: the Core floor keeps the major absent from a payload without Core"
   Loader.loadSource(src, "@LibKa0s/Compat.lua", nil, bare)
   local lib = bare.LibStub("LibKa0s-Compat-1.0", true)
   assertTrue(lib ~= nil, "with Core: registered")
-  assertEqual(lib.MINOR, 1)
+  assertEqual(lib.MINOR, 2)
 end)
 
 test("compat: the source reads every global bare, never through the global table", function()
@@ -615,6 +616,10 @@ local ABSENT_ANSWERS = {
   { member = "GetSpellCooldown",      args = pack(774),  answer = pack(0, 0, false, 1, false) },
   { member = "GetSpecialization",     args = pack(),     answer = pack(nil) },
   { member = "GetSpecializationInfo", args = pack(1),    answer = pack(nil) },
+  { member = "IsForever",             args = pack(),     answer = pack(false) },
+  { member = "IsRetail",              args = pack(),     answer = pack(false) },
+  { member = "ClientKey",             args = pack(),     answer = pack(nil) },
+  { member = "ForClient",             args = pack(nil),  answer = pack(true) },
 }
 
 test("compat: with every rung removed each member answers the documented absent value", function()
@@ -623,6 +628,7 @@ test("compat: with every rung removed each member answers the documented absent 
     GetSpellInfo = ABSENT, GetSpellTexture = ABSENT, GetSpellCooldown = ABSENT,
     GetSpecialization = ABSENT, GetSpecializationInfo = ABSENT,
     issecretvalue = ABSENT, canaccessvalue = ABSENT,
+    WOW_PROJECT_ID = ABSENT, WOW_PROJECT_MAINLINE = ABSENT, WOW_PROJECT_CAMELOT = ABSENT,
   }, function()
     local covered = {}
     for _, row in ipairs(ABSENT_ANSWERS) do
@@ -652,4 +658,86 @@ test("compat: a host patching the shared table does not change another member's 
   end)
   compat.IsSecret = saved
   if not ok then error(err, 0) end
+end)
+
+-- -- the client (5) -----------------------------------------------------------------------------
+--
+-- Each case states its constants through `with`, so none depends on the profile the run started
+-- under (KA0S_KIT_CLIENT); the last case pins that the active profile is the one the library sees.
+
+local RETAIL  = { WOW_PROJECT_ID = 1,  WOW_PROJECT_MAINLINE = 1, WOW_PROJECT_CAMELOT = ABSENT }
+local FOREVER = { WOW_PROJECT_ID = 18, WOW_PROJECT_MAINLINE = 1, WOW_PROJECT_CAMELOT = 18 }
+local NEITHER = { WOW_PROJECT_ID = ABSENT, WOW_PROJECT_MAINLINE = ABSENT, WOW_PROJECT_CAMELOT = ABSENT }
+
+-- test_compat_client_retail
+test("compat: client retail (the live shape: the Camelot constant is nil) is Retail, not Forever", function()
+  with(RETAIL, function()
+    assertTrue(compat.IsRetail(), "IsRetail")
+    assertFalse(compat.IsForever(), "IsForever")
+    assertEqual(compat.ClientKey(), "retail", "ClientKey")
+  end)
+end)
+
+-- test_compat_client_forever
+test("compat: client forever is Forever, and never Retail even though MAINLINE is set", function()
+  with(FOREVER, function()
+    assertTrue(compat.IsForever(), "IsForever")
+    assertFalse(compat.IsRetail(), "IsRetail")
+    assertEqual(compat.ClientKey(), "forever", "ClientKey")
+  end)
+end)
+
+-- test_compat_client_unknown
+test("compat: client unknown (both project constants nil) is neither, never Forever", function()
+  -- A harness that defines no project constants must not read as Forever: nil == nil is true in
+  -- Lua, which is the bug the `WOW_PROJECT_CAMELOT ~= nil` guard exists for.
+  with(NEITHER, function()
+    assertFalse(compat.IsForever(), "IsForever")
+    assertFalse(compat.IsRetail(), "IsRetail")
+    assertNil(compat.ClientKey(), "ClientKey")
+  end)
+end)
+
+-- test_compat_client_read_at_call_time
+test("compat: the client is read at call time, so flipping the mock changes the answer", function()
+  with(RETAIL, function()
+    assertEqual(compat.ClientKey(), "retail", "before")
+    mocks.WOW_PROJECT_ID, mocks.WOW_PROJECT_CAMELOT = 18, 18
+    assertEqual(compat.ClientKey(), "forever", "after")
+    mocks.WOW_PROJECT_ID, mocks.WOW_PROJECT_CAMELOT = nil, nil
+    assertNil(compat.ClientKey(), "after again")
+  end)
+end)
+
+-- test_compat_forclient_cases
+test("compat: ForClient answers nil and both for every client, and a list by membership", function()
+  local cases = {
+    { RETAIL,  "retail"  }, { FOREVER, "forever" }, { NEITHER, nil },
+  }
+  for _, case in ipairs(cases) do
+    with(case[1], function()
+      local key = case[2] or "unknown"
+      assertTrue(compat.ForClient(nil), key .. ": nil means both")
+      assertTrue(compat.ForClient("both"), key .. ": both")
+      assertEqual(compat.ForClient({ "retail" }), case[2] == "retail", key .. ": { retail }")
+      assertEqual(compat.ForClient({ "forever" }), case[2] == "forever", key .. ": { forever }")
+      assertEqual(compat.ForClient({ "retail", "forever" }), case[2] ~= nil, key .. ": both listed")
+      assertFalse(compat.ForClient({}), key .. ": an empty list is no client")
+    end)
+  end
+end)
+
+test("compat: ForClient raises on an unknown token, from any client, before it matches", function()
+  for _, fixture in ipairs({ RETAIL, FOREVER, NEITHER }) do
+    with(fixture, function()
+      local err = T.assertError(function() compat.ForClient({ "retail", "classic" }) end, "list")
+      assertTrue(tostring(err):find('ForClient: unknown client "classic"', 1, true) ~= nil, "message")
+      err = T.assertError(function() compat.ForClient("retail") end, "a bare string other than both")
+      assertTrue(tostring(err):find('ForClient: unknown client "retail"', 1, true) ~= nil, "bare")
+    end)
+  end
+end)
+
+test("compat: the active kit profile is the client the library sees", function()
+  assertEqual(compat.ClientKey(), T.loader.MockClient.current(), "KA0S_KIT_CLIENT reaches Compat")
 end)
