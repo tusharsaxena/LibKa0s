@@ -10,6 +10,22 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.94.0 — 2026-11-08
+
+Opened 2026-11-08, on `feat/2026-11-07-forever-port-wave1`: the owner's ruling after the wave-1 Forever smoke of the WoW Forever port's step 5 (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT_STEP5/`), item `W1-LK-01`: the default skin is Ka0s Default on Retail and WoW Forever on the Forever client; and `W1-LK-02`, the owner's call after the Forever name probe, character identity in Compat.
+
+Versions in this release: `LibKa0s-Compat-1.0` key **4** (Compat minor 4); `LibKa0s-Skin-1.0` key **18.1.27.8.19.19.1.1.17.4.9** (Skin minor 18); every other file at its v1.93.0 minor, and the test kit at its v1.93.0 revision. No `NEEDS_*` floor rises. The tag is cut locally and pushed only at the run's finalize.
+
+### Character identity (`W1-LK-02`)
+
+- **Compat minor 4** ([docs](docs/api/Compat/version-4-docs.md)): `RegionalNames()`, `UnitCharacterName(unit)`, `CharacterKey()` and `RealmKey()`. Where names are unique per region (WoW Forever), `UnitName` answers the surname second, so a character is `"First Surname"` and a realm its `C_GameRules` ruleset. The four mirror AceDB-3.0 minor 40's key block, decide by `RegionalUniqueNamesEnabled` (feature detection, never the client) and never concatenate a secret. Elsewhere they answer `UnitName`'s own values, `"Name - Realm"` and `GetRealmName()`. Measured by the owner's probe (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT_STEP5/W1_FOREVER_NAME_PROBE.md`). Five new `tests/test_compat.lua` cases, and the absent table grows four rows.
+
+### The default skin per client (`W1-LK-01`)
+
+- **Skin minor 18** ([docs](docs/api/Skin/version-18.1.27.8.19.19.1.1.17.4.9-docs.md)): `Skin:DefaultSkin()` answers the client's default skin, `CLIENT_DEFAULTS[Compat.ClientKey()]` (`{ retail = "ka0s", forever = "forever" }`) when that skin is registered, else Ka0s Default; Compat is looked up at call time with no floor. A choice with no skin (`RegisterOwner`'s first read, `WriteChoice`, `SetChoice`) and an unregistered owner's `GetChoice` take it. `DEFAULT` stays `"ka0s"`, the token base and the draw fallback for an unknown key. Retail answers are unchanged.
+- Hosts adopt it by naming `Skin:DefaultSkin()` in their profile defaults instead of `"ka0s"` (standard skinning-§2).
+- Tests: three new `tests/test_skin.lua` cases pin both clients, the fallbacks and the choice cleaning; `tests/fixture_icon_browser.lua`'s owner chooses Ka0s Default by name, since its cases pin that skin's values under both kit profiles.
+
 ## v1.93.0 — 2026-11-07
 
 Opened 2026-11-07, on `feat/2026-11-07-wow-forever-port`: the library half of the WoW Forever port's M5 follow-ups (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT/`), `WFP-LK-06`, `WFP-LK-08` and the library's half of `WFP-FIX-02`, released as `WFP-LK-09`, plus the final whole-branch review's fixes (`WFP-RV2-LK`).

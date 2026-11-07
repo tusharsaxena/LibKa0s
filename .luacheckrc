@@ -41,6 +41,8 @@ read_globals = {
   -- `C_SpecializationInfo` is the namespaced rung P.Context prefers; the two bare names are the
   -- deprecated fallback it keeps for a client that has not moved yet.
   "C_SpecializationInfo",
+  -- Compat minor 4's character identity (W1-LK-02): the regional-names test and AceDB 40's rungs.
+  "RegionalUniqueNamesEnabled", "UnitNameUnmodified", "C_GameRules",
   "GetSpecialization", "GetSpecializationInfo", "IsInInstance", "IsInRaid", "IsInGroup",
   "GetNumGroupMembers",
   -- LibKa0s-Compat-1.0's ladders: the deprecated spell globals below C_Spell, and 12.0's secret

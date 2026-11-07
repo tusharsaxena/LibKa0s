@@ -106,18 +106,18 @@ local INERT = pack(0, 0, false, 1, false)
 
 -- -- registration and shape (3) -----------------------------------------------------------------
 
-test("compat: registers minor 3 with exactly the thirteen public members", function()
+test("compat: registers minor 4 with exactly the seventeen public members", function()
   assertEqual(compat.MAJOR, "LibKa0s-Compat-1.0")
-  assertEqual(compat.MINOR, 3)
-  assertEqual(compat.MODULES.Compat, 3)
+  assertEqual(compat.MINOR, 4)
+  assertEqual(compat.MODULES.Compat, 4)
   local names = {}
   for _, member in ipairs(T.publicMembers(compat)) do
     assertEqual(member.kind, "function", member.name .. " kind")
     names[#names + 1] = member.name
   end
-  assertEqual(table.concat(names, ","), "CanAccess,ClientKey,ForClient,GetSpecialization,"
+  assertEqual(table.concat(names, ","), "CanAccess,CharacterKey,ClientKey,ForClient,GetSpecialization,"
     .. "GetSpecializationInfo,GetSpellCooldown,GetSpellInfo,GetSpellName,GetSpellTexture,IsForever,"
-    .. "IsRetail,IsSafeKey,IsSecret")
+    .. "IsRetail,IsSafeKey,IsSecret,RealmKey,RegionalNames,UnitCharacterName")
 end)
 
 test("compat: the Core floor keeps the major absent from a payload without Core", function()
@@ -131,7 +131,7 @@ test("compat: the Core floor keeps the major absent from a payload without Core"
   Loader.loadSource(src, "@LibKa0s/Compat.lua", nil, bare)
   local lib = bare.LibStub("LibKa0s-Compat-1.0", true)
   assertTrue(lib ~= nil, "with Core: registered")
-  assertEqual(lib.MINOR, 3)
+  assertEqual(lib.MINOR, 4)
 end)
 
 test("compat: the source reads every global bare, never through the global table", function()
@@ -620,6 +620,10 @@ local ABSENT_ANSWERS = {
   { member = "IsRetail",              args = pack(),     answer = pack(false) },
   { member = "ClientKey",             args = pack(),     answer = pack(nil) },
   { member = "ForClient",             args = pack(nil),  answer = pack(true) },
+  { member = "RegionalNames",         args = pack(),     answer = pack(false) },
+  { member = "UnitCharacterName",     args = pack("player"), answer = pack(nil, nil) },
+  { member = "CharacterKey",          args = pack(),     answer = pack(nil) },
+  { member = "RealmKey",              args = pack(),     answer = pack(nil) },
 }
 
 test("compat: with every rung removed each member answers the documented absent value", function()
@@ -629,6 +633,8 @@ test("compat: with every rung removed each member answers the documented absent 
     GetSpecialization = ABSENT, GetSpecializationInfo = ABSENT,
     issecretvalue = ABSENT, canaccessvalue = ABSENT,
     WOW_PROJECT_ID = ABSENT, WOW_PROJECT_MAINLINE = ABSENT, WOW_PROJECT_CAMELOT = ABSENT,
+    UnitName = ABSENT, UnitNameUnmodified = ABSENT, GetRealmName = ABSENT,
+    RegionalUniqueNamesEnabled = ABSENT, C_GameRules = ABSENT,
   }, function()
     local covered = {}
     for _, row in ipairs(ABSENT_ANSWERS) do
@@ -780,5 +786,94 @@ test("compat: the spec readers answer nil without raising on Forever when the na
   }, function()
     assertNil(compat.GetSpecialization(), "no index")
     assertTuple(pack(compat.GetSpecializationInfo(1)), pack(nil), "no info")
+  end)
+end)
+
+-- -- character identity (minor 4) ---------------------------------------------------------------
+--
+-- The two shapes the owner's probe measured on 2026-11-08 (Ka0sAddonsCommonTasks
+-- docs/2026-11-07-WOW_FOREVER_PORT_STEP5/W1_FOREVER_NAME_PROBE.md): Forever's UnitName answers the
+-- surname second and its realm is a ruleset; Retail's answers the realm second.
+
+local RULES = { HardcoreRuleset = 1, RPRuleset = 2, PvPRuleset = 3 }
+local function names(t)
+  return function(unit) local e = t[unit]; if e then return e[1], e[2] end end
+end
+local function rules(on)
+  return { IsGameRuleActive = function(rule) return on[rule] == true end }
+end
+local function forever(extra)
+  local f = {
+    RegionalUniqueNamesEnabled = function() return true end,
+    UnitName = names({ player = { "Traxex", "Silentshot" }, target = { "Ryz", "Rockheart" }, pet = { "Wolf" } }),
+    UnitNameUnmodified = names({ player = { "Traxex", "Silentshot" } }),
+    GetRealmName = function() return "CAMWOW AU1 Realm 2 PvP" end,
+    Enum = { GameRule = RULES },
+    C_GameRules = rules({ [3] = true }),
+  }
+  for k, v in pairs(extra or {}) do f[k] = v end
+  return f
+end
+local function retail()
+  return {
+    RegionalUniqueNamesEnabled = function() return false end,
+    UnitName = names({ player = { "Traxex" }, target = { "Ryz", "Frostmourne" } }),
+    UnitNameUnmodified = names({ player = { "Traxex" } }),
+    GetRealmName = function() return "Area 52" end,
+    C_GameRules = ABSENT,
+  }
+end
+
+test("compat: with regional names a unit is its whole name, and the realm is nil", function()
+  with(forever(), function()
+    assertTrue(compat.RegionalNames(), "RegionalNames")
+    assertTuple(pack(compat.UnitCharacterName("player")), pack("Traxex Silentshot", nil), "player")
+    assertTuple(pack(compat.UnitCharacterName("target")), pack("Ryz Rockheart", nil), "never the surname as a realm")
+    assertTuple(pack(compat.UnitCharacterName("pet")), pack("Wolf", nil), "no surname: the name alone")
+    assertTuple(pack(compat.UnitCharacterName("focus")), pack(nil, nil), "no unit")
+  end)
+end)
+
+test("compat: without regional names UnitCharacterName is UnitName's two values", function()
+  with(retail(), function()
+    assertFalse(compat.RegionalNames(), "RegionalNames")
+    assertTuple(pack(compat.UnitCharacterName("player")), pack("Traxex", nil), "own realm")
+    assertTuple(pack(compat.UnitCharacterName("target")), pack("Ryz", "Frostmourne"), "another realm")
+  end)
+end)
+
+test("compat: the character and realm keys are AceDB 40's, on both shapes", function()
+  with(forever(), function()
+    assertEqual(compat.CharacterKey(), "Traxex Silentshot", "Forever char key")
+    assertEqual(compat.RealmKey(), "PvP", "Forever realm key: the ruleset")
+  end)
+  with(retail(), function()
+    assertEqual(compat.CharacterKey(), "Traxex - Area 52", "Retail char key")
+    assertEqual(compat.RealmKey(), "Area 52", "Retail realm key")
+  end)
+end)
+
+test("compat: the ruleset follows AceDB 40's order", function()
+  local cases = {
+    { {}, "PvE" }, { { [3] = true }, "PvP" }, { { [2] = true }, "RP" },
+    { { [2] = true, [3] = true }, "RP-PvP" }, { { [1] = true, [3] = true }, "Hardcore" },
+  }
+  for _, c in ipairs(cases) do
+    with(forever({ C_GameRules = rules(c[1]) }), function()
+      assertEqual(compat.RealmKey(), c[2], c[2])
+    end)
+  end
+  with(forever({ C_GameRules = ABSENT }), function()
+    assertEqual(compat.RealmKey(), "CAMWOW AU1 Realm 2 PvP", "no C_GameRules: the realm name")
+  end)
+end)
+
+test("compat: a secret name part is never concatenated", function()
+  local secret = {}
+  with(forever({ issecretvalue = function(v) return v == secret end,
+                 UnitName = function() return "Traxex", secret end }), function()
+    local name, realm = compat.UnitCharacterName("target")
+    assertEqual(name, "Traxex", "the name untouched")
+    assertNil(realm, "no realm")
   end)
 end)

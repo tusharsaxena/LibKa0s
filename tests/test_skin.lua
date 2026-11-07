@@ -391,6 +391,62 @@ end)
 
 -- ── owners and choice ────────────────────────────────────────────────────────────────────────
 
+-- ── the default skin per client (minor 18) ──────────────────────────────────────────────────
+
+-- A Skin major with Compat beside it, its project constants set to one client's. They are set after
+-- the loads, because the first load applies the kit's client profile over the mocks; Compat reads
+-- them at call time.
+local PROJECT = { "WOW_PROJECT_ID", "WOW_PROJECT_MAINLINE", "WOW_PROJECT_CAMELOT" }
+local function clientEnv(consts, noDefs)
+  local m = buildMocks()
+  Loader.load("LibKa0s/Core.lua", nil, m)
+  Loader.load("LibKa0s/Compat.lua", nil, m)
+  Loader.load("LibKa0s/Skin.lua", nil, m)
+  Loader.load("LibKa0s/SkinOwnerTokens.lua", nil, m)
+  if not noDefs then
+    Loader.load("LibKa0s/SkinDefs.lua", nil, m)
+    Loader.load("LibKa0s/SkinDefsOthers.lua", nil, m)
+  end
+  for _, k in ipairs(PROJECT) do m[k] = consts[k] end
+  return m, m.LibStub(MAJOR)
+end
+local RETAIL  = { WOW_PROJECT_ID = 1,  WOW_PROJECT_MAINLINE = 1, WOW_PROJECT_CAMELOT = nil }
+local FOREVER = { WOW_PROJECT_ID = 18, WOW_PROJECT_MAINLINE = 1, WOW_PROJECT_CAMELOT = 18 }
+
+test("skin: the default skin is Ka0s Default on Retail and WoW Forever on Forever", function()
+  local _, R = clientEnv(RETAIL)
+  assertEqual(R:DefaultSkin(), "ka0s", "Retail")
+  local m, F = clientEnv(FOREVER)
+  assertEqual(F:DefaultSkin(), "forever", "Forever")
+  assertEqual(F.DEFAULT, "ka0s", "the token base stays Ka0s Default on Forever")
+  assertEqual(F.CLIENT_DEFAULTS.retail, "ka0s", "the table: retail")
+  assertEqual(F.CLIENT_DEFAULTS.forever, "forever", "the table: forever")
+  m.WOW_PROJECT_ID, m.WOW_PROJECT_CAMELOT = 1, nil
+  assertEqual(F:DefaultSkin(), "ka0s", "read at call time")
+end)
+
+test("skin: the default skin falls back to Ka0s Default without Compat or the Forever skin", function()
+  local _, NoCompat = env()
+  assertEqual(NoCompat:DefaultSkin(), "ka0s", "no Compat")
+  local _, NoDefs = clientEnv(FOREVER, true)
+  assertEqual(NoDefs:DefaultSkin(), "ka0s", "WoW Forever not registered")
+  local _, Neither = clientEnv({ WOW_PROJECT_ID = nil, WOW_PROJECT_MAINLINE = nil, WOW_PROJECT_CAMELOT = nil })
+  assertEqual(Neither:DefaultSkin(), "ka0s", "a client that is neither")
+end)
+
+test("skin: on Forever an unregistered owner and an empty skin take WoW Forever", function()
+  local _, Skin = clientEnv(FOREVER)
+  assertEqual(select(2, Skin:GetChoice("Nobody")), "forever", "an unregistered owner")
+  local wrote
+  Skin:RegisterOwner("A", { get = function() return "ka0s", "" end,
+                            set = function(_, skin) wrote = skin end })
+  assertEqual(select(2, Skin:GetChoice("A")), "forever", "a getter with no skin")
+  assertTrue(Skin:WriteChoice("A", "ka0s", ""), "the write")
+  assertEqual(wrote, "forever", "an empty skin writes the client's default")
+  Skin:SetChoice("A", "ka0s", "obsidian")
+  assertEqual(select(2, Skin:GetChoice("A")), "obsidian", "a chosen skin stays")
+end)
+
 test("skin: an unregistered owner is not an owner and reads Ka0s Default", function()
   local _, Skin = env()
   assertFalse(Skin:IsOwner("Nobody"), "not registered")
