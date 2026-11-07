@@ -87,6 +87,10 @@ Kit.diagnostics = dofile("tests/fixture_diagnostics.lua")(_G.LK_TEST)
 -- real Skin major, for the same reason; see tests/fixture_skin_switch.lua.
 Kit.skinSwitch = dofile("tests/fixture_skin_switch.lua")
 
+-- The library's tooling (the kit, tools/) runs on a developer's machine and never ships, so the
+-- missing-globals gate leaves it out and reads the payload under LibKa0s/.
+Kit.clientGlobals = { skip = { "testkit/", "tools/" } }
+
 Kit.run{
   dir = "tests/",
   suites = {
@@ -106,7 +110,7 @@ Kit.run{
     "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events", "test_mock_resize", "test_mock_client", "test_mock_lines", "test_mock_bindings", "test_mock_layers", "test_mock_paint",
     "test_surface_parity",
     "test_versioning", "test_kitsync", "test_prose",
-    "test_register", "test_kit_inventory", "test_kit_eol", "test_kit_prose", "test_kit_runner", "test_kit_vendor_sync", "test_kit_skin_values", "test_kit_skin_switch",
+    "test_register", "test_kit_inventory", "test_kit_eol", "test_kit_prose", "test_kit_runner", "test_kit_vendor_sync", "test_kit_skin_values", "test_kit_skin_switch", "test_kit_client_globals",
     -- Shipped in the kit, so every consumer inherits the gate instead of re-typing it; the
     -- inventory assertion goes red in any repo that vendors it and leaves it undeclared.
     -- Declared by the PAIR (basename, directory) from kit revision 25: a bare name here wires
@@ -122,5 +126,8 @@ Kit.run{
     -- declared skip here. Its cases run in tests/test_kit_skin_values.lua against fixture trees.
     { name = "test_skin_values", dir = "tests/_kit/" },
     { name = "test_skin_switch", dir = "tests/_kit/" },
+    -- The missing-globals gate (kit revision 53): this repo scans its own tracked source, so the live
+    -- run is a real one; the allowlist is tests/client_globals_allow.lua.
+    { name = "test_client_globals", dir = "tests/_kit/" },
   },
 }
