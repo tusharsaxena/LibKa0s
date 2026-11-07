@@ -38,7 +38,7 @@ A new file. Exactly two profiles exist, selected by `KA0S_KIT_CLIENT` (default `
 
 ### `loader.lua`: the profile reaches every mock set
 
-`Loader.makeEnv` applies the active profile once to each mock set it builds an environment over, so a suite sees it with no wiring. `Loader.MockClient` exposes the module. A consumer's own `tests/wow_mock.lua` should drop its `GetBuildInfo` and let the profile answer.
+`Loader.makeEnv` applies the active profile once to each mock set it builds an environment over, so a suite sees it with no wiring. `Loader.MockClient` exposes the module. A consumer's own `tests/wow_mock.lua` should drop its `GetBuildInfo` and let the profile answer. The profile overwrites any `WOW_PROJECT_*` or `GetBuildInfo` a suite pre-set on a mock set before its first `makeEnv`.
 
 ## What a consumer owes
 

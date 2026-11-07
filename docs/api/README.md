@@ -461,7 +461,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.1.1.13](./Perf/version-15.1.1.13-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 13** (an owned panel's header on the band, `R5-L3`) | v1.85.0 | **Current** |
+| [16.1.1.13](./Perf/version-16.1.1.13-docs.md) | **`Perf.lua` 16** (the spec name's namespaced rung, `WFP-LK-04`) · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 13 | v1.92.0 | **Current** |
+| [15.1.1.13](./Perf/version-15.1.1.13-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 13** (an owned panel's header on the band, `R5-L3`) | v1.85.0 – v1.91.0 | Superseded |
 | [15.1.1.12](./Perf/version-15.1.1.12-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 12** (a 30 high title band) | v1.85.0 | Superseded |
 | [15.1.1.11](./Perf/version-15.1.1.11-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 11** (an owned panel's step and command columns in its skin's body face, so *Ignore fonts* reaches them; its resize grip wears its skin; no new member) | v1.81.0 – v1.84.0 | Superseded |
 | [15.1.1.10](./Perf/version-15.1.1.10-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 10** (the panel follows its skin owner; no new member) | v1.78.0 – v1.80.0 | Superseded |

@@ -15,7 +15,8 @@
 --
 -- -- WHY IT IS NARROW --------------------------------------------------------------------------
 --
--- Thirteen members (nine at minor 1, four client helpers at minor 2), not the union of nine files. `LibKa0s/Env.lua` records that the WIDE extraction was
+-- Thirteen members (nine at minor 1, four client helpers at minor 2), not the union of nine files.
+-- `LibKa0s/Env.lua` records that the WIDE extraction was
 -- measured and rejected, and that record stays true: a container reader is BankLedger's, a mail
 -- decoder is LootHistory's, and a damage-meter reader is MultiMeters'. A member is here only when
 -- two or more addons have a PRODUCTION caller for it and every copy agrees on what the right answer
