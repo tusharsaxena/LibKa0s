@@ -10,9 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## Unreleased
+## v1.92.0 — 2026-11-07
 
-Opened 2026-11-07, on `feat/2026-11-07-wow-forever-port` (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT/`). This block is the in-flight record; the release step (`WFP-LK-07`) turns it into the dated `v1.92.0` entry.
+Opened 2026-11-07, on `feat/2026-11-07-wow-forever-port`: the library half of the WoW Forever port (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT/`), `WFP-LK-01` to `WFP-LK-05`, released as `WFP-LK-07`.
+
+Versions in this release: `LibKa0s-Compat-1.0` key **2** (Compat minor 2); `LibKa0s-Slash-1.0` key **22.2** (Slash minor 22, SlashParse minor 2); `LibKa0s-Launcher-1.0` key **8** (Launcher minor 8); `LibKa0s-Perf-1.0` key **16.1.1.13** (Perf minor 16, PerfSampler minor 1, PerfCommands minor 1, PerfPanel minor 13); `LibKa0s-Options-1.0` key **37.5.45.3.7.2.9.16.3.4.19.13.5.5.8.7.11.1.1.4** (OptionsRegistry minor 5, OptionsWidgets minor 45, OptionsFlow minor 3, OptionsTabs minor 16, OptionsTabbed minor 3, OptionsKeybinds minor 8); every other file at its v1.91.0 minor, and the test kit at revision **52**. No `NEEDS_*` floor rises. **`WFP-LK-06` (the icon alias for the `minimise` key) is deferred to [LibKa0s#77](https://github.com/tusharsaxena/LibKa0s/issues/77)** and is not in this release. The tag is cut locally and pushed only at the run's finalize.
 
 ### Client profiles and the client helpers (`WFP-LK-01`, `WFP-LK-02`)
 

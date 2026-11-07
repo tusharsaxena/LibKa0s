@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.91.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.92.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -277,6 +277,10 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    pixel members, a Widgets with no `Dropdown`, `ContextMenu` or `CloseMenu`, and a Skin major
    with no `BarGloss` or `HudFont`; a host suite that reaches for them goes red, and one that
    does not silently tests the degraded payload instead of the shipped one.
+   v1.92.0 adds no payload file and no Skin facade, major or instance member: the `clients` gate is an
+   optional descriptor field, `Compat` gains four members, and a host owes nothing but the re-vendor.
+   A host's tests that load library files by name need no new line. The kit moves to revision 52, whose
+   `tests/_kit/mock_client.lua` is a new kit file a consumer's re-vendor copies whole.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 
@@ -342,7 +346,7 @@ Three traps in the kit-40 sequence, one rule each:
 the copy. The tool reads the declaration under it, and on a consumer that has no line yet it finds
 none, removes nothing and the copy is committed whole:
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.91.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.92.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
