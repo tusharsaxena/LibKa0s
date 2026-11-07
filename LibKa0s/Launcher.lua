@@ -259,6 +259,11 @@ end
 ---   openSkinPicker function  optional, since minor 6 (SF-F2). Opens the addon's skin picker (the
 ---                            act of its `/<slash> skin` verb). With it, and while `owner` is a
 ---                            registered skin owner, the menu ends with "Open skin selector".
+---   entryClients   table     optional, since minor 8 (WFP-LK-04). Keyed by a menu entry's toggle name
+---                            (setEnabled, toggleLock, toggleTestMode, toggleSim, toggleWindow) or
+---                            `openSkinPicker`; each value is what LibKa0s-Compat-1.0's ForClient takes
+---                            (nil or "both", or an array of "retail" / "forever"). An entry the running
+---                            client is not in is not built. No declaration means every client.
 ---   L              table     optional. Locale override, keyed to lib.STRINGS.
 ---
 --- RETIRED at minor 4, with launcher-§2's left-click rungs, and ignored if passed (no error):

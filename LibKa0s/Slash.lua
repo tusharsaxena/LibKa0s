@@ -236,18 +236,6 @@ function lib.SplitVerb(rest)
   return (verb or ""):lower(), remainder or ""
 end
 
---- Find one entry in an ordered { name, description, handler } array, or nil.
----
---- The same row shape the `commands` descriptor field has always taken, so a sub level reuses this
---- major's existing vocabulary rather than inventing one. Compares verbatim: callers lowercase
---- through lib.SplitVerb first.
-function lib.FindCommand(list, name)
-  if type(list) ~= "table" then return nil end
-  for _, entry in ipairs(list) do
-    if entry[1] == name then return entry end
-  end
-end
-
 --- Whether a command entry's `clients` (minor 22; the value `LibKa0s-Compat-1.0`'s `ForClient` takes)
 --- includes this client. An entry with none is for every client, and a payload without Compat gates
 --- nothing. An entry the client is not in is not a verb here: it is not dispatched, not listed in the
@@ -258,6 +246,18 @@ local function clientOk(entry)
   local compat = LibStub and LibStub("LibKa0s-Compat-1.0", true)
   if not (compat and compat.ForClient) then return true end
   return compat.ForClient(clients)
+end
+
+--- Find one entry in an ordered { name, description, handler } array, or nil.
+---
+--- The same row shape the `commands` descriptor field has always taken, so a sub level reuses this
+--- major's existing vocabulary rather than inventing one. Compares verbatim: callers lowercase
+--- through lib.SplitVerb first.
+function lib.FindCommand(list, name)
+  if type(list) ~= "table" then return nil end
+  for _, entry in ipairs(list) do
+    if entry[1] == name and clientOk(entry) then return entry end
+  end
 end
 
 --- Render one command list as rows, prefixed by the chat command that reaches them.
@@ -584,8 +584,21 @@ function lib:New(d)
 
   -- ── the schema verbs ─────────────────────────────────────────────────────────────────────
 
+  -- Minor 22: a schema row carrying `clients` for another client is not here at all. The CLI reads
+  -- every row through these two, so a gated row is not listed, and `get`, `set` and `reset` on its
+  -- path answer exactly as they do for a key that does not exist.
   local function rowFor(path)
-    return type(d.findRow) == "function" and d.findRow(path) or nil
+    local row = type(d.findRow) == "function" and d.findRow(path) or nil
+    if row ~= nil and not clientOk(row) then return nil end
+    return row
+  end
+
+  local function liveRows()
+    local out = {}
+    for _, row in ipairs(type(d.allRows) == "function" and d.allRows() or {}) do
+      if clientOk(row) then out[#out + 1] = row end
+    end
+    return out
   end
 
   -- Spelled out rather than folded into an `and`/`or` chain. A stored `false` is a perfectly good
@@ -597,7 +610,7 @@ function lib:New(d)
   end
 
   function Sl:BuildListLines()
-    local all = type(d.allRows) == "function" and d.allRows() or {}
+    local all = liveRows()
 
     local out = { self:Text("LIST_HEADER") }
     -- Grouped in the order the rows were declared, not alphabetically: a schema's own order is the
@@ -735,7 +748,7 @@ function lib:New(d)
   --- Bracketed as act "reset", scope "all" (minor 8). The acknowledgment is printed after the
   --- bracket closes, and not at all if the walk raised.
   function Sl:CliResetAll()
-    local all = type(d.allRows) == "function" and d.allRows() or {}
+    local all = liveRows()
     runBulk("reset", "all", function(write)
       for _, row in ipairs(all) do write(row) end
     end)

@@ -21,6 +21,7 @@
 `Launcher.lua` moves 7 -> **8** (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT/`). No library or instance member is added or removed.
 
 - **The field.** A host descriptor may carry `entryClients`, a table keyed by the entry's toggle name (`setEnabled`, `toggleLock`, `toggleTestMode`, `toggleSim`, `toggleWindow`) or by `openSkinPicker`, each value the one `LibKa0s-Compat-1.0`'s `ForClient` takes: `entryClients = { toggleSim = { "retail" } }`.
+- **Descriptor header.** `entryClients` is listed beside `openSkinPicker` in `Launcher.lua`'s descriptor comment: optional, since minor 8, keyed as above.
 - **A gated entry is not built.** On a client the value does not list, the options menu has no checkbox (or, for `openSkinPicker`, no action) for it, as for an entry the host never supplied. An entry with no declaration is for every client, and a payload without Compat gates nothing; an unknown token raises, as `ForClient` does.
 - **What a host owes.** Nothing.
 

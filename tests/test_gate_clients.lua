@@ -82,6 +82,72 @@ test("gate clients: a forever-only verb is absent on Retail, and no clients mean
   end)
 end)
 
+-- test_gate_slash_schema_row_absent_on_forever
+--- A dispatcher whose schema carries one row, `onlyHere`, declared for `clients`.
+local function schemaHost(clients)
+  local Sl, rec = F.new()
+  local row = { path = "onlyHere", page = "general", type = "bool", default = false, clients = clients }
+  rec.rows[#rec.rows + 1] = row
+  rec.byPath[row.path] = row
+  rec.store[row.path] = true
+  return Sl, rec, row
+end
+
+--- Every chat line a command printed, color escapes stripped.
+local function said(Sl, rec, msg)
+  rec.chat = rec.chat or {}
+  for i = #rec.chat, 1, -1 do rec.chat[i] = nil end
+  Sl:OnSlash(msg)
+  local out = {}
+  for _, line in ipairs(rec.chat) do out[#out + 1] = F.plain(line) end
+  return table.concat(out, "\n")
+end
+
+test("gate clients: a retail schema row is invisible to list, get, set and reset on Forever", function()
+  on(FOREVER, function()
+    local Sl, rec = schemaHost({ "retail" })
+    assertTrue(said(Sl, rec, "list"):find("onlyHere", 1, true) == nil, "not listed")
+    local got, unknown = said(Sl, rec, "get onlyHere"), said(Sl, rec, "get bogusPath")
+    assertEqual(got, (unknown:gsub("bogusPath", "onlyHere")), "get answers as an unknown key")
+    local setSaid, setUnknown = said(Sl, rec, "set onlyHere false"), said(Sl, rec, "set bogusPath false")
+    assertEqual(setSaid, (setUnknown:gsub("bogusPath", "onlyHere")), "set answers as an unknown key")
+    assertEqual(rec.store.onlyHere, true, "and wrote nothing")
+    rec.store.onlyHere = true
+    Sl:OnSlash("reset onlyHere")
+    assertEqual(rec.store.onlyHere, true, "reset left it alone")
+    Sl:CliResetAll()
+    assertEqual(rec.store.onlyHere, true, "reset all left it alone")
+  end)
+  on(RETAIL, function()
+    local Sl, rec = schemaHost({ "retail" })
+    assertTrue(said(Sl, rec, "list"):find("onlyHere", 1, true) ~= nil, "Retail lists it")
+    assertTrue(said(Sl, rec, "get onlyHere"):find("true", 1, true) ~= nil, "and reads it")
+  end)
+end)
+
+test("gate clients: a forever-only schema row is absent on Retail", function()
+  on(RETAIL, function()
+    local Sl, rec = schemaHost({ "forever" })
+    assertTrue(said(Sl, rec, "list"):find("onlyHere", 1, true) == nil, "not listed")
+    Sl:CliResetAll()
+    assertEqual(rec.store.onlyHere, true, "reset all left it alone")
+  end)
+  on(FOREVER, function()
+    local Sl, rec = schemaHost({ "forever" })
+    assertTrue(said(Sl, rec, "list"):find("onlyHere", 1, true) ~= nil, "Forever lists it")
+  end)
+end)
+
+-- test_gate_slash_findcommand
+test("gate clients: lib.FindCommand does not find a gated sub-level verb", function()
+  local list = { { "a", "A", function() end }, { "b", "B", function() end, clients = { "retail" } } }
+  on(FOREVER, function()
+    assertTrue(T.slash.FindCommand(list, "a") ~= nil)
+    assertTrue(T.slash.FindCommand(list, "b") == nil, "gated on Forever")
+  end)
+  on(RETAIL, function() assertTrue(T.slash.FindCommand(list, "b") ~= nil, "found on Retail") end)
+end)
+
 -- ── launcher ──────────────────────────────────────────────────────────────────────────────────
 
 local launcher = T.launcher

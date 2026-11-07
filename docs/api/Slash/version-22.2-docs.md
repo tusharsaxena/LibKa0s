@@ -28,6 +28,7 @@ this major".
 
 - **The field.** An entry of the host's `commands` table may carry `clients`, the value `LibKa0s-Compat-1.0`'s `ForClient` takes (nil or `"both"` for every client, or an array of `"retail"` / `"forever"`): `{ "scan", "Scan the group", handler, clients = { "retail" } }`.
 - **On a client it does not list the entry is no verb at all.** It is not dispatched (the dispatcher's lookup does not find it, so typing it prints the normal `unknown command '<verb>'` line and the help index), not listed in `Sl:HelpRows()` or `Sl:LandingRows()`, and `lib.CommandRows` leaves it out for any host that renders its own list. The host's table is never mutated.
+- **Schema rows too.** A row the host's `allRows` or `findRow` answers with `clients` for another client is invisible to the schema CLI: not in `list`, not reset by `reset all`, and `get`, `set` and `reset` on its path answer as they do for a key that does not exist. `lib.FindCommand` skips a gated entry as well, so a sub-level verb list cannot dispatch one.
 - **A payload without `LibKa0s-Compat-1.0` gates nothing**; an unknown token raises, as `ForClient` does.
 - **What a host owes.** Nothing. The reserved verbs stay the host's to register on every client.
 
