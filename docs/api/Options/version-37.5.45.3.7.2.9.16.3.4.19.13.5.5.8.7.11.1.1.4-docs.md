@@ -1,4 +1,4 @@
-# `LibKa0s-Options-1.0` — version 37.5.45.3.7.2.9.16.3.4.19.13.5.5.7.7.11.1.1.4
+# `LibKa0s-Options-1.0` — version 37.5.45.3.7.2.9.16.3.4.19.13.5.5.8.7.11.1.1.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Options surface points here rather than restating it. It describes the
@@ -8,26 +8,27 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Options-1.0` |
-| Files and minors | `Options.lua` **37** · `OptionsRegistry.lua` **5** · `OptionsWidgets.lua` **45** · `OptionsFlow.lua` **3** · `OptionsIds.lua` **7** · `OptionsIdSuggest.lua` **2** · `OptionsIdList.lua` **9** · `OptionsTabs.lua` **16** · `OptionsTabbed.lua` **3** · `OptionsCombat.lua` **4** · `OptionsCompose.lua` **19** · `OptionsScroll.lua` **13** · `OptionsNav.lua` **5** · `OptionsDrawer.lua` **5** · `OptionsKeybinds.lua` **7** · `OptionsAppearance.lua` **7** · `OptionsSkinPicker.lua` **11** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **4** |
-| Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `37.5.45.3.7.2.9.16.3.4.19.13.5.5.7.7.11.1.1.4` |
+| Files and minors | `Options.lua` **37** · `OptionsRegistry.lua` **5** · `OptionsWidgets.lua` **45** · `OptionsFlow.lua` **3** · `OptionsIds.lua` **7** · `OptionsIdSuggest.lua` **2** · `OptionsIdList.lua` **9** · `OptionsTabs.lua` **16** · `OptionsTabbed.lua` **3** · `OptionsCombat.lua` **4** · `OptionsCompose.lua` **19** · `OptionsScroll.lua` **13** · `OptionsNav.lua` **5** · `OptionsDrawer.lua` **5** · `OptionsKeybinds.lua` **8** · `OptionsAppearance.lua` **7** · `OptionsSkinPicker.lua` **11** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **4** |
+| Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `37.5.45.3.7.2.9.16.3.4.19.13.5.5.8.7.11.1.1.4` |
 | Shipped in | v1.92.0 |
 | Status | **Current** |
 | Supersedes | [version 37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4](./version-37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4-docs.md) (v1.90.0 – v1.91.0) — the Options registries honor a `clients` field on pages, tabs, rows and landing sections. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
-| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 37, OptionsRegistry = 5, OptionsWidgets = 45, OptionsFlow = 3, OptionsIds = 7, OptionsIdSuggest = 2, OptionsIdList = 9, OptionsTabs = 16, OptionsTabbed = 3, OptionsCombat = 4, OptionsCompose = 19, OptionsScroll = 13, OptionsNav = 5, OptionsDrawer = 5, OptionsKeybinds = 7, OptionsAppearance = 7, OptionsSkinPicker = 11, OptionsSkinPickerRows = 1, OptionsSwitch = 1, OptionsMedia = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 37, OptionsRegistry = 5, OptionsWidgets = 45, OptionsFlow = 3, OptionsIds = 7, OptionsIdSuggest = 2, OptionsIdList = 9, OptionsTabs = 16, OptionsTabbed = 3, OptionsCombat = 4, OptionsCompose = 19, OptionsScroll = 13, OptionsNav = 5, OptionsDrawer = 5, OptionsKeybinds = 8, OptionsAppearance = 7, OptionsSkinPicker = 11, OptionsSkinPickerRows = 1, OptionsSwitch = 1, OptionsMedia = 4 }` |
 
-## What changed at this version: the `clients` gate (`WFP-LK-03`)
+## What changed at this version: the `clients` gate (`WFP-LK-03`, `WFP-LK-04`)
 
-Five files move: `OptionsRegistry.lua` 4 -> **5**, `OptionsWidgets.lua` 44 -> **45**, `OptionsFlow.lua` 2 -> **3**, `OptionsTabs.lua` 15 -> **16** and `OptionsTabbed.lua` 2 -> **3** (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT/`). The shell stays at 37. No public instance member is added or removed.
+Six files move: `OptionsRegistry.lua` 4 -> **5**, `OptionsWidgets.lua` 44 -> **45**, `OptionsFlow.lua` 2 -> **3**, `OptionsTabs.lua` 15 -> **16** `OptionsTabbed.lua` 2 -> **3** and `OptionsKeybinds.lua` 7 -> **8** (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT/`). The shell stays at 37. No public instance member is added or removed.
 
 - **The field.** A page, a tab, a schema row and a landing section (and a line in one) may carry `clients`, the value `LibKa0s-Compat-1.0`'s `ForClient` takes: nil or `"both"` for every client, or an array of `"retail"` / `"forever"`. An entry the running client is not in is dropped **before anything is built from it**: no Settings category, no tab button (and the strip's geometry is laid for the buttons that exist), no widget out of the AceGUI pool. It is not hidden and not counted. The host's own tables are never mutated.
 - **Page.** `O.RegisterOptionsPage(key, name, builder, opts)` takes an optional fourth argument; `opts.clients` gates the page. A gated page is never queued, so its builder never runs and `O.__pages()` does not list it.
 - **Choke points.** `lib.__ClientOk(clients)` and `lib.__GateClients(list)` (internal, `OptionsRegistry.lua`) are the one filter, looked up at call time by `O.TabStrip` and `O.SubTabStrip` (`spec.tabs`), `O.RenderTabbedSchema` (the page's rows and `opts.tabs`; a group whose every row is gated has no tab), `O.RenderRows` (so `O.RenderSchema` too) and `O.BuildLandingPage` (`spec.sections` and each section's lines). The reset walk is not filtered: a gated row's default is still written, and nothing draws it.
+- **Keybinds.** `O.KeybindRows` draws no row for a `spec.bindings` entry whose `clients` exclude this client, and `O.KeybindingsTab(spec)` carries `spec.clients` on the host tab it answers, so the tabbed page drops the whole tab.
 - **Unknown tokens raise.** A misspelled token raises from `ForClient`, on any client, so a typo cannot hide behind the client that does not list it. A payload without `LibKa0s-Compat-1.0` gates nothing.
 - **What a host owes.** Nothing; an entry with no `clients` behaves as before. Event and message registrations are host code and take `Compat.ForClient` directly.
 
-Pinned by `tests/test_options_clients.lua`.
+Pinned by `tests/test_options_clients.lua` and `tests/test_gate_clients.lua`.
 
 ## What changed at this version: a copy leaves a `keepScope` owner's Scope alone (`SF1-L2`)
 

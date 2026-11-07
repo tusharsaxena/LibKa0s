@@ -19,7 +19,7 @@ local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
 -- Minor 21 (LibKa0s#59): /list and resetall skip a schema `note` row.
-local MAJOR, MINOR = "LibKa0s-Slash-1.0", 21
+local MAJOR, MINOR = "LibKa0s-Slash-1.0", 22
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -248,6 +248,18 @@ function lib.FindCommand(list, name)
   end
 end
 
+--- Whether a command entry's `clients` (minor 22; the value `LibKa0s-Compat-1.0`'s `ForClient` takes)
+--- includes this client. An entry with none is for every client, and a payload without Compat gates
+--- nothing. An entry the client is not in is not a verb here: it is not dispatched, not listed in the
+--- help or on a landing page, and typing it answers the dispatcher's unknown-verb line.
+local function clientOk(entry)
+  local clients = type(entry) == "table" and entry.clients or nil
+  if clients == nil then return true end
+  local compat = LibStub and LibStub("LibKa0s-Compat-1.0", true)
+  if not (compat and compat.ForClient) then return true end
+  return compat.ForClient(clients)
+end
+
 --- Render one command list as rows, prefixed by the chat command that reaches them.
 ---
 --- `indent` defaults to "" — the indent belongs to whoever is rendering, exactly as it does for
@@ -257,7 +269,7 @@ function lib.CommandRows(prefix, commands, indent)
   local out = {}
   if type(commands) ~= "table" then return out end
   for _, entry in ipairs(commands) do
-    out[#out + 1] = indent .. lib.FormatRow(prefix .. " " .. entry[1], entry[2])
+    if clientOk(entry) then out[#out + 1] = indent .. lib.FormatRow(prefix .. " " .. entry[1], entry[2]) end
   end
   return out
 end
@@ -375,7 +387,9 @@ end
 --- Descriptor:
 ---   slash        string    required. The command prefix, with its slash: "/at". Every usage line
 ---                          and every help row is composed from it.
----   commands     table     required. The HOST's ordered { name, description, handler } triples.
+---   commands     table     required. The HOST's ordered { name, description, handler } triples; a
+---                          triple may carry `clients = { "retail" }` (minor 22), and is then no verb
+---                          at all on a client it does not list.
 ---                          Passed in rather than owned, so the host's own About page can render
 ---                          the same table without that page's library depending on this one.
 ---   slashAliases table     optional. Other chat commands that reach the same dispatcher, named in
@@ -803,7 +817,7 @@ function lib:New(d)
 
   local function findCommand(name)
     for _, entry in ipairs(d.commands) do
-      if entry[1] == name then return entry end
+      if entry[1] == name and clientOk(entry) then return entry end
     end
   end
 

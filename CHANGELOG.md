@@ -21,7 +21,14 @@ Opened 2026-11-07, on `feat/2026-11-07-wow-forever-port` (Ka0sAddonsCommonTasks 
 
 ### The `clients` gate in the Options registries (`WFP-LK-03`)
 
-- **OptionsRegistry minor 5, OptionsWidgets minor 45, OptionsFlow minor 3, OptionsTabs minor 16, OptionsTabbed minor 3** ([docs](docs/api/Options/version-37.5.45.3.7.2.9.16.3.4.19.13.5.5.7.7.11.1.1.4-docs.md)): a page, tab, row or landing section declared with `clients` (the values `Compat.ForClient` takes) is dropped before anything is built from it on a client it does not list: no Settings category, no tab button, no pooled widget. `O.RegisterOptionsPage` takes an optional fourth `opts` argument for it.
+- **OptionsRegistry minor 5, OptionsWidgets minor 45, OptionsFlow minor 3, OptionsTabs minor 16, OptionsTabbed minor 3** ([docs](docs/api/Options/version-37.5.45.3.7.2.9.16.3.4.19.13.5.5.8.7.11.1.1.4-docs.md)): a page, tab, row or landing section declared with `clients` (the values `Compat.ForClient` takes) is dropped before anything is built from it on a client it does not list: no Settings category, no tab button, no pooled widget. `O.RegisterOptionsPage` takes an optional fourth `opts` argument for it.
+
+### The `clients` gate in Slash, Launcher and Keybinds (`WFP-LK-04`)
+
+- **Slash minor 22** ([docs](docs/api/Slash/version-22.2-docs.md)): a `commands` entry carrying `clients` is no verb on a client it does not list: not dispatched, not in the help or on the landing page, and typing it gets the normal unknown-verb line.
+- **Launcher minor 8** ([docs](docs/api/Launcher/version-8-docs.md)): `entryClients`, keyed by an entry's toggle name, builds no menu entry the client is not in.
+- **OptionsKeybinds minor 8** ([docs](docs/api/Options/version-37.5.45.3.7.2.9.16.3.4.19.13.5.5.8.7.11.1.1.4-docs.md)): a `spec.bindings` entry carrying `clients` is no row, and `O.KeybindingsTab`'s `spec.clients` gates the tab.
+- **No descriptor field on Lifecycle and Bus.** They take no feature descriptors; a host gates its own event and message registrations with `Compat.ForClient`.
 
 ## v1.91.0 — 2026-11-06
 

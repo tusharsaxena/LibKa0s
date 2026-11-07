@@ -146,6 +146,24 @@ are the only place that question is answered (`clients-§3`): never an interface
 - **The kit selects the client** with `KA0S_KIT_CLIENT=retail|forever` (test kit revision 52); the
   default, `retail`, leaves `WOW_PROJECT_CAMELOT` nil, which is the live Retail shape.
 
+## Gating a host's own registrations (`WFP-LK-03`, `WFP-LK-04`)
+
+The library gates what it builds from a descriptor: a `clients` field on an Options page, tab, row or
+landing section, on a Slash `commands` entry, on a Launcher entry (`entryClients`) and on a
+Keybindings row or tab. **Lifecycle and Bus take no such field**, because they take no feature
+descriptors: an event or message registration is host code. A host gates its own with `ForClient`,
+at the one place it registers:
+
+```lua
+if Compat.ForClient({ "retail" }) then
+  addon:RegisterEvent("GROUP_ROSTER_UPDATE", "OnRoster")
+end
+```
+
+The gate is the registration, not a check inside the handler, so a handler for an event the client
+never fires is never made. Reading the client at registration time is safe, because `ForClient` reads
+the project constants at call time.
+
 ## The spec readers on Forever (`WFP-LK-05`)
 
 **Checked, no code change.** The Gethe/wow-ui-source mirror's `forever` branch, whose head was
