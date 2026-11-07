@@ -1019,10 +1019,7 @@ function lib.__AttachTabs(O, d)
   --- `spec` = { tabs = { { key, label, tooltip } }, value, onSelect }. Returns the buttons in
   --- tab order, or nil having drawn nothing.
   function O.TabStrip(ctx, spec)
-    -- Minor 16: a tab whose `clients` exclude this client is dropped before any button is made.
-    if spec and type(spec.tabs) == "table" then
-      spec = setmetatable({ tabs = lib.__GateClients(spec.tabs) }, { __index = spec })
-    end
+    spec = lib.__GateTabSpec(spec)   -- minor 16: tabs for another client are never built
     if not (ctx and ctx.chrome and spec and type(spec.tabs) == "table" and #spec.tabs > 0) then
       return nil
     end
@@ -1252,9 +1249,7 @@ function lib.__AttachTabs(O, d)
   --- category and back remembers the subject you were on and a stale pointer heals per category.
   --- Session state either way, and never persisted (options-ui-§13).
   function O.SubTabStrip(ctx, parent, spec)
-    if spec and type(spec.tabs) == "table" then
-      spec = setmetatable({ tabs = lib.__GateClients(spec.tabs) }, { __index = spec })
-    end
+    spec = lib.__GateTabSpec(spec)
     if not (ctx and parent and spec and type(spec.tabs) == "table" and #spec.tabs > 0) then
       return nil
     end

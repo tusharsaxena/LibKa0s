@@ -79,6 +79,13 @@ function lib.__GateClients(list)
   return out or list
 end
 
+--- `spec` with its `tabs` gated (OptionsTabs minor 16's two strips): a view over the host's spec, so
+--- neither it nor its tabs table is mutated. A spec with no tabs table comes back as it was.
+function lib.__GateTabSpec(spec)
+  if not (spec and type(spec.tabs) == "table") then return spec end
+  return setmetatable({ tabs = lib.__GateClients(spec.tabs) }, { __index = spec })
+end
+
 -- ── the registration park (minor 24) ────────────────────────────────────────────────────────
 --
 -- O.CreateOptionsPanel under InCombatLockdown() registers nothing: registering a category is the
