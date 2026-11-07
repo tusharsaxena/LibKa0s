@@ -7,7 +7,7 @@
 --     "repos/Ketho/BlizzardInterfaceResources/contents/Resources/<File>.lua?ref=<branch>"
 -- for GlobalAPI.lua and FrameXML.lua. It keeps only what testkit/client_globals.lua asks about: the
 -- global function names (the C API, the Lua API, the FrameXML functions) and the members of the C_*
--- namespaces, as `C_Name.Member`. Sorted, one space between names, wrapped at 110 columns.
+-- namespaces, as `C_Name.Member`. Sorted, one space between names, wrapped at 400 columns, so the file stays well under the 1500-line cap.
 local branch, sha, date, dir = ...
 assert(branch and sha and date and dir, "usage: client_globals_data.lua <branch> <sha> <date> <dir>")
 
@@ -36,7 +36,7 @@ table.sort(list)
 local function wrap(names)
   local lines, line = {}, ""
   for _, name in ipairs(names) do
-    if #line + #name + 1 > 110 then lines[#lines + 1] = line; line = "" end
+    if #line + #name + 1 > 400 then lines[#lines + 1] = line; line = "" end
     line = (line == "" and "" or line .. " ") .. name
   end
   lines[#lines + 1] = line
