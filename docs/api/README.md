@@ -140,7 +140,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [3](./Compat/version-3-docs.md) | `Compat.lua` 3 (`ForClient` accepts `"both"` in an array, `WFP-RV2-LK`) | v1.93.0 | **Current** |
+| [4](./Compat/version-4-docs.md) | **`Compat.lua` 4** (character identity: `RegionalNames`, `UnitCharacterName`, `CharacterKey`, `RealmKey`, `W1-LK-02`) | v1.94.0 | **Current** |
+| [3](./Compat/version-3-docs.md) | `Compat.lua` 3 (`ForClient` accepts `"both"` in an array, `WFP-RV2-LK`) | v1.93.0 | Superseded |
 | [2](./Compat/version-2-docs.md) | `Compat.lua` 2 | v1.92.0 | Superseded |
 | [1](./Compat/version-1-docs.md) | `Compat.lua` 1 | v1.55.0 – v1.91.0 | Superseded |
 

@@ -12,9 +12,13 @@ cannot drift. Release order is in
 
 ## v1.94.0 — 2026-11-08
 
-Opened 2026-11-08, on `feat/2026-11-07-forever-port-wave1`: the owner's ruling after the wave-1 Forever smoke of the WoW Forever port's step 5 (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT_STEP5/`), item `W1-LK-01`: the default skin is Ka0s Default on Retail and WoW Forever on the Forever client.
+Opened 2026-11-08, on `feat/2026-11-07-forever-port-wave1`: the owner's ruling after the wave-1 Forever smoke of the WoW Forever port's step 5 (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT_STEP5/`), item `W1-LK-01`: the default skin is Ka0s Default on Retail and WoW Forever on the Forever client; and `W1-LK-02`, the owner's call after the Forever name probe, character identity in Compat.
 
-Versions in this release: `LibKa0s-Skin-1.0` key **18.1.27.8.19.19.1.1.17.4.9** (Skin minor 18); every other file at its v1.93.0 minor, and the test kit at its v1.93.0 revision. No `NEEDS_*` floor rises. The tag is cut locally and pushed only at the run's finalize.
+Versions in this release: `LibKa0s-Compat-1.0` key **4** (Compat minor 4); `LibKa0s-Skin-1.0` key **18.1.27.8.19.19.1.1.17.4.9** (Skin minor 18); every other file at its v1.93.0 minor, and the test kit at its v1.93.0 revision. No `NEEDS_*` floor rises. The tag is cut locally and pushed only at the run's finalize.
+
+### Character identity (`W1-LK-02`)
+
+- **Compat minor 4** ([docs](docs/api/Compat/version-4-docs.md)): `RegionalNames()`, `UnitCharacterName(unit)`, `CharacterKey()` and `RealmKey()`. Where names are unique per region (WoW Forever), `UnitName` answers the surname second, so a character is `"First Surname"` and a realm its `C_GameRules` ruleset. The four mirror AceDB-3.0 minor 40's key block, decide by `RegionalUniqueNamesEnabled` (feature detection, never the client) and never concatenate a secret. Elsewhere they answer `UnitName`'s own values, `"Name - Realm"` and `GetRealmName()`. Measured by the owner's probe (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT_STEP5/W1_FOREVER_NAME_PROBE.md`). Five new `tests/test_compat.lua` cases, and the absent table grows four rows.
 
 ### The default skin per client (`W1-LK-01`)
 

@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Compat-1.0` |
 | Files and minors | `Compat.lua` minor **3** |
 | Shipped in | v1.93.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 2](./version-2-docs.md) — the same thirteen members; `ForClient` accepts `"both"` inside an array. |
-| Superseded by | — |
+| Superseded by | [version 4](./version-4-docs.md) (v1.94.0) — four character-identity readers for clients with regional names (WoW Forever). |
 | Confirm in-game | `LibStub("LibKa0s-Compat-1.0").MODULES` → `{ Compat = 3 }` |
 
 ## What changed at this version: `{ "both" }` (`WFP-RV2-LK`, final-review M-1)
@@ -416,3 +416,7 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 `Compat.lua` is a new entry in `LibKa0s.xml`, immediately after `Env.lua`. A consumer whose test
 harness derives its load list from that XML picks it up with no edit; a consumer that re-types the
 list adds one row after `libs/LibKa0s/Env.lua`.
+
+## Moving to version 4
+
+Nothing breaks: four members are added and none changes. A host whose degradation stub mirrors this major (`Kit.assertSurfaceParity`) owes the four, each answering its absent value: `RegionalNames` false, `UnitCharacterName` nil, nil, and `CharacterKey` and `RealmKey` nil.
