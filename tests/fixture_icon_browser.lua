@@ -27,7 +27,7 @@ local OPENER = "TestHostOpener"
 
 local SKIN = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls" }
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest",
-  "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav",
+  "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav",
   "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows",
   "OptionsSwitch", "OptionsMedia" }
 

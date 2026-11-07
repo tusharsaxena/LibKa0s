@@ -136,7 +136,7 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Options-1.0",
-    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" },
+    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" },
     primary = "Options",
     paired = {
       { file = "OptionsRegistry", minorField = "__registryMinor", probeField = "__registryShellMinor" },
@@ -147,6 +147,7 @@ local MAJORS = {
       { file = "OptionsIdList",  minorField = "__idListMinor",  probeField = "__idListShellMinor" },
       { file = "OptionsTabs",    minorField = "__tabsMinor",    probeField = "__tabsShellMinor" },
       { file = "OptionsTabbed", minorField = "__tabbedMinor", probeField = "__tabbedShellMinor" },
+      { file = "OptionsHeader", minorField = "__headerMinor", probeField = "__headerShellMinor" },
       { file = "OptionsCombat",  minorField = "__combatMinor",  probeField = "__combatShellMinor" },
       { file = "OptionsCompose", minorField = "__composeMinor", probeField = "__composeShellMinor" },
       { file = "OptionsScroll",  minorField = "__scrollMinor",  probeField = "__scrollShellMinor" },
