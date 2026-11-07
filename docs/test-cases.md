@@ -108,9 +108,9 @@ Total.
 - env: GetZone answers zone and subzone
 - env: GetZone answers empty strings, never nil, when the readers are absent
 
-### test_compat.lua (49)
+### test_compat.lua (58)
 
-- compat: registers minor 1 with exactly the nine public members
+- compat: registers minor 2 with exactly the thirteen public members
 - compat: the Core floor keeps the major absent from a payload without Core
 - compat: the source reads every global bare, never through the global table
 - compat: IsSecret is false for every value when the client has no secrets system
@@ -159,6 +159,15 @@ Total.
 - compat: GetSpecializationInfo(nil) calls no reader, and nil when none exists
 - compat: with every rung removed each member answers the documented absent value
 - compat: a host patching the shared table does not change another member's answer
+- compat: client retail (the live shape: the Camelot constant is nil) is Retail, not Forever
+- compat: client forever is Forever, and never Retail even though MAINLINE is set
+- compat: client unknown (both project constants nil) is neither, never Forever
+- compat: the client is read at call time, so flipping the mock changes the answer
+- compat: ForClient answers nil and both for every client, and a list by membership
+- compat: ForClient raises on an unknown token, from any client, before it matches
+- compat: the active kit profile is the client the library sees
+- compat: the spec readers answer from C_SpecializationInfo on Forever, with no legacy global
+- compat: the spec readers answer nil without raising on Forever when the namespace is absent
 
 ### test_lifecycle.lua (22)
 
@@ -2610,6 +2619,26 @@ Total.
 - widgets: PageBanner's action re-rendering from its own click never hands itself back
 - widgets: PageBanner's action is refused in combat, like its picker
 
+### test_options_clients.lua (7)
+
+- options clients: a page declared retail registers no builder on Forever, and does on Retail
+- options clients: a gated tab has no button on Forever and the strip is laid without it
+- options clients: a gated host tab and a gated group's rows leave the tabbed page
+- options clients: a gated row acquires no widget on Forever
+- options clients: a gated landing section and line are not drawn on Forever
+- options clients: a forever-only page, tab and row are absent on Retail
+- options clients: an unknown token raises rather than hiding silently
+
+### test_gate_clients.lua (7)
+
+- gate clients: a retail verb is not dispatched, listed or counted on Forever
+- gate clients: a forever-only verb is absent on Retail, and no clients means every client
+- gate clients: a retail schema row is invisible to list, get, set and reset on Forever
+- gate clients: a forever-only schema row is absent on Retail
+- gate clients: lib.FindCommand does not find a gated sub-level verb
+- gate clients: a retail launcher entry is not built on Forever
+- gate clients: a retail keybind row is never drawn on Forever
+
 ### test_options_banner_acts.lua (10)
 
 - acts: a Button and a CheckBox draw beside the picker, third return in act order
@@ -3560,7 +3589,7 @@ Total.
 - throttle: the window re-arms after it fires, for a nil-returning host
 - throttle: a host whose timer answers a handle is unchanged
 
-### test_perf_core.lua (78)
+### test_perf_core.lua (79)
 
 - lib: registers under its major with a schema and a default ring
 - lib: New requires a name, an sv global and a lifecycle latch
@@ -3627,6 +3656,7 @@ Total.
 - lib: Context captures character, spec, zone and group
 - lib: Context reports solo when ungrouped
 - lib: Context takes the namespaced spec reader before the bare global
+- lib: Context reads the namespaced spec name where the bare global is gone (Forever shape)
 - lib: Context reports party size and instance type
 - lib: Context reports raid size
 - lib: ContextLines folds the sub-zone into the location
@@ -4405,6 +4435,13 @@ Total.
 - resize mock: StartMoving marks the frame user-placed, and SetUserPlaced clears it
 - resize mock: a frame's own stub (M.__stubFrame) carries the surface too
 
+### test_mock_client.lua (4)
+
+- mock client: retail is the live Retail shape, with no Camelot constant
+- mock client: forever is Camelot, with the spec globals gone
+- mock client: an unknown profile name raises
+- mock client: applying retail after forever restores the Camelot-free shape
+
 ### test_mock_lines.lua (5)
 
 - line mock: CreateLine answers a distinct object per call, recorded on its frame
@@ -4534,7 +4571,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 51
+- the kit is revision 53
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -4726,6 +4763,25 @@ Total.
 - skin switch suite: a surface gets a case per pass, and an excluded one its first only
 - skin switch suite: a surface that does not change fails its case
 
+### test_kit_client_globals.lua (16)
+
+- client_globals_flags_setdesaturation: a bare call no client has is flagged for both
+- client_globals_ignores_guarded: a presence test on the same name excuses the call
+- client globals: a name in a comment or a string is neither a call nor a guard
+- client globals: what the addon declares is its own, whatever the shape
+- client globals: methods, fields and real client functions are no findings
+- client globals: a C_ member missing on one client is flagged on that client alone
+- client globals: a vendored AceGUI site passes with no addon row, addon code stays checked
+- client globals: an addon row's path scopes it, and a built-in is never stale
+- client globals: a local in one file never masks an unguarded call in another
+- client globals: a table field is no declaration
+- client globals: the live and forever sets differ where the data says, and carry their SHAs
+- client globals: the TOC picks the clients, forever only on a 16xxx Interface
+- client globals: the allowlist excuses, needs a reason and goes stale
+- client globals: no git fails rather than passing over nothing
+- client globals suite: a clean repo passes, a missing global fails with file:line name client
+- client globals suite: tests/ is not scanned, libs/ is, and forever counts on a 16xxx TOC
+
 ### test_eol.lua (2)
 
 - eol: every tracked file carries the terminator .gitattributes declares for it
@@ -4783,6 +4839,12 @@ Total.
 - skin switch: a string changes with the Scope ignored
 - skin switch: a settings row changes
 
+### test_client_globals.lua (3)
+
+- client globals: no call of a global a client lacks
+- client globals: every allowlist row has a reason and a finding to excuse
+- client globals: the check is falsifiable, a planted bare call is flagged for both clients
+
 ## Totals
 
 | Suite | Cases |
@@ -4790,7 +4852,7 @@ Total.
 | test_core.lua | 52 |
 | test_core_resize.lua | 26 |
 | test_env.lua | 9 |
-| test_compat.lua | 49 |
+| test_compat.lua | 58 |
 | test_lifecycle.lua | 22 |
 | test_lifecycle_debug.lua | 14 |
 | test_bus.lua | 30 |
@@ -4875,6 +4937,8 @@ Total.
 | test_options_idlist_layout.lua | 39 |
 | test_options_tabs.lua | 41 |
 | test_options_tabbed.lua | 20 |
+| test_options_clients.lua | 7 |
+| test_gate_clients.lua | 7 |
 | test_options_banner_acts.lua | 10 |
 | test_options_nav.lua | 14 |
 | test_options_drawer.lua | 26 |
@@ -4920,7 +4984,7 @@ Total.
 | test_options_compose_skin.lua | 25 |
 | test_options_compose_flags.lua | 5 |
 | test_options_throttle.lua | 4 |
-| test_perf_core.lua | 78 |
+| test_perf_core.lua | 79 |
 | test_perf_run.lua | 42 |
 | test_perf_panel.lua | 46 |
 | test_perf_command.lua | 22 |
@@ -4951,6 +5015,7 @@ Total.
 | test_mock_record.lua | 42 |
 | test_mock_events.lua | 14 |
 | test_mock_resize.lua | 6 |
+| test_mock_client.lua | 4 |
 | test_mock_lines.lua | 5 |
 | test_mock_bindings.lua | 17 |
 | test_mock_layers.lua | 7 |
@@ -4967,10 +5032,12 @@ Total.
 | test_kit_vendor_sync.lua | 25 |
 | test_kit_skin_values.lua | 29 |
 | test_kit_skin_switch.lua | 35 |
+| test_kit_client_globals.lua | 16 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 6 |
+| test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4211** |
+| **Total** | **4258** |

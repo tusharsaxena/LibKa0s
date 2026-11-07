@@ -120,6 +120,8 @@ answers both "what does this version have?" and "when did I get it?".
 | [10](./Core/version-10-docs.md) | `Core.lua` 10 | v1.67.0 – v1.74.0 | Superseded |
 | [9](./Core/version-9-docs.md) | `Core.lua` 9 | v1.64.0 – v1.66.0 | Superseded |
 | [8](./Core/version-8-docs.md) | `Core.lua` 8 | v1.56.0 – v1.63.0 | Superseded |
+| [9](./Launcher/version-9-docs.md) | **`Launcher.lua` 9** (`entryClients` validated at registration, `WFP-RV2-LK`) | v1.93.0 | **Current** |
+| [8](./Launcher/version-8-docs.md) | **`Launcher.lua` 8** (`entryClients`: a menu entry gated per client, `WFP-LK-04`) | v1.92.0 | Superseded |
 | [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 – v1.55.0 | Superseded |
 | [6](./Core/version-6-docs.md) | `Core.lua` 6 | v1.10.0 – v1.23.0 | Superseded |
 | [5](./Core/version-5-docs.md) | `Core.lua` 5 | v1.8.0 – v1.9.2 | Superseded |
@@ -138,7 +140,9 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Compat/version-1-docs.md) | `Compat.lua` 1 | v1.55.0 | **Current** |
+| [3](./Compat/version-3-docs.md) | `Compat.lua` 3 (`ForClient` accepts `"both"` in an array, `WFP-RV2-LK`) | v1.93.0 | **Current** |
+| [2](./Compat/version-2-docs.md) | `Compat.lua` 2 | v1.92.0 | Superseded |
+| [1](./Compat/version-1-docs.md) | `Compat.lua` 1 | v1.55.0 – v1.91.0 | Superseded |
 
 ### `LibKa0s-Lifecycle-1.0`
 
@@ -333,7 +337,9 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [21.2](./Slash/version-21.2-docs.md) | `Slash.lua` 21 · `SlashParse.lua` 2 | v1.84.0 | **Current** |
+| [23.2](./Slash/version-23.2-docs.md) | **`Slash.lua` 23** (`clients` validated at registration, `WFP-RV2-LK`) · `SlashParse.lua` 2 | v1.93.0 | **Current** |
+| [22.2](./Slash/version-22.2-docs.md) | **`Slash.lua` 22** (a `commands` entry may carry `clients`, `WFP-LK-04`) · `SlashParse.lua` 2 | v1.92.0 | Superseded |
+| [21.2](./Slash/version-21.2-docs.md) | `Slash.lua` 21 · `SlashParse.lua` 2 | v1.84.0 | Superseded |
 | [20.2](./Slash/version-20.2-docs.md) | `Slash.lua` 20 · `SlashParse.lua` 2 | v1.71.0 – v1.83.0 | Superseded |
 | [19.1](./Slash/version-19.1-docs.md) | `Slash.lua` 19 · `SlashParse.lua` 1 | v1.66.0 – v1.70.0 | Superseded |
 | [18](./Slash/version-18-docs.md) | `Slash.lua` 18 | v1.65.0 | Superseded |
@@ -368,7 +374,10 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4](./Options/version-37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 4 · `OptionsWidgets.lua` 44 · `OptionsFlow.lua` 2 · `OptionsIds.lua` 7 · `OptionsIdSuggest.lua` 2 · `OptionsIdList.lua` 9 · `OptionsTabs.lua` 15 · `OptionsTabbed.lua` 2 · `OptionsCombat.lua` 4 · `OptionsCompose.lua` 19 · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · `OptionsKeybinds.lua` 7 · **`OptionsAppearance.lua` 7** (the Skin tab's copy and Apply to all leave a `keepScope` owner's Scope alone, `SF1-L2`) · `OptionsSkinPicker.lua` 11 · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.90.0 | **Current** |
+| [38.5.45.3.7.2.9.17.3.1.4.19.13.6.5.8.7.11.1.1.4](./Options/version-38.5.45.3.7.2.9.17.3.1.4.19.13.6.5.8.7.11.1.1.4-docs.md) | **`Options.lua` 38 and `OptionsNav.lua` 6** (the bulk resets walk only gated-in rows and `O.NavRail` honors `clients`, `WFP-RV2-LK`) · the rest as the row below | v1.93.0 | **Current** |
+| [37.5.45.3.7.2.9.17.3.1.4.19.13.5.5.8.7.11.1.1.4](./Options/version-37.5.45.3.7.2.9.17.3.1.4.19.13.5.5.8.7.11.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 5 · `OptionsWidgets.lua` 45 · `OptionsFlow.lua` 3 · **`OptionsTabs.lua` 17 and the new `OptionsHeader.lua` 1** (`O.PageHeader` and `O.SubTabStrip` peeled out unchanged, no behavior change, `WFP-LK-08`) · the rest as the row below | v1.93.0 | Superseded |
+| [37.5.45.3.7.2.9.16.3.4.19.13.5.5.8.7.11.1.1.4](./Options/version-37.5.45.3.7.2.9.16.3.4.19.13.5.5.8.7.11.1.1.4-docs.md) | `Options.lua` 37 · **`OptionsRegistry.lua` 5** (the `clients` gate and `RegisterOptionsPage`'s `opts`, `WFP-LK-03`) · **`OptionsWidgets.lua` 45** (landing sections gated by `clients`) · **`OptionsFlow.lua` 3** (rows gated by `clients`) · `OptionsIds.lua` 7 · `OptionsIdSuggest.lua` 2 · `OptionsIdList.lua` 9 · **`OptionsTabs.lua` 16** (tabs gated by `clients`) · **`OptionsTabbed.lua` 3** (host tabs and rows gated by `clients`) · `OptionsCombat.lua` 4 · `OptionsCompose.lua` 19 · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · **`OptionsKeybinds.lua` 8** (a binding and the tab gated by `clients`, `WFP-LK-04`) · `OptionsAppearance.lua` 7 · `OptionsSkinPicker.lua` 11 · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.92.0 | Superseded |
+| [37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4](./Options/version-37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.7.11.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 4 · `OptionsWidgets.lua` 44 · `OptionsFlow.lua` 2 · `OptionsIds.lua` 7 · `OptionsIdSuggest.lua` 2 · `OptionsIdList.lua` 9 · `OptionsTabs.lua` 15 · `OptionsTabbed.lua` 2 · `OptionsCombat.lua` 4 · `OptionsCompose.lua` 19 · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · `OptionsKeybinds.lua` 7 · **`OptionsAppearance.lua` 7** (the Skin tab's copy and Apply to all leave a `keepScope` owner's Scope alone, `SF1-L2`) · `OptionsSkinPicker.lua` 11 · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.90.0 – v1.91.0 | Superseded |
 | [37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.6.11.1.1.4](./Options/version-37.4.44.2.7.2.9.15.2.4.19.13.5.5.7.6.11.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 4 · `OptionsWidgets.lua` 44 · `OptionsFlow.lua` 2 · `OptionsIds.lua` 7 · `OptionsIdSuggest.lua` 2 (a row's icon cropped 0.07 and on an owned page edged in `icon.outline`, `R5-L5`) · `OptionsIdList.lua` 9 (an entry's icon cropped 0.07 and on an owned page edged in `icon.outline`, on a frame the list owns, `R5-L5`) · `OptionsTabs.lua` 15 · `OptionsTabbed.lua` 2 · `OptionsCombat.lua` 4 · **`OptionsCompose.lua` 19** (`O.MasterControls` takes `isSimMode` and `toggleSim` and draws a session-only Sim mode row beside Test mode, or beside Lock frame, `R6-SIM-L`) · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · `OptionsKeybinds.lua` 7 · `OptionsAppearance.lua` 6 · `OptionsSkinPicker.lua` 11 (`spec.preview`: the eye's mode entered at show when the surface is hidden, toggled by the eye with a lit state and per-mode tooltips, restored on every close, `R6-L1`) · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.85.0 – v1.89.0 | Superseded |
 | [37.4.44.2.7.2.9.15.2.4.18.13.5.5.7.6.11.1.1.4](./Options/version-37.4.44.2.7.2.9.15.2.4.18.13.5.5.7.6.11.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 4 · `OptionsWidgets.lua` 44 · `OptionsFlow.lua` 2 · `OptionsIds.lua` 7 · `OptionsIdSuggest.lua` 2 (a row's icon cropped 0.07 and on an owned page edged in `icon.outline`, `R5-L5`) · `OptionsIdList.lua` 9 (an entry's icon cropped 0.07 and on an owned page edged in `icon.outline`, on a frame the list owns, `R5-L5`) · `OptionsTabs.lua` 15 · `OptionsTabbed.lua` 2 · `OptionsCombat.lua` 4 · `OptionsCompose.lua` 18 (a bar border row under a skin's None) · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · `OptionsKeybinds.lua` 7 · `OptionsAppearance.lua` 6 · `OptionsSkinPicker.lua` 11 (`spec.preview`: the eye's mode entered at show when the surface is hidden, toggled by the eye with a lit state and per-mode tooltips, restored on every close, `R6-L1`) · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.85.0 | Superseded |
 | [37.4.44.2.7.2.9.15.2.4.18.13.5.5.7.6.10.1.1.4](./Options/version-37.4.44.2.7.2.9.15.2.4.18.13.5.5.7.6.10.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 4 · `OptionsWidgets.lua` 44 · `OptionsFlow.lua` 2 · `OptionsIds.lua` 7 · **`OptionsIdSuggest.lua` 2** (a row's icon cropped 0.07 and on an owned page edged in `icon.outline`, `R5-L5`) · **`OptionsIdList.lua` 9** (an entry's icon cropped 0.07 and on an owned page edged in `icon.outline`, on a frame the list owns, `R5-L5`) · `OptionsTabs.lua` 15 · `OptionsTabbed.lua` 2 · `OptionsCombat.lua` 4 · `OptionsCompose.lua` 18 (a bar border row under a skin's None) · `OptionsScroll.lua` 13 · `OptionsNav.lua` 5 · `OptionsDrawer.lua` 5 · `OptionsKeybinds.lua` 7 · `OptionsAppearance.lua` 6 · `OptionsSkinPicker.lua` 10 (its header on the band, `R5-L3`; its open list closes on an outside press, `R5-L4`) (the one-time skin notice, `O.SkinNotice`) · `OptionsSkinPickerRows.lua` 1 · `OptionsSwitch.lua` 1 · `OptionsMedia.lua` 4 | v1.85.0 | Superseded |
@@ -457,7 +466,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [15.1.1.13](./Perf/version-15.1.1.13-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 13** (an owned panel's header on the band, `R5-L3`) | v1.85.0 | **Current** |
+| [16.1.1.13](./Perf/version-16.1.1.13-docs.md) | **`Perf.lua` 16** (the spec name's namespaced rung, `WFP-LK-04`) · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 13 | v1.92.0 | **Current** |
+| [15.1.1.13](./Perf/version-15.1.1.13-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 13** (an owned panel's header on the band, `R5-L3`) | v1.85.0 – v1.91.0 | Superseded |
 | [15.1.1.12](./Perf/version-15.1.1.12-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 12** (a 30 high title band) | v1.85.0 | Superseded |
 | [15.1.1.11](./Perf/version-15.1.1.11-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 11** (an owned panel's step and command columns in its skin's body face, so *Ignore fonts* reaches them; its resize grip wears its skin; no new member) | v1.81.0 – v1.84.0 | Superseded |
 | [15.1.1.10](./Perf/version-15.1.1.10-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 10** (the panel follows its skin owner; no new member) | v1.78.0 – v1.80.0 | Superseded |
@@ -505,7 +515,9 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [51](./testkit/version-51-docs.md) | same files; **`mock_ace.lua`**: an unregister clears only a registration that exists, as CallbackHandler does, so one made during a dispatch no longer breaks its walk | v1.89.0 | **Current** |
+| [53](./testkit/version-53-docs.md) | same files **plus `client_globals.lua`, `test_client_globals.lua` and the two name sets `client_globals_live.lua`, `client_globals_forever.lua`**: the missing-globals gate (`WFP-LK-06`, LibKa0s#77), a kit suite every consumer wires with one `suites` entry | v1.93.0 | **Current** |
+| [52](./testkit/version-52-docs.md) | same files **plus `mock_client.lua`**: the client profiles, `retail` (default) and `forever`, selected by `KA0S_KIT_CLIENT` and stamped on every mock set by `loader.lua`; `GetBuildInfo` moves out of the consumer's mock into the profile | v1.92.0 | Superseded |
+| [51](./testkit/version-51-docs.md) | same files; **`mock_ace.lua`**: an unregister clears only a registration that exists, as CallbackHandler does, so one made during a dispatch no longer breaks its walk | v1.89.0 | Superseded |
 | [50](./testkit/version-50-docs.md) | same files **plus `skin_values.lua`, `skin_switch.lua`, `test_skin_values.lua` and `test_skin_switch.lua`**: the typed-value gate (`Kit.skinValues`) and the skin-switch test (`Kit.skinSwitch`), each a declared skip until a host adopts it | v1.85.0 | Superseded |
 | [49](./testkit/version-49-docs.md) | same files; **`vendor_sync.lua`**: `chevron-up` joins `VendorSync.LIBRARY_MARKS` | v1.85.0 | Superseded |
 | [48](./testkit/version-48-docs.md) | same files; **`vendor_sync.lua`**: `VendorSync.LIBRARY_MARKS`, `VendorSync.missingMarks`, and the gate goes red on a list that leaves one out | v1.85.0 | Superseded |

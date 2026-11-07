@@ -452,7 +452,8 @@ test("lib: a record stamps the host's interface version and the capture time", f
   -- unattributable to a game build.
   local p = Fixture.new()
   local r = p.BuildRecord("cap")
-  assertEqual(r.interface, 120007, "from the host's own TOC metadata")
+  local _, _, _, interface = T.mocks.GetBuildInfo()   -- the active client profile's
+  assertEqual(r.interface, interface, "from the host's own TOC metadata")
   T.assertTrue(type(r.timestamp) == "number" and r.timestamp > 0, "epoch seconds")
 end)
 
@@ -696,7 +697,12 @@ test("lib: Context captures character, spec, zone and group", function()
   assertEqual(ctx.character, "Testchar", "character")
   assertEqual(ctx.realm, "Testrealm", "realm")
   assertEqual(ctx.level, 80, "level")
-  assertEqual(ctx.spec, "Blood", "spec")
+  -- Forever has neither spec global, and the headless mock offers no namespace either, so the field
+  -- keeps its default ("?") there instead of raising. Where the mock provides a reader, bare or
+  -- namespaced, the real name is recorded.
+  local ns = T.mocks.C_SpecializationInfo
+  local provided = T.mocks.GetSpecializationInfo or (ns and ns.GetSpecializationInfo)
+  assertEqual(ctx.spec, provided and "Blood" or "?", "spec")
   assertEqual(ctx.zone, "Silvermoon City", "zone")
   assertEqual(ctx.subZone, "Falconwing Square", "sub-zone")
 end)
@@ -724,6 +730,25 @@ test("lib: Context takes the namespaced spec reader before the bare global", fun
   T.mocks.GetSpecializationInfo = savedInfo
 
   assertEqual(spec, "Frost", "the namespaced rung is the one that answered")
+end)
+
+test("lib: Context reads the namespaced spec name where the bare global is gone (Forever shape)", function()
+  -- WFP-LK-04. C_SpecializationInfo.GetSpecializationInfo is the namespaced twin of the bare global,
+  -- and a client that has no global (Forever) answers only the namespace.
+  -- red under: a reader that asks the bare global for the name, which answers "?" here.
+  local savedNS   = T.mocks.C_SpecializationInfo
+  local savedBare = { T.mocks.GetSpecialization, T.mocks.GetSpecializationInfo }
+  T.mocks.GetSpecialization, T.mocks.GetSpecializationInfo = nil, nil
+  T.mocks.C_SpecializationInfo = {
+    GetSpecialization = function() return 2 end,
+    GetSpecializationInfo = function(index) return 251, index == 2 and "Unholy" or "?" end,
+  }
+  local p = Fixture.new()
+  local spec = p.Context().spec
+  T.mocks.C_SpecializationInfo = savedNS
+  T.mocks.GetSpecialization, T.mocks.GetSpecializationInfo = savedBare[1], savedBare[2]
+
+  assertEqual(spec, "Unholy", "the namespaced name answered")
 end)
 
 test("lib: Context reports party size and instance type", function()

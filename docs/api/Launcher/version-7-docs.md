@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Launcher-1.0` |
 | Files and minors | `Launcher.lua` minor **7** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 6](./version-6-docs.md) — whose menu had no Open settings and no Sim mode |
-| Superseded by | — |
+| Superseded by | [version 8](./version-8-docs.md) (v1.92.0) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **LibKa0s-Skin-1.0** is OPTIONAL and resolved with `LibStub(…, true)` on every tooltip show. **LibDataBroker-1.1** and **LibDBIcon-1.0** are OPTIONAL and are resolved with `LibStub(…, true)` at `Register` time, never at load. The client's context-menu API (`MenuUtil`, 11.0 and later) is OPTIONAL too, resolved on every right click. |
 | Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 7 }` |
 

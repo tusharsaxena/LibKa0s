@@ -87,6 +87,10 @@ Kit.diagnostics = dofile("tests/fixture_diagnostics.lua")(_G.LK_TEST)
 -- real Skin major, for the same reason; see tests/fixture_skin_switch.lua.
 Kit.skinSwitch = dofile("tests/fixture_skin_switch.lua")
 
+-- The library's tooling (the kit, tools/) runs on a developer's machine and never ships, so the
+-- missing-globals gate leaves it out and reads the payload under LibKa0s/.
+Kit.clientGlobals = { skip = { "testkit/", "tools/" } }
+
 Kit.run{
   dir = "tests/",
   suites = {
@@ -95,7 +99,7 @@ Kit.run{
     "test_options", "test_options_render", "test_options_bulk", "test_options_fontpreload", "test_options_widgets",
     "test_options_choicegrid", "test_options_flow", "test_options_flow_seams", "test_options_landing",
     "test_options_ids", "test_options_idlist", "test_options_idlist_layout",
-    "test_options_tabs", "test_options_tabbed", "test_options_banner_acts",
+    "test_options_tabs", "test_options_tabbed", "test_options_clients", "test_gate_clients", "test_options_banner_acts",
     "test_options_nav", "test_options_drawer", "test_options_keybinds_model", "test_options_keybinds", "test_options_keybinds_sync", "test_options_appearance", "test_options_appearance_overrides", "test_options_skin_picker", "test_options_skin_picker_shared", "test_options_skin_picker_close", "test_options_skin_picker_preview", "test_options_skin_picker_faces", "test_options_skin_picker_rows", "test_options_skin_verb", "test_options_skin_notice",
     "test_options_idsuggest", "test_options_idsuggest_frames", "test_options_idlist_remove", "test_skin_marks", "test_skin_ace_confirm", "test_skin_step_arrows", "test_skin_ace_dropdown", "test_widgets_small_misses", "test_title_shape", "test_shell_band", "test_header_band", "test_options_switched", "test_options_media", "test_options_combat", "test_options_combat_debug", "test_options_pullout_close", "test_options_compose", "test_options_compose_arm", "test_options_compose_master", "test_options_compose_sim", "test_options_compose_tooltips", "test_options_reset_tooltip", "test_options_skin", "test_options_tooltip_skin", "test_options_chrome_skin", "test_icon_rule", "test_options_compose_skin", "test_options_compose_flags",
     "test_options_throttle",
@@ -103,10 +107,10 @@ Kit.run{
     "test_sim_seam", "test_sim_session", "test_sim_timeline", "test_sim_verbs", "test_sim_autoplay", "test_sim_panel", "test_sim_panel_controls", "test_sim_panel_render",
     "test_sim_isolation", "test_sim_stub", "test_sim_host",
     "test_loader", "test_parallel", "test_kit_limits", "test_kit_asserts", "test_kit_secrets", "test_kit_latch", "test_kit_bindings", "test_glyph_guard",
-    "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events", "test_mock_resize", "test_mock_lines", "test_mock_bindings", "test_mock_layers", "test_mock_paint",
+    "test_mock_base", "test_mock_ace", "test_mock_record", "test_mock_events", "test_mock_resize", "test_mock_client", "test_mock_lines", "test_mock_bindings", "test_mock_layers", "test_mock_paint",
     "test_surface_parity",
     "test_versioning", "test_kitsync", "test_prose",
-    "test_register", "test_kit_inventory", "test_kit_eol", "test_kit_prose", "test_kit_runner", "test_kit_vendor_sync", "test_kit_skin_values", "test_kit_skin_switch",
+    "test_register", "test_kit_inventory", "test_kit_eol", "test_kit_prose", "test_kit_runner", "test_kit_vendor_sync", "test_kit_skin_values", "test_kit_skin_switch", "test_kit_client_globals",
     -- Shipped in the kit, so every consumer inherits the gate instead of re-typing it; the
     -- inventory assertion goes red in any repo that vendors it and leaves it undeclared.
     -- Declared by the PAIR (basename, directory) from kit revision 25: a bare name here wires
@@ -122,5 +126,8 @@ Kit.run{
     -- declared skip here. Its cases run in tests/test_kit_skin_values.lua against fixture trees.
     { name = "test_skin_values", dir = "tests/_kit/" },
     { name = "test_skin_switch", dir = "tests/_kit/" },
+    -- The missing-globals gate (kit revision 53): this repo scans its own tracked source, so the live
+    -- run is a real one; the allowlist is tests/client_globals_allow.lua.
+    { name = "test_client_globals", dir = "tests/_kit/" },
   },
 }

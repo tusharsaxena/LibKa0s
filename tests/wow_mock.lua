@@ -68,9 +68,9 @@ return function()
   M.ITEM_QUALITY7_DESC = "Heirloom"
   M.ITEM_QUALITY8_DESC = "WoW Token"
 
-  -- The client's interface version, which is where `Interface` actually comes from: GetBuildInfo's
-  -- FOURTH return. version, build, date, tocversion.
-  M.GetBuildInfo = function() return "12.0.7", "60000", "Jul 31 2026", 120007 end
+  -- GetBuildInfo, and the WOW_PROJECT_* constants, come from the kit's client profile
+  -- (tests/_kit/mock_client.lua), which Loader stamps on this set: the interface is GetBuildInfo's
+  -- FOURTH return, and which client it names is the profile's, not this file's.
 
   -- This repo's suites assert that a capture's context records the character's LOCALIZED class
   -- name rather than the token, so the fixture character is a Death Knight — the pair where the two

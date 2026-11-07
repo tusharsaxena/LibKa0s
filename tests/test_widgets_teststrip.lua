@@ -233,7 +233,7 @@ end
 
 test("TestStrip: kind = 'sim' fills the collection's simulation cyan at 12% and reads 'sim'", function()
   recording(function()
-    local s = W.TestStrip(mocks.UIParent, { text = "SIMULATION", kind = "sim" })
+    local s = W.TestStrip(mocks.UIParent, { text = "SIM: a made-up run, not your data", kind = "sim" })
     assertFill(s, 0.35, 0.80, 1.00, 0.12, "sim fill")
     assertTrue(s.__fill.__allPoints == s, "the fill covers the strip, all points")
     assertEqual(s.__fill.__layer, "BACKGROUND")

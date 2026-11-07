@@ -11,9 +11,9 @@
 | Files and minors | `Slash.lua` **21** · `SlashParse.lua` **2** |
 | Version key | `<Slash>.<SlashParse>`, in load order — the same two numbers `lib.MODULES` reports |
 | Shipped in | v1.84.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 20.2](./version-20.2-docs.md) — the same surface, listing and resetting every row it was handed |
-| Superseded by | — |
+| Superseded by | [version 22.2](./version-22.2-docs.md) (v1.92.0) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) |
 | Confirm in-game | `LibStub("LibKa0s-Slash-1.0").MODULES` → `{ Slash = 21, SlashParse = 2 }` |
 

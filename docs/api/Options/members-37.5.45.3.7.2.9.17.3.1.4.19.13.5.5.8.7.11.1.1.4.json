@@ -1,0 +1,38 @@
+{
+  "major": "LibKa0s-Options-1.0",
+  "versionKey": "37.5.45.3.7.2.9.17.3.1.4.19.13.5.5.8.7.11.1.1.4",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Options", "minor": 37 },
+    { "file": "OptionsRegistry", "minor": 5 },
+    { "file": "OptionsWidgets", "minor": 45 },
+    { "file": "OptionsFlow", "minor": 3 },
+    { "file": "OptionsIds", "minor": 7 },
+    { "file": "OptionsIdSuggest", "minor": 2 },
+    { "file": "OptionsIdList", "minor": 9 },
+    { "file": "OptionsTabs", "minor": 17 },
+    { "file": "OptionsTabbed", "minor": 3 },
+    { "file": "OptionsHeader", "minor": 1 },
+    { "file": "OptionsCombat", "minor": 4 },
+    { "file": "OptionsCompose", "minor": 19 },
+    { "file": "OptionsScroll", "minor": 13 },
+    { "file": "OptionsNav", "minor": 5 },
+    { "file": "OptionsDrawer", "minor": 5 },
+    { "file": "OptionsKeybinds", "minor": 8 },
+    { "file": "OptionsAppearance", "minor": 7 },
+    { "file": "OptionsSkinPicker", "minor": 11 },
+    { "file": "OptionsSkinPickerRows", "minor": 1 },
+    { "file": "OptionsSwitch", "minor": 1 },
+    { "file": "OptionsMedia", "minor": 4 }
+  ],
+  "members": [
+    { "name": "APPEARANCE_STRINGS", "kind": "table" },
+    { "name": "KEYBIND_STRINGS", "kind": "table" },
+    { "name": "LAYOUT", "kind": "table" },
+    { "name": "New", "kind": "function" },
+    { "name": "PatchAlwaysShowScrollbar", "kind": "function" },
+    { "name": "SKIN_NOTICE_VERSION", "kind": "number" },
+    { "name": "SKIN_PICKER_STRINGS", "kind": "table" },
+    { "name": "STRINGS", "kind": "table" }
+  ]
+}

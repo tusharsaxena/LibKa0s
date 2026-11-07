@@ -89,8 +89,10 @@ test("diag: the identity header names the host, the client, the flags and the ru
     local D = newLog()
     local t = texts(D:BuildDiagnostics())
     assertEqual(t[2], "Diag Test v1.0.0, schema 3", "the host's initSummary comes first")
-    assertTrue(has(t, "client: version=12.0.7 build=60000"), "GetBuildInfo, read")
-    assertTrue(has(t, "interface=120007"), "the interface number")
+    -- Whatever the active client profile's GetBuildInfo answers, so the case holds under both.
+    local version, build, _, interface = T.mocks.GetBuildInfo()
+    assertTrue(has(t, "client: version=" .. version .. " build=" .. build), "GetBuildInfo, read")
+    assertTrue(has(t, "interface=" .. interface), "the interface number")
     assertTrue(has(t, "locale: enUS"), "GetLocale")
     assertTrue(has(t, "debug logging: off"), "the flag, printed")
     assertTrue(has(t, "combat: InCombatLockdown=false UnitAffectingCombat=false"), "both reads")

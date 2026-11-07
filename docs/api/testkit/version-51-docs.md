@@ -10,9 +10,9 @@
 | Version | **51** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.89.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 50](version-50-docs.md) — the same surface, with an unregister that could disturb a dispatch in flight |
-| Superseded by | — |
+| Superseded by | [version 52](version-52-docs.md) |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `51` |
 

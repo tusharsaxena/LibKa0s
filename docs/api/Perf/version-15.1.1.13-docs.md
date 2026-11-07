@@ -11,9 +11,9 @@
 | Files and minors | `Perf.lua` **15** · `PerfSampler.lua` **1** · `PerfCommands.lua` **1** · `PerfPanel.lua` **13** |
 | Version key | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>`, in load order — the same four numbers `lib.MODULES` reports |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 15.1.1.12](./version-15.1.1.12-docs.md) (unreleased, an earlier step of v1.85.0) — an owned panel's title and close were anchored to the window's top at -(1 + TITLE_H / 2), a px high under a 2 px edge. |
-| Superseded by | — |
+| Superseded by | [version 16.1.1.13](./version-16.1.1.13-docs.md) (v1.92.0) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
 | Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 15, PerfSampler = 1, PerfCommands = 1, PerfPanel = 13 }` |

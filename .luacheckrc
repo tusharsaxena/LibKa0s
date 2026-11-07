@@ -6,6 +6,7 @@ read_globals = {
   "LibStub", "CreateFrame", "UIParent", "UISpecialFrames", "DEFAULT_CHAT_FRAME",
   "STATICPOPUP_NUMDIALOGS",   -- how many StaticPopupN frames Core.RaiseStaticPopups walks
   "time", "date", "debugprofilestop", "UnitAffectingCombat", "InCombatLockdown",
+  "WOW_PROJECT_ID", "WOW_PROJECT_MAINLINE", "WOW_PROJECT_CAMELOT",   -- LibKa0s-Compat-1.0's client helpers; CAMELOT is nil on Retail
   "C_AddOns",   -- Env's TOC reader and the id list help-art guard; never the bare globals
   "C_Map",   -- the player's map id, read by LibKa0s-Env-1.0
   "C_Item", "C_Timer", "ITEM_QUALITY_COLORS",   -- read by LibKa0s-Item-1.0
