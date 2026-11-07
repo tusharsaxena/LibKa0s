@@ -238,3 +238,20 @@ Bench.case("gate clients: a retail keybind row is never drawn on Forever", funct
     assertFalse(tab.clients == nil, "the tab carries its declaration to the tabbed page")
   end)
 end)
+
+-- test_gate_registration_validates_tokens
+test("gate clients: a clients typo raises at registration and names the entry", function()
+  local ok, err = pcall(F.new, { commands = { { "scan", "Scan", function() end, clients = { "retial" } } } })
+  assertFalse(ok, "Slash:New raises")
+  assertTrue(tostring(err):find('command "scan"', 1, true) ~= nil, tostring(err))
+  assertTrue(tostring(err):find('unknown client "retial"', 1, true) ~= nil, tostring(err))
+  assertTrue(pcall(F.new, { commands = { { "scan", "Scan", function() end, clients = { "both" } } } }),
+    "a valid declaration registers")
+  seq = seq + 1
+  local ok2, err2 = pcall(launcher.New, launcher, {
+    name = "GateHost" .. seq, icon = "x", openSettings = function() end,
+    entryClients = { toggleSim = { "retial" } } })
+  assertFalse(ok2, "Launcher:New raises")
+  assertTrue(tostring(err2):find("entryClients.toggleSim", 1, true) ~= nil, tostring(err2))
+  assertTrue(tostring(err2):find('unknown client "retial"', 1, true) ~= nil, tostring(err2))
+end)

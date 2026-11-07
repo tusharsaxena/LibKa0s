@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Compat-1.0` |
 | Files and minors | `Compat.lua` minor **2** |
 | Shipped in | v1.92.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 1](version-1-docs.md) — the same nine members, with no client question |
-| Superseded by | — |
+| Superseded by | [version 3](./version-3-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Compat-1.0").MODULES` → `{ Compat = 2 }` |
 
 ## What this major is
@@ -409,3 +409,7 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 `Compat.lua` is a new entry in `LibKa0s.xml`, immediately after `Env.lua`. A consumer whose test
 harness derives its load list from that XML picks it up with no edit; a consumer that re-types the
 list adds one row after `libs/LibKa0s/Env.lua`.
+
+## Moving to version 3
+
+The same thirteen members; `ForClient` accepts `"both"` inside an array. See [version 3](./version-3-docs.md). Re-vendor the whole folder; a host owes nothing.

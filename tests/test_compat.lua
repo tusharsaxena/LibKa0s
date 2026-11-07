@@ -106,10 +106,10 @@ local INERT = pack(0, 0, false, 1, false)
 
 -- -- registration and shape (3) -----------------------------------------------------------------
 
-test("compat: registers minor 2 with exactly the thirteen public members", function()
+test("compat: registers minor 3 with exactly the thirteen public members", function()
   assertEqual(compat.MAJOR, "LibKa0s-Compat-1.0")
-  assertEqual(compat.MINOR, 2)
-  assertEqual(compat.MODULES.Compat, 2)
+  assertEqual(compat.MINOR, 3)
+  assertEqual(compat.MODULES.Compat, 3)
   local names = {}
   for _, member in ipairs(T.publicMembers(compat)) do
     assertEqual(member.kind, "function", member.name .. " kind")
@@ -131,7 +131,7 @@ test("compat: the Core floor keeps the major absent from a payload without Core"
   Loader.loadSource(src, "@LibKa0s/Compat.lua", nil, bare)
   local lib = bare.LibStub("LibKa0s-Compat-1.0", true)
   assertTrue(lib ~= nil, "with Core: registered")
-  assertEqual(lib.MINOR, 2)
+  assertEqual(lib.MINOR, 3)
 end)
 
 test("compat: the source reads every global bare, never through the global table", function()
@@ -723,6 +723,16 @@ test("compat: ForClient answers nil and both for every client, and a list by mem
       assertEqual(compat.ForClient({ "forever" }), case[2] == "forever", key .. ": { forever }")
       assertEqual(compat.ForClient({ "retail", "forever" }), case[2] ~= nil, key .. ": both listed")
       assertFalse(compat.ForClient({}), key .. ": an empty list is no client")
+    end)
+  end
+end)
+
+test("compat: ForClient accepts both inside an array, on every client", function()
+  for _, fixture in ipairs({ RETAIL, FOREVER, NEITHER }) do
+    with(fixture, function()
+      assertTrue(compat.ForClient({ "both" }), "{ both }")
+      assertTrue(compat.ForClient({ "retail", "both" }), "{ retail, both }")
+      assertTrue(compat.ForClient({ "both", "forever" }), "{ both, forever }")
     end)
   end
 end)

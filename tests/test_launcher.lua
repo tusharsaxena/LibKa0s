@@ -473,8 +473,8 @@ end)
 test("launcher: minor 6 is live", function()
   -- red under: a change that forgot its bump, which reaches no host holding an older minor.
   -- Minor 8 is the per-client entry gate (WFP-LK-04); 7 is Sim mode, Open settings and one row rule; 6 the tooltip following the skin; minor 5 the at-enable queue (tests/test_atenable.lua).
-  assertEqual(lib.MINOR, 8)
-  assertEqual(lib.MODULES.Launcher, 8)
+  assertEqual(lib.MINOR, 9)
+  assertEqual(lib.MODULES.Launcher, 9)
 end)
 
 -- ── click behavior (minor 4, launcher-§2 as of standard v2.67.0) ─────────────────────────────

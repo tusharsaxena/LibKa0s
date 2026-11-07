@@ -173,3 +173,45 @@ test("options clients: an unknown token raises rather than hiding silently", fun
     assertFalse(ok)
   end)
 end)
+
+-- test_gate_reset_walks_only_gated_in_rows
+test("options clients: the page Defaults and Reset all never write a row gated out for this client", function()
+  for _, case in ipairs({ { FOREVER, "gForever", "gRetail" }, { RETAIL, "gRetail", "gForever" } }) do
+    on(case[1], function()
+      local calls = {}
+      local O, rec = Fixture.new({ applyDefault = function(row) calls[#calls + 1] = row.path end })
+      local rows = rec.d.allRows()
+      rows[#rows + 1] = { path = "gRetail", page = "bar", group = "Size", order = 90, type = "bool",
+        default = false, clients = { "retail" } }
+      rows[#rows + 1] = { path = "gForever", page = "bar", group = "Size", order = 91, type = "bool",
+        default = false, clients = { "forever" } }
+      local function ran(path)
+        for _, p in ipairs(calls) do if p == path then return true end end
+        return false
+      end
+      O.RestoreDefaults("bar")
+      assertTrue(ran("barWidth"), "an ungated row is reset by the page Defaults")
+      assertTrue(ran(case[2]), "the row for this client is reset")
+      assertFalse(ran(case[3]), "the row for the other client is not touched by the page Defaults")
+      calls = {}
+      O.RestoreAllDefaults()
+      assertTrue(ran("barWidth"), "an ungated row is reset by Reset all")
+      assertTrue(ran(case[2]), "the row for this client is reset by Reset all")
+      assertFalse(ran(case[3]), "the row for the other client is not touched by Reset all")
+    end)
+  end
+end)
+
+-- test_gate_navrail_entries
+test("options clients: a nav-rail entry for another client gets no button", function()
+  for _, case in ipairs({ { FOREVER, 2 }, { RETAIL, 3 } }) do
+    on(case[1], function()
+      local O, _, ctx = bench()
+      local buttons = O.NavRail(ctx, { entries = {
+        { key = "a", label = "Alpha" },
+        { key = "r", label = "Retail only", clients = { "retail" } },
+        { key = "b", label = "Beta" } }, value = "a", onSelect = function() end })
+      assertEqual(#buttons, case[2], "entries drawn")
+    end)
+  end
+end)

@@ -12,9 +12,9 @@ cannot drift. Release order is in
 
 ## v1.93.0 — 2026-11-07
 
-Opened 2026-11-07, on `feat/2026-11-07-wow-forever-port`: the library half of the WoW Forever port's M5 follow-ups (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT/`), `WFP-LK-06`, `WFP-LK-08` and the library's half of `WFP-FIX-02`, released as `WFP-LK-09`.
+Opened 2026-11-07, on `feat/2026-11-07-wow-forever-port`: the library half of the WoW Forever port's M5 follow-ups (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT/`), `WFP-LK-06`, `WFP-LK-08` and the library's half of `WFP-FIX-02`, released as `WFP-LK-09`, plus the final whole-branch review's fixes (`WFP-RV2-LK`).
 
-Versions in this release: `LibKa0s-Options-1.0` key **37.5.45.3.7.2.9.17.3.1.4.19.13.5.5.8.7.11.1.1.4** (OptionsTabs minor 17, OptionsHeader minor 1, the new file); every other file at its v1.92.0 minor, and the test kit at revision **53**. No `NEEDS_*` floor rises. The tag is cut locally and pushed only at the run's finalize.
+Versions in this release: `LibKa0s-Compat-1.0` key **3** (Compat minor 3); `LibKa0s-Slash-1.0` key **23.2** (Slash minor 23, SlashParse minor 2); `LibKa0s-Launcher-1.0` key **9** (Launcher minor 9); `LibKa0s-Options-1.0` key **38.5.45.3.7.2.9.17.3.1.4.19.13.6.5.8.7.11.1.1.4** (Options minor 38, OptionsNav minor 6, OptionsTabs minor 17, OptionsHeader minor 1, the new file); every other file at its v1.92.0 minor, and the test kit at revision **53**. No `NEEDS_*` floor rises. The tag is cut locally and pushed only at the run's finalize.
 
 ### The static missing-globals gate (`WFP-LK-06`, LibKa0s#77)
 
@@ -23,6 +23,13 @@ Versions in this release: `LibKa0s-Options-1.0` key **37.5.45.3.7.2.9.17.3.1.4.1
 ### The header block and the secondary strip peel out (`WFP-LK-08`)
 
 - **OptionsTabs minor 17, OptionsHeader minor 1** ([docs](docs/api/Options/version-37.5.45.3.7.2.9.17.3.1.4.19.13.5.5.8.7.11.1.1.4-docs.md)): `O.PageHeader` and `O.SubTabStrip` moved, unchanged, out of `OptionsTabs.lua` (1295 -> 1185 lines) into the new `OptionsHeader.lua` (166), on the seam CLAUDE.md's band census named, which clears that file's 1300-line trigger. No behavior change, no member added or removed. A file added to the Options major moves its key by one component.
+
+### The final review's fixes (`WFP-RV2-LK`)
+
+- **The bulk resets honor `clients`** (Options minor 38, [docs](docs/api/Options/version-38.5.45.3.7.2.9.17.3.1.4.19.13.6.5.8.7.11.1.1.4-docs.md), final-review I-2): the page Defaults button and `O.RestoreAllDefaults` walk only the rows this client draws, through `lib.__GateClients`, so a row gated out never has its `set` or `onChange` called on a client that lacks the API it configures. The previous document's "the reset walk is not filtered" line is superseded.
+- **`O.NavRail` honors `clients`** (OptionsNav minor 6, M-3): an entry for another client gets no button. `O.Drawer` takes one section per call with nothing to filter; a host wraps a gated Drawer in `ForClient`, and the document says so.
+- **`ForClient({ "both" })`** (Compat minor 3, [docs](docs/api/Compat/version-3-docs.md), M-1) is true on every client, so the standard's three tokens all work inside an array.
+- **`clients` is validated at registration** (Slash minor 23, Launcher minor 9, [Slash](docs/api/Slash/version-23.2-docs.md), [Launcher](docs/api/Launcher/version-9-docs.md), M-10): `Slash:New` checks each `commands` entry and `Launcher:New` each `entryClients` value, and a typo raises at the host's call naming the entry.
 
 ### The sim strip is `SIM` (`WFP-FIX-02`, library half)
 
