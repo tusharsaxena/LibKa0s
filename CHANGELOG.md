@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.93.0 — unreleased
+## v1.93.0 — 2026-11-07
 
 Opened 2026-11-07, on `feat/2026-11-07-wow-forever-port`: the library half of the WoW Forever port's M5 follow-ups (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT/`), `WFP-LK-06`, `WFP-LK-08` and the library's half of `WFP-FIX-02`, released as `WFP-LK-09`.
 
