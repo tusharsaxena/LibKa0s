@@ -452,7 +452,8 @@ test("lib: a record stamps the host's interface version and the capture time", f
   -- unattributable to a game build.
   local p = Fixture.new()
   local r = p.BuildRecord("cap")
-  assertEqual(r.interface, 120007, "from the host's own TOC metadata")
+  local _, _, _, interface = T.mocks.GetBuildInfo()   -- the active client profile's
+  assertEqual(r.interface, interface, "from the host's own TOC metadata")
   T.assertTrue(type(r.timestamp) == "number" and r.timestamp > 0, "epoch seconds")
 end)
 
@@ -696,7 +697,9 @@ test("lib: Context captures character, spec, zone and group", function()
   assertEqual(ctx.character, "Testchar", "character")
   assertEqual(ctx.realm, "Testrealm", "realm")
   assertEqual(ctx.level, 80, "level")
-  assertEqual(ctx.spec, "Blood", "spec")
+  -- Forever has neither spec global, and Perf's reader still needs the global GetSpecializationInfo
+  -- (the Compat row in CLAUDE.md), so the field keeps its default ("?") there instead of raising.
+  assertEqual(ctx.spec, T.mocks.GetSpecializationInfo and "Blood" or "?", "spec")
   assertEqual(ctx.zone, "Silvermoon City", "zone")
   assertEqual(ctx.subZone, "Falconwing Square", "sub-zone")
 end)

@@ -505,7 +505,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [51](./testkit/version-51-docs.md) | same files; **`mock_ace.lua`**: an unregister clears only a registration that exists, as CallbackHandler does, so one made during a dispatch no longer breaks its walk | v1.89.0 | **Current** |
+| [52](./testkit/version-52-docs.md) | same files **plus `mock_client.lua`**: the client profiles, `retail` (default) and `forever`, selected by `KA0S_KIT_CLIENT` and stamped on every mock set by `loader.lua`; `GetBuildInfo` moves out of the consumer's mock into the profile | v1.92.0 | **Current** |
+| [51](./testkit/version-51-docs.md) | same files; **`mock_ace.lua`**: an unregister clears only a registration that exists, as CallbackHandler does, so one made during a dispatch no longer breaks its walk | v1.89.0 | Superseded |
 | [50](./testkit/version-50-docs.md) | same files **plus `skin_values.lua`, `skin_switch.lua`, `test_skin_values.lua` and `test_skin_switch.lua`**: the typed-value gate (`Kit.skinValues`) and the skin-switch test (`Kit.skinSwitch`), each a declared skip until a host adopts it | v1.85.0 | Superseded |
 | [49](./testkit/version-49-docs.md) | same files; **`vendor_sync.lua`**: `chevron-up` joins `VendorSync.LIBRARY_MARKS` | v1.85.0 | Superseded |
 | [48](./testkit/version-48-docs.md) | same files; **`vendor_sync.lua`**: `VendorSync.LIBRARY_MARKS`, `VendorSync.missingMarks`, and the gate goes red on a list that leaves one out | v1.85.0 | Superseded |
