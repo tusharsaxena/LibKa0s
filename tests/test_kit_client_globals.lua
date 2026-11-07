@@ -63,6 +63,44 @@ test("client globals: a C_ member missing on one client is flagged on that clien
   assertEqual(flags("C_MyOwnNamespace.Call()"), "", "a C_ root no client knows is the addon's")
 end)
 
+--- Findings over several files, as "path:line:name" comma-joined, live only, after the judge.
+local function judged(files, allow)
+  local rows = {}
+  for _, f in ipairs(files) do rows[#rows + 1] = { f[1], f[2] } end
+  local bad = CG.judge(CG.scan(rows, sets), allow or {}, { "live" })
+  return table.concat(bad, ",")
+end
+
+test("client globals: a vendored AceGUI site passes with no addon row, addon code stays checked", function()
+  local site = "if type == 'spell' then\n  name = GetSpellInfo(id, info)\nend"
+  assertEqual(judged({ { "libs/AceGUI-3.0/widgets/EditBox.lua", site } }), "")
+  assertEqual(judged({ { "libs/LibCustomGlow-1.0/LibCustomGlow-1.0.lua", "AnimateTexCoords(a)" } }), "")
+  assertEqual(judged({ { "core/Spells.lua", "local n = GetSpellInfo(id)" } }), "core/Spells.lua:1 GetSpellInfo live")
+  assertEqual(judged({ { "libs/AceGUI-3.0/a.lua", "GetSpellInfo(1)" }, { "core/B.lua", "GetSpellInfo(2)" } }),
+    "core/B.lua:1 GetSpellInfo live")
+end)
+
+test("client globals: an addon row's path scopes it, and a built-in is never stale", function()
+  local row = { name = "Gone", reason = "r", path = "libs/Old/" }
+  local files = { { "libs/Old/a.lua", "Gone(1)" }, { "core/b.lua", "Gone(2)" } }
+  assertEqual(judged(files, { row }), "core/b.lua:1 Gone live")
+  local _, _, stale = CG.judge(CG.scan({ { "core/b.lua", "CreateFrame('x')" } }, sets), {}, { "live" })
+  assertEqual(#stale, 0)
+end)
+
+test("client globals: a local in one file never masks an unguarded call in another", function()
+  local files = { { "libs/L.lua", "local SetDesaturation = SetDesaturation" }, { "core/C.lua", "SetDesaturation(x)" } }
+  assertEqual(judged(files), "core/C.lua:1 SetDesaturation live")
+  assertEqual(judged({ { "a.lua", "local function Mine() end" }, { "b.lua", "Mine()" } }), "b.lua:1 Mine live")
+  assertEqual(judged({ { "a.lua", "function Shared() end" }, { "b.lua", "Shared()" } }), "")
+  assertEqual(judged({ { "a.lua", "Shared = function() end" }, { "b.lua", "Shared()" } }), "")
+end)
+
+test("client globals: a table field is no declaration", function()
+  assertEqual(judged({ { "a.lua", "local t = {\n  SetDesaturation = 1,\n}" }, { "b.lua", "SetDesaturation(x)" } }),
+    "b.lua:1 SetDesaturation live")
+end)
+
 test("client globals: the live and forever sets differ where the data says, and carry their SHAs", function()
   assertTrue(sets.live.CreateFrame and sets.forever.CreateFrame)
   assertTrue(sets.live.AbandonSkill and not sets.forever.AbandonSkill, "AbandonSkill is live-only")

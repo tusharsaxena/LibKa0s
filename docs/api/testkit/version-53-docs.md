@@ -36,13 +36,25 @@ declare the name and does not guard it. It reads source, so it needs no run to r
 - **What it reports:** `file:line name client`, one per call and client.
 - **Findings:** a bare call `Name(`, or `C_Name.Member(` where `C_Name` is a namespace some client
   knows, whose name is missing from that client's set.
-- **Heuristics, all lenient:** comments and strings are blanked first; a name the addon declares
-  anywhere (`local`, `function`, a parameter, a `for` variable, a global assignment) is its own; a
+- **Heuristics, all lenient:** comments and strings are blanked first; a local (`local`, a parameter,
+  a `for` variable) is the addon's own in its file only, a global (`function f(`, `f = ...` at statement
+  start outside a table constructor, `_G.f = ...`) in every file, and a table field `Name = x,` declares
+  nothing; a
   name the same file mentions other than as a call is guarded (`if X then`, `X and X(`,
   `local f = X`, `type(X)`, `pcall(X, ...)`), and for a namespace member a bare reference to the
   namespace guards it. Method and field calls are never findings.
-- **The allowlist:** `tests/client_globals_allow.lua` returns `{ { name = "X", reason = "why" }, ... }`.
-  A row with no reason fails, and so does a row no finding reaches (checked against both clients,
+- **Known false negatives:** a guard is file-wide (a call in the else-branch of a test on a different
+  name, or in a function the guard does not cover, passes); `_G.Name(`, `_G["Name"](` and
+  `getglobal("Name")` are not read and dynamic names are invisible; method and field calls are never
+  checked; a global assigned inside a table constructor's function body is not seen as a declaration;
+  forever findings are best-effort, because Ketho's forever set can list names the client lacks (for
+  example `GetSpecialization`, which the kit's forever profile removes).
+- **The built-in allowlist:** the kit ships path-scoped rows for vendored library sites,
+  `libs/AceGUI-3.0/` with `GetSpellInfo` (an else-branch behind a `C_Spell` test) and
+  `libs/LibCustomGlow-1.0/` with `AnimateTexCoords`. They excuse those names under those paths only, so
+  the same name in addon code is still flagged, and are never stale-checked.
+- **The allowlist:** `tests/client_globals_allow.lua` returns `{ { name = "X", reason = "why", path = "core/" }, ... }`;
+  `path` is an optional file prefix, and a name-only row excuses the name in addon code too. A row with no reason fails, and so does a row no finding reaches (checked against both clients,
   whatever the TOC asks for). An absent file is an empty list.
 
 ### `client_globals.lua`: the scanner

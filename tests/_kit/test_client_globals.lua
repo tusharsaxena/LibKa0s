@@ -30,11 +30,14 @@ end
 local CG = dofile(ownDir() .. "client_globals.lua")
 local sets = CG.sets(ownDir())
 
+local cached
 local function look()
+  if cached then return cached[1], cached[2], cached[3] end
   local files, toc = CG.collect(facts.root, facts.skip)
   local found = CG.scan(files, sets)
   local allow = CG.allowlist(facts.allow or "tests/client_globals_allow.lua")
-  return found, allow, CG.clientsFromToc(toc)
+  cached = { found, allow, CG.clientsFromToc(toc) }
+  return found, allow, cached[3]
 end
 
 test("client globals: no call of a global a client lacks", function()

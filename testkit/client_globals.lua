@@ -20,16 +20,32 @@
 -- THE HEURISTICS, simple on purpose, and all of them lenient (a false negative beats a red suite that
 -- trains people to allowlist):
 --   * Comments and strings are blanked first, so a name in either is no call and no guard.
---   * DECLARED: a name the addon declares anywhere, in any scanned file (`local x`, `local function
---     f`, `function f(`, a parameter, a `for` variable, a global assignment `f = ...`, `_G.f = ...`),
---     is the addon's own and never a finding. The set is per addon, not per scope.
+--   * DECLARED: a LOCAL (`local x`, `local function f`, a parameter, a `for` variable) is the
+--     addon's own in the file that declares it and nowhere else, so `local X = X` in one file never
+--     masks an unguarded call in another. A GLOBAL (`function f(`, `f = ...` at statement start,
+--     `_G.f = ...`) is the addon's own in every file. A table field `Name = x,` inside `{}` declares
+--     nothing.
 --   * GUARDED: a name the same FILE mentions anywhere other than as a call is guarded, whatever the
 --     shape: `if X then`, `X and X(`, `local f = X`, `type(X)`, `pcall(X, ...)`. For `C_Name.Member`
 --     a bare reference to `C_Name.Member` or to `C_Name` guards it.
 --   * Method calls (`obj:Name(`) and field calls (`obj.Name(`) are never findings; only globals are.
 --
--- THE ALLOWLIST. `tests/client_globals_allow.lua` returns `{ { name = "X", reason = "why" }, ... }`.
--- A name there is never a finding; a row with no reason fails, and so does a row no finding reaches.
+-- KNOWN FALSE NEGATIVES (lenient by design; each is a call this gate passes):
+--   * A guard is file-wide: a call in the else-branch of a test on a different name, or in a
+--     function the guard does not cover, passes while the file mentions the name anywhere else.
+--   * `_G.Name(`, `_G["Name"](` and `getglobal("Name")` are not read; dynamic names are invisible.
+--   * Method and field calls are never checked, so a missing widget method is not found.
+--   * A global assignment inside a table constructor's function body is not seen as a declaration,
+--     and a name declared by XML or a TOC-loaded file the scan does not list is not known.
+--   * Forever findings are best-effort: Ketho's forever set can list names the client lacks (for
+--     example GetSpecialization, which the kit's forever profile removes), so a missing name there
+--     can be read as present.
+--
+-- THE ALLOWLIST. The kit ships a path-scoped one, CG.BUILTIN, for vendored library sites (AceGUI's
+-- GetSpellInfo else-branch, LibCustomGlow's AnimateTexCoords); it is never stale-checked.
+-- `tests/client_globals_allow.lua` returns `{ { name = "X", reason = "why", path = "core/" }, ... }`;
+-- `path` is an optional file prefix. A name there is never a finding in its scope; a row with no
+-- reason fails, and so does a row no finding reaches.
 --
 -- WHICH CLIENTS. `live` always. `forever` only when a root `.toc`'s `## Interface` line carries a
 -- 16xxx number: an addon that has not been ported declares no Forever load and owes it nothing.
@@ -102,22 +118,32 @@ local function nameList(code, pos, into)
   end
 end
 
---- Add every name `code` (already stripped) declares to `into`.
-function CG.declare(code, into)
-  for name, params in code:gmatch("function%s+([%w_%.:]+)%s*%(([^)]*)%)") do
-    if not name:find("[%.:]") then into[name] = true end
-    for p in params:gmatch("[%a_][%w_]*") do into[p] = true end
+--- Add the names `code` (already stripped) declares: `locals` takes what only this file can see
+--- (`local x`, `local function f`, parameters, `for` variables), `globals` what every file can see
+--- (`function f(`, `f = ...` at statement start outside a table constructor, `_G.f = ...`). A table
+--- field written `Name = x,` inside `{}` is neither.
+function CG.declare(code, locals, globals)
+  for pos, name, params in code:gmatch("()function%s+([%w_%.:]+)%s*%(([^)]*)%)") do
+    if not name:find("[%.:]") then
+      local into = code:sub(1, pos - 1):find("local%s+$") and locals or globals
+      into[name] = true
+    end
+    for p in params:gmatch("[%a_][%w_]*") do locals[p] = true end
   end
   for params in code:gmatch("function%s*%(([^)]*)%)") do
-    for p in params:gmatch("[%a_][%w_]*") do into[p] = true end
+    for p in params:gmatch("[%a_][%w_]*") do locals[p] = true end
   end
-  for pos in code:gmatch("%f[%w_]local%s+()") do nameList(code, pos, into) end
-  for pos in code:gmatch("%f[%w_]for%s+()") do nameList(code, pos, into) end
-  for name in ("\n" .. code):gmatch("[\n;]%s*([%a_][%w_]*)%s*=[^=]") do
-    if not KEYWORDS[name] then into[name] = true end
+  for pos in code:gmatch("%f[%w_]local%s+()") do nameList(code, pos, locals) end
+  for pos in code:gmatch("%f[%w_]for%s+()") do nameList(code, pos, locals) end
+  local text, depth, last = "\n" .. code, 0, 1
+  for pos, name in text:gmatch("[\n;]%s*()([%a_][%w_]*)%s*=[^=]") do
+    local _, opens = text:sub(last, pos - 1):gsub("{", "")
+    local _, closes = text:sub(last, pos - 1):gsub("}", "")
+    depth, last = depth + opens - closes, pos
+    if depth <= 0 and not KEYWORDS[name] then globals[name] = true end
   end
-  for name in code:gmatch("_G%.([%a_][%w_]*)%s*=[^=]") do into[name] = true end
-  return into
+  for name in code:gmatch("_G%.([%a_][%w_]*)%s*=[^=]") do globals[name] = true end
+  return locals
 end
 
 --- Is `name` mentioned in stripped `code` other than as a call? `prefix` tokens are allowed to
@@ -190,10 +216,11 @@ end
 --- Every finding in `files` (`{ { path, src }, ... }`), as `{ file, line, name, client }`, for both
 --- clients (the caller picks which count). `sets` is CG.sets's answer.
 function CG.scan(files, sets)
-  local stripped, declared = {}, {}
+  local stripped, locals, globals = {}, {}, {}
   for i, f in ipairs(files) do
     stripped[i] = CG.strip(f[2])
-    CG.declare(stripped[i], declared)
+    locals[i] = {}
+    CG.declare(stripped[i], locals[i], globals)
   end
   local found, seen = {}, {}
   for i, f in ipairs(files) do
@@ -210,7 +237,7 @@ function CG.scan(files, sets)
       for _, call in ipairs(callsOf(text)) do
         local root, member = call[1], call[2]
         local name = member and (root .. "." .. member) or root
-        if not declared[root] and not (member and not sets.roots[root]) then
+        if not locals[i][root] and not globals[root] and not (member and not sets.roots[root]) then
           for _, client in ipairs({ "live", "forever" }) do
             local key = f[1] .. ":" .. line .. ":" .. name .. ":" .. client
             if not sets[client][name] and not seen[key] and not guarded(name, member and root) then
@@ -258,26 +285,46 @@ function CG.allowlist(path)
   return chunk() or {}
 end
 
---- Sort findings against the allowlist: answers `bad` (findings in `clients` no row takes), `problems`
---- (a row with no name or no reason) and `stale` (a row no finding in EITHER client reaches).
+--- The allowlist the kit ships: vendored library sites, scoped by path prefix, so an addon's own
+--- code stays checked. Never stale-checked: an addon without the library has no hit to excuse.
+CG.BUILTIN = {
+  { path = "libs/AceGUI-3.0/", name = "GetSpellInfo",
+    reason = "AceGUI's EditBox calls it in the else-branch of a C_Spell presence test" },
+  { path = "libs/LibCustomGlow-1.0/", name = "AnimateTexCoords",
+    reason = "LibCustomGlow's ants animation calls Blizzard's FrameXML helper" },
+}
+
+local function rowTakes(row, hit)
+  return row.name == hit.name and (row.path == nil or hit.file:sub(1, #row.path) == row.path)
+end
+
+--- Sort findings against the kit's built-in rows and the addon's own: answers `bad` (findings in
+--- `clients` no row takes), `problems` (a row with no name or no reason) and `stale` (an addon row
+--- no finding in EITHER client reaches). An addon row is `{ name, reason }` with an optional `path`
+--- prefix; a name-only row excuses that name in addon code too, so scope it where it can be.
 function CG.judge(found, allow, clients)
-  local want, rows, used, bad, problems, stale = {}, {}, {}, {}, {}, {}
+  local want, used, bad, problems, stale = {}, {}, {}, {}, {}
   for _, c in ipairs(clients) do want[c] = true end
   for i, row in ipairs(allow) do
-    if type(row.name) ~= "string" or row.name == "" or type(row.reason) ~= "string" or row.reason == "" then
-      problems[#problems + 1] = ("allowlist row %d needs a name and a reason"):format(i)
-    else
-      rows[row.name] = i
+    if type(row.name) ~= "string" or row.name == "" or type(row.reason) ~= "string" or row.reason == ""
+      or (row.path ~= nil and type(row.path) ~= "string") then
+      problems[#problems + 1] = ("allowlist row %d needs a name and a reason (and a string path, if any)"):format(i)
     end
   end
   for _, hit in ipairs(found) do
-    if rows[hit.name] then used[rows[hit.name]] = true
-    elseif want[hit.client] then
+    local taken = false
+    for _, row in ipairs(CG.BUILTIN) do
+      if rowTakes(row, hit) then taken = true end
+    end
+    for i, row in ipairs(allow) do
+      if rowTakes(row, hit) then used[i] = true; taken = true end
+    end
+    if not taken and want[hit.client] then
       bad[#bad + 1] = ("%s:%d %s %s"):format(hit.file, hit.line, hit.name, hit.client)
     end
   end
   for i, row in ipairs(allow) do
-    if rows[row.name] == i and not used[i] then stale[#stale + 1] = row.name end
+    if not used[i] and type(row.name) == "string" then stale[#stale + 1] = row.name end
   end
   return bad, problems, stale
 end

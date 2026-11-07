@@ -4763,7 +4763,7 @@ Total.
 - skin switch suite: a surface gets a case per pass, and an excluded one its first only
 - skin switch suite: a surface that does not change fails its case
 
-### test_kit_client_globals.lua (12)
+### test_kit_client_globals.lua (16)
 
 - client_globals_flags_setdesaturation: a bare call no client has is flagged for both
 - client_globals_ignores_guarded: a presence test on the same name excuses the call
@@ -4771,6 +4771,10 @@ Total.
 - client globals: what the addon declares is its own, whatever the shape
 - client globals: methods, fields and real client functions are no findings
 - client globals: a C_ member missing on one client is flagged on that client alone
+- client globals: a vendored AceGUI site passes with no addon row, addon code stays checked
+- client globals: an addon row's path scopes it, and a built-in is never stale
+- client globals: a local in one file never masks an unguarded call in another
+- client globals: a table field is no declaration
 - client globals: the live and forever sets differ where the data says, and carry their SHAs
 - client globals: the TOC picks the clients, forever only on a 16xxx Interface
 - client globals: the allowlist excuses, needs a reason and goes stale
@@ -5028,7 +5032,7 @@ Total.
 | test_kit_vendor_sync.lua | 25 |
 | test_kit_skin_values.lua | 29 |
 | test_kit_skin_switch.lua | 35 |
-| test_kit_client_globals.lua | 12 |
+| test_kit_client_globals.lua | 16 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
@@ -5036,4 +5040,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4254** |
+| **Total** | **4258** |
