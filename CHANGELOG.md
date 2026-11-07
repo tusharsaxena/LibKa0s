@@ -27,7 +27,7 @@ Versions in this release: `LibKa0s-Compat-1.0` key **2** (Compat minor 2); `LibK
 
 ### The `clients` gate in Slash, Launcher and Keybinds (`WFP-LK-04`)
 
-- **Slash minor 22** ([docs](docs/api/Slash/version-22.2-docs.md)): a `commands` entry carrying `clients` is no verb on a client it does not list: not dispatched, not in the help or on the landing page, and typing it gets the normal unknown-verb line.
+- **Slash minor 22** ([docs](docs/api/Slash/version-22.2-docs.md)): a `commands` entry carrying `clients` is no verb on a client it does not list: not dispatched, not in the help or on the landing page, and typing it gets the normal unknown-verb line. A schema row carrying `clients` is invisible to `list`, `get`, `set` and `reset`, and `lib.FindCommand` skips a gated entry.
 - **Launcher minor 8** ([docs](docs/api/Launcher/version-8-docs.md)): `entryClients`, keyed by an entry's toggle name, builds no menu entry the client is not in.
 - **OptionsKeybinds minor 8** ([docs](docs/api/Options/version-37.5.45.3.7.2.9.16.3.4.19.13.5.5.8.7.11.1.1.4-docs.md)): a `spec.bindings` entry carrying `clients` is no row, and `O.KeybindingsTab`'s `spec.clients` gates the tab.
 - **Perf minor 16** ([docs](docs/api/Perf/version-16.1.1.13-docs.md)): the specialization name reads `C_SpecializationInfo.GetSpecializationInfo` ahead of the bare global, so a Forever record names the spec instead of `?`. No floor rises.
