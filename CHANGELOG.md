@@ -19,6 +19,10 @@ Opened 2026-11-07, on `feat/2026-11-07-wow-forever-port` (Ka0sAddonsCommonTasks 
 - **Test kit revision 52** ([docs](docs/api/testkit/version-52-docs.md)): `testkit/mock_client.lua`, the `retail` (default) and `forever` client profiles, selected by `KA0S_KIT_CLIENT` and stamped on every mock set by `loader.lua`.
 - **Compat minor 2** ([docs](docs/api/Compat/version-2-docs.md)): `IsForever`, `IsRetail`, `ClientKey` and `ForClient`, read from `WOW_PROJECT_ID` against the project constants at call time.
 
+### The `clients` gate in the Options registries (`WFP-LK-03`)
+
+- **OptionsRegistry minor 5, OptionsWidgets minor 45, OptionsFlow minor 3, OptionsTabs minor 16, OptionsTabbed minor 3** ([docs](docs/api/Options/version-37.5.45.3.7.2.9.16.3.4.19.13.5.5.7.7.11.1.1.4-docs.md)): a page, tab, row or landing section declared with `clients` (the values `Compat.ForClient` takes) is dropped before anything is built from it on a client it does not list: no Settings category, no tab button, no pooled widget. `O.RegisterOptionsPage` takes an optional fourth `opts` argument for it.
+
 ## v1.91.0 — 2026-11-06
 
 Opened 2026-11-06, on `feat/2026-11-06-followups-v1-91`: the follow-ups v1.90.0's run left open (Ka0sAddonsCommonTasks `docs/2026-11-06-FOLLOWUPS_V1_91/00_PLAN.md`), `FU-L1` and `FU-L2` of that run, released as `FU-L3`.
