@@ -81,7 +81,11 @@ local function env(opts)
   for _, f in ipairs(files) do Loader.load("LibKa0s/" .. f .. ".lua", nil, m) end
   Loader.uncache()
   local Skin = m.LibStub("LibKa0s-Skin-1.0")
-  if not opts.noOwner then Skin:RegisterOwner(OWNER, { label = "Test Host" }) end
+  -- Ka0s Default by name: the cases pin its token values, and the client's default skin is WoW Forever
+  -- under the forever kit profile (Skin minor 18).
+  if not opts.noOwner then
+    Skin:RegisterOwner(OWNER, { label = "Test Host", get = function() return "ka0s", "ka0s" end })
+  end
   local helpers = m.LibStub("LibKa0s-Options-1.0"):New({
     parentTitle = "Test Host", mainPanelName = "TestHostMain", addonName = OWNER,
     print = function() end, get = function() end, set = function() end, applyDefault = function() end,

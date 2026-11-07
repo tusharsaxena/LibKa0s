@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **17** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **27** · `SkinDefsOthers.lua` **8** · `SkinPaint.lua` **19** · `SkinPaintExtras.lua` **19** · `SkinPaintHud.lua` **1** · `SkinAceConfirm.lua` **1** · `SkinPaintControls.lua` **17** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
 | Shipped in | v1.91.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 17.1.27.8.19.18.17.4.9](./version-17.1.27.8.19.18.17.4.9-docs.md) (v1.90.0) — the same surface, with the HUD's shared looks and AceConfigDialog's confirmation box in `SkinPaintExtras.lua`. |
-| Superseded by | — |
+| Superseded by | [version 18.1.27.8.19.19.1.1.17.4.9](./version-18.1.27.8.19.19.1.1.17.4.9-docs.md) (v1.94.0) — the default skin choice is per client: WoW Forever on the Forever client, Ka0s Default on Retail. |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). Core members are used optionally, resolved at call time: `SkinEUI.lua`'s `SafeRegisterEvent` (with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner`), and from `SkinPaintExtras.lua` 18 Core 16's pixel edges (with a Core that lacks them `P.px` answers its `n` and no edge is re-sized on a scale change) |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 17, SkinOwnerTokens = 1, SkinDefs = 27, SkinDefsOthers = 8, SkinPaint = 19, SkinPaintExtras = 19, SkinPaintHud = 1, SkinAceConfirm = 1, SkinPaintControls = 17, SkinEUI = 4, SkinAce = 9 }` |
 
@@ -2178,3 +2178,7 @@ the LibStub race later keeps every owner, record and facade; the resolve cache a
 - `addonName`: no consumer as of v1.83.0, kept because the scan counts a read of the Options descriptor inside a Skin file; it is `lib:New`'s `addonName`, which is passed there.
 - `thirdPartySkinAddons`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
 - `thirdPartySkinsOff`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
+
+## Moving to version 18.1.27.8.19.19.1.1.17.4.9
+
+Nothing breaks. On Retail every answer is the same. On the Forever client, an owner whose choice has no skin, and an unregistered owner, now wear WoW Forever instead of Ka0s Default. A host that wants its new profiles on the client's default skin writes `Skin:DefaultSkin()` into its profile defaults, not the literal `"ka0s"` (skinning-§2).
