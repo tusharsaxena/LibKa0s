@@ -146,6 +146,31 @@ are the only place that question is answered (`clients-§3`): never an interface
 - **The kit selects the client** with `KA0S_KIT_CLIENT=retail|forever` (test kit revision 52); the
   default, `retail`, leaves `WOW_PROJECT_CAMELOT` nil, which is the live Retail shape.
 
+## The spec readers on Forever (`WFP-LK-05`)
+
+**Checked, no code change.** The Gethe/wow-ui-source mirror's `forever` branch, whose head was
+**1.60.1 (70862)** on 2026-11-07 (the client the port targets is 1.60.1, build 70790; the mirror had
+moved to 70862), documents `C_SpecializationInfo` in
+`Interface/AddOns/Blizzard_APIDocumentationGenerated/SpecializationInfoDocumentation.lua`:
+
+- `C_SpecializationInfo.GetSpecialization(isInspect, isPet, specGroupIndex)` exists and returns one
+  `specializationIndex`.
+- `C_SpecializationInfo.GetSpecializationInfo(specializationIndex, isInspect, isPet, inspectTarget, sex,
+  groupIndex, classID)` exists and returns `specId, name, description, icon, role, primaryStat,
+  pointsSpent, background, previewPointsSpent, isUnlocked`: the same leading six as Retail, with four
+  more after them, which the passthrough forwards unmodified.
+- `Interface/AddOns/Blizzard_Deprecated/Mainline/Deprecated_12_0_1.lua`, `Deprecated_12_0_5.lua` and
+  `Shared/Deprecated_12_1_0.lua` on that branch carry no `GetSpecialization` shim. The legacy globals
+  are therefore not relied on there, and the test kit's `forever` profile removes them.
+
+`GetSpecialization` and `GetSpecializationInfo` take the namespaced rung first, so on Forever they
+answer from it, and where the namespace is absent they answer `nil` without raising. Both are pinned by
+`test_compat_spec_forever` and its absent-namespace twin in `tests/test_compat.lua`. One consumer-side
+consequence: `LibKa0s-Perf-1.0`'s inline reader (the `compat` row in `CLAUDE.md`) still asks the
+global `GetSpecializationInfo`, so a Perf capture on Forever records the spec as `?`. That is the
+documented behavior of that row, not a Compat defect. The owner's in-game check is SM-F1 in the port
+bundle's `03_SMOKE_TESTS.md`.
+
 ## What a headless harness answers
 
 The consumer kit (`testkit/mock_base.lua`) carries **no** `C_Spell`, no `C_SpecializationInfo`, no

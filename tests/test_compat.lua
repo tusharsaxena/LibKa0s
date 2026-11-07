@@ -741,3 +741,34 @@ end)
 test("compat: the active kit profile is the client the library sees", function()
   assertEqual(compat.ClientKey(), T.loader.MockClient.current(), "KA0S_KIT_CLIENT reaches Compat")
 end)
+
+-- test_compat_spec_forever
+-- WoW Forever has C_SpecializationInfo.GetSpecialization and GetSpecializationInfo and none of the
+-- legacy globals (docs/api/Compat/version-2-docs.md, "The spec readers on Forever"), so the
+-- namespaced rung is the only one that can answer there, and the ladder already takes it.
+test("compat: the spec readers answer from C_SpecializationInfo on Forever, with no legacy global", function()
+  with({
+    WOW_PROJECT_ID = 18, WOW_PROJECT_MAINLINE = 1, WOW_PROJECT_CAMELOT = 18,
+    GetSpecialization = ABSENT, GetSpecializationInfo = ABSENT,
+    C_SpecializationInfo = {
+      GetSpecialization = function() return 2 end,
+      GetSpecializationInfo = function(i) return 250, "Blood", "desc", 135770, "TANK", 1, i end,
+    },
+  }, function()
+    assertEqual(compat.GetSpecialization(), 2, "the namespaced index")
+    local got = pack(compat.GetSpecializationInfo(2))
+    assertEqual(got[1], 250, "specID")
+    assertEqual(got[2], "Blood", "name")
+    assertEqual(got.n, 7, "the multi-return passes through")
+  end)
+end)
+
+test("compat: the spec readers answer nil without raising on Forever when the namespace is absent", function()
+  with({
+    WOW_PROJECT_ID = 18, WOW_PROJECT_MAINLINE = 1, WOW_PROJECT_CAMELOT = 18,
+    GetSpecialization = ABSENT, GetSpecializationInfo = ABSENT, C_SpecializationInfo = ABSENT,
+  }, function()
+    assertNil(compat.GetSpecialization(), "no index")
+    assertTuple(pack(compat.GetSpecializationInfo(1)), pack(nil), "no info")
+  end)
+end)
