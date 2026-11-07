@@ -1,0 +1,1 @@
+WFP M2 review (2026-11-07): M2a spec ✅ approved (minors folded into M2b); M2b spec ✅, 2 Important (schema CLI ungated, OptionsTabs at the 1300 trigger) → fix round 1 → re-review 4/4 ADDRESSED. Gate 4239/0/3 under retail and forever, luacheck 0/0 in 317 files. Tag v1.92.0 local at d690237. LK-06 deferred to #77.
