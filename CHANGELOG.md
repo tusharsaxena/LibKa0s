@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.95.0 — unreleased
+## v1.95.0 — 2026-11-10
 
 Opened 2026-11-10, on `feat/2026-11-10-quickcomms-forever-emotes`: the library half of Ka0s Quick Comms' WoW Forever port (Ka0sAddonsCommonTasks `docs/2026-11-10-QUICKCOMMS_FOREVER_EMOTES/`, design §3), item `QFE-LK1`, released as `QFE-LK2`. The owner's rulings R3 and R5: the spec and role read is a reusable LibKa0s module, the talents decide the role on Forever, and the player can override it, saved per character.
 
