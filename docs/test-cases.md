@@ -108,9 +108,9 @@ Total.
 - env: GetZone answers zone and subzone
 - env: GetZone answers empty strings, never nil, when the readers are absent
 
-### test_compat.lua (58)
+### test_compat.lua (64)
 
-- compat: registers minor 2 with exactly the thirteen public members
+- compat: registers minor 4 with exactly the seventeen public members
 - compat: the Core floor keeps the major absent from a payload without Core
 - compat: the source reads every global bare, never through the global table
 - compat: IsSecret is false for every value when the client has no secrets system
@@ -164,10 +164,48 @@ Total.
 - compat: client unknown (both project constants nil) is neither, never Forever
 - compat: the client is read at call time, so flipping the mock changes the answer
 - compat: ForClient answers nil and both for every client, and a list by membership
+- compat: ForClient accepts both inside an array, on every client
 - compat: ForClient raises on an unknown token, from any client, before it matches
 - compat: the active kit profile is the client the library sees
 - compat: the spec readers answer from C_SpecializationInfo on Forever, with no legacy global
 - compat: the spec readers answer nil without raising on Forever when the namespace is absent
+- compat: with regional names a unit is its whole name, and the realm is nil
+- compat: without regional names UnitCharacterName is UnitName's two values
+- compat: the character and realm keys are AceDB 40's, on both shapes
+- compat: the ruleset follows AceDB 40's order
+- compat: a secret name part is never concatenated
+
+### test_role.lua (29)
+
+- role: registers minor 1 with exactly its public members
+- role: the Core floor keeps the major absent from a payload without Core
+- role: the source reads every global bare, never through the global table
+- role: the talent seed names three valid roles for each of the nine classic classes
+- role: Spec answers the active spec's id and name through Compat, exactly two values
+- role: Spec answers nil for no spec, a zero id and a secret id
+- role: SpecsForClass lists a class's specs from the client, in index order
+- role: SpecsForClass with no class reads the player's own
+- role: SpecsForClass falls to the globals when the namespaced rungs are absent
+- role: SpecsForClass is an empty table for an unknown class, a missing API or a secret
+- role: Groups lists Forever's talent groups in display order with the points spent
+- role: Groups is empty on Retail even where C_Traits answers
+- role: Groups takes the config from GetActiveConfigID and the tree from the spec when needed
+- role: Groups reads a group with no currency entry as zero points
+- role: Groups is empty when C_Traits, the config or the tree is missing
+- role: Resolve answers the player's override first, over every other rung
+- role: Resolve ignores an override that is not a role
+- role: Resolve answers the group-assigned role next
+- role: Resolve passes over NONE, a secret and an absent UnitGroupRolesAssigned
+- role: Resolve on Forever answers the talent group with the most points
+- role: Resolve on Forever falls through a tie, zero points and an unseeded class
+- role: Resolve on Retail never reads the talent groups
+- role: Resolve answers the spec API's role, and saves it with the spec id
+- role: Resolve answers the saved role when the client cannot, and does not rewrite it
+- role: Resolve accepts no store, and answers without writing
+- role: a resolved answer updates store.last in place
+- role: without Compat, the override and the saved role still answer
+- role: SetOverride sets a valid role and clears with nil
+- role: SetOverride raises on an unknown role and on a store that is not a table
 
 ### test_lifecycle.lua (22)
 
@@ -696,7 +734,7 @@ Total.
 - browser: a stand-down closes it and refuses an open until the stand-up
 - browser: two instances do not share selection or search
 
-### test_skin.lua (33)
+### test_skin.lua (36)
 
 - skin: the major registers both files and the sentinel
 - skin: the shell refuses without Core, and SkinDefs then attaches to nothing
@@ -711,6 +749,9 @@ Total.
 - skin: Ka0s Default equals LootHistory's constants
 - skin: a skin derives from Ka0s Default, and false means none
 - skin: RegisterSkin validates, orders and replaces
+- skin: the default skin is Ka0s Default on Retail and WoW Forever on Forever
+- skin: the default skin falls back to Ka0s Default without Compat or the Forever skin
+- skin: on Forever an unregistered owner and an empty skin take WoW Forever
 - skin: an unregistered owner is not an owner and reads Ka0s Default
 - skin: RegisterOwner reads the host's choice once, in either shape
 - skin: SetChoice is idempotent
@@ -2619,7 +2660,7 @@ Total.
 - widgets: PageBanner's action re-rendering from its own click never hands itself back
 - widgets: PageBanner's action is refused in combat, like its picker
 
-### test_options_clients.lua (7)
+### test_options_clients.lua (9)
 
 - options clients: a page declared retail registers no builder on Forever, and does on Retail
 - options clients: a gated tab has no button on Forever and the strip is laid without it
@@ -2628,8 +2669,10 @@ Total.
 - options clients: a gated landing section and line are not drawn on Forever
 - options clients: a forever-only page, tab and row are absent on Retail
 - options clients: an unknown token raises rather than hiding silently
+- options clients: the page Defaults and Reset all never write a row gated out for this client
+- options clients: a nav-rail entry for another client gets no button
 
-### test_gate_clients.lua (7)
+### test_gate_clients.lua (8)
 
 - gate clients: a retail verb is not dispatched, listed or counted on Forever
 - gate clients: a forever-only verb is absent on Retail, and no clients means every client
@@ -2638,6 +2681,7 @@ Total.
 - gate clients: lib.FindCommand does not find a gated sub-level verb
 - gate clients: a retail launcher entry is not built on Forever
 - gate clients: a retail keybind row is never drawn on Forever
+- gate clients: a clients typo raises at registration and names the entry
 
 ### test_options_banner_acts.lua (10)
 
@@ -4852,7 +4896,8 @@ Total.
 | test_core.lua | 52 |
 | test_core_resize.lua | 26 |
 | test_env.lua | 9 |
-| test_compat.lua | 58 |
+| test_compat.lua | 64 |
+| test_role.lua | 29 |
 | test_lifecycle.lua | 22 |
 | test_lifecycle_debug.lua | 14 |
 | test_bus.lua | 30 |
@@ -4871,7 +4916,7 @@ Total.
 | test_icon_browser_sources.lua | 26 |
 | test_icon_browser.lua | 28 |
 | test_icon_browser_search.lua | 14 |
-| test_skin.lua | 33 |
+| test_skin.lua | 36 |
 | test_skin_override.lua | 28 |
 | test_skin_outline.lua | 19 |
 | test_skin_owner_tokens.lua | 17 |
@@ -4937,8 +4982,8 @@ Total.
 | test_options_idlist_layout.lua | 39 |
 | test_options_tabs.lua | 41 |
 | test_options_tabbed.lua | 20 |
-| test_options_clients.lua | 7 |
-| test_gate_clients.lua | 7 |
+| test_options_clients.lua | 9 |
+| test_gate_clients.lua | 8 |
 | test_options_banner_acts.lua | 10 |
 | test_options_nav.lua | 14 |
 | test_options_drawer.lua | 26 |
@@ -5040,4 +5085,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4258** |
+| **Total** | **4299** |

@@ -10,6 +10,20 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.95.0 — unreleased
+
+Opened 2026-11-10, on `feat/2026-11-10-quickcomms-forever-emotes`: the library half of Ka0s Quick Comms' WoW Forever port (Ka0sAddonsCommonTasks `docs/2026-11-10-QUICKCOMMS_FOREVER_EMOTES/`, design §3), item `QFE-LK1`, released as `QFE-LK2`. The owner's rulings R3 and R5: the spec and role read is a reusable LibKa0s module, the talents decide the role on Forever, and the player can override it, saved per character.
+
+Versions in this release: `LibKa0s-Role-1.0` key **1** (Role minor 1, a new major); `LibKa0s-DebugLog-1.0` key **22.8.1.4** (DebugLogDiagnostics minor 8); every other file at its v1.94.0 minor, and the test kit at its v1.94.0 revision. No `NEEDS_*` floor rises. The tag is cut locally and pushed only at the run's finalize.
+
+### The Role major (`QFE-LK1`)
+
+- **Role minor 1** ([docs](docs/api/Role/version-1-docs.md)), `LibKa0s/Role.lua`, loaded after `Compat.lua`: `Spec()` (`specID, name`), `SpecsForClass(classFile)` (the class's specs read from the client, `GetNumSpecializationsForClassID` / `GetSpecializationInfoForClassID`, so Forever needs no seed), `Groups()` (Forever's talent groups for the active spec group, `{ index, id, name, spent }`, through `C_Traits.GetGroupDisplayInfoByTreeID` and `GetGroupCurrencyInfo`), `Resolve(store)` (`role, source, detail`) and `SetOverride(store, role)`, plus the read-only `TALENT_GROUP_ROLE` seed (MATCHED, NOT CONFIRMED until the owner's probe).
+- **The resolution order**: the player's override, the group-assigned role (`UnitGroupRolesAssigned`, not `NONE`), on Forever only the talent group with the most points through the seed (a tie or zero points falls through), the spec API's role, then `store.last`. Every resolved answer but the saved one is written to `store.last` with the spec id. The store is the host's; the module owns no SavedVariables, no frames and no events, floors on Core minor 1 and reads Compat at call time (its `IsForever`, `IsSecret` and spec ladder).
+- One consumer, on the owner's ruling: a new row in `CLAUDE.md`'s *Documented deviations* (`library-stack-§7`).
+- **DebugLogDiagnostics minor 8** ([docs](docs/api/DebugLog/version-22.8.1.4-docs.md)): the report's `LibKa0s running:` line names Role. No member change.
+- Tests: the new `tests/test_role.lua` (every branch of `Resolve` on both kit profiles, each case installing its whole client), and `tests/test_debuglog_diagnostics.lua` re-pins `DebugLogDiagnostics 8`.
+
 ## v1.94.0 — 2026-11-08
 
 Opened 2026-11-08, on `feat/2026-11-07-forever-port-wave1`: the owner's ruling after the wave-1 Forever smoke of the WoW Forever port's step 5 (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT_STEP5/`), item `W1-LK-01`: the default skin is Ka0s Default on Retail and WoW Forever on the Forever client; and `W1-LK-02`, the owner's call after the Forever name probe, character identity in Compat.

@@ -1,0 +1,16 @@
+{
+  "major": "LibKa0s-Role-1.0",
+  "versionKey": "1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Role", "minor": 1 }
+  ],
+  "members": [
+    { "name": "Groups", "kind": "function" },
+    { "name": "Resolve", "kind": "function" },
+    { "name": "SetOverride", "kind": "function" },
+    { "name": "Spec", "kind": "function" },
+    { "name": "SpecsForClass", "kind": "function" },
+    { "name": "TALENT_GROUP_ROLE", "kind": "table" }
+  ]
+}

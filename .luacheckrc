@@ -48,6 +48,10 @@ read_globals = {
   -- LibKa0s-Compat-1.0's ladders: the deprecated spell globals below C_Spell, and 12.0's secret
   -- tests. Every one read bare, at call time, and guarded for absence.
   "GetSpellInfo", "GetSpellTexture", "GetSpellCooldown", "issecretvalue", "canaccessvalue",
+  -- LibKa0s-Role-1.0 (Role.lua): the class list, the per-class spec reads, the group-assigned role
+  -- and WoW Forever's talent groups. Every one read bare, at call time, and guarded for absence.
+  "GetNumClasses", "GetClassInfo", "C_CreatureInfo", "GetNumSpecializationsForClassID",
+  "GetSpecializationInfoForClassID", "UnitGroupRolesAssigned", "C_ClassTalents", "C_Traits",
   -- The client's context menu (11.0+), which LibKa0s-Launcher-1.0's right click opens (minor 4).
   -- Read at call time and guarded: a client without it degrades to opening the settings panel.
   "MenuUtil", "MenuResponse",

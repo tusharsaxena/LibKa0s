@@ -33,6 +33,11 @@ local MAJORS = {
     primary = "Compat",
   },
   {
+    major = "LibKa0s-Role-1.0",
+    files = { "Role" },
+    primary = "Role",
+  },
+  {
     major = "LibKa0s-Lifecycle-1.0",
     files = { "Lifecycle" },
     primary = "Lifecycle",

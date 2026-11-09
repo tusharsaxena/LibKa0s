@@ -60,6 +60,7 @@ the file you need:
 | `LibKa0s-Core-1.0` | `<Core>.<CorePixel>` (one number through 16) | `LibStub("LibKa0s-Core-1.0").MODULES` |
 | `LibKa0s-Env-1.0` | `<Env>` | `LibStub("LibKa0s-Env-1.0").MODULES` |
 | `LibKa0s-Compat-1.0` | `<Compat>` | `LibStub("LibKa0s-Compat-1.0").MODULES` |
+| `LibKa0s-Role-1.0` | `<Role>` | `LibStub("LibKa0s-Role-1.0").MODULES` |
 | `LibKa0s-Lifecycle-1.0` | `<Lifecycle>` | `LibStub("LibKa0s-Lifecycle-1.0").MODULES` |
 | `LibKa0s-Bus-1.0` | `<Bus>` | `LibStub("LibKa0s-Bus-1.0").MODULES` |
 | `LibKa0s-Schema-1.0` | `<Schema>` | `LibStub("LibKa0s-Schema-1.0").MODULES` |
@@ -144,6 +145,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [3](./Compat/version-3-docs.md) | `Compat.lua` 3 (`ForClient` accepts `"both"` in an array, `WFP-RV2-LK`) | v1.93.0 | Superseded |
 | [2](./Compat/version-2-docs.md) | `Compat.lua` 2 | v1.92.0 | Superseded |
 | [1](./Compat/version-1-docs.md) | `Compat.lua` 1 | v1.55.0 – v1.91.0 | Superseded |
+
+### `LibKa0s-Role-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Role/version-1-docs.md) | **`Role.lua` 1** (the new major: `Spec`, `SpecsForClass`, `Groups`, `Resolve`, `SetOverride`, `TALENT_GROUP_ROLE`, `QFE-LK1`) | v1.95.0 | **Current** |
 
 ### `LibKa0s-Lifecycle-1.0`
 
@@ -308,7 +315,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 | **Current** |
+| [22.8.1.4](./DebugLog/version-22.8.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 8** (the identity header names Role) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.95.0 | **Current** |
+| [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 – v1.94.0 | Superseded |
 | [22.6.1.4](./DebugLog/version-22.6.1.4-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 4** (an owned console's header on the band, `R5-L3`) | v1.85.0 | Superseded |
 | [22.6.1.3](./DebugLog/version-22.6.1.3-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 3** (a 30 high title bar; no divider under it) | v1.85.0 | Superseded |
 | [22.6.1.2](./DebugLog/version-22.6.1.2-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 6** (the identity header names Charts) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 2 | v1.84.0 | Superseded |

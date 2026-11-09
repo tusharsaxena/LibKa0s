@@ -10,7 +10,7 @@ before changing anything. [`DEPENDENCIES.md`](DEPENDENCIES.md) lists what to ins
 
 LibKa0s is a Ka0s-owned shared library. Ka0s WoW addons vendor it the way they vendor Ace3: each one
 copies it into its own `libs/` folder instead of depending on it at runtime. Every module is one
-LibStub major, and twenty-one of them ship today:
+LibStub major, and twenty-two of them ship today:
 
 - `LibKa0s-Core-1.0`: the small stateless seams every other module sits on. That means secret-safe
   stringification, the window skin and its close button, a prefixed chat printer,
@@ -22,6 +22,9 @@ LibStub major, and twenty-one of them ship today:
 - `LibKa0s-Compat-1.0` holds the version-variant spell and spec readers that two or more addons had
   written the same way, plus the secret-value seam (`IsSecret`, `CanAccess`, `IsSafeKey`) every guard
   checks before it compares.
+- `LibKa0s-Role-1.0` reads the player's specialization and the group role it plays, the same way on
+  Retail and on WoW Forever, where the talent group with the most points tells a tank from a damage
+  dealer. The host keeps the per-character store; the module keeps nothing.
 - `LibKa0s-Lifecycle-1.0` is the stand-down latch. An addon can have many reasons to go inert, but
   there is one way down and one way back up. `disabled` and `perf` are two named holds on one set,
   and releasing one never brings back an addon the other is still holding down.
@@ -136,6 +139,7 @@ here restates a signature, because a second copy of a contract is a contract tha
 | `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. It depends on LibStub and nothing else, and that is what keeps the rest adoptable by non-Ace addons. | `Core.lua`, `CorePixel.lua` | [17.1](docs/api/Core/version-17.1-docs.md) |
 | `LibKa0s-Env-1.0` | The handful of client facts every Ka0s addon reads, read one way: the TOC manifest, the player's map id and the player's zone labels. It has no state, no frames and no events. | `Env.lua` | [2](docs/api/Env/version-2-docs.md) |
 | `LibKa0s-Compat-1.0` | The version-variant client readers that two or more Ka0s addons wrote the same way: `GetSpellInfo`, `GetSpellName`, `GetSpellTexture`, `GetSpellCooldown`, `GetSpecialization` and `GetSpecializationInfo`, each a ladder from the namespaced API down to the deprecated global. Add the secret-value seam every guard asks before it compares (`IsSecret`, `CanAccess`, `IsSafeKey`) and you have nine stateless functions, with no frames, no events and no addon framework. | `Compat.lua` | [1](docs/api/Compat/version-1-docs.md) |
+| `LibKa0s-Role-1.0` | The player's specialization and the role it plays. `Spec()`, `SpecsForClass(classFile)` (read from the client, so WoW Forever needs no seed), `Groups()` (WoW Forever's talent groups and the points in each), `Resolve(store)` (`role, source, detail`: the player's override, the group-assigned role, on Forever the talent group with the most points through a per-class seed, the spec API's role, then the last saved answer) and `SetOverride(store, role)`. Framework-free; the host passes its per-character store. | `Role.lua` | [1](docs/api/Role/version-1-docs.md) |
 | `LibKa0s-Lifecycle-1.0` | The stand-down latch: a hold set, an edge, and two host callbacks. `standDown` fires only when the set goes from empty to non-empty and `standUp` only when it goes back to empty, so a perf run that ends under a `disabled` hold does not bring the addon back. There is deliberately no `StandUp()` member, because a bare stand-up is the bug the latch exists to prevent. Persists nothing. | `Lifecycle.lua` | [3](docs/api/Lifecycle/version-3-docs.md) |
 | `LibKa0s-Bus-1.0` | The stand-down record for an addon's tracked bus receivers. `New` builds an instance whose `NewTarget` hands out AceEvent targets that remember what they are registered for, so `StandDown` takes every event and message down and `StandUp` puts back what is wanted now, `arg` included. Beside it sits `Catalog`, the strict declare-once message catalog, which validates the `Ka0s_<Addon>_<Event>` names at load and raises on a mistyped key. Bus owns no hold set; the host calls it from its own Lifecycle callbacks. AceEvent is resolved at call time, never required. | `Bus.lua` | [2](docs/api/Bus/version-2-docs.md) |
 | `LibKa0s-Schema-1.0` | The settings schema's runtime without the schema. The host keeps its rows, and this module supplies the dotted-path primitives (`SplitPath`, `Read`, `Write`, `SameValue`), the path index, the single write seam `Set` and its all-or-nothing batch `SetMany`, the bulk bracket that makes a sweep one debug line, the profile reset's changed-row count and `Validate`. It owns no storage, sends no message and formats no value. | `Schema.lua` | [3](docs/api/Schema/version-3-docs.md) |
@@ -295,7 +299,7 @@ then **re-vendor every consumer**. That last step is the one that gets forgotten
 forgotten once already, with both repos' suites green the whole time.
 
 Re-vendoring is **whole-folder**, never file by file, with one carve-out: `media/icons/` ships only the
-icons the consumer declares (see *Installing* above). Every major except Core (Env, Compat, Lifecycle,
+icons the consumer declares (see *Installing* above). Every major except Core (Env, Compat, Role, Lifecycle,
 Bus, Schema, Pool, Item, Glow, Toast, Charts, Media, Skin, Widgets, DebugLog, Slash, Launcher, Options, IconBrowser, Perf and Sim) resolves
 `LibKa0s-Core-1.0` before it calls `NewLibrary`, and returns outright if Core is missing or below the
 minor it needs. A consumer that copied a new `Perf.lua` over an old `Core.lua` gets no probe at all,
@@ -312,6 +316,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   CorePixel.lua      -- pixel edges, shared by Widgets and the Skin major, same module, PIXEL_MINOR of its own
   Env.lua            -- LibKa0s-Env-1.0, MINOR at the top of the file; needs Core
   Compat.lua         -- LibKa0s-Compat-1.0, MINOR at the top of the file; needs Core
+  Role.lua           -- LibKa0s-Role-1.0, MINOR at the top of the file; needs Core (Compat at call time)
   Lifecycle.lua      -- LibKa0s-Lifecycle-1.0, MINOR at the top of the file; needs Core
   Bus.lua            -- LibKa0s-Bus-1.0, MINOR at the top of the file; needs Core
   Schema.lua         -- LibKa0s-Schema-1.0, MINOR at the top of the file; needs Core
