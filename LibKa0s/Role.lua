@@ -264,6 +264,47 @@ local function byOrder(a, b)
   return a.id < b.id
 end
 
+--- The groups the tree displays, as `{ id, name, order }` rows, and their ids (two tables).
+local function displayedGroups(treeID)
+  local rows, ids = {}, {}
+  local displays = C_Traits.GetGroupDisplayInfoByTreeID(treeID)
+  if type(displays) ~= "table" then return rows, ids end
+  for _, display in ipairs(displays) do
+    local id = type(display) == "table" and plainNumber(display.groupID)
+    if id then
+      ids[#ids + 1] = id
+      rows[#rows + 1] = { id = id, name = plainString(display.displayName),
+        order = plainNumber(display.orderIndex) or #rows + 1 }
+    end
+  end
+  return rows, ids
+end
+
+--- groupID -> points spent, for the groups `ids` names in the config.
+local function spentByGroup(configID, ids)
+  local spent = {}
+  local infos = C_Traits.GetGroupCurrencyInfo(configID, ids)
+  if type(infos) ~= "table" then return spent end
+  for _, info in ipairs(infos) do
+    local id = type(info) == "table" and plainNumber(info.traitNodeGroupID)
+    if id then spent[id] = spentIn(info) end
+  end
+  return spent
+end
+
+--- The config and tree to read, or nil when this is not Forever or an API or an answer is missing.
+local function talentSource()
+  if not isForever() then return nil end
+  if not (C_Traits and C_Traits.GetGroupDisplayInfoByTreeID and C_Traits.GetGroupCurrencyInfo) then
+    return nil
+  end
+  local configID = activeConfigID()
+  if not configID then return nil end
+  local treeID = treeIDFor(configID)
+  if not treeID then return nil end
+  return configID, treeID
+end
+
 --- The talent groups of the active spec group: an array of `{ index, id, name, spent }`, in the
 --- groups' display order (`orderIndex`), `index` being the position in that order. Always a new
 --- table; empty on a client that is not WoW Forever, and wherever an API or an answer is missing.
@@ -277,35 +318,11 @@ end
 ---
 --- @return table[]
 function lib.Groups()
-  local out = {}
-  if not isForever() then return out end
-  if not (C_Traits and C_Traits.GetGroupDisplayInfoByTreeID and C_Traits.GetGroupCurrencyInfo) then
-    return out
-  end
-  local configID = activeConfigID()
-  if not configID then return out end
-  local treeID = treeIDFor(configID)
-  if not treeID then return out end
-  local displays = C_Traits.GetGroupDisplayInfoByTreeID(treeID)
-  if type(displays) ~= "table" then return out end
-  local ids = {}
-  for _, display in ipairs(displays) do
-    local id = type(display) == "table" and plainNumber(display.groupID)
-    if id then
-      ids[#ids + 1] = id
-      out[#out + 1] = { id = id, name = plainString(display.displayName),
-        order = plainNumber(display.orderIndex) or #out + 1 }
-    end
-  end
+  local configID, treeID = talentSource()
+  if not configID then return {} end
+  local out, ids = displayedGroups(treeID)
   if #ids == 0 then return out end
-  local spent = {}
-  local infos = C_Traits.GetGroupCurrencyInfo(configID, ids)
-  if type(infos) == "table" then
-    for _, info in ipairs(infos) do
-      local id = type(info) == "table" and plainNumber(info.traitNodeGroupID)
-      if id then spent[id] = spentIn(info) end
-    end
-  end
+  local spent = spentByGroup(configID, ids)
   table.sort(out, byOrder)
   for index, group in ipairs(out) do
     group.index, group.order, group.spent = index, nil, spent[group.id] or 0
