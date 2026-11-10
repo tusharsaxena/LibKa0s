@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 53", function()
-  assertEqual(Kit.VERSION, 53, "v1.93.0 ships revision 53: the missing-globals gate, on top of the client profiles")
-  assertEqual(T.KIT_VERSION, 53, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 54", function()
+  assertEqual(Kit.VERSION, 54, "v1.95.0 ships revision 54: the missing-globals scanner split under CCN 15, on top of the gate")
+  assertEqual(T.KIT_VERSION, 54, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

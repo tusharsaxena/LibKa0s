@@ -10,6 +10,30 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.95.0 — 2026-11-10
+
+Opened 2026-11-10, on `feat/2026-11-10-quickcomms-forever-emotes`: the library half of Ka0s Quick Comms' WoW Forever port (Ka0sAddonsCommonTasks `docs/2026-11-10-QUICKCOMMS_FOREVER_EMOTES/`, design §3), item `QFE-LK1`, released as `QFE-LK2`. The owner's rulings R3 and R5: the spec and role read is a reusable LibKa0s module, the talents decide the role on Forever, and the player can override it, saved per character.
+
+Versions in this release: `LibKa0s-Role-1.0` key **1** (Role minor 1, a new major); `LibKa0s-DebugLog-1.0` key **22.8.1.4** (DebugLogDiagnostics minor 8); `LibKa0s-Launcher-1.0` key **10** (Launcher minor 10); every other file at its v1.94.0 minor, and the test kit at revision **54**. No `NEEDS_*` floor rises. The tag is cut locally and pushed only at the run's finalize.
+
+### The Role major (`QFE-LK1`)
+
+- **Role minor 1** ([docs](docs/api/Role/version-1-docs.md)), `LibKa0s/Role.lua`, loaded after `Compat.lua`: `Spec()` (`specID, name`), `SpecsForClass(classFile)` (the class's specs read from the client, `GetNumSpecializationsForClassID` / `GetSpecializationInfoForClassID`, so Forever needs no seed), `Groups()` (Forever's talent groups for the active spec group, `{ index, id, name, spent }`, through `C_Traits.GetGroupDisplayInfoByTreeID` and `GetGroupCurrencyInfo`), `Resolve(store)` (`role, source, detail`) and `SetOverride(store, role)`, plus the read-only `TALENT_GROUP_ROLE` seed (MATCHED, NOT CONFIRMED until the owner's probe).
+- **The resolution order**: the player's override, the group-assigned role (`UnitGroupRolesAssigned`, not `NONE`), on Forever only the talent group with the most points through the seed (a tie or zero points falls through), the spec API's role, then `store.last`. Every answer from the assigned, talents and spec rungs is written to `store.last` with the spec id; an override is not, so clearing it cannot return as the saved answer. The store is the host's; the module owns no SavedVariables, no frames and no events, floors on Core minor 1 and reads Compat at call time (its `IsForever`, `IsSecret` and spec ladder).
+- One consumer, on the owner's ruling: a new row in `CLAUDE.md`'s *Documented deviations* (`library-stack-§7`).
+- **DebugLogDiagnostics minor 8** ([docs](docs/api/DebugLog/version-22.8.1.4-docs.md)): the report's `LibKa0s running:` line names Role. No member change.
+- Tests: the new `tests/test_role.lua` (every branch of `Resolve` on both kit profiles, each case installing its whole client), and `tests/test_debuglog_diagnostics.lua` re-pins `DebugLogDiagnostics 8`.
+
+### No function over CCN 15 (`QFE-LK2`)
+
+- The release run's complexity suite found four functions over the tag's CCN 15 cap, all from v1.92.0 and v1.93.0; each is split into helpers with no behavior change. **Launcher minor 10** ([docs](docs/api/Launcher/version-10-docs.md)): `lib.New` (16) checks its descriptor through the file-local `checkDescriptor`, raising the same messages at the host's line; a new `tests/test_launcher.lua` case pins that line. **Test kit revision 54** ([docs](docs/api/testkit/version-54-docs.md)): `client_globals.lua`'s `CG.strip` (19), `CG.scan` (16) and `CG.judge` (19) split into file-local helpers, checked against revision 53 on 2152 source files. `Role.lua`'s `lib.Groups` (19) was split the same way before the Role minor shipped, so it moves no minor.
+
+Release gate (`docs/automated-tests/20261110-090851/`): lint pass, 0/0 in 326 files;
+tests pass, 4303 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved.
+
 ## v1.94.0 — 2026-11-08
 
 Opened 2026-11-08, on `feat/2026-11-07-forever-port-wave1`: the owner's ruling after the wave-1 Forever smoke of the WoW Forever port's step 5 (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT_STEP5/`), item `W1-LK-01`: the default skin is Ka0s Default on Retail and WoW Forever on the Forever client; and `W1-LK-02`, the owner's call after the Forever name probe, character identity in Compat.

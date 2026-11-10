@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Launcher-1.0` |
 | Files and minors | `Launcher.lua` minor **9** |
 | Shipped in | v1.93.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 8](./version-8-docs.md) — `Launcher:New` validates `entryClients` tokens at registration. |
-| Superseded by | — |
+| Superseded by | [version 10](./version-10-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`). **LibKa0s-Skin-1.0** is OPTIONAL and resolved with `LibStub(…, true)` on every tooltip show. **LibDataBroker-1.1** and **LibDBIcon-1.0** are OPTIONAL and are resolved with `LibStub(…, true)` at `Register` time, never at load. The client's context-menu API (`MenuUtil`, 11.0 and later) is OPTIONAL too, resolved on every right click. |
 | Confirm in-game | `LibStub("LibKa0s-Launcher-1.0").MODULES` → `{ Launcher = 9 }` |
 
@@ -474,3 +474,7 @@ listed in the TOC's `# Libraries` section (`toc-file-§4`). They are not part of
 never will be: they are third-party libraries with their own release cadence, and bundling them
 inside a folder that is itself copied into eleven addons would give each of them two copies to
 reconcile. `MenuUtil` is the client's own and needs nothing vendored.
+
+## Moving to version 10
+
+`Launcher:New`'s descriptor checks move to a file-local helper, with no behavior change. See [version 10](./version-10-docs.md). Re-vendor the whole folder; a host owes nothing.

@@ -10,9 +10,9 @@
 | Version | **53** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.93.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 52](version-52-docs.md) — the same surface, with no missing-globals gate |
-| Superseded by | — |
+| Superseded by | [version 54](version-54-docs.md) — the same surface, the scanner split into helpers |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `53` |
 

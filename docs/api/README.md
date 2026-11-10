@@ -60,6 +60,7 @@ the file you need:
 | `LibKa0s-Core-1.0` | `<Core>.<CorePixel>` (one number through 16) | `LibStub("LibKa0s-Core-1.0").MODULES` |
 | `LibKa0s-Env-1.0` | `<Env>` | `LibStub("LibKa0s-Env-1.0").MODULES` |
 | `LibKa0s-Compat-1.0` | `<Compat>` | `LibStub("LibKa0s-Compat-1.0").MODULES` |
+| `LibKa0s-Role-1.0` | `<Role>` | `LibStub("LibKa0s-Role-1.0").MODULES` |
 | `LibKa0s-Lifecycle-1.0` | `<Lifecycle>` | `LibStub("LibKa0s-Lifecycle-1.0").MODULES` |
 | `LibKa0s-Bus-1.0` | `<Bus>` | `LibStub("LibKa0s-Bus-1.0").MODULES` |
 | `LibKa0s-Schema-1.0` | `<Schema>` | `LibStub("LibKa0s-Schema-1.0").MODULES` |
@@ -120,8 +121,6 @@ answers both "what does this version have?" and "when did I get it?".
 | [10](./Core/version-10-docs.md) | `Core.lua` 10 | v1.67.0 – v1.74.0 | Superseded |
 | [9](./Core/version-9-docs.md) | `Core.lua` 9 | v1.64.0 – v1.66.0 | Superseded |
 | [8](./Core/version-8-docs.md) | `Core.lua` 8 | v1.56.0 – v1.63.0 | Superseded |
-| [9](./Launcher/version-9-docs.md) | **`Launcher.lua` 9** (`entryClients` validated at registration, `WFP-RV2-LK`) | v1.93.0 | **Current** |
-| [8](./Launcher/version-8-docs.md) | **`Launcher.lua` 8** (`entryClients`: a menu entry gated per client, `WFP-LK-04`) | v1.92.0 | Superseded |
 | [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 – v1.55.0 | Superseded |
 | [6](./Core/version-6-docs.md) | `Core.lua` 6 | v1.10.0 – v1.23.0 | Superseded |
 | [5](./Core/version-5-docs.md) | `Core.lua` 5 | v1.8.0 – v1.9.2 | Superseded |
@@ -144,6 +143,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [3](./Compat/version-3-docs.md) | `Compat.lua` 3 (`ForClient` accepts `"both"` in an array, `WFP-RV2-LK`) | v1.93.0 | Superseded |
 | [2](./Compat/version-2-docs.md) | `Compat.lua` 2 | v1.92.0 | Superseded |
 | [1](./Compat/version-1-docs.md) | `Compat.lua` 1 | v1.55.0 – v1.91.0 | Superseded |
+
+### `LibKa0s-Role-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Role/version-1-docs.md) | **`Role.lua` 1** (the new major: `Spec`, `SpecsForClass`, `Groups`, `Resolve`, `SetOverride`, `TALENT_GROUP_ROLE`, `QFE-LK1`) | v1.95.0 | **Current** |
 
 ### `LibKa0s-Lifecycle-1.0`
 
@@ -308,7 +313,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 | **Current** |
+| [22.8.1.4](./DebugLog/version-22.8.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 8** (the identity header names Role) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.95.0 | **Current** |
+| [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 – v1.94.0 | Superseded |
 | [22.6.1.4](./DebugLog/version-22.6.1.4-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 4** (an owned console's header on the band, `R5-L3`) | v1.85.0 | Superseded |
 | [22.6.1.3](./DebugLog/version-22.6.1.3-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 3** (a 30 high title bar; no divider under it) | v1.85.0 | Superseded |
 | [22.6.1.2](./DebugLog/version-22.6.1.2-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 6** (the identity header names Charts) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 2 | v1.84.0 | Superseded |
@@ -364,7 +370,10 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7](./Launcher/version-7-docs.md) | **`Launcher.lua` 7** (menu: Sim mode, Open settings, one row rule) | v1.85.0 | **Current** |
+| [10](./Launcher/version-10-docs.md) | **`Launcher.lua` 10** (`New`'s descriptor checks move to a helper so no function is over CCN 15, no behavior change, `QFE-LK2`) | v1.95.0 | **Current** |
+| [9](./Launcher/version-9-docs.md) | **`Launcher.lua` 9** (`entryClients` validated at registration, `WFP-RV2-LK`) | v1.93.0 – v1.94.0 | Superseded |
+| [8](./Launcher/version-8-docs.md) | **`Launcher.lua` 8** (`entryClients`: a menu entry gated per client, `WFP-LK-04`) | v1.92.0 | Superseded |
+| [7](./Launcher/version-7-docs.md) | **`Launcher.lua` 7** (menu: Sim mode, Open settings, one row rule) | v1.85.0 – v1.91.0 | Superseded |
 | [6](./Launcher/version-6-docs.md) | `Launcher.lua` 6 (the status tooltip follows the host's skin; optional descriptor field `owner`) | v1.85.0 | Superseded |
 | [5](./Launcher/version-5-docs.md) | `Launcher.lua` 5 | v1.65.0 – v1.84.0 | Superseded |
 | [4](./Launcher/version-4-docs.md) | `Launcher.lua` 4 | v1.58.0 – v1.64.0 | Superseded |
@@ -517,7 +526,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [53](./testkit/version-53-docs.md) | same files **plus `client_globals.lua`, `test_client_globals.lua` and the two name sets `client_globals_live.lua`, `client_globals_forever.lua`**: the missing-globals gate (`WFP-LK-06`, LibKa0s#77), a kit suite every consumer wires with one `suites` entry | v1.93.0 | **Current** |
+| [54](./testkit/version-54-docs.md) | same files; **`client_globals.lua`**: `strip`, `scan` and `judge` split into helpers so no function is over CCN 15, no behavior change (`QFE-LK2`) | v1.95.0 | **Current** |
+| [53](./testkit/version-53-docs.md) | same files **plus `client_globals.lua`, `test_client_globals.lua` and the two name sets `client_globals_live.lua`, `client_globals_forever.lua`**: the missing-globals gate (`WFP-LK-06`, LibKa0s#77), a kit suite every consumer wires with one `suites` entry | v1.93.0 – v1.94.0 | Superseded |
 | [52](./testkit/version-52-docs.md) | same files **plus `mock_client.lua`**: the client profiles, `retail` (default) and `forever`, selected by `KA0S_KIT_CLIENT` and stamped on every mock set by `loader.lua`; `GetBuildInfo` moves out of the consumer's mock into the profile | v1.92.0 | Superseded |
 | [51](./testkit/version-51-docs.md) | same files; **`mock_ace.lua`**: an unregister clears only a registration that exists, as CallbackHandler does, so one made during a dispatch no longer breaks its walk | v1.89.0 | Superseded |
 | [50](./testkit/version-50-docs.md) | same files **plus `skin_values.lua`, `skin_switch.lua`, `test_skin_values.lua` and `test_skin_switch.lua`**: the typed-value gate (`Kit.skinValues`) and the skin-switch test (`Kit.skinSwitch`), each a declared skip until a host adopts it | v1.85.0 | Superseded |
