@@ -28,6 +28,12 @@ Versions in this release: `LibKa0s-Role-1.0` key **1** (Role minor 1, a new majo
 
 - The release run's complexity suite found four functions over the tag's CCN 15 cap, all from v1.92.0 and v1.93.0; each is split into helpers with no behavior change. **Launcher minor 10** ([docs](docs/api/Launcher/version-10-docs.md)): `lib.New` (16) checks its descriptor through the file-local `checkDescriptor`, raising the same messages at the host's line; a new `tests/test_launcher.lua` case pins that line. **Test kit revision 54** ([docs](docs/api/testkit/version-54-docs.md)): `client_globals.lua`'s `CG.strip` (19), `CG.scan` (16) and `CG.judge` (19) split into file-local helpers, checked against revision 53 on 2152 source files. `Role.lua`'s `lib.Groups` (19) was split the same way before the Role minor shipped, so it moves no minor.
 
+Release gate (`docs/automated-tests/20261110-090851/`): lint pass, 0/0 in 326 files;
+tests pass, 4303 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved.
+
 ## v1.94.0 — 2026-11-08
 
 Opened 2026-11-08, on `feat/2026-11-07-forever-port-wave1`: the owner's ruling after the wave-1 Forever smoke of the WoW Forever port's step 5 (Ka0sAddonsCommonTasks `docs/2026-11-07-WOW_FOREVER_PORT_STEP5/`), item `W1-LK-01`: the default skin is Ka0s Default on Retail and WoW Forever on the Forever client; and `W1-LK-02`, the owner's call after the Forever name probe, character identity in Compat.
