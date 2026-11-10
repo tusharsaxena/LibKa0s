@@ -61,15 +61,16 @@ no addon framework.
 | 2 | `"assigned"` | `UnitGroupRolesAssigned("player")`, unless it is `NONE` (or secret, or absent) | both |
 | 3 | `"talents"` | The group of `Groups()` with the most points, mapped through `TALENT_GROUP_ROLE[classFile][index]`. A tie for the most, zero points everywhere, an unseeded class or an unseeded index falls through. | Forever only (Compat's `IsForever`) |
 | 4 | `"spec"` | The spec API's role, the fifth return of `GetSpecializationInfo` | both |
-| 5 | `"saved"` | `store.last.role`, the last answer rungs 1 to 4 gave | both |
+| 5 | `"saved"` | `store.last.role`, the last answer rungs 2 to 4 gave | both |
 
 `role` is `"TANK"`, `"HEALER"`, `"DAMAGER"` or nil; `source` is one of the five above or nil.
 `detail` names where the answer came from when there is a name to give: the talent group's name for
 `"talents"` (`"Protection"`), the spec's name for `"spec"`, else nil. A host's tooltip reads it
 ("from your talents: Protection").
 
-Every answer from rungs 1 to 4 is written to `store.last` as `{ role = role, specID = id }`, updating
-the table already there rather than replacing it. A `"saved"` answer writes nothing. A `store` that
+Every answer from rungs 2 to 4 is written to `store.last` as `{ role = role, specID = id }`, updating
+the table already there rather than replacing it. An override and a `"saved"` answer write nothing, so clearing an override never brings the manual
+pick back as `"saved"`. A `store` that
 is not a table is accepted as no store: no override, no saved answer, no write.
 
 The talent rung comes before the spec API on Forever because one spec per class makes the API's

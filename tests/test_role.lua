@@ -353,13 +353,16 @@ end)
 
 -- -- Resolve: the order -----------------------------------------------------------------------
 
-test("role: Resolve answers the player's override first, over every other rung", function()
+test("role: Resolve answers the player's override first, over every other rung, and never saves it", function()
   with(client("forever", nil, {
     UnitGroupRolesAssigned = function() return "HEALER" end, C_Traits = traits(0, 0, 31),
   }), function()
     local store = { override = "DAMAGER" }
     assertResolve(store, "DAMAGER", "override", nil, "override")
-    assertEqual(store.last.role, "DAMAGER")
+    assertEqual(store.last, nil, "an override is not saved")
+    store.override = nil
+    assertResolve(store, "HEALER", "assigned", nil, "cleared override")
+    assertEqual(store.last.role, "HEALER")
     assertEqual(store.last.specID, 1001)
   end)
 end)
