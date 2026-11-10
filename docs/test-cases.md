@@ -192,7 +192,7 @@ Total.
 - role: Groups takes the config from GetActiveConfigID and the tree from the spec when needed
 - role: Groups reads a group with no currency entry as zero points
 - role: Groups is empty when C_Traits, the config or the tree is missing
-- role: Resolve answers the player's override first, over every other rung
+- role: Resolve answers the player's override first, over every other rung, and never saves it
 - role: Resolve ignores an override that is not a role
 - role: Resolve answers the group-assigned role next
 - role: Resolve passes over NONE, a secret and an absent UnitGroupRolesAssigned
