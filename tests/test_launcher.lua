@@ -130,6 +130,23 @@ test("launcher: New refuses a descriptor missing name, icon or openSettings", fu
     "requires descriptor.name", "an empty string is not a folder name")
 end)
 
+test("launcher: a descriptor error names the host's line, not the library's", function()
+  -- red under: a check that raises at the wrong level (minor 10 lifted the checks out of New into
+  -- checkDescriptor), which points the host at Launcher.lua instead of at its own bad descriptor.
+  local cases = {
+    { icon = "x", openSettings = function() end },
+    { name = "X", openSettings = function() end },
+    { name = "X", icon = "x" },
+    { name = "LevelHost", icon = "x", openSettings = function() end, entryClients = { toggleSim = { "retial" } } },
+  }
+  for i, d in ipairs(cases) do
+    local ok, err = pcall(function() local made = lib:New(d); return made end)
+    assertFalse(ok, "case " .. i .. " raises")
+    assertTrue(tostring(err):find("test_launcher.lua:", 1, true) ~= nil, "case " .. i .. ": " .. tostring(err))
+    assertTrue(tostring(err):find("Launcher.lua:", 1, true) == nil, "case " .. i .. ": " .. tostring(err))
+  end
+end)
+
 -- ── one object, registered twice ─────────────────────────────────────────────────────────────
 
 test("launcher: ONE object, of type 'launcher', carrying the host's own icon", function()
@@ -472,9 +489,9 @@ end)
 
 test("launcher: minor 6 is live", function()
   -- red under: a change that forgot its bump, which reaches no host holding an older minor.
-  -- Minor 8 is the per-client entry gate (WFP-LK-04); 7 is Sim mode, Open settings and one row rule; 6 the tooltip following the skin; minor 5 the at-enable queue (tests/test_atenable.lua).
-  assertEqual(lib.MINOR, 9)
-  assertEqual(lib.MODULES.Launcher, 9)
+  -- Minor 10 moves New's descriptor checks to a helper (QFE-LK2); 9 validates entryClients; 8 is the per-client entry gate (WFP-LK-04); 7 is Sim mode, Open settings and one row rule; 6 the tooltip following the skin; minor 5 the at-enable queue (tests/test_atenable.lua).
+  assertEqual(lib.MINOR, 10)
+  assertEqual(lib.MODULES.Launcher, 10)
 end)
 
 -- ── click behavior (minor 4, launcher-§2 as of standard v2.67.0) ─────────────────────────────

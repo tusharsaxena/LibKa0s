@@ -283,9 +283,11 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `tests/_kit/mock_client.lua` is a new kit file a consumer's re-vendor copies whole.
    v1.95.0 adds one payload file, `Role.lua` (the new `LibKa0s-Role-1.0`, loaded by `LibKa0s.xml`
    directly after `Compat.lua`), so a host whose tests load library files by name adds it after
-   `Compat.lua` in the re-vendor commit. No Skin facade, major or instance member moves, and the kit
-   stays at revision 53. `DebugLogDiagnostics.lua` moves to minor 8, so a host suite that pins
-   `DebugLogDiagnostics 7` re-pins it at 8.
+   `Compat.lua` in the re-vendor commit. No Skin facade, major or instance member moves. The kit
+   moves to revision 54 (`client_globals.lua` split under CCN 15, no behavior change), which a
+   consumer's whole-folder re-vendor of `tests/_kit/` carries. `DebugLogDiagnostics.lua` moves to
+   minor 8 and `Launcher.lua` to minor 10 (no behavior change), so a host suite that pins
+   `DebugLogDiagnostics 7` or `Launcher 9` re-pins it at 8 or 10.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 

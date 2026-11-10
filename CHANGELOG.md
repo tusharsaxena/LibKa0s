@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-10, on `feat/2026-11-10-quickcomms-forever-emotes`: the library half of Ka0s Quick Comms' WoW Forever port (Ka0sAddonsCommonTasks `docs/2026-11-10-QUICKCOMMS_FOREVER_EMOTES/`, design §3), item `QFE-LK1`, released as `QFE-LK2`. The owner's rulings R3 and R5: the spec and role read is a reusable LibKa0s module, the talents decide the role on Forever, and the player can override it, saved per character.
 
-Versions in this release: `LibKa0s-Role-1.0` key **1** (Role minor 1, a new major); `LibKa0s-DebugLog-1.0` key **22.8.1.4** (DebugLogDiagnostics minor 8); every other file at its v1.94.0 minor, and the test kit at its v1.94.0 revision. No `NEEDS_*` floor rises. The tag is cut locally and pushed only at the run's finalize.
+Versions in this release: `LibKa0s-Role-1.0` key **1** (Role minor 1, a new major); `LibKa0s-DebugLog-1.0` key **22.8.1.4** (DebugLogDiagnostics minor 8); `LibKa0s-Launcher-1.0` key **10** (Launcher minor 10); every other file at its v1.94.0 minor, and the test kit at revision **54**. No `NEEDS_*` floor rises. The tag is cut locally and pushed only at the run's finalize.
 
 ### The Role major (`QFE-LK1`)
 
@@ -23,6 +23,10 @@ Versions in this release: `LibKa0s-Role-1.0` key **1** (Role minor 1, a new majo
 - One consumer, on the owner's ruling: a new row in `CLAUDE.md`'s *Documented deviations* (`library-stack-§7`).
 - **DebugLogDiagnostics minor 8** ([docs](docs/api/DebugLog/version-22.8.1.4-docs.md)): the report's `LibKa0s running:` line names Role. No member change.
 - Tests: the new `tests/test_role.lua` (every branch of `Resolve` on both kit profiles, each case installing its whole client), and `tests/test_debuglog_diagnostics.lua` re-pins `DebugLogDiagnostics 8`.
+
+### No function over CCN 15 (`QFE-LK2`)
+
+- The release run's complexity suite found four functions over the tag's CCN 15 cap, all from v1.92.0 and v1.93.0; each is split into helpers with no behavior change. **Launcher minor 10** ([docs](docs/api/Launcher/version-10-docs.md)): `lib.New` (16) checks its descriptor through the file-local `checkDescriptor`, raising the same messages at the host's line; a new `tests/test_launcher.lua` case pins that line. **Test kit revision 54** ([docs](docs/api/testkit/version-54-docs.md)): `client_globals.lua`'s `CG.strip` (19), `CG.scan` (16) and `CG.judge` (19) split into file-local helpers, checked against revision 53 on 2152 source files. `Role.lua`'s `lib.Groups` (19) was split the same way before the Role minor shipped, so it moves no minor.
 
 ## v1.94.0 — 2026-11-08
 

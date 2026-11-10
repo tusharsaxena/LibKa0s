@@ -121,7 +121,8 @@ answers both "what does this version have?" and "when did I get it?".
 | [10](./Core/version-10-docs.md) | `Core.lua` 10 | v1.67.0 – v1.74.0 | Superseded |
 | [9](./Core/version-9-docs.md) | `Core.lua` 9 | v1.64.0 – v1.66.0 | Superseded |
 | [8](./Core/version-8-docs.md) | `Core.lua` 8 | v1.56.0 – v1.63.0 | Superseded |
-| [9](./Launcher/version-9-docs.md) | **`Launcher.lua` 9** (`entryClients` validated at registration, `WFP-RV2-LK`) | v1.93.0 | **Current** |
+| [10](./Launcher/version-10-docs.md) | **`Launcher.lua` 10** (`New`'s descriptor checks move to a helper so no function is over CCN 15, no behavior change, `QFE-LK2`) | v1.95.0 | **Current** |
+| [9](./Launcher/version-9-docs.md) | **`Launcher.lua` 9** (`entryClients` validated at registration, `WFP-RV2-LK`) | v1.93.0 – v1.94.0 | Superseded |
 | [8](./Launcher/version-8-docs.md) | **`Launcher.lua` 8** (`entryClients`: a menu entry gated per client, `WFP-LK-04`) | v1.92.0 | Superseded |
 | [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 – v1.55.0 | Superseded |
 | [6](./Core/version-6-docs.md) | `Core.lua` 6 | v1.10.0 – v1.23.0 | Superseded |
@@ -525,7 +526,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [53](./testkit/version-53-docs.md) | same files **plus `client_globals.lua`, `test_client_globals.lua` and the two name sets `client_globals_live.lua`, `client_globals_forever.lua`**: the missing-globals gate (`WFP-LK-06`, LibKa0s#77), a kit suite every consumer wires with one `suites` entry | v1.93.0 | **Current** |
+| [54](./testkit/version-54-docs.md) | same files; **`client_globals.lua`**: `strip`, `scan` and `judge` split into helpers so no function is over CCN 15, no behavior change (`QFE-LK2`) | v1.95.0 | **Current** |
+| [53](./testkit/version-53-docs.md) | same files **plus `client_globals.lua`, `test_client_globals.lua` and the two name sets `client_globals_live.lua`, `client_globals_forever.lua`**: the missing-globals gate (`WFP-LK-06`, LibKa0s#77), a kit suite every consumer wires with one `suites` entry | v1.93.0 – v1.94.0 | Superseded |
 | [52](./testkit/version-52-docs.md) | same files **plus `mock_client.lua`**: the client profiles, `retail` (default) and `forever`, selected by `KA0S_KIT_CLIENT` and stamped on every mock set by `loader.lua`; `GetBuildInfo` moves out of the consumer's mock into the profile | v1.92.0 | Superseded |
 | [51](./testkit/version-51-docs.md) | same files; **`mock_ace.lua`**: an unregister clears only a registration that exists, as CallbackHandler does, so one made during a dispatch no longer breaks its walk | v1.89.0 | Superseded |
 | [50](./testkit/version-50-docs.md) | same files **plus `skin_values.lua`, `skin_switch.lua`, `test_skin_values.lua` and `test_skin_switch.lua`**: the typed-value gate (`Kit.skinValues`) and the skin-switch test (`Kit.skinSwitch`), each a declared skip until a host adopts it | v1.85.0 | Superseded |

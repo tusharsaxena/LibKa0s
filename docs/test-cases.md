@@ -2111,9 +2111,10 @@ Total.
 - sl debug: a non-function debug field is ignored
 - sl debug: the chat is byte for byte the same with and without a debug sink
 
-### test_launcher.lua (57)
+### test_launcher.lua (58)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
+- launcher: a descriptor error names the host's line, not the library's
 - launcher: ONE object, of type 'launcher', carrying the host's own icon
 - launcher: both registrations use the addon's folder name, and a host may relabel
 - launcher: Register is idempotent, so a second call builds no second button
@@ -4615,7 +4616,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 53
+- the kit is revision 54
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -4966,7 +4967,7 @@ Total.
 | test_slash_refusal.lua | 7 |
 | test_slash_profile.lua | 30 |
 | test_slash_debug.lua | 14 |
-| test_launcher.lua | 57 |
+| test_launcher.lua | 58 |
 | test_atenable.lua | 21 |
 | test_options.lua | 57 |
 | test_options_render.lua | 27 |
@@ -5085,4 +5086,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4299** |
+| **Total** | **4300** |
