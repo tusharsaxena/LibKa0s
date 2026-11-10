@@ -121,9 +121,6 @@ answers both "what does this version have?" and "when did I get it?".
 | [10](./Core/version-10-docs.md) | `Core.lua` 10 | v1.67.0 – v1.74.0 | Superseded |
 | [9](./Core/version-9-docs.md) | `Core.lua` 9 | v1.64.0 – v1.66.0 | Superseded |
 | [8](./Core/version-8-docs.md) | `Core.lua` 8 | v1.56.0 – v1.63.0 | Superseded |
-| [10](./Launcher/version-10-docs.md) | **`Launcher.lua` 10** (`New`'s descriptor checks move to a helper so no function is over CCN 15, no behavior change, `QFE-LK2`) | v1.95.0 | **Current** |
-| [9](./Launcher/version-9-docs.md) | **`Launcher.lua` 9** (`entryClients` validated at registration, `WFP-RV2-LK`) | v1.93.0 – v1.94.0 | Superseded |
-| [8](./Launcher/version-8-docs.md) | **`Launcher.lua` 8** (`entryClients`: a menu entry gated per client, `WFP-LK-04`) | v1.92.0 | Superseded |
 | [7](./Core/version-7-docs.md) | `Core.lua` 7 | v1.24.0 – v1.55.0 | Superseded |
 | [6](./Core/version-6-docs.md) | `Core.lua` 6 | v1.10.0 – v1.23.0 | Superseded |
 | [5](./Core/version-5-docs.md) | `Core.lua` 5 | v1.8.0 – v1.9.2 | Superseded |
@@ -373,7 +370,10 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [7](./Launcher/version-7-docs.md) | **`Launcher.lua` 7** (menu: Sim mode, Open settings, one row rule) | v1.85.0 | **Current** |
+| [10](./Launcher/version-10-docs.md) | **`Launcher.lua` 10** (`New`'s descriptor checks move to a helper so no function is over CCN 15, no behavior change, `QFE-LK2`) | v1.95.0 | **Current** |
+| [9](./Launcher/version-9-docs.md) | **`Launcher.lua` 9** (`entryClients` validated at registration, `WFP-RV2-LK`) | v1.93.0 – v1.94.0 | Superseded |
+| [8](./Launcher/version-8-docs.md) | **`Launcher.lua` 8** (`entryClients`: a menu entry gated per client, `WFP-LK-04`) | v1.92.0 | Superseded |
+| [7](./Launcher/version-7-docs.md) | **`Launcher.lua` 7** (menu: Sim mode, Open settings, one row rule) | v1.85.0 – v1.91.0 | Superseded |
 | [6](./Launcher/version-6-docs.md) | `Launcher.lua` 6 (the status tooltip follows the host's skin; optional descriptor field `owner`) | v1.85.0 | Superseded |
 | [5](./Launcher/version-5-docs.md) | `Launcher.lua` 5 | v1.65.0 – v1.84.0 | Superseded |
 | [4](./Launcher/version-4-docs.md) | `Launcher.lua` 4 | v1.58.0 – v1.64.0 | Superseded |

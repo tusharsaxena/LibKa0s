@@ -218,8 +218,9 @@ Every one of those reports one line naming the addon and the missing piece, thro
 
 ## The descriptor
 
-`lib:New(d)` raises on a missing `name`, `icon` or `openSettings`, and on nothing else. None of the
-three has a defensible default: the folder name keys LibDBIcon's saved position, the icon is the
+`lib:New(d)` raises on a missing `name`, `icon` or `openSettings`, and on an `entryClients` value
+`LibKa0s-Compat-1.0`'s `ForClient` refuses (since minor 9, above), and on nothing else. None of the
+three required fields has a defensible default: the folder name keys LibDBIcon's saved position, the icon is the
 addon's face in three places, and left-click **always** opens the panel.
 
 | Field | Since | Required | What it is |
