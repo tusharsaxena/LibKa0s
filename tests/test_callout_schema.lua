@@ -90,6 +90,19 @@ end
 
 -- ── the rows ─────────────────────────────────────────────────────────────────────────────────
 
+--- A stored row's own fields: no `set` (the host stores it), a `get` on a color row alone (the
+--- stored color in either shape, answered in the host's), a validate and an onChange.
+local function assertStoredRow(r)
+  if r.type == "color" then
+    assertEqual(type(r.get), "function", r.path .. " reads the stored color in either shape")
+  else
+    assertNil(r.get, r.path .. " has no get of its own: the host stores it")
+  end
+  assertNil(r.set, r.path .. " has no set of its own: the host stores it")
+  assertEqual(type(r.validate), "function", r.path .. " validates")
+  assertEqual(type(r.onChange), "function", r.path .. " reacts")
+end
+
 test("callout schema: SchemaRows answers a row with a path under the prefix for every setting a control chooses", function()
   local c, _, _, _, Callout = newCallout()
   local rows, named = c:SchemaRows("co")
@@ -101,16 +114,7 @@ test("callout schema: SchemaRows answers a row with a path under the prefix for 
     paths[r.path] = true
     assertTrue(type(r.group) == "string" and r.group ~= "", r.path .. " has a group (options-ui-§13)")
     assertTrue(r.type == "bool" or r.type == "number" or r.type == "string" or r.type == "color", r.path .. "'s type")
-    if not r.sessionOnly then
-      if r.type == "color" then
-        assertEqual(type(r.get), "function", r.path .. " reads the stored color in either shape")
-      else
-        assertNil(r.get, r.path .. " has no get of its own: the host stores it")
-      end
-      assertNil(r.set, r.path .. " has no set of its own: the host stores it")
-      assertEqual(type(r.validate), "function", r.path .. " validates")
-      assertEqual(type(r.onChange), "function", r.path .. " reacts")
-    end
+    if not r.sessionOnly then assertStoredRow(r) end
   end
   assertEqual(#named, 1)
   assertEqual(named[1], "co.point", "the drag's point is the named state beside the rows")
