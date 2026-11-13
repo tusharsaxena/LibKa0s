@@ -60,6 +60,12 @@ The branch's review, fixed before the release, all inside the unreleased Callout
 - `CLAUDE.md`'s register gains the Callout's one-consumer `library-stack-§7` row, and the Role row retires (Drop Watcher is its second consumer). `docs/api/README.md`'s key shape is `<Callout>.<CalloutSettings>`. `DEPENDENCIES.md`'s voice-pack block moves below the artwork tools' table it had split from its paragraph.
 - Tests: ten new cases across the four Callout suites, each a regression of the above.
 
+Release gate (`docs/automated-tests/20261113-220138/`): lint pass, 0/0 in 333 files;
+tests pass, 4459 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (Callout 1, CalloutSettings 1 and DebugLogDiagnostics 9 only).
+
 ## v1.95.0 — 2026-11-10
 
 Opened 2026-11-10, on `feat/2026-11-10-quickcomms-forever-emotes`: the library half of Ka0s Quick Comms' WoW Forever port (Ka0sAddonsCommonTasks `docs/2026-11-10-QUICKCOMMS_FOREVER_EMOTES/`, design §3), item `QFE-LK1`, released as `QFE-LK2`. The owner's rulings R3 and R5: the spec and role read is a reusable LibKa0s module, the talents decide the role on Forever, and the player can override it, saved per character.
