@@ -4797,9 +4797,10 @@ Total.
 - prose: no non-ASCII byte reaches a player, the em dash excepted
 - prose: no retired §N.M section reference in the shipped library or the shipped kit
 
-### test_register.lua (1)
+### test_register.lua (2)
 
 - every deviation id the register cites is assigned by a bundle in docs/audits/
+- the register's prose gives the table's own row count
 
 ### test_kit_inventory.lua (42)
 
@@ -5298,7 +5299,7 @@ Total.
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
 | test_prose.lua | 6 |
-| test_register.lua | 1 |
+| test_register.lua | 2 |
 | test_kit_inventory.lua | 42 |
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
@@ -5314,4 +5315,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4504** |
+| **Total** | **4505** |

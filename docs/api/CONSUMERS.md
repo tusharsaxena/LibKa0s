@@ -71,10 +71,10 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 `LibKa0s-WaypointArrow-1.0` (its lib-level members in `docs/api/WaypointArrow/members-1.1.json`, the descriptor's
 fields and the instance's members in [its document](WaypointArrow/version-1.1-docs.md)): the waypoint arrow with
 its settings rows (`WaypointArrowSettings.lua`), moved out of Ka0s Skill Master. None gets a row here yet. **Its
-one consumer is Ka0s Skill Master**, whose adoption (its round-8 plan row R8-5: `New`, `SetTarget`, `Clear`,
-`ShowSample` / `HideSample`, `Suspend`, `ConfigureFrom` and `SettingsRows` in place of its own
-`modules/WaypointArrow.lua` and art) is **pending**, so the major's verdict is *zero — planned* until Skill Master
-calls `WaypointArrow:New`. The owner accepted the one-consumer promotion on 2026-11-14 (`CLAUDE.md`, *Documented
+one consumer is Ka0s Skill Master**, adopted on its round-8 plan row R8-5 (`modules/WaypointArrow.lua`, an
+adapter that calls `New`, `ConfigureFrom`, `SetTarget`, `Clear`, `ShowSample` / `HideSample`, `SetPosition`, `IsShown`
+and `Update` on the instance and `SettingsRows` on the lib, in place of its own arrow and art), so the major's verdict
+is *one* when the census next counts it. The owner accepted the one-consumer promotion on 2026-11-14 (`CLAUDE.md`, *Documented
 deviations*). DebugLogDiagnostics minor 10 names the major on the report's `LibKa0s running:` line and moves no
 member.
 
