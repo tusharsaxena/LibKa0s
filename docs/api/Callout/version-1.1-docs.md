@@ -14,7 +14,7 @@
 | Supersedes | — (the first version of this major) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
-| Optional at call time | the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, and the `Ka0sMedia_Font` picker through its row), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
+| Optional at call time | the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 1, CalloutSettings = 1 }` |
 
 ## What changed at this version: the settings section (`CalloutSettings.lua` 1, plan row L4)
@@ -86,7 +86,7 @@ Read straight off the LibStub table.
 | `ANIMS` | 1 | `slam`, `pulse`, `glow`, `blink`, `shake`, `none` |
 | `CHANNELS` | 1 | `Master`, `SFX`, `Dialog` |
 | `SIZE_MIN`, `SIZE_MAX` | 1 | `32`, `200` |
-| `STRATA` | 1 | `"HIGH"` (frame-layering's alert tier) |
+| `STRATA` | 1 | `"FULLSCREEN"`: frame-layering-§1's T5 non-interactive screen alert (`SCREEN_ALERT`), mouse-transparent while locked, so it draws over the Blizzard Settings panel (`HIGH`) it is unlocked and tested from |
 | `WIDTH` | 1 | `900`: the frame's width; its height is 1.5 × the size |
 | `SETTINGS_STRINGS` | 1.1 | Every word the settings section shows, US English, keyed; a host overrides any through `opts.L` |
 | `SETTINGS_TABS` | 1.1 | `look`, `sound`, `texts`: the section's tabs, in order |
@@ -148,6 +148,7 @@ in `GetTtsVoices()`, text to speech is silence, reported once; nothing stands in
 | `soundsBase` | no | The folder holding the packs, overriding the one `addon` implies |
 | `skin` | no | A registered skin owner: the "Skin font" face and the drag strip's colors |
 | `label` | no | The drag strip's text; `"Call-out"` by default |
+| `packs` | no | The pack folders the host ships, as its `LibKa0s sounds:` line names them (`{ "callout/male-joe" }`; the bare folder works too, and `{}` is none). `Voices()` offers only those, `Set("voice", …)` refuses any other pack, and a stored or default pack the host does not ship reads as the first pack it does, else `"off"`. Nil offers every `PACKS` row |
 | `debug` | no | `debug(tag, msg)`, called under pcall with tag `"CALLOUT"` |
 
 ## The settings
@@ -166,8 +167,8 @@ nil clears back to the default.
 | `glow` | `"soft"` | `GLOWS`: a halo of the text in its kind's color behind it |
 | `anim` | `"slam"` | `ANIMS` |
 | `hold` | `1.5` | 0.2 – 10 seconds before a call-out fades |
-| `point` | `{ "CENTER", "CENTER", 0, 180 }` | `{ point, relativePoint, x, y }` in UIParent's units; written by a drag |
-| `voice` | `"female"` | a `PACKS` key, `"tts"` or `"off"` |
+| `point` | `{ "CENTER", "CENTER", 0, 180 }` | `{ point, relativePoint, x, y }` in UIParent's units, both anchors one of the nine region points; written by a drag |
+| `voice` | `"female"` | a `PACKS` key, `"tts"` or `"off"`; a pack outside `d.packs` reads as the first pack in it, else `"off"` |
 | `channel` | `"Master"` | `CHANNELS` |
 | `speakFrom` | `5` | an integer 1 – 20: higher numbers are shown, not spoken |
 | `ttsVoice` | `false` | false (the client's first voice) or a `voiceID` |
@@ -182,18 +183,18 @@ Default colors: `number` white, `info` (0.35, 0.75, 1), `go` (0.3, 1, 0.45), `st
 
 | Method | Meaning |
 |---|---|
-| `Countdown(spec)` | `spec = { endsAt, from, finish, onTick, onDone }`. `from` is clamped to 1 – 20 (20 when nil); nothing shows while `ceil(endsAt - now)` is above it. At zero `finish` shows (a stock key, a number, a custom spec, or `false` for none; `"GO"` when nil) and `onDone()` is called once. `onTick(n)` is called as each number shows. Both run under pcall. A running countdown is replaced. Answers false while suspended or for a non-number `endsAt` |
+| `Countdown(spec)` | `spec = { endsAt, from, finish, onTick, onDone }`. `from` is clamped to 1 – 20 (20 when nil); nothing shows while `ceil(endsAt - now)` is above it. At zero `finish` shows (a stock key, a number, a custom spec, or `false` for none; `"GO"` when nil) and `onDone()` is called once. `onTick(n)` is called as each number shows. Both run under pcall. A running countdown is replaced. A call-out already held on screen keeps its hold: it fades on its own schedule through a lead-in (`endsAt` more than `from` away), and the first number replaces it. Answers false while suspended or for a non-number `endsAt` |
 | `Cancel()` | Stops the countdown with no finish and no `onDone`, takes the call-out down. Answers whether one ran |
 | `Running()` | `running, n`: whether a countdown runs and the number it shows (nil before its first) |
-| `Show(what, opts)` | `what` is a stock key, a number 1 – 20 (or its string) or a custom `{ text, kind, sound, voice = false, hold, anim, key }`. `opts` may carry `hold`, `anim`, `voice = false`. It fades after its hold. Answers false for nothing to show, or while suspended |
+| `Show(what, opts)` | `what` is a stock key, a number 1 – 20 (or its string) or a custom `{ text, kind, sound, voice = false, hold, anim, key }`. `opts` may carry `hold`, `anim`, `voice = false`. It fades after its hold. Over a running countdown it shows until the next number, which replaces it and takes its hold with it: a Show never fades a number. Answers false for nothing to show, or while suspended |
 | `Hide()` | Takes the call-out down now; a running countdown shows its next number |
 | `Suspend()` / `Resume()` / `Suspended()` | The stand-down: cancels, hides, locks, and refuses Show and Countdown until Resume |
 | `Get(key)` / `Set(key, value)` | The settings, above |
 | `GetColor(kind)` / `SetColor(kind, r, g, b)` | A kind's color; `SetColor(kind)` with no color clears it |
 | `Apply()` | Re-reads every setting onto the frame |
-| `SetLocked(locked)` / `Locked()` | Unlocked, the frame takes the mouse, shows a sample (`READY`, silent) and the drag strip, and a drag writes `point`. Locked (the default, and not saved) it is mouse-transparent |
+| `SetLocked(locked)` / `Locked()` | Unlocked, the frame takes the mouse, shows a sample (`READY`, silent) and the drag strip, and a drag writes `point`. Locked (the default, and not saved) it is mouse-transparent; a lock (or a `Suspend`) during a drag ends the move and writes `point`. The animations play on an inner content frame, so the frame and its strip never scale, shake or blink, and the strip ignores the frame's alpha |
 | `ResetPosition()` | Clears `point` |
-| `Voices()` | The `voice` choices: `{ key, name }` for each pack, then `tts`, then `off` |
+| `Voices()` | The `voice` choices: `{ key, name }` for each pack the host ships (`d.packs`), then `tts`, then `off` |
 | `TtsVoices()` | The client's voices, `{ voiceID, name }` each; empty without `C_VoiceChat` |
 | `Frame()` | The frame, built on first use |
 | `Stats()` | `built`, `shown`, `running`, `number`, `endsAt`, `key`, `text`, `kind`, `awake` (the OnUpdate is armed), `suspended`, `locked`, `logged` |
@@ -219,7 +220,7 @@ LibSharedMedia face (every LibKa0s-Media-1.0 face without it). A color swatch's 
 color shapes, `{ r, g, b, a, [1], [2], [3], [4] }`, and its `set` reads either, so the host's
 `colorDecode` / `colorEncode` pair does not matter.
 
-`opts.tab` (`"look"`, `"sound"` or `"texts"`) draws one tab with no heading of its own; without it
+`opts.tab` (`"look"`, `"sound"` or `"texts"`) draws one tab with no heading of its own, in either build; without it
 the three draw one under another, each under its heading. Options-ui-§13 puts sections on tabs, so a
 host normally passes `SettingsTabs(opts)` to `RenderTabbedSchema` as host tabs: `{ key, label,
 tooltip, before, render }` each, keyed `opts.keyPrefix .. tab` (`"callout."` by default), `before`
@@ -245,8 +246,9 @@ and **Reset position** (`ResetPosition`).
 
 **The view** `BuildSettings` answers: `kind` (`"options"` or `"plain"`), `rows`, `preview` (the
 Label or FontString), and for the plain build `controls` (`{ row, control, sync }` each), `refresh`
-and `height`. It answers nil with no `parent` to build into (a plain build needs a frame) or for an
-unknown `opts.tab`.
+and `height`. It answers nil with no `parent` to build into (a plain build needs a frame), for an
+unknown `opts.tab`, or, with `opts.options`, when the instance lacks one of `EnsureScroll`, `TextRow`,
+`InlineButtonPair` and `RenderRows` or its `EnsureScroll` answers no scroll for `parent`.
 
 **Words.** `SETTINGS_STRINGS`, overridden key by key through `opts.L`, read with rawget (a Ka0s
 locale table answers an unknown key with the key). A stock key's own word is its `STOCK` text.
@@ -271,10 +273,10 @@ LibKa0s sounds: all.
 LibKa0s sounds: callout/female-kathleen, callout/male-joe.
 ```
 
-**No line means none.** A consumer that keeps only some packs offers only those: `Voices()` still
-lists every `PACKS` row, and a pack the copy does not carry is silence, reported once per file
-through `d.debug`, so a host that prunes a pack also leaves it out of its own choices or accepts the
-silence. `tools/prune-icons.lua` prunes `media/sounds/` to the line after the icons, and
+**No line means none.** A consumer that keeps only some packs offers only those by passing the same
+folders as `d.packs`: `Voices()`, and through it the settings section's Voice row, then lists only
+those, and a pack outside them is never played. Without `d.packs` every `PACKS` row is offered, and
+a pack the copy does not carry is silence, reported once per file through `d.debug`. `tools/prune-icons.lua` prunes `media/sounds/` to the line after the icons, and
 `testkit/vendor_sync.lua` holds the consumer's copy to it, credits and licenses included. A pack
 under a license that makes attribution a condition is credited in the consumer's README as its
 `CREDITS.md` states.
@@ -288,13 +290,15 @@ look, the voice and the settings rows. A sketch, Ka0s Combat Trail's race countd
 local _, NS = ...
 -- modules/RaceCountdown.lua: the race countdown on LibKa0s-Callout-1.0 (library-stack-§7).
 local Callout = LibStub and LibStub("LibKa0s-Callout-1.0", true)
+-- NS.CalloutStub (the degradation stub below) is defined before this file runs.
 
 -- AceDB defaults: profile.callout = Callout and Callout.DEFAULTS or {}
 NS.Callout = Callout and Callout:New({
     name = "CombatTrailCallout", addon = "CombatTrail", skin = "CombatTrail",
+    packs = { "callout/male-joe" },   -- its CLAUDE.md line: LibKa0s sounds: callout/male-joe.
     db = function() return NS.addon.db.profile.callout end,
     debug = function(tag, msg) NS.Debug(tag, msg) end,
-}) or NS.CalloutStub   -- the degradation stub below
+}) or NS.CalloutStub   -- defined first: nil here would leave NS.Callout nil
 
 -- The race clock and the call-out read the same endsAt, so they never disagree.
 local endsAt = GetTime() + 10
@@ -308,7 +312,8 @@ what finds the packs and the bundled faces under `Interface\AddOns\<addon>\libs\
 
 ### The degradation stub
 
-A host that degrades without the library (anti-pattern #47) stubs the **instance**:
+A host that degrades without the library (anti-pattern #47) stubs the **instance**, in a file that
+loads before the one calling `New` (the `or NS.CalloutStub` above reads it there):
 
 ```lua
 NS.CalloutStub = {

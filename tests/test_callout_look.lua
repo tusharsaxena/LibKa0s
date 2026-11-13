@@ -39,27 +39,27 @@ end
 
 test("look: each animation is the setting's, built once from its own steps", function()
   local c = newCallout()
-  local f, _, halo = parts(c)
+  local _, _, halo, cf = parts(c)
   local want = {
     slam  = { "Scale", "Alpha" },
     pulse = { "Scale", "Scale" },
     blink = { "Alpha", "Alpha", "Alpha", "Alpha" },
     shake = { "Translation", "Translation", "Translation", "Translation" },
   }
-  local seen = 1                                   -- groups[1] is the fade, built with the frame
+  local seen = 0                                   -- the content frame carries only the animations
   for _, name in ipairs({ "slam", "pulse", "blink", "shake" }) do
     assertTrue(c:Set("anim", name))
     c:Show("GO")
     seen = seen + 1
-    local list = groups(f)
-    assertEqual(#list, seen, name .. " builds one group on the frame")
+    local list = groups(cf)
+    assertEqual(#list, seen, name .. " builds one group on the content frame")
     local ag = list[seen]
     assertEqual(ag.__plays, 1, name .. " plays")
     local kinds = {}
     for i, a in ipairs(ag.__anims) do kinds[i] = a.__kind end
     assertEqual(table.concat(kinds, ","), table.concat(want[name], ","), name .. "'s steps")
     c:Show("GO")
-    assertEqual(#groups(f), seen, name .. " is built once and reused")
+    assertEqual(#groups(cf), seen, name .. " is built once and reused")
     assertEqual(ag.__plays, 2, name .. " plays again on the next call-out")
   end
   assertEqual(#groups(halo), 0, "no frame animation is built on the halo")
@@ -67,9 +67,9 @@ end)
 
 test("look: slam lands from 2.2x and fades in; pulse swells and settles; shake runs out and back", function()
   local c = newCallout()
-  local f = parts(c)
+  local _, _, _, cf = parts(c)
   c:Show("GO")
-  local slam = groups(f)[2].__anims
+  local slam = groups(cf)[1].__anims
   assertEqual(slam[1].__scaleFrom[1], 2.2)
   assertEqual(slam[1].__scaleTo[1], 1)
   assertEqual(slam[1].__smoothing, "OUT")
@@ -77,13 +77,13 @@ test("look: slam lands from 2.2x and fades in; pulse swells and settles; shake r
   assertEqual(slam[2].__toAlpha, 1)
   assertEqual(slam[1].__order, slam[2].__order, "the scale and the fade-in run together")
   c:Show("GO", { anim = "pulse" })
-  local pulse = groups(f)[3].__anims
+  local pulse = groups(cf)[2].__anims
   assertEqual(pulse[1].__scaleTo[1], pulse[2].__scaleFrom[1], "the swell's peak is where it settles from")
   assertEqual(pulse[2].__scaleTo[1], 1)
   assertTrue(pulse[2].__order > pulse[1].__order, "one after the other")
   c:Show("GO", { anim = "shake" })
   local sum, orders = 0, {}
-  for i, a in ipairs(groups(f)[4].__anims) do
+  for i, a in ipairs(groups(cf)[3].__anims) do
     sum = sum + a.__offset[1]
     orders[i] = a.__order
   end
@@ -93,9 +93,9 @@ end)
 
 test("look: blink dims twice; glow flashes the halo and leaves it at its final alpha", function()
   local c = newCallout()
-  local f, _, halo = parts(c)
+  local _, _, halo, cf = parts(c)
   c:Show("GO", { anim = "blink" })
-  local blink = groups(f)[2].__anims
+  local blink = groups(cf)[1].__anims
   assertEqual(#blink, 4)
   assertEqual(blink[1].__toAlpha, blink[3].__toAlpha)
   assertEqual(blink[4].__toAlpha, 1, "the text ends fully drawn")
@@ -105,31 +105,31 @@ test("look: blink dims twice; glow flashes the halo and leaves it at its final a
   assertTrue(glow.__finalAlpha, "SetToFinalAlpha, so the halo does not snap back")
   assertEqual(glow.__anims[1].__fromAlpha, 1)
   assertEqual(glow.__anims[1].__toAlpha, 0)
-  assertEqual(#groups(f), 2, "glow adds nothing to the frame")
+  assertEqual(#groups(cf), 1, "glow adds nothing to the content frame")
 end)
 
 test("look: a new call-out stops the last one's animation; an unknown opts.anim is the setting's", function()
   local c = newCallout()
-  local f = parts(c)
+  local _, _, _, cf = parts(c)
   c:Show("GO")
-  local slam = groups(f)[2]
+  local slam = groups(cf)[1]
   local stops = slam.__stops
   c:Show("STOP")
   assertTrue(slam.__stops > stops, "the running group is stopped before the next plays")
   assertEqual(slam.__plays, 2)
   c:Show("GO", { anim = "spin" })
-  assertEqual(#groups(f), 2, "no group for an unknown name")
+  assertEqual(#groups(cf), 1, "no group for an unknown name")
   assertEqual(slam.__plays, 3, "the setting's slam plays")
   c:Set("anim", "none")
   c:Show("GO", { anim = "pulse" })
-  assertEqual(#groups(f), 3, "opts.anim wins over none")
+  assertEqual(#groups(cf), 2, "opts.anim wins over none")
 end)
 
 test("look: a countdown's every number animates, and the fade waits for the finish's hold", function()
   local c, m = newCallout()
-  local f = parts(c)
+  local f, _, _, cf = parts(c)
   c:Countdown{ endsAt = 3 }
-  local slam = groups(f)[2]
+  local slam = groups(cf)[1]
   assertEqual(slam.__plays, 1)
   frameAt(m, 1)
   frameAt(m, 2)
@@ -328,6 +328,8 @@ test("unlock: the drag strip is built over the frame, hidden while locked, shown
   local spec = rawget(h, "__spec")
   assertEqual(spec.label, "Call-out", "the default label")
   assertEqual(spec.moveFrame, f)
+  assertTrue(spec.ignoreParentAlpha, "the strip does not take the frame's alpha (frame-layering-§2)")
+  assertEqual(spec.level, 10, "and sits over the frame's level")
   assertEqual(spec.owner, "TestSkin", "the strip is in the host's skin")
   assertTrue(rawget(h, "__widthApplied"))
   local p = rawget(h, "__point")
@@ -351,6 +353,54 @@ test("unlock: the strip's own drag saves the point; d.label names it", function(
   spec.onDragStop()
   assertEqual(db.point[1], "TOP")
   assertEqual(db.point[4], -100)
+end)
+
+test("unlock: locking mid-drag ends the move and saves the point", function()
+  local c, m, db = newCallout()
+  local f = parts(c)
+  c:SetLocked(false)
+  f:__fire("OnDragStart")
+  assertTrue(rawget(f, "__moving"))
+  f:SetPoint("TOPLEFT", m.UIParent, "TOPLEFT", 40, -60)
+  c:SetLocked(true)
+  assertFalse(rawget(f, "__moving"), "the mouse-up never comes once the frame stops taking the mouse")
+  assertEqual(table.concat({ db.point[1], db.point[2], db.point[3], db.point[4] }, ","), "TOPLEFT,TOPLEFT,40,-60")
+end)
+
+test("unlock: a Suspend mid-drag on the strip ends the move and saves the point", function()
+  local c, m, db = newCallout(nil, withHandle)
+  local f = parts(c)
+  c:SetLocked(false)
+  local spec = rawget(m.__handles[1], "__spec")
+  f:StartMoving()                                  -- what the strip's own OnDragStart does
+  spec.onDragStart()
+  f:SetPoint("BOTTOM", m.UIParent, "BOTTOM", 0, 80)
+  c:Suspend()
+  assertFalse(rawget(f, "__moving"))
+  assertEqual(db.point[1], "BOTTOM")
+  assertEqual(db.point[4], 80)
+end)
+
+test("unlock: a lock with no drag running leaves the point alone", function()
+  local c, _, db = newCallout()
+  c:SetLocked(false)
+  c:SetLocked(true)
+  assertNil(db.point)
+end)
+
+test("position: a stored anchor that is not a region point reads as the default", function()
+  local c, _, db = newCallout()
+  db.point = { "MIDDLE", "CENTER", 5, 5 }
+  local f = parts(c)
+  local p = rawget(f, "__point")
+  assertEqual(p[1] .. "," .. p[3] .. "," .. p[5], "CENTER,CENTER,180", "built at the default")
+  db.point = { "TOP", "UPPER", 0, 0 }
+  c:Apply()
+  assertEqual(rawget(f, "__point")[1], "CENTER", "a bad relative point is the default too")
+  assertEqual(c:Get("point")[1], "CENTER")
+  assertFalse(c:Set("point", { "MIDDLE" }), "never written")
+  assertTrue(c:Set("point", { "BOTTOMRIGHT", "BOTTOMRIGHT", -10, 10 }))
+  assertEqual(rawget(f, "__point")[1], "BOTTOMRIGHT")
 end)
 
 test("unlock: without Widgets there is no strip, and the frame drags itself", function()

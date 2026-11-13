@@ -128,14 +128,19 @@ local function newCallout(d, before)
   return Callout:New(desc), m, db, logs, Callout
 end
 
---- The call-out's frames, by their roles: the frame, its text, its halo and its clock.
+--- The call-out's frames, by their roles: the frame, its text, its halo and the content frame they
+--- sit on (the one the animations play on; the frame itself only fades).
 local function parts(c)
   local f = c:Frame()
-  local text, halo
-  for _, r in ipairs({ f:GetRegions() }) do
-    if r:GetDrawLayer() == "OVERLAY" then text = r elseif r:GetDrawLayer() == "BACKGROUND" then halo = r end
+  local text, halo, content
+  for _, child in ipairs({ f:GetChildren() }) do
+    for _, r in ipairs({ child:GetRegions() }) do
+      if r.GetDrawLayer and r:GetDrawLayer() == "OVERLAY" then text, content = r, child
+      elseif r.GetDrawLayer and r:GetDrawLayer() == "BACKGROUND" then halo = r end
+    end
+    if content then break end
   end
-  return f, text, halo
+  return f, text, halo, content
 end
 
 --- The clock frame: the unparented frame that carries the OnUpdate while one is armed.

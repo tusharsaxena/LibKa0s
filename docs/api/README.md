@@ -68,7 +68,7 @@ the file you need:
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Toast-1.0` | `<Toast>` | `LibStub("LibKa0s-Toast-1.0").MODULES` |
-| `LibKa0s-Callout-1.0` | `<Callout>` | `LibStub("LibKa0s-Callout-1.0").MODULES` |
+| `LibKa0s-Callout-1.0` | `<Callout>.<CalloutSettings>` | `LibStub("LibKa0s-Callout-1.0").MODULES` |
 | `LibKa0s-Charts-1.0` | `<Charts>.<ChartsRender>` | `LibStub("LibKa0s-Charts-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Skin-1.0` | `<Skin>.<SkinOwnerTokens>.<SkinDefs>.<SkinDefsOthers>.<SkinPaint>.<SkinPaintExtras>.<SkinPaintHud>.<SkinAceConfirm>.<SkinPaintControls>.<SkinEUI>.<SkinAce>` (six numbers through 3.3.2.1.1.1, never shipped; nine through 17.1.27.8.19.18.17.4.9) | `LibStub("LibKa0s-Skin-1.0").MODULES` |

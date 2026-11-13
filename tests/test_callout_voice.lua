@@ -222,6 +222,33 @@ end)
 
 -- ── finish = false ───────────────────────────────────────────────────────────────────────────
 
+test("packs: d.packs offers only the shipped packs, and an undeclared pack is never played", function()
+  local c, m = newCallout({ packs = { "callout/male-joe" } })
+  local keys = {}
+  for i, v in ipairs(c:Voices()) do keys[i] = v.key end
+  assertEqual(table.concat(keys, ","), "male,tts,off", "the host's LibKa0s sounds: line, mirrored")
+  assertEqual(c:Get("voice"), "male", "the default pack is not shipped: the first shipped one speaks")
+  assertFalse(c:Set("voice", "female"), "a pack the host does not ship is refused")
+  c:Show("GO")
+  assertEqual(#m.__files, 1)
+  assertTrue(m.__files[1].file:find("\\male-joe\\go.ogg", 1, true) ~= nil, m.__files[1].file)
+end)
+
+test("packs: a stored pack the host no longer ships reads as the first it does; none shipped is off", function()
+  local c, _, db = newCallout({ packs = { "male-joe" } })
+  db.voice = "female"                              -- AceDB's default, or a pack pruned since
+  assertEqual(c:Get("voice"), "male", "the bare folder name works as well")
+  local none, m = newCallout({ packs = {} })
+  local keys = {}
+  for i, v in ipairs(none:Voices()) do keys[i] = v.key end
+  assertEqual(table.concat(keys, ","), "tts,off")
+  assertEqual(none:Get("voice"), "off")
+  none:Show("GO")
+  none:Countdown{ endsAt = 2, from = 2 }
+  assertEqual(#m.__files, 0, "no pack, no file played")
+  assertTrue(none:Set("voice", "tts"), "text to speech is still a choice")
+end)
+
 test("finish false: at zero nothing new shows or plays, the 1 fades, onDone runs once", function()
   local c, m = newCallout()
   c:Set("speakFrom", 1)
@@ -361,7 +388,7 @@ test("suspend: a running animation is stopped, and the countdown's onTick and on
   local c, m = newCallout()
   local ticks, done = 0, false
   c:Countdown{ endsAt = 3, onTick = function() ticks = ticks + 1 end, onDone = function() done = true end }
-  local slam = rawget(parts(c), "__groups")[2]
+  local slam = rawget(select(4, parts(c)), "__groups")[1]
   local stops = slam.__stops
   c:Suspend()
   assertTrue(slam.__stops > stops)

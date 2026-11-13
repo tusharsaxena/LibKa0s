@@ -287,6 +287,19 @@ test("callout settings: nothing to build into, or an unknown tab, answers nil", 
   assertNil(c:BuildSettings({}, { options = O, tab = "colors" }))
 end)
 
+test("callout settings: an Options instance missing a member it calls builds nothing, and raises nothing", function()
+  for _, member in ipairs({ "EnsureScroll", "TextRow", "InlineButtonPair", "RenderRows" }) do
+    local c = newCallout()
+    local O, ctx = page()
+    local lacking = setmetatable({ [member] = false }, { __index = O })
+    assertNil(c:BuildSettings(ctx, { options = lacking }), "no " .. member)
+  end
+  local c = newCallout()
+  local O, ctx = page()
+  local noScroll = setmetatable({ EnsureScroll = function() return nil end }, { __index = O })
+  assertNil(c:BuildSettings(ctx, { options = noScroll }), "an EnsureScroll that answers no scroll")
+end)
+
 -- ── the plain build ──────────────────────────────────────────────────────────────────────────
 
 test("callout settings: without Options, plain frames: a control per row and the preview", function()
@@ -512,11 +525,14 @@ test("callout settings: a plain refresh syncs every control to an outside write"
   assertEqual(by.size.control.text:GetText(), "150")
 end)
 
-test("callout settings: one plain tab builds that tab's rows alone, under its heading", function()
+test("callout settings: one plain tab builds that tab's rows alone, with no heading of its own", function()
   local c, m = newCallout()
   local parent = m.CreateFrame("Frame", nil, m.UIParent)
   local view = c:BuildSettings(parent, { tab = "sound" })
   for _, r in ipairs(view.rows) do assertEqual(r.tab, "sound") end
+  for _, r in ipairs({ parent:GetRegions() }) do
+    assertFalse(r.GetText and r:GetText() == "Sound", "the host's tab names it, as in the Options build")
+  end
   assertTrue(#view.rows >= 3, "voice, channel and speak from")
   assertTrue(view.testButton ~= nil and view.playButton ~= nil and view.resetButton ~= nil)
   view.resetButton:__fire("OnClick")

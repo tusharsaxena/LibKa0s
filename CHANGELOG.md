@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-13, on `feat/2026-11-13-callout`: the call-out major, `LibKa0s-Callout-1.0`, built for Ka0s Combat Trail's race countdown on the owner's rulings of 2026-11-13 (`docs/superpowers/plans/2026-11-13-callout.md`, adoption issue LibKa0s#85), and the sound subset that lets a consumer ship only the voice packs it declares (`library-stack-§7`, *The sound subset*, standard v2.108.0).
 
-Versions in this release: `LibKa0s-Callout-1.0` key **1.1** (Callout minor 1 and CalloutSettings minor 1, a new major); `LibKa0s-DebugLog-1.0` key **22.9.1.4** (DebugLogDiagnostics minor 9); every other file at its v1.95.0 minor, and the test kit at revision **55**. No `NEEDS_*` floor rises. The payload gains a third non-code folder, `media/sounds/` (two voice packs, 86 Ogg Vorbis clips with their credits and licenses, about 760 KB), which a consumer ships only as declared. The Callout's three new display faces (plan row L2) are not in this release; its font row offers every face the host has, with Oxanium Bold the default.
+Versions in this release: `LibKa0s-Callout-1.0` key **1.1** (Callout minor 1 and CalloutSettings minor 1, a new major); `LibKa0s-DebugLog-1.0` key **22.9.1.4** (DebugLogDiagnostics minor 9); every other file at its v1.95.0 minor, and the test kit at revision **55**. No `NEEDS_*` floor rises. The payload gains a fourth media folder, `media/sounds/` beside `icons/`, `textures/` and `fonts/` (two voice packs, 86 Ogg Vorbis clips with their credits and licenses, about 620 KB as tracked), which a consumer ships only as declared. The Callout's three new display faces (plan row L2) are not in this release; its font row offers every face the host has, with Oxanium Bold the default.
 
 ### The Callout major (L3)
 
@@ -46,6 +46,19 @@ Versions in this release: `LibKa0s-Callout-1.0` key **1.1** (Callout minor 1 and
 - `README.md` names the twenty-third major in *What it is*, *The modules* and the repo layout, the `media/sounds/` carve-out in *Installing* and *Versioning*, and the voice packs' credits; its standards pointer moves v2.105.0 → v2.108.0 (v2.106.0's skin-default pin binds addons, v2.107.0 adds the Role row, v2.108.0 the Callout row and the sound subset).
 - `DEPENDENCIES.md`: the Callout's runtime voices (the bundled packs and the client's text to speech, nothing to install), the voice packs as build-time art whose text-to-speech models never ship, and what ships under which license.
 - `docs/releasing.md`: the version pointers at v1.96.0, the Callout's two constants and seventy-five files in step 2, twenty-three majors in step 3, the v1.96.0 re-vendor note's payload files, the floors and paired guards, and a Consumers row for the Callout (Combat Trail, planned). Step 9's re-sweep added the Consumers row `LibKa0s-Role-1.0` never had (Quick Comms and Drop Watcher, each in `core/Compat.lua`, Drop Watcher also in `core/CompatClient.lua`) and Quick Comms' second Widgets lookup (`settings/CalloutPopup.lua`). `CLAUDE.md`'s documentation map names `Callout`.
+
+### The review (L8)
+
+The branch's review, fixed before the release, all inside the unreleased Callout minor 1 and CalloutSettings minor 1:
+
+- **The hold over a countdown.** A number now clears the hold a `Show` (or the last finish) armed, so a `Show` made mid-count no longer fades the next number; `Countdown` no longer clears a held call-out's hold, so through a lead-in (`endsAt` more than `from` away) it fades on its own schedule instead of staying up until the first number.
+- **The strata.** `STRATA` is `FULLSCREEN`, frame-layering-§1's T5 non-interactive screen alert, where it was `HIGH` (the interactive toast's tier), so a call-out unlocked or tested from the Blizzard Settings panel (`HIGH`, toplevel) draws over it.
+- **The drag.** A lock or a `Suspend` during a drag ends the move and writes `point`, as Toast's `endDrag` does. The animations play on an inner content frame, so the frame and its drag strip never scale, shake or blink; the strip passes `ignoreParentAlpha` and `level` (frame-layering-§2).
+- **A stored anchor** must be one of the nine region points; any other reads as the default, where it raised in `SetPoint` on every build.
+- **`d.packs`**, the pack folders the host ships (its `LibKa0s sounds:` line): `Voices()` and the Voice row offer only those, `Set` refuses any other pack, and a stored or default pack outside them reads as the first shipped one, else off.
+- **The settings section.** The Options build checks `TextRow`, `InlineButtonPair` and `RenderRows` beside `EnsureScroll` and answers nil without one; `skinFont` checks `Skin.For`; one plain tab draws no heading of its own, as the Options build does.
+- `CLAUDE.md`'s register gains the Callout's one-consumer `library-stack-§7` row, and the Role row retires (Drop Watcher is its second consumer). `docs/api/README.md`'s key shape is `<Callout>.<CalloutSettings>`. `DEPENDENCIES.md`'s voice-pack block moves below the artwork tools' table it had split from its paragraph.
+- Tests: ten new cases across the four Callout suites, each a regression of the above.
 
 ## v1.95.0 — 2026-11-10
 

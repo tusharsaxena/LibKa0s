@@ -129,7 +129,10 @@ lib.GLOWS = { "off", "soft", "strong" }
 lib.ANIMS = { "slam", "pulse", "glow", "blink", "shake", "none" }
 lib.CHANNELS = { "Master", "SFX", "Dialog" }
 lib.SIZE_MIN, lib.SIZE_MAX = 32, 200
-lib.STRATA = "HIGH"                       -- frame-layering's T5 alert tier
+-- frame-layering-§1's T5 non-interactive screen alert (`SCREEN_ALERT`): FULLSCREEN, mouse disabled
+-- while locked. HIGH is the interactive toast's tier, and the Blizzard Settings panel (HIGH, toplevel)
+-- would cover a call-out unlocked or tested from it.
+lib.STRATA = "FULLSCREEN"
 lib.WIDTH = 900                           -- the frame's width; its height follows the size
 
 --- The settings a host seeds its profile with (AceDB copies a defaults table, so pass this one; a
@@ -155,6 +158,7 @@ local GLOW_SCALE = { off = 1, soft = 1.04, strong = 1.1 }
 local HEIGHT_FACTOR = 1.5                 -- the frame's height over the font size
 local FADE = 0.25                         -- seconds a call-out takes to fade at the end of its hold
 local HANDLE_GAP = 2
+local HANDLE_LEVEL = 10                   -- the drag strip's level over the frame's
 
 -- ── small readers ────────────────────────────────────────────────────────────────────────────
 
@@ -171,8 +175,12 @@ local function oneOf(list) return function(v) return inList(list, v) end end
 
 local function nonEmpty(v) return type(v) == "string" and v ~= "" end
 
+-- The nine region points SetPoint takes. A stored anchor outside them would raise in SetPoint.
+local ANCHOR = { TOPLEFT = true, TOP = true, TOPRIGHT = true, LEFT = true, CENTER = true, RIGHT = true,
+  BOTTOMLEFT = true, BOTTOM = true, BOTTOMRIGHT = true }
+
 local function validPoint(pt)
-  return type(pt) == "table" and type(pt[1]) == "string" and (pt[2] == nil or type(pt[2]) == "string")
+  return type(pt) == "table" and ANCHOR[pt[1]] == true and (pt[2] == nil or ANCHOR[pt[2]] == true)
     and (pt[3] == nil or finite(pt[3])) and (pt[4] == nil or finite(pt[4]))
 end
 
@@ -258,6 +266,37 @@ local function get(S, key)
   return lib.DEFAULTS[key]
 end
 
+--- The pack keys this instance offers, as a set: the packs whose folder `d.packs` names (the host's
+--- `LibKa0s sounds:` line, each `callout/<folder>` or the bare folder), or every pack when `d.packs`
+--- is not a table. Read once per instance: the shipped payload does not change in a session.
+local function offered(S)
+  if S.offered then return S.offered end
+  local out, want = {}, S.d.packs
+  local ships
+  if type(want) == "table" then
+    ships = {}
+    for _, f in ipairs(want) do
+      if type(f) == "string" then ships[(f:gsub("^callout/", ""))] = true end
+    end
+  end
+  for _, p in ipairs(lib.PACKS) do
+    if not ships or ships[p.folder] then out[p.key] = true end
+  end
+  S.offered = out
+  return out
+end
+
+--- The voice as the instance speaks it. A stored (or default) pack the host does not ship reads as
+--- the first pack it does ship, else off: an undeclared pack is never played.
+local function voiceOf(S)
+  local v = get(S, "voice")
+  if not PACK[v] or offered(S)[v] then return v end
+  for _, p in ipairs(lib.PACKS) do
+    if offered(S)[p.key] then return p.key end
+  end
+  return lib.OFF
+end
+
 local function colorOf(S, kind)
   local t = store(S)
   local c = t and type(t.colors) == "table" and t.colors[kind]
@@ -278,7 +317,8 @@ end
 local function skinFont(S)
   local Skin = resolve("LibKa0s-Skin-1.0")
   local owner = S.d.skin
-  if not (Skin and type(owner) == "string" and type(Skin.IsOwner) == "function" and Skin:IsOwner(owner)) then
+  if not (Skin and type(owner) == "string" and type(Skin.IsOwner) == "function" and type(Skin.For) == "function"
+    and Skin:IsOwner(owner)) then
     return nil
   end
   local facade = Skin:For(owner)
@@ -314,7 +354,7 @@ end
 
 -- ── the animations ───────────────────────────────────────────────────────────────────────────
 --
--- Each is a list of steps on the frame (or, for "glow", on the halo behind the text). Built once
+-- Each is a list of steps on the content frame (or, for "glow", on the halo behind the text). Built once
 -- per instance, the first time it plays.
 local ANIM_STEPS = {
   slam = {
@@ -372,7 +412,7 @@ local function animGroup(S, name)
   if ag then return ag end
   local steps = ANIM_STEPS[name]
   if not steps then return nil end
-  ag = buildGroup(steps[1].halo and S.halo or S.frame, steps)
+  ag = buildGroup(steps[1].halo and S.halo or S.content, steps)
   if steps[1].halo then ag:SetToFinalAlpha(true) end
   S.anims[name] = ag
   return ag
@@ -424,22 +464,36 @@ end
 local function onDragStart(S)
   if S.locked then return end
   S.frame:StartMoving()
+  S.moving = true
 end
 
 local function onDragStop(S)
+  S.moving = nil
   S.frame:StopMovingOrSizing()
   savePosition(S)
 end
 
---- The drag strip over the frame while it is unlocked, when LibKa0s-Widgets-1.0 is present.
+--- A lock (or a Suspend) during a drag: the mouse-up never reaches a frame that no longer takes the
+--- mouse, so the move ends here and the point is saved (Toast.lua's endDrag, the same shape).
+local function endDrag(S)
+  if not S.moving then return end
+  S.moving = nil
+  S.frame:StopMovingOrSizing()
+  savePosition(S)
+end
+
+--- The drag strip over the frame while it is unlocked, when LibKa0s-Widgets-1.0 is present. It is a
+--- child of the frame, which never animates (the animations play on S.content), and it ignores the
+--- frame's alpha and sits HANDLE_LEVEL over it (frame-layering-§2).
 local function buildHandle(S)
   local Widgets = resolve("LibKa0s-Widgets-1.0")
   if not (Widgets and type(Widgets.DragHandle) == "function") then return end
   local handle = Widgets.DragHandle(S.frame, {
     label = type(S.d.label) == "string" and S.d.label or "Call-out",
-    moveFrame = S.frame, owner = S.d.skin,
+    moveFrame = S.frame, owner = S.d.skin, ignoreParentAlpha = true, level = HANDLE_LEVEL,
     canDrag = function() return not S.locked end,
-    onDragStop = function() savePosition(S) end,
+    onDragStart = function() S.moving = true end,
+    onDragStop = function() S.moving = nil; savePosition(S) end,
   })
   if not handle then return end
   handle:SetPoint("BOTTOM", S.frame, "TOP", 0, HANDLE_GAP)
@@ -474,10 +528,15 @@ local function build(S)
   f:RegisterForDrag("LeftButton")
   f:SetScript("OnDragStart", function() onDragStart(S) end)
   f:SetScript("OnDragStop", function() onDragStop(S) end)
-  S.halo = f:CreateFontString(nil, "BACKGROUND")
-  S.halo:SetPoint("CENTER", f, "CENTER", 0, 0)
-  S.text = f:CreateFontString(nil, "OVERLAY")
-  S.text:SetPoint("CENTER", f, "CENTER", 0, 0)
+  -- The text and its halo sit on an inner frame the animations play on, so the frame (the drag
+  -- target, the fade, and the drag strip's parent) never scales, shakes or blinks.
+  local content = CreateFrame("Frame", nil, f)
+  content:SetAllPoints(f)
+  S.content = content
+  S.halo = content:CreateFontString(nil, "BACKGROUND")
+  S.halo:SetPoint("CENTER", content, "CENTER", 0, 0)
+  S.text = content:CreateFontString(nil, "OVERLAY")
+  S.text:SetPoint("CENTER", content, "CENTER", 0, 0)
   S.clock = CreateFrame("Frame")   -- no parent: a hidden UI does not stop the countdown
   buildFade(S)
   buildHandle(S)
@@ -585,7 +644,7 @@ end
 local function sound(S, entry)
   if entry.voice == false then return false end
   if entry.stock and get(S, "muted")[entry.key] then return false end
-  local voice = get(S, "voice")
+  local voice = voiceOf(S)
   if voice == lib.OFF then return false end
   if entry.sound then return playFile(S, entry.sound) end
   if entry.number and entry.number > get(S, "speakFrom") then return false end
@@ -677,6 +736,7 @@ local function stepCountdown(S, now)
   if n == cd.last or n > cd.from then return end
   cd.last = n
   if n >= 1 then
+    S.hideAt = nil   -- the number replaces a held Show (or the last finish); its hold goes with it
     present(S, numberEntry(n))
     call(S, cd.onTick, n)
     return
@@ -715,7 +775,8 @@ function METHODS:Countdown(spec)
   local from = tonumber(spec.from) or lib.MAX_FROM
   from = math.max(1, math.min(lib.MAX_FROM, math.floor(from)))
   build(S)
-  S.hideAt = nil
+  -- A held call-out keeps its hold: through a lead-in (endsAt more than `from` away) it fades on its
+  -- own schedule, and the first number replaces it (stepCountdown clears the hold).
   S.cd = { endsAt = spec.endsAt, from = from, finish = spec.finish,
     onTick = spec.onTick, onDone = spec.onDone }
   wake(S)
@@ -781,6 +842,7 @@ function METHODS:Suspended() return state(self).suspended == true end
 function METHODS:Get(key)
   local S = state(self)
   if not VALID[key] then return nil end
+  if key == "voice" then return voiceOf(S) end
   return copy(get(S, key))
 end
 
@@ -790,6 +852,7 @@ function METHODS:Set(key, value)
   local S = state(self)
   local t = store(S)
   if not (t and VALID[key]) or (value ~= nil and not VALID[key](value)) then return false end
+  if key == "voice" and PACK[value] and not offered(S)[value] then return false end   -- not shipped
   t[key] = copy(value)
   self:Apply()
   return true
@@ -834,6 +897,7 @@ function METHODS:SetLocked(locked)
     if locked then return end
     build(S)
   end
+  if locked then endDrag(S) end
   S.frame:EnableMouse(not locked)
   if S.handle then S.handle:SetShown(not locked) end
   if not locked then
@@ -854,10 +918,14 @@ function METHODS:ResetPosition()
   if S.frame then applyPosition(S) end
 end
 
---- The `voice` choices, in order: the packs, then text to speech and off. A fresh list.
-function METHODS:Voices()   -- luacheck: ignore 212/self
+--- The `voice` choices, in order: the packs the host ships (`d.packs`), then text to speech and
+--- off. A fresh list.
+function METHODS:Voices()
+  local S = state(self)
   local out = {}
-  for _, p in ipairs(lib.PACKS) do out[#out + 1] = { key = p.key, name = p.name } end
+  for _, p in ipairs(lib.PACKS) do
+    if offered(S)[p.key] then out[#out + 1] = { key = p.key, name = p.name } end
+  end
   out[#out + 1] = { key = lib.TTS, name = "Game text to speech" }
   out[#out + 1] = { key = lib.OFF, name = "Off" }
   return out

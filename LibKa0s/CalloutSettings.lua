@@ -409,10 +409,16 @@ local function optionsPreview(inst, O, ctx, L, view)
     onClick = function() inst:ResetPosition() end })
 end
 
+-- What the Options build calls on the host's instance, each checked before anything is drawn.
+local OPTIONS_MEMBERS = { "EnsureScroll", "TextRow", "InlineButtonPair", "RenderRows" }
+
 local function buildOptions(inst, ctx, opts)
   local O, L = opts.options, opts.L
   local view = { kind = "options" }
-  if type(O.EnsureScroll) ~= "function" or not O.EnsureScroll(ctx) then return nil end
+  for _, member in ipairs(OPTIONS_MEMBERS) do
+    if type(O[member]) ~= "function" then return nil end   -- an instance without it builds nothing
+  end
+  if not O.EnsureScroll(ctx) then return nil end
   optionsPreview(inst, O, ctx, L, view)
   view.rows = inst:SettingsRows({ tab = opts.tab, L = L })
   O.RenderRows(ctx, view.rows, nil, nil, { noHeadings = opts.tab ~= nil })
@@ -571,7 +577,7 @@ local function buildPlain(inst, parent, opts)
   view.rows = inst:SettingsRows({ tab = opts.tab, L = L, plain = true })
   local heading
   for _, r in ipairs(view.rows) do
-    if r.group ~= heading then
+    if opts.tab == nil and r.group ~= heading then   -- one tab draws no heading of its own
       heading = r.group
       y = y - PLAIN_PAD
       plainHeading(parent, heading, y)
