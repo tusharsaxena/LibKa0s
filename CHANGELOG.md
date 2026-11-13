@@ -12,7 +12,9 @@ cannot drift. Release order is in
 
 ## v1.96.0 — unreleased
 
-Opened 2026-11-13, on `feat/2026-11-13-callout`: the call-out major (`docs/superpowers/plans/2026-11-13-callout.md`, adoption issue LibKa0s#85). This section is in progress; plan row L7 finishes it.
+Opened 2026-11-13, on `feat/2026-11-13-callout`: the call-out major, `LibKa0s-Callout-1.0`, built for Ka0s Combat Trail's race countdown on the owner's rulings of 2026-11-13 (`docs/superpowers/plans/2026-11-13-callout.md`, adoption issue LibKa0s#85), and the sound subset that lets a consumer ship only the voice packs it declares (`library-stack-§7`, *The sound subset*, standard v2.108.0).
+
+Versions in this release: `LibKa0s-Callout-1.0` key **1.1** (Callout minor 1 and CalloutSettings minor 1, a new major); `LibKa0s-DebugLog-1.0` key **22.9.1.4** (DebugLogDiagnostics minor 9); every other file at its v1.95.0 minor, and the test kit at revision **55**. No `NEEDS_*` floor rises. The payload gains a third non-code folder, `media/sounds/` (two voice packs, 86 Ogg Vorbis clips with their credits and licenses, about 760 KB), which a consumer ships only as declared. The Callout's three new display faces (plan row L2) are not in this release; its font row offers every face the host has, with Oxanium Bold the default.
 
 ### The Callout major (L3)
 
@@ -34,6 +36,16 @@ Opened 2026-11-13, on `feat/2026-11-13-callout`: the call-out major (`docs/super
 - **Test kit revision 55** ([docs](docs/api/testkit/version-55-docs.md)): `vendor_sync.lua` reads a consumer's `LibKa0s sounds:` line, directly under its `LibKa0s icons:` line (`none.`, `all.` or a comma-separated list of `callout/<voice>` packs; **no line means none**), and the library pair holds `libs/LibKa0s/media/sounds/` to exactly the declared packs, each pack's credits and license included, byte-identical to the tag; a pack the tag does not carry fails. It publishes `parseSoundLine`, `soundDeclaration`, `soundCatalog` and `requiredSounds`; a pair takes a `sounds` field and `register` a `soundsPattern` opt (`library-stack-§7`, *The sound subset*, standard v2.108.0).
 - `tools/prune-icons.lua` prunes `media/sounds/` to the sounds line in the same run as the icons, reading and resolving both lines before it removes anything, so an unknown pack or a malformed line refuses the run with both folders untouched.
 - Tests: `tests/test_kit_vendor_sync.lua` covers the parser, the placement, the default none, the gate against a tagged fixture with two packs, and the tool's sound step and refusal; `tests/test_kit_inventory.lua` pins revision 55.
+
+### Tests in depth (L6)
+
+- The new `tests/test_callout_look.lua` (23 cases: each animation, every outline's flags, the shadow, the glow, a LibSharedMedia face and one the client cannot load, every stock key's kind color, the saved point, a drag and unlock-to-move) and `tests/test_callout_voice.lua` (27: numbers spoken only from the speak-from setting, text to speech with `C_VoiceChat` absent, partial and present, a custom sound path or FileDataID played as given, `finish = false`, `from` clamped to 1..20, `Suspend` / `Resume`), and `tests/test_callout_settings.lua` grows to 31 cases (slider bounds, list choices, refused writes, the font list, `Preview`, `TestCountdown`). The Callout document is completed with the stock texts, what each speaks, the packs, the `LibKa0s sounds:` line, *Adopting it* with its stub, and *Vendoring*.
+
+### Documentation (L7)
+
+- `README.md` names the twenty-third major in *What it is*, *The modules* and the repo layout, the `media/sounds/` carve-out in *Installing* and *Versioning*, and the voice packs' credits; its standards pointer moves v2.105.0 → v2.108.0 (v2.106.0's skin-default pin binds addons, v2.107.0 adds the Role row, v2.108.0 the Callout row and the sound subset).
+- `DEPENDENCIES.md`: the Callout's runtime voices (the bundled packs and the client's text to speech, nothing to install), the voice packs as build-time art whose text-to-speech models never ship, and what ships under which license.
+- `docs/releasing.md`: the version pointers at v1.96.0, the Callout's two constants and seventy-five files in step 2, twenty-three majors in step 3, the v1.96.0 re-vendor note's payload files, the floors and paired guards, and a Consumers row for the Callout (Combat Trail, planned). `CLAUDE.md`'s documentation map names `Callout`.
 
 ## v1.95.0 — 2026-11-10
 
