@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.98.0 — unreleased
+## v1.98.0 — 2026-11-14
 
 Opened 2026-11-14, on `feat/2026-11-13-callout-schema`: the Callout's settings on a Ka0s host's write route (plan row L11 of `docs/superpowers/plans/2026-11-13-callout.md`). Found while adopting the call-out in Ka0s Combat Trail: CalloutSettings' rows had no path, and their writes went from the instance straight into the host's `profile.callout`, around the host's `NS.SetByPath`. `architecture-§5` wants a schema row for every value a control chooses, every write through the host's one helper, and `/<slash> get|set|reset` reaching every setting. The owner chose a library fix, not a deviation row.
 
