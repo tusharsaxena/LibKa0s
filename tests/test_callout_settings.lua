@@ -447,6 +447,19 @@ test("callout settings: the call-out's display faces lead the font row, each whe
 
   local bare = values()
   assertEqual(table.concat(bare, ","), "Skin font,Game default,Ka0s Oxanium Bold", "nothing installed: the default alone")
+
+  -- red under: a face offered because the Media copy ships it while LibSharedMedia, present, does
+  -- not list it. LSM holds no face Media's RegisterLSM refused for the client's locale (its
+  -- langmask, Media.lua), and namedFont would then draw that face's raw file, boxes and all.
+  local refused = values(function(m)
+    local LSM = m.LibStub:NewLibrary("LibSharedMedia-3.0", 1)
+    LSM.List = function() return { "Ka0s Oxanium Bold", "Alpha Face" } end
+    LSM.Fetch = function() return nil end
+    local Media = m.LibStub:NewLibrary("LibKa0s-Media-1.0", 13)
+    Media.FONTS = { ["Ka0s Oxanium Bold"] = {}, ["Ka0s Russo One"] = {}, ["Ka0s Bebas Neue"] = {} }
+  end)
+  assertEqual(table.concat(refused, ","), "Skin font,Game default,Ka0s Oxanium Bold,Alpha Face",
+    "a face LibSharedMedia does not list is not offered, though the Media copy ships it")
 end)
 
 test("callout settings: FONT_FACES names the default first and the two Media minor 13 faces", function()

@@ -28,9 +28,12 @@ planned, does not ship). `CalloutSettings.lua` moves to **minor 2**; `Callout.lu
 | `FONT_FACES` | `{ "Ka0s Oxanium Bold", "Ka0s Bebas Neue", "Ka0s Russo One" }`: the call-out's display faces, in the order the font row offers them, `FONT_DEFAULT` first. Never mutate it | **1.2** |
 
 - **The font row** offers "Skin font", "Game default", then `FONT_FACES`, then every other face,
-  sorted. The default is offered always, as before; each other face only when LibSharedMedia lists
-  it or the winning `LibKa0s-Media-1.0` copy's `FONTS` has it, so a host whose Media copy predates
-  13 offers neither and a pick cannot fall back unseen. No face is listed twice.
+  sorted. The default is offered always, as before; each other face only when it is listed: by
+  LibSharedMedia when it lists any face, else by the winning `LibKa0s-Media-1.0` copy's `FONTS`.
+  So a host whose Media copy predates 13 offers neither, and a face Media's `RegisterLSM` refused
+  for the client's locale (its `langmask`: Bebas Neue is western only, Russo One western and ruRU)
+  is not offered where LibSharedMedia is loaded, though the file ships, because drawn from the raw
+  file it renders the player's text as boxes. No face is listed twice.
 - **What a consumer owes:** nothing. A face reaches LibSharedMedia's list once the host's
   `Media.RegisterLSM` runs, and a new font file needs a **full client restart** to load.
 
@@ -234,8 +237,8 @@ answers, or the ctx a host tab's `render` is handed). The rows are ordinary **pa
 instance), drawn by `O.RenderRows`, so every control is the panel's own dropdown, slider, checkbox,
 edit box or color swatch, in the host's skin and under its combat lock. The font row is the one media
 picker, `Ka0sMedia_Font` (options-ui-§23), offering "Skin font", "Game default", then `FONT_FACES`
-(the default always, Bebas Neue and Russo One when LibSharedMedia lists them or the Media copy ships
-them; from 1.2), then every other LibSharedMedia face (every LibKa0s-Media-1.0 face without it),
+(the default always, Bebas Neue and Russo One when LibSharedMedia lists them, or without it when
+the Media copy ships them; from 1.2), then every other LibSharedMedia face (every LibKa0s-Media-1.0 face without it),
 sorted. A color swatch's `get` answers both
 color shapes, `{ r, g, b, a, [1], [2], [3], [4] }`, and its `set` reads either, so the host's
 `colorDecode` / `colorEncode` pair does not matter.
