@@ -54,9 +54,10 @@
 -- each read at build time and optional.
 
 local lib = LibStub and LibStub("LibKa0s-Callout-1.0", true)
--- Minor 3 reads the shell's minor-2 privates (`__validFor`, `__defaultFor`, `__prefixOf`): an older
+-- Minor 3 reads the shell's minor-2 privates (`__validFor`, `__defaultFor`, `__colorFor`, `__prefixOf`): an older
 -- shell gets no settings section rather than one that raises.
-if not lib or type(lib.__methods) ~= "table" or type(lib.__validFor) ~= "function" then return end
+if not lib or type(lib.__methods) ~= "table" or type(lib.__validFor) ~= "function"
+  or type(lib.__colorFor) ~= "function" then return end
 
 -- Minor 1: the section (plan row L4).
 -- Minor 2 (plan row L2, v1.97.0): `FONT_FACES`, the call-out's display faces (Oxanium Bold, the
@@ -110,6 +111,7 @@ lib.SETTINGS_STRINGS = {
   VOICE = "Voice",
   VOICE_TIP = "A bundled voice, the game's text to speech (the voices your system has installed), or off.",
   TTS_VOICE = "Text to speech voice", TTS_VOICE_TIP = "Which of the game's voices speaks.",
+  TTS_VOICE_DEFAULT = "Default (%s)",
   TTS_RATE = "Speech rate", TTS_RATE_TIP = "How fast text to speech speaks, -10 to 10.",
   TTS_VOLUME = "Speech volume", TTS_VOLUME_TIP = "How loud text to speech speaks, 0 to 100.",
   CHANNEL = "Sound channel", CHANNEL_TIP = "The game's volume slider the voice follows.",
@@ -256,7 +258,10 @@ end
 -- are drawn.
 
 --- Bind `t` to setting `key`. `less` overrides the path-less row's get / set; `more` adds fields
---- to a schema row (a `normalize`, a `values` function).
+--- to a schema row (a `normalize`, a `values` function, a color row's `get`). A schema row's `get`
+--- comes with no `set`: Schema.Get answers through it, and a write still stores through the host's
+--- seam (prepareWrite stores a row with no `set`), so it must answer the stored value's equal at the
+--- default, or the host's reset count reads the row as changed.
 local function bind(B, key, t, less, more)
   local inst = B.inst
   t.key = key
@@ -319,6 +324,16 @@ local function ttsValues(inst)
   return out
 end
 
+--- The schema row's choices: the stored default, `false` (the client's first voice), leads as
+--- "Default (<first voice>)", so the dropdown names the voice spoken rather than showing blank. A
+--- path-less row maps `false` to the first voice through its own `get` instead; a schema row has no
+--- `get` here, since one answering the first voice's id would read as changed at the default.
+local function ttsSchemaValues(inst, L)
+  local out = ttsValues(inst)
+  if out[1] then table.insert(out, 1, { value = false, text = word(L, "TTS_VOICE_DEFAULT"):format(out[1].text) }) end
+  return out
+end
+
 --- The text to speech rows. Path-less (and in the Options build), only on a client that lists a
 --- voice; as schema rows (`all`), always, since the settings exist whether or not this client has a
 --- voice, with the choices read when they are drawn. Drawn disabled off "tts".
@@ -332,7 +347,7 @@ local function ttsRows(B, L, out, g, all)
     for _, v in ipairs(tts) do if v.voiceID == want then return want end end
     return tts[1] and tts[1].voiceID
   end
-  local values = B.prefix and function() return ttsValues(inst) end or ttsValues(inst)
+  local values = B.prefix and function() return ttsSchemaValues(inst, L) end or ttsValues(inst)
   row(out, "sound", g, nil, bind(B, "ttsVoice", { type = "number", label = word(L, "TTS_VOICE"),
     tooltip = word(L, "TTS_VOICE_TIP"), values = values, startsLine = true, disabledIf = notTts },
     { get = pickGet }))
@@ -364,7 +379,7 @@ local function colorRows(B, L, out, g)
         set = function(c)
           local r, gg, b = fromEither(c)
           if r then inst:SetColor(kind, r, gg, b) end
-        end }))
+        end }, { get = function() return lib.__colorFor(inst, kind) end }))
   end
 end
 

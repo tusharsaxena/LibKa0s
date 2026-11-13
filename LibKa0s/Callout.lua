@@ -404,11 +404,27 @@ local function defaultOf(S, key, named)
   return copy(lib.DEFAULTS[key])
 end
 
+--- A whole `texts` / `muted` table on the host's route, where only its leaves have rows: one leaf
+--- write per stock key, `d.set(prefix .. head .. "." .. KEY, v)`, a key the table leaves out (or a
+--- nil table) written as its default. Every leaf is written; answers whether every one landed.
+local function writeWhole(S, head, value)
+  local ok = true
+  for _, k in ipairs(lib.STOCK_ORDER) do
+    local leaf, v = head .. "." .. k, nil
+    if type(value) == "table" then v = value[k] end
+    if v == nil then v = defaultOf(S, leaf) end
+    if S.d.set(prefixOf(S) .. leaf, v) == false then ok = false end
+  end
+  return ok
+end
+
 --- Write one validated value. On the host's route that is `d.set(prefix .. key, value)`, nil sent as
---- the default (a schema row's validate takes no nil); else it is stored into `d.db`, a leaf by a
---- copy of its table with the one key changed, and nil removes it. Answers whether it landed.
+--- the default (a schema row's validate takes no nil), and a whole `texts` / `muted` split into its
+--- leaves; else it is stored into `d.db`, a leaf by a copy of its table with the one key changed,
+--- and nil removes it. Answers whether it landed.
 local function write(S, key, value)
   if hostWrites(S) then
+    if key == "texts" or key == "muted" then return writeWhole(S, key, value) end
     if value == nil then value = defaultOf(S, key) end
     return S.d.set(prefixOf(S) .. key, copy(value)) ~= false
   end
@@ -982,7 +998,8 @@ function METHODS:Get(key)
 end
 
 --- Write one setting and apply it. nil clears it back to the default. On the host's route (`d.path`
---- and `d.set`) the write is `d.set(d.path .. key, value)`; otherwise it lands in `d.db`. Answers
+--- and `d.set`) the write is `d.set(d.path .. key, value)`, a whole `texts` / `muted` as one write
+--- per stock key's leaf; otherwise it lands in `d.db`. Answers
 --- false for an unknown key, an invalid value, no table to write into, or a host seam that refused.
 function METHODS:Set(key, value)
   local S = state(self)
@@ -1114,8 +1131,15 @@ lib.__methods = METHODS
 
 -- What CalloutSettings.lua's schema rows (minor 3) read off an instance, private for the same
 -- reason: a row's validate (`__validFor`), its default (`__defaultFor`, a color in the host's shape),
--- the host's prefix (`__prefixOf`, nil without `d.path`) and whether a leaf key is one (`__known`).
+-- a color row's reader (`__colorFor`, the kind's color as it reads, re-encoded in the host's shape,
+-- so a stored array still reaches a swatch that decodes named keys), the host's prefix
+-- (`__prefixOf`, nil without `d.path`) and whether a leaf key is one (`__known`).
 lib.__validFor = function(inst, key, v) return validFor(state(inst), key, v) end
 lib.__defaultFor = function(inst, key) return copy(defaultOf(state(inst), key, true)) end
+lib.__colorFor = function(inst, kind)
+  local S = state(inst)
+  local r, g, b = colorOf(S, kind)
+  return encodeColor(S, r, g, b, true)
+end
 lib.__prefixOf = function(inst) return prefixOf(state(inst)) end
 lib.__known = known

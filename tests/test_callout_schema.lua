@@ -102,8 +102,12 @@ test("callout schema: SchemaRows answers a row with a path under the prefix for 
     assertTrue(type(r.group) == "string" and r.group ~= "", r.path .. " has a group (options-ui-§13)")
     assertTrue(r.type == "bool" or r.type == "number" or r.type == "string" or r.type == "color", r.path .. "'s type")
     if not r.sessionOnly then
-      assertNil(r.get, r.path .. " has no get of its own: the host stores it")
-      assertNil(r.set, r.path .. " has no set of its own")
+      if r.type == "color" then
+        assertEqual(type(r.get), "function", r.path .. " reads the stored color in either shape")
+      else
+        assertNil(r.get, r.path .. " has no get of its own: the host stores it")
+      end
+      assertNil(r.set, r.path .. " has no set of its own: the host stores it")
       assertEqual(type(r.validate), "function", r.path .. " validates")
       assertEqual(type(r.onChange), "function", r.path .. " reacts")
     end
@@ -222,7 +226,9 @@ test("callout schema: the text to speech rows are schema rows whatever the clien
   assertEqual(#by[PREFIX .. "ttsVoice"].values(), 0)
   local c2 = newCallout(nil, function(m) tts(m, { { voiceID = 3, name = "Zira" } }) end)
   local v = rowsByPath(c2:SchemaRows(PREFIX))[PREFIX .. "ttsVoice"].values()
-  assertEqual(v[1].value .. "," .. v[1].text, "3,Zira", "the choices are read when they are drawn")
+  assertFalse(v[1].value, "the default, the client's first voice, leads")
+  assertEqual(v[1].text, "Default (Zira)")
+  assertEqual(v[2].value .. "," .. v[2].text, "3,Zira", "the choices are read when they are drawn")
 end)
 
 test("callout schema: SchemaRows takes the descriptor's path when given none, and refuses with neither", function()
@@ -268,6 +274,80 @@ test("callout schema: on the host's route every write the instance makes goes th
   assertEqual(table.concat(host.writes, ","),
     "callout.size,callout.texts.GO,callout.muted.STOP,callout.colors.go,callout.size,callout.colors.go,callout.texts.GO")
   assertEqual(#host.announced, #host.writes, "and the host announced each")
+end)
+
+test("callout schema: a whole texts or muted table on the host's route is one write per stock key", function()
+  local c, host, _, _, Callout = hostCallout()
+  assertTrue(c:Set("texts", { GO = "Charge", STOP = "Halt" }), "the whole-table form still writes")
+  assertEqual(host.profile.callout.texts.GO, "Charge")
+  assertEqual(host.profile.callout.texts.STOP, "Halt")
+  assertEqual(host.profile.callout.texts.READY, "", "a key the table leaves out is its default")
+  assertEqual(c:Get("texts").GO, "Charge", "and the instance reads it back")
+  assertEqual(#host.writes, #Callout.STOCK_ORDER, "one leaf write per stock key")
+  for i, key in ipairs(Callout.STOCK_ORDER) do assertEqual(host.writes[i], PREFIX .. "texts." .. key) end
+  assertTrue(c:Set("muted", { GO = true }))
+  assertTrue(host.profile.callout.muted.GO)
+  assertFalse(host.profile.callout.muted.STOP)
+  assertTrue(c:Set("texts", nil), "nil puts every key's default back")
+  assertEqual(host.profile.callout.texts.GO, "")
+  assertEqual(host.profile.callout.texts.STOP, "")
+  assertTrue(c:Set("muted", nil))
+  assertFalse(host.profile.callout.muted.GO)
+  assertFalse(c:Set("texts", { GO = 5 }), "an invalid table is refused before any write")
+  assertEqual(host.profile.callout.texts.GO, "")
+  local h2
+  local refusing
+  refusing, h2 = hostCallout({ set = function(path, v)
+    if path == PREFIX .. "texts.STOP" then return false end
+    return h2.Set(path, v)
+  end })
+  assertFalse(refusing:Set("texts", { GO = "A", STOP = "B" }), "one refused leaf is a refused write")
+  assertEqual(h2.profile.callout.texts.GO, "A", "the leaves the seam took are written")
+end)
+
+test("callout schema: a stored array color shows its own color in the host's swatch", function()
+  local c, host = hostCallout()
+  host.profile.callout.colors.go = { 0.3, 0.2, 0.1 }   -- what a minor-1 instance wrote into d.db
+  assertEqual(table.concat({ c:GetColor("go") }, ","), "0.3,0.2,0.1")
+  local got = host.S.Get(PREFIX .. "colors.go")
+  assertEqual(got.r .. "," .. got.g .. "," .. got.b .. "," .. got.a, "0.3,0.2,0.1,1", "read in the host's shape")
+  local O, ctx, scroll = hostPage(host)
+  c:BuildSettings(ctx, { options = O, tab = "texts" })
+  local sw = widgetLabeled(scroll, "Go").color
+  assertEqual(sw.r .. "," .. sw.g .. "," .. sw.b, "0.3,0.2,0.1", "the swatch and the call-out agree")
+  widgetLabeled(scroll, "Go"):__fire("OnValueConfirmed", 0.5, 0.25, 0.5, 1)
+  assertEqual(host.profile.callout.colors.go.g, 0.25, "a write still stores through the seam")
+end)
+
+test("callout schema: a color row's reader counts a profile at its defaults as unchanged", function()
+  local _, host = hostCallout()
+  assertEqual(host.S.CountOffDefault(), 0, "the seeded defaults")
+  for _, kind in ipairs({ "go", "stop" }) do
+    local d = host.S.FindRow(PREFIX .. "colors." .. kind).default
+    host.profile.callout.colors[kind] = { d.r, d.g, d.b }   -- the default, in the array shape
+  end
+  assertEqual(host.S.CountOffDefault(), 0, "a default color stored as an array is still the default")
+  host.S.Set(PREFIX .. "colors.go", { r = 0, g = 0, b = 1, a = 1 })
+  assertEqual(host.S.CountOffDefault(), 1)
+  local _, host2 = hostCallout({ colorEncode = function(r, g, b) return { r, g, b, 1 } end })
+  assertEqual(host2.S.CountOffDefault(), 0, "the host's own shape, at its defaults")
+end)
+
+test("callout schema: the text to speech voice dropdown names the voice spoken at its default", function()
+  local c, host = hostCallout(nil, function(m) tts(m, { { voiceID = 7, name = "Zira" }, { voiceID = 9, name = "David" } }) end)
+  assertFalse(host.profile.callout.ttsVoice, "the stored default: the client's first voice")
+  local O, ctx, scroll = hostPage(host)
+  c:BuildSettings(ctx, { options = O, tab = "sound" })
+  local dd = widgetLabeled(scroll, "Text to speech voice")
+  assertFalse(dd.value, "the dropdown reads the stored value")
+  assertEqual(dd.list[false], "Default (Zira)", "and the default has a label naming the voice spoken")
+  assertEqual(dd.order[1], false)
+  assertEqual(dd.list[9], "David")
+  assertEqual(host.S.CountOffDefault(), 0, "the default is not counted as changed")
+  dd:__fire("OnValueChanged", 9)
+  assertEqual(host.profile.callout.ttsVoice, 9)
+  dd:__fire("OnValueChanged", false)
+  assertFalse(host.profile.callout.ttsVoice, "the default can be picked again")
 end)
 
 test("callout schema: a value the host's seam refuses is no write, and the instance says so", function()

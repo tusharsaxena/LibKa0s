@@ -709,7 +709,7 @@ Total.
 - callout settings: a plain refresh syncs every control to an outside write
 - callout settings: one plain tab builds that tab's rows alone, with no heading of its own
 
-### test_callout_schema.lua (21)
+### test_callout_schema.lua (25)
 
 - callout schema: SchemaRows answers a row with a path under the prefix for every setting a control chooses
 - callout schema: every stored row's default is what the instance reads with nothing stored
@@ -720,6 +720,10 @@ Total.
 - callout schema: SchemaRows takes the descriptor's path when given none, and refuses with neither
 - callout schema: New refuses a d.set with no d.path
 - callout schema: on the host's route every write the instance makes goes through the host's seam
+- callout schema: a whole texts or muted table on the host's route is one write per stock key
+- callout schema: a stored array color shows its own color in the host's swatch
+- callout schema: a color row's reader counts a profile at its defaults as unchanged
+- callout schema: the text to speech voice dropdown names the voice spoken at its default
 - callout schema: a value the host's seam refuses is no write, and the instance says so
 - callout schema: a drag's point and Reset position go through the host's seam
 - callout schema: a raising host seam under a drag reaches the error handler, not the drag
@@ -5109,7 +5113,7 @@ Total.
 | test_callout_look.lua | 27 |
 | test_callout_voice.lua | 29 |
 | test_callout_settings.lua | 34 |
-| test_callout_schema.lua | 21 |
+| test_callout_schema.lua | 25 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5286,4 +5290,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4480** |
+| **Total** | **4484** |

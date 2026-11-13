@@ -117,7 +117,7 @@ Read straight off the LibStub table.
 | `MAJOR`, `MINOR` | 1 | `"LibKa0s-Callout-1.0"`, `2` (from 2) |
 | `MODULES` | 1 | `{ Callout = 2, CalloutSettings = 3 }` (the second from 1.1, at 2 from 1.2, both moving at 2.3) |
 | `New(d)` | 1 | A new instance (below). Raises without `d.db` |
-| `DEFAULTS` | 1 | The settings table a host seeds its profile with (below). Never mutate it |
+| `DEFAULTS` | 1 | The settings' defaults (below), and the table a host **off the write route** seeds its profile with. A host on the route (`d.path`, from 2) seeds from `SchemaRows`' defaults instead: `DEFAULTS.texts` and `muted` are `{}` where the rows are one leaf per stock key, and `DEFAULTS.colors` are arrays where the rows' defaults are the host's shape (see [Adopting it](#adopting-it)). Never mutate it |
 | `SETTINGS` | 1 | The setting keys `Get`/`Set` take, sorted |
 | `PACKS` | 1 | `{ { key, folder, name }, ... }`: the bundled voice packs, in settings order: `female` (folder `female-kathleen`, Piper kathleen) and `male` (folder `male-joe`, Piper joe), each with its `CREDITS.md` and license texts |
 | `TTS`, `OFF` | 1 | `"tts"`, `"off"`: the two `voice` values that are not a pack |
@@ -210,7 +210,11 @@ nil clears back to the default. From 2 both take the leaf keys `texts.<KEY>`, `m
 `colors.<kind>`. **Where the write lands** is the descriptor's choice: with `d.path` and `d.set` it is
 `d.set(d.path .. key, value)`, a nil sent as the default (`""` for a text, `false` for a mute, the
 kind's color in the host's shape, `DEFAULTS`' value otherwise), and the instance never writes
-`d.db`; without them it is `d.db` itself, as at 1.2, a nil removing the key.
+`d.db`; without them it is `d.db` itself, as at 1.2, a nil removing the key. On the route a whole
+`texts` or `muted` table (1.2's form) is written as its leaves, since only they have rows: one
+`d.set(d.path .. "texts." .. KEY, v)` per stock key, in `STOCK_ORDER`, a key the table leaves out
+(or a nil table) sent as its default, so `Set("texts", t)` replaces the whole table exactly as off
+the route. Every leaf is sent, and `Set` answers false when the seam refused any of them.
 
 | Key | Default | Valid |
 |---|---|---|
@@ -285,7 +289,8 @@ too when the descriptor gives `set`, and the host's `db` otherwise.
 | `validate(v)` | The instance's own rule for the key (the same one `Set` applies), a pack outside `d.packs` refused |
 | `normalize(v)` | A stock key's text only: trimmed |
 | `onChange()` | The instance's `Apply()`, so a write by path, from the panel, the slash command or a reset, reaches the frame |
-| `min`, `max`, `step` / `values` | A number row's bounds, or a list's `{ value, text }` choices. The voice's and the text to speech voice's are functions, read when drawn: the packs the host ships, then `tts` and `off`; the client's voices. The font row's is the `Ka0sMedia_Font` picker's list, a function as before |
+| `min`, `max`, `step` / `values` | A number row's bounds, or a list's `{ value, text }` choices. The voice's and the text to speech voice's are functions, read when drawn: the packs the host ships, then `tts` and `off`; the client's voices, led (when it lists any) by `{ value = false, text = "Default (<first voice>)" }` (`SETTINGS_STRINGS.TTS_VOICE_DEFAULT`), so the stored default names the voice it speaks. The font row's is the `Ka0sMedia_Font` picker's list, a function as before |
+| `get` | A color row's only (no row has a `set`): the kind's color as the instance reads it, either stored shape, answered in the host's shape (`d.colorEncode`'s, else `{ r, g, b, a = 1 }`). `Schema.Get` answers through it, so a color a 1.2 instance stored as an array still reaches the host's swatch as its own color and a default color reads as the default; a write still stores through the host's seam |
 | `label`, `tooltip`, `group`, `subgroup`, `tab`, `startsLine`, `disabledIf`, `dialogControl`, `hasAlpha` | The panel's: `group` is the tab's word (Look, Sound, Texts), `subgroup` the Texts tab's two (Colors, Stock texts), `disabledIf` a predicate |
 | `page` | `opts.page`, when given |
 
@@ -317,9 +322,13 @@ edit box or color swatch, in the host's skin and under its combat lock. The font
 picker, `Ka0sMedia_Font` (options-ui-§23), offering "Skin font", "Game default", then `FONT_FACES`
 (the default always, Bebas Neue and Russo One when LibSharedMedia lists them, or without it when
 the Media copy ships them; from 1.2), then every other LibSharedMedia face (every LibKa0s-Media-1.0 face without it),
-sorted. A color swatch's `get` answers both
+sorted. **Off the route** a color swatch's `get` answers both
 color shapes, `{ r, g, b, a, [1], [2], [3], [4] }`, and its `set` reads either, so the host's
-`colorDecode` / `colorEncode` pair does not matter.
+`colorDecode` / `colorEncode` pair does not matter there. **On the route** the swatch is the host's:
+it reads through the descriptor's `get(path)` (the color row's `get`, in the host's shape) and decodes
+with the host's `colorDecode`, and it writes what the host's `colorEncode` makes through the seam. So
+there the codec does matter: `colorDecode` must read the shape `d.colorEncode` writes (the named
+shape when it is not given), and the host passes its Options codec's encoder as `d.colorEncode`.
 
 `opts.tab` (`"look"`, `"sound"` or `"texts"`) draws one tab with no heading of its own, in either build; without it
 the three draw one under another, each under its heading. Options-ui-§13 puts sections on tabs, so a
@@ -403,13 +412,23 @@ NS.Callout = Callout and Callout:New({
     debug = function(tag, msg) NS.Debug(tag, msg) end,
 }) or NS.CalloutStub   -- defined first: nil here would leave NS.Callout nil
 
--- settings/Schema.lua: the rows join the host's schema, so its AceDB defaults (profile.callout.*),
--- its panel, its /ct get|set|list|reset and its boot check all cover them. The drag's point joins
--- the Schema descriptor's writeThrough and is named in docs/schema.md as non-setting state.
--- `writeThrough` is read once, at the Schema's :New, so its list names "callout.point" there:
--- the second answer below, which a suite holds the host's list to.
+-- settings/Schema.lua: the rows join the host's schema, so its panel, its /ct get|set|list|reset
+-- and its boot check all cover them. The drag's point joins the Schema descriptor's writeThrough
+-- and is named in docs/schema.md as non-setting state. `writeThrough` is read once, at the
+-- Schema's :New, so its list names "callout.point" there: the second answer below, which a suite
+-- holds the host's list to.
 local rows, named = NS.Callout:SchemaRows("callout.", { page = "race" })
 NS.RegisterSchemaRows(rows)
+
+-- defaults/Profile.lua: the AceDB defaults for profile.callout come from the ROWS, before
+-- AceDB:New, never from Callout.DEFAULTS (the off-route seed): its texts and muted are {} where the
+-- rows are one leaf per stock key, and its colors arrays where the rows' are the host's shape.
+-- Seeded from DEFAULTS, Validate's defaultsRoot reports the 46 text and mute paths missing and
+-- the reset count reads the six colors as changed. The point is seeded from DEFAULTS.point.
+for _, r in ipairs(rows) do
+    if not r.sessionOnly then LibStub("LibKa0s-Schema-1.0").Write(NS.defaults.profile, r.path, r.default) end
+end
+LibStub("LibKa0s-Schema-1.0").Write(NS.defaults.profile, named[1], Callout.DEFAULTS.point)
 
 -- The race clock and the call-out read the same endsAt, so they never disagree.
 local endsAt = GetTime() + 10
