@@ -25,6 +25,12 @@ Versions in this release: `LibKa0s-Media-1.0` key **13.1** (Media minor 13); `Li
 - Tests: `tests/test_media.lua` counts thirty-five faces and holds both to upstream's static files under their own names; `tests/test_skin_width_parity.lua` pins both faces' measured advances and counts thirty-five rows; `tests/test_callout_settings.lua` adds the font row's order and its two `FONT_FACES` cases, with LibSharedMedia loaded and not listing a shipped face among them; `tests/test_kit_inventory.lua` pins revision 56.
 - Documentation: `README.md` (thirty-five faces, the Media, Skin and Callout rows, the kit line; the faces' terms stay in `FONTS.md` alone), `DEPENDENCIES.md` (the faces' provenance), `docs/releasing.md` (the version pointers at v1.97.0 and the v1.97.0 re-vendor note), `CLAUDE.md`'s register row (the Callout's key, and its one-release trigger, which fires at this release with no second consumer named: the row records that the owner's ruling on it is pending).
 
+Release gate (`docs/automated-tests/20261113-233957/`): lint pass, 0/0 in 333 files;
+tests pass, 4462 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (Media 13, SkinDefsOthers 9, CalloutSettings 2 and kit revision 56 only).
+
 ## v1.96.0 — 2026-11-13
 
 Opened 2026-11-13, on `feat/2026-11-13-callout`: the call-out major, `LibKa0s-Callout-1.0`, built for Ka0s Combat Trail's race countdown on the owner's rulings of 2026-11-13 (`docs/superpowers/plans/2026-11-13-callout.md`, adoption issue LibKa0s#85), and the sound subset that lets a consumer ship only the voice packs it declares (`library-stack-§7`, *The sound subset*, standard v2.108.0).
