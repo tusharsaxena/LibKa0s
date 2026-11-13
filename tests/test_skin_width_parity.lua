@@ -37,6 +37,8 @@ local WIDTH = {
   ["Ka0s Atkinson"]            = { body = 0.4698, title = 0.4806, hud = 0.4944 },
   ["Ka0s Atkinson Bold"]       = { body = 0.5061, title = 0.5158, hud = 0.5277 },
   ["Ka0s Avant Garde"]         = { body = 0.5070, title = 0.5156, hud = 0.5219 },
+  -- The Callout's faces (Media minor 13), measured 2026-11-13 by the same script on the shipped bytes.
+  ["Ka0s Bebas Neue"]          = { body = 0.3569, title = 0.3606, hud = 0.3712 },
   ["Ka0s Bitter"]              = { body = 0.4923, title = 0.5061, hud = 0.5156 },
   ["Ka0s Bitter Bold"]         = { body = 0.5032, title = 0.5169, hud = 0.5282 },
   ["Ka0s Doris PP"]            = { body = 0.5248, title = 0.5330, hud = 0.5500 },
@@ -59,6 +61,7 @@ local WIDTH = {
   ["Ka0s Philosopher"]         = { body = 0.4543, title = 0.4673, hud = 0.4753 },
   ["Ka0s Philosopher Bold"]    = { body = 0.4720, title = 0.4864, hud = 0.4942 },
   ["Ka0s Prototype"]           = { body = 0.4735, title = 0.4804, hud = 0.4911 },
+  ["Ka0s Russo One"]           = { body = 0.5403, title = 0.5527, hud = 0.5600 },
   ["Ka0s Segoe UI"]            = { body = 0.4682, title = 0.4719, hud = 0.4919 },
   ["Ka0s Segoe UI Bold"]       = { body = 0.5015, title = 0.5065, hud = 0.5289 },
   ["Ka0s Segoe UI Light"]      = { body = 0.4537, title = 0.4579, hud = 0.4754 },
@@ -167,7 +170,7 @@ test("skin width parity: every shipped face has a size for each role, as wide as
     end
     count = count + 1
   end
-  assertEqual(count, 33, "the shipped faces")
+  assertEqual(count, 35, "the shipped faces")
   assertTrue(Skin.__FACE_SIZES["Ka0s Friz Quadrata TT"] == nil, "Friz's row left with the face (R3-L7)")
   for key in pairs(Skin.__FACE_SIZES) do
     assertTrue(Media.FONTS[key] ~= nil, key .. "'s row names a shipped face")

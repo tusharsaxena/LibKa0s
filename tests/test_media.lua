@@ -23,7 +23,8 @@ local FONT_DIR = "LibKa0s/media/fonts"
 -- v1.81.0 shipped them and every older face stays: Inter's two and Fira Sans Regular draw Cyrillic.
 -- R3-L6 adds Ubuntu Regular, WoW Default's face, under the Ubuntu font license (UFL 1.0); it draws Cyrillic.
 -- R3-L7 deletes Ka0s Friz Quadrata TT, western only: no skin draws it, and a stored pick moves to Ubuntu.
-local FONT_COUNT, RU_COUNT = 33, 26
+-- Minor 13 adds the Callout's two display faces: Russo One draws Cyrillic, Bebas Neue does not.
+local FONT_COUNT, RU_COUNT = 35, 27
 
 --- The basenames on disk under `dir`, as a set. Lua 5.1 has no directory API and this repo does not
 --- depend on LuaFileSystem, so the listing shells out — the same bargain tests/_kit/vendor_sync.lua
@@ -572,6 +573,9 @@ local SKIN_FACES = {
                                   license = "AtkinsonHyperlegible-OFL.txt" },
   ["Ka0s Atkinson Bold"]      = { file = "AtkinsonHyperlegible-Bold.ttf",
                                   license = "AtkinsonHyperlegible-OFL.txt" },
+  -- Minor 13: the Callout's display faces (LibKa0s-Callout-1.0), upstream's static files, unchanged.
+  ["Ka0s Bebas Neue"]         = { file = "BebasNeue-Regular.ttf", license = "BebasNeue-OFL.txt" },
+  ["Ka0s Russo One"]          = { file = "RussoOne-Regular.ttf", license = "RussoOne-OFL.txt", ru = true },
 }
 
 -- The families cut from a variable font upstream, whose license records the instancing.
@@ -741,6 +745,40 @@ test("media: Open Sans ships the Apache 2.0 text, and each new face's bytes carr
     local face = readFile(FONT_DIR .. "/" .. want.file) or ""
     assertTrue(face ~= "", want.file .. " is missing")
     assertTrue(nameTableHas(face, want.notice), name .. "'s name table lacks \"" .. want.notice .. "\"")
+  end
+end)
+
+-- The Callout's faces (minor 13), by file: the copyright notice upstream's name table carries. Russo One
+-- reserves its name under the OFL, so a modified (instanced or renamed) copy may not ship under it:
+-- each must be upstream's static file, with no variation table.
+local CALLOUT_FACES = {
+  ["BebasNeue-Regular.ttf"] = { license = "BebasNeue-OFL.txt", notice = "The Bebas Neue Project Authors" },
+  ["RussoOne-Regular.ttf"]  = { license = "RussoOne-OFL.txt", notice = "Jovanny Lemonad" },
+}
+
+--- The table tags of a TrueType file's table directory, as a set.
+local function tableTags(body)
+  local tags = {}
+  local hi, lo = body:byte(5, 6)
+  for i = 0, (hi or 0) * 256 + (lo or 0) - 1 do
+    tags[body:sub(13 + i * 16, 16 + i * 16)] = true
+  end
+  return tags
+end
+
+test("media: the Callout faces are upstream's static files, unchanged, under their own names", function()
+  -- red under: an instanced or renamed Russo One, which the reserved name "Russo" forbids shipping as
+  -- Russo One, a variable cut, or a different face swapped in under the same file
+  for file, want in pairs(CALLOUT_FACES) do
+    local face = readFile(FONT_DIR .. "/" .. file) or ""
+    assertTrue(face ~= "", file .. " is missing")
+    local tags = tableTags(face)
+    assertTrue(tags.glyf == true, file .. " is not a TrueType face")
+    assertTrue(tags.fvar == nil, file .. " is a variable font")
+    assertTrue(nameTableHas(face, want.notice), file .. "'s name table lacks \"" .. want.notice .. "\"")
+    local license = readFile(FONT_DIR .. "/" .. want.license) or ""
+    assertTrue(license:find("SIL Open Font License, Version 1.1", 1, true) ~= nil, want.license .. " is not the OFL")
+    assertTrue(license:find("static instances", 1, true) == nil, want.license .. " records an instancing")
   end
 end)
 

@@ -1,5 +1,6 @@
--- tests/test_callout_settings.lua — LibKa0s-Callout-1.0's CalloutSettings.lua (minor 1): the settings
--- section a consumer drops into its own panel (plan row L4).
+-- tests/test_callout_settings.lua — LibKa0s-Callout-1.0's CalloutSettings.lua (minor 2): the settings
+-- section a consumer drops into its own panel (plan row L4), its font row led by the call-out's
+-- display faces from minor 2 (plan row L2).
 --
 -- Two benches. The call-out is tests/fixture_callout.lua's (its own environment, CalloutSettings.lua
 -- loaded after Callout.lua). The Options build draws into a page of tests/fixture_options.lua's
@@ -52,10 +53,10 @@ end
 
 -- ── the version ──────────────────────────────────────────────────────────────────────────────
 
-test("callout settings: CalloutSettings is at minor 1, paired on the Callout shell's minor", function()
+test("callout settings: CalloutSettings is at minor 2, paired on the Callout shell's minor", function()
   local c, _, _, _, Callout = newCallout()
-  assertEqual(Callout.MODULES.CalloutSettings, 1)
-  assertEqual(Callout.__settingsMinor, 1)
+  assertEqual(Callout.MODULES.CalloutSettings, 2)
+  assertEqual(Callout.__settingsMinor, 2)
   assertEqual(Callout.__settingsShellMinor, Callout.MINOR)
   for _, name in ipairs({ "BuildSettings", "SettingsRows", "SettingsTabs", "Preview", "TestCountdown", "Look" }) do
     assertEqual(type(c[name]), "function", "an instance has " .. name)
@@ -406,6 +407,52 @@ test("callout settings: the font list leads with the skin's and the game's faces
   assertEqual(values[1] .. "," .. values[2], "Skin font,Game default")
   assertTrue(list:find("Big Face", 1, true) ~= nil)
   assertTrue(list:find("Alpha Face", 1, true) ~= nil)
+end)
+
+test("callout settings: the call-out's display faces lead the font row, each when it can be drawn", function()
+  -- Plan row L2 (minor 2). red under: the faces sorted in among the rest, a face offered that neither
+  -- LibSharedMedia lists nor the Media copy ships (an older copy, before Media minor 13), a face
+  -- listed twice, or Oxanium, the default, missing with neither present.
+  local function values(before)
+    local c = newCallout(nil, before)
+    local out = {}
+    for i, v in ipairs(rowsByKey(c:SettingsRows({ tab = "look" })).font.values()) do out[i] = v.value end
+    return out
+  end
+  local listed = values(function(m)
+    local LSM = m.LibStub:NewLibrary("LibSharedMedia-3.0", 1)
+    LSM.List = function()
+      return { "Alpha Face", "Ka0s Russo One", "Ka0s Oxanium Bold", "Ka0s Bebas Neue", "Zulu Face" }
+    end
+    LSM.Fetch = function() return nil end
+  end)
+  assertEqual(table.concat(listed, ","),
+    "Skin font,Game default,Ka0s Oxanium Bold,Ka0s Bebas Neue,Ka0s Russo One,Alpha Face,Zulu Face",
+    "the skin's, the game's, then the three faces in their order, then the rest sorted, each once")
+
+  local old = values(function(m)
+    local Media = m.LibStub:NewLibrary("LibKa0s-Media-1.0", 12)
+    Media.FONTS = { ["Ka0s Oxanium Bold"] = {}, ["Ka0s Prototype"] = {} }
+  end)
+  assertEqual(table.concat(old, ","), "Skin font,Game default,Ka0s Oxanium Bold,Ka0s Prototype",
+    "a Media copy without the two faces offers neither")
+
+  local shipped = values(function(m)
+    local Media = m.LibStub:NewLibrary("LibKa0s-Media-1.0", 13)
+    Media.FONTS = { ["Ka0s Russo One"] = {}, ["Ka0s Bebas Neue"] = {}, ["Ka0s Prototype"] = {} }
+  end)
+  assertEqual(table.concat(shipped, ","),
+    "Skin font,Game default,Ka0s Oxanium Bold,Ka0s Bebas Neue,Ka0s Russo One,Ka0s Prototype",
+    "with no LibSharedMedia the Media copy's faces stand in, the default offered regardless")
+
+  local bare = values()
+  assertEqual(table.concat(bare, ","), "Skin font,Game default,Ka0s Oxanium Bold", "nothing installed: the default alone")
+end)
+
+test("callout settings: FONT_FACES names the default first and the two Media minor 13 faces", function()
+  local _, _, _, _, Callout = newCallout()
+  assertEqual(table.concat(Callout.FONT_FACES, ","), "Ka0s Oxanium Bold,Ka0s Bebas Neue,Ka0s Russo One")
+  assertEqual(Callout.FONT_FACES[1], Callout.FONT_DEFAULT)
 end)
 
 -- ── the preview, in depth ────────────────────────────────────────────────────────────────────

@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Callout-1.0` |
 | Files and minors | `Callout.lua` minor **1** · `CalloutSettings.lua` minor **1** (paired on `Callout.lua`'s minor) |
 | Shipped in | v1.96.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (the first version of this major) |
-| Superseded by | — |
+| Superseded by | [version 1.2](./version-1.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
 | Optional at call time | the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 1, CalloutSettings = 1 }` |
@@ -358,3 +358,9 @@ order, so the whole-folder copy brings them in with no load-list change in the h
 **Consumer census.** Not measured: the major is new at v1.96.0, after the v1.83.0 stamp of
 [`CONSUMERS.md`](../CONSUMERS.md). Ka0s Combat Trail is its one planned consumer (LibKa0s#85); every
 export's verdict is *zero — planned at v1.96.0* until the next re-run.
+
+## Moving to version 1.2
+
+Nothing to do. The font row offers `Ka0s Bebas Neue` and `Ka0s Russo One` (`LibKa0s-Media-1.0` 13.1)
+right after the default face, when the host's LibSharedMedia lists them or its Media copy ships them,
+and `FONT_FACES` names the three. A host test that reads the font row's order sees them lead.

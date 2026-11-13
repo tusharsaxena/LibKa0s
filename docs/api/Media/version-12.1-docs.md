@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **12** · `MediaIcons.lua` minor **1** |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 11.1](./version-11.1-docs.md) (shipped in v1.83.0) — the same surface, with no `Solid` border in LibSharedMedia |
-| Superseded by | — |
+| Superseded by | [version 13.1](./version-13.1-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 12, MediaIcons = 1 }` |
 
 ## What changed at this version
@@ -577,3 +577,7 @@ and normalized line endings on everything, which is right for Lua and wrong for 
 - `lib.BORDERS`: no consumer as of v1.83.0, kept because it is the catalog `Border` reads.
 - `lib.Background`: no consumer as of v1.83.0, kept because the Skin major reaches it, so no host names it; the name-only hits are host functions of the same name.
 - `lib.Border`: no consumer as of v1.83.0, kept because the Skin major reaches it, so no host names it; the name-only hits are host functions of the same name.
+
+## Moving to 13.1
+
+Nothing to do. `FONTS` gains `Ka0s Bebas Neue` and `Ka0s Russo One`, so a test that counts the shipped faces counts thirty-five, and a picker over LibSharedMedia's font list offers both after a full client restart.
