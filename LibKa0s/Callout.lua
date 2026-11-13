@@ -16,7 +16,7 @@
 -- (the frame's global name), `addon` and `vendorPath` (where the payload sits, for the voice packs
 -- and the bundled fonts), `soundsBase` (the folder holding the packs, overriding the one `addon`
 -- implies), `skin` (a registered skin owner, for the "Skin font" choice and the drag strip),
--- `label` (the drag strip's text) and `debug` (`debug(tag, msg)`). docs/api/Callout/version-1-docs.md
+-- `label` (the drag strip's text) and `debug` (`debug(tag, msg)`). docs/api/Callout/version-1.1-docs.md
 -- is the full contract.
 --
 -- ── TIMING ───────────────────────────────────────────────────────────────────────────────────
@@ -146,6 +146,7 @@ lib.DEFAULTS = {
   voice = "female", channel = "Master", speakFrom = 5,
   ttsVoice = false, ttsRate = 0, ttsVolume = 100,   -- false: the client's first voice
   texts = {},                                        -- key -> the player's own text for a stock key
+  muted = {},                                        -- key -> true: that stock key shows unspoken
 }
 
 local TAG = "CALLOUT"
@@ -185,6 +186,14 @@ local function validTexts(v)
   return true
 end
 
+local function validMuted(v)
+  if type(v) ~= "table" then return false end
+  for k, m in pairs(v) do
+    if not (lib.STOCK[k] and type(m) == "boolean") then return false end
+  end
+  return true
+end
+
 -- What each setting may hold. A stored value that fails is read as the default (never written).
 local VALID = {
   font = nonEmpty, size = between(lib.SIZE_MIN, lib.SIZE_MAX), outline = oneOf(lib.OUTLINES),
@@ -195,7 +204,7 @@ local VALID = {
   speakFrom = function(v) return between(1, lib.MAX_FROM)(v) and v == math.floor(v) end,
   ttsVoice = function(v) return v == false or finite(v) end,
   ttsRate = between(-10, 10), ttsVolume = between(0, 100),
-  texts = validTexts,
+  texts = validTexts, muted = validMuted,
 }
 lib.SETTINGS = {}
 for key in pairs(VALID) do lib.SETTINGS[#lib.SETTINGS + 1] = key end
@@ -575,6 +584,7 @@ end
 --- What an entry says, by the voice setting. Answers whether anything was played.
 local function sound(S, entry)
   if entry.voice == false then return false end
+  if entry.stock and get(S, "muted")[entry.key] then return false end
   local voice = get(S, "voice")
   if voice == lib.OFF then return false end
   if entry.sound then return playFile(S, entry.sound) end
@@ -596,7 +606,7 @@ local function stockEntry(S, key)
   if not stock then return nil end
   local own = get(S, "texts")[key]
   return { key = key, text = nonEmpty(own) and own or stock.text, kind = stock.kind,
-    say = stock.say, line = key:lower() }
+    say = stock.say, line = key:lower(), stock = true }
 end
 
 local function customEntry(spec)
@@ -861,6 +871,14 @@ end
 --- The frame, built on first use.
 function METHODS:Frame() return build(state(self)) end
 
+--- The look as the frame draws it: `{ font, size, flags, shadow, shadowX, shadowY, glow }`, the
+--- font resolved to a file path. A fresh table, for a host's (or CalloutSettings.lua's) preview.
+function METHODS:Look()
+  local S = state(self)
+  return { font = fontPath(S), size = get(S, "size"), flags = fontFlags(S), shadow = get(S, "shadow"),
+    shadowX = get(S, "shadowX"), shadowY = get(S, "shadowY"), glow = get(S, "glow") }
+end
+
 --- The instance's state, for a host's diagnostics report and its suites.
 function METHODS:Stats()
   local S = state(self)
@@ -885,3 +903,7 @@ function lib:New(d)   -- luacheck: ignore 212/self
   STATE[inst] = { d = d, anims = {}, logged = {}, locked = true, suspended = false, awake = false }
   return inst
 end
+
+-- The method table every New copies, for this major's paired files (CalloutSettings.lua adds the
+-- settings section to it) and nobody else. Private: a host calls methods on an instance.
+lib.__methods = METHODS

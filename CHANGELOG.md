@@ -16,9 +16,18 @@ Opened 2026-11-13, on `feat/2026-11-13-callout`: the call-out major (`docs/super
 
 ### The Callout major (L3)
 
-- **Callout minor 1** ([docs](docs/api/Callout/version-1-docs.md)), `LibKa0s/Callout.lua`, loaded after `Toast.lua`: `New(d)` with the host's `db`; `Countdown{ endsAt, from, finish, onTick, onDone }` whose number is `math.ceil(endsAt - GetTime())`, read in an OnUpdate armed only while a countdown runs or a call-out holds; `Show` for the 23 stock keys, the numbers 1 to 20 and custom texts; the look (font, size, outline, shadow, per-kind colors, glow, AnimationGroup animations, saved position, unlock-to-move) and the sound (voice packs by `PACKS`, text to speech through `C_VoiceChat`, channel, speak-from) settings with `DEFAULTS`; `Suspend` / `Resume`.
+- **Callout minor 1** ([docs](docs/api/Callout/version-1.1-docs.md)), `LibKa0s/Callout.lua`, loaded after `Toast.lua`: `New(d)` with the host's `db`; `Countdown{ endsAt, from, finish, onTick, onDone }` whose number is `math.ceil(endsAt - GetTime())`, read in an OnUpdate armed only while a countdown runs or a call-out holds; `Show` for the 23 stock keys, the numbers 1 to 20 and custom texts; the look (font, size, outline, shadow, per-kind colors, glow, AnimationGroup animations, saved position, unlock-to-move) and the sound (voice packs by `PACKS`, text to speech through `C_VoiceChat`, channel, speak-from) settings with `DEFAULTS`; `Suspend` / `Resume`.
 - **DebugLogDiagnostics minor 9** ([docs](docs/api/DebugLog/version-22.9.1.4-docs.md)): the report's `LibKa0s running:` line names Callout. No member change.
 - Tests: the new `tests/test_callout.lua` on `tests/fixture_callout.lua`, and `tests/test_debuglog_diagnostics.lua` re-pins `DebugLogDiagnostics 9`.
+
+### The voice packs (L1)
+
+- `LibKa0s/media/sounds/callout/female-kathleen/` and `male-joe/`: the 43 lines of `Callout.LINES` each, Ogg Vorbis, synthesized with Piper `en_US-kathleen-medium` and `en_US-joe-medium` (CC0 datasets; kathleen's base model is trained on Hi-Fi TTS, CC BY 4.0, credited in its `CREDITS.md`), each with its license texts. `Callout.PACKS` keys them `female` and `male`.
+
+### The settings section (L4)
+
+- **CalloutSettings minor 1** ([docs](docs/api/Callout/version-1.1-docs.md#the-settings-section)), `LibKa0s/CalloutSettings.lua`, loaded after `Callout.lua` and paired on its minor: `BuildSettings(parent, opts)` draws the Look, Sound and Texts rows with the host's Options instance (path-less schema rows, the font row the `Ka0sMedia_Font` picker) or, without one, in plain frames; a live preview with Test countdown and Play; Unlock to move and Reset position; `SettingsTabs(opts)` for a host's `RenderTabbedSchema`; `SettingsRows`, `Preview`, `TestCountdown`; the words in `SETTINGS_STRINGS`. `Callout.lua` gains, inside its unreleased minor 1, the `muted` setting and `Look()`.
+- Tests: the new `tests/test_callout_settings.lua`; `tests/test_callout.lua` holds every pack folder to `LINES`.
 
 ## v1.95.0 — 2026-11-10
 

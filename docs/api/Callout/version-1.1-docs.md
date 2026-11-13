@@ -1,4 +1,4 @@
-# `LibKa0s-Callout-1.0` — version 1
+# `LibKa0s-Callout-1.0` — version 1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Callout surface points here rather than restating it. It describes the
@@ -8,16 +8,25 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Callout-1.0` |
-| Files and minors | `Callout.lua` minor **1** |
+| Files and minors | `Callout.lua` minor **1** · `CalloutSettings.lua` minor **1** (paired on `Callout.lua`'s minor) |
 | Shipped in | v1.96.0 |
 | Status | **Current** |
 | Supersedes | — (the first version of this major) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
-| Optional at call time | `LibKa0s-Media-1.0` (`Font`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), `LibSharedMedia-3.0` (`Fetch`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
-| Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 1 }` |
+| Optional at call time | the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, and the `Ka0sMedia_Font` picker through its row), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
+| Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 1, CalloutSettings = 1 }` |
 
-## What changed at this version: the major is new
+## What changed at this version: the settings section (`CalloutSettings.lua` 1, plan row L4)
+
+The version is new with its major (v1.96.0 ships 1.1, never 1 alone). `CalloutSettings.lua` adds
+the settings section to every instance: `BuildSettings`, `SettingsRows`, `SettingsTabs`, `Preview`
+and `TestCountdown`, with the words in `SETTINGS_STRINGS` and the tab keys in `SETTINGS_TABS`.
+`Callout.lua` gains, at its minor 1 and before any release, the `muted` setting (a stock key shown
+without its voice, the Texts tab's per-key mute) and `Look()`, the look the frame draws, which the
+preview reads. See [The settings section](#the-settings-section).
+
+## What changed at version 1: the major is new
 
 The owner's decisions of 2026-11-13 (`docs/superpowers/plans/2026-11-13-callout.md`, adoption issue
 [LibKa0s#85](https://github.com/tusharsaxena/LibKa0s/issues/85)): a big center-screen call-out for
@@ -59,7 +68,7 @@ Read straight off the LibStub table.
 | Name | Since | Meaning |
 |---|---|---|
 | `MAJOR`, `MINOR` | 1 | `"LibKa0s-Callout-1.0"`, `1` |
-| `MODULES` | 1 | `{ Callout = 1 }` |
+| `MODULES` | 1 | `{ Callout = 1, CalloutSettings = 1 }` (the second from 1.1) |
 | `New(d)` | 1 | A new instance (below). Raises without `d.db` |
 | `DEFAULTS` | 1 | The settings table a host seeds its profile with (below). Never mutate it |
 | `SETTINGS` | 1 | The setting keys `Get`/`Set` take, sorted |
@@ -79,6 +88,8 @@ Read straight off the LibStub table.
 | `SIZE_MIN`, `SIZE_MAX` | 1 | `32`, `200` |
 | `STRATA` | 1 | `"HIGH"` (frame-layering's alert tier) |
 | `WIDTH` | 1 | `900`: the frame's width; its height is 1.5 × the size |
+| `SETTINGS_STRINGS` | 1.1 | Every word the settings section shows, US English, keyed; a host overrides any through `opts.L` |
+| `SETTINGS_TABS` | 1.1 | `look`, `sound`, `texts`: the section's tabs, in order |
 
 The stock keys: `READY`, `GO`, `START`, `STOP`, `WARNING`, `ERROR`, `DONE`, `FINISH`, `NEW_BEST`,
 `PAUSE`, `RESUME`, `CANCELED`, `PULL`, `INTERRUPT`, `MOVE`, `DEFENSIVE`, `REBUFF`, `EXPIRING`,
@@ -120,6 +131,7 @@ nil clears back to the default.
 | `ttsVoice` | `false` | false (the client's first voice) or a `voiceID` |
 | `ttsRate`, `ttsVolume` | `0`, `100` | −10 – 10; 0 – 100 |
 | `texts` | `{}` | stock key → the player's own text for it |
+| `muted` | `{}` | stock key → `true`: that key shows without its voice (from 1.1) |
 
 Default colors: `number` white, `info` (0.35, 0.75, 1), `go` (0.3, 1, 0.45), `stop` (1, 0.35, 0.3),
 `warn` (1, 0.78, 0.2), `error` (1, 0.2, 0.25).
@@ -143,9 +155,61 @@ Default colors: `number` white, `info` (0.35, 0.75, 1), `go` (0.3, 1, 0.45), `st
 | `TtsVoices()` | The client's voices, `{ voiceID, name }` each; empty without `C_VoiceChat` |
 | `Frame()` | The frame, built on first use |
 | `Stats()` | `built`, `shown`, `running`, `number`, `endsAt`, `key`, `text`, `kind`, `awake` (the OnUpdate is armed), `suspended`, `locked`, `logged` |
+| `Look()` | From 1.1: `{ font, size, flags, shadow, shadowX, shadowY, glow }`, the look the frame draws, the font resolved to a file path. A fresh table |
+| `Preview(what)` | From 1.1: `Show(what, { voice = false })`, `READY` by default: the look on the real call-out, silent |
+| `TestCountdown(from)` | From 1.1: `Countdown{ endsAt = GetTime() + from, from = from }`, `from` 5 by default |
+| `SettingsRows(opts)` | From 1.1: the section's rows (below); `opts.tab` one tab's, `opts.L` the words, `opts.plain` without the text boxes |
+| `SettingsTabs(opts)` | From 1.1: three host tab entries for `RenderTabbedSchema`'s `opts.tabs` (below) |
+| `BuildSettings(parent, opts)` | From 1.1: builds the section into `parent` and answers its view (below) |
+
+## The settings section
+
+`CalloutSettings.lua`, from 1.1. A consumer drops it into its own panel; it owns no page and no
+SavedVariables, and every write is the instance's `Set` / `SetColor` into the host's `db`.
+
+**With the host's Options instance** (`opts.options`), `parent` is a page ctx (what `CreatePanel`
+answers, or the ctx a host tab's `render` is handed). The rows are ordinary **path-less schema rows**
+(Options' W15 arm: each is read with `row.get()` and written with `row.set(v)`, which call the
+instance), drawn by `O.RenderRows`, so every control is the panel's own dropdown, slider, checkbox,
+edit box or color swatch, in the host's skin and under its combat lock. The font row is the one media
+picker, `Ka0sMedia_Font` (options-ui-§23), offering "Skin font", "Game default" and then every
+LibSharedMedia face (every LibKa0s-Media-1.0 face without it). A color swatch's `get` answers both
+color shapes, `{ r, g, b, a, [1], [2], [3], [4] }`, and its `set` reads either, so the host's
+`colorDecode` / `colorEncode` pair does not matter.
+
+`opts.tab` (`"look"`, `"sound"` or `"texts"`) draws one tab with no heading of its own; without it
+the three draw one under another, each under its heading. Options-ui-§13 puts sections on tabs, so a
+host normally passes `SettingsTabs(opts)` to `RenderTabbedSchema` as host tabs: `{ key, label,
+tooltip, before, render }` each, keyed `opts.keyPrefix .. tab` (`"callout."` by default), `before`
+copied from `opts.before`, `render(ctx)` calling `BuildSettings(ctx, { options, tab, L })`.
+
+**Without one**, `parent` is a frame and the section is built of plain frames, one line each: a
+check button for a toggle, a value between - and + buttons for a number, a button stepping through
+the choices for a list, a swatch opening the client's `ColorPickerFrame` (when it has
+`SetupColorPickerAndShow`) for a color. The per-key text boxes are the Options build's alone.
+
+**Over each tab**, in either build: the **preview**, a sample line (`5  GO!  STOP`, each word in its
+kind's color) in the chosen face, outline and shadow at the chosen size up to 64, repainted on every
+write (a refresher in the page's `refreshers`); **Test countdown** (`TestCountdown()`, 5 to GO! on the
+real call-out); **Play**, which shows the stock text picked in **Text to play** (session state, `GO`
+until another is picked, never saved) with its voice; **Unlock to move** (`SetLocked`, never saved);
+and **Reset position** (`ResetPosition`).
+
+| Tab | Rows |
+|---|---|
+| Look | Font, Size, Outline, Glow, Shadow, Shadow X offset, Shadow Y offset (disabled with no shadow), Animation, Hold |
+| Sound | Voice, Sound channel, Speak numbers from; with a client that lists a text to speech voice, Text to speech voice, Speech rate, Speech volume (disabled unless the voice is text to speech, and absent with no voice listed) |
+| Texts | Colors: one swatch per kind. Stock texts: per key, a text box for the player's own words (empty is the stock text) and **Mute** (the `muted` setting) |
+
+**The view** `BuildSettings` answers: `kind` (`"options"` or `"plain"`), `rows`, `preview` (the
+Label or FontString), and for the plain build `controls` (`{ row, control, sync }` each), `refresh`
+and `height`. It answers nil with no `parent` to build into (a plain build needs a frame) or for an
+unknown `opts.tab`.
+
+**Words.** `SETTINGS_STRINGS`, overridden key by key through `opts.L`, read with rawget (a Ka0s
+locale table answers an unknown key with the key). A stock key's own word is its `STOCK` text.
 
 ## What is not here
 
-- **The settings section** (`BuildSettings`, `Preview`) is `CalloutSettings.lua`, plan row L4.
 - **No queue.** A Show replaces what is on screen.
 - **No per-call channel or volume.** One channel per instance, the player's.

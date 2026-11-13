@@ -1,9 +1,10 @@
 {
   "major": "LibKa0s-Callout-1.0",
-  "versionKey": "1",
+  "versionKey": "1.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
-    { "file": "Callout", "minor": 1 }
+    { "file": "Callout", "minor": 1 },
+    { "file": "CalloutSettings", "minor": 1 }
   ],
   "members": [
     { "name": "ANIMS", "kind": "table" },
@@ -21,6 +22,8 @@
     { "name": "OUTLINES", "kind": "table" },
     { "name": "PACKS", "kind": "table" },
     { "name": "SETTINGS", "kind": "table" },
+    { "name": "SETTINGS_STRINGS", "kind": "table" },
+    { "name": "SETTINGS_TABS", "kind": "table" },
     { "name": "SIZE_MAX", "kind": "number" },
     { "name": "SIZE_MIN", "kind": "number" },
     { "name": "SOUND_EXT", "kind": "string" },

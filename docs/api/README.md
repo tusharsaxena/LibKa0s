@@ -210,7 +210,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Callout/version-1-docs.md) | **`Callout.lua` 1** (the new major: `New`, `Countdown`, `Show`, the look and sound settings, `Suspend`/`Resume`, LibKa0s#85) | v1.96.0 | **Current** |
+| [1.1](./Callout/version-1.1-docs.md) | **`Callout.lua` 1** (the new major: `New`, `Countdown`, `Show`, the look and sound settings, `Suspend`/`Resume`, LibKa0s#85) · **`CalloutSettings.lua` 1** (the settings section: `BuildSettings`, `SettingsTabs`, the preview) | v1.96.0 | **Current** |
 
 ### `LibKa0s-Charts-1.0`
 
