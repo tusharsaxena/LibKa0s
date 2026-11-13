@@ -288,6 +288,11 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    consumer's whole-folder re-vendor of `tests/_kit/` carries. `DebugLogDiagnostics.lua` moves to
    minor 8 and `Launcher.lua` to minor 10 (no behavior change), so a host suite that pins
    `DebugLogDiagnostics 7` or `Launcher 9` re-pins it at 8 or 10.
+   v1.96.0 moves the kit to revision 55, whose vendor gate holds `media/sounds/` to the
+   `LibKa0s sounds:` line, no line meaning none: the re-vendor runs the tag's
+   `tools/prune-icons.lua` as before, which now prunes the voice packs in the same run, and a host
+   that passes its own `pairs` to `VendorSync.register` adds `sounds = "media/sounds"` to its
+   library pair.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 
@@ -325,8 +330,9 @@ committed here, never edited in a consumer.
 cp -r LibKa0s/. <Addon>/libs/LibKa0s/
 diff -r --strip-trailing-cr LibKa0s <Addon>/libs/LibKa0s   # content — MUST be empty
 diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD be empty
-# now write or roll BOTH CLAUDE.md lines (provenance + `LibKa0s icons:`, below), THEN prune
-lua tools/prune-icons.lua <Addon>                          # media/icons/ down to the declaration
+# now write or roll the CLAUDE.md lines (provenance + `LibKa0s icons:`, and `LibKa0s sounds:`
+# only for a bundled voice; below), THEN prune
+lua tools/prune-icons.lua <Addon>                          # media/icons/ and media/sounds/ down to them
 cd <Addon> && lua tests/run.lua && ~/.claude/dev-copilot/bin/ka0s-bounded luacheck .
 ```
 
@@ -350,8 +356,9 @@ Three traps in the kit-40 sequence, one rule each:
   loop goes, rather than the declaration growing to satisfy it.
 
 **Before the prune**, add or update the provenance line in `<Addon>/CLAUDE.md`, in the same commit as
-the copy. The tool reads the declaration under it, and on a consumer that has no line yet it finds
-none, removes nothing and the copy is committed whole:
+the copy. The tool reads the declaration under it, and on a consumer that has no icons line yet it
+finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
+there, since no sounds line means none):
 
 > Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.95.0 (MIT).
 
@@ -375,6 +382,27 @@ icon file and no icon license. `tools/prune-icons.lua` applies exactly that afte
 printing every path it removes; it refuses a name the copy does not carry and then removes nothing.
 A consumer with no line is gated as a whole-folder copy, which is the transition state; the MUST
 binds from the first release whose kit carries the declaration-aware gate.
+
+**And directly under that, the sound declaration** (`library-stack-§7`, *The sound subset*,
+standard v2.108.0; kit revision 55, from v1.96.0), one line in one of three forms:
+
+```text
+LibKa0s sounds: none.
+LibKa0s sounds: all.
+LibKa0s sounds: callout/female-kathleen, callout/male-joe.
+```
+
+`media/sounds/` is the second carve-out: the Callout's voice packs, one folder each at
+`media/sounds/callout/<voice>/`, each holding its `.ogg` lines and its own license and credits
+files. A name is a pack folder under `media/sounds/`, declared whole, so its license and credits
+travel with it; `all` is bare, with no reason. **No line means none**, the opposite of the icons
+line: only a consumer that adopts the Callout with a bundled voice needs a pack, so the gate holds
+every other consumer's `media/sounds/` empty, and the re-vendor that brings the folder (v1.96.0's)
+is the one that prunes it. The same `tools/prune-icons.lua` run prunes it after the icons, and it
+reads and resolves both lines before it removes anything, so a pack the copy does not carry, or a
+malformed sounds line, refuses the whole run with both folders untouched. A pack that ships under a
+license that makes attribution a condition is credited in the consumer's README as its
+`CREDITS.md` states (documentation-§1 item 12).
 
 **Library-drawn icons are the host's to declare.** Some modules call `Media.Icon(<host>, ...)` on
 the host's behalf, so the art comes out of the host's copy and its name must be in the host's line:
@@ -491,9 +519,9 @@ gate yet, so downstream the `diff -r` above is still yours to run.
 
 Rules, and the reason each exists:
 
-- **Copy the WHOLE folder, always. Never one module.** The one carve-out is `media/icons/`, which
-  ships only the icons the consumer declares (above); it carries no Lua, so no minor and no floor
-  can skew through it. With one major per module and independent
+- **Copy the WHOLE folder, always. Never one module.** The two carve-outs are `media/icons/` and
+  `media/sounds/`, which ship only the icons and voice packs the consumer declares (above); they
+  carry no Lua, so no minor and no floor can skew through them. With one major per module and independent
   minors, per-module re-vendoring is exactly how cross-major skew gets manufactured: an addon ends
   up carrying a new `Perf.lua` over an old `Core.lua`, or a `Core.lua` that never arrived at all.
   The only negotiation between majors is a floor — a dependent file names the minimum minor it needs

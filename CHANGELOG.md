@@ -29,6 +29,12 @@ Opened 2026-11-13, on `feat/2026-11-13-callout`: the call-out major (`docs/super
 - **CalloutSettings minor 1** ([docs](docs/api/Callout/version-1.1-docs.md#the-settings-section)), `LibKa0s/CalloutSettings.lua`, loaded after `Callout.lua` and paired on its minor: `BuildSettings(parent, opts)` draws the Look, Sound and Texts rows with the host's Options instance (path-less schema rows, the font row the `Ka0sMedia_Font` picker) or, without one, in plain frames; a live preview with Test countdown and Play; Unlock to move and Reset position; `SettingsTabs(opts)` for a host's `RenderTabbedSchema`; `SettingsRows`, `Preview`, `TestCountdown`; the words in `SETTINGS_STRINGS`. `Callout.lua` gains, inside its unreleased minor 1, the `muted` setting and `Look()`.
 - Tests: the new `tests/test_callout_settings.lua`; `tests/test_callout.lua` holds every pack folder to `LINES`.
 
+### The sound subset (L5)
+
+- **Test kit revision 55** ([docs](docs/api/testkit/version-55-docs.md)): `vendor_sync.lua` reads a consumer's `LibKa0s sounds:` line, directly under its `LibKa0s icons:` line (`none.`, `all.` or a comma-separated list of `callout/<voice>` packs; **no line means none**), and the library pair holds `libs/LibKa0s/media/sounds/` to exactly the declared packs, each pack's credits and license included, byte-identical to the tag; a pack the tag does not carry fails. It publishes `parseSoundLine`, `soundDeclaration`, `soundCatalog` and `requiredSounds`; a pair takes a `sounds` field and `register` a `soundsPattern` opt (`library-stack-§7`, *The sound subset*, standard v2.108.0).
+- `tools/prune-icons.lua` prunes `media/sounds/` to the sounds line in the same run as the icons, reading and resolving both lines before it removes anything, so an unknown pack or a malformed line refuses the run with both folders untouched.
+- Tests: `tests/test_kit_vendor_sync.lua` covers the parser, the placement, the default none, the gate against a tagged fixture with two packs, and the tool's sound step and refusal; `tests/test_kit_inventory.lua` pins revision 55.
+
 ## v1.95.0 — 2026-11-10
 
 Opened 2026-11-10, on `feat/2026-11-10-quickcomms-forever-emotes`: the library half of Ka0s Quick Comms' WoW Forever port (Ka0sAddonsCommonTasks `docs/2026-11-10-QUICKCOMMS_FOREVER_EMOTES/`, design §3), item `QFE-LK1`, released as `QFE-LK2`. The owner's rulings R3 and R5: the spec and role read is a reusable LibKa0s module, the talents decide the role on Forever, and the player can override it, saved per character.
