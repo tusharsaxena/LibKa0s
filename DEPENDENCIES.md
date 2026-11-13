@@ -113,7 +113,8 @@ release that does not touch the art. Its sibling `tools/artwork/bar_textures.py`
 statusbars in `LibKa0s/media/textures/` from named constants — no network and no input files — and
 needs Python 3, Pillow and NumPy only; `tools/artwork/glass_textures.py` does the same for the Glass
 skin's border and fill. `tools/artwork/fonts.py` is the provenance record for the skin faces in
-`LibKa0s/media/fonts/`: `--fetch` downloads them from google/fonts at pinned commits, and Prototype
+`LibKa0s/media/fonts/`, and for the Callout's two display faces beside them (Bebas Neue and Russo
+One, SIL OFL 1.1, google/fonts' static files shipped unchanged with their `-OFL.txt` texts): `--fetch` downloads them from google/fonts at pinned commits, and Prototype
 and Expressway's EULA from their authors' archives on dafont.com, and Expressway and the 2026-10-31
 faces from the owner's WoW install, checking each SHA-256, into `tools/artwork/.cache/fonts/`, and `--build`
 copies them in and cuts static weights from the five variable ones (Nunito, Vollkorn, Bitter, Inter,
