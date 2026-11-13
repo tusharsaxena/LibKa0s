@@ -210,7 +210,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1.2](./Callout/version-1.2-docs.md) | `Callout.lua` 1 · **`CalloutSettings.lua` 2** (`FONT_FACES`: the font row leads with Oxanium Bold, Bebas Neue and Russo One, each when it can be drawn) | unreleased (v1.97.0) | **Current** |
+| [2.3](./Callout/version-2.3-docs.md) | **`Callout.lua` 2** (the host's write route, `d.path` and `d.set`, with `d.colorEncode`; the leaf keys `texts.<KEY>`, `muted.<KEY>`, `colors.<kind>`; a color read in either shape) · **`CalloutSettings.lua` 3** (`SchemaRows`, the settings as schema rows a host registers under its own prefix, and the Options build whose rows carry their paths; architecture-§5, plan row L11) | unreleased (v1.98.0) | **Current** |
+| [1.2](./Callout/version-1.2-docs.md) | `Callout.lua` 1 · **`CalloutSettings.lua` 2** (`FONT_FACES`: the font row leads with Oxanium Bold, Bebas Neue and Russo One, each when it can be drawn) | v1.97.0 | Superseded |
 | [1.1](./Callout/version-1.1-docs.md) | **`Callout.lua` 1** (the new major: `New`, `Countdown`, `Show`, the look and sound settings, `Suspend`/`Resume`, LibKa0s#85) · **`CalloutSettings.lua` 1** (the settings section: `BuildSettings`, `SettingsTabs`, the preview) | v1.96.0 | Superseded |
 
 ### `LibKa0s-Charts-1.0`

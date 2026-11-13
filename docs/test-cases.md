@@ -557,7 +557,7 @@ Total.
 
 ### test_callout.lua (52)
 
-- callout: the major loads at minor 1 and reports its one file
+- callout: the major loads at minor 2 and reports its one file
 - callout: without Core the major is absent (no NewLibrary)
 - callout: New refuses a descriptor without a db, naming it
 - callout: a method called on something that is not an instance raises
@@ -674,7 +674,7 @@ Total.
 
 ### test_callout_settings.lua (34)
 
-- callout settings: CalloutSettings is at minor 2, paired on the Callout shell's minor
+- callout settings: CalloutSettings is at minor 3, paired on the Callout shell's minor
 - callout settings: the rows are Look, Sound then Texts, each path-less and bound to the instance
 - callout settings: the Texts tab has a color per kind, and a text box and a mute per stock key
 - callout settings: text to speech rows are there only while the client lists a voice
@@ -708,6 +708,30 @@ Total.
 - callout settings: a plain swatch with no color picker does nothing
 - callout settings: a plain refresh syncs every control to an outside write
 - callout settings: one plain tab builds that tab's rows alone, with no heading of its own
+
+### test_callout_schema.lua (21)
+
+- callout schema: SchemaRows answers a row with a path under the prefix for every setting a control chooses
+- callout schema: every stored row's default is what the instance reads with nothing stored
+- callout schema: the host's Validate resolves every row against defaults built from them
+- callout schema: the voice row offers and defaults to the packs the host ships
+- callout schema: the choice rows refuse what the instance refuses, and texts are trimmed
+- callout schema: the text to speech rows are schema rows whatever the client lists
+- callout schema: SchemaRows takes the descriptor's path when given none, and refuses with neither
+- callout schema: New refuses a d.set with no d.path
+- callout schema: on the host's route every write the instance makes goes through the host's seam
+- callout schema: a value the host's seam refuses is no write, and the instance says so
+- callout schema: a drag's point and Reset position go through the host's seam
+- callout schema: a raising host seam under a drag reaches the error handler, not the drag
+- callout schema: a host write by path reacts on the call-out (slash set reaches it)
+- callout schema: the Options build on the host's route draws rows that carry their paths
+- callout schema: a widget's change writes only through the host's seam, and the call-out follows
+- callout schema: the Texts tab's boxes, mutes and swatches write through the host's seam
+- callout schema: the preview block's session rows and buttons work on the host's route
+- callout schema: SettingsTabs on the host's route hands its prefix to each tab
+- callout schema: the leaf keys read and write one entry of d.db, as minor 1's tables
+- callout schema: a stored color is read in either shape
+- callout schema: a host's colorEncode decides the shape the instance writes
 
 ### test_charts.lua (15)
 
@@ -5085,6 +5109,7 @@ Total.
 | test_callout_look.lua | 27 |
 | test_callout_voice.lua | 29 |
 | test_callout_settings.lua | 34 |
+| test_callout_schema.lua | 21 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5261,4 +5286,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4459** |
+| **Total** | **4480** |
