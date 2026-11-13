@@ -25,9 +25,9 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   seventy-five, by their exact constant names: `MINOR` in `Core.lua`, `PIXEL_MINOR` in `CorePixel.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   seventy-seven, by their exact constant names: `MINOR` in `Core.lua`, `PIXEL_MINOR` in `CorePixel.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Role.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
-   `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Glow.lua`, `MINOR` in `Toast.lua`, `MINOR` in `Callout.lua`, `SETTINGS_MINOR` in `CalloutSettings.lua`, `MINOR` in `Charts.lua`, `RENDER_MINOR` in `ChartsRender.lua`, `MINOR` in `Media.lua`, `ICONS_MINOR` in `MediaIcons.lua` (a generated file: change the
+   `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Glow.lua`, `MINOR` in `Toast.lua`, `MINOR` in `Callout.lua`, `SETTINGS_MINOR` in `CalloutSettings.lua`, `MINOR` in `WaypointArrow.lua`, `SETTINGS_MINOR` in `WaypointArrowSettings.lua`, `MINOR` in `Charts.lua`, `RENDER_MINOR` in `ChartsRender.lua`, `MINOR` in `Media.lua`, `ICONS_MINOR` in `MediaIcons.lua` (a generated file: change the
    constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `TOKENS_MINOR` in `SkinOwnerTokens.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `OTHERS_MINOR` in `SkinDefsOthers.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `HUD_MINOR` in `SkinPaintHud.lua`, `CONFIRM_MINOR` in `SkinAceConfirm.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
    `Slash.lua`, `PARSE_MINOR` in `SlashParse.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `DROPDOWN_MINOR` in `WidgetsDropdown.lua`, `REORDER_MINOR` in
    `WidgetsReorder.lua`, `DRAG_MINOR` in
@@ -57,7 +57,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `{ OptionsSwitch, __switchMinor, __switchShellMinor }`, `{ OptionsMedia, __mediaMinor, __mediaShellMinor }`). **A file added to an existing major moves
    that major's version key**, because the key is every file's minor in load order — the Options key
    ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1, nine from 25.32.1.1.6.1.7.4.1, ten from 26.1.32.1.1.6.1.7.4.1, eleven from 29.2.34.2.4.8.1.7.4.2.1, twelve from 30.2.34.3.5.9.2.11.4.2.1.4, thirteen from 33.3.35.4.6.10.3.12.8.3.2.5.2, fourteen from 34.4.35.4.6.10.3.12.8.3.2.5.3.1 fifteen from 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1, sixteen from 34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1 and twenty from 34.4.39.1.6.1.7.12.1.3.14.9.4.3.6.5.5.1.1.1, the four files of v1.84.0's peels at once. The table
-   carries one row per shipped major — twenty-three today, since `LibKa0s-Glow-1.0` and
+   carries one row per shipped major — twenty-three today (twenty-four with the unreleased `LibKa0s-WaypointArrow-1.0`, `files = { WaypointArrow, WaypointArrowSettings }`, paired `{ WaypointArrowSettings, __settingsMinor, __settingsShellMinor }`, its key 1.1), since `LibKa0s-Glow-1.0` and
    `LibKa0s-Sim-1.0` at v1.75.0, `LibKa0s-Skin-1.0` at v1.78.0, `LibKa0s-Toast-1.0` at v1.79.0, `LibKa0s-Charts-1.0` at v1.84.0, `LibKa0s-Role-1.0` at v1.95.0 (one file, `files = { Role }`), `LibKa0s-Callout-1.0` at v1.96.0 (`files = { Callout, CalloutSettings }`, paired `{ CalloutSettings, __settingsMinor, __settingsShellMinor }`, so its key is two numbers, 1.1 at v1.96.0) and `LibKa0s-IconBrowser-1.0` at v1.86.0 (its key three numbers, `files = { IconBrowserSources, IconBrowserWindow, IconBrowser }`, paired `{ IconBrowserWindow, __windowMinor, __windowShellMinor }` and `{ IconBrowser, __browserMinor, __browserShellMinor }`). The Sim row is the example of a smaller major paired on its
    shell: `files = { Sim, SimTimeline, SimPanel, SimPanelRender }` and a `paired`
    array of three (`{ SimTimeline, __timelineMinor, __timelineShellMinor }`,
@@ -324,7 +324,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the seventy-five `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the seventy-seven `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,

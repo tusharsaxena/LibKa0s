@@ -81,6 +81,14 @@ local MAJORS = {
     },
   },
   {
+    major = "LibKa0s-WaypointArrow-1.0",
+    files = { "WaypointArrow", "WaypointArrowSettings" },
+    primary = "WaypointArrow",
+    paired = {
+      { file = "WaypointArrowSettings", minorField = "__settingsMinor", probeField = "__settingsShellMinor" },
+    },
+  },
+  {
     major = "LibKa0s-Charts-1.0",
     files = { "Charts", "ChartsRender" },
     primary = "Charts",
