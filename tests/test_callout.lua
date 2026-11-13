@@ -81,8 +81,29 @@ test("callout: the stock texts, the packs and the lines are data", function()
   assertEqual(Callout.LINES[1], "ready")
   assertEqual(Callout.LINES[43], "20")
   assertEqual(Callout.PACKS[1].key, "female")
-  assertEqual(Callout.PACKS[2].folder, "male")
+  assertEqual(Callout.PACKS[2].folder, "male-joe")
   assertEqual(Callout.DEFAULTS.voice, "female", "the default voice is the first pack")
+end)
+
+test("texts: every pack folder ships exactly LINES as .ogg, beside its credits", function()
+  -- red under: a pack row whose folder is missing a line, or carries a clip no LINES entry names
+  local _, Callout = env()
+  for _, pack in ipairs(Callout.PACKS) do
+    local dir = "LibKa0s/media/sounds/callout/" .. pack.folder .. "/"
+    local p = io.popen("git ls-files -co --exclude-standard -- '" .. dir .. "' 2>/dev/null")
+    local onDisk, clips = {}, 0
+    for path in p:read("*a"):gmatch("[^\n]+") do
+      local name = path:match("[^/]+$")
+      onDisk[name] = true
+      if name:match("%.ogg$") then clips = clips + 1 end
+    end
+    p:close()
+    for _, line in ipairs(Callout.LINES) do
+      assertTrue(onDisk[line .. Callout.SOUND_EXT], pack.folder .. " has " .. line .. Callout.SOUND_EXT)
+    end
+    assertEqual(clips, #Callout.LINES, pack.folder .. " carries no clip LINES does not name")
+    assertTrue(onDisk["CREDITS.md"], pack.folder .. " carries its CREDITS.md")
+  end
 end)
 
 -- ── the countdown ────────────────────────────────────────────────────────────────────────────
@@ -466,22 +487,22 @@ test("sound: a stock key plays its pack line on the chosen channel", function()
   local c, m = newCallout()
   c:Show("NEW_BEST")
   assertEqual(#m.__files, 1)
-  assertEqual(m.__files[1].file, PACK_DIR .. "female\\new_best.ogg")
+  assertEqual(m.__files[1].file, PACK_DIR .. "female-kathleen\\new_best.ogg")
   assertEqual(m.__files[1].channel, "Master")
   c:Set("voice", "male")
   c:Set("channel", "Dialog")
   c:Show("GO")
-  assertEqual(m.__files[2].file, PACK_DIR .. "male\\go.ogg")
+  assertEqual(m.__files[2].file, PACK_DIR .. "male-joe\\go.ogg")
   assertEqual(m.__files[2].channel, "Dialog")
 end)
 
 test("sound: soundsBase and vendorPath move where the packs are found", function()
   local c, m = newCallout({ vendorPath = "lib\\Ka0s" })
   c:Show("GO")
-  assertEqual(m.__files[1].file, "Interface\\AddOns\\TestAddon\\lib\\Ka0s\\media\\sounds\\callout\\female\\go.ogg")
+  assertEqual(m.__files[1].file, "Interface\\AddOns\\TestAddon\\lib\\Ka0s\\media\\sounds\\callout\\female-kathleen\\go.ogg")
   local c2, m2 = newCallout({ soundsBase = "Interface\\AddOns\\Mine\\voices" })
   c2:Show("GO")
-  assertEqual(m2.__files[1].file, "Interface\\AddOns\\Mine\\voices\\female\\go.ogg")
+  assertEqual(m2.__files[1].file, "Interface\\AddOns\\Mine\\voices\\female-kathleen\\go.ogg")
 end)
 
 test("sound: a countdown speaks only from speakFrom down", function()
@@ -491,14 +512,14 @@ test("sound: a countdown speaks only from speakFrom down", function()
   assertEqual(#m.__files, 0, "7 and 6 are shown, not spoken")
   frameAt(m, 2)
   assertEqual(#m.__files, 1)
-  assertEqual(m.__files[1].file, PACK_DIR .. "female\\5.ogg")
+  assertEqual(m.__files[1].file, PACK_DIR .. "female-kathleen\\5.ogg")
   frameAt(m, 7)
-  assertEqual(m.__files[#m.__files].file, PACK_DIR .. "female\\go.ogg")
+  assertEqual(m.__files[#m.__files].file, PACK_DIR .. "female-kathleen\\go.ogg")
 end)
 
 test("sound: a missing file falls back to silence, logged once", function()
   local c, m, _, logs = newCallout()
-  m.__missing[PACK_DIR .. "female\\go.ogg"] = true
+  m.__missing[PACK_DIR .. "female-kathleen\\go.ogg"] = true
   assertTrue(c:Show("GO"), "the call-out still shows")
   assertTrue(c:Show("GO"))
   local n = 0

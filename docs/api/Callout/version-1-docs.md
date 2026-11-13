@@ -63,7 +63,7 @@ Read straight off the LibStub table.
 | `New(d)` | 1 | A new instance (below). Raises without `d.db` |
 | `DEFAULTS` | 1 | The settings table a host seeds its profile with (below). Never mutate it |
 | `SETTINGS` | 1 | The setting keys `Get`/`Set` take, sorted |
-| `PACKS` | 1 | `{ { key, folder, name }, ... }`: the bundled voice packs, in settings order (`female`, `male`) |
+| `PACKS` | 1 | `{ { key, folder, name }, ... }`: the bundled voice packs, in settings order: `female` (folder `female-kathleen`, Piper kathleen) and `male` (folder `male-joe`, Piper joe), each with its `CREDITS.md` and license texts |
 | `TTS`, `OFF` | 1 | `"tts"`, `"off"`: the two `voice` values that are not a pack |
 | `KINDS` | 1 | `number`, `info`, `go`, `stop`, `warn`, `error` |
 | `STOCK` | 1 | key → `{ text, kind, say }` for the 23 stock call-outs |

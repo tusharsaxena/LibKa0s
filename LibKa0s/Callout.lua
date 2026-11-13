@@ -66,8 +66,8 @@ lib.MODULES.Callout = MINOR
 -- lines sit in, and the name a settings row shows. Order is the settings row's order. A new pack is
 -- a row here and a folder of LINES; nothing else names a pack.
 lib.PACKS = {
-  { key = "female", folder = "female", name = "Female" },
-  { key = "male",   folder = "male",   name = "Male" },
+  { key = "female", folder = "female-kathleen", name = "Female (Kathleen)" },
+  { key = "male",   folder = "male-joe",        name = "Male (Joe)" },
 }
 lib.TTS, lib.OFF = "tts", "off"           -- the two `voice` values that are not a pack
 
