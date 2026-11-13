@@ -45,7 +45,7 @@ Versions in this release: `LibKa0s-Callout-1.0` key **1.1** (Callout minor 1 and
 
 - `README.md` names the twenty-third major in *What it is*, *The modules* and the repo layout, the `media/sounds/` carve-out in *Installing* and *Versioning*, and the voice packs' credits; its standards pointer moves v2.105.0 → v2.108.0 (v2.106.0's skin-default pin binds addons, v2.107.0 adds the Role row, v2.108.0 the Callout row and the sound subset).
 - `DEPENDENCIES.md`: the Callout's runtime voices (the bundled packs and the client's text to speech, nothing to install), the voice packs as build-time art whose text-to-speech models never ship, and what ships under which license.
-- `docs/releasing.md`: the version pointers at v1.96.0, the Callout's two constants and seventy-five files in step 2, twenty-three majors in step 3, the v1.96.0 re-vendor note's payload files, the floors and paired guards, and a Consumers row for the Callout (Combat Trail, planned). `CLAUDE.md`'s documentation map names `Callout`.
+- `docs/releasing.md`: the version pointers at v1.96.0, the Callout's two constants and seventy-five files in step 2, twenty-three majors in step 3, the v1.96.0 re-vendor note's payload files, the floors and paired guards, and a Consumers row for the Callout (Combat Trail, planned). Step 9's re-sweep added the Consumers row `LibKa0s-Role-1.0` never had (Quick Comms and Drop Watcher, each in `core/Compat.lua`, Drop Watcher also in `core/CompatClient.lua`) and Quick Comms' second Widgets lookup (`settings/CalloutPopup.lua`). `CLAUDE.md`'s documentation map names `Callout`.
 
 ## v1.95.0 — 2026-11-10
 
