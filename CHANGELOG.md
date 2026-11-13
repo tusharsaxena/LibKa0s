@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.96.0 — unreleased
+## v1.96.0 — 2026-11-13
 
 Opened 2026-11-13, on `feat/2026-11-13-callout`: the call-out major, `LibKa0s-Callout-1.0`, built for Ka0s Combat Trail's race countdown on the owner's rulings of 2026-11-13 (`docs/superpowers/plans/2026-11-13-callout.md`, adoption issue LibKa0s#85), and the sound subset that lets a consumer ship only the voice packs it declares (`library-stack-§7`, *The sound subset*, standard v2.108.0).
 
