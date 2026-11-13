@@ -555,14 +555,14 @@ Total.
 - toast stack: Clear takes the whole stack down
 - toast stack: without the stack field (or with 1) it is the v1 toast: one frame, one at a time
 
-### test_callout.lua (49)
+### test_callout.lua (52)
 
 - callout: the major loads at minor 1 and reports its one file
 - callout: without Core the major is absent (no NewLibrary)
 - callout: New refuses a descriptor without a db, naming it
 - callout: a method called on something that is not an instance raises
 - callout: nothing is built before first use, and nothing wakes
-- callout: the frame is the alert tier, clamped, and never takes the mouse while locked
+- callout: the frame is the screen alert tier, clamped, and never takes the mouse while locked
 - callout: the stock texts, the packs and the lines are data
 - texts: every pack folder ships exactly LINES as .ogg, beside its credits
 - countdown: the first number shows at the call, and onTick hears it
@@ -571,6 +571,9 @@ Total.
 - countdown: nothing shows while the remainder is above `from`
 - countdown: from is clamped to 20, and a non-number endsAt is refused
 - countdown: at zero the finish shows, onDone is called once, and the clock sleeps after the hold
+- countdown: a Show during the count is replaced by the next number, and its hold fades nothing
+- countdown: a held call-out fades on its own hold through a lead-in; the first number still shows
+- countdown: a finish's GO fades on its hold when onDone starts the next countdown's lead-in
 - countdown: finish may be a stock key, a custom spec, or false for none
 - countdown: an endsAt already past finishes at the call
 - countdown: Cancel takes it down with no finish and no onDone, and disarms the clock
@@ -607,7 +610,7 @@ Total.
 - suspend: the countdown stops with no onDone, everything goes, and Show is refused until Resume
 - suspend: Stats reports the state a host's diagnostics prints
 
-### test_callout_look.lua (23)
+### test_callout_look.lua (27)
 
 - look: each animation is the setting's, built once from its own steps
 - look: slam lands from 2.2x and fades in; pulse swells and settles; shake runs out and back
@@ -628,12 +631,16 @@ Total.
 - position: a drag that ends without a relative point saves the point twice and finite offsets
 - unlock: the drag strip is built over the frame, hidden while locked, shown unlocked
 - unlock: the strip's own drag saves the point; d.label names it
+- unlock: locking mid-drag ends the move and saves the point
+- unlock: a Suspend mid-drag on the strip ends the move and saves the point
+- unlock: a lock with no drag running leaves the point alone
+- position: a stored anchor that is not a region point reads as the default
 - unlock: without Widgets there is no strip, and the frame drags itself
 - unlock: unlocking builds the frame; the sample is silent and stays past any hold
 - unlock: the lock is never written into the host's db, and SetLocked twice is one change
 - unlock: locking during a countdown leaves the countdown on screen
 
-### test_callout_voice.lua (27)
+### test_callout_voice.lua (29)
 
 - speak from: a countdown from 10 speaks 5 to 1 and GO, and shows every number
 - speak from: the setting moves the line, from 1 to 20
@@ -649,6 +656,8 @@ Total.
 - custom sound: it needs no addon or soundsBase, and is not under the pack folder
 - custom sound: a missing file is silence, logged once by its path; an empty path is no sound
 - custom sound: no PlaySoundFile in the client is silence, logged once
+- packs: d.packs offers only the shipped packs, and an undeclared pack is never played
+- packs: a stored pack the host no longer ships reads as the first it does; none shipped is off
 - finish false: at zero nothing new shows or plays, the 1 fades, onDone runs once
 - finish false: an endsAt already past is onDone at the call, with nothing on screen
 - finish: a number finish shows that number; nil is GO; an unknown key is no finish
@@ -663,7 +672,7 @@ Total.
 - suspend: after Resume a countdown runs to its finish as new
 - suspend: settings still read and write while suspended
 
-### test_callout_settings.lua (31)
+### test_callout_settings.lua (32)
 
 - callout settings: CalloutSettings is at minor 1, paired on the Callout shell's minor
 - callout settings: the rows are Look, Sound then Texts, each path-less and bound to the instance
@@ -680,6 +689,7 @@ Total.
 - callout settings: SettingsTabs answers three host tabs that draw their tab
 - callout settings: words come from opts.L, read with rawget, else US English
 - callout settings: nothing to build into, or an unknown tab, answers nil
+- callout settings: an Options instance missing a member it calls builds nothing, and raises nothing
 - callout settings: without Options, plain frames: a control per row and the preview
 - callout settings: each slider carries the setting's own bounds and step
 - callout settings: each list offers exactly the major's choices, in its order
@@ -695,7 +705,7 @@ Total.
 - callout settings: a plain swatch opens the client's color picker; cancel puts the color back
 - callout settings: a plain swatch with no color picker does nothing
 - callout settings: a plain refresh syncs every control to an outside write
-- callout settings: one plain tab builds that tab's rows alone, under its heading
+- callout settings: one plain tab builds that tab's rows alone, with no heading of its own
 
 ### test_charts.lua (15)
 
@@ -5068,10 +5078,10 @@ Total.
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
-| test_callout.lua | 49 |
-| test_callout_look.lua | 23 |
-| test_callout_voice.lua | 27 |
-| test_callout_settings.lua | 31 |
+| test_callout.lua | 52 |
+| test_callout_look.lua | 27 |
+| test_callout_voice.lua | 29 |
+| test_callout_settings.lua | 32 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5248,4 +5258,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4446** |
+| **Total** | **4456** |
