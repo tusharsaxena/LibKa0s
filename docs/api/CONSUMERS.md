@@ -67,6 +67,18 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.96.0, not in the census (2026-11-13).** The release adds a major,
+`LibKa0s-Callout-1.0` (its twenty-five lib-level members in `docs/api/Callout/members-1.1.json`, the
+descriptor's eight fields and the instance's twenty-six members in [its document](Callout/version-1.1-docs.md)),
+the center-screen call-out with its settings section (`CalloutSettings.lua`), built for Ka0s Combat
+Trail's race countdown ([#85](https://github.com/tusharsaxena/LibKa0s/issues/85)). None gets a row
+here yet. **No host has adopted it.** Combat Trail (its re-vendor replaces the race countdown, its cue
+sounds and their settings with one instance) is its one planned consumer, **pending**, so the
+major's verdict is *zero — planned at v1.96.0* until Combat Trail calls `Callout:New` (the owner's
+rulings of 2026-11-13, `docs/superpowers/plans/2026-11-13-callout.md`).
+DebugLogDiagnostics minor 9 names the major on the report's `LibKa0s running:` line and moves no
+member.
+
 **v1.88.0, not in the census (2026-11-05).** Toast minor 4 adds the stack: the optional descriptor
 fields `stack`, `stackGrow` and `stackGap`, the lib-level `STACK_GAP` and the instance members `SetStack`, `Visible` and
 `FrameFor` ([its document](Toast/version-4-docs.md)). Ka0s Drop Watcher is the one planned consumer (its issue #14: `stack`,

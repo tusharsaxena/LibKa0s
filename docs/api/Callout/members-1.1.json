@@ -1,0 +1,36 @@
+{
+  "major": "LibKa0s-Callout-1.0",
+  "versionKey": "1.1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Callout", "minor": 1 },
+    { "file": "CalloutSettings", "minor": 1 }
+  ],
+  "members": [
+    { "name": "ANIMS", "kind": "table" },
+    { "name": "CHANNELS", "kind": "table" },
+    { "name": "DEFAULTS", "kind": "table" },
+    { "name": "FONT_DEFAULT", "kind": "string" },
+    { "name": "FONT_GAME", "kind": "string" },
+    { "name": "FONT_SKIN", "kind": "string" },
+    { "name": "GLOWS", "kind": "table" },
+    { "name": "KINDS", "kind": "table" },
+    { "name": "LINES", "kind": "table" },
+    { "name": "MAX_FROM", "kind": "number" },
+    { "name": "New", "kind": "function" },
+    { "name": "OFF", "kind": "string" },
+    { "name": "OUTLINES", "kind": "table" },
+    { "name": "PACKS", "kind": "table" },
+    { "name": "SETTINGS", "kind": "table" },
+    { "name": "SETTINGS_STRINGS", "kind": "table" },
+    { "name": "SETTINGS_TABS", "kind": "table" },
+    { "name": "SIZE_MAX", "kind": "number" },
+    { "name": "SIZE_MIN", "kind": "number" },
+    { "name": "SOUND_EXT", "kind": "string" },
+    { "name": "STOCK", "kind": "table" },
+    { "name": "STOCK_ORDER", "kind": "table" },
+    { "name": "STRATA", "kind": "string" },
+    { "name": "TTS", "kind": "string" },
+    { "name": "WIDTH", "kind": "number" }
+  ]
+}

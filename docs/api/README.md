@@ -68,6 +68,7 @@ the file you need:
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Toast-1.0` | `<Toast>` | `LibStub("LibKa0s-Toast-1.0").MODULES` |
+| `LibKa0s-Callout-1.0` | `<Callout>.<CalloutSettings>` | `LibStub("LibKa0s-Callout-1.0").MODULES` |
 | `LibKa0s-Charts-1.0` | `<Charts>.<ChartsRender>` | `LibStub("LibKa0s-Charts-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Skin-1.0` | `<Skin>.<SkinOwnerTokens>.<SkinDefs>.<SkinDefsOthers>.<SkinPaint>.<SkinPaintExtras>.<SkinPaintHud>.<SkinAceConfirm>.<SkinPaintControls>.<SkinEUI>.<SkinAce>` (six numbers through 3.3.2.1.1.1, never shipped; nine through 17.1.27.8.19.18.17.4.9) | `LibStub("LibKa0s-Skin-1.0").MODULES` |
@@ -205,6 +206,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [2](./Toast/version-2-docs.md) | **`Toast.lua` 2** (`soundFile`, additive) | v1.85.0 | Superseded |
 | [1](./Toast/version-1-docs.md) | **`Toast.lua` 1** (new: the alert-toast shell, LibKa0s#60) | v1.79.0 – v1.84.0 | Superseded |
 
+### `LibKa0s-Callout-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1.1](./Callout/version-1.1-docs.md) | **`Callout.lua` 1** (the new major: `New`, `Countdown`, `Show`, the look and sound settings, `Suspend`/`Resume`, LibKa0s#85) · **`CalloutSettings.lua` 1** (the settings section: `BuildSettings`, `SettingsTabs`, the preview) | v1.96.0 | **Current** |
+
 ### `LibKa0s-Charts-1.0`
 
 | Version | Files | Shipped in | Status |
@@ -313,7 +320,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.8.1.4](./DebugLog/version-22.8.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 8** (the identity header names Role) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.95.0 | **Current** |
+| [22.9.1.4](./DebugLog/version-22.9.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 9** (the identity header names Callout) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.96.0 | **Current** |
+| [22.8.1.4](./DebugLog/version-22.8.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 8** (the identity header names Role) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.95.0 | Superseded |
 | [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 – v1.94.0 | Superseded |
 | [22.6.1.4](./DebugLog/version-22.6.1.4-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 4** (an owned console's header on the band, `R5-L3`) | v1.85.0 | Superseded |
 | [22.6.1.3](./DebugLog/version-22.6.1.3-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 3** (a 30 high title bar; no divider under it) | v1.85.0 | Superseded |
@@ -526,7 +534,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [54](./testkit/version-54-docs.md) | same files; **`client_globals.lua`**: `strip`, `scan` and `judge` split into helpers so no function is over CCN 15, no behavior change (`QFE-LK2`) | v1.95.0 | **Current** |
+| [55](./testkit/version-55-docs.md) | same files; **`vendor_sync.lua`** reads the consumer's `LibKa0s sounds:` line (directly under the icons line: `none.`, `all.` or a comma-separated list of `callout/<voice>` packs; **no line means none**) and holds `libs/LibKa0s/media/sounds/` to exactly the declared packs, credits and license included; publishes `parseSoundLine`, `soundDeclaration`, `soundCatalog` and `requiredSounds` for `tools/prune-icons.lua`; a pair takes a `sounds` field and `register` a `soundsPattern` opt (plan row L5) | v1.96.0 | **Current** |
+| [54](./testkit/version-54-docs.md) | same files; **`client_globals.lua`**: `strip`, `scan` and `judge` split into helpers so no function is over CCN 15, no behavior change (`QFE-LK2`) | v1.95.0 | Superseded |
 | [53](./testkit/version-53-docs.md) | same files **plus `client_globals.lua`, `test_client_globals.lua` and the two name sets `client_globals_live.lua`, `client_globals_forever.lua`**: the missing-globals gate (`WFP-LK-06`, LibKa0s#77), a kit suite every consumer wires with one `suites` entry | v1.93.0 – v1.94.0 | Superseded |
 | [52](./testkit/version-52-docs.md) | same files **plus `mock_client.lua`**: the client profiles, `retail` (default) and `forever`, selected by `KA0S_KIT_CLIENT` and stamped on every mock set by `loader.lua`; `GetBuildInfo` moves out of the consumer's mock into the profile | v1.92.0 | Superseded |
 | [51](./testkit/version-51-docs.md) | same files; **`mock_ace.lua`**: an unregister clears only a registration that exists, as CallbackHandler does, so one made during a dispatch no longer breaks its walk | v1.89.0 | Superseded |

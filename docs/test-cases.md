@@ -555,6 +555,158 @@ Total.
 - toast stack: Clear takes the whole stack down
 - toast stack: without the stack field (or with 1) it is the v1 toast: one frame, one at a time
 
+### test_callout.lua (52)
+
+- callout: the major loads at minor 1 and reports its one file
+- callout: without Core the major is absent (no NewLibrary)
+- callout: New refuses a descriptor without a db, naming it
+- callout: a method called on something that is not an instance raises
+- callout: nothing is built before first use, and nothing wakes
+- callout: the frame is the screen alert tier, clamped, and never takes the mouse while locked
+- callout: the stock texts, the packs and the lines are data
+- texts: every pack folder ships exactly LINES as .ogg, beside its credits
+- countdown: the first number shows at the call, and onTick hears it
+- countdown: the number flips exactly when ceil(endsAt - now) changes
+- countdown: a frame that skips past several integers shows the number now, once
+- countdown: nothing shows while the remainder is above `from`
+- countdown: from is clamped to 20, and a non-number endsAt is refused
+- countdown: at zero the finish shows, onDone is called once, and the clock sleeps after the hold
+- countdown: a Show during the count is replaced by the next number, and its hold fades nothing
+- countdown: a held call-out fades on its own hold through a lead-in; the first number still shows
+- countdown: a finish's GO fades on its hold when onDone starts the next countdown's lead-in
+- countdown: finish may be a stock key, a custom spec, or false for none
+- countdown: an endsAt already past finishes at the call
+- countdown: Cancel takes it down with no finish and no onDone, and disarms the clock
+- countdown: a new countdown replaces the running one
+- countdown: a raising callback reaches the error handler and the countdown runs on
+- show: a stock key shows its text in its kind's color, and fades after the hold
+- show: a number, its string, and a custom text with its kind
+- show: nothing to show is refused, and logged
+- show: opts.hold and a spec's hold replace the setting's
+- show: the player's own text for a stock key is shown in its place
+- show: the setting's animation plays, opts.anim overrides it, and none plays nothing
+- show: Hide takes it down now and disarms the clock
+- settings: Set writes into the host's table and Get reads it back
+- settings: an invalid value or an unknown key is refused and nothing is written
+- settings: a stored value that is not valid reads as the default and is left alone
+- settings: a db getter is followed at every read (a profile switch)
+- settings: Get hands out a copy, so the caller cannot change a table it holds
+- settings: DEFAULTS seeds a profile with every key the instance reads
+- settings: a kind's color is written as r, g, b and painted on the text
+- settings: the look reaches the text: face, size, outline and shadow
+- settings: a face name nothing resolves falls back to the game's
+- position: the frame sits at the saved point, a drag writes it, and Reset forgets it
+- position: a locked frame does not move on a drag
+- sound: a stock key plays its pack line on the chosen channel
+- sound: soundsBase and vendorPath move where the packs are found
+- sound: a countdown speaks only from speakFrom down
+- sound: a missing file falls back to silence, logged once
+- sound: no addon and no soundsBase is silence, logged once
+- sound: voice off, a spec's voice = false and opts.voice = false are silent
+- sound: a custom text plays its own file; with none it is silent on a pack
+- sound: text to speech speaks with the chosen voice, else the client's first
+- sound: text to speech without C_VoiceChat or without a voice is silent, logged once
+- sound: Voices lists the packs, then text to speech and off
+- suspend: the countdown stops with no onDone, everything goes, and Show is refused until Resume
+- suspend: Stats reports the state a host's diagnostics prints
+
+### test_callout_look.lua (27)
+
+- look: each animation is the setting's, built once from its own steps
+- look: slam lands from 2.2x and fades in; pulse swells and settles; shake runs out and back
+- look: blink dims twice; glow flashes the halo and leaves it at its final alpha
+- look: a new call-out stops the last one's animation; an unknown opts.anim is the setting's
+- look: a countdown's every number animates, and the fade waits for the finish's hold
+- look: every outline reaches the text as its flags; the halo is always thick
+- look: the shadow is on by default at (2, -2), follows its offsets, and off is no shadow at all
+- look: the glow is the halo's alpha and its size over the text
+- look: the size sets the frame's height, its width is WIDTH
+- look: a LibSharedMedia face is drawn by its path; the skin and game choices are the game's here
+- look: a face the client cannot load is replaced by the game's at the same size and flags
+- colors: every stock key paints its kind's default on the text and the halo
+- colors: each kind is the player's own, set alone, and a custom text takes its kind's
+- colors: a write repaints the call-out on screen; a broken stored color reads as the default
+- position: a point stored before the frame is built is where it first appears
+- position: Set moves the frame now; a broken point is refused, and a stored one reads as the default
+- position: a drag that ends without a relative point saves the point twice and finite offsets
+- unlock: the drag strip is built over the frame, hidden while locked, shown unlocked
+- unlock: the strip's own drag saves the point; d.label names it
+- unlock: locking mid-drag ends the move and saves the point
+- unlock: a Suspend mid-drag on the strip ends the move and saves the point
+- unlock: a lock with no drag running leaves the point alone
+- position: a stored anchor that is not a region point reads as the default
+- unlock: without Widgets there is no strip, and the frame drags itself
+- unlock: unlocking builds the frame; the sample is silent and stays past any hold
+- unlock: the lock is never written into the host's db, and SetLocked twice is one change
+- unlock: locking during a countdown leaves the countdown on screen
+
+### test_callout_voice.lua (29)
+
+- speak from: a countdown from 10 speaks 5 to 1 and GO, and shows every number
+- speak from: the setting moves the line, from 1 to 20
+- speak from: a number shown on its own follows the same line, a stock key never does
+- speak from: text to speech speaks the numbers from the line too
+- tts: absent C_VoiceChat, the call-out still shows, says nothing, raises nothing
+- tts: a C_VoiceChat without SpeakText is absent too; one without GetTtsVoices has no voice
+- tts: present, the line's words are spoken at the player's rate and volume, overlapping
+- tts: the voice list is the client's, malformed rows dropped, names defaulted
+- tts: a custom text with its own sound plays the file, not the voice; muted and voice=false are silent
+- custom sound: the path is played exactly as given, on the player's channel
+- custom sound: a FileDataID number is played as that number
+- custom sound: it needs no addon or soundsBase, and is not under the pack folder
+- custom sound: a missing file is silence, logged once by its path; an empty path is no sound
+- custom sound: no PlaySoundFile in the client is silence, logged once
+- packs: d.packs offers only the shipped packs, and an undeclared pack is never played
+- packs: a stored pack the host no longer ships reads as the first it does; none shipped is off
+- finish false: at zero nothing new shows or plays, the 1 fades, onDone runs once
+- finish false: an endsAt already past is onDone at the call, with nothing on screen
+- finish: a number finish shows that number; nil is GO; an unknown key is no finish
+- from: above 20 is 20; nothing shows until the remainder reaches it
+- from: nil is 20, a fraction is floored, a numeric string is read, a nonsense one is 20
+- from: negative and zero are 1, so only the 1 shows before the finish
+- from: MAX_FROM is 20, the last number a pack has a line for
+- suspend: a call-out holding on screen goes at once, with no fade and nothing armed
+- suspend: an unlocked frame is locked and its sample goes; Resume does not unlock or re-show
+- suspend: a running animation is stopped, and the countdown's onTick and onDone never run again
+- suspend: before first use it builds nothing; twice is once; Resume twice is harmless
+- suspend: after Resume a countdown runs to its finish as new
+- suspend: settings still read and write while suspended
+
+### test_callout_settings.lua (32)
+
+- callout settings: CalloutSettings is at minor 1, paired on the Callout shell's minor
+- callout settings: the rows are Look, Sound then Texts, each path-less and bound to the instance
+- callout settings: the Texts tab has a color per kind, and a text box and a mute per stock key
+- callout settings: text to speech rows are there only while the client lists a voice
+- callout settings: every row writes the host db
+- callout settings: a muted stock key shows without its voice; the rest still speak
+- callout settings: Look answers the look the frame draws
+- callout settings: one tab builds with the Options instance's own widgets
+- callout settings: a widget's change writes the host db and repaints the preview
+- callout settings: Test countdown counts the real call-out from 5; Play shows the picked text
+- callout settings: the unlock toggle is the instance's lock, never saved
+- callout settings: with no tab the three sections draw one under another, each under its heading
+- callout settings: SettingsTabs answers three host tabs that draw their tab
+- callout settings: words come from opts.L, read with rawget, else US English
+- callout settings: nothing to build into, or an unknown tab, answers nil
+- callout settings: an Options instance missing a member it calls builds nothing, and raises nothing
+- callout settings: without Options, plain frames: a control per row and the preview
+- callout settings: each slider carries the setting's own bounds and step
+- callout settings: each list offers exactly the major's choices, in its order
+- callout settings: the shadow offsets are drawn disabled with no shadow
+- callout settings: a row's write the call-out refuses leaves the db as it was
+- callout settings: the font list leads with the skin's and the game's faces, then every LSM face
+- callout settings: Preview shows the look on the real call-out without a sound
+- callout settings: TestCountdown counts from its argument, 5 by default
+- callout settings: the plain preview is drawn in the chosen look, capped at 64
+- callout settings: the preview's words carry each kind's color, so a color write shows
+- callout settings: a plain number stops at its bounds and steps by its own step
+- callout settings: a plain list wraps from its last choice to its first
+- callout settings: a plain swatch opens the client's color picker; cancel puts the color back
+- callout settings: a plain swatch with no color picker does nothing
+- callout settings: a plain refresh syncs every control to an outside write
+- callout settings: one plain tab builds that tab's rows alone, with no heading of its own
+
 ### test_charts.lua (15)
 
 - charts: the major loads and reports its two files
@@ -4616,7 +4768,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 54
+- the kit is revision 55
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -4710,7 +4862,7 @@ Total.
 - runner complexity: a raise no single file reproduces is a whole-tree crash
 - runner complexity: the real 1.24.0 for-header crash is crashed, not blind
 
-### test_kit_vendor_sync.lua (25)
+### test_kit_vendor_sync.lua (41)
 
 - parseIconLine: the three forms
 - parseIconLine: `all` without a parenthesized reason is refused
@@ -4722,6 +4874,11 @@ Total.
 - iconCatalog: names and attribution by set folder
 - requiredIcons: attribution travels with its set, unknown names come back
 - cappedList: ten names, then a count
+- parseSoundLine: the three forms
+- parseSoundLine: malformed lines are refused, naming why
+- soundDeclaration: no line means none, not a transition
+- soundDeclaration: placed, misplaced, doubled
+- soundCatalog and requiredSounds: a pack is its folder, credits and license included
 - vendor sync: a byte-identical PDF holding CR LF pairs passes, and one edited byte fails
 - vendor sync: a CR LF copy of an LF text blob passes, and one edited byte under it fails
 - vendor sync: every extension .gitattributes pins binary is one the gate compares raw
@@ -4734,9 +4891,20 @@ Total.
 - vendor sync: a declared icon that differs from the tag fails
 - vendor sync: outside media/icons the copy is still compared whole
 - vendor sync: `all` needs its reason, and with one is the whole folder
+- vendor sync: no `LibKa0s sounds:` line is none, so a copied pack fails until pruned
+- vendor sync: a tag without media/sounds and no line passes, as every tag before v1.96.0
+- vendor sync: `none.` ships no sound, and an empty folder passes
+- vendor sync: a list ships exactly its packs, credits and license included
+- vendor sync: an undeclared pack fails, and a declared one that differs from the tag fails
+- vendor sync: a pack the tag does not carry fails, even if a stray file vouches for it
+- vendor sync: `all.` compares media/sounds whole; a malformed line fails
+- vendor sync: outside both carved folders the copy is still compared whole
 - prune-icons: a list keeps its icons and attribution, and the gate then passes
 - prune-icons: none empties the folder; all and no line remove nothing
 - prune-icons: an unknown name is refused and nothing is removed
+- prune-icons: no sounds line removes every pack in the same run, and the gate passes
+- prune-icons: a sounds list keeps its packs whole; all keeps everything
+- prune-icons: an unknown pack is refused and nothing is removed from either folder
 
 ### test_kit_skin_values.lua (29)
 
@@ -4910,6 +5078,10 @@ Total.
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
+| test_callout.lua | 52 |
+| test_callout_look.lua | 27 |
+| test_callout_voice.lua | 29 |
+| test_callout_settings.lua | 32 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5075,7 +5247,7 @@ Total.
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 20 |
-| test_kit_vendor_sync.lua | 25 |
+| test_kit_vendor_sync.lua | 41 |
 | test_kit_skin_values.lua | 29 |
 | test_kit_skin_switch.lua | 35 |
 | test_kit_client_globals.lua | 16 |
@@ -5086,4 +5258,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4300** |
+| **Total** | **4456** |

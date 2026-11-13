@@ -73,6 +73,14 @@ local MAJORS = {
     primary = "Toast",
   },
   {
+    major = "LibKa0s-Callout-1.0",
+    files = { "Callout", "CalloutSettings" },
+    primary = "Callout",
+    paired = {
+      { file = "CalloutSettings", minorField = "__settingsMinor", probeField = "__settingsShellMinor" },
+    },
+  },
+  {
     major = "LibKa0s-Charts-1.0",
     files = { "Charts", "ChartsRender" },
     primary = "Charts",

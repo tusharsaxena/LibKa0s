@@ -14,7 +14,7 @@ Required by `documentation-§7`, which binds this repo unchanged (`library-stack
 
 **Nothing.** LibKa0s is a **library, not an addon**: it has no `.toc`, it is never installed by a
 player, and it never appears in the addon list. It is vendored whole-folder into each host addon's
-`libs/LibKa0s/` (all but `media/icons/`, which carries only the icons the addon declares) and loaded through that addon's TOC — see
+`libs/LibKa0s/` (all but `media/icons/` and `media/sounds/`, which carry only the icons and voice packs the addon declares) and loaded through that addon's TOC — see
 [README.md → Installing](README.md#installing). A player who has a Ka0s addon already has every copy
 of this library they will ever need.
 
@@ -25,6 +25,12 @@ vendored the code.
 LibCustomGlow-1.0 in its own `libs/`, and Glow resolves it with `LibStub` at every call, drawing
 nothing when it is absent, so there is nothing to install here (the suite uses a fake,
 `tests/test_glow.lua`).
+
+`LibKa0s-Callout-1.0` speaks with the voice packs this payload carries (`media/sounds/callout/`,
+Ogg Vorbis, played with `PlaySoundFile`) or with the client's own text to speech
+(`C_VoiceChat.SpeakText`, through the voices installed with the operating system). Neither is
+installed by a player or a developer: a host that pruned a pack away gets silence, logged once,
+and a client with no installed voice offers none (the suite fakes both, `tests/test_callout_voice.lua`).
 
 ## Development
 
@@ -94,7 +100,8 @@ does not bind a library repo (`library-stack-§7`), and releasing is git plus th
 [`docs/releasing.md`](docs/releasing.md).
 
 **Re-vendoring needs nothing extra either.** `tools/prune-icons.lua`, which cuts a consumer's copied
-`media/icons/` down to its `LibKa0s icons:` declaration, is pure Lua 5.1 with no dependencies beyond
+`media/icons/` down to its `LibKa0s icons:` declaration and its `media/sounds/` down to its
+`LibKa0s sounds:` declaration (no line: none), is pure Lua 5.1 with no dependencies beyond
 the `lua5.1` and POSIX `find` above: `lua tools/prune-icons.lua <Addon>`.
 
 **Regenerating the shipped art is the one thing that needs more**, and only when the art itself
@@ -149,6 +156,26 @@ python3 -I tools/artwork/fonts.py --fetch --build                          # net
 ```
 
 A clean rebuild must leave `git status` clean — the committed TGAs are what the tool produces.
+
+**The voice packs are build-time art too, and the text-to-speech models never ship.** The 86 clips
+in `LibKa0s/media/sounds/callout/` (43 lines in each of two packs) were synthesized once, on
+2026-11-13, and are committed; nothing in the suite, a re-vendor or a release reads a model. No
+generator script is committed: each pack's `CREDITS.md` is the recipe, naming the model and its
+SHA-256, the synthesis settings, the text of each line, the trim and normalize step and the
+encoding. Regenerating a pack, which only a changed line or a new voice needs, takes:
+
+| Tool | Why | Where |
+|---|---|---|
+| piper-tts 1.8.0 (Python) | Synthesizes each line ([OHF-Voice/piper1-gpl](https://github.com/OHF-Voice/piper1-gpl); GPL-3.0, a build tool only, so none of its code is in the payload) | `pip install piper-tts==1.8.0` in a venv (the PEP 668 trap below applies) |
+| The Piper voice models `en_US-kathleen-medium` and `en_US-joe-medium` (`.onnx` and `.onnx.json`) | The two voices, from [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices) (MIT); the SHA-256 of each `.onnx` is in its pack's `CREDITS.md` | downloaded beside the script, never committed |
+| python-soundfile over libsndfile 1.2.2, and NumPy | The silence trim, the peak normalize and the Ogg Vorbis encode | in the same venv: `pip install soundfile numpy` |
+
+What ships, and under what terms (the texts beside each pack):
+
+| Pack | Model | Licenses shipped | Attribution |
+|---|---|---|---|
+| `callout/female-kathleen/` | Piper `en_US-kathleen-medium`, fine-tuned from `en_US-hifi_tts_92-medium` | CC0 1.0 (the Nabu Casa kathleen dataset, `LICENSE-CC0-1.0.txt`); CC BY 4.0 (the Hi-Fi Multi-Speaker English TTS Dataset the base model was trained on, NVIDIA, `LICENSE-CC-BY-4.0.txt`) | **Required** by CC BY 4.0: `CREDITS.md`, this repo's README *Credits*, and the README of every consumer that ships the pack |
+| `callout/male-joe/` | Piper `en_US-joe-medium`, fine-tuned from `nl_BE-rdh-medium` | CC0 1.0 (the Nabu Casa joe dataset and the base model's data, `LICENSE-CC0-1.0.txt`) | Not required; credited anyway in `CREDITS.md` and this repo's README |
 
 ## What this repo is verified with
 
