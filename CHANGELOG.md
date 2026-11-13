@@ -10,6 +10,16 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.96.0 — unreleased
+
+Opened 2026-11-13, on `feat/2026-11-13-callout`: the call-out major (`docs/superpowers/plans/2026-11-13-callout.md`, adoption issue LibKa0s#85). This section is in progress; plan row L7 finishes it.
+
+### The Callout major (L3)
+
+- **Callout minor 1** ([docs](docs/api/Callout/version-1-docs.md)), `LibKa0s/Callout.lua`, loaded after `Toast.lua`: `New(d)` with the host's `db`; `Countdown{ endsAt, from, finish, onTick, onDone }` whose number is `math.ceil(endsAt - GetTime())`, read in an OnUpdate armed only while a countdown runs or a call-out holds; `Show` for the 23 stock keys, the numbers 1 to 20 and custom texts; the look (font, size, outline, shadow, per-kind colors, glow, AnimationGroup animations, saved position, unlock-to-move) and the sound (voice packs by `PACKS`, text to speech through `C_VoiceChat`, channel, speak-from) settings with `DEFAULTS`; `Suspend` / `Resume`.
+- **DebugLogDiagnostics minor 9** ([docs](docs/api/DebugLog/version-22.9.1.4-docs.md)): the report's `LibKa0s running:` line names Callout. No member change.
+- Tests: the new `tests/test_callout.lua` on `tests/fixture_callout.lua`, and `tests/test_debuglog_diagnostics.lua` re-pins `DebugLogDiagnostics 9`.
+
 ## v1.95.0 — 2026-11-10
 
 Opened 2026-11-10, on `feat/2026-11-10-quickcomms-forever-emotes`: the library half of Ka0s Quick Comms' WoW Forever port (Ka0sAddonsCommonTasks `docs/2026-11-10-QUICKCOMMS_FOREVER_EMOTES/`, design §3), item `QFE-LK1`, released as `QFE-LK2`. The owner's rulings R3 and R5: the spec and role read is a reusable LibKa0s module, the talents decide the role on Forever, and the player can override it, saved per character.

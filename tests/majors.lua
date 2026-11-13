@@ -73,6 +73,11 @@ local MAJORS = {
     primary = "Toast",
   },
   {
+    major = "LibKa0s-Callout-1.0",
+    files = { "Callout" },
+    primary = "Callout",
+  },
+  {
     major = "LibKa0s-Charts-1.0",
     files = { "Charts", "ChartsRender" },
     primary = "Charts",

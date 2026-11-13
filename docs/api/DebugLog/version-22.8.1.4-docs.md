@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **8** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **4** |
 | Shipped in | v1.95.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 22.7.1.4](./version-22.7.1.4-docs.md) (shipped in v1.86.0) — the identity header did not name `LibKa0s-Role-1.0`. |
-| Superseded by | — |
+| Superseded by | [version 22.9.1.4](./version-22.9.1.4-docs.md) (v1.96.0) — the identity header names `LibKa0s-Callout-1.0`. |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 22, DebugLogDiagnostics = 8, DebugLogGates = 1, DebugLogWindow = 4 }` |
 
