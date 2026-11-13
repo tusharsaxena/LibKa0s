@@ -1,4 +1,4 @@
--- tests/test_callout_settings.lua — LibKa0s-Callout-1.0's CalloutSettings.lua (minor 2): the settings
+-- tests/test_callout_settings.lua — LibKa0s-Callout-1.0's CalloutSettings.lua (minor 3): the settings
 -- section a consumer drops into its own panel (plan row L4), its font row led by the call-out's
 -- display faces from minor 2 (plan row L2).
 --
@@ -53,12 +53,12 @@ end
 
 -- ── the version ──────────────────────────────────────────────────────────────────────────────
 
-test("callout settings: CalloutSettings is at minor 2, paired on the Callout shell's minor", function()
+test("callout settings: CalloutSettings is at minor 3, paired on the Callout shell's minor", function()
   local c, _, _, _, Callout = newCallout()
-  assertEqual(Callout.MODULES.CalloutSettings, 2)
-  assertEqual(Callout.__settingsMinor, 2)
+  assertEqual(Callout.MODULES.CalloutSettings, 3)
+  assertEqual(Callout.__settingsMinor, 3)
   assertEqual(Callout.__settingsShellMinor, Callout.MINOR)
-  for _, name in ipairs({ "BuildSettings", "SettingsRows", "SettingsTabs", "Preview", "TestCountdown", "Look" }) do
+  for _, name in ipairs({ "BuildSettings", "SettingsRows", "SchemaRows", "SettingsTabs", "Preview", "TestCountdown", "Look" }) do
     assertEqual(type(c[name]), "function", "an instance has " .. name)
   end
 end)
