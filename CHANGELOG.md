@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.97.0 — unreleased
+## v1.97.0 — 2026-11-13
 
 Opened 2026-11-13, on `feat/2026-11-13-callout-fonts`: the Callout's display faces (plan row L2 of `docs/superpowers/plans/2026-11-13-callout.md`), Bebas Neue and Russo One, beside Oxanium Bold, the default. Orbitron, the third face the plan named, does not ship, on the owner's ruling of 2026-11-13: its Bold lacks 28 characters of the glyph safe set (the middle dot, the plus-minus sign, the guillemets, the copyright and trademark signs among them), which would have cut the set from 117 to 89 for every consumer. Bebas Neue and Russo One cost it nothing.
 
