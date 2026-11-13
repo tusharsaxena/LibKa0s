@@ -95,6 +95,48 @@ The stock keys: `READY`, `GO`, `START`, `STOP`, `WARNING`, `ERROR`, `DONE`, `FIN
 `PAUSE`, `RESUME`, `CANCELED`, `PULL`, `INTERRUPT`, `MOVE`, `DEFENSIVE`, `REBUFF`, `EXPIRING`,
 `UPGRADE`, `TIME_UP`, `VICTORY`, `FAILED`, `LAST_TEN`.
 
+### The stock texts
+
+Each key's pack line is its lower-case name plus `SOUND_EXT`. `texts[key]` replaces what is shown,
+never what is said; `muted[key]` silences it.
+
+| Key | Shown | Kind | Said (text to speech) | Pack line |
+|---|---|---|---|---|
+| `READY` | READY | info | Ready | `ready.ogg` |
+| `GO` | GO! | go | Go | `go.ogg` |
+| `START` | START | go | Start | `start.ogg` |
+| `STOP` | STOP | stop | Stop | `stop.ogg` |
+| `WARNING` | WARNING | warn | Warning | `warning.ogg` |
+| `ERROR` | ERROR | error | Error | `error.ogg` |
+| `DONE` | DONE | info | Done | `done.ogg` |
+| `FINISH` | FINISH | go | Finish | `finish.ogg` |
+| `NEW_BEST` | NEW BEST | go | New best | `new_best.ogg` |
+| `PAUSE` | PAUSED | warn | Paused | `pause.ogg` |
+| `RESUME` | RESUME | info | Resume | `resume.ogg` |
+| `CANCELED` | CANCELED | stop | Canceled | `canceled.ogg` |
+| `PULL` | PULL | warn | Pull | `pull.ogg` |
+| `INTERRUPT` | INTERRUPT | warn | Interrupt | `interrupt.ogg` |
+| `MOVE` | MOVE | warn | Move | `move.ogg` |
+| `DEFENSIVE` | DEFENSIVE | warn | Defensive | `defensive.ogg` |
+| `REBUFF` | REBUFF | info | Rebuff | `rebuff.ogg` |
+| `EXPIRING` | EXPIRING | warn | Expiring | `expiring.ogg` |
+| `UPGRADE` | UPGRADE | go | Upgrade | `upgrade.ogg` |
+| `TIME_UP` | TIME UP | stop | Time up | `time_up.ogg` |
+| `VICTORY` | VICTORY | go | Victory | `victory.ogg` |
+| `FAILED` | FAILED | error | Failed | `failed.ogg` |
+| `LAST_TEN` | LAST TEN | warn | Last ten seconds | `last_ten.ogg` |
+| `1` .. `20` | the number | number | the number | `1.ogg` .. `20.ogg` |
+
+### What is spoken
+
+In this order, the first that applies: a `voice = false` (the spec's or `opts`') is silence; a stock
+key in `muted` is silence; `voice = "off"` is silence; a custom spec's `sound` is played **exactly as
+given** (a path or a FileDataID, on the player's channel, never joined to `soundsBase`); a number
+above `speakFrom` is silence; `voice = "tts"` speaks the line's words (a stock key's *Said* column, a
+number, a custom text's `text`); a pack plays the line's file. A custom text with no `sound` is
+therefore spoken by text to speech and silent on a pack. With no `C_VoiceChat.SpeakText`, or no voice
+in `GetTtsVoices()`, text to speech is silence, reported once; nothing stands in for it.
+
 ## The descriptor
 
 | Field | Required | Meaning |
@@ -209,7 +251,105 @@ unknown `opts.tab`.
 **Words.** `SETTINGS_STRINGS`, overridden key by key through `opts.L`, read with rawget (a Ka0s
 locale table answers an unknown key with the key). A stock key's own word is its `STOCK` text.
 
+## The voice packs and the sound declaration
+
+The packs ship in the payload at `media/sounds/callout/<folder>/`, each folder holding exactly
+`LINES` as `.ogg` (43 files) beside its own `CREDITS.md` and license texts:
+
+| `voice` key | Folder | Voice | Licenses in the folder |
+|---|---|---|---|
+| `female` | `female-kathleen` | Piper `en_US-kathleen-medium`, US English | `LICENSE-CC0-1.0.txt`, `LICENSE-CC-BY-4.0.txt` (the base model's Hi-Fi TTS data, credited in `CREDITS.md`) |
+| `male` | `male-joe` | Piper `en_US-joe-medium`, US English | `LICENSE-CC0-1.0.txt` |
+
+`media/sounds/` is the second carve-out from whole-folder vendoring (`library-stack-§7`, *The sound
+subset*; kit revision 55). A consumer declares the packs it ships in one line of its root
+`CLAUDE.md`, **directly under its `LibKa0s icons:` line**, in one of three forms:
+
+```text
+LibKa0s sounds: none.
+LibKa0s sounds: all.
+LibKa0s sounds: callout/female-kathleen, callout/male-joe.
+```
+
+**No line means none.** A consumer that keeps only some packs offers only those: `Voices()` still
+lists every `PACKS` row, and a pack the copy does not carry is silence, reported once per file
+through `d.debug`, so a host that prunes a pack also leaves it out of its own choices or accepts the
+silence. `tools/prune-icons.lua` prunes `media/sounds/` to the line after the icons, and
+`testkit/vendor_sync.lua` holds the consumer's copy to it, credits and licenses included. A pack
+under a license that makes attribution a condition is credited in the consumer's README as its
+`CREDITS.md` states.
+
+## Adopting it
+
+A host keeps when to speak, its custom texts and every string; the instance keeps the frame, the
+look, the voice and the settings rows. A sketch, Ka0s Combat Trail's race countdown:
+
+```lua
+local _, NS = ...
+-- modules/RaceCountdown.lua: the race countdown on LibKa0s-Callout-1.0 (library-stack-§7).
+local Callout = LibStub and LibStub("LibKa0s-Callout-1.0", true)
+
+-- AceDB defaults: profile.callout = Callout and Callout.DEFAULTS or {}
+NS.Callout = Callout and Callout:New({
+    name = "CombatTrailCallout", addon = "CombatTrail", skin = "CombatTrail",
+    db = function() return NS.addon.db.profile.callout end,
+    debug = function(tag, msg) NS.Debug(tag, msg) end,
+}) or NS.CalloutStub   -- the degradation stub below
+
+-- The race clock and the call-out read the same endsAt, so they never disagree.
+local endsAt = GetTime() + 10
+NS.Callout:Countdown{ endsAt = endsAt, from = 10, finish = "GO", onDone = NS.StartRace }
+```
+
+The settings page passes `NS.Callout:SettingsTabs({ options = O })` to `RenderTabbedSchema` (or calls
+`BuildSettings(ctx, { options = O, tab = "look" })` from a tab's own render). The host's stand-down
+calls `Suspend()` and its return `Resume()`; its profile change calls `Apply()`. The `addon` field is
+what finds the packs and the bundled faces under `Interface\AddOns\<addon>\libs\LibKa0s\`.
+
+### The degradation stub
+
+A host that degrades without the library (anti-pattern #47) stubs the **instance**:
+
+```lua
+NS.CalloutStub = {
+    Countdown = function() return false end, Cancel = function() return false end,
+    Running = function() return false, nil end, Show = function() return false end,
+    Hide = function() end, Suspend = function() end, Resume = function() end,
+    Suspended = function() return false end, Get = function() return nil end,
+    Set = function() return false end, GetColor = function() return 1, 1, 1 end,
+    SetColor = function() return false end, Apply = function() end, SetLocked = function() end,
+    Locked = function() return true end, ResetPosition = function() end,
+    Voices = function() return {} end, TtsVoices = function() return {} end,
+    Frame = function() return nil end, Look = function() return {} end,
+    Preview = function() return false end, TestCountdown = function() return false end,
+    SettingsRows = function() return {} end, SettingsTabs = function() return {} end,
+    BuildSettings = function() return nil end,
+    Stats = function() return { built = false, shown = false, running = false, awake = false,
+        suspended = false, locked = true, logged = 0 } end,
+}
+```
+
+Pin it with `T.assertSurfaceParity(liveInstance, NS.CalloutStub, "Callout instance")`;
+`members-1.1.json` lists the lib-level surface, which a host reads through `Callout:New` and the
+constants above.
+
 ## What is not here
 
 - **No queue.** A Show replaces what is on screen.
 - **No per-call channel or volume.** One channel per instance, the player's.
+
+## Vendoring
+
+Whole-folder, exactly as every other major in this payload, then the declaration-driven prune:
+
+```sh
+cp -r LibKa0s/. <Addon>/libs/LibKa0s/
+lua tools/prune-icons.lua <Addon>        # media/icons/ and media/sounds/ to the CLAUDE.md lines
+```
+
+`Callout.lua` and `CalloutSettings.lua` are entries in `LibKa0s.xml`, after `Toast.lua`, in that
+order, so the whole-folder copy brings them in with no load-list change in the host.
+
+**Consumer census.** Not measured: the major is new at v1.96.0, after the v1.83.0 stamp of
+[`CONSUMERS.md`](../CONSUMERS.md). Ka0s Combat Trail is its one planned consumer (LibKa0s#85); every
+export's verdict is *zero — planned at v1.96.0* until the next re-run.

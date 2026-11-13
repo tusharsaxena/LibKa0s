@@ -318,3 +318,206 @@ test("callout settings: without Options, plain frames: a control per row and the
   view.playButton:__fire("OnClick")
   assertEqual(shown(c), "GO!", "Play shows the picked text, GO! until another is picked")
 end)
+
+-- ── the rows, in depth (plan row L6) ─────────────────────────────────────────────────────────
+
+test("callout settings: each slider carries the setting's own bounds and step", function()
+  local c, _, _, _, Callout = newCallout(nil, function(m) tts(m, { { voiceID = 3, name = "Zira" } }) end)
+  local by = rowsByKey(c:SettingsRows())
+  local want = {
+    size = { Callout.SIZE_MIN, Callout.SIZE_MAX, 1 }, shadowX = { -20, 20, 1 }, shadowY = { -20, 20, 1 },
+    hold = { 0.2, 10, 0.1 }, speakFrom = { 1, Callout.MAX_FROM, 1 }, ttsRate = { -10, 10, 1 },
+    ttsVolume = { 0, 100, 1 },
+  }
+  for key, w in pairs(want) do
+    local r = by[key]
+    assertEqual(r.type, "number", key .. " is a slider")
+    assertEqual(r.min .. "," .. r.max .. "," .. r.step, w[1] .. "," .. w[2] .. "," .. w[3], key .. "'s bounds")
+    assertNil(r.values, key .. " is no list")
+  end
+end)
+
+test("callout settings: each list offers exactly the major's choices, in its order", function()
+  local c, _, _, _, Callout = newCallout()
+  local by = rowsByKey(c:SettingsRows())
+  local function keys(r)
+    local out = {}
+    for i, v in ipairs(r.values) do out[i] = v.value end
+    return table.concat(out, ",")
+  end
+  assertEqual(keys(by.outline), table.concat(Callout.OUTLINES, ","))
+  assertEqual(keys(by.glow), table.concat(Callout.GLOWS, ","))
+  assertEqual(keys(by.anim), table.concat(Callout.ANIMS, ","))
+  assertEqual(keys(by.channel), table.concat(Callout.CHANNELS, ","))
+  assertEqual(keys(by.voice), "female,male,tts,off")
+  for _, key in ipairs({ "outline", "glow", "anim", "channel", "voice" }) do
+    for _, v in ipairs(by[key].values) do
+      assertTrue(type(v.text) == "string" and v.text ~= "", key .. " " .. tostring(v.value) .. " has a word")
+    end
+  end
+end)
+
+test("callout settings: the shadow offsets are drawn disabled with no shadow", function()
+  local c, _, db = newCallout()
+  local by = rowsByKey(c:SettingsRows({ tab = "look" }))
+  assertFalse(by.shadowX.disabledIf())
+  assertFalse(by.shadowY.disabledIf())
+  db.shadow = false
+  assertTrue(by.shadowX.disabledIf())
+  assertTrue(by.shadowY.disabledIf())
+  assertNil(by.size.disabledIf, "the other rows are never disabled")
+end)
+
+test("callout settings: a row's write the call-out refuses leaves the db as it was", function()
+  local c, _, db = newCallout()
+  local by = rowsByKey(c:SettingsRows())
+  by.size.set(500)
+  by.outline.set("THIN")
+  by.voice.set("robot")
+  by.speakFrom.set(2.5)
+  assertNil(next(db), "nothing was written")
+  assertEqual(by.size.get(), 96, "the row still reads the default")
+  by["colors.go"].set({})
+  assertNil(db.colors, "a color with no channels is no write")
+end)
+
+test("callout settings: the font list leads with the skin's and the game's faces, then every LSM face", function()
+  local c = newCallout(nil, function(m)
+    local LSM = m.LibStub:NewLibrary("LibSharedMedia-3.0", 1)
+    LSM.List = function() return { "Big Face", "Alpha Face" } end
+    LSM.Fetch = function() return nil end
+  end)
+  local values = {}
+  for i, v in ipairs(rowsByKey(c:SettingsRows({ tab = "look" })).font.values()) do values[i] = v.value end
+  local list = table.concat(values, ",")
+  assertEqual(values[1] .. "," .. values[2], "Skin font,Game default")
+  assertTrue(list:find("Big Face", 1, true) ~= nil)
+  assertTrue(list:find("Alpha Face", 1, true) ~= nil)
+end)
+
+-- ── the preview, in depth ────────────────────────────────────────────────────────────────────
+
+test("callout settings: Preview shows the look on the real call-out without a sound", function()
+  local c, m = newCallout()
+  assertTrue(c:Preview())
+  assertEqual(shown(c), "READY", "READY by default")
+  assertTrue(c:Preview("STOP"))
+  assertEqual(shown(c), "STOP")
+  assertTrue(c:Preview({ text = "Mine", sound = "Interface\\x.ogg" }))
+  assertEqual(#m.__files, 0, "silent, a custom sound included")
+end)
+
+test("callout settings: TestCountdown counts from its argument, 5 by default", function()
+  local c, m = newCallout()
+  m.__now = 10
+  assertTrue(c:TestCountdown(3))
+  assertEqual(shown(c), "3")
+  local _, n = c:Running()
+  assertEqual(n, 3)
+  assertEqual(c:Stats().endsAt, 13, "endsAt is now + from")
+  assertTrue(c:TestCountdown())
+  assertEqual(shown(c), "5")
+end)
+
+test("callout settings: the plain preview is drawn in the chosen look, capped at 64", function()
+  local c, m = newCallout()
+  local parent = m.CreateFrame("Frame", nil, m.UIParent)
+  local view = c:BuildSettings(parent, {})
+  local _, size, flags = view.preview:GetFont()
+  assertEqual(size, 64, "the default 96 is capped")
+  assertEqual(flags, "THICKOUTLINE")
+  local x, y = view.preview:GetShadowOffset()
+  assertEqual(x .. "," .. y, "2,-2")
+  c:Set("size", 40)
+  c:Set("outline", "NONE")
+  c:Set("shadow", false)
+  view.refresh()
+  _, size, flags = view.preview:GetFont()
+  assertEqual(size, 40, "below the cap, the size itself")
+  assertEqual(flags, "")
+  x, y = view.preview:GetShadowOffset()
+  assertEqual(x .. "," .. y, "0,0")
+end)
+
+test("callout settings: the preview's words carry each kind's color, so a color write shows", function()
+  local c, m = newCallout()
+  local parent = m.CreateFrame("Frame", nil, m.UIParent)
+  local view = c:BuildSettings(parent, {})
+  local text = view.preview:GetText()
+  assertTrue(text:find("|cffffffff5|r", 1, true) ~= nil, "5 in the number color")
+  c:SetColor("stop", 1, 0, 0)
+  view.refresh()
+  assertTrue(view.preview:GetText():find("|cffff0000STOP|r", 1, true) ~= nil, "STOP in the new stop color")
+end)
+
+-- ── the plain build, in depth ────────────────────────────────────────────────────────────────
+
+local function plainView(before)
+  local c, m, db = newCallout(nil, before)
+  local parent = m.CreateFrame("Frame", nil, m.UIParent)
+  local view = c:BuildSettings(parent, {})
+  local by = {}
+  for _, ctl in ipairs(view.controls) do by[ctl.row.key] = ctl end
+  return c, m, db, view, by
+end
+
+test("callout settings: a plain number stops at its bounds and steps by its own step", function()
+  local _, _, db, _, by = plainView()
+  db.size = 200
+  by.size.control.plus:__fire("OnClick")
+  assertEqual(db.size, 200, "+ at the top stays at the top")
+  db.speakFrom = 1
+  by.speakFrom.control.minus:__fire("OnClick")
+  assertEqual(db.speakFrom, 1, "- at the bottom stays at the bottom")
+  by.hold.control.plus:__fire("OnClick")
+  assertEqual(("%.1f"):format(db.hold), "1.6", "hold steps by 0.1")
+  assertEqual(by.hold.control.text:GetText(), "1.6", "and shows one decimal")
+end)
+
+test("callout settings: a plain list wraps from its last choice to its first", function()
+  local _, _, db, _, by = plainView()
+  db.channel = "Dialog"
+  by.channel.control:__fire("OnClick")
+  assertEqual(db.channel, "Master")
+end)
+
+test("callout settings: a plain swatch opens the client's color picker; cancel puts the color back", function()
+  local picked
+  local _, m, db, _, by = plainView(function(mm)
+    mm.ColorPickerFrame = {
+      SetupColorPickerAndShow = function(_, info) picked = info end,
+      GetColorRGB = function() return 0.2, 0.4, 0.6 end,
+    }
+  end)
+  assertTrue(m.ColorPickerFrame ~= nil)
+  by["colors.warn"].control:__fire("OnClick")
+  assertEqual(("%.2f %.2f %.2f"):format(picked.r, picked.g, picked.b), "1.00 0.78 0.20", "opened on the current color")
+  assertFalse(picked.hasOpacity)
+  picked.swatchFunc()
+  assertEqual(table.concat(db.colors.warn, ","), "0.2,0.4,0.6")
+  picked.cancelFunc()
+  assertEqual(table.concat(db.colors.warn, ","), "1,0.78,0.2", "cancel writes the color it opened on")
+end)
+
+test("callout settings: a plain swatch with no color picker does nothing", function()
+  local _, _, db, _, by = plainView()
+  by["colors.go"].control:__fire("OnClick")
+  assertNil(db.colors)
+end)
+
+test("callout settings: a plain refresh syncs every control to an outside write", function()
+  local c, _, _, view, by = plainView()
+  c:Set("size", 150)
+  view.refresh()
+  assertEqual(by.size.control.text:GetText(), "150")
+end)
+
+test("callout settings: one plain tab builds that tab's rows alone, under its heading", function()
+  local c, m = newCallout()
+  local parent = m.CreateFrame("Frame", nil, m.UIParent)
+  local view = c:BuildSettings(parent, { tab = "sound" })
+  for _, r in ipairs(view.rows) do assertEqual(r.tab, "sound") end
+  assertTrue(#view.rows >= 3, "voice, channel and speak from")
+  assertTrue(view.testButton ~= nil and view.playButton ~= nil and view.resetButton ~= nil)
+  view.resetButton:__fire("OnClick")
+end)
