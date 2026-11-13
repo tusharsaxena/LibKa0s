@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261113-233957`](20261113-233957/) | `f12a0b3` | clean | 1.96.0 → 1.97.0 | 0/0 | 333 | 4459/3/4462 | skip | 100849 | 14401 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261113-220138`](20261113-220138/) | `1c37022` | clean | 1.95.0 → 1.96.0 | 0/0 | 333 | 4456/3/4459 | skip | 100755 | 14387 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261110-090851`](20261110-090851/) | `1266068` | clean | 1.95.0 → 1.95.0 | 0/0 | 326 | 4300/3/4303 | skip | 97152 | 13898 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261106-191446`](20261106-191446/) | `1938837` | clean | 1.90.0 → 1.91.0 | 0/0 | 313 | 4211/3/4214 | skip | 94056 | 13523 | 6.9 | 2.1 | 15 | 0 | **green** |
@@ -210,11 +211,11 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**4459 cases** — 4456 passed, 0 failed, 3 skipped. The generated inventory
-[`20261113-220138/test-cases.md`](20261113-220138/test-cases.md) is the authority on which cases existed at this run;
+**4462 cases** — 4459 passed, 0 failed, 3 skipped. The generated inventory
+[`20261113-233957/test-cases.md`](20261113-233957/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **4303 → 4459** since the previous run.
+Moved **4459 → 4462** since the previous run.
 
 **3 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -238,7 +239,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261113-220138`](20261113-220138/) — **this run's measurement, not its diff.** Max CCN **15** across 14387
+Current as of [`20261113-233957`](20261113-233957/) — **this run's measurement, not its diff.** Max CCN **15** across 14401
 functions, **0** of them warned on; 13 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
@@ -270,7 +271,7 @@ None.
 | 1000–1500 (on notice) | `LibKa0s/WidgetsDragHandle.lua` | 1022 | **Newly crossed at minor 11 (the marks' art). Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row.** Seam: its tooltip half. **Re-check trigger: 1100 lines.** 1022 at minor 13 (`SF2-L1`), under it. |
 | 1000–1500 (on notice) | `tests/test_debuglog.lua` | 1002 | **Newly crossed with `R4-SEP`'s console cases. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's `R4-REL2` re-cut.** A suite, so a peel is no release. Seam: the close-button factory across a Core upgrade section, to a suite of its own. **Re-check trigger: 1100 lines, or the next console case added.** |
 | 1000–1500 (on notice) | `tests/test_launcher.lua` | 1235 | **Newly crossed, with `FS-L1`'s skin cases. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's close.** Seam: its *the tooltip follows the skin* section, to a suite of its own. **Re-check trigger: 1200 lines.** |
-| 1000–1500 (on notice) | `tests/test_media.lua` | 1010 | **Newly crossed with `R3-L6` and `R3-L7`. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's `R3-REL` re-cut.** A suite, so a peel is no release. Seam: the font inventory and license section, to a suite of its own. **Re-check trigger: 1100 lines, or the next face added to `FONTS`.** |
+| 1000–1500 (on notice) | `tests/test_media.lua` | 1048 | **Newly crossed with `R3-L6` and `R3-L7`. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's `R3-REL` re-cut.** A suite, so a peel is no release. Seam: the font inventory and license section, to a suite of its own. **Re-check trigger: 1100 lines, or the next face added to `FONTS`.** |
 
 `lizard` counts every `and`/`or` short-circuit as a decision, so in Lua a run of
 `t.k = rec.k or D.k` defaulting lines scores high with no visible branching at all: a large CCN

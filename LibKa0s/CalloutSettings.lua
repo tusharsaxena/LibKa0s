@@ -49,7 +49,12 @@
 local lib = LibStub and LibStub("LibKa0s-Callout-1.0", true)
 if not lib or type(lib.__methods) ~= "table" then return end
 
-local SETTINGS_MINOR = 1
+-- Minor 1: the section (plan row L4).
+-- Minor 2 (plan row L2, v1.97.0): `FONT_FACES`, the call-out's display faces (Oxanium Bold, the
+-- default, and LibKa0s-Media-1.0 13's Bebas Neue and Russo One), lead the font row after "Skin font"
+-- and "Game default", each offered when the host's LibSharedMedia lists it (without LSM, when the
+-- winning Media copy ships it); every other face follows, sorted, as before.
+local SETTINGS_MINOR = 2
 if lib.__settingsMinor and lib.__settingsMinor >= SETTINGS_MINOR
   and lib.__settingsShellMinor == lib.MINOR then return end
 lib.__settingsMinor      = SETTINGS_MINOR
@@ -171,9 +176,14 @@ local function channelValues(L)
   return listOf(L, { { "Master", "CHANNEL_MASTER" }, { "SFX", "CHANNEL_SFX" }, { "Dialog", "CHANNEL_DIALOG" } })
 end
 
---- Every face the font row offers, in order: the skin's and the game's first, then every
---- LibSharedMedia face (or, without it, every LibKa0s-Media-1.0 face), as `{ value, text }`.
-local function fontChoices()
+-- The call-out's display faces, in the order the font row offers them after the skin's and the
+-- game's: the owner's choice of 2026-11-13 (Orbitron, also planned, does not ship). Each is a
+-- LibKa0s-Media-1.0 key and its LSM name.
+lib.FONT_FACES = { lib.FONT_DEFAULT, "Ka0s Bebas Neue", "Ka0s Russo One" }
+
+--- Every face LibSharedMedia lists (or, without it, every LibKa0s-Media-1.0 face), sorted, as a list
+--- and a set.
+local function listedFaces()
   local names, seen = {}, {}
   local function add(n)
     if type(n) == "string" and not seen[n] then seen[n] = true; names[#names + 1] = n end
@@ -186,11 +196,28 @@ local function fontChoices()
   if #names == 0 and Media and type(Media.FONTS) == "table" then
     for n in pairs(Media.FONTS) do add(n) end
   end
-  add(lib.FONT_DEFAULT)
   table.sort(names)
+  return names, seen
+end
+
+--- Every face the font row offers, in order: the skin's and the game's first, then `FONT_FACES`
+--- (the default always, the others when they are listed: by LibSharedMedia when it lists any face,
+--- else by LibKa0s-Media-1.0's `FONTS`), then every other listed face, sorted, as `{ value, text }`.
+--- A face the Media copy ships but LibSharedMedia, present, does not list is not offered: Media's
+--- RegisterLSM refused it for the client's locale (its langmask), and drawn from the raw file it
+--- would render the player's text as boxes.
+local function fontChoices()
+  local names, seen = listedFaces()
   local out = { { value = lib.FONT_SKIN, text = lib.FONT_SKIN }, { value = lib.FONT_GAME, text = lib.FONT_GAME } }
+  local taken = { [lib.FONT_SKIN] = true, [lib.FONT_GAME] = true }
+  for _, n in ipairs(lib.FONT_FACES) do
+    if n == lib.FONT_DEFAULT or seen[n] then
+      taken[n] = true
+      out[#out + 1] = { value = n, text = n }
+    end
+  end
   for _, n in ipairs(names) do
-    if n ~= lib.FONT_SKIN and n ~= lib.FONT_GAME then out[#out + 1] = { value = n, text = n } end
+    if not taken[n] then out[#out + 1] = { value = n, text = n } end
   end
   return out
 end

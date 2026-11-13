@@ -672,9 +672,9 @@ Total.
 - suspend: after Resume a countdown runs to its finish as new
 - suspend: settings still read and write while suspended
 
-### test_callout_settings.lua (32)
+### test_callout_settings.lua (34)
 
-- callout settings: CalloutSettings is at minor 1, paired on the Callout shell's minor
+- callout settings: CalloutSettings is at minor 2, paired on the Callout shell's minor
 - callout settings: the rows are Look, Sound then Texts, each path-less and bound to the instance
 - callout settings: the Texts tab has a color per kind, and a text box and a mute per stock key
 - callout settings: text to speech rows are there only while the client lists a voice
@@ -696,6 +696,8 @@ Total.
 - callout settings: the shadow offsets are drawn disabled with no shadow
 - callout settings: a row's write the call-out refuses leaves the db as it was
 - callout settings: the font list leads with the skin's and the game's faces, then every LSM face
+- callout settings: the call-out's display faces lead the font row, each when it can be drawn
+- callout settings: FONT_FACES names the default first and the two Media minor 13 faces
 - callout settings: Preview shows the look on the real call-out without a sound
 - callout settings: TestCountdown counts from its argument, 5 by default
 - callout settings: the plain preview is drawn in the chosen look, capped at 64
@@ -761,7 +763,7 @@ Total.
 - skin: Reskin works for a host with no owner, and a card keeps its caller's color
 - skin: setCard puts the owner's face back on the figure
 
-### test_media.lua (45)
+### test_media.lua (46)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -797,6 +799,7 @@ Total.
 - media: every OFL face ships with its license text beside it
 - media: a face off the OFL ships its author's terms verbatim, and the face says the same
 - media: Open Sans ships the Apache 2.0 text, and each new face's bytes carry the notice recorded for it
+- media: the Callout faces are upstream's static files, unchanged, under their own names
 - media: Ka0s Friz Quadrata TT is gone: no key, no file, no record
 - media: FONTS.md records every shipped face by file, and the notice of each new one
 - media: the README points at FONTS.md and carries no font license or credit of its own
@@ -4768,7 +4771,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 55
+- the kit is revision 56
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -5081,11 +5084,11 @@ Total.
 | test_callout.lua | 52 |
 | test_callout_look.lua | 27 |
 | test_callout_voice.lua | 29 |
-| test_callout_settings.lua | 32 |
+| test_callout_settings.lua | 34 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
-| test_media.lua | 45 |
+| test_media.lua | 46 |
 | test_icon_browser_sources.lua | 26 |
 | test_icon_browser.lua | 28 |
 | test_icon_browser_search.lua | 14 |
@@ -5258,4 +5261,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4456** |
+| **Total** | **4459** |

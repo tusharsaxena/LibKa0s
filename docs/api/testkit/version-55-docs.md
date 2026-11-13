@@ -10,9 +10,9 @@
 | Version | **55** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.96.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 54](version-54-docs.md) — the same surface, with `media/sounds/` compared whole like the rest of the payload |
-| Superseded by | — |
+| Superseded by | [version 56](version-56-docs.md) — `glyphs.lua`'s face list gains Bebas Neue and Russo One; the safe set is unchanged |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `55` |
 

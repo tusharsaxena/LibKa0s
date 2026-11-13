@@ -22,6 +22,8 @@ WHAT SHIPS, AND FROM WHERE. From google/fonts' ofl/ folder, SIL Open Font Licens
     Oxanium-SemiBold.ttf, Oxanium-Bold.ttf             oxanium, Oxanium[wght].ttf, INSTANCED
     FiraSans-Regular.ttf, -Medium, -SemiBold           firasans, static files, unchanged
     AtkinsonHyperlegible-Regular.ttf, -Bold.ttf        atkinsonhyperlegible, static files, unchanged
+    BebasNeue-Regular.ttf                              bebasneue, static file, unchanged
+    RussoOne-Regular.ttf                               russoone, static file, unchanged
 
     and one license file per family beside them, `<Family>-OFL.txt`: upstream's OFL.txt verbatim,
     an instanced family's with a provenance note above it.
@@ -281,6 +283,32 @@ FAMILIES = [
         "license": "Ubuntu-UFL.txt",
         "licenseSrc": "UFL.txt",
         "ship": ["Ubuntu-Regular.ttf"],
+        "instances": [],
+    },
+    # THE CALLOUT FACES (2026-11-13, the owner's choice for LibKa0s-Callout-1.0's big text): two OFL
+    # display faces, each a static file shipped unchanged. Russo One reserves its name ("Russo"), so it
+    # may not be instanced or renamed. Orbitron, the third planned, stays out (the owner's ruling of
+    # 2026-11-13): its Bold lacks 28 characters of the glyph safe set.
+    {
+        "dir": "bebasneue", "family": "Bebas Neue",
+        "sha": "61f595f96445e9c2316b50d1ba3d79ef91f72b0a",
+        "files": {
+            "BebasNeue-Regular.ttf": "08e4623805102d819f58601e46e345648846075e363b2ceb23313c2d1c83ec73",
+            "OFL.txt": "72082f6cb4d04be2ecf7cc7d9e1e7d73787f0af8a5a278a47cade70c16b78341",
+        },
+        "license": "BebasNeue-OFL.txt",
+        "ship": ["BebasNeue-Regular.ttf"],
+        "instances": [],
+    },
+    {
+        "dir": "russoone", "family": "Russo One",
+        "sha": "14f3bd097a44db854285fae061ae0fe6eb1a583b",
+        "files": {
+            "RussoOne-Regular.ttf": "bc0abcc660bd8b7ad3000ecb2898a27c58a29a50f7ec81652fa12e75148d09df",
+            "OFL.txt": "3ac1301549523d9861fedca12871f24e575fbd26d520632fc00ba849b471d275",
+        },
+        "license": "RussoOne-OFL.txt",
+        "ship": ["RussoOne-Regular.ttf"],
         "instances": [],
     },
 ]
