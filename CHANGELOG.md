@@ -24,6 +24,12 @@ Versions in this release: `LibKa0s-Callout-1.0` key **2.3** (Callout minor 2, Ca
 - Tests: the new `tests/test_callout_schema.lua`, on a real host (a `LibKa0s-Schema-1.0` instance, its Options instance and a recording seam, the call-out's `db` a fresh copy on every read so only a write through the seam can land): the rows against `DEFAULTS` and the host's `Validate`, a path on every row, every instance write and the drag through the seam, a write by path reaching the frame, the Options build's rows, widgets and preview on the route, the whole-table `texts` / `muted` write split into leaves, an array color in the host's swatch, the reset count at the defaults, the text to speech voice's default choice, the leaf keys and either color shape off it. `tests/test_callout.lua` and `tests/test_callout_settings.lua` re-pin the minors.
 - Documentation: `README.md` (the Callout row, its document at 2.3, the kit line at v1.98.0), `docs/releasing.md` (the version pointers at v1.98.0 and the v1.98.0 re-vendor note: the instance stub gains `SchemaRows`, and what a Ka0s host's adoption takes), `CLAUDE.md` (the register's Callout row, its key and its write route; `LibKa0s/Callout.lua` enters the 1000–1500 band at 1145, on notice with its seam named), the plan's ledger rows L11 and L12.
 
+Release gate (`docs/automated-tests/20261114-003644/`): lint pass, 0/0 in 334 files;
+tests pass, 4487 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (Callout 2 and CalloutSettings 3 only).
+
 ## v1.97.0 — 2026-11-13
 
 Opened 2026-11-13, on `feat/2026-11-13-callout-fonts`: the Callout's display faces (plan row L2 of `docs/superpowers/plans/2026-11-13-callout.md`), Bebas Neue and Russo One, beside Oxanium Bold, the default. Orbitron, the third face the plan named, does not ship, on the owner's ruling of 2026-11-13: its Bold lacks 28 characters of the glyph safe set (the middle dot, the plus-minus sign, the guillemets, the copyright and trademark signs among them), which would have cut the set from 117 to 89 for every consumer. Bebas Neue and Russo One cost it nothing.
