@@ -129,10 +129,10 @@ under *Moving to version 2.2* in [the 1.1 document](./version-1.1-docs.md).
     what lets Enter post the line to the box's channel as a message. The box opens through
     `ChatFrameUtil.OpenChat` (12.0 and the clients built on it), else the older
     `ChatFrame_OpenChat` global, whichever the client has. Disabled for a target with no map point
-    (a world or provider target, the sample). **The line's shape is open for the owner**: the
-    request read "/way xx.x,yy.y"; the zone name (localized, and not unique across maps such as
-    the Dalarans) and the label are this version's additions, and TomTom's `#<mapID>` form is the
-    unambiguous alternative.
+    (a world or provider target, the sample). **The line's shape is the owner's ruling of
+    2026-11-14**: the zone and the label stay, so a reader in another zone can use it. The zone name
+    is localized and not unique across maps (the Dalarans); TomTom's `#<mapID>` form, the
+    unambiguous alternative, was not taken.
   - `map`, **Show on map**: the world map at the target's `mapID`, through `C_Map.OpenWorldMap`,
     else the `OpenWorldMap` global. Disabled with no map point, and disabled and refused in combat
     (`InCombatLockdown`), since the map is a UI panel and the frame otherwise calls nothing that

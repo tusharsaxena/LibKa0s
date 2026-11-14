@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.101.0 — unreleased
+## v1.101.0 — 2026-11-14
 
 Opened 2026-11-14, on `feat/2026-11-14-arrow-text-position-menu`: Ka0s Skill Master's round-9 feedback on the waypoint arrow (Skill Master `docs/superpowers/plans/2026-11-14-feedback-round9.md`, rows L0 to L5): its text, its position, its size and a right-click menu, and a slider box that kept junk text. The owner named this release v1.101.0 (the plan's owner decisions); the date is written at release.
 
@@ -46,7 +46,7 @@ Versions in this release: `LibKa0s-WaypointArrow-1.0` key **2.2** (WaypointArrow
 - **`opts.L` reaches the composed Font rows' English.** With `opts.options`, the flags row's choices (`FLAGS_*`) and the swatch's class-color sentence (`CLASS_COLOR_NOTE`), which OptionsCompose writes in English, are put back in `opts.L`'s words.
 - **The Position block keeps its own heading.** Its subgroup is `opts.positionSubgroup`, else "Position"; `opts.subgroup` no longer folds X, Y, Lock and Reset into the look's subgroup. The `SettingsRows` doc comment sits on `SettingsRows` again, and says Reset position needs `opts.options`.
 - Tests: `tests/test_waypoint_arrow_menu.lua` (the opened line's first character is not `/`; the sample's Clear with and without `onSampleClear`, the real target kept; a stale Clear; the menu closed by `Clear` and `Suspend`, and another owner's left), `tests/test_waypoint_arrow_position.lua` (a drag at scale 2 stores scale 1's numbers; changing the scale keeps the center; a drag past the range stores its edge; `opts.subgroup` alone keeps the Position heading), `tests/test_waypoint_arrow_settings.lua` (a localized `L` in the composed flags choices and the swatch's tooltip, the composer's table untouched).
-- **Open for the owner**: the shared line's shape. The request read "/way xx.x,yy.y"; this version writes `/way <zone> 45.2, 63.1 <label>`, where the zone name is localized and not unique across maps. TomTom's `#<mapID>` form is the unambiguous alternative.
+- **The shared line's shape** (the owner's ruling of 2026-11-14, after the review): `/way <zone> 45.2, 63.1 <label>`, the zone and the label kept so a reader in another zone can use it. The zone name is localized and not unique across maps; TomTom's `#<mapID>` form was not taken.
 
 ### What a consumer owes (L1 to L4)
 
@@ -63,6 +63,10 @@ Versions in this release: `LibKa0s-WaypointArrow-1.0` key **2.2** (WaypointArrow
 ### Docs and record (L5)
 
 - `docs/api/WaypointArrow/version-2.2-docs.md` (1.1 superseded, with *Moving to version 2.2*) and `members-2.2.json`; `docs/api/Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md` (the previous key superseded) and its manifest; the index rows in `docs/api/README.md`; `README.md` (the WaypointArrow and Options rows, the overview line, the layout); `CLAUDE.md` (the register's WaypointArrow row, the OptionsWidgets measurement in its tracker row and in the band record, and `WaypointArrow.lua` entering the band at 1204, on notice); `docs/releasing.md`'s re-vendor note for v1.101.0; `docs/test-cases.md` regenerated.
+
+### Release
+
+- `docs/releasing.md`: repo semver and the provenance template at v1.101.0. `README.md`'s kit line at v1.101.0. The owner's rulings after the review: Share in chat keeps the zone and the label (` /way <zone> 45.2, 63.1 <label>`, the leading space so Enter posts it), and Skill Master records the arrow's own lock as its own deviation.
 
 ## v1.100.0 — 2026-11-14
 
