@@ -85,6 +85,12 @@ lib.SETTINGS_STRINGS = {
   UNITS = "Distance units",
   UNITS_TIP = "Yards, or compact: thousands of yards shortened, as 4.2k yd.",
   UNITS_YARDS = "Yards", UNITS_COMPACT = "Compact (4.2k yd)",
+  -- Minor 2: the Position block and the arrow's own lock.
+  POSITION = "Position",
+  X_OFFSET = "X offset", X_TIP = "How far right of the screen's center the arrow sits, in pixels. Dragging the arrow sets it.",
+  Y_OFFSET = "Y offset", Y_TIP = "How far above the screen's center the arrow sits, in pixels. Dragging the arrow sets it.",
+  LOCK = "Lock the arrow", LOCK_TIP = "While on, the arrow cannot be dragged. Its right-click menu still opens.",
+  RESET_POSITION = "Reset position", RESET_POSITION_TIP = "Put the arrow back at its default position.",
 }
 
 local STYLE_WORD = { flat = "STYLE_FLAT", ridge = "STYLE_RIDGE", raised = "STYLE_RAISED",
@@ -260,6 +266,67 @@ local EXTRA_ROWS = {
     end },
 }
 
+-- ── the Position block (minor 2) ─────────────────────────────────────────────────────────────
+
+local function lockRow(L, path)
+  return { key = "lock", path = path, type = "bool", label = word(L, "LOCK"), tooltip = word(L, "LOCK_TIP"),
+    default = lib.DEFAULTS.lock, startsLine = true }
+end
+
+--- The Reset position button's handler: the instance's ResetPosition, then `opts.onResetPosition`;
+--- nil with neither, and then there is no button.
+local function resetHandler(opts)
+  local arrow, after = opts.arrow, opts.onResetPosition
+  local hasArrow = type(arrow) == "table" and type(arrow.ResetPosition) == "function"
+  if not hasArrow and type(after) ~= "function" then return nil end
+  return function()
+    if hasArrow then arrow:ResetPosition() end
+    if type(after) == "function" then after() end
+  end
+end
+
+--- X offset and Y offset as PositionBlock draws them, built here (no Options instance).
+local function ownPositionRows(L, paths)
+  local out = {}
+  for _, a in ipairs({ { "x", "X_OFFSET", "X_TIP" }, { "y", "Y_OFFSET", "Y_TIP" } }) do
+    if paths[a[1]] then
+      out[#out + 1] = { key = a[1], path = paths[a[1]], type = "number", label = word(L, a[2]),
+        tooltip = word(L, a[3]), default = lib.DEFAULTS[a[1]], min = lib.POSITION_MIN,
+        max = lib.POSITION_MAX, step = 1, startsLine = a[1] == "x" or nil }
+    end
+  end
+  if paths.lock then out[#out + 1] = lockRow(L, paths.lock) end
+  return out
+end
+
+--- The Position block from the host's Options instance (`O.PositionBlock`): its X and Y offset
+--- rows, the Lock row as its extra, and its Reset position hook.
+local function composedPositionRows(O, opts, L, paths, subgroup)
+  local omit = { x = not paths.x or nil, y = not paths.y or nil }
+  local rows, hook = O.PositionBlock({ prefix = "", keys = { x = paths.x, y = paths.y }, omit = omit,
+    labels = { x = override(L, "X_OFFSET"), y = override(L, "Y_OFFSET") },
+    tooltips = { x = word(L, "X_TIP"), y = word(L, "Y_TIP") },
+    defaults = { x = lib.DEFAULTS.x, y = lib.DEFAULTS.y }, min = lib.POSITION_MIN, max = lib.POSITION_MAX,
+    page = opts.page, group = opts.group, subgroup = subgroup, onReset = resetHandler(opts),
+    resetText = word(L, "RESET_POSITION"), resetTooltip = word(L, "RESET_POSITION_TIP"),
+    extra = paths.lock and { lockRow(L, paths.lock) } or nil })
+  local byPath, out = { [paths.x or ""] = "x", [paths.y or ""] = "y", [paths.lock or ""] = "lock" }, {}
+  for _, row in ipairs(type(rows) == "table" and rows or {}) do
+    row.key = byPath[row.path]
+    if row.key then out[#out + 1] = row end
+  end
+  return out, hook
+end
+
+--- The Position block on `subgroup`: composed with a Reset position hook, or built here without.
+local function positionRows(opts, L, paths, subgroup)
+  local O = opts.options
+  if type(O) == "table" and type(O.PositionBlock) == "function" and (paths.x or paths.y) then
+    return composedPositionRows(O, opts, L, paths, subgroup)
+  end
+  return ownPositionRows(L, paths), nil
+end
+
 --- The host's paths with the companion's filled in (the font path plus "FromSkin").
 local function withCompanion(paths)
   local out = {}
@@ -298,17 +365,19 @@ end
 --- setting (`style`, `useSkinColors`, `farColor`, `nearColor`, `scale`; from minor 2 the Text
 --- block's `font`, `fontSize`, `fontColor`, `useClassColorFont`, `fontFlags`, `fontShadow`,
 --- `textPosition`, `showLabel`, `distanceUnits`; "Use the skin's font" sits at the font path plus
---- "FromSkin"); a setting with no path has no row. `opts.page`, `opts.group` and `opts.subgroup`
---- are copied onto every row (`opts.textSubgroup` for the Text block's, minor 2); `opts.L`
+--- "FromSkin"; and the Position block's `x`, `y` and `lock`); a setting with no path has no row.
+--- `opts.page`, `opts.group` and `opts.subgroup` are copied onto every row (minor 2:
+--- `opts.textSubgroup` for the Text block's, `opts.positionSubgroup` for the Position block's, which
+--- is "Position" when neither it nor `opts.subgroup` is given); `opts.L`
 --- overrides the words; `opts.encodeColor(r, g, b, a)` shapes the color rows' defaults the way the
 --- host stores colors (`{ r, g, b, a }` without it); `opts.options` (an Options instance, minor 2)
---- composes the Font rows; `opts.arrow` (an instance) is configured on every change, then
---- `opts.onChange(key, value)` is called. Answers a fresh list, and (minor 2) a table of
---- `afterSubgroup` hooks keyed by subgroup for RenderRows (empty when there are none).
-function lib.SettingsRows(opts)
-  opts = type(opts) == "table" and opts or {}
-  local paths = withCompanion(type(opts.paths) == "table" and opts.paths or {})
-  local L, out = opts.L, {}
+--- composes the Font and Position rows; `opts.arrow` (an instance) is configured on every change,
+--- then `opts.onChange(key, value)` is called. Answers a fresh list, and (minor 2) a table of
+--- `afterSubgroup` hooks keyed by subgroup for RenderRows (empty when there are none): with
+--- `opts.options`, the Position block's Reset position button, which calls `opts.arrow`'s
+--- ResetPosition and then `opts.onResetPosition()` (no button with neither).
+--- The look's rows (minor 1's five), into `out`.
+local function lookRows(opts, L, paths, out)
   for _, spec in ipairs(ROWS) do
     local path = paths[spec.key]
     if path then
@@ -318,9 +387,19 @@ function lib.SettingsRows(opts)
       out[#out + 1] = place(opts, row, opts.subgroup)
     end
   end
+end
+
+function lib.SettingsRows(opts)
+  opts = type(opts) == "table" and opts or {}
+  local paths = withCompanion(type(opts.paths) == "table" and opts.paths or {})
+  local L, out = opts.L, {}
+  lookRows(opts, L, paths, out)
   local textSub = opts.textSubgroup or opts.subgroup
   for _, row in ipairs(textRows(opts, L, paths, textSub)) do out[#out + 1] = place(opts, row, textSub) end
-  return out, {}
+  local posSub = opts.positionSubgroup or opts.subgroup or word(L, "POSITION")
+  local posRows, hook = positionRows(opts, L, paths, posSub)
+  for _, row in ipairs(posRows) do out[#out + 1] = place(opts, row, posSub) end
+  return out, hook and { [posSub] = hook } or {}
 end
 
 --- The same rows from an instance: `opts.arrow` is this one.

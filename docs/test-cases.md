@@ -853,6 +853,18 @@ Total.
 - arrow text: the text never takes the skin's Text role, so a skin switch cannot overwrite the font
 - arrow text: ConfigureFrom reads the companion at the font path plus FromSkin
 
+### test_waypoint_arrow_position.lua (9)
+
+- arrow position: x and y place the arrow from the parent's CENTER; the defaults are today's spot
+- arrow position: configured x and y win over d.point; SetPosition sets them aside
+- arrow position: a drag ends CENTER on the parent's CENTER, written to the host's x and y
+- arrow position: the offsets are in the frame's own units at another scale
+- arrow position: Lock the arrow holds it still, and canDrag still applies
+- arrow position: ResetPosition writes the default spot through the host, then onMoved(nil)
+- arrow position: a drag with no centers to read keeps minor 1's point and writes no offsets
+- arrow position: the rows are X offset, Y offset and Lock the arrow, on a Position subgroup
+- arrow position: with an Options instance the block is O.PositionBlock's, its Reset button hooked
+
 ### test_charts.lua (15)
 
 - charts: the major loads and reports its two files
@@ -5253,6 +5265,7 @@ Total.
 | test_waypoint_arrow.lua | 37 |
 | test_waypoint_arrow_settings.lua | 14 |
 | test_waypoint_arrow_text.lua | 17 |
+| test_waypoint_arrow_position.lua | 9 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5430,4 +5443,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4600** |
+| **Total** | **4609** |

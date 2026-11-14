@@ -34,6 +34,8 @@
     { "name": "Mix", "kind": "function" },
     { "name": "NEAR", "kind": "number" },
     { "name": "New", "kind": "function" },
+    { "name": "POSITION_MAX", "kind": "number" },
+    { "name": "POSITION_MIN", "kind": "number" },
     { "name": "PlayerFacing", "kind": "function" },
     { "name": "PlayerWorldPos", "kind": "function" },
     { "name": "Rotation", "kind": "function" },

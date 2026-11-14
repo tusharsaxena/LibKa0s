@@ -109,6 +109,8 @@ lib.FONT_FLAGS = { "@skin", "", "OUTLINE", "THICKOUTLINE", "MONOCHROME", "OUTLIN
 lib.FONT_DEFAULT = "Ka0s Prototype" -- FontGroup's own default face (Ka0s Default's pick)
 lib.FONT_SIZE_MIN, lib.FONT_SIZE_MAX = 6, 32
 lib.COMPACT_FROM = 1000             -- yards: from here "compact" reads thousands ("4.2k yd")
+-- The position (minor 2, L3): pixels from the parent's CENTER, OptionsCompose's PositionBlock range.
+lib.POSITION_MIN, lib.POSITION_MAX = -2000, 2000
 
 --- The settings a host seeds its own paths with. Colors are { r, g, b, a }; a keyed { r =, g =,
 --- b = } is read as well. The far color is Ka0s Default's `text.accent`, the near its `sem.good`.
@@ -121,10 +123,11 @@ lib.DEFAULTS = {
   font = lib.FONT_DEFAULT, fontFromSkin = true, fontSize = 12, fontColor = { 1, 1, 1, 1 },
   useClassColorFont = false, fontFlags = lib.FLAGS_FROM_SKIN, fontShadow = true,
   textPosition = "BELOW", showLabel = false, distanceUnits = "yards",
+  x = 0, y = 200, lock = false,
 }
 lib.SETTINGS = { "style", "useSkinColors", "farColor", "nearColor", "scale",
   "font", "fontFromSkin", "fontSize", "fontColor", "useClassColorFont", "fontFlags", "fontShadow",
-  "textPosition", "showLabel", "distanceUnits" }
+  "textPosition", "showLabel", "distanceUnits", "x", "y", "lock" }
 lib.SKIN_FAR, lib.SKIN_NEAR = "text.accent", "sem.good"   -- the skin's tokens "Use the skin's colors" reads
 
 -- ── the measures ─────────────────────────────────────────────────────────────────────────────
@@ -180,6 +183,9 @@ local VALID = {
   textPosition = oneOf(lib.TEXT_POSITIONS),
   showLabel = isBool,
   distanceUnits = oneOf(lib.DISTANCE_UNITS),
+  x = function(v) return plainNumber(v) and v >= lib.POSITION_MIN and v <= lib.POSITION_MAX end,
+  y = function(v) return plainNumber(v) and v >= lib.POSITION_MIN and v <= lib.POSITION_MAX end,
+  lock = isBool,
 }
 
 local function resolve(major) return LibStub and LibStub(major, true) end
@@ -371,14 +377,76 @@ local function mediaBase(S)
   return "Interface\\AddOns\\" .. d.addon .. "\\" .. (d.vendorPath or "libs\\LibKa0s") .. "\\" .. lib.MEDIA_DIR .. "\\"
 end
 
+--- The host's path for `key` in `paths` (minor 2): its own entry, but for `fontFromSkin` the font
+--- path plus "FromSkin" whenever a font path is named, where the Font block's companion lives
+--- (OptionsCompose's rule, which Skin's ResetToSkin reads too).
+local function pathOf(paths, key)
+  if key == "fontFromSkin" and type(paths.font) == "string" and paths.font ~= "" then
+    return paths.font .. "FromSkin"
+  end
+  local p = paths[key]
+  if type(p) == "string" and p ~= "" then return p end
+  return nil
+end
+lib.__pathOf = pathOf
+
+--- A setting written through the host (minor 2): the arrow takes it, then `d.set(path, value)`
+--- stores it at the host's path from `d.paths`, its architecture-§5 helper, so its settings rows
+--- show it. Without `d.set` or a path the arrow alone holds it.
+local function write(S, key, value)
+  S.settings[key] = value
+  local paths = S.d.paths
+  local path = type(paths) == "table" and pathOf(paths, key) or nil
+  if path and type(S.d.set) == "function" then call(S, S.d.set, path, value) end
+end
+
 -- ── the frame ────────────────────────────────────────────────────────────────────────────────
 
+local function parentOf(S) return S.d.parent or UIParent end
+
+local function effectiveScale(f)
+  local ok, v = pcall(f.GetEffectiveScale, f)
+  return ok and plainNumber(v) and v > 0 and v or 1
+end
+
+--- The frame's center as whole-pixel offsets from its parent's center, in the frame's own units
+--- (what SetPoint takes), or nil while either center is unknown.
+local function centerOffsets(S)
+  local f, parent = S.frame, parentOf(S)
+  local ok, fx, fy = pcall(f.GetCenter, f)
+  local okP, px, py = pcall(parent.GetCenter, parent)
+  if not (ok and okP and plainNumber(fx) and plainNumber(fy) and plainNumber(px) and plainNumber(py)) then
+    return nil
+  end
+  local k = effectiveScale(parent) / effectiveScale(f)
+  return math.floor(fx - px * k + 0.5), math.floor(fy - py * k + 0.5)
+end
+
+--- The point a drag left the frame at: re-anchored CENTER to the parent's CENTER when the centers
+--- are known (minor 2), else the frame's own first point, as minor 1 read it.
+local function droppedPoint(S)
+  local x, y = centerOffsets(S)
+  if x then
+    S.frame:ClearAllPoints()
+    S.frame:SetPoint("CENTER", parentOf(S), "CENTER", x, y)
+    return { point = "CENTER", relPoint = "CENTER", x = x, y = y }
+  end
+  local point, _, relPoint, px, py = S.frame:GetPoint(1)
+  if type(point) ~= "string" then return nil end
+  return { point = point, relPoint = type(relPoint) == "string" and relPoint or point,
+    x = plainNumber(px) and px or 0, y = plainNumber(py) and py or 0 }
+end
+
+--- A drag ended: the point is kept, a CENTER point is written to the x and y settings through the
+--- host (so its sliders follow), and onMoved hears it either way.
 local function savePoint(S)
-  local point, _, relPoint, x, y = S.frame:GetPoint(1)
-  if type(point) ~= "string" then return end
-  local p = { point = point, relPoint = type(relPoint) == "string" and relPoint or point,
-    x = plainNumber(x) and x or 0, y = plainNumber(y) and y or 0 }
+  local p = droppedPoint(S)
+  if not p then return end
   S.point = p
+  if p.point == "CENTER" and p.relPoint == "CENTER" then
+    write(S, "x", p.x)
+    write(S, "y", p.y)
+  end
   call(S, S.d.onMoved, { point = p.point, relPoint = p.relPoint, x = p.x, y = p.y })
 end
 
@@ -394,13 +462,25 @@ local function pointOf(p)
   return { point = point, relPoint = relPoint, x = plainNumber(x) and x or 0, y = plainNumber(y) and y or 0 }
 end
 
-local function applyPoint(S)
-  local p = pointOf(S.point) or lib.DEFAULT_POINT
-  S.frame:ClearAllPoints()
-  S.frame:SetPoint(p.point, S.d.parent or UIParent, p.relPoint, p.x, p.y)
+--- The point the frame sits at: the x and y settings (CENTER from the parent's CENTER) once either
+--- is configured (minor 2), else the saved point (`d.point`, SetPosition), else DEFAULT_POINT.
+local function currentPoint(S)
+  local sx, sy = S.settings.x, S.settings.y
+  if (sx ~= nil and VALID.x(sx)) or (sy ~= nil and VALID.y(sy)) then
+    return { point = "CENTER", relPoint = "CENTER", x = setting(S, "x"), y = setting(S, "y") }
+  end
+  return pointOf(S.point) or lib.DEFAULT_POINT
 end
 
+local function applyPoint(S)
+  local p = currentPoint(S)
+  S.frame:ClearAllPoints()
+  S.frame:SetPoint(p.point, parentOf(S), p.relPoint, p.x, p.y)
+end
+
+--- A drag starts unless the arrow's own lock is on (minor 2) or the host's `canDrag()` says no.
 local function onDragStart(S)
+  if setting(S, "lock") then return end
   if S.d.canDrag ~= nil and not call(S, S.d.canDrag) then return end
   S.frame:StartMoving()
   S.moving = true
@@ -838,19 +918,6 @@ function METHODS:Configure(t)
   self:Apply()
 end
 
---- The host's path for `key` in `paths` (minor 2): its own entry, but for `fontFromSkin` the font
---- path plus "FromSkin" whenever a font path is named, where the Font block's companion lives
---- (OptionsCompose's rule, which Skin's ResetToSkin reads too).
-local function pathOf(paths, key)
-  if key == "fontFromSkin" and type(paths.font) == "string" and paths.font ~= "" then
-    return paths.font .. "FromSkin"
-  end
-  local p = paths[key]
-  if type(p) == "string" and p ~= "" then return p end
-  return nil
-end
-lib.__pathOf = pathOf
-
 --- Configure from the host's own settings: `get(path)` for each key `paths` names
 --- (`{ style = "waypoints.arrowStyle", ... }`); a key with no path is left as it is.
 function METHODS:ConfigureFrom(get, paths)
@@ -887,30 +954,45 @@ function METHODS:Apply()
   applyFont(S)
   applyStyle(S)
   applyScale(S)
+  applyPoint(S)
   if S.frame:IsShown() then update(S) end
 end
 
 --- Move the frame to a saved point (`{ point, relPoint, x, y }`, keyed or positional); nil puts it
---- back at `DEFAULT_POINT`. Not handed to onMoved: the host already holds it.
+--- back at `DEFAULT_POINT`. Not handed to onMoved: the host already holds it. From minor 2 it also
+--- sets aside configured x and y settings until they are configured again.
 function METHODS:SetPosition(point)
   local S = state(self)
   S.point = pointOf(point)
+  S.settings.x, S.settings.y = nil, nil
   if S.frame then applyPoint(S) end
 end
 
 --- The point the frame sits at now: a fresh `{ point, relPoint, x, y }`.
 function METHODS:GetPosition()
-  local p = pointOf(state(self).point) or lib.DEFAULT_POINT
+  local p = currentPoint(state(self))
   return { point = p.point, relPoint = p.relPoint, x = p.x, y = p.y }
 end
 
---- Back to `DEFAULT_POINT`, and onMoved(nil) so the host forgets its saved point.
+--- Back to the default spot (`DEFAULTS.x`, `DEFAULTS.y`, which are DEFAULT_POINT's), written to
+--- the host's x and y paths through `d.set` (minor 2), then onMoved(nil) so the host forgets its
+--- saved point.
 function METHODS:ResetPosition()
   local S = state(self)
   S.point = nil
+  write(S, "x", lib.DEFAULTS.x)
+  write(S, "y", lib.DEFAULTS.y)
   if S.frame then applyPoint(S) end
   call(S, S.d.onMoved, nil)
 end
+
+--- Minor 2: the arrow's own lock (`lock`): while on it cannot be dragged. Written through the host
+--- like a drag's x and y.
+function METHODS:SetLocked(on)
+  write(state(self), "lock", on == true)
+end
+
+function METHODS:IsLocked() return setting(state(self), "lock") == true end
 
 --- One measure now (a shown arrow measures on its own every THROTTLE seconds).
 function METHODS:Update() update(state(self)) end
