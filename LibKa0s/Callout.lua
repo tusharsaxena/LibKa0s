@@ -64,7 +64,7 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 2 (plan row L11, v1.98.0): the host-write route (`d.path` and `d.set`, `d.colorEncode`),
 -- the leaf keys `texts.<KEY>`, `muted.<KEY>` and `colors.<kind>` that Get and Set take, and a color
 -- read in either shape.
--- Minor 3 (plan row L15, v1.99.0): the glow behind the text as AuraMaster's text glow is: an on/off
+-- Minor 3 (plan row L15, v1.100.0): the glow behind the text as AuraMaster's text glow is: an on/off
 -- `glow`, `glowIntensity`, `glowThickness`, `glowX` / `glowY`, and its color (`glowCustom` with
 -- `glowColor`, `useClassColorGlow`, `glowColorFromSkin`; off, each word's kind color, as before).
 -- A stored "off" / "soft" / "strong" reads as the same look (`GLOW_LEGACY`, `MigrateGlow`), and

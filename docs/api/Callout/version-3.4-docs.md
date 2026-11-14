@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Callout-1.0` |
 | Files and minors | `Callout.lua` minor **3** · `CalloutSettings.lua` minor **4** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2, minor 4 at 3) |
-| Shipped in | unreleased (v1.99.0) |
+| Shipped in | unreleased (v1.100.0) |
 | Status | **Current** |
 | Supersedes | [version 2.3](./version-2.3-docs.md) (v1.98.0) — the same surface without the one tab (`SettingsTab`, `BuildSettings`' `layout = "side"`), `texts = false`, the Play list's countdown, the glow's settings (an Off / Soft / Strong choice there), the six voice packs added in v1.99.0 or the announcer as the default voice. This document was keyed 2.4 until `Callout.lua` moved to minor 3 for the glow (plan row L15), before either shipped |
 | Superseded by | — |
@@ -42,7 +42,7 @@ v1.96.0 consumer declaring `callout/female-kathleen, callout/male-joe` keeps `fe
 with no change of its own, **when it passes `d.packs`**. Without `d.packs` every `PACKS` row is
 offered, so the default is the announcer whether or not the copy carries it, and a pack the copy does
 not carry plays as silence (see *The packs a host ships*). A v1.98.0 host that pruned its copy to
-kathleen and joe and never passed `d.packs` is silent by default after re-vendoring v1.99.0: it
+kathleen and joe and never passed `d.packs` is silent by default after re-vendoring v1.100.0: it
 passes `d.packs` (its `LibKa0s sounds:` folders) to keep a voice that plays, or ships the announcer.
 
 **The spoken words match the packs.** Text to speech says what the packs say: `PAUSE` says "Pause"
@@ -572,7 +572,7 @@ LibKa0s sounds: all.
 LibKa0s sounds: callout/female-kathleen, callout/male-joe.
 ```
 
-The eight pack names a list may carry, from v1.99.0: `callout/male-arena-john`,
+The eight pack names a list may carry, from v1.100.0: `callout/male-arena-john`,
 `callout/female-kathleen`, `callout/female-kristin`, `callout/female-cori`, `callout/female-bella`,
 `callout/male-joe`, `callout/male-john`, `callout/male-norman`.
 

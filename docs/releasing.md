@@ -323,7 +323,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    kit revision. `DebugLogDiagnostics.lua` moves to minor 10 (the report's `LibKa0s running:` line
    names WaypointArrow, no member change), so a host suite that pins `DebugLogDiagnostics 9` re-pins
    it at 10.
-   v1.99.0 adds no Lua file and no kit revision (still 56). The payload gains six voice-pack
+   v1.100.0 adds no Lua file and no kit revision (still 56). The payload gains six voice-pack
    folders under `media/sounds/callout/` (`male-arena-john`, `female-kristin`, `female-cori`,
    `female-bella`, `male-john`, `male-norman`), which `tools/prune-icons.lua` removes unless the
    host's `LibKa0s sounds:` line names them. `Callout.lua` moves to minor 3 and

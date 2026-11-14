@@ -135,7 +135,7 @@ modules and points you there. It does not restate them.
    license and credits. An addon ships only the packs it declares, on the line directly under its
    icons line (`LibKa0s sounds: none.`, `LibKa0s sounds: all.`, or the packs,
    `LibKa0s sounds: callout/female-kathleen, callout/male-joe.`), and **no line means none**, so
-   only an addon that adopts the Callout with a bundled voice carries any. From v1.99.0 there are
+   only an addon that adopts the Callout with a bundled voice carries any. From v1.100.0 there are
    eight packs, about 2.7 MB in all (about 0.3 MB each): `callout/male-arena-john` (the default
    voice), `callout/female-kathleen`, `callout/female-kristin`, `callout/female-cori`,
    `callout/female-bella`, `callout/male-joe`, `callout/male-john` and `callout/male-norman`. The same

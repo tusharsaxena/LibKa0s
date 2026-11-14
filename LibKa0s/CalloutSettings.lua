@@ -79,7 +79,7 @@ if not lib or type(lib.__methods) ~= "table" or type(lib.__validFor) ~= "functio
 -- Minor 3 (plan row L11, v1.98.0): `SchemaRows`, the settings as schema rows a host registers
 -- under its own prefix (architecture-§5), and the Options build on the host's route, where every row
 -- carries its path and is written through the host's seam. Needs the Callout shell at minor 2.
--- Minor 4 (plan row L13, v1.99.0): `SettingsTab`, the section as one host tab (a Preview block over
+-- Minor 4 (plan row L13, v1.100.0): `SettingsTab`, the section as one host tab (a Preview block over
 -- Look and Sound side tabs, through the Options instance's O.SideTabs, OptionsNav minor 7; Colors in
 -- Look; no stock texts), `BuildSettings`' `opts.layout = "side"`, `SchemaRows`' and `SettingsRows`'
 -- `opts.texts = false`, and the Play list's "Countdown 10 to 1"; and (plan row L15) the Glow rows in

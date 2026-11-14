@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Callout-1.0` |
 | Files and minors | `Callout.lua` minor **2** · `CalloutSettings.lua` minor **3** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2) |
-| Shipped in | v1.98.0 |
+| Shipped in | v1.98.0 – v1.99.0 |
 | Status | Superseded |
 | Supersedes | [version 1.2](./version-1.2-docs.md) (v1.97.0) — the same surface with no host write route, no leaf keys and no `SchemaRows` |
 | Superseded by | [version 3.4](./version-3.4-docs.md) |
