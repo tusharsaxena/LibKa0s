@@ -12,7 +12,7 @@
 | Shipped in | v1.96.0 |
 | Status | Superseded |
 | Supersedes | [version 22.8.1.4](./version-22.8.1.4-docs.md) (shipped in v1.95.0) — the identity header did not name `LibKa0s-Callout-1.0`. |
-| Superseded by | [version 22.10.1.4](./version-22.10.1.4-docs.md) (unreleased) — the identity header names `LibKa0s-WaypointArrow-1.0`. |
+| Superseded by | [version 22.10.1.4](./version-22.10.1.4-docs.md) (v1.99.0) — the identity header names `LibKa0s-WaypointArrow-1.0`. |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 22, DebugLogDiagnostics = 9, DebugLogGates = 1, DebugLogWindow = 4 }` |
 

@@ -10,11 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## Unreleased
+## v1.99.0 — 2026-11-14
 
-Opened 2026-11-14, on `feat/2026-11-14-waypoint-arrow`: the waypoint arrow major, `LibKa0s-WaypointArrow-1.0`, moved out of Ka0s Skill Master on the owner's decisions of 2026-11-14 (Skill Master `docs/superpowers/plans/2026-11-14-feedback-round8.md`, row L1). No version is assigned yet: the owner names it, and the tag, at the merge.
+Opened 2026-11-14, on `feat/2026-11-14-waypoint-arrow`: the waypoint arrow major, `LibKa0s-WaypointArrow-1.0`, moved out of Ka0s Skill Master on the owner's decisions of 2026-11-14 (Skill Master `docs/superpowers/plans/2026-11-14-feedback-round8.md`, row L1). Released as v1.99.0 on the owner's go-ahead of 2026-11-14, after `master` (v1.98.0) was merged into the branch.
 
-Versions so far: `LibKa0s-WaypointArrow-1.0` key **1.1** (WaypointArrow minor 1 and WaypointArrowSettings minor 1, a new major); `LibKa0s-DebugLog-1.0` key **22.10.1.4** (DebugLogDiagnostics minor 10); every other file at its v1.98.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises. The payload gains a fifth media folder, `media/waypoint/` (eight generated TGAs, about 450 KB), which ships whole.
+Versions in this release: `LibKa0s-WaypointArrow-1.0` key **1.1** (WaypointArrow minor 1 and WaypointArrowSettings minor 1, a new major); `LibKa0s-DebugLog-1.0` key **22.10.1.4** (DebugLogDiagnostics minor 10); every other file at its v1.98.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises. The payload gains a fifth media folder, `media/waypoint/` (eight generated TGAs, about 450 KB), which ships whole.
 
 ### The arrow (L1)
 

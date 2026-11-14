@@ -67,7 +67,7 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
-**Unreleased, not in the census (2026-11-14).** The branch `feat/2026-11-14-waypoint-arrow` adds a major,
+**v1.99.0, not in the census (2026-11-14).** The release adds a major,
 `LibKa0s-WaypointArrow-1.0` (its lib-level members in `docs/api/WaypointArrow/members-1.1.json`, the descriptor's
 fields and the instance's members in [its document](WaypointArrow/version-1.1-docs.md)): the waypoint arrow with
 its settings rows (`WaypointArrowSettings.lua`), moved out of Ka0s Skill Master. None gets a row here yet. **Its

@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.98.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.99.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -57,7 +57,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `{ OptionsSwitch, __switchMinor, __switchShellMinor }`, `{ OptionsMedia, __mediaMinor, __mediaShellMinor }`). **A file added to an existing major moves
    that major's version key**, because the key is every file's minor in load order — the Options key
    ran three numbers through 13.12.3, four from 14.13.1.3, five from 21.20.1.7.3, six from 25.31.5.7.4.1, eight from 25.32.1.1.5.7.4.1, nine from 25.32.1.1.6.1.7.4.1, ten from 26.1.32.1.1.6.1.7.4.1, eleven from 29.2.34.2.4.8.1.7.4.2.1, twelve from 30.2.34.3.5.9.2.11.4.2.1.4, thirteen from 33.3.35.4.6.10.3.12.8.3.2.5.2, fourteen from 34.4.35.4.6.10.3.12.8.3.2.5.3.1 fifteen from 34.4.37.5.7.11.3.14.9.4.3.6.4.3.1, sixteen from 34.4.38.5.7.11.3.14.9.4.3.6.5.4.1.1 and twenty from 34.4.39.1.6.1.7.12.1.3.14.9.4.3.6.5.5.1.1.1, the four files of v1.84.0's peels at once. The table
-   carries one row per shipped major — twenty-three today (twenty-four with the unreleased `LibKa0s-WaypointArrow-1.0`, `files = { WaypointArrow, WaypointArrowSettings }`, paired `{ WaypointArrowSettings, __settingsMinor, __settingsShellMinor }`, its key 1.1), since `LibKa0s-Glow-1.0` and
+   carries one row per shipped major — twenty-four today (with `LibKa0s-WaypointArrow-1.0` at v1.99.0, `files = { WaypointArrow, WaypointArrowSettings }`, paired `{ WaypointArrowSettings, __settingsMinor, __settingsShellMinor }`, its key 1.1), since `LibKa0s-Glow-1.0` and
    `LibKa0s-Sim-1.0` at v1.75.0, `LibKa0s-Skin-1.0` at v1.78.0, `LibKa0s-Toast-1.0` at v1.79.0, `LibKa0s-Charts-1.0` at v1.84.0, `LibKa0s-Role-1.0` at v1.95.0 (one file, `files = { Role }`), `LibKa0s-Callout-1.0` at v1.96.0 (`files = { Callout, CalloutSettings }`, paired `{ CalloutSettings, __settingsMinor, __settingsShellMinor }`, so its key is two numbers, 1.1 at v1.96.0) and `LibKa0s-IconBrowser-1.0` at v1.86.0 (its key three numbers, `files = { IconBrowserSources, IconBrowserWindow, IconBrowser }`, paired `{ IconBrowserWindow, __windowMinor, __windowShellMinor }` and `{ IconBrowser, __browserMinor, __browserShellMinor }`). The Sim row is the example of a smaller major paired on its
    shell: `files = { Sim, SimTimeline, SimPanel, SimPanelRender }` and a `paired`
    array of three (`{ SimTimeline, __timelineMinor, __timelineShellMinor }`,
@@ -315,6 +315,14 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    descriptor's `writeThrough` and names it as non-setting state, and passes `path` and `set`
    (`NS.SetByPath`) to `New`; a suite that reads `profile.callout` the instance wrote directly now
    reads what the seam stored, colors in the host's shape.
+   v1.99.0 adds two payload files, `WaypointArrow.lua` and `WaypointArrowSettings.lua` (the new
+   `LibKa0s-WaypointArrow-1.0`, loaded by `LibKa0s.xml` directly after `CalloutSettings.lua`), and a
+   fifth media folder, `media/waypoint/`, which the whole-folder copy brings; a host whose tests load
+   library files by name and reach for the major adds both after `CalloutSettings.lua`, and a host
+   that does not adopt it owes no loader line. No Skin facade, major or instance member moves, and no
+   kit revision. `DebugLogDiagnostics.lua` moves to minor 10 (the report's `LibKa0s running:` line
+   names WaypointArrow, no member change), so a host suite that pins `DebugLogDiagnostics 9` re-pins
+   it at 10.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 
@@ -382,7 +390,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.98.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.99.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:

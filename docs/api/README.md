@@ -219,7 +219,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1.1](./WaypointArrow/version-1.1-docs.md) | **`WaypointArrow.lua` 1** (the new major: `New`, `SetTarget`, `SetProvider`, five looks, the distance fade, the sample, the drag handed back; Skill Master round 8, L1) · **`WaypointArrowSettings.lua` 1** (`SettingsRows`: path rows for the host's schema) | unreleased | **Current** |
+| [1.1](./WaypointArrow/version-1.1-docs.md) | **`WaypointArrow.lua` 1** (the new major: `New`, `SetTarget`, `SetProvider`, five looks, the distance fade, the sample, the drag handed back; Skill Master round 8, L1) · **`WaypointArrowSettings.lua` 1** (`SettingsRows`: path rows for the host's schema) | v1.99.0 | **Current** |
 
 ### `LibKa0s-Charts-1.0`
 
@@ -331,7 +331,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.10.1.4](./DebugLog/version-22.10.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 10** (the identity header names WaypointArrow) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | unreleased | **Current** |
+| [22.10.1.4](./DebugLog/version-22.10.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 10** (the identity header names WaypointArrow) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.99.0 | **Current** |
 | [22.9.1.4](./DebugLog/version-22.9.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 9** (the identity header names Callout) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.96.0 – v1.97.0 | Superseded |
 | [22.8.1.4](./DebugLog/version-22.8.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 8** (the identity header names Role) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.95.0 | Superseded |
 | [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 – v1.94.0 | Superseded |

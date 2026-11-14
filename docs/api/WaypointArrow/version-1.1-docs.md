@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-WaypointArrow-1.0` |
 | Files and minors | `WaypointArrow.lua` minor **1** · `WaypointArrowSettings.lua` minor **1** (paired on `WaypointArrow.lua`'s minor) |
-| Shipped in | unreleased |
+| Shipped in | v1.99.0 |
 | Status | **Current** |
 | Supersedes | — (a new major) |
 | Superseded by | — |

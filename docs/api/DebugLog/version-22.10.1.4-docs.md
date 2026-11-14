@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **10** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **4** |
-| Shipped in | unreleased |
+| Shipped in | v1.99.0 |
 | Status | **Current** |
 | Supersedes | [version 22.9.1.4](./version-22.9.1.4-docs.md) (shipped in v1.96.0) — the identity header did not name `LibKa0s-WaypointArrow-1.0`. |
 | Superseded by | — |
@@ -18,7 +18,7 @@
 
 ## What changed at this version: the identity header names WaypointArrow
 
-**No member change.** `DebugLogDiagnostics.lua` moves to minor **10** (the other three files unchanged, so the key moves 22.9.1.4 → 22.10.1.4). The unreleased `LibKa0s-WaypointArrow-1.0` (`WaypointArrow`, `WaypointArrowSettings`) is added, and the report's `LibKa0s running:` line now lists it, in `tests/majors.lua` order: `Core`, `Env`, `Compat`, `Role`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Glow`, `Toast`, `Callout`, `WaypointArrow`, `Charts`, `Media`, `Skin`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `IconBrowser`, `Perf`, `Sim`. A major absent from the client is still skipped, so a host whose winning copy has no arrow module prints the same header as before. `tests/test_debuglog_diagnostics.lua` is the gate that asked for this, as it did for Callout at version 22.9.1.4.
+**No member change.** `DebugLogDiagnostics.lua` moves to minor **10** (the other three files unchanged, so the key moves 22.9.1.4 → 22.10.1.4). The new `LibKa0s-WaypointArrow-1.0` (`WaypointArrow`, `WaypointArrowSettings`) is added, and the report's `LibKa0s running:` line now lists it, in `tests/majors.lua` order: `Core`, `Env`, `Compat`, `Role`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Glow`, `Toast`, `Callout`, `WaypointArrow`, `Charts`, `Media`, `Skin`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `IconBrowser`, `Perf`, `Sim`. A major absent from the client is still skipped, so a host whose winning copy has no arrow module prints the same header as before. `tests/test_debuglog_diagnostics.lua` is the gate that asked for this, as it did for Callout at version 22.9.1.4.
 
 ## What changed at version 22.9.1.4: the identity header names Callout
 
