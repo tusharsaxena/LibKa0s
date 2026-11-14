@@ -2587,7 +2587,7 @@ Total.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (53)
+### test_options_widgets.lua (55)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labeled and seeded from the schema
@@ -2600,6 +2600,8 @@ Total.
 - widgets: a slider falls back to the row default when the stored value is not a number
 - widgets: releasing a slider snaps the value to the row's step
 - widgets: slider snapping is relative to the row's min, not to zero
+- widgets: a slider's box puts junk back to the value on Enter and on focus loss
+- widgets: the box hook is set once per pooled box and acts only for the library's widget
 - widgets: a string row with values renders a Dropdown, sorted alphabetically by default
 - widgets: a row with explicit `sorting` keeps that order instead of alphabetizing
 - widgets: a dropdown falls back to a plain Dropdown when its dialogControl is unregistered
@@ -5287,7 +5289,7 @@ Total.
 | test_options_render.lua | 27 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 53 |
+| test_options_widgets.lua | 55 |
 | test_options_choicegrid.lua | 22 |
 | test_options_flow.lua | 48 |
 | test_options_flow_seams.lua | 17 |
@@ -5401,4 +5403,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4575** |
+| **Total** | **4577** |

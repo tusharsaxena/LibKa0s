@@ -10,6 +10,18 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## Unreleased
+
+Opened 2026-11-14, on `feat/2026-11-14-arrow-text-position-menu`: Ka0s Skill Master's round-9 feedback on the waypoint arrow (Skill Master `docs/superpowers/plans/2026-11-14-feedback-round9.md`, rows L0 to L5): its text, its position, its size and a right-click menu, and a slider box that kept junk text. Written as the next release; the version is named at release.
+
+Versions in this release: `LibKa0s-Options-1.0` key **38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4** (OptionsWidgets minor 46); every other file at its v1.100.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises. No file is added.
+
+### A slider's box takes no junk (L0)
+
+- **OptionsWidgets minor 46** ([docs](docs/api/Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md)): the owner's screenshot showed a number row's slider box reading `1.5awd`. The box is AceGUI's (`AceGUIWidget-Slider.lua`): its Enter ignores text that is not a number and nothing re-reads it on focus loss. `makeSlider` marks its widget in AceGUI's `userdata` and post-hooks the box once per pooled box: an Enter on junk, and every focus loss, put the box back to the widget's value. A number's Enter commits as before. A pooled box another addon acquires next (its `userdata` cleared by Release) keeps AceGUI's behavior. Not covered: a percent slider's Enter on junk raises inside AceGUI's own handler first.
+- Tests: `tests/test_options_widgets.lua` (junk put back on Enter and on focus loss, a number's Enter still committing, a typed number never entered not shown as stored, and a box whose widget the library did not make left alone).
+- What a consumer owes: nothing.
+
 ## v1.100.0 — 2026-11-14
 
 Opened 2026-11-14, on `feat/2026-11-14-callout-layout`: the Callout's settings as one tab (plan row L13 of `docs/superpowers/plans/2026-11-13-callout.md`), the owner's redesign after seeing Ka0s Combat Trail's three tabs (Call-out look, Call-out sound, Call-out texts). One "Callout" tab: a Preview block at the top, then Look and Sound as side tabs, the Colors in Look, and no stock texts, whose words the owner rules are the addon's to control. Text to play gains "Countdown 10 to 1". The glow behind the text becomes AuraMaster's (plan row L15): an on/off toggle with intensity, thickness, offsets and its own color choices, in place of Off / Soft / Strong. Six more voice packs ship beside the two of v1.96.0 (plan row L16), the owner's choice of 2026-11-14, and an arena announcer is the default voice. The release itself is plan row L14. Prepared as v1.99.0 until `master`'s v1.99.0 (`LibKa0s-WaypointArrow-1.0`) was released from another branch; that release was merged into this branch on 2026-11-14 and this one renumbered to v1.100.0. Released as v1.100.0 on the owner's go-ahead of 2026-11-14.
