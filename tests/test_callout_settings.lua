@@ -121,7 +121,9 @@ test("callout settings: every row writes the host db", function()
   local c, _, db = newCallout(nil, function(m) tts(m, { { voiceID = 3, name = "Zira" }, { voiceID = 7, name = "David" } }) end)
   local by = rowsByKey(c:SettingsRows())
   local writes = {
-    font = "Game default", size = 120, outline = "OUTLINE", glow = "strong", shadow = false,
+    font = "Game default", size = 120, outline = "OUTLINE", glow = false, shadow = false,
+    glowIntensity = 0.5, glowThickness = 4, glowX = 3, glowY = -3, glowCustom = true,
+    useClassColorGlow = true, glowColorFromSkin = true,
     shadowX = 4, shadowY = -4, anim = "pulse", hold = 2.5, voice = "male", channel = "SFX",
     speakFrom = 3, ttsVoice = 7, ttsRate = 2, ttsVolume = 50,
   }
@@ -243,7 +245,7 @@ test("callout settings: with no tab the three sections draw one under another, e
   for _, w in ipairs(widgets(scroll)) do
     if w.type == "Heading" then headings[#headings + 1] = w.text end
   end
-  assertEqual(table.concat(headings, ","), "Look,Sound,Texts,Colors,Stock texts",
+  assertEqual(table.concat(headings, ","), "Look,Glow,Sound,Texts,Colors,Stock texts",
     "a heading per tab, then the Texts tab's two subgroups")
   widgetLabeled(scroll, "Voice"):__fire("OnValueChanged", "off")
   assertEqual(db.voice, "off")
@@ -341,7 +343,8 @@ test("callout settings: each slider carries the setting's own bounds and step", 
   local want = {
     size = { Callout.SIZE_MIN, Callout.SIZE_MAX, 1 }, shadowX = { -20, 20, 1 }, shadowY = { -20, 20, 1 },
     hold = { 0.2, 10, 0.1 }, speakFrom = { 1, Callout.MAX_FROM, 1 }, ttsRate = { -10, 10, 1 },
-    ttsVolume = { 0, 100, 1 },
+    ttsVolume = { 0, 100, 1 }, glowIntensity = { 0.05, 1, 0.05 }, glowThickness = { 1, 6, 1 },
+    glowX = { -20, 20, 1 }, glowY = { -20, 20, 1 },
   }
   for key, w in pairs(want) do
     local r = by[key]
@@ -360,11 +363,10 @@ test("callout settings: each list offers exactly the major's choices, in its ord
     return table.concat(out, ",")
   end
   assertEqual(keys(by.outline), table.concat(Callout.OUTLINES, ","))
-  assertEqual(keys(by.glow), table.concat(Callout.GLOWS, ","))
   assertEqual(keys(by.anim), table.concat(Callout.ANIMS, ","))
   assertEqual(keys(by.channel), table.concat(Callout.CHANNELS, ","))
   assertEqual(keys(by.voice), "female,male,tts,off")
-  for _, key in ipairs({ "outline", "glow", "anim", "channel", "voice" }) do
+  for _, key in ipairs({ "outline", "anim", "channel", "voice" }) do
     for _, v in ipairs(by[key].values) do
       assertTrue(type(v.text) == "string" and v.text ~= "", key .. " " .. tostring(v.value) .. " has a word")
     end

@@ -27,11 +27,11 @@ local function live(m) return #m.__timers() end
 
 -- ── load and construction ────────────────────────────────────────────────────────────────────
 
-test("callout: the major loads at minor 2 and reports its one file", function()
+test("callout: the major loads at minor 3 and reports its one file", function()
   local _, Callout = env()
   assertEqual(Callout.MAJOR, MAJOR)
-  assertEqual(Callout.MINOR, 2)
-  assertEqual(Callout.MODULES.Callout, 2)
+  assertEqual(Callout.MINOR, 3)
+  assertEqual(Callout.MODULES.Callout, 3)
   assertEqual(T.callout, T.mocks.LibStub(MAJOR), "the runner's whole-payload load carries it too")
 end)
 
@@ -430,9 +430,9 @@ test("settings: a db getter is followed at every read (a profile switch)", funct
   assertEqual(c:Get("size"), 50)
   cur = b
   assertEqual(c:Get("size"), 150)
-  c:Set("glow", "strong")
-  assertEqual(b.glow, "strong")
-  assertNil(a.glow)
+  c:Set("glowThickness", 5)
+  assertEqual(b.glowThickness, 5)
+  assertNil(a.glowThickness)
 end)
 
 test("settings: Get hands out a copy, so the caller cannot change a table it holds", function()
@@ -485,7 +485,7 @@ test("settings: the look reaches the text: face, size, outline and shadow", func
   assertEqual(rawget(f, "__h"), 180, "the frame is 1.5 x the size high")
   c:Set("shadow", false)
   assertEqual(select(1, text:GetShadowOffset()), 0)
-  c:Set("glow", "off")
+  c:Set("glow", false)
   assertEqual(halo:GetAlpha(), 0)
 end)
 

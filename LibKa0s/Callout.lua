@@ -15,8 +15,8 @@
 -- `Callout.DEFAULTS` is the table a host seeds it from. Everything else in `d` is optional: `name`
 -- (the frame's global name), `addon` and `vendorPath` (where the payload sits, for the voice packs
 -- and the bundled fonts), `soundsBase` (the folder holding the packs, overriding the one `addon`
--- implies), `skin` (a registered skin owner, for the "Skin font" choice and the drag strip),
--- `label` (the drag strip's text) and `debug` (`debug(tag, msg)`). docs/api/Callout/version-2.3-docs.md
+-- implies), `skin` (a registered skin owner, for the "Skin font" choice, the drag strip and,
+-- from minor 3, the glow's skin color), `label` (the drag strip's text) and `debug` (`debug(tag, msg)`). docs/api/Callout/version-3.4-docs.md
 -- is the full contract.
 --
 -- ── WHERE A WRITE GOES (minor 2) ─────────────────────────────────────────────────────────────
@@ -64,7 +64,11 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 2 (plan row L11, v1.98.0): the host-write route (`d.path` and `d.set`, `d.colorEncode`),
 -- the leaf keys `texts.<KEY>`, `muted.<KEY>` and `colors.<kind>` that Get and Set take, and a color
 -- read in either shape.
-local MAJOR, MINOR = "LibKa0s-Callout-1.0", 2
+-- Minor 3 (plan row L15, v1.99.0): the glow behind the text as AuraMaster's text glow is: an on/off
+-- `glow`, `glowIntensity`, `glowThickness`, `glowX` / `glowY`, and its color (`glowCustom` with
+-- `glowColor`, `useClassColorGlow`, `glowColorFromSkin`; off, each word's kind color, as before).
+-- A stored "off" / "soft" / "strong" reads as the same look (`GLOW_LEGACY`, `MigrateGlow`).
+local MAJOR, MINOR = "LibKa0s-Callout-1.0", 3
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -138,7 +142,7 @@ lib.SOUND_EXT = ".ogg"
 lib.FONT_SKIN, lib.FONT_GAME = "Skin font", "Game default"   -- the two font values that are no face
 lib.FONT_DEFAULT = "Ka0s Oxanium Bold"    -- a LibKa0s-Media-1.0 face, also its LSM name
 lib.OUTLINES = { "NONE", "OUTLINE", "THICKOUTLINE", "MONOCHROME" }
-lib.GLOWS = { "off", "soft", "strong" }
+lib.GLOWS = { "off", "soft", "strong" }    -- the retired glow choice (to minor 2), GLOW_LEGACY's keys
 lib.ANIMS = { "slam", "pulse", "glow", "blink", "shake", "none" }
 lib.CHANNELS = { "Master", "SFX", "Dialog" }
 lib.SIZE_MIN, lib.SIZE_MAX = 32, 200
@@ -157,7 +161,10 @@ lib.DEFAULTS = {
     number = { 1, 1, 1 },        info = { 0.35, 0.75, 1 },  go = { 0.3, 1, 0.45 },
     stop   = { 1, 0.35, 0.3 },   warn = { 1, 0.78, 0.2 },   error = { 1, 0.2, 0.25 },
   },
-  glow = "soft", anim = "slam", hold = 1.5,
+  -- The glow behind the text (minor 3): on, at the old "soft" look, in each word's kind color.
+  glow = true, glowIntensity = 0.35, glowThickness = 2, glowX = 0, glowY = 0,
+  glowCustom = false, glowColor = { 1, 1, 1 }, useClassColorGlow = false, glowColorFromSkin = false,
+  anim = "slam", hold = 1.5,
   point = { "CENTER", "CENTER", 0, 180 },
   voice = "female", channel = "Master", speakFrom = 5,
   ttsVoice = false, ttsRate = 0, ttsVolume = 100,   -- false: the client's first voice
@@ -165,9 +172,16 @@ lib.DEFAULTS = {
   muted = {},                                        -- key -> true: that stock key shows unspoken
 }
 
+--- What a stored minor-2 `glow` choice reads as (minor 3): the halo was the text's size times 1.04
+--- ("soft") or 1.1 ("strong") at alpha 0.35 or 0.7, so at the default size 96 "soft" is 2 px out and
+--- "strong" 5. A setting stored on its own wins over the choice. Never mutate it.
+lib.GLOW_LEGACY = {
+  off    = { glow = false },
+  soft   = { glow = true, glowIntensity = 0.35, glowThickness = 2 },
+  strong = { glow = true, glowIntensity = 0.7, glowThickness = 5 },
+}
+
 local TAG = "CALLOUT"
-local GLOW_ALPHA = { off = 0, soft = 0.35, strong = 0.7 }
-local GLOW_SCALE = { off = 1, soft = 1.04, strong = 1.1 }
 local HEIGHT_FACTOR = 1.5                 -- the frame's height over the font size
 local FADE = 0.25                         -- seconds a call-out takes to fade at the end of its hold
 local HANDLE_GAP = 2
@@ -187,6 +201,22 @@ local function between(lo, hi) return function(v) return finite(v) and v >= lo a
 local function oneOf(list) return function(v) return inList(list, v) end end
 
 local function nonEmpty(v) return type(v) == "string" and v ~= "" end
+
+local function isBool(v) return type(v) == "boolean" end
+
+--- A stored color's channels, in either shape: named keys (`{ r =, g =, b = }`, the Options
+--- descriptor's default codec) or an array (`{ r, g, b }`, what the instance writes into `d.db`
+--- itself). Nil for anything else.
+local function rgb(c)
+  if type(c) ~= "table" then return nil end
+  local r, g, b = c.r, c.g, c.b
+  if r == nil and g == nil and b == nil then r, g, b = c[1], c[2], c[3] end
+  if finite(r) and finite(g) and finite(b) then return r, g, b end
+  return nil
+end
+
+local function validColor(c) return rgb(c) ~= nil end
+
 
 -- The nine region points SetPoint takes. A stored anchor outside them would raise in SetPoint.
 local ANCHOR = { TOPLEFT = true, TOP = true, TOPRIGHT = true, LEFT = true, CENTER = true, RIGHT = true,
@@ -218,9 +248,11 @@ end
 -- What each setting may hold. A stored value that fails is read as the default (never written).
 local VALID = {
   font = nonEmpty, size = between(lib.SIZE_MIN, lib.SIZE_MAX), outline = oneOf(lib.OUTLINES),
-  shadow = function(v) return type(v) == "boolean" end,
-  shadowX = between(-20, 20), shadowY = between(-20, 20),
-  glow = oneOf(lib.GLOWS), anim = oneOf(lib.ANIMS), hold = between(0.2, 10),
+  shadow = isBool, shadowX = between(-20, 20), shadowY = between(-20, 20),
+  glow = isBool, glowIntensity = between(0.05, 1), glowThickness = between(1, 6),
+  glowX = between(-20, 20), glowY = between(-20, 20), glowCustom = isBool, glowColor = validColor,
+  useClassColorGlow = isBool, glowColorFromSkin = isBool,
+  anim = oneOf(lib.ANIMS), hold = between(0.2, 10),
   point = validPoint, voice = validVoice, channel = oneOf(lib.CHANNELS),
   speakFrom = function(v) return between(1, lib.MAX_FROM)(v) and v == math.floor(v) end,
   ttsVoice = function(v) return v == false or finite(v) end,
@@ -237,19 +269,6 @@ local function copy(v)
   for k, x in pairs(v) do t[k] = copy(x) end
   return t
 end
-
---- A stored color's channels, in either shape: named keys (`{ r =, g =, b = }`, the Options
---- descriptor's default codec) or an array (`{ r, g, b }`, what the instance writes into `d.db`
---- itself). Nil for anything else.
-local function rgb(c)
-  if type(c) ~= "table" then return nil end
-  local r, g, b = c.r, c.g, c.b
-  if r == nil and g == nil and b == nil then r, g, b = c[1], c[2], c[3] end
-  if finite(r) and finite(g) and finite(b) then return r, g, b end
-  return nil
-end
-
-local function validColor(c) return rgb(c) ~= nil end
 
 local function debugOut(S, msg)
   local sink = S.d.debug
@@ -285,6 +304,8 @@ local function get(S, key)
   local t = store(S)
   local v = t and t[key]
   if v ~= nil and VALID[key](v) then return v end
+  local legacy = t and lib.GLOW_LEGACY[t.glow]   -- a minor-2 glow choice, read as its look (minor 3)
+  if legacy and legacy[key] ~= nil then return legacy[key] end
   return lib.DEFAULTS[key]
 end
 
@@ -389,8 +410,8 @@ local function defaultOf(S, key, named)
   local head, sub = leafOf(key)
   if head == "texts" then return "" end
   if head == "muted" then return false end
-  if head == "colors" then
-    local c = lib.DEFAULTS.colors[sub]
+  if head == "colors" or key == "glowColor" then
+    local c = head and lib.DEFAULTS.colors[sub] or lib.DEFAULTS.glowColor
     return encodeColor(S, c[1], c[2], c[3], named)
   end
   if key == "voice" then
@@ -450,14 +471,19 @@ local function gameFont()
   return "Fonts\\FRIZQT__.TTF"
 end
 
-local function skinFont(S)
+--- The host's skin facade (`d.skin`, a registered owner), or nil.
+local function skinFacade(S)
   local Skin = resolve("LibKa0s-Skin-1.0")
   local owner = S.d.skin
   if not (Skin and type(owner) == "string" and type(Skin.IsOwner) == "function" and type(Skin.For) == "function"
     and Skin:IsOwner(owner)) then
     return nil
   end
-  local facade = Skin:For(owner)
+  return Skin:For(owner)
+end
+
+local function skinFont(S)
+  local facade = skinFacade(S)
   return facade and type(facade.GetFont) == "function" and facade.GetFont() or nil
 end
 
@@ -486,6 +512,40 @@ end
 --- SetFont answers false for a face the client cannot load; the game's face stands in.
 local function setFont(fs, path, size, flags)
   if fs:SetFont(path, size, flags) == false then fs:SetFont(gameFont(), size, flags) end
+end
+
+-- ── the glow (minor 3) ───────────────────────────────────────────────────────────────────────
+--
+-- AuraMaster's text glow, on the halo this file has always drawn: one FontString behind the text,
+-- in the text's face with a thick outline, `glowThickness` px bigger on every side, moved by
+-- (`glowX`, `glowY`), at alpha `glowIntensity` while `glow` is on. Its color, first that answers:
+-- the player's class color (`useClassColorGlow`, LibKa0s-Core-1.0's ClassColor, RAID_CLASS_COLORS),
+-- the skin's glow color (`glowColorFromSkin`, the facade's GlowColor, `glow.color`), the swatch
+-- (`glowCustom`, `glowColor`), else the word's kind color. A class or skin that answers nothing
+-- falls through to the next. No OnUpdate: it is set when a call-out is painted.
+
+local function skinGlow(S)
+  local facade = skinFacade(S)
+  if not (facade and type(facade.GlowColor) == "function") then return nil end
+  local r, g, b = facade.GlowColor()
+  if finite(r) and finite(g) and finite(b) then return r, g, b end
+  return nil
+end
+
+local function classGlow()
+  if type(core.ClassColor) ~= "function" then return nil end
+  local r, g, b = core.ClassColor("player")
+  if finite(r) and finite(g) and finite(b) then return r, g, b end
+  return nil
+end
+
+local function glowColorOf(S, kind)
+  local r, g, b
+  if get(S, "useClassColorGlow") then r, g, b = classGlow() end
+  if not r and get(S, "glowColorFromSkin") then r, g, b = skinGlow(S) end
+  if r then return r, g, b end
+  if get(S, "glowCustom") then return rgb(get(S, "glowColor")) end
+  return colorOf(S, kind)
 end
 
 -- ── the animations ───────────────────────────────────────────────────────────────────────────
@@ -564,14 +624,16 @@ end
 local function paint(S, kind)
   local r, g, b = colorOf(S, kind)
   S.text:SetTextColor(r, g, b, 1)
-  S.halo:SetTextColor(r, g, b, 1)
-  S.halo:SetAlpha(GLOW_ALPHA[get(S, "glow")])
+  S.halo:SetTextColor(glowColorOf(S, kind))
+  S.halo:SetAlpha(get(S, "glow") and get(S, "glowIntensity") or 0)
 end
 
 local function applyLook(S)
   local path, size, flags = fontPath(S), get(S, "size"), fontFlags(S)
   setFont(S.text, path, size, flags)
-  setFont(S.halo, path, math.floor(size * GLOW_SCALE[get(S, "glow")] + 0.5), "THICKOUTLINE")
+  setFont(S.halo, path, size + 2 * math.floor(get(S, "glowThickness") + 0.5), "THICKOUTLINE")
+  S.halo:ClearAllPoints()
+  S.halo:SetPoint("CENTER", S.content, "CENTER", get(S, "glowX"), get(S, "glowY"))
   if get(S, "shadow") then
     S.text:SetShadowOffset(get(S, "shadowX"), get(S, "shadowY"))
     S.text:SetShadowColor(0, 0, 0, 1)
@@ -672,8 +734,7 @@ local function build(S)
   local content = CreateFrame("Frame", nil, f)
   content:SetAllPoints(f)
   S.content = content
-  S.halo = content:CreateFontString(nil, "BACKGROUND")
-  S.halo:SetPoint("CENTER", content, "CENTER", 0, 0)
+  S.halo = content:CreateFontString(nil, "BACKGROUND")   -- placed by applyLook, at the glow's offset
   S.text = content:CreateFontString(nil, "OVERLAY")
   S.text:SetPoint("CENTER", content, "CENTER", 0, 0)
   S.clock = CreateFrame("Frame")   -- no parent: a hidden UI does not stop the countdown
@@ -999,11 +1060,13 @@ end
 
 --- Write one setting and apply it. nil clears it back to the default. On the host's route (`d.path`
 --- and `d.set`) the write is `d.set(d.path .. key, value)`, a whole `texts` / `muted` as one write
---- per stock key's leaf; otherwise it lands in `d.db`. Answers
+--- per stock key's leaf; otherwise it lands in `d.db`. A `glowColor` in either shape is stored in
+--- the instance's (minor 3), as SetColor's is. Answers
 --- false for an unknown key, an invalid value, no table to write into, or a host seam that refused.
 function METHODS:Set(key, value)
   local S = state(self)
   if not known(key) or (value ~= nil and not validFor(S, key, value)) then return false end
+  if key == "glowColor" and value ~= nil then value = encodeColor(S, rgb(value)) end
   if not write(S, key, value) then return false end
   self:Apply()
   return true
@@ -1089,11 +1152,19 @@ end
 function METHODS:Frame() return build(state(self)) end
 
 --- The look as the frame draws it: `{ font, size, flags, shadow, shadowX, shadowY, glow }`, the
---- font resolved to a file path. A fresh table, for a host's (or CalloutSettings.lua's) preview.
+--- font resolved to a file path, and from minor 3 `glow` a boolean with `glowIntensity`,
+--- `glowThickness`, `glowX` and `glowY`. A fresh table, for a host's (or CalloutSettings.lua's) preview.
 function METHODS:Look()
   local S = state(self)
   return { font = fontPath(S), size = get(S, "size"), flags = fontFlags(S), shadow = get(S, "shadow"),
-    shadowX = get(S, "shadowX"), shadowY = get(S, "shadowY"), glow = get(S, "glow") }
+    shadowX = get(S, "shadowX"), shadowY = get(S, "shadowY"), glow = get(S, "glow"),
+    glowIntensity = get(S, "glowIntensity"), glowThickness = get(S, "glowThickness"),
+    glowX = get(S, "glowX"), glowY = get(S, "glowY") }
+end
+
+--- The glow's color as a call-out of `kind` ("info" when not a kind) is drawn with it (minor 3).
+function METHODS:GetGlowColor(kind)
+  return glowColorOf(state(self), KIND[kind] and kind or "info")
 end
 
 --- The instance's state, for a host's diagnostics report and its suites.
@@ -1108,6 +1179,19 @@ function METHODS:Stats()
     key = cur and cur.key, text = cur and cur.text, kind = cur and cur.kind,
     awake = S.awake == true, suspended = S.suspended == true, locked = S.locked, logged = logged,
   }
+end
+
+--- Rewrite a minor-2 `glow` choice stored in `t` (the host's call-out table) as the minor-3 keys
+--- (`GLOW_LEGACY`), for a host's own migration: `glow` becomes the boolean, and the intensity and
+--- thickness the choice implied are stored where no valid one is. Answers whether it changed `t`.
+--- The instance reads an unmigrated table the same way, so a host that never calls it looks the same.
+function lib:MigrateGlow(t)   -- luacheck: ignore 212/self
+  local legacy = type(t) == "table" and lib.GLOW_LEGACY[t.glow]
+  if not legacy then return false end
+  for key, v in pairs(legacy) do
+    if key == "glow" or not VALID[key](t[key]) then t[key] = v end
+  end
+  return true
 end
 
 --- A new call-out. `d.db` is required; every other field is optional (see the API document).
@@ -1139,6 +1223,12 @@ lib.__defaultFor = function(inst, key) return copy(defaultOf(state(inst), key, t
 lib.__colorFor = function(inst, kind)
   local S = state(inst)
   local r, g, b = colorOf(S, kind)
+  return encodeColor(S, r, g, b, true)
+end
+-- Minor 3: the glow swatch's reader, the same way.
+lib.__glowColorFor = function(inst)
+  local S = state(inst)
+  local r, g, b = rgb(get(S, "glowColor"))
   return encodeColor(S, r, g, b, true)
 end
 lib.__prefixOf = function(inst) return prefixOf(state(inst)) end

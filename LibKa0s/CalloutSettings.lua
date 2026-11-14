@@ -65,10 +65,11 @@
 -- each read at build time and optional.
 
 local lib = LibStub and LibStub("LibKa0s-Callout-1.0", true)
--- Minor 3 reads the shell's minor-2 privates (`__validFor`, `__defaultFor`, `__colorFor`, `__prefixOf`): an older
--- shell gets no settings section rather than one that raises.
+-- Minor 3 reads the shell's minor-2 privates (`__validFor`, `__defaultFor`, `__colorFor`, `__prefixOf`),
+-- and minor 4 its minor-3 glow settings (`__glowColorFor`): an older shell gets no settings section
+-- rather than one whose rows it refuses.
 if not lib or type(lib.__methods) ~= "table" or type(lib.__validFor) ~= "function"
-  or type(lib.__colorFor) ~= "function" then return end
+  or type(lib.__colorFor) ~= "function" or type(lib.__glowColorFor) ~= "function" then return end
 
 -- Minor 1: the section (plan row L4).
 -- Minor 2 (plan row L2, v1.97.0): `FONT_FACES`, the call-out's display faces (Oxanium Bold, the
@@ -81,7 +82,9 @@ if not lib or type(lib.__methods) ~= "table" or type(lib.__validFor) ~= "functio
 -- Minor 4 (plan row L13, v1.99.0): `SettingsTab`, the section as one host tab (a Preview block over
 -- Look and Sound side tabs, through the Options instance's O.SideTabs, OptionsNav minor 7; Colors in
 -- Look; no stock texts), `BuildSettings`' `opts.layout = "side"`, `SchemaRows`' and `SettingsRows`'
--- `opts.texts = false`, and the Play list's "Countdown 10 to 1". Callout.lua does not move.
+-- `opts.texts = false`, and the Play list's "Countdown 10 to 1"; and (plan row L15) the Glow rows in
+-- Look, AuraMaster's text glow (on/off, Glow color, Use class color, Use the skin's color, Intensity,
+-- Thickness, X and Y offset) in place of the Off / Soft / Strong choice. Needs the shell at minor 3.
 local SETTINGS_MINOR = 4
 if lib.__settingsMinor and lib.__settingsMinor >= SETTINGS_MINOR
   and lib.__settingsShellMinor == lib.MINOR then return end
@@ -119,8 +122,20 @@ lib.SETTINGS_STRINGS = {
   SHADOW = "Shadow", SHADOW_TIP = "A black shadow behind the text.",
   SHADOW_X = "Shadow X offset", SHADOW_Y = "Shadow Y offset",
   SHADOW_OFFSET_TIP = "How far the shadow sits from the text, -20 to 20.",
-  GLOW = "Glow", GLOW_TIP = "A halo in the text's color behind it.",
-  GLOW_OFF = "Off", GLOW_SOFT = "Soft", GLOW_STRONG = "Strong",
+  GLOW = "Glow",
+  GLOW_ON = "Glow behind the text",
+  GLOW_ON_TIP = "Draw a soft glow behind the text, in addition to its outline and shadow.",
+  GLOW_CUSTOM = "Glow color",
+  GLOW_CUSTOM_TIP = "Draw the glow in the color of the swatch below. Off, the glow takes each word's kind color.",
+  GLOW_COLOR = "Color", GLOW_COLOR_TIP = "The glow's own color, drawn while Glow color is on.",
+  GLOW_CLASS = "Use class color",
+  GLOW_CLASS_TIP = "Draw the glow in your class color instead of the swatch or the kind color.",
+  GLOW_SKIN = "Use the skin's color",
+  GLOW_SKIN_TIP = "Draw the glow in your skin's glow color. Use class color, when on, wins.",
+  GLOW_INTENSITY = "Intensity", GLOW_INTENSITY_TIP = "How strongly the glow shows, 5 to 100%.",
+  GLOW_THICKNESS = "Thickness (px)", GLOW_THICKNESS_TIP = "How far the glow reaches out from the text, 1 to 6 pixels.",
+  GLOW_X = "X offset", GLOW_X_TIP = "Nudge the glow off the text, sideways, in pixels.",
+  GLOW_Y = "Y offset", GLOW_Y_TIP = "Nudge the glow off the text, up or down, in pixels.",
   ANIM = "Animation", ANIM_TIP = "How a call-out arrives on screen.",
   ANIM_SLAM = "Slam", ANIM_PULSE = "Pulse", ANIM_GLOW = "Glow", ANIM_BLINK = "Blink",
   ANIM_SHAKE = "Shake", ANIM_NONE = "None",
@@ -198,10 +213,6 @@ end
 local function outlineValues(L)
   return listOf(L, { { "NONE", "OUTLINE_NONE" }, { "OUTLINE", "OUTLINE_OUTLINE" },
     { "THICKOUTLINE", "OUTLINE_THICK" }, { "MONOCHROME", "OUTLINE_MONO" } })
-end
-
-local function glowValues(L)
-  return listOf(L, { { "off", "GLOW_OFF" }, { "soft", "GLOW_SOFT" }, { "strong", "GLOW_STRONG" } })
 end
 
 local function animValues(L)
@@ -318,13 +329,51 @@ local function choice(B, label, tip, key, values)
   return bind(B, key, { type = "string", label = label, tooltip = tip, values = values })
 end
 
+local function check(B, L, key, w)
+  return bind(B, key, { type = "bool", label = word(L, w), tooltip = word(L, w .. "_TIP") })
+end
+
+--- The glow's rows (minor 4, plan row L15) under their "Glow" subgroup, in AuraMaster's two columns:
+---
+---   [Glow behind the text]  [Glow color]
+---   [Color]                 [Use class color]
+---   [Use the skin's color]
+---   [Intensity]             [Thickness (px)]
+---   [X offset]              [Y offset]
+---
+--- The swatch and its class-color companion are options-ui-§17's pair, adjacent and never dimmed;
+--- every other row but the toggle dims while the glow is off.
+local function glowRows(B, L, out, g)
+  local inst, sub = B.inst, word(L, "GLOW")
+  local off = function() return not inst:Get("glow") end
+  local function add(t, startsLine, dims)
+    t.startsLine, t.disabledIf = startsLine or nil, dims and off or nil
+    return row(out, "look", g, sub, t)
+  end
+  add(check(B, L, "glow", "GLOW_ON"), true)
+  add(check(B, L, "glowCustom", "GLOW_CUSTOM"), false, true)
+  add(bind(B, "glowColor", { type = "color", label = word(L, "GLOW_COLOR"), tooltip = word(L, "GLOW_COLOR_TIP"),
+    hasAlpha = false, classColorSource = "player" }, {
+      get = function() return bothShapes(fromEither(inst:Get("glowColor"))) end,
+      set = function(c) inst:Set("glowColor", c) end },
+    { get = function() return lib.__glowColorFor(inst) end }), true)
+  local class = add(check(B, L, "useClassColorGlow", "GLOW_CLASS"))
+  class.classColorSource = "player"
+  add(check(B, L, "glowColorFromSkin", "GLOW_SKIN"), true, true)
+  local pct = add(slider(B, word(L, "GLOW_INTENSITY"), word(L, "GLOW_INTENSITY_TIP"), "glowIntensity", 0.05, 1, 0.05),
+    true, true)
+  pct.isPercent = true
+  add(slider(B, word(L, "GLOW_THICKNESS"), word(L, "GLOW_THICKNESS_TIP"), "glowThickness", 1, 6, 1), false, true)
+  add(slider(B, word(L, "GLOW_X"), word(L, "GLOW_X_TIP"), "glowX", -20, 20, 1), true, true)
+  add(slider(B, word(L, "GLOW_Y"), word(L, "GLOW_Y_TIP"), "glowY", -20, 20, 1), false, true)
+end
+
 local function lookRows(B, L, out)
   local inst, g = B.inst, word(L, "TAB_LOOK")
   row(out, "look", g, nil, bind(B, "font", { type = "string", label = word(L, "FONT"), tooltip = word(L, "FONT_TIP"),
     dialogControl = "Ka0sMedia_Font", values = fontChoices, startsLine = true }))
   row(out, "look", g, nil, slider(B, word(L, "SIZE"), word(L, "SIZE_TIP"), "size", lib.SIZE_MIN, lib.SIZE_MAX, 1))
   row(out, "look", g, nil, choice(B, word(L, "OUTLINE"), word(L, "OUTLINE_TIP"), "outline", outlineValues(L)))
-  row(out, "look", g, nil, choice(B, word(L, "GLOW"), word(L, "GLOW_TIP"), "glow", glowValues(L)))
   row(out, "look", g, nil, bind(B, "shadow", { type = "bool", label = word(L, "SHADOW"), tooltip = word(L, "SHADOW_TIP"),
     startsLine = true }))
   local noShadow = function() return not inst:Get("shadow") end
@@ -334,6 +383,7 @@ local function lookRows(B, L, out)
   local anim = row(out, "look", g, nil, choice(B, word(L, "ANIM"), word(L, "ANIM_TIP"), "anim", animValues(L)))
   anim.startsLine = true
   row(out, "look", g, nil, slider(B, word(L, "HOLD"), word(L, "HOLD_TIP"), "hold", 0.2, 10, 0.1))
+  glowRows(B, L, out, g)
 end
 
 --- The voice choices: the packs the host ships (`d.packs`), then text to speech and off.
@@ -700,6 +750,7 @@ local function valueText(r)
   if type(r.values) == "table" then
     for _, item in ipairs(r.values) do if item.value == v then return item.text end end
   end
+  if r.isPercent then return ("%d%%"):format(math.floor(v * 100 + 0.5)) end
   if r.type == "number" then return (r.step or 1) < 1 and ("%.1f"):format(v) or tostring(v) end
   return tostring(v)
 end

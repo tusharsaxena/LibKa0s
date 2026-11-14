@@ -1,9 +1,9 @@
 {
   "major": "LibKa0s-Callout-1.0",
-  "versionKey": "2.4",
+  "versionKey": "3.4",
   "generator": "tools/gen-api-members.lua",
   "modules": [
-    { "file": "Callout", "minor": 2 },
+    { "file": "Callout", "minor": 3 },
     { "file": "CalloutSettings", "minor": 4 }
   ],
   "members": [
@@ -15,9 +15,11 @@
     { "name": "FONT_GAME", "kind": "string" },
     { "name": "FONT_SKIN", "kind": "string" },
     { "name": "GLOWS", "kind": "table" },
+    { "name": "GLOW_LEGACY", "kind": "table" },
     { "name": "KINDS", "kind": "table" },
     { "name": "LINES", "kind": "table" },
     { "name": "MAX_FROM", "kind": "number" },
+    { "name": "MigrateGlow", "kind": "function" },
     { "name": "New", "kind": "function" },
     { "name": "OFF", "kind": "string" },
     { "name": "OUTLINES", "kind": "table" },

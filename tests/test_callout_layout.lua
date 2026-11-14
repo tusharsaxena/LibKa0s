@@ -119,11 +119,12 @@ test("callout layout: Look holds the face rows and the Colors section; no Sound 
   for _, w in ipairs(scroll.children) do
     if w.layout == "Ka0sSideTabs" then body = w.children[1] end
   end
-  for _, label in ipairs({ "Font", "Size", "Outline", "Glow", "Shadow", "Animation", "Hold (seconds)", "Numbers", "Errors" }) do
+  for _, label in ipairs({ "Font", "Size", "Outline", "Glow behind the text", "Shadow", "Animation", "Hold (seconds)",
+    "Numbers", "Errors" }) do
     assertTrue(labeled(body, label) ~= nil, label .. " is in Look")
   end
   -- red under: Colors left on a Texts tab, or drawn above the side tabs
-  assertEqual(headings(body), "Colors", "Look's one heading is Colors")
+  assertEqual(headings(body), "Glow,Colors", "Look's headings are Glow and Colors (L15)")
   assertNil(labeled(scroll, "Voice"), "Sound is not drawn while Look is selected")
   assertNil(labeled(scroll, "Mute STOP"), "no mute per stock key")
   assertNil(labeled(scroll, "READY"), "no text box per stock key")
@@ -132,7 +133,7 @@ test("callout layout: Look holds the face rows and the Colors section; no Sound 
   local colors = 0
   for _, r in ipairs(view.rows) do
     assertEqual(r.tab, "look")
-    if r.type == "color" then colors = colors + 1 end
+    if r.type == "color" and r.key:find("^colors%.") then colors = colors + 1 end
   end
   assertEqual(colors, #Callout.KINDS)
 end)
@@ -185,7 +186,7 @@ test("callout layout: an Options copy without SideTabs draws Look and Sound unde
   local older = setmetatable({ SideTabs = false }, { __index = O })
   local view = c:BuildSettings(ctx, { options = older, layout = "side" })
   assertTrue(view ~= nil)
-  assertEqual(headings(scroll), "Preview,Look,Colors,Sound", "the older copy still has every row but the texts")
+  assertEqual(headings(scroll), "Preview,Look,Glow,Colors,Sound", "the older copy still has every row but the texts")
   assertNil(labeled(scroll, "Mute STOP"))
 end)
 
@@ -207,7 +208,8 @@ test("callout layout: the plain build's side layout draws Look and Sound with no
   for _, r in ipairs(view.rows) do
     groups[r.group] = true
     assertFalse(r.key:find("^muted%.") ~= nil or r.key:find("^texts%.") ~= nil, r.key .. " is no stock text row")
-    if r.type == "color" then colors = colors + 1; assertEqual(r.group, "Look") end
+    if r.type == "color" and r.key:find("^colors%.") then colors = colors + 1 end
+    if r.type == "color" then assertEqual(r.group, "Look") end
   end
   assertTrue(groups.Look and groups.Sound and not groups.Texts)
   assertEqual(colors, #Callout.KINDS)
@@ -237,7 +239,9 @@ test("callout layout: SchemaRows with texts = false leaves the stock texts' rows
     if r.type == "color" then assertEqual(r.tab, "look", r.path .. " is on Look") end
   end
   for _, r in ipairs(all) do
-    if r.type == "color" then assertEqual(r.tab, "texts", r.path .. " stays on Texts by default") end
+    if r.type == "color" and r.key ~= "glowColor" then
+      assertEqual(r.tab, "texts", r.path .. " stays on Texts by default")
+    end
   end
 end)
 
@@ -247,7 +251,7 @@ test("callout layout: SettingsRows with texts = false is the one tab's rows", fu
   assertEqual(stockRows(rows, "key"), 0)
   local look = c:SettingsRows({ texts = false, tab = "look" })
   local colors = 0
-  for _, r in ipairs(look) do if r.type == "color" then colors = colors + 1 end end
+  for _, r in ipairs(look) do if r.type == "color" and r.key:find("^colors%.") then colors = colors + 1 end end
   assertEqual(colors, 6, "Look carries the colors")
   assertEqual(#c:SettingsRows({ texts = false, tab = "texts" }), 0, "there is no Texts tab")
 end)
@@ -348,6 +352,6 @@ test("callout layout: SettingsTabs and the three-tab build are as they were", fu
   assertEqual(#tabs, 3)
   assertEqual(tabs[3].key, "callout.texts")
   c:BuildSettings(ctx, { options = O })
-  assertEqual(headings(scroll), "Look,Sound,Texts,Colors,Stock texts")
+  assertEqual(headings(scroll), "Look,Glow,Sound,Texts,Colors,Stock texts", "with Look's Glow (L15)")
   assertTrue(labeled(scroll, "Mute STOP") ~= nil, "the three-tab build still draws the stock texts")
 end)

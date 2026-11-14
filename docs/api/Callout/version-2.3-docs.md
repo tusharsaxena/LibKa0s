@@ -12,7 +12,7 @@
 | Shipped in | v1.98.0 |
 | Status | Superseded |
 | Supersedes | [version 1.2](./version-1.2-docs.md) (v1.97.0) — the same surface with no host write route, no leaf keys and no `SchemaRows` |
-| Superseded by | [version 2.4](./version-2.4-docs.md) |
+| Superseded by | [version 3.4](./version-3.4-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
 | Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 2, CalloutSettings = 3 }` |
@@ -494,6 +494,6 @@ order, so the whole-folder copy brings them in with no load-list change in the h
 [`CONSUMERS.md`](../CONSUMERS.md). Ka0s Combat Trail is its one planned consumer (LibKa0s#85); every
 export's verdict is *zero — planned at v1.96.0* until the next re-run.
 
-## Moving to version 2.4
+## Moving to version 3.4
 
-The same surface, with the section as one tab added (`SettingsTab`, `BuildSettings`' `layout = "side"`, `SchemaRows`' and `SettingsRows`' `texts = false`) and "Countdown 10 to 1" in Text to play. See [version 2.4](./version-2.4-docs.md). Re-vendor the whole folder; a host owes nothing to keep working, and a stub of the instance gains `SettingsTab`.
+The same surface, with the section as one tab added (`SettingsTab`, `BuildSettings`' `layout = "side"`, `SchemaRows`' and `SettingsRows`' `texts = false`), "Countdown 10 to 1" in Text to play, and the glow as AuraMaster's (an on/off `glow` with intensity, thickness, offsets and color, the Off / Soft / Strong choice read as the same look; `Callout:MigrateGlow`). See [version 3.4](./version-3.4-docs.md). Re-vendor the whole folder; a host owes nothing to keep working, and a stub of the instance gains `SettingsTab` and `GetGlowColor`.

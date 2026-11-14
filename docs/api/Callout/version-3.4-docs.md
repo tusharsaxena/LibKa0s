@@ -1,4 +1,4 @@
-# `LibKa0s-Callout-1.0` — version 2.4
+# `LibKa0s-Callout-1.0` — version 3.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Callout surface points here rather than restating it. It describes the
@@ -8,16 +8,74 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Callout-1.0` |
-| Files and minors | `Callout.lua` minor **2** · `CalloutSettings.lua` minor **4** (paired on `Callout.lua`'s minor; minors 3 and 4 need the shell at 2) |
+| Files and minors | `Callout.lua` minor **3** · `CalloutSettings.lua` minor **4** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2, minor 4 at 3) |
 | Shipped in | unreleased (v1.99.0) |
 | Status | **Current** |
-| Supersedes | [version 2.3](./version-2.3-docs.md) (v1.98.0) — the same surface without the one tab (`SettingsTab`, `BuildSettings`' `layout = "side"`), `texts = false` or the Play list's countdown |
+| Supersedes | [version 2.3](./version-2.3-docs.md) (v1.98.0) — the same surface without the one tab (`SettingsTab`, `BuildSettings`' `layout = "side"`), `texts = false`, the Play list's countdown or the glow's settings (an Off / Soft / Strong choice there). This document was keyed 2.4 until `Callout.lua` moved to minor 3 for the glow (plan row L15), before either shipped |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
-| Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row; from 4, for the side layout, `Section` and `SideTabs` (Options' OptionsNav minor 7), each presence-checked), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
-| Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 2, CalloutSettings = 4 }` |
+| Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row; from 4, for the side layout, `Section` and `SideTabs` (Options' OptionsNav minor 7), each presence-checked), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), from `Callout.lua` 3 the skin facade's `GlowColor` (Use the skin's color) and `LibKa0s-Core-1.0`'s `ClassColor` (Use class color, `RAID_CLASS_COLORS`), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
+| Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 3, CalloutSettings = 4 }` |
 
-## What changed at this version: the section as one tab (plan row L13)
+## What changed at this version: the glow behind the text (plan row L15)
+
+The owner's request of 2026-11-14: the glow works as AuraMaster's text glow does. `Callout.lua`
+moves to **minor 3**; `CalloutSettings.lua` stays at **minor 4** (unreleased, so the Glow rows fold
+into it) and now needs the shell at 3. The Off / Soft / Strong choice becomes an on/off toggle with
+its own intensity, thickness, offsets and color:
+
+| Key | Default | Valid | What it does |
+|---|---|---|---|
+| `glow` | `true` | a boolean (it was a `GLOWS` value) | The glow behind the text, on or off |
+| `glowIntensity` | `0.35` | 0.05 – 1 (5 – 100%) | The halo's alpha |
+| `glowThickness` | `2` | 1 – 6 px | How far the halo reaches past the text on every side: its font size is the text's plus twice this, rounded |
+| `glowX`, `glowY` | `0`, `0` | −20 – 20 px | The halo's offset from the text's center |
+| `glowCustom` | `false` | a boolean | **Glow color**: the halo takes `glowColor`. Off, it takes each word's kind color, as before |
+| `glowColor` | `{ 1, 1, 1 }` | a color in either shape | The swatch. `Set` stores it in the instance's shape (`d.colorEncode`'s, the named shape on the route, an array in `d.db`), as `SetColor` does |
+| `useClassColorGlow` | `false` | a boolean | **Use class color**: the player's class color (`LibKa0s-Core-1.0`'s `ClassColor`, `RAID_CLASS_COLORS`) |
+| `glowColorFromSkin` | `false` | a boolean | **Use the skin's color**: the skin's glow color (`d.skin`'s facade `GlowColor`, the `glow.color` token AuraMaster's glow follows) |
+
+**The color**, AuraMaster's precedence (its `Style.Followed` and `Style.Color`): the class color when
+Use class color is on, else the skin's when Use the skin's color is on, else the swatch when Glow
+color is on, else the word's kind color. A class the client does not answer for (or no Core
+`ClassColor`), or a skin with no owner or no glow color, falls through to the next. The text keeps
+its kind's color whatever the glow takes. **The drawing** is the halo this major has always drawn:
+one FontString behind the text in the text's face with a thick outline, so no texture, no OnUpdate,
+and the `glow` animation still flashes it; each setting is applied by `Apply` and each call-out's
+paint.
+
+**The old choice, mapped.** Minor 2's halo was the text's size × 1.04 at alpha 0.35 (`soft`) or
+× 1.1 at 0.7 (`strong`), and alpha 0 (`off`). `GLOW_LEGACY` maps each to the new keys:
+`off` → `glow = false`; `soft` → `glow = true`, intensity 0.35, thickness 2; `strong` → `glow = true`,
+intensity 0.7, thickness 5. At the default size 96 that is the same halo to the pixel (100 and 106
+points); at another size the halo is the same number of pixels out rather than the same ratio (at
+50, strong drew 55 and draws 60). The instance **reads** a stored `glow` string through the map,
+without rewriting it, and a key stored on its own wins over the map. `Callout:MigrateGlow(t)`
+rewrites it in a host's own migration: `t.glow` becomes the boolean and the intensity and thickness
+the choice implied are stored where no valid one is; it answers whether it changed `t`. A host on
+the route calls it on its stored call-out table before its Schema's boot check, so the `glow` row
+does not read a string.
+
+| | | Since |
+|---|---|---|
+| The nine settings above | In `SETTINGS`, `DEFAULTS`, `Get` / `Set`, and `SchemaRows` | **`Callout.lua` 3** |
+| `GLOW_LEGACY` | `{ off = { glow = false }, soft = { glow = true, glowIntensity = 0.35, glowThickness = 2 }, strong = { glow = true, glowIntensity = 0.7, glowThickness = 5 } }`. Never mutate it | **`Callout.lua` 3** |
+| `MigrateGlow(t)` | `Callout:MigrateGlow(t)`, above | **`Callout.lua` 3** |
+| `GetGlowColor(kind)` | Instance: `r, g, b`, the glow's color for a call-out of `kind` (`"info"` when not a kind) | **`Callout.lua` 3** |
+| `Look()` | `glow` is a boolean, and the table gains `glowIntensity`, `glowThickness`, `glowX`, `glowY` | **`Callout.lua` 3** |
+| The Glow rows | Look's "Glow" subgroup, right before "Colors" in the one tab (after Hold in the three-tab Look): see [The schema rows](#the-schema-rows) | **`CalloutSettings.lua` 4** |
+
+`GLOWS` stays, as the retired choice's values (`GLOW_LEGACY`'s keys), so no lib-level member is
+removed; the glow rows' words are new `SETTINGS_STRINGS` keys (`GLOW_ON`, `GLOW_CUSTOM`,
+`GLOW_COLOR`, `GLOW_CLASS`, `GLOW_SKIN`, `GLOW_INTENSITY`, `GLOW_THICKNESS`, `GLOW_X`, `GLOW_Y`, each
+with its `_TIP`), and `GLOW_TIP`, `GLOW_OFF`, `GLOW_SOFT` and `GLOW_STRONG` are gone (`GLOW` is the
+subgroup's heading).
+
+**What a host owes.** Nothing to keep working: a stored choice reads as its look. A host on the
+route that registered 2.3's rows registers the new ones (the `glow` row is now a `bool`) and calls
+`Callout:MigrateGlow` on its stored table; a degradation stub of the instance gains `GetGlowColor`.
+
+## What changed at version 2.4 (unreleased, folded here): the section as one tab (plan row L13)
 
 The owner's redesign of 2026-11-14, from Ka0s Combat Trail's three tabs (Call-out look, Call-out
 sound, Call-out texts): **one** "Callout" tab, a **Preview** block at its top, then **side tabs**,
@@ -31,7 +89,7 @@ nothing is stored. A host that wants its own words registers `SchemaRows(prefix)
 through `Show` with a custom text. Text to play gains
 "Countdown 10 to 1". `CalloutSettings.lua` moves to **minor 4**; `Callout.lua` does not move. Every
 change is additive: `SettingsTabs`, the three-tab build and `SchemaRows` with no `texts` option are
-as at 2.3. No lib-level member is removed; two constants are added (`members-2.4.json`).
+as at 2.3. No lib-level member is removed; two constants are added (`members-3.4.json`).
 
 | | | Since |
 |---|---|---|
@@ -144,8 +202,10 @@ Read straight off the LibStub table.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `MAJOR`, `MINOR` | 1 | `"LibKa0s-Callout-1.0"`, `2` (from 2) |
-| `MODULES` | 1 | `{ Callout = 2, CalloutSettings = 4 }` (the second from 1.1, at 2 from 1.2, both moving at 2.3, `CalloutSettings` at 4 from 2.4) |
+| `MAJOR`, `MINOR` | 1 | `"LibKa0s-Callout-1.0"`, `3` (from 3.4) |
+| `MODULES` | 1 | `{ Callout = 3, CalloutSettings = 4 }` (the second from 1.1, at 2 from 1.2, both moving at 2.3, at 3 and 4 from 3.4) |
+| `MigrateGlow(t)` | 3.4 | Rewrites a stored minor-2 `glow` choice in `t` as the minor-3 keys; answers whether it changed `t` (see [What changed at this version](#what-changed-at-this-version-the-glow-behind-the-text-plan-row-l15)) |
+| `GLOW_LEGACY` | 3.4 | The retired choice → the keys it reads as. Never mutate it |
 | `New(d)` | 1 | A new instance (below). Raises without `d.db` |
 | `DEFAULTS` | 1 | The settings' defaults (below), and the table a host **off the write route** seeds its profile with. A host on the route (`d.path`, from 2) seeds from `SchemaRows`' defaults instead: `DEFAULTS.texts` and `muted` are `{}` where the rows are one leaf per stock key, and `DEFAULTS.colors` are arrays where the rows' defaults are the host's shape (see [Adopting it](#adopting-it)). Never mutate it |
 | `SETTINGS` | 1 | The setting keys `Get`/`Set` take, sorted |
@@ -160,7 +220,7 @@ Read straight off the LibStub table.
 | `FONT_SKIN`, `FONT_GAME`, `FONT_DEFAULT` | 1 | `"Skin font"`, `"Game default"`, `"Ka0s Oxanium Bold"` |
 | `FONT_FACES` | 1.2 | `{ "Ka0s Oxanium Bold", "Ka0s Bebas Neue", "Ka0s Russo One" }`: the faces the font row leads with, after the skin's and the game's |
 | `OUTLINES` | 1 | `NONE`, `OUTLINE`, `THICKOUTLINE`, `MONOCHROME` |
-| `GLOWS` | 1 | `off`, `soft`, `strong` |
+| `GLOWS` | 1 | `off`, `soft`, `strong`: from 3.4 the retired choice's values, `GLOW_LEGACY`'s keys; no setting takes them |
 | `ANIMS` | 1 | `slam`, `pulse`, `glow`, `blink`, `shake`, `none` |
 | `CHANNELS` | 1 | `Master`, `SFX`, `Dialog` |
 | `SIZE_MIN`, `SIZE_MAX` | 1 | `32`, `200` |
@@ -168,8 +228,8 @@ Read straight off the LibStub table.
 | `WIDTH` | 1 | `900`: the frame's width; its height is 1.5 × the size |
 | `SETTINGS_STRINGS` | 1.1 | Every word the settings section shows, US English, keyed; a host overrides any through `opts.L` |
 | `SETTINGS_TABS` | 1.1 | `look`, `sound`, `texts`: the three-tab shape's tabs, in order |
-| `SETTINGS_SIDE_TABS` | 2.4 | `look`, `sound`: the one tab's side tabs, in order |
-| `PLAY_COUNTDOWN` | 2.4 | `"countdown10"`: the Play list's "Countdown 10 to 1" choice, a value no stock key takes |
+| `SETTINGS_SIDE_TABS` | 3.4 | `look`, `sound`: the one tab's side tabs, in order |
+| `PLAY_COUNTDOWN` | 3.4 | `"countdown10"`: the Play list's "Countdown 10 to 1" choice, a value no stock key takes |
 
 The stock keys: `READY`, `GO`, `START`, `STOP`, `WARNING`, `ERROR`, `DONE`, `FINISH`, `NEW_BEST`,
 `PAUSE`, `RESUME`, `CANCELED`, `PULL`, `INTERRUPT`, `MOVE`, `DEFENSIVE`, `REBUFF`, `EXPIRING`,
@@ -255,7 +315,11 @@ the route. Every leaf is sent, and `Set` answers false when the seam refused any
 | `outline` | `"THICKOUTLINE"` | `OUTLINES` |
 | `shadow`, `shadowX`, `shadowY` | `true`, `2`, `-2` | a boolean; −20 – 20 |
 | `colors` | per kind (below) | through `GetColor` / `SetColor`, or the leaf `colors.<kind>` (from 2); a stored color is read with named keys or as an array |
-| `glow` | `"soft"` | `GLOWS`: a halo of the text in its kind's color behind it |
+| `glow` | `true` | a boolean (from 3.4; a stored `GLOWS` value reads through `GLOW_LEGACY`): the halo behind the text |
+| `glowIntensity`, `glowThickness` | `0.35`, `2` | 0.05 – 1, the halo's alpha; 1 – 6 px past the text on every side (from 3.4) |
+| `glowX`, `glowY` | `0`, `0` | −20 – 20 px, the halo's offset (from 3.4) |
+| `glowCustom`, `glowColor` | `false`, `{ 1, 1, 1 }` | a boolean; a color in either shape: the halo takes the swatch while on, else the kind's color (from 3.4) |
+| `useClassColorGlow`, `glowColorFromSkin` | `false`, `false` | booleans: the player's class color, then the skin's glow color, win over the swatch (from 3.4) |
 | `anim` | `"slam"` | `ANIMS` |
 | `hold` | `1.5` | 0.2 – 10 seconds before a call-out fades |
 | `point` | `{ "CENTER", "CENTER", 0, 180 }` | `{ point, relativePoint, x, y }` in UIParent's units, both anchors one of the nine region points; written by a drag (through `d.set` on the host's route, from 2) |
@@ -282,6 +346,7 @@ Default colors: `number` white, `info` (0.35, 0.75, 1), `go` (0.3, 1, 0.45), `st
 | `Suspend()` / `Resume()` / `Suspended()` | The stand-down: cancels, hides, locks, and refuses Show and Countdown until Resume |
 | `Get(key)` / `Set(key, value)` | The settings, above; the leaf keys from 2 |
 | `GetColor(kind)` / `SetColor(kind, r, g, b)` | A kind's color; `SetColor(kind)` with no color clears it. From 2 the write is `colors.<kind>`'s, in the host's shape |
+| `GetGlowColor(kind)` | From `Callout.lua` 3: `r, g, b`, the glow's color for a call-out of `kind`: class, skin, swatch or the kind's, as above |
 | `Apply()` | Re-reads every setting onto the frame |
 | `SetLocked(locked)` / `Locked()` | Unlocked, the frame takes the mouse, shows a sample (`READY`, silent) and the drag strip, and a drag writes `point`. Locked (the default, and not saved) it is mouse-transparent; a lock (or a `Suspend`) during a drag ends the move and writes `point`. The animations play on an inner content frame, so the frame and its strip never scale, shake or blink, and the strip ignores the frame's alpha |
 | `ResetPosition()` | Clears `point` (on the host's route, writes the default point through `d.set`, from 2) |
@@ -289,7 +354,7 @@ Default colors: `number` white, `info` (0.35, 0.75, 1), `go` (0.3, 1, 0.45), `st
 | `TtsVoices()` | The client's voices, `{ voiceID, name }` each; empty without `C_VoiceChat` |
 | `Frame()` | The frame, built on first use |
 | `Stats()` | `built`, `shown`, `running`, `number`, `endsAt`, `key`, `text`, `kind`, `awake` (the OnUpdate is armed), `suspended`, `locked`, `logged` |
-| `Look()` | From 1.1: `{ font, size, flags, shadow, shadowX, shadowY, glow }`, the look the frame draws, the font resolved to a file path. A fresh table |
+| `Look()` | From 1.1: `{ font, size, flags, shadow, shadowX, shadowY, glow }`, the look the frame draws, the font resolved to a file path; from `Callout.lua` 3 `glow` is a boolean and `glowIntensity`, `glowThickness`, `glowX`, `glowY` join it. A fresh table |
 | `Preview(what)` | From 1.1: `Show(what, { voice = false })`, `READY` by default: the look on the real call-out, silent |
 | `TestCountdown(from)` | From 1.1: `Countdown{ endsAt = GetTime() + from, from = from }`, `from` 5 by default |
 | `SettingsRows(opts)` | From 1.1: the section's path-less rows (below); `opts.tab` one tab's, `opts.L` the words, `opts.plain` without the text boxes |
@@ -316,7 +381,8 @@ instance (`BuildSettings(ctx, { options, layout = "side" })`), top to bottom:
 2. **The side tabs**, `O.SideTabs` (the host's Options at OptionsNav minor 7): a list on the left,
    **Look** and **Sound** (`SETTINGS_SIDE_TABS`, labeled `TAB_LOOK` and `TAB_SOUND`), and the
    selected tab's rows on the right, drawn by `O.RenderRows` with no tab heading. Look is the face
-   rows, then "Colors" (a subgroup heading) and one swatch per kind; Sound is the Sound rows of the
+   rows, then "Glow" (a subgroup heading, from 3.4) and its rows, then "Colors" (a subgroup heading)
+   and one swatch per kind; Sound is the Sound rows of the
    table below. The selected tab is session state per instance (Look until another is picked, never
    saved), and a click re-renders the page through its renderer, refused in combat.
 
@@ -355,8 +421,10 @@ drawn.
 | `label`, `tooltip`, `group`, `subgroup`, `tab`, `startsLine`, `disabledIf`, `dialogControl`, `hasAlpha` | The panel's: `group` is the tab's word (Look, Sound, Texts), `subgroup` the Texts tab's two (Colors, Stock texts), `disabledIf` a predicate |
 | `page` | `opts.page`, when given |
 
-Every setting a control chooses has one: the fifteen scalars of `SETTINGS` other than `point`,
-`texts` and `muted`, the six kinds' colors and, per stock key, its text and its mute (23 each).
+Every setting a control chooses has one: the twenty-three settings of `SETTINGS` other than `point`,
+`texts` and `muted` (from 3.4 the glow's eight new keys among them, `glowColor` a color row whose
+`get` and `default` are in the host's shape, as a kind's), the six kinds' colors and, per stock key,
+its text and its mute (23 each).
 With `opts.texts = false` (from 4) the text and mute rows are left out and the color rows carry
 `tab = "look"` (their `group` the Look word): the one tab's shape. The
 text to speech rows are among them whatever the client lists. Last come the preview block's two
@@ -414,7 +482,7 @@ and **Reset position** (`ResetPosition`).
 
 | Tab | Rows |
 |---|---|
-| Look | Font, Size, Outline, Glow, Shadow, Shadow X offset, Shadow Y offset (disabled with no shadow), Animation, Hold |
+| Look | Font, Size, Outline, Shadow, Shadow X offset, Shadow Y offset (disabled with no shadow), Animation, Hold; then (from 3.4, where 2.3 had a Glow choice after Outline) the **Glow** subgroup in AuraMaster's two columns: Glow behind the text and Glow color; Color (the swatch) and Use class color, options-ui-§17's adjacent pair, neither ever dimmed; Use the skin's color; Intensity (a percent) and Thickness (px); X offset and Y offset. Every Glow row but the toggle and the pair is disabled while the glow is off. The plain build shows Intensity as a percent |
 | Sound | Voice, Sound channel, Speak numbers from; with a client that lists a text to speech voice, Text to speech voice, Speech rate, Speech volume (disabled unless the voice is text to speech, and absent with no voice listed) |
 | Texts | Colors: one swatch per kind. Stock texts: per key, a text box for the player's own words (empty is the stock text) and **Mute** (the `muted` setting) |
 
@@ -522,6 +590,7 @@ NS.CalloutStub = {
     Hide = function() end, Suspend = function() end, Resume = function() end,
     Suspended = function() return false end, Get = function() return nil end,
     Set = function() return false end, GetColor = function() return 1, 1, 1 end,
+    GetGlowColor = function() return 1, 1, 1 end,
     SetColor = function() return false end, Apply = function() end, SetLocked = function() end,
     Locked = function() return true end, ResetPosition = function() end,
     Voices = function() return {} end, TtsVoices = function() return {} end,
@@ -536,9 +605,9 @@ NS.CalloutStub = {
 ```
 
 From 3 the instance has `SchemaRows`, so a stub written against 1.2 gains it; from 4 it has
-`SettingsTab` too. Pin it with
+`SettingsTab` too, and from `Callout.lua` 3 `GetGlowColor`. Pin it with
 `T.assertSurfaceParity(liveInstance, NS.CalloutStub, "Callout instance")`;
-`members-2.4.json` lists the lib-level surface, which a host reads through `Callout:New` and the
+`members-3.4.json` lists the lib-level surface, which a host reads through `Callout:New` and the
 constants above.
 
 ## What is not here

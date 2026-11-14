@@ -557,7 +557,7 @@ Total.
 
 ### test_callout.lua (52)
 
-- callout: the major loads at minor 2 and reports its one file
+- callout: the major loads at minor 3 and reports its one file
 - callout: without Core the major is absent (no NewLibrary)
 - callout: New refuses a descriptor without a db, naming it
 - callout: a method called on something that is not an instance raises
@@ -619,7 +619,7 @@ Total.
 - look: a countdown's every number animates, and the fade waits for the finish's hold
 - look: every outline reaches the text as its flags; the halo is always thick
 - look: the shadow is on by default at (2, -2), follows its offsets, and off is no shadow at all
-- look: the glow is the halo's alpha and its size over the text
+- look: the glow is the halo's alpha (its intensity) and its size over the text (its thickness)
 - look: the size sets the frame's height, its width is WIDTH
 - look: a LibSharedMedia face is drawn by its path; the skin and game choices are the game's here
 - look: a face the client cannot load is replaced by the game's at the same size and flags
@@ -755,6 +755,23 @@ Total.
 - callout layout: Play with Countdown 10 to 1 counts the real call-out from 10 to 1, with no finish
 - callout layout: the countdown pick is a session value the route's validate accepts
 - callout layout: SettingsTabs and the three-tab build are as they were
+
+### test_callout_glow.lua (14)
+
+- callout glow: on by default at the old soft look; the color companions all off
+- callout glow: the setting rules refuse what is out of range
+- callout glow: intensity is the halo's alpha, thickness its size over the text, the offsets its point
+- callout glow: no OnUpdate is armed for the glow; it is painted with the call-out
+- callout glow: Glow color draws the swatch; off, the kind's color
+- callout glow: class over skin over the swatch over the kind, each falling through when it answers nothing
+- callout glow: the skin's color needs a registered owner answering one, else it falls through
+- callout glow: a glow color in either shape is stored in the instance's
+- callout glow: a stored off / soft / strong reads as the same look it drew
+- callout glow: MigrateGlow rewrites the old choice as the new keys, once
+- callout glow: SchemaRows carries every glow row with its path, default, bounds, validate and onChange
+- callout glow: AuraMaster's two columns; the swatch and its class companion never dim
+- callout glow: the one tab's Look draws the Glow rows beside Colors, and a write reaches the halo
+- callout glow: the plain build draws the intensity as a percent
 
 ### test_charts.lua (15)
 
@@ -5148,6 +5165,7 @@ Total.
 | test_callout_settings.lua | 34 |
 | test_callout_schema.lua | 25 |
 | test_callout_layout.lua | 16 |
+| test_callout_glow.lua | 14 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5325,4 +5343,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4511** |
+| **Total** | **4525** |
