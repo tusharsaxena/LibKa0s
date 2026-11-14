@@ -31,6 +31,12 @@ Versions in this release: `LibKa0s-Callout-1.0` key **4.5** (Callout minor 4, Ca
 
 - `docs/releasing.md`: repo semver and the provenance template at v1.101.0, and the v1.101.0 re-vendor note. `README.md`'s kit line at v1.101.0. `CLAUDE.md`'s register row: key 4.5 at v1.101.0, and its one-release trigger recorded as fired, with no second consumer named; the choice between the row and moving the module into Combat Trail is put to the owner, awaiting a ruling. The plan's ledger row L17.
 
+Release gate (`docs/automated-tests/20261114-153219/`): lint pass, 0/0 in 342 files;
+tests pass, 4579 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (Callout 4 and CalloutSettings 5 only).
+
 ## v1.100.0 — 2026-11-14
 
 Opened 2026-11-14, on `feat/2026-11-14-callout-layout`: the Callout's settings as one tab (plan row L13 of `docs/superpowers/plans/2026-11-13-callout.md`), the owner's redesign after seeing Ka0s Combat Trail's three tabs (Call-out look, Call-out sound, Call-out texts). One "Callout" tab: a Preview block at the top, then Look and Sound as side tabs, the Colors in Look, and no stock texts, whose words the owner rules are the addon's to control. Text to play gains "Countdown 10 to 1". The glow behind the text becomes AuraMaster's (plan row L15): an on/off toggle with intensity, thickness, offsets and its own color choices, in place of Off / Soft / Strong. Six more voice packs ship beside the two of v1.96.0 (plan row L16), the owner's choice of 2026-11-14, and an arena announcer is the default voice. The release itself is plan row L14. Prepared as v1.99.0 until `master`'s v1.99.0 (`LibKa0s-WaypointArrow-1.0`) was released from another branch; that release was merged into this branch on 2026-11-14 and this one renumbered to v1.100.0. Released as v1.100.0 on the owner's go-ahead of 2026-11-14.

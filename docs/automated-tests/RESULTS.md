@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261114-153219`](20261114-153219/) | `6cfa001e` | clean | 1.100.0 → 1.101.0 | 0/0 | 342 | 4576/3/4579 | skip | 103941 | 14815 | 6.9 | 2.1 | 15 | 0 | **green** |
 | [`20261114-120613`](20261114-120613/) | `a4775f4f` | clean | 1.99.0 → 1.100.0 | 0/0 | 342 | 4575/3/4578 | skip | 103890 | 14813 | 6.9 | 2.1 | 15 | 0 | **green** |
 | [`20261114-111504`](20261114-111504/) | `68392b6` | clean | 1.98.0 → 1.99.0 | 0/0 | 339 | 4530/3/4533 | skip | 102760 | 14675 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261114-003644`](20261114-003644/) | `17c1497` | clean | 1.97.0 → 1.98.0 | 0/0 | 334 | 4484/3/4487 | skip | 101466 | 14482 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -214,11 +215,11 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**4578 cases** — 4575 passed, 0 failed, 3 skipped. The generated inventory
-[`20261114-120613/test-cases.md`](20261114-120613/test-cases.md) is the authority on which cases existed at this run;
+**4579 cases** — 4576 passed, 0 failed, 3 skipped. The generated inventory
+[`20261114-153219/test-cases.md`](20261114-153219/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **4533 → 4578** since the previous run.
+Moved **4578 → 4579** since the previous run.
 
 **3 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -242,7 +243,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261114-120613`](20261114-120613/) — **this run's measurement, not its diff.** Max CCN **15** across 14813
+Current as of [`20261114-153219`](20261114-153219/) — **this run's measurement, not its diff.** Max CCN **15** across 14815
 functions, **0** of them warned on; 14 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
@@ -262,7 +263,7 @@ None.
 
 | Band | File | LOC | Disposition |
 |---|---|---|---|
-| 1000–1500 (on notice) | `LibKa0s/Callout.lua` | 1277 | **On notice, unruled: `CLAUDE.md`'s band census (2026-11-14, plan rows L11 and L12).** New to the band at minor 2, 977 -> 1121 with the host write route and the leaf keys, then 1145 with the branch review's whole-table split and color reader. Seam: the write-route section (`prefixOf` through `write`), or the sound section, to a secondary paired on the Callout shell; a peel is a new shipped file and so a release. **Re-check trigger: the lead's ruling, which `CLAUDE.md` leaves open.** |
+| 1000–1500 (on notice) | `LibKa0s/Callout.lua` | 1283 | **On notice, unruled: `CLAUDE.md`'s band census (2026-11-14, plan rows L11 and L12).** New to the band at minor 2, 977 -> 1121 with the host write route and the leaf keys, then 1145 with the branch review's whole-table split and color reader. Seam: the write-route section (`prefixOf` through `write`), or the sound section, to a secondary paired on the Callout shell; a peel is a new shipped file and so a release. **Re-check trigger: the lead's ruling, which `CLAUDE.md` leaves open.** |
 | 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1280 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-04`) to `LibKa0s/OptionsRegistry.lua`, then accepted at 1261 and re-ruled at v1.65.0; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. Seam: the reset walk. **Re-check trigger: the next member added to `Options.lua`, or 1400 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsCompose.lua` | 1080 | **Accepted: `CLAUDE.md`'s census row (2026-11-04, `R6-SIM-L`, `R6-REL2`).** New to the band at minor 19, 974 -> 1073 with the Sim mode row, then 1080 with `R6-REL2`'s `masterTail` split; the minor is not yet shipped, so a peel is a release. Seam: the Master controls block (`masterRows`, `masterButtons` and the sim row), to a file of its own paired on the Options shell. **Re-check trigger: 1150 lines, or the next OptionsCompose minor that adds a composer.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsIdList.lua` | 1339 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: `O.IdList` and its entry-line layout, one piece of machinery, so a seam is named before the append at the trigger. **Re-check trigger: 1350 lines.** |
