@@ -49,6 +49,7 @@
     { "name": "SETTINGS_STRINGS", "kind": "table" },
     { "name": "SHADOW_BOX", "kind": "number" },
     { "name": "SHADOW_OFFSET", "kind": "table" },
+    { "name": "SHARE_LEAD", "kind": "string" },
     { "name": "SKIN_FAR", "kind": "string" },
     { "name": "SKIN_NEAR", "kind": "string" },
     { "name": "STRATA", "kind": "string" },

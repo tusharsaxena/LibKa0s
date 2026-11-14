@@ -35,7 +35,9 @@
 --
 -- Every word is `lib.SETTINGS_STRINGS`, US English; a host passes `opts.L` keyed to it (read with
 -- rawget, because a Ka0s locale table answers an unknown key with the key). The Font block's words
--- are the composer's own, which `opts.L` overrides leaf by leaf through the same keys.
+-- are the composer's own, which `opts.L` overrides leaf by leaf through the same keys; the flags
+-- row's choices (`FLAGS_*`) and the swatch's class-color sentence (`CLASS_COLOR_NOTE`), which the
+-- composer writes in English, are put back in `opts.L`'s words after composing.
 
 local lib = LibStub and LibStub("LibKa0s-WaypointArrow-1.0", true)
 if not lib or type(lib.__methods) ~= "table" then return end
@@ -87,8 +89,8 @@ lib.SETTINGS_STRINGS = {
   UNITS_YARDS = "Yards", UNITS_COMPACT = "Compact (4.2k yd)",
   -- Minor 2: the Position block and the arrow's own lock.
   POSITION = "Position",
-  X_OFFSET = "X offset", X_TIP = "How far right of the screen's center the arrow sits, in pixels. Dragging the arrow sets it.",
-  Y_OFFSET = "Y offset", Y_TIP = "How far above the screen's center the arrow sits, in pixels. Dragging the arrow sets it.",
+  X_OFFSET = "X offset", X_TIP = "How far right of the screen's center the arrow sits; the Arrow scale does not move it. Dragging the arrow sets it.",
+  Y_OFFSET = "Y offset", Y_TIP = "How far above the screen's center the arrow sits; the Arrow scale does not move it. Dragging the arrow sets it.",
   LOCK = "Lock the arrow", LOCK_TIP = "While on, the arrow cannot be dragged. Its right-click menu still opens.",
   RESET_POSITION = "Reset position", RESET_POSITION_TIP = "Put the arrow back at its default position.",
 }
@@ -228,6 +230,26 @@ local function override(L, key)
   return type(v) == "string" and v or nil
 end
 
+--- Whether `L` overrides any of `keys`.
+local function overridesAny(L, keys)
+  for _, key in ipairs(keys) do if override(L, key) then return true end end
+  return false
+end
+
+local FLAG_KEYS = { "FLAGS_SKIN", "FLAGS_NONE", "FLAGS_OUTLINE", "FLAGS_THICK", "FLAGS_MONO", "FLAGS_MONO_OUTLINE" }
+
+--- A composed Font row in `L`'s words where the composer wrote its own English: the flags row's
+--- choices (a fresh table, never the composer's shared one) and the swatch's tooltip, rebuilt as
+--- FONT_COLOR_TIP plus CLASS_COLOR_NOTE when `L` overrides either.
+local function localizeComposed(L, row)
+  if row.key == "fontFlags" and overridesAny(L, FLAG_KEYS) then
+    row.values = flagValues(L)
+  elseif row.key == "fontColor" and overridesAny(L, { "FONT_COLOR_TIP", "CLASS_COLOR_NOTE" }) then
+    row.tooltip = word(L, "FONT_COLOR_TIP") .. " " .. word(L, "CLASS_COLOR_NOTE")
+  end
+  return row
+end
+
 --- The Font block's rows from the host's Options instance `O` (`O.FontGroup`, fromSkin and
 --- flagsFromSkin), each given its arrow `key`. A leaf with no path is omitted.
 local function composedFontRows(O, opts, L, paths, subgroup)
@@ -246,7 +268,7 @@ local function composedFontRows(O, opts, L, paths, subgroup)
   local out = {}
   for _, row in ipairs(type(rows) == "table" and rows or {}) do
     row.key = byPath[row.path]
-    if row.key then out[#out + 1] = row end
+    if row.key then out[#out + 1] = localizeComposed(L, row) end
   end
   return out
 end
@@ -361,21 +383,6 @@ local function place(opts, row, subgroup)
   return row
 end
 
---- The arrow's settings rows, for the host's schema. `opts.paths` names the host's path for each
---- setting (`style`, `useSkinColors`, `farColor`, `nearColor`, `scale`; from minor 2 the Text
---- block's `font`, `fontSize`, `fontColor`, `useClassColorFont`, `fontFlags`, `fontShadow`,
---- `textPosition`, `showLabel`, `distanceUnits`; "Use the skin's font" sits at the font path plus
---- "FromSkin"; and the Position block's `x`, `y` and `lock`); a setting with no path has no row.
---- `opts.page`, `opts.group` and `opts.subgroup` are copied onto every row (minor 2:
---- `opts.textSubgroup` for the Text block's, `opts.positionSubgroup` for the Position block's, which
---- is "Position" when neither it nor `opts.subgroup` is given); `opts.L`
---- overrides the words; `opts.encodeColor(r, g, b, a)` shapes the color rows' defaults the way the
---- host stores colors (`{ r, g, b, a }` without it); `opts.options` (an Options instance, minor 2)
---- composes the Font and Position rows; `opts.arrow` (an instance) is configured on every change,
---- then `opts.onChange(key, value)` is called. Answers a fresh list, and (minor 2) a table of
---- `afterSubgroup` hooks keyed by subgroup for RenderRows (empty when there are none): with
---- `opts.options`, the Position block's Reset position button, which calls `opts.arrow`'s
---- ResetPosition and then `opts.onResetPosition()` (no button with neither).
 --- The look's rows (minor 1's five), into `out`.
 local function lookRows(opts, L, paths, out)
   for _, spec in ipairs(ROWS) do
@@ -389,6 +396,25 @@ local function lookRows(opts, L, paths, out)
   end
 end
 
+--- The arrow's settings rows, for the host's schema. `opts.paths` names the host's path for each
+--- setting (`style`, `useSkinColors`, `farColor`, `nearColor`, `scale`; from minor 2 the Text
+--- block's `font`, `fontSize`, `fontColor`, `useClassColorFont`, `fontFlags`, `fontShadow`,
+--- `textPosition`, `showLabel`, `distanceUnits`; "Use the skin's font" sits at the font path plus
+--- "FromSkin"; and the Position block's `x`, `y` and `lock`); a setting with no path has no row.
+--- `opts.page`, `opts.group` and `opts.subgroup` are copied onto every row (minor 2:
+--- `opts.textSubgroup` for the Text block's, falling back to `opts.subgroup`; `opts.positionSubgroup`
+--- for the Position block's, which is its own "Position" (the `POSITION` word, PositionBlock's
+--- canonical heading) when it is not given, never `opts.subgroup`); `opts.L`
+--- overrides the words; `opts.encodeColor(r, g, b, a)` shapes the color rows' defaults the way the
+--- host stores colors (`{ r, g, b, a }` without it); `opts.options` (an Options instance, minor 2)
+--- composes the Font and Position rows; `opts.arrow` (an instance) is configured on every change,
+--- then `opts.onChange(key, value)` is called. Answers a fresh list, and (minor 2) a table of
+--- `afterSubgroup` hooks keyed by subgroup for RenderRows (empty when there are none): with
+--- `opts.options`, the Position block's Reset position button, which calls `opts.arrow`'s
+--- ResetPosition and then `opts.onResetPosition()` (no button with neither). Reset position NEEDS
+--- `opts.options`: the button is PositionBlock's, and without an Options instance the block is the
+--- X, Y and Lock rows alone, so such a host draws its own reset and calls the instance's
+--- ResetPosition (or the right-click menu's Reset position serves).
 function lib.SettingsRows(opts)
   opts = type(opts) == "table" and opts or {}
   local paths = withCompanion(type(opts.paths) == "table" and opts.paths or {})
@@ -396,7 +422,7 @@ function lib.SettingsRows(opts)
   lookRows(opts, L, paths, out)
   local textSub = opts.textSubgroup or opts.subgroup
   for _, row in ipairs(textRows(opts, L, paths, textSub)) do out[#out + 1] = place(opts, row, textSub) end
-  local posSub = opts.positionSubgroup or opts.subgroup or word(L, "POSITION")
+  local posSub = opts.positionSubgroup or word(L, "POSITION")
   local posRows, hook = positionRows(opts, L, paths, posSub)
   for _, row in ipairs(posRows) do out[#out + 1] = place(opts, row, posSub) end
   return out, hook and { [posSub] = hook } or {}

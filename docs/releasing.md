@@ -337,7 +337,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    packs and never passed `d.packs` passes them (its `LibKa0s sounds:` folders) or it defaults to
    a pack it does not carry and is silent. A host carrying `female-bella` credits SIWIS and
    Koniwa `tnc` in its README, as for `female-kathleen`.
-   The next release (Skill Master round 9) adds no payload file and no kit revision (still 56).
+   v1.101.0 (Skill Master round 9) adds no payload file and no kit revision (still 56).
    `WaypointArrow.lua` and `WaypointArrowSettings.lua` move to minor 2 (key 2.2) and
    `OptionsWidgets.lua` to minor 46, so a host suite that pins `WaypointArrow 1` re-pins it at 2.
    The arrow's instance gains `SetLocked`, `IsLocked`, `MenuItems` and `OpenMenu`, its major the

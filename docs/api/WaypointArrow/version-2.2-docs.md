@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-WaypointArrow-1.0` |
 | Files and minors | `WaypointArrow.lua` minor **2** · `WaypointArrowSettings.lua` minor **2** (paired on `WaypointArrow.lua`'s minor) |
-| Shipped in | the next release (unreleased) |
+| Shipped in | v1.101.0 (unreleased) |
 | Status | **Current** |
 | Supersedes | [version 1.1](./version-1.1-docs.md) (v1.99.0, v1.100.0) — the arrow at 48 px, with no text, position, lock or menu settings. |
 | Superseded by | — |
@@ -81,18 +81,26 @@ under *Moving to version 2.2* in [the 1.1 document](./version-1.1-docs.md).
 
 ### The position (L3)
 
-- **Three settings**: `x` and `y` (pixels from the parent's CENTER, `POSITION_MIN` ..
-  `POSITION_MAX`, -2000 .. 2000, defaults `0` and `200`, `DEFAULT_POINT`'s) and `lock` (`false`).
+- **Three settings**: `x` and `y` (offsets from the parent's CENTER **in the parent's units**,
+  UIParent's for the default parent, `POSITION_MIN` .. `POSITION_MAX`, -2000 .. 2000, defaults `0`
+  and `200`, `DEFAULT_POINT`'s) and `lock` (`false`).
+- **The units do not move with the Arrow scale.** SetPoint reads offsets in the frame's own units,
+  which `scale` scales, so the frame is anchored at `x / scale`, `y / scale`: changing the scale
+  grows the arrow where it is, a slider value is the same spot on screen at every scale, and Reset
+  position lands on the same spot at every scale. Every point the arrow holds (`d.point`,
+  `SetPosition`, `DEFAULT_POINT`, what `onMoved` hears) is in the parent's units the same way; at
+  scale 1 they read as 1.1's.
 - **Where the frame sits.** Once `x` or `y` is configured, the frame's CENTER sits at those offsets
   from the parent's CENTER; until then the saved point (`d.point`, `SetPosition`) as at 1.1, else
   `DEFAULT_POINT`. `SetPosition(point)` sets configured `x` and `y` aside until they are configured
   again. `GetPosition()` answers the point in use.
-- **A drag's end** re-anchors the frame CENTER on the parent's CENTER, in whole pixels of the
-  frame's own units (the centers' difference, the parent's scaled into the frame's), and **writes
+- **A drag's end** re-anchors the frame CENTER on the parent's CENTER, in whole units of the
+  parent (`(fx * fs - px * ps) / ps`, each center taken to screen units by its effective scale),
+  held to `POSITION_MIN` .. `POSITION_MAX` so a drag never stores a value the setting refuses, and **writes
   `x` and `y` through the host**: `d.set(path, value)` at `d.paths.x` and `d.paths.y`, the host's
   architecture-§5 helper, so its sliders follow the drag. `onMoved(point)` still hears the point.
-  Where the client answers no centers, the frame's own first point is kept as 1.1 kept it, and no
-  offsets are written.
+  Where the client answers no centers, the frame's own first point is kept as 1.1 kept it (its
+  offsets times the scale, into the parent's units), and no offsets are written.
 - **`lock`** refuses a drag while on; `d.canDrag()` still applies as well. `SetLocked(on)` writes it
   through the host; `IsLocked()` reads it.
 - **`ResetPosition()`** writes `DEFAULTS.x` and `DEFAULTS.y` through the host, moves the frame and
@@ -107,13 +115,24 @@ under *Moving to version 2.2* in [the 1.1 document](./version-1.1-docs.md).
   host's skin `d.skin`) in place of `d.onClick(frame, "RightButton")`. The stock items, in
   `MENU_ITEMS` order, each with an `id`:
   - `clear`, **Clear waypoint**: `d.onClear(target)` when the host has one (it owns the waypoint),
-    else `Clear()`, and `HideSample()` under the sample. Under the sample `target` is nil.
+    else `Clear()`. It acts only on the target the menu opened over: if that target arrived or was
+    replaced while the menu was open, the click does nothing. **Under the sample** it ends the
+    sample only, through `d.onSampleClear()` when the host has one (the host ends its test mode),
+    else `HideSample()`; the real target waiting under the sample is never cleared, and `onClear`
+    is not called.
   - `share`, **Share in chat**: opens the chat box with `ShareText(target)`, `"/way <zone> 45.2,
     63.1 <label>"`, and **never sends**. The zone is `C_Map.GetMapInfo(mapID).name`, the
     coordinates are percent to one decimal, and the zone or the label is left out when there is
-    none. The box opens through `ChatFrameUtil.OpenChat` (12.0 and the clients built on it), else
-    the older `ChatFrame_OpenChat` global, whichever the client has. Disabled for a target with no
-    map point (a world or provider target, the sample).
+    none. The box is opened with `SHARE_LEAD` (one space) before the line: when a chat box sends,
+    the client runs any text whose first character is `/` as a slash command on the player's own
+    client (a waypoint addon's `/way`, or "unknown command") and sends nothing, so the space is
+    what lets Enter post the line to the box's channel as a message. The box opens through
+    `ChatFrameUtil.OpenChat` (12.0 and the clients built on it), else the older
+    `ChatFrame_OpenChat` global, whichever the client has. Disabled for a target with no map point
+    (a world or provider target, the sample). **The line's shape is open for the owner**: the
+    request read "/way xx.x,yy.y"; the zone name (localized, and not unique across maps such as
+    the Dalarans) and the label are this version's additions, and TomTom's `#<mapID>` form is the
+    unambiguous alternative.
   - `map`, **Show on map**: the world map at the target's `mapID`, through `C_Map.OpenWorldMap`,
     else the `OpenWorldMap` global. Disabled with no map point, and disabled and refused in combat
     (`InCombatLockdown`), since the map is a UI panel and the frame otherwise calls nothing that
@@ -128,6 +147,10 @@ under *Moving to version 2.2* in [the 1.1 document](./version-1.1-docs.md).
   `d.onClick(frame, "RightButton")`. Every other button reaches `d.onClick` as before.
 - `MenuItems()` answers the rows as they would open now; `OpenMenu()` opens them as a right-click
   does (false with no frame, no Widgets major or `d.menu = false`).
+- **The menu follows the arrow.** The shared menu is a UIParent-parented singleton that only an
+  outside press closes, so the arrow closes it (`W.CloseMenu`) when it comes down (arrival,
+  `Clear`, `Suspend`) and when the sample starts or ends, while the open menu is still this
+  frame's; another owner's menu is left.
 
 ## What this major is
 
@@ -165,7 +188,8 @@ promotion is a row in the repo's register (`CLAUDE.md`, *Documented deviations*)
 | `FONT_DEFAULT` | `"Ka0s Prototype"`, FontGroup's own default face | **2** |
 | `FONT_SIZE_MIN`, `FONT_SIZE_MAX` | `6`, `32`, FontGroup's range | **2** |
 | `COMPACT_FROM` | `1000` yards: from here `"compact"` reads thousands | **2** |
-| `POSITION_MIN`, `POSITION_MAX` | `-2000`, `2000` pixels, PositionBlock's range | **2** |
+| `POSITION_MIN`, `POSITION_MAX` | `-2000`, `2000` units of the parent, PositionBlock's range | **2** |
+| `SHARE_LEAD` | `" "`: what Share in chat opens the chat box with before the `/way` line, so Enter sends it as a message rather than running it as a slash command | **2** |
 | `MENU_ITEMS` | `{ "clear", "share", "map", "lock", "reset" }`, the stock menu items' ids in order | **2** |
 | `ARRIVE`, `NEAR`, `FAR` | `5`, `30`, `300` yards: arrival, the near color's edge, the far color's edge (each overridable per instance) | **1.1** |
 | `THROTTLE` | `0.03` seconds between two measures while shown | **1.1** |
@@ -215,7 +239,8 @@ promotion is a row in the repo's register (`CLAUDE.md`, *Documented deviations*)
 | `onClick(frame, button)` | no | Every mouse-up on the frame; from 2.2 not the right button while the menu opens | **1.1** |
 | `menu` | no | `false` keeps the right-click on `onClick`, with no menu | **2** |
 | `menuItems(items, target, arrow)` | no | The host's items: answers the list the menu opens (or edits `items` in place) | **2** |
-| `onClear(target)` | no | The menu's Clear waypoint: the host clears its waypoint (and the arrow); nil `target` under the sample. Without it the arrow clears itself | **2** |
+| `onClear(target)` | no | The menu's Clear waypoint: the host clears its waypoint (and the arrow). Not called under the sample. Without it the arrow clears itself | **2** |
+| `onSampleClear()` | no | The menu's Clear waypoint under the sample: the host ends its test mode (and calls `HideSample`). Without it the arrow calls `HideSample()` itself | **2** |
 | `strings` | no | Overrides `STRINGS` by key, read with rawget: the distance's formats, the sample's label, the menu's words | **2** |
 | `onEnter(frame)`, `onLeave(frame)` | no | The host's tooltip | **1.1** |
 | `onArrive(spec)` | no | Called with the target's spec when it comes within `arrive` yards; the target is cleared and the arrow hidden first | **1.1** |
@@ -325,13 +350,16 @@ widgets read either way), `page`, `group`, `subgroup` and `onChange(value)`. In 
    and skin-governed picker (`skinValue`). Without one the rows are built here with the same
    leaves, order, types, defaults and words (compose minor 19's), the Font row's values from
    LibSharedMedia's `HashTable("font")`.
-3. **The Position block** (2.2), on `opts.positionSubgroup` (else `opts.subgroup`, else
-   "Position"): X offset and Y offset (`number`, -2000 .. 2000, step 1, defaults 0 and 200, X
+3. **The Position block** (2.2), on `opts.positionSubgroup`, else its own "Position" subgroup (the
+   `POSITION` word, PositionBlock's canonical heading; never `opts.subgroup`, so a host that passes
+   only `opts.subgroup` still gets the block under its heading): X offset and Y offset (`number`, -2000 .. 2000, step 1, defaults 0 and 200, X
    `startsLine`), then **Lock the arrow** (`bool`, `startsLine`). **Given `opts.options`** the two
    offsets are `O.PositionBlock`'s with the Lock row as its extra, and its **Reset position** button
    comes back as the hook keyed by the block's subgroup; it calls `opts.arrow:ResetPosition()` (when
    the rows are an instance's) and then `opts.onResetPosition()`, and with neither there is no
-   button. Without an Options instance there is no button; the menu's Reset position remains.
+   button. **Reset position needs `opts.options`**: without an Options instance the block is the X,
+   Y and Lock rows alone and there is no button, so such a host draws its own and calls the
+   instance's `ResetPosition()`; the menu's Reset position remains either way.
 
 | `opts` field | Meaning | Since |
 |---|---|---|
@@ -340,7 +368,7 @@ widgets read either way), `page`, `group`, `subgroup` and `onChange(value)`. In 
 | `textSubgroup`, `positionSubgroup` | The Text and Position blocks' subgroups | **2** |
 | `options` | The host's Options instance: the Font and Position rows are its composers' | **2** |
 | `onResetPosition()` | Called by the Reset position button, after the instance's `ResetPosition` | **2** |
-| `L` | Overrides `SETTINGS_STRINGS` by key, read with rawget; a composed row's label or tooltip takes it too | **1.1** |
+| `L` | Overrides `SETTINGS_STRINGS` by key, read with rawget; a composed row's label or tooltip takes it too, and so do the composed flags row's choices (`FLAGS_*`) and the swatch's class-color sentence (`CLASS_COLOR_NOTE`), which the composer writes in English | **1.1** |
 | `encodeColor(r, g, b, a)` | Shapes the color rows' defaults the way the host stores colors; `{ r, g, b, a }` without it | **1.1** |
 | `arrow` | An instance: each row's `onChange` calls `arrow:Configure({ [key] = value })` first | **1.1** |
 | `onChange(key, value)` | Called after, on every change | **1.1** |

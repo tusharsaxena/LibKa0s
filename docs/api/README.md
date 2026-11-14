@@ -220,7 +220,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.2](./WaypointArrow/version-2.2-docs.md) | **`WaypointArrow.lua` 2** (the art 1.25x larger at scale 1; the distance text's font, side, name line and units; `x`, `y` and `lock`, a drag written back through the host's `set`; the right-click menu; Skill Master round 9, L1 to L4) · **`WaypointArrowSettings.lua` 2** (the Text block, the canonical Font block's rows and its extras, and the Position block with Lock the arrow, composed by the host's Options instance when given) | the next release (unreleased) | **Current** |
+| [2.2](./WaypointArrow/version-2.2-docs.md) | **`WaypointArrow.lua` 2** (the art 1.25x larger at scale 1; the distance text's font, side, name line and units; `x`, `y` and `lock`, a drag written back through the host's `set`; the right-click menu; Skill Master round 9, L1 to L4) · **`WaypointArrowSettings.lua` 2** (the Text block, the canonical Font block's rows and its extras, and the Position block with Lock the arrow, composed by the host's Options instance when given) | v1.101.0 (unreleased) | **Current** |
 | [1.1](./WaypointArrow/version-1.1-docs.md) | **`WaypointArrow.lua` 1** (the new major: `New`, `SetTarget`, `SetProvider`, five looks, the distance fade, the sample, the drag handed back; Skill Master round 8, L1) · **`WaypointArrowSettings.lua` 1** (`SettingsRows`: path rows for the host's schema) | v1.99.0 – v1.100.0 | Superseded |
 
 ### `LibKa0s-Charts-1.0`
@@ -407,7 +407,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4](./Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md) | **`OptionsWidgets.lua` 46** (a number row's slider box puts text that is not a number back to the value, on Enter and on focus loss; L0 of Skill Master's round 9) · the rest as the row below | the next release (unreleased) | **Current** |
+| [38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4](./Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md) | **`OptionsWidgets.lua` 46** (a number row's slider box puts text that is not a number back to the value, on Enter and on focus loss; L0 of Skill Master's round 9) · the rest as the row below | v1.101.0 (unreleased) | **Current** |
 | [38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4](./Options/version-38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md) | **`OptionsNav.lua` 7** (`O.SideTabs`: the nav rail's look inside the page's content, a list of tabs beside the selected one's body, under whatever the page drew; plan row L13) · the rest as the row below | v1.100.0 | Superseded |
 | [38.5.45.3.7.2.9.17.3.1.4.19.13.6.5.8.7.11.1.1.4](./Options/version-38.5.45.3.7.2.9.17.3.1.4.19.13.6.5.8.7.11.1.1.4-docs.md) | **`Options.lua` 38 and `OptionsNav.lua` 6** (the bulk resets walk only gated-in rows and `O.NavRail` honors `clients`, `WFP-RV2-LK`) · the rest as the row below | v1.93.0 – v1.99.0 | Superseded |
 | [37.5.45.3.7.2.9.17.3.1.4.19.13.5.5.8.7.11.1.1.4](./Options/version-37.5.45.3.7.2.9.17.3.1.4.19.13.5.5.8.7.11.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 5 · `OptionsWidgets.lua` 45 · `OptionsFlow.lua` 3 · **`OptionsTabs.lua` 17 and the new `OptionsHeader.lua` 1** (`O.PageHeader` and `O.SubTabStrip` peeled out unchanged, no behavior change, `WFP-LK-08`) · the rest as the row below | v1.93.0 | Superseded |

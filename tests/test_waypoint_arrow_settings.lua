@@ -221,3 +221,16 @@ test("arrow settings: every row, the Text block's too, passes a Schema instance'
   S.Set("waypoints.units", "compact")
   assertEqual(a:Get("distanceUnits"), "compact")
 end)
+
+test("arrow settings: opts.L reaches the composed flags choices and the swatch's class-color sentence", function()
+  local O = dofile("tests/fixture_options.lua").new()
+  local L = { FLAGS_SKIN = "Du skin", FLAGS_NONE = "Aucun", CLASS_COLOR_NOTE = "Non lu en couleur de classe." }
+  local r = byKey(T.arrow.SettingsRows({ paths = TEXT_PATHS, options = O, page = "p", group = "g", L = L }))
+  assertEqual(r.fontFlags.values["@skin"], "Du skin", "a localized flags choice")
+  assertEqual(r.fontFlags.values[""], "Aucun")
+  assertEqual(r.fontFlags.values.OUTLINE, "Outline", "the rest in the US-English words")
+  assertEqual(r.fontColor.tooltip, "The color the text is drawn in. Non lu en couleur de classe.",
+    "the composer's English sentence replaced")
+  local again = byKey(T.arrow.SettingsRows({ paths = TEXT_PATHS, options = O, page = "p", group = "g" }))
+  assertEqual(again.fontFlags.values["@skin"], "From skin", "the composer's shared table untouched")
+end)

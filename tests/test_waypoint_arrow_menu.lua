@@ -14,9 +14,16 @@ local function menuArrow(d, before)
   local rec = { menus = {}, chat = {}, maps = {} }
   local a, m, Arrow, bench = F.newArrow(d, function(mm)
     local W = mm.LibStub:NewLibrary("LibKa0s-Widgets-1.0", 1)
+    rec.closed = 0
+    local shown = {}
+    function shown:IsShown() return rec.open == self end
     function W.ContextMenu(anchor, rows, opts)
       rec.menus[#rec.menus + 1] = { anchor = anchor, rows = rows, opts = opts }
-      return {}
+      shown._owner, rec.open = anchor, shown
+      return shown
+    end
+    function W.CloseMenu()
+      rec.closed, rec.open = rec.closed + 1, nil
     end
     mm.ChatFrame_OpenChat = function(text) rec.chat[#rec.chat + 1] = text end
     mm.C_Map.OpenWorldMap = function(id) rec.maps[#rec.maps + 1] = id end
@@ -97,7 +104,8 @@ test("arrow menu: Share in chat opens the chat box with the /way line and never 
   local share = item(rec.menus[1].rows, "share")
   assertFalse(share.disabled == true)
   share.onClick()
-  assertEqual(rec.chat[1], "/way Elwynn Forest 45.2, 63.1 Master Smith")
+  assertEqual(rec.chat[1], " /way Elwynn Forest 45.2, 63.1 Master Smith")
+  assertTrue(rec.chat[1]:sub(1, 1) ~= "/", "not a slash command: Enter sends it as a message")
   assertEqual(sent, 0, "nothing sent")
   assertEqual(Arrow.ShareText({ mapID = 7, x = 0.5, y = 0.25 }), "/way 50.0, 25.0", "no zone, no label")
   assertNil(Arrow.ShareText({ instance = 1, wx = 1, wy = 1 }), "a world target has no map point")
@@ -110,7 +118,7 @@ test("arrow menu: Share in chat prefers ChatFrameUtil.OpenChat where the client 
   a:SetTarget(TARGET)
   rightClick(a)
   item(rec.menus[1].rows, "share").onClick()
-  assertEqual(util[1], "/way Elwynn Forest 45.2, 63.1 Master Smith")
+  assertEqual(util[1], " /way Elwynn Forest 45.2, 63.1 Master Smith")
   assertEqual(#rec.chat, 0)
 end)
 
@@ -190,4 +198,52 @@ test("arrow menu: OpenMenu opens it as a right-click does", function()
   a:SetTarget(TARGET)
   assertTrue(a:OpenMenu())
   assertEqual(#rec.menus, 1)
+end)
+
+test("arrow menu: the sample's Clear ends the sample only; the real target under it stays", function()
+  local cleared, ended = 0, 0
+  local a, _, _, rec = menuArrow({ onClear = function() cleared = cleared + 1 end })
+  a:SetTarget(TARGET)
+  a:ShowSample()
+  rightClick(a)
+  item(rec.menus[1].rows, "clear").onClick()
+  assertFalse(a:SampleShown(), "the sample ended")
+  assertEqual(a:Target().label, "Master Smith", "the real waypoint kept")
+  assertTrue(a:IsShown(), "and pointed at again")
+  assertEqual(cleared, 0, "the host's onClear not called")
+  local b, _, _, brec = menuArrow({ onSampleClear = function() ended = ended + 1 end })
+  b:ShowSample()
+  rightClick(b)
+  item(brec.menus[1].rows, "clear").onClick()
+  assertEqual(ended, 1, "the host ends its test mode")
+end)
+
+test("arrow menu: Clear acts only on the target the menu opened over", function()
+  local cleared = 0
+  local a, _, _, rec = menuArrow({ onClear = function() cleared = cleared + 1 end })
+  a:SetTarget(TARGET)
+  rightClick(a)
+  local clear = item(rec.menus[1].rows, "clear")
+  a:SetTarget({ mapID = 1429, x = 0.1, y = 0.1, label = "Another" })
+  clear.onClick()
+  assertEqual(cleared, 0, "a stale Clear leaves the new waypoint")
+  assertEqual(a:Target().label, "Another")
+end)
+
+test("arrow menu: the arrow coming down closes its menu, and only its own", function()
+  local a, _, _, rec = menuArrow()
+  a:SetTarget(TARGET)
+  rightClick(a)
+  a:Clear()
+  assertEqual(rec.closed, 1, "Clear closes it")
+  a:SetTarget(TARGET)
+  rightClick(a)
+  a:Suspend()
+  assertEqual(rec.closed, 2, "Suspend closes it")
+  a:Resume()
+  a:SetTarget(TARGET)
+  rightClick(a)
+  rec.open = {}   -- another frame's menu opened since
+  a:Clear()
+  assertEqual(rec.closed, 2, "another owner's menu is left")
 end)

@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **38** · `OptionsRegistry.lua` **5** · `OptionsWidgets.lua` **46** · `OptionsFlow.lua` **3** · `OptionsIds.lua` **7** · `OptionsIdSuggest.lua` **2** · `OptionsIdList.lua` **9** · `OptionsTabs.lua` **17** · `OptionsTabbed.lua` **3** · `OptionsHeader.lua` **1** · `OptionsCombat.lua` **4** · `OptionsCompose.lua` **19** · `OptionsScroll.lua` **13** · `OptionsNav.lua` **7** · `OptionsDrawer.lua` **5** · `OptionsKeybinds.lua` **8** · `OptionsAppearance.lua` **7** · `OptionsSkinPicker.lua` **11** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **4** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsHeader>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4` |
-| Shipped in | the next release (unreleased) |
+| Shipped in | v1.101.0 (unreleased) |
 | Status | **Current** |
 | Supersedes | [version 38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4](./version-38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md) — the same surface; a number row's slider box no longer keeps text that is not a number. |
 | Superseded by | — |

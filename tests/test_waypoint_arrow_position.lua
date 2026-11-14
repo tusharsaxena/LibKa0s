@@ -79,7 +79,7 @@ test("arrow position: a drag ends CENTER on the parent's CENTER, written to the 
   assertEqual(rec.moved[1].point, "CENTER", "onMoved still hears the point")
 end)
 
-test("arrow position: the offsets are in the frame's own units at another scale", function()
+test("arrow position: the offsets are in the parent's units at every scale", function()
   local a, store, _, m = hosted()
   a:Configure({ scale = 2 })
   pointAhead(a)
@@ -87,8 +87,35 @@ test("arrow position: the offsets are in the frame's own units at another scale"
   f:__fire("OnDragStart")
   centers(m, f, 500, 300, 2, 1)   -- the frame at scale 2: its center in its own (halved) units
   f:__fire("OnDragStop")
-  assertEqual(store["w.arrowX"], 20, "500 - 960 / 2")
-  assertEqual(store["w.arrowY"], 30, "300 - 540 / 2")
+  assertEqual(store["w.arrowX"], 40, "500 * 2 - 960: the same numbers a drag to that spot stores at scale 1")
+  assertEqual(store["w.arrowY"], 60, "300 * 2 - 540")
+  local p = { f:GetPoint() }
+  assertEqual(p[4] .. "," .. p[5], "20,30", "SetPoint takes them in the frame's units")
+end)
+
+test("arrow position: changing Arrow scale leaves the arrow's center where it is", function()
+  local a = newArrow()
+  a:Configure({ x = 100, y = 200 })
+  pointAhead(a)
+  for _, scale in ipairs({ 0.5, 1, 2 }) do
+    a:Configure({ scale = scale })
+    local p = { a:Frame():GetPoint() }
+    assertEqual(p[4] * scale .. "," .. p[5] * scale, "100,200", "the same spot at scale " .. scale)
+  end
+  assertEqual(a:GetPosition().y, 200, "the setting is unchanged")
+end)
+
+test("arrow position: a drag past the range stores the range's edge, which VALID keeps", function()
+  local a, store, _, m = hosted()
+  a:Configure({ scale = 0.5 })
+  pointAhead(a)
+  local f = a:Frame()
+  f:__fire("OnDragStart")
+  centers(m, f, 9000, -9000, 0.5, 1)
+  f:__fire("OnDragStop")
+  assertEqual(store["w.arrowX"], 2000)
+  assertEqual(store["w.arrowY"], -2000)
+  assertEqual(a:GetPosition().x, 2000, "read back, not snapped to the default")
 end)
 
 test("arrow position: Lock the arrow holds it still, and canDrag still applies", function()
@@ -161,6 +188,8 @@ test("arrow position: the rows are X offset, Y offset and Lock the arrow, on a P
   assertEqual(r.lock.default, false)
   assertEqual(r.x.subgroup, "Position")
   assertNil(next(hooks), "no Options instance: no Reset position button")
+  local inLook = byKey((Arrow.SettingsRows({ paths = PATHS, subgroup = "Arrow" })))
+  assertEqual(inLook.x.subgroup, "Position", "opts.subgroup alone keeps the block's own heading")
 end)
 
 test("arrow position: with an Options instance the block is O.PositionBlock's, its Reset button hooked", function()
@@ -168,7 +197,7 @@ test("arrow position: with an Options instance the block is O.PositionBlock's, i
   local a = newArrow()
   local after = 0
   local rows, hooks = T.arrow.__methods.SettingsRows(a, { paths = PATHS, options = O, page = "p", group = "g",
-    subgroup = "Arrow", onResetPosition = function() after = after + 1 end })
+    positionSubgroup = "Arrow", onResetPosition = function() after = after + 1 end })
   local keys = {}
   for i, r in ipairs(rows) do keys[i] = r.key end
   assertEqual(table.concat(keys, ","), "x,y,lock")

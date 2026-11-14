@@ -109,7 +109,8 @@ lib.FONT_FLAGS = { "@skin", "", "OUTLINE", "THICKOUTLINE", "MONOCHROME", "OUTLIN
 lib.FONT_DEFAULT = "Ka0s Prototype" -- FontGroup's own default face (Ka0s Default's pick)
 lib.FONT_SIZE_MIN, lib.FONT_SIZE_MAX = 6, 32
 lib.COMPACT_FROM = 1000             -- yards: from here "compact" reads thousands ("4.2k yd")
--- The position (minor 2, L3): pixels from the parent's CENTER, OptionsCompose's PositionBlock range.
+-- The position (minor 2, L3): offsets from the parent's CENTER in the PARENT's units (UIParent's: the
+-- same spot on screen at every Arrow scale, applyPoint divides by the scale), PositionBlock's range.
 lib.POSITION_MIN, lib.POSITION_MAX = -2000, 2000
 
 --- The settings a host seeds its own paths with. Colors are { r, g, b, a }; a keyed { r =, g =,
@@ -141,7 +142,7 @@ lib.STRINGS = { DISTANCE = "%d yd", DISTANCE_COMPACT = "%.1fk yd", SAMPLE = "Way
   -- Minor 2 (L4): the right-click menu's words.
   MENU_CLEAR = "Clear waypoint", MENU_SHARE = "Share in chat", MENU_MAP = "Show on map",
   MENU_LOCK = "Lock the arrow", MENU_UNLOCK = "Unlock the arrow", MENU_RESET = "Reset position",
-  MENU_SHARE_TIP = "Opens the chat box with a /way line for this waypoint, ready to send or edit. Nothing is sent.",
+  MENU_SHARE_TIP = "Opens the chat box with a /way line for this waypoint. Press Enter to send it to the channel the box is set to, or edit it first. Nothing is sent until you do.",
   MENU_NO_MAP = "This waypoint has no map point to share or show.",
   MENU_COMBAT = "Not available in combat.",
 }
@@ -417,8 +418,16 @@ local function effectiveScale(f)
   return ok and plainNumber(v) and v > 0 and v or 1
 end
 
---- The frame's center as whole-pixel offsets from its parent's center, in the frame's own units
---- (what SetPoint takes), or nil while either center is unknown.
+--- The arrow's own scale relative to its parent (the Arrow scale setting, which applyScale sets).
+local function ownScale(S) return setting(S, "scale") end
+
+--- An offset held to the settings' range, so a drag never stores a value `VALID` would refuse.
+local function clampOffset(v) return math.max(lib.POSITION_MIN, math.min(lib.POSITION_MAX, v)) end
+
+--- The frame's center as whole-unit offsets from its parent's center, in the PARENT's units (minor
+--- 2, the x and y settings' units: the same spot on screen at every Arrow scale), or nil while
+--- either center is unknown. GetCenter answers each frame in its own units, so both go to screen
+--- units first: (fx * fs - px * ps) / ps.
 local function centerOffsets(S)
   local f, parent = S.frame, parentOf(S)
   local ok, fx, fy = pcall(f.GetCenter, f)
@@ -426,23 +435,25 @@ local function centerOffsets(S)
   if not (ok and okP and plainNumber(fx) and plainNumber(fy) and plainNumber(px) and plainNumber(py)) then
     return nil
   end
-  local k = effectiveScale(parent) / effectiveScale(f)
-  return math.floor(fx - px * k + 0.5), math.floor(fy - py * k + 0.5)
+  local k = effectiveScale(f) / effectiveScale(parent)
+  return clampOffset(math.floor(fx * k - px + 0.5)), clampOffset(math.floor(fy * k - py + 0.5))
 end
 
---- The point a drag left the frame at: re-anchored CENTER to the parent's CENTER when the centers
---- are known (minor 2), else the frame's own first point, as minor 1 read it.
+--- The point a drag left the frame at, its offsets in the parent's units: re-anchored CENTER to
+--- the parent's CENTER when the centers are known (minor 2), else the frame's own first point, as
+--- minor 1 read it, its offsets taken from the frame's units to the parent's.
 local function droppedPoint(S)
   local x, y = centerOffsets(S)
+  local k = ownScale(S)
   if x then
     S.frame:ClearAllPoints()
-    S.frame:SetPoint("CENTER", parentOf(S), "CENTER", x, y)
+    S.frame:SetPoint("CENTER", parentOf(S), "CENTER", x / k, y / k)
     return { point = "CENTER", relPoint = "CENTER", x = x, y = y }
   end
   local point, _, relPoint, px, py = S.frame:GetPoint(1)
   if type(point) ~= "string" then return nil end
   return { point = point, relPoint = type(relPoint) == "string" and relPoint or point,
-    x = plainNumber(px) and px or 0, y = plainNumber(py) and py or 0 }
+    x = plainNumber(px) and px * k or 0, y = plainNumber(py) and py * k or 0 }
 end
 
 --- A drag ended: the point is kept, a CENTER point is written to the x and y settings through the
@@ -480,10 +491,13 @@ local function currentPoint(S)
   return pointOf(S.point) or lib.DEFAULT_POINT
 end
 
+--- Anchor the frame at its point. The point's offsets are in the parent's units (minor 2) and
+--- SetPoint reads them in the frame's own, which the Arrow scale scales, so they are divided by it:
+--- changing the scale grows the arrow where it is, and a slider value is the same spot at any scale.
 local function applyPoint(S)
-  local p = currentPoint(S)
+  local p, k = currentPoint(S), ownScale(S)
   S.frame:ClearAllPoints()
-  S.frame:SetPoint(p.point, parentOf(S), p.relPoint, p.x, p.y)
+  S.frame:SetPoint(p.point, parentOf(S), p.relPoint, p.x / k, p.y / k)
 end
 
 --- A drag starts unless the arrow's own lock is on (minor 2) or the host's `canDrag()` says no.
@@ -791,6 +805,7 @@ local function measure(S)
 end
 
 local takeDown   -- forward: the arrival clears the target
+local closeMenu  -- forward: the menu section's; the arrow coming down closes its menu
 
 local function arrived(S, yards)
   local arrive = S.d.arrive
@@ -841,6 +856,7 @@ end
 -- and nothing re-arms it on the way back, while a hidden frame runs no OnUpdate anyway.
 takeDown = function(S)
   if not S.frame then return end
+  closeMenu(S)
   if S.moving then onDragStop(S) end
   S.frame:SetScript("OnUpdate", nil)
   S.frame:Hide()
@@ -852,7 +868,9 @@ end
 -- with the stock items in MENU_ITEMS order, then whatever the host's `d.menuItems(items, target,
 -- arrow)` makes of them. `d.menu = false`, or a payload without the Widgets major, keeps minor 1's
 -- right-click: `d.onClick(frame, "RightButton")`. The sample has no map point, so Share in chat and
--- Show on map are disabled under it; its Clear still works.
+-- Show on map are disabled under it; its Clear ends the sample only (`d.onSampleClear()`, else
+-- HideSample), never the real target waiting under it. Clear acts only on the target the menu
+-- opened over, and the arrow coming down closes its menu (`closeMenu`).
 
 local function word(S, key)
   local own = type(S.d.strings) == "table" and rawget(S.d.strings, key)
@@ -889,13 +907,19 @@ function lib.ShareText(spec)
   return table.concat(parts, " ")
 end
 
+-- What the chat box is opened with goes before the line. When the box sends, ChatEdit_ParseText
+-- runs any text whose FIRST character is "/" as a slash command on the player's own client (a
+-- waypoint addon's /way, or "unknown command") and sends nothing; a leading space is not "/", so
+-- Enter sends the line to the box's channel as a message, and the others read "/way ...".
+lib.SHARE_LEAD = " "
+
 --- Open the chat box with `text` in it, never sending: ChatFrameUtil.OpenChat (12.0 and the clients
 --- built on it), else the older ChatFrame_OpenChat global. True when one was called.
 local function openChat(text)
   local util = type(ChatFrameUtil) == "table" and ChatFrameUtil.OpenChat or nil
   local fn = type(util) == "function" and util or ChatFrame_OpenChat
   if type(fn) ~= "function" then return false end
-  return (pcall(fn, text))
+  return (pcall(fn, lib.SHARE_LEAD .. text))
 end
 
 --- Open the world map on `mapID`: C_Map.OpenWorldMap, else the OpenWorldMap global. Refused in
@@ -916,11 +940,21 @@ local function menuTarget(S)
   return S.target and S.target.spec or nil
 end
 
+--- Clear waypoint. It acts on the target the menu opened over, and on nothing else: a target that
+--- arrived, or was replaced, while the menu was open is left alone. Under the sample it ends the
+--- sample only (`d.onSampleClear()`, the host ending its test mode, else HideSample), and the real
+--- target waiting under it stays.
 local function clearItem(S, inst, target)
+  local sample, captured = S.sample, S.target
   return { id = "clear", label = word(S, "MENU_CLEAR"), onClick = function()
+    if sample then
+      if S.sample ~= sample then return end
+      if type(S.d.onSampleClear) == "function" then return call(S, S.d.onSampleClear) end
+      return inst:HideSample()
+    end
+    if captured == nil or S.target ~= captured then return end
     if type(S.d.onClear) == "function" then return call(S, S.d.onClear, target) end
     inst:Clear()
-    if S.sample then inst:HideSample() end
   end }
 end
 
@@ -965,8 +999,21 @@ function lib.__mouseUp(S, f, button)
   if not W then return call(S, S.d.onClick, f, button) end
   local rows = menuItems(S, S.inst)
   if #rows == 0 then return end
-  local ok, err = pcall(W.ContextMenu, f, rows, { owner = S.d.skin, cursor = true })
-  if not ok then debugOut(S, "menu failed: " .. tostring(err)) end
+  local ok, m = pcall(W.ContextMenu, f, rows, { owner = S.d.skin, cursor = true })
+  if not ok then return debugOut(S, "menu failed: " .. tostring(m)) end
+  S.menu = type(m) == "table" and m or nil
+end
+
+--- Close the shared menu if it is still this arrow's (its `_owner` is this frame and it is shown):
+--- the menu is a UIParent-parented singleton that only an outside press closes, so the arrow coming
+--- down (arrival, Clear, Suspend, the sample ending) closes it here. Another owner's menu is left.
+closeMenu = function(S)
+  local m = S.menu
+  S.menu = nil
+  if type(m) ~= "table" or m._owner ~= S.frame or type(m.IsShown) ~= "function" then return end
+  local ok, shown = pcall(m.IsShown, m)
+  local W = ok and shown and resolve("LibKa0s-Widgets-1.0") or nil
+  if W and type(W.CloseMenu) == "function" then pcall(W.CloseMenu) end
 end
 
 -- ── the methods ──────────────────────────────────────────────────────────────────────────────
@@ -1022,6 +1069,7 @@ function METHODS:ShowSample(label)
   local S = state(self)
   if S.suspended then return false end
   local own = type(S.d.strings) == "table" and rawget(S.d.strings, "SAMPLE")
+  closeMenu(S)   -- its items were the real target's
   S.sample = { label = type(label) == "string" and label or type(own) == "string" and own or lib.STRINGS.SAMPLE }
   present(S)
   return true
@@ -1032,6 +1080,7 @@ function METHODS:HideSample()
   local S = state(self)
   if not S.sample then return end
   S.sample = nil
+  closeMenu(S)   -- its items were the sample's
   if S.target then return present(S) end
   takeDown(S)
 end
@@ -1089,8 +1138,8 @@ function METHODS:Apply()
   if S.frame:IsShown() then update(S) end
 end
 
---- Move the frame to a saved point (`{ point, relPoint, x, y }`, keyed or positional); nil puts it
---- back at `DEFAULT_POINT`. Not handed to onMoved: the host already holds it. From minor 2 it also
+--- Move the frame to a saved point (`{ point, relPoint, x, y }`, keyed or positional, its offsets in
+--- the parent's units from minor 2, as onMoved hands them); nil puts it back at `DEFAULT_POINT`. Not handed to onMoved: the host already holds it. From minor 2 it also
 --- sets aside configured x and y settings until they are configured again.
 function METHODS:SetPosition(point)
   local S = state(self)

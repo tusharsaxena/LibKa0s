@@ -816,7 +816,7 @@ Total.
 - arrow: SetPosition takes either shape; ResetPosition tells the host to forget
 - arrow: a right click reaches onClick
 
-### test_waypoint_arrow_settings.lua (14)
+### test_waypoint_arrow_settings.lua (15)
 
 - arrow settings: five rows in order, each on the host's path, page and group
 - arrow settings: the defaults are the arrow's: Raised, the skin's colors on, scale 1
@@ -832,6 +832,7 @@ Total.
 - arrow settings: given an Options instance the Font rows are O.FontGroup's own
 - arrow settings: a Text row's change configures the arrow
 - arrow settings: every row, the Text block's too, passes a Schema instance's shape check
+- arrow settings: opts.L reaches the composed flags choices and the swatch's class-color sentence
 
 ### test_waypoint_arrow_text.lua (17)
 
@@ -853,19 +854,21 @@ Total.
 - arrow text: the text never takes the skin's Text role, so a skin switch cannot overwrite the font
 - arrow text: ConfigureFrom reads the companion at the font path plus FromSkin
 
-### test_waypoint_arrow_position.lua (9)
+### test_waypoint_arrow_position.lua (11)
 
 - arrow position: x and y place the arrow from the parent's CENTER; the defaults are today's spot
 - arrow position: configured x and y win over d.point; SetPosition sets them aside
 - arrow position: a drag ends CENTER on the parent's CENTER, written to the host's x and y
-- arrow position: the offsets are in the frame's own units at another scale
+- arrow position: the offsets are in the parent's units at every scale
+- arrow position: changing Arrow scale leaves the arrow's center where it is
+- arrow position: a drag past the range stores the range's edge, which VALID keeps
 - arrow position: Lock the arrow holds it still, and canDrag still applies
 - arrow position: ResetPosition writes the default spot through the host, then onMoved(nil)
 - arrow position: a drag with no centers to read keeps minor 1's point and writes no offsets
 - arrow position: the rows are X offset, Y offset and Lock the arrow, on a Position subgroup
 - arrow position: with an Options instance the block is O.PositionBlock's, its Reset button hooked
 
-### test_waypoint_arrow_menu.lua (11)
+### test_waypoint_arrow_menu.lua (14)
 
 - arrow menu: a right-click opens the menu at the pointer with the stock items, Clear first
 - arrow menu: d.menu = false, or no Widgets major, keeps the old right-click
@@ -878,6 +881,9 @@ Total.
 - arrow menu: the host's menuItems adds, reorders or replaces the items
 - arrow menu: d.strings words the items
 - arrow menu: OpenMenu opens it as a right-click does
+- arrow menu: the sample's Clear ends the sample only; the real target under it stays
+- arrow menu: Clear acts only on the target the menu opened over
+- arrow menu: the arrow coming down closes its menu, and only its own
 
 ### test_charts.lua (15)
 
@@ -5277,10 +5283,10 @@ Total.
 | test_callout_layout.lua | 16 |
 | test_callout_glow.lua | 16 |
 | test_waypoint_arrow.lua | 37 |
-| test_waypoint_arrow_settings.lua | 14 |
+| test_waypoint_arrow_settings.lua | 15 |
 | test_waypoint_arrow_text.lua | 17 |
-| test_waypoint_arrow_position.lua | 9 |
-| test_waypoint_arrow_menu.lua | 11 |
+| test_waypoint_arrow_position.lua | 11 |
+| test_waypoint_arrow_menu.lua | 14 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5458,4 +5464,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4620** |
+| **Total** | **4626** |
