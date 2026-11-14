@@ -10,11 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.100.0 — unreleased
+## v1.100.0 — 2026-11-14
 
-Opened 2026-11-14, on `feat/2026-11-14-callout-layout`: the Callout's settings as one tab (plan row L13 of `docs/superpowers/plans/2026-11-13-callout.md`), the owner's redesign after seeing Ka0s Combat Trail's three tabs (Call-out look, Call-out sound, Call-out texts). One "Callout" tab: a Preview block at the top, then Look and Sound as side tabs, the Colors in Look, and no stock texts, whose words the owner rules are the addon's to control. Text to play gains "Countdown 10 to 1". The glow behind the text becomes AuraMaster's (plan row L15): an on/off toggle with intensity, thickness, offsets and its own color choices, in place of Off / Soft / Strong. Six more voice packs ship beside the two of v1.96.0 (plan row L16), the owner's choice of 2026-11-14, and an arena announcer is the default voice. The release itself is plan row L14. Prepared as v1.99.0 until `master`'s v1.99.0 (`LibKa0s-WaypointArrow-1.0`) was released from another branch; that release was merged into this branch on 2026-11-14 and this one renumbered to v1.100.0.
+Opened 2026-11-14, on `feat/2026-11-14-callout-layout`: the Callout's settings as one tab (plan row L13 of `docs/superpowers/plans/2026-11-13-callout.md`), the owner's redesign after seeing Ka0s Combat Trail's three tabs (Call-out look, Call-out sound, Call-out texts). One "Callout" tab: a Preview block at the top, then Look and Sound as side tabs, the Colors in Look, and no stock texts, whose words the owner rules are the addon's to control. Text to play gains "Countdown 10 to 1". The glow behind the text becomes AuraMaster's (plan row L15): an on/off toggle with intensity, thickness, offsets and its own color choices, in place of Off / Soft / Strong. Six more voice packs ship beside the two of v1.96.0 (plan row L16), the owner's choice of 2026-11-14, and an arena announcer is the default voice. The release itself is plan row L14. Prepared as v1.99.0 until `master`'s v1.99.0 (`LibKa0s-WaypointArrow-1.0`) was released from another branch; that release was merged into this branch on 2026-11-14 and this one renumbered to v1.100.0. Released as v1.100.0 on the owner's go-ahead of 2026-11-14.
 
-Versions so far: `LibKa0s-Callout-1.0` key **3.4** (Callout minor 3, CalloutSettings minor 4; the key was 2.4 until L15 moved `Callout.lua`, and its document moved with it); `LibKa0s-Options-1.0` key **38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4** (OptionsNav minor 7); every other file at its v1.99.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises. No Lua file is added; the payload gains six voice-pack folders under `media/sounds/callout/` (L16).
+Versions in this release: `LibKa0s-Callout-1.0` key **3.4** (Callout minor 3, CalloutSettings minor 4; the key was 2.4 until L15 moved `Callout.lua`, and its document moved with it); `LibKa0s-Options-1.0` key **38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4** (OptionsNav minor 7); every other file at its v1.99.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises. No Lua file is added; the payload gains six voice-pack folders under `media/sounds/callout/` (L16).
 
 ### The one tab (L13)
 
@@ -45,7 +45,7 @@ Versions so far: `LibKa0s-Callout-1.0` key **3.4** (Callout minor 3, CalloutSett
 ### The release (L14)
 
 - The branch review's findings, in `394da9a`: a `glow` write over a stored old choice keeps the look it implied; a freed side rail goes back to client art before another instance takes it; the 2.3 document's *Moving to version 3.4* names the boolean `glow` read and the voice-pack changes; the default-voice note for a host without `d.packs`; the SIWIS and Koniwa `tnc` creators in `female-bella`'s credits and the README; the ledger's L13 row.
-- `docs/releasing.md`: the v1.100.0 re-vendor note (the stub members, the voice packs, the two behavior changes).
+- `docs/releasing.md`: repo semver and the provenance template at v1.100.0, and the v1.100.0 re-vendor note (the stub members, the voice packs, the two behavior changes). `README.md`'s kit line at v1.100.0. "Shipped in" v1.100.0 in the Callout 3.4 and Options `38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4` documents and their `docs/api/README.md` rows, and `CLAUDE.md`'s register row (key 3.4 at v1.100.0).
 
 ## v1.99.0 — 2026-11-14
 
