@@ -34,6 +34,7 @@ local function instrument(f)
     if not p then return nil end
     return p[1], p[2], p[3], p[4], p[5]
   end)
+  rawset(f, "SetHitRectInsets", function(self, ...) rawset(self, "__insets", { ... }) end)
   rawset(f, "StartMoving", function(self) rawset(self, "__moving", true) end)
   rawset(f, "StopMovingOrSizing", function(self) rawset(self, "__moving", false) end)
   return f

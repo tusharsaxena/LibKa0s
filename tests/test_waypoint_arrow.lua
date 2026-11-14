@@ -222,8 +222,13 @@ test("arrow: scale 1 draws the 48-unit art box at 60 px, 1.25x minor 1's 48", fu
   assertNear(p[4], 1.875, "the shadow's offset right, 1.5 units")
   assertNear(p[5], -3.75, "and down, 3 units")
   local fw, fh = f:GetSize()
-  assertNear(fw, 60 + 2 * 8 * 1.25, "the hit rect: 8 units each side")
-  assertNear(fh, 60 + 22 * 1.25, "and 22 units under, for the text")
+  assertNear(fw, 60 + 2 * 8 * 1.25, "the frame: the box and 8 units each side")
+  assertNear(fh, 60 + 2 * 8 * 1.25, "a square, centered on the art")
+  local ins = rawget(f, "__insets")
+  assertEqual(table.concat({ ins[1], ins[2], ins[3] }, ","), "0,0,0", "the hit rect grows only under")
+  assertNear(ins[4], -(2.5 + 20 * 1.25 - 10), "by the text's 22 units, past the pad")
+  local p2 = { box:GetPoint(1) }
+  assertEqual(p2[1], "CENTER", "the art box sits at the frame's center")
   assertEqual(f:GetScale(), 1, "scale 1 is the new 1.0")
 end)
 

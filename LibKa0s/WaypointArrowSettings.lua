@@ -21,10 +21,21 @@
 -- skin's colors are drawn. A row's `onChange(value)` hands the value to `opts.arrow:Configure` (when
 -- an instance is given), then calls `opts.onChange(key, value)`.
 --
+-- ── THE TEXT BLOCK (minor 2) ─────────────────────────────────────────────────────────────────
+--
+-- The distance text's settings are options-ui-§16's canonical Font block: Font, Font size, Font
+-- color, Use class color, Font flags (led by From skin), Font shadow, then "Use the skin's font",
+-- the companion at the font path plus "FromSkin" (OptionsCompose's FontGroup with `fromSkin` and
+-- `flagsFromSkin`). Given `opts.options`, the host's Options instance, the six rows and the
+-- companion ARE `O.FontGroup`'s, so they carry the composer's shape, words and media picker; without
+-- one this file emits the same leaves in the same order with the same words. The block's own
+-- extras follow it: Text position, Show the label and Distance units.
+--
 -- ── WORDS ────────────────────────────────────────────────────────────────────────────────────
 --
 -- Every word is `lib.SETTINGS_STRINGS`, US English; a host passes `opts.L` keyed to it (read with
--- rawget, because a Ka0s locale table answers an unknown key with the key).
+-- rawget, because a Ka0s locale table answers an unknown key with the key). The Font block's words
+-- are the composer's own, which `opts.L` overrides leaf by leaf through the same keys.
 
 local lib = LibStub and LibStub("LibKa0s-WaypointArrow-1.0", true)
 if not lib or type(lib.__methods) ~= "table" then return end
@@ -51,6 +62,29 @@ lib.SETTINGS_STRINGS = {
   FAR = "Far color", FAR_TIP = "The arrow's color 300 yards away or more. Not read while Use the skin's colors is on.",
   NEAR = "Near color", NEAR_TIP = "The arrow's color 30 yards away or closer. Not read while Use the skin's colors is on.",
   SCALE = "Arrow scale", SCALE_TIP = "The size of the arrow and its distance, 0.5 to 2.",
+  -- Minor 2: the Text block (the Font block's words are OptionsCompose's FontGroup's).
+  FONT = "Font", FONT_TIP = "The face this text is drawn in.",
+  FONT_SIZE = "Font size", FONT_SIZE_TIP = "Height of the text, in points.",
+  FONT_COLOR = "Font color", FONT_COLOR_TIP = "The color the text is drawn in.",
+  CLASS_COLOR = "Use class color",
+  CLASS_COLOR_TIP = "Draw this text in the class color instead of the swatch beside it.",
+  CLASS_COLOR_NOTE = "Not read while Use class color is on, except for its opacity, which always applies.",
+  FONT_FLAGS = "Font flags",
+  FONT_FLAGS_TIP = "Outline and monochrome rendering. From skin follows the Font outline setting on this addon's Skin tab; any other choice is drawn as picked.",
+  FLAGS_SKIN = "From skin", FLAGS_NONE = "None", FLAGS_OUTLINE = "Outline", FLAGS_THICK = "Thick outline",
+  FLAGS_MONO = "Monochrome", FLAGS_MONO_OUTLINE = "Monochrome outline",
+  FONT_SHADOW = "Font shadow",
+  FONT_SHADOW_TIP = "Draw a soft shadow behind the text, for legibility over bright art.",
+  FONT_SKIN = "Use the skin's font",
+  FONT_SKIN_TIP = "Draw this text in the skin's font. The font picker is not read while this is on.",
+  TEXT_POSITION = "Text position",
+  TEXT_POSITION_TIP = "Where the distance sits beside the arrow, or Hidden for the arrow alone.",
+  POS_BELOW = "Below", POS_ABOVE = "Above", POS_LEFT = "Left", POS_RIGHT = "Right", POS_HIDDEN = "Hidden",
+  SHOW_LABEL = "Show the target's name",
+  SHOW_LABEL_TIP = "A second line under the distance with the name of what the arrow points to.",
+  UNITS = "Distance units",
+  UNITS_TIP = "Yards, or compact: thousands of yards shortened, as 4.2k yd.",
+  UNITS_YARDS = "Yards", UNITS_COMPACT = "Compact (4.2k yd)",
 }
 
 local STYLE_WORD = { flat = "STYLE_FLAT", ridge = "STYLE_RIDGE", raised = "STYLE_RAISED",
@@ -63,12 +97,26 @@ local function word(L, key)
   return lib.SETTINGS_STRINGS[key]
 end
 
---- The style row's choices, in STYLES order: `{ value, text }` each.
-function lib.StyleValues(L)
+--- `list`'s choices as `{ value, text }`, each word `words[value]` through `word`.
+local function choices(L, list, words)
   local out = {}
-  for i, style in ipairs(lib.STYLES) do out[i] = { value = style, text = word(L, STYLE_WORD[style]) } end
+  for i, v in ipairs(list) do out[i] = { value = v, text = word(L, words[v]) } end
   return out
 end
+
+--- The style row's choices, in STYLES order: `{ value, text }` each.
+function lib.StyleValues(L) return choices(L, lib.STYLES, STYLE_WORD) end
+
+local POSITION_WORD = { BELOW = "POS_BELOW", ABOVE = "POS_ABOVE", LEFT = "POS_LEFT", RIGHT = "POS_RIGHT",
+  HIDDEN = "POS_HIDDEN" }
+local UNITS_WORD = { yards = "UNITS_YARDS", compact = "UNITS_COMPACT" }
+local FLAGS_WORD = { ["@skin"] = "FLAGS_SKIN", [""] = "FLAGS_NONE", OUTLINE = "FLAGS_OUTLINE",
+  THICKOUTLINE = "FLAGS_THICK", MONOCHROME = "FLAGS_MONO", ["OUTLINE, MONOCHROME"] = "FLAGS_MONO_OUTLINE" }
+
+--- Minor 2: the Text position and Distance units rows' choices, in TEXT_POSITIONS and
+--- DISTANCE_UNITS order.
+function lib.TextPositionValues(L) return choices(L, lib.TEXT_POSITIONS, POSITION_WORD) end
+function lib.DistanceUnitsValues(L) return choices(L, lib.DISTANCE_UNITS, UNITS_WORD) end
 
 local function colorDefault(opts, c)
   if type(opts.encodeColor) == "function" then return opts.encodeColor(c[1], c[2], c[3], c[4] or 1) end
@@ -108,28 +156,171 @@ local ROWS = {
     end },
 }
 
---- The arrow's settings rows, for the host's schema. `opts.paths` names the host's path for each
---- setting (`style`, `useSkinColors`, `farColor`, `nearColor`, `scale`); a setting with no path has
---- no row. `opts.page`, `opts.group` and `opts.subgroup` are copied onto every row; `opts.L`
---- overrides the words; `opts.encodeColor(r, g, b, a)` shapes the color rows' defaults the way the
---- host stores colors (`{ r, g, b, a }` without it); `opts.arrow` (an instance) is configured on
---- every change, then `opts.onChange(key, value)` is called. Answers a fresh list.
-function lib.SettingsRows(opts)
-  opts = type(opts) == "table" and opts or {}
-  local paths = type(opts.paths) == "table" and opts.paths or {}
-  local out = {}
-  for _, spec in ipairs(ROWS) do
-    local path = paths[spec.key]
-    if type(path) == "string" and path ~= "" then
-      local row = spec.make(opts, opts.L)
-      row.path, row.key = path, spec.key
-      row.page, row.group, row.subgroup = opts.page, opts.group, opts.subgroup
-      row.onChange = onChangeFor(opts, spec.key)
-      if spec.color and type(paths.useSkinColors) == "string" then row.disabledIf = paths.useSkinColors end
+-- ── the Text block (minor 2) ─────────────────────────────────────────────────────────────────
+
+-- The Font block's leaves in the canonical order, each with its words' keys.
+local FONT_LEAVES = {
+  { key = "font", label = "FONT", tip = "FONT_TIP" },
+  { key = "fontSize", label = "FONT_SIZE", tip = "FONT_SIZE_TIP" },
+  { key = "fontColor", label = "FONT_COLOR", tip = "FONT_COLOR_TIP" },
+  { key = "useClassColorFont", label = "CLASS_COLOR", tip = "CLASS_COLOR_TIP" },
+  { key = "fontFlags", label = "FONT_FLAGS", tip = "FONT_FLAGS_TIP" },
+  { key = "fontShadow", label = "FONT_SHADOW", tip = "FONT_SHADOW_TIP" },
+  { key = "fontFromSkin", label = "FONT_SKIN", tip = "FONT_SKIN_TIP" },
+}
+
+--- The font row's choices without an Options instance: LibSharedMedia's faces, else the default's.
+local function fontValues()
+  return function()
+    local LSM = LibStub and LibStub("LibSharedMedia-3.0", true)
+    local ok, list = false, nil
+    if LSM and type(LSM.HashTable) == "function" then ok, list = pcall(LSM.HashTable, LSM, "font") end
+    local out, any = {}, false
+    for k in pairs(ok and type(list) == "table" and list or {}) do out[k], any = k, true end
+    if not any then out[lib.FONT_DEFAULT] = lib.FONT_DEFAULT end
+    return out
+  end
+end
+
+local function flagValues(L)
+  local values = {}
+  for _, f in ipairs(lib.FONT_FLAGS) do values[f] = word(L, FLAGS_WORD[f]) end
+  return values
+end
+
+--- The Font block's rows, built here (no Options instance): FontGroup's leaves, order, types,
+--- defaults and words, `startsLine` on Font, Font color and the companion. `paths` has the
+--- companion's path already.
+local function ownFontRows(opts, L, paths)
+  local D, out = lib.DEFAULTS, {}
+  local made = {
+    font = { type = "string", dialogControl = "Ka0sMedia_Font", values = fontValues(), startsLine = true,
+      disabledIf = paths.fontFromSkin },
+    fontSize = { type = "number", min = lib.FONT_SIZE_MIN, max = lib.FONT_SIZE_MAX, step = 1 },
+    fontColor = { type = "color", hasAlpha = true, startsLine = true, classColorSource = "player" },
+    useClassColorFont = { type = "bool", classColorSource = "player" },
+    fontFlags = { type = "string", values = flagValues(L), sorting = lib.FONT_FLAGS },
+    fontShadow = { type = "bool" },
+    fontFromSkin = { type = "bool", startsLine = true },
+  }
+  for _, leaf in ipairs(FONT_LEAVES) do
+    local row, path = made[leaf.key], paths[leaf.key]
+    if path then
+      row.key, row.path, row.label, row.tooltip = leaf.key, path, word(L, leaf.label), word(L, leaf.tip)
+      if leaf.key == "fontColor" then row.tooltip = row.tooltip .. " " .. word(L, "CLASS_COLOR_NOTE") end
+      local v = D[leaf.key]
+      row.default = leaf.key == "fontColor" and colorDefault(opts, v) or v
       out[#out + 1] = row
     end
   end
   return out
+end
+
+--- A word `L` overrides, or nil: the composer keeps its own words for the rest.
+local function override(L, key)
+  local v = type(L) == "table" and rawget(L, key)
+  return type(v) == "string" and v or nil
+end
+
+--- The Font block's rows from the host's Options instance `O` (`O.FontGroup`, fromSkin and
+--- flagsFromSkin), each given its arrow `key`. A leaf with no path is omitted.
+local function composedFontRows(O, opts, L, paths, subgroup)
+  local keys, omit, labels, tooltips, byPath = {}, {}, {}, {}, {}
+  for _, leaf in ipairs(FONT_LEAVES) do
+    local path = paths[leaf.key]
+    if path then byPath[path] = leaf.key else omit[leaf.key] = true end
+    if leaf.key ~= "fontFromSkin" then keys[leaf.key] = path end
+    labels[leaf.key], tooltips[leaf.key] = override(L, leaf.label), override(L, leaf.tip)
+  end
+  local D = lib.DEFAULTS
+  local rows = O.FontGroup({ prefix = "", keys = keys, omit = omit, labels = labels, tooltips = tooltips,
+    page = opts.page, group = opts.group, subgroup = subgroup, fromSkin = true, flagsFromSkin = true,
+    defaults = { font = D.font, fontSize = D.fontSize, fontColor = colorDefault(opts, D.fontColor),
+      fontShadow = D.fontShadow } })
+  local out = {}
+  for _, row in ipairs(type(rows) == "table" and rows or {}) do
+    row.key = byPath[row.path]
+    if row.key then out[#out + 1] = row end
+  end
+  return out
+end
+
+--- The block's extras, after the Font rows: Text position, Show the label, Distance units.
+local EXTRA_ROWS = {
+  { key = "textPosition", make = function(L)
+      return { type = "string", label = word(L, "TEXT_POSITION"), tooltip = word(L, "TEXT_POSITION_TIP"),
+        values = lib.TextPositionValues(L), startsLine = true }
+    end },
+  { key = "showLabel", make = function(L)
+      return { type = "bool", label = word(L, "SHOW_LABEL"), tooltip = word(L, "SHOW_LABEL_TIP") }
+    end },
+  { key = "distanceUnits", make = function(L)
+      return { type = "string", label = word(L, "UNITS"), tooltip = word(L, "UNITS_TIP"),
+        values = lib.DistanceUnitsValues(L) }
+    end },
+}
+
+--- The host's paths with the companion's filled in (the font path plus "FromSkin").
+local function withCompanion(paths)
+  local out = {}
+  for k, v in pairs(paths) do if type(v) == "string" and v ~= "" then out[k] = v end end
+  out.fontFromSkin = lib.__pathOf(paths, "fontFromSkin")
+  return out
+end
+
+--- The Text block: the Font rows (composed, or built here), then the extras, on `subgroup`.
+local function textRows(opts, L, paths, subgroup)
+  local O = opts.options
+  local font
+  if type(O) == "table" and type(O.FontGroup) == "function" then
+    font = composedFontRows(O, opts, L, paths, subgroup)
+  else
+    font = ownFontRows(opts, L, paths)
+  end
+  for _, spec in ipairs(EXTRA_ROWS) do
+    if paths[spec.key] then
+      local row = spec.make(L)
+      row.key, row.path, row.default = spec.key, paths[spec.key], lib.DEFAULTS[spec.key]
+      font[#font + 1] = row
+    end
+  end
+  return font
+end
+
+--- Stamp the host's placement and the change route on `row`.
+local function place(opts, row, subgroup)
+  row.page, row.group, row.subgroup = opts.page, opts.group, subgroup
+  row.onChange = onChangeFor(opts, row.key)
+  return row
+end
+
+--- The arrow's settings rows, for the host's schema. `opts.paths` names the host's path for each
+--- setting (`style`, `useSkinColors`, `farColor`, `nearColor`, `scale`; from minor 2 the Text
+--- block's `font`, `fontSize`, `fontColor`, `useClassColorFont`, `fontFlags`, `fontShadow`,
+--- `textPosition`, `showLabel`, `distanceUnits`; "Use the skin's font" sits at the font path plus
+--- "FromSkin"); a setting with no path has no row. `opts.page`, `opts.group` and `opts.subgroup`
+--- are copied onto every row (`opts.textSubgroup` for the Text block's, minor 2); `opts.L`
+--- overrides the words; `opts.encodeColor(r, g, b, a)` shapes the color rows' defaults the way the
+--- host stores colors (`{ r, g, b, a }` without it); `opts.options` (an Options instance, minor 2)
+--- composes the Font rows; `opts.arrow` (an instance) is configured on every change, then
+--- `opts.onChange(key, value)` is called. Answers a fresh list, and (minor 2) a table of
+--- `afterSubgroup` hooks keyed by subgroup for RenderRows (empty when there are none).
+function lib.SettingsRows(opts)
+  opts = type(opts) == "table" and opts or {}
+  local paths = withCompanion(type(opts.paths) == "table" and opts.paths or {})
+  local L, out = opts.L, {}
+  for _, spec in ipairs(ROWS) do
+    local path = paths[spec.key]
+    if path then
+      local row = spec.make(opts, L)
+      row.path, row.key = path, spec.key
+      if spec.color and paths.useSkinColors then row.disabledIf = paths.useSkinColors end
+      out[#out + 1] = place(opts, row, opts.subgroup)
+    end
+  end
+  local textSub = opts.textSubgroup or opts.subgroup
+  for _, row in ipairs(textRows(opts, L, paths, textSub)) do out[#out + 1] = place(opts, row, textSub) end
+  return out, {}
 end
 
 --- The same rows from an instance: `opts.arrow` is this one.

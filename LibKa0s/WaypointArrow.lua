@@ -16,7 +16,7 @@
 -- `parent`, `strata`, `skin` (a registered skin owner: the skin's colors and the text's role),
 -- `point` (the saved position), `onMoved(point)` (a drag ended: persist the point), `canDrag()`,
 -- `onClick(frame, button)`, `onEnter(frame)`, `onLeave(frame)`, `onArrive(target)`, `arrive`,
--- `near`, `far`, `format(yards)` and `debug(tag, msg)`. The instance owns no SavedVariables: the
+-- `near`, `far`, `format(yards, units)`, `strings` and `debug(tag, msg)`. The instance owns no SavedVariables: the
 -- host keeps its settings at its own paths (WaypointArrowSettings.lua's rows) and hands them over
 -- with `Configure`. docs/api/WaypointArrow/version-1.1-docs.md is the full contract.
 --
@@ -98,6 +98,18 @@ lib.GROUND = {
 -- ── the settings ─────────────────────────────────────────────────────────────────────────────
 
 lib.SCALE_MIN, lib.SCALE_MAX = 0.5, 2
+
+-- The distance text (minor 2, L2): the canonical Font block's six leaves and its "Use the skin's
+-- font" companion (OptionsCompose's FontGroup with `fromSkin` and `flagsFromSkin`), where the text
+-- sits, a second line with the target's label, and the distance's units.
+lib.TEXT_POSITIONS = { "BELOW", "ABOVE", "LEFT", "RIGHT", "HIDDEN" }
+lib.DISTANCE_UNITS = { "yards", "compact" }
+lib.FLAGS_FROM_SKIN = "@skin"       -- the Skin major's FROM_SKIN: the skin's HUD outline
+lib.FONT_FLAGS = { "@skin", "", "OUTLINE", "THICKOUTLINE", "MONOCHROME", "OUTLINE, MONOCHROME" }
+lib.FONT_DEFAULT = "Ka0s Prototype" -- FontGroup's own default face (Ka0s Default's pick)
+lib.FONT_SIZE_MIN, lib.FONT_SIZE_MAX = 6, 32
+lib.COMPACT_FROM = 1000             -- yards: from here "compact" reads thousands ("4.2k yd")
+
 --- The settings a host seeds its own paths with. Colors are { r, g, b, a }; a keyed { r =, g =,
 --- b = } is read as well. The far color is Ka0s Default's `text.accent`, the near its `sem.good`.
 lib.DEFAULTS = {
@@ -106,8 +118,13 @@ lib.DEFAULTS = {
   farColor = { 1, 0.82, 0, 1 },
   nearColor = { 0.35, 0.80, 0.45, 1 },
   scale = 1,
+  font = lib.FONT_DEFAULT, fontFromSkin = true, fontSize = 12, fontColor = { 1, 1, 1, 1 },
+  useClassColorFont = false, fontFlags = lib.FLAGS_FROM_SKIN, fontShadow = true,
+  textPosition = "BELOW", showLabel = false, distanceUnits = "yards",
 }
-lib.SETTINGS = { "style", "useSkinColors", "farColor", "nearColor", "scale" }
+lib.SETTINGS = { "style", "useSkinColors", "farColor", "nearColor", "scale",
+  "font", "fontFromSkin", "fontSize", "fontColor", "useClassColorFont", "fontFlags", "fontShadow",
+  "textPosition", "showLabel", "distanceUnits" }
 lib.SKIN_FAR, lib.SKIN_NEAR = "text.accent", "sem.good"   -- the skin's tokens "Use the skin's colors" reads
 
 -- ── the measures ─────────────────────────────────────────────────────────────────────────────
@@ -117,10 +134,10 @@ lib.THROTTLE = 0.03                          -- seconds between two measures whi
 lib.SAMPLE_YARDS, lib.SAMPLE_ROTATION = 240, math.rad(35)   -- the sample: 35 degrees to the left
 lib.STRATA = "MEDIUM"
 lib.DEFAULT_POINT = { point = "CENTER", relPoint = "CENTER", x = 0, y = 200 }
-lib.STRINGS = { DISTANCE = "%d yd", SAMPLE = "Waypoint" }
+lib.STRINGS = { DISTANCE = "%d yd", DISTANCE_COMPACT = "%.1fk yd", SAMPLE = "Waypoint" }
 
 local TAG = "ARROW"
-local DIM = 0.6                 -- the label's alpha with no distance and no skin
+local DIM = 0.6                 -- the label's alpha while no distance shows
 
 -- ── small readers ────────────────────────────────────────────────────────────────────────────
 
@@ -143,12 +160,26 @@ local function rgbOf(c)
   return r, g, b
 end
 
+local function isBool(v) return type(v) == "boolean" end
+local function isColor(v) return rgbOf(v) ~= nil end
+local function oneOf(list) return function(v) return inList(list, v) end end
+
 local VALID = {
   style = function(v) return LOOK[v] ~= nil end,
-  useSkinColors = function(v) return type(v) == "boolean" end,
-  farColor = function(v) return rgbOf(v) ~= nil end,
-  nearColor = function(v) return rgbOf(v) ~= nil end,
+  useSkinColors = isBool,
+  farColor = isColor,
+  nearColor = isColor,
   scale = function(v) return plainNumber(v) and v >= lib.SCALE_MIN and v <= lib.SCALE_MAX end,
+  font = function(v) return type(v) == "string" and v ~= "" end,
+  fontFromSkin = isBool,
+  fontSize = function(v) return plainNumber(v) and v >= lib.FONT_SIZE_MIN and v <= lib.FONT_SIZE_MAX end,
+  fontColor = isColor,
+  useClassColorFont = isBool,
+  fontFlags = oneOf(lib.FONT_FLAGS),
+  fontShadow = isBool,
+  textPosition = oneOf(lib.TEXT_POSITIONS),
+  showLabel = isBool,
+  distanceUnits = oneOf(lib.DISTANCE_UNITS),
 }
 
 local function resolve(major) return LibStub and LibStub(major, true) end
@@ -211,6 +242,21 @@ function lib.GroundTexCoord(k)
   local col, row = k % G.cols, math.floor(k / G.cols)
   return col * G.cellW / G.sheet, (col + 1) * G.cellW / G.sheet,
     row * G.cellH / G.sheet, (row + 1) * G.cellH / G.sheet
+end
+
+--- A distance as the text shows it (minor 2): `units` "yards" (the default) is `DISTANCE` of the
+--- rounded yards; "compact" is the same below `COMPACT_FROM` and `DISTANCE_COMPACT` of the
+--- thousands from there ("4.2k yd"). `strings` (optional) overrides `STRINGS` by key, read with
+--- rawget. nil for a distance that is not a number.
+function lib.FormatDistance(yards, units, strings)
+  if not plainNumber(yards) then return nil end
+  local function word(key)
+    local v = type(strings) == "table" and rawget(strings, key)
+    return type(v) == "string" and v or lib.STRINGS[key]
+  end
+  local n = math.floor(yards + 0.5)
+  if units == "compact" and n >= lib.COMPACT_FROM then return word("DISTANCE_COMPACT"):format(n / 1000) end
+  return word("DISTANCE"):format(n)
 end
 
 -- ── the client reads ─────────────────────────────────────────────────────────────────────────
@@ -395,19 +441,123 @@ local function build(S)
   S.box = box
   S.shadow, S.body, S.overlay = texture(box, 0), texture(box, 1), texture(box, 2)
   S.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  S.textRole = nil
   return f
 end
 
---- The frame (its hit rect), the art box in it and the text beside the box, in art units.
+-- Where the text sits (minor 2): its point, the art box's point, the gap's direction (x, y) and
+-- the text's justification. HIDDEN has no row: the text hides.
+local TEXT_ANCHOR = {
+  BELOW = { "TOP", "BOTTOM", 0, -1, "CENTER" },
+  ABOVE = { "BOTTOM", "TOP", 0, 1, "CENTER" },
+  LEFT  = { "RIGHT", "LEFT", -1, 0, "RIGHT" },
+  RIGHT = { "LEFT", "RIGHT", 1, 0, "LEFT" },
+}
+
+--- A measured string size, or nil while the client has not laid it out (0, or no number).
+local function measured(v) return plainNumber(v) and v > 0 and v or nil end
+
+--- The hit rect: the frame, grown on the text's side past the pad by what the text takes, so the
+--- text drags and clicks with the arrow. Measured from the string when the client has laid it out,
+--- else `TEXT_ROOM` under or over the box and nothing beside it.
+local function hitRect(S)
+  local a, k = S.textAnchor, unitPx()
+  if not a then return S.frame:SetHitRectInsets(0, 0, 0, 0) end
+  local gap, pad = lib.TEXT_GAP * k, lib.HIT_PAD * k
+  if a[3] == 0 then
+    local h = measured(S.text:GetStringHeight()) or (lib.TEXT_ROOM - lib.TEXT_GAP) * k
+    local grow = -math.max(0, gap + h - pad)
+    return S.frame:SetHitRectInsets(0, 0, a[4] > 0 and grow or 0, a[4] < 0 and grow or 0)
+  end
+  local grow = -math.max(0, gap + (measured(S.text:GetStringWidth()) or 0) - pad)
+  S.frame:SetHitRectInsets(a[3] < 0 and grow or 0, a[3] > 0 and grow or 0, 0, 0)
+end
+
+--- The frame, the art box at its center with `HIT_PAD` round it, and the text beside the box on
+--- the `textPosition` side, in art units. The frame's point is the art's center, so moving the
+--- text never moves the arrow.
 local function layout(S)
-  local k, f, box = unitPx(), S.frame, S.box
-  f:SetSize(lib.ART + 2 * lib.HIT_PAD * k, lib.ART + lib.TEXT_ROOM * k)
+  local k, f, box, text = unitPx(), S.frame, S.box, S.text
+  local side = lib.ART + 2 * lib.HIT_PAD * k
+  f:SetSize(side, side)
   box:SetSize(lib.ART, lib.ART)
   box:ClearAllPoints()
-  box:SetPoint("TOP", f, "TOP", 0, 0)
-  S.text:ClearAllPoints()
-  S.text:SetPoint("TOP", box, "BOTTOM", 0, -lib.TEXT_GAP * k)
+  box:SetPoint("CENTER", f, "CENTER", 0, 0)
+  local a = TEXT_ANCHOR[setting(S, "textPosition")]
+  S.textAnchor, S.shownText = a, nil
+  text:ClearAllPoints()
+  if a then
+    local gap = lib.TEXT_GAP * k
+    text:SetPoint(a[1], box, a[2], a[3] * gap, a[4] * gap)
+    text:SetJustifyH(a[5])
+    text:Show()
+  else
+    text:Hide()
+  end
+  hitRect(S)
+end
+
+-- ── the text's font (minor 2) ────────────────────────────────────────────────────────────────
+
+local function skinFacade(S)
+  local Skin, owner = resolve("LibKa0s-Skin-1.0"), S.d.skin
+  if not (Skin and type(owner) == "string" and type(Skin.For) == "function") then return nil end
+  local ok, facade = pcall(Skin.For, Skin, owner)
+  return ok and type(facade) == "table" and facade or nil
+end
+
+local function gameFace()
+  return type(STANDARD_TEXT_FONT) == "string" and STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
+end
+
+--- A face by name: LibSharedMedia's, else LibKa0s-Media-1.0's bundled file of that name, else nil.
+local function namedFont(S, name)
+  local LSM = resolve("LibSharedMedia-3.0")
+  local ok, path = false, nil
+  if LSM and type(LSM.Fetch) == "function" then ok, path = pcall(LSM.Fetch, LSM, "font", name, true) end
+  if ok and type(path) == "string" then return path end
+  local Media = resolve("LibKa0s-Media-1.0")
+  if not (Media and type(Media.Font) == "function" and type(S.d.addon) == "string") then return nil end
+  ok, path = pcall(Media.Font, S.d.addon, name, S.d.vendorPath)
+  return ok and type(path) == "string" and path or nil
+end
+
+--- The text's color as r, g, b, a: the player's class color while Use class color is on (and the
+--- client answers one), else the swatch.
+local function textColor(S)
+  if setting(S, "useClassColorFont") and type(core.ClassColor) == "function" then
+    local ok, r, g, b = pcall(core.ClassColor, "player")
+    if ok and plainNumber(r) and plainNumber(g) and plainNumber(b) then return r, g, b, 1 end
+  end
+  local c = setting(S, "fontColor")
+  local r, g, b = rgbOf(c)
+  local a = c[4] or c.a
+  return r, g, b, plainNumber(a) and a or 1
+end
+
+--- Face, size, flags and shadow on the text. With a skin owner, through its facade's `HudFont`
+--- (the skin's HUD face while Use the skin's font is on, its size scaled by `HudFontSize`, "@skin"
+--- flags through the skin's outline); without one, on the string, "@skin" reading "OUTLINE".
+--- The font on the string itself, with no skin: "@skin" reads "OUTLINE", the client's shadow.
+local function setOwnFont(fs, face, size, flags, shadow)
+  if flags == lib.FLAGS_FROM_SKIN then flags = "OUTLINE" end
+  if fs:SetFont(face or gameFace(), size, flags) == false then fs:SetFont(gameFace(), size, flags) end
+  fs:SetShadowColor(0, 0, 0, shadow and 1 or 0)
+  fs:SetShadowOffset(shadow and 1 or 0, shadow and -1 or 0)
+end
+
+local function applyFont(S)
+  local fs, facade = S.text, skinFacade(S)
+  local fromSkin = setting(S, "fontFromSkin")
+  local face = not fromSkin and (namedFont(S, setting(S, "font")) or gameFace()) or nil
+  local size, flags, shadow = setting(S, "fontSize"), setting(S, "fontFlags"), setting(S, "fontShadow")
+  if facade and type(facade.HudFont) == "function" then
+    if type(facade.HudFontSize) == "function" then size = facade.HudFontSize(size, fromSkin) end
+    facade.HudFont(fs, { face = face, size = size, flags = flags, shadow = shadow, shadowFromSkin = false })
+  else
+    setOwnFont(fs, face, size, flags, shadow)
+  end
+  S.textRGBA = { textColor(S) }
+  S.shownText = nil
 end
 
 --- Lay the current look onto the three textures: files, sizes, anchors, and the coords a turn or a
@@ -485,30 +635,35 @@ local function paintArt(S, rotation, yards)
   S.rotation, S.color = rotation, { r, g, b }
 end
 
---- The text's role, painted only when it changes (a skin records each call, and this runs every
---- tick): "body" with a distance, "muted" for the label alone.
-local function paintRole(S, role)
-  if S.textRole == role then return end
-  S.textRole = role
-  local Skin, owner = skinOwner(S)
-  local facade = Skin and type(Skin.For) == "function" and Skin:For(owner) or nil
-  if facade and type(facade.Text) == "function" then
-    facade.Text(S.text, role)
-    S.text:SetAlpha(1)
-  else
-    S.text:SetAlpha(role == "muted" and DIM or 1)
-  end
+--- The distance: the host's `format(yards, units)` when it answers a string, else FormatDistance
+--- in the configured units with the host's `strings`.
+local function formatYards(S, yards)
+  local units = setting(S, "distanceUnits")
+  local text = call(S, S.d.format, yards, units)
+  if type(text) == "string" then return text end
+  return lib.FormatDistance(yards, units, S.d.strings)
 end
 
-local function formatYards(S, yards)
-  local text = call(S, S.d.format, yards)
-  if type(text) == "string" then return text end
-  return lib.STRINGS.DISTANCE:format(math.floor(yards + 0.5))
+--- The text and whether it is dim: the distance (and the label on a second line while Show the
+--- label is on), or the label alone, dim, while no distance can be measured.
+local function textLine(S, yards, label)
+  local name = type(label) == "string" and label ~= "" and label or nil
+  if not yards then return name or "", true end
+  local dist = formatYards(S, yards)
+  if name and setting(S, "showLabel") then return dist .. "\n" .. name, false end
+  return dist, false
 end
 
 local function paintText(S, yards, label)
-  paintRole(S, yards and "body" or "muted")
-  S.text:SetText(yards and formatYards(S, yards) or (type(label) == "string" and label or ""))
+  if not S.textAnchor then return end
+  local text, dim = textLine(S, yards, label)
+  local c = S.textRGBA or { 1, 1, 1, 1 }
+  S.text:SetTextColor(c[1], c[2], c[3], c[4])
+  S.text:SetAlpha(dim and DIM or 1)
+  if text == S.shownText then return end
+  S.shownText = text
+  S.text:SetText(text)
+  hitRect(S)
 end
 
 -- ── the measure ──────────────────────────────────────────────────────────────────────────────
@@ -583,6 +738,7 @@ local function present(S)
   if S.suspended then return end
   build(S)
   layout(S)
+  applyFont(S)
   applyStyle(S)
   applyScale(S)
   applyPoint(S)
@@ -654,7 +810,8 @@ end
 function METHODS:ShowSample(label)
   local S = state(self)
   if S.suspended then return false end
-  S.sample = { label = type(label) == "string" and label or lib.STRINGS.SAMPLE }
+  local own = type(S.d.strings) == "table" and rawget(S.d.strings, "SAMPLE")
+  S.sample = { label = type(label) == "string" and label or type(own) == "string" and own or lib.STRINGS.SAMPLE }
   present(S)
   return true
 end
@@ -670,8 +827,8 @@ end
 
 function METHODS:SampleShown() return state(self).sample ~= nil end
 
---- Merge settings in: any of `style`, `useSkinColors`, `farColor`, `nearColor`, `scale`. A value
---- that is not valid reads as the default (never stored). A shown arrow takes them at once.
+--- Merge settings in: any key of `SETTINGS`. A value that is not valid reads as the default (never
+--- stored). A shown arrow takes them at once.
 function METHODS:Configure(t)
   local S = state(self)
   if type(t) ~= "table" then return end
@@ -681,13 +838,27 @@ function METHODS:Configure(t)
   self:Apply()
 end
 
+--- The host's path for `key` in `paths` (minor 2): its own entry, but for `fontFromSkin` the font
+--- path plus "FromSkin" whenever a font path is named, where the Font block's companion lives
+--- (OptionsCompose's rule, which Skin's ResetToSkin reads too).
+local function pathOf(paths, key)
+  if key == "fontFromSkin" and type(paths.font) == "string" and paths.font ~= "" then
+    return paths.font .. "FromSkin"
+  end
+  local p = paths[key]
+  if type(p) == "string" and p ~= "" then return p end
+  return nil
+end
+lib.__pathOf = pathOf
+
 --- Configure from the host's own settings: `get(path)` for each key `paths` names
 --- (`{ style = "waypoints.arrowStyle", ... }`); a key with no path is left as it is.
 function METHODS:ConfigureFrom(get, paths)
   if type(get) ~= "function" or type(paths) ~= "table" then return end
   local t = {}
   for _, key in ipairs(lib.SETTINGS) do
-    if type(paths[key]) == "string" then t[key] = get(paths[key]) end
+    local path = pathOf(paths, key)
+    if path then t[key] = get(path) end
   end
   self:Configure(t)
 end
@@ -713,6 +884,7 @@ function METHODS:Apply()
   local S = state(self)
   if not S.frame then return end
   layout(S)
+  applyFont(S)
   applyStyle(S)
   applyScale(S)
   if S.frame:IsShown() then update(S) end

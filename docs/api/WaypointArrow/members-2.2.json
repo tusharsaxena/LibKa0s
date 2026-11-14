@@ -9,12 +9,21 @@
   "members": [
     { "name": "ARRIVE", "kind": "number" },
     { "name": "ART", "kind": "number" },
+    { "name": "COMPACT_FROM", "kind": "number" },
     { "name": "DEFAULTS", "kind": "table" },
     { "name": "DEFAULT_POINT", "kind": "table" },
     { "name": "DEFAULT_STYLE", "kind": "string" },
+    { "name": "DISTANCE_UNITS", "kind": "table" },
     { "name": "Distance", "kind": "function" },
+    { "name": "DistanceUnitsValues", "kind": "function" },
     { "name": "FAR", "kind": "number" },
+    { "name": "FLAGS_FROM_SKIN", "kind": "string" },
+    { "name": "FONT_DEFAULT", "kind": "string" },
+    { "name": "FONT_FLAGS", "kind": "table" },
+    { "name": "FONT_SIZE_MAX", "kind": "number" },
+    { "name": "FONT_SIZE_MIN", "kind": "number" },
     { "name": "Fade", "kind": "function" },
+    { "name": "FormatDistance", "kind": "function" },
     { "name": "GROUND", "kind": "table" },
     { "name": "GroundFrame", "kind": "function" },
     { "name": "GroundTexCoord", "kind": "function" },
@@ -45,8 +54,10 @@
     { "name": "SettingsRows", "kind": "function" },
     { "name": "StyleValues", "kind": "function" },
     { "name": "TEXT_GAP", "kind": "number" },
+    { "name": "TEXT_POSITIONS", "kind": "table" },
     { "name": "TEXT_ROOM", "kind": "number" },
     { "name": "THROTTLE", "kind": "number" },
+    { "name": "TextPositionValues", "kind": "function" },
     { "name": "UNITS", "kind": "number" }
   ]
 }

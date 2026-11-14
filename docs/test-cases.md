@@ -816,7 +816,7 @@ Total.
 - arrow: SetPosition takes either shape; ResetPosition tells the host to forget
 - arrow: a right click reaches onClick
 
-### test_waypoint_arrow_settings.lua (10)
+### test_waypoint_arrow_settings.lua (14)
 
 - arrow settings: five rows in order, each on the host's path, page and group
 - arrow settings: the defaults are the arrow's: Raised, the skin's colors on, scale 1
@@ -828,6 +828,30 @@ Total.
 - arrow settings: a change configures the arrow, then tells the host
 - arrow settings: the rows pass a Schema instance's shape check, and a write reaches the arrow
 - arrow settings: ConfigureFrom reads the host's paths
+- arrow settings: the Text block is the Font block's six rows, the companion, then three extras
+- arrow settings: given an Options instance the Font rows are O.FontGroup's own
+- arrow settings: a Text row's change configures the arrow
+- arrow settings: every row, the Text block's too, passes a Schema instance's shape check
+
+### test_waypoint_arrow_text.lua (17)
+
+- arrow text: the defaults follow the skin, below the arrow, in yards, with no label line
+- arrow text: a value that is not valid reads as the default
+- arrow text: FormatDistance in yards and compact, with the host's strings
+- arrow text: compact units reach the text, and d.strings words it
+- arrow text: d.format gets the yards and the units, and its string wins
+- arrow text: Show the label adds the target's label on a second line
+- arrow text: with no distance the label shows alone and dim, the label line or not
+- arrow text: the sample previews the label line with its own label
+- arrow text: each position anchors the text to its side of the art box
+- arrow text: the hit rect grows toward the text's side
+- arrow text: Hidden hides the text and the art still points
+- arrow text: without a skin, Use the skin's font draws the game's face, outlined, shadowed
+- arrow text: the player's font, size, flags and shadow
+- arrow text: the color is the swatch's, or the player's class color
+- arrow text: with a skin the font goes through its HudFont, the skin's face while it follows
+- arrow text: the text never takes the skin's Text role, so a skin switch cannot overwrite the font
+- arrow text: ConfigureFrom reads the companion at the font path plus FromSkin
 
 ### test_charts.lua (15)
 
@@ -5227,7 +5251,8 @@ Total.
 | test_callout_layout.lua | 16 |
 | test_callout_glow.lua | 16 |
 | test_waypoint_arrow.lua | 37 |
-| test_waypoint_arrow_settings.lua | 10 |
+| test_waypoint_arrow_settings.lua | 14 |
+| test_waypoint_arrow_text.lua | 17 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5405,4 +5430,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4579** |
+| **Total** | **4600** |
