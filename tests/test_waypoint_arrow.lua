@@ -29,12 +29,12 @@ end
 
 -- ── load and construction ────────────────────────────────────────────────────────────────────
 
-test("arrow: the major loads at minor 1 and reports its two files", function()
+test("arrow: the major loads at minor 2 and reports its two files", function()
   local _, Arrow = F.env()
   assertEqual(Arrow.MAJOR, MAJOR)
-  assertEqual(Arrow.MINOR, 1)
-  assertEqual(Arrow.MODULES.WaypointArrow, 1)
-  assertEqual(Arrow.MODULES.WaypointArrowSettings, 1)
+  assertEqual(Arrow.MINOR, 2)
+  assertEqual(Arrow.MODULES.WaypointArrow, 2)
+  assertEqual(Arrow.MODULES.WaypointArrowSettings, 2)
   assertEqual(T.arrow, T.mocks.LibStub(MAJOR), "the runner's whole-payload load carries it too")
 end)
 
@@ -200,8 +200,47 @@ test("arrow: the ground look picks a sheet frame instead of turning", function()
   assertNear(ul_x, (18 % 8) * 64 / 512, "frame 18's column")
   assertNear(ul_y, math.floor(18 / 8) * 44 / 512, "frame 18's row")
   local w, h = body:GetSize()
-  assertNear(w, 50, "a cell is 50 units wide")
-  assertNear(h, 34.375, "and 34.375 tall")
+  assertNear(w, 50 * 1.25, "a cell is 50 units wide, at 1.25 px a unit")
+  assertNear(h, 34.375 * 1.25, "and 34.375 tall")
+end)
+
+-- ── the size (minor 2, round 9 L1) ───────────────────────────────────────────────────────────
+
+test("arrow: scale 1 draws the 48-unit art box at 60 px, 1.25x minor 1's 48", function()
+  local a, _, Arrow = newArrow()
+  pointAhead(a, 100, 0)
+  local f, box, shadow, body, overlay = parts(a)
+  assertEqual(Arrow.ART, 60)
+  assertEqual(Arrow.UNITS, 48)
+  local bw, bh = box:GetSize()
+  assertEqual(bw, 60, "the box")
+  assertEqual(bh, 60)
+  assertEqual(select(1, body:GetSize()), 60, "the body fills it")
+  assertEqual(select(1, overlay:GetSize()), 60, "and the overlay")
+  assertNear(select(1, shadow:GetSize()), 80, "the 64-unit shadow canvas")
+  local p = { shadow:GetPoint(1) }
+  assertNear(p[4], 1.875, "the shadow's offset right, 1.5 units")
+  assertNear(p[5], -3.75, "and down, 3 units")
+  local fw, fh = f:GetSize()
+  assertNear(fw, 60 + 2 * 8 * 1.25, "the frame: the box and 8 units each side")
+  assertNear(fh, 60 + 2 * 8 * 1.25, "a square, centered on the art")
+  local ins = rawget(f, "__insets")
+  assertEqual(table.concat({ ins[1], ins[2], ins[3] }, ","), "0,0,0", "the hit rect grows only under")
+  assertNear(ins[4], -(2.5 + 20 * 1.25 - 10), "by the text's 22 units, past the pad")
+  local p2 = { box:GetPoint(1) }
+  assertEqual(p2[1], "CENTER", "the art box sits at the frame's center")
+  assertEqual(f:GetScale(), 1, "scale 1 is the new 1.0")
+end)
+
+test("arrow: the text sits the gap's 2 units under the art box", function()
+  local a = newArrow()
+  pointAhead(a, 100, 0)
+  local _, box, _, _, _, text = parts(a)
+  local p = { text:GetPoint(1) }
+  assertEqual(p[1], "TOP")
+  assertEqual(p[2], box)
+  assertEqual(p[3], "BOTTOM")
+  assertNear(p[5], -2.5, "2 units at 1.25 px")
 end)
 
 test("arrow: leaving the ground look gives the textures back their full coords", function()

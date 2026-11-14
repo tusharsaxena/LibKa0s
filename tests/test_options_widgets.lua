@@ -157,6 +157,64 @@ test("widgets: slider snapping is relative to the row's min, not to zero", funct
   assertEqual(rec.store.barHeight, 35, "35, not the 40 a zero-relative rounding would give")
 end)
 
+--- Render `path` with the Slider wearing a box shaped like AceGUI's: an EditBox frame whose `obj`
+--- is the widget, holding text, with AceGUI's Enter handler (a number commits, anything else is
+--- ignored) and its SetValue, which rewrites the box (minor 46).
+local function renderWithBox(path, overrides)
+  local O, rec, ctx = bench(overrides)
+  local create = O.AceGUI.Create
+  O.AceGUI.Create = function(self, wtype)
+    local w = create(self, wtype)
+    if wtype ~= "Slider" then return w end
+    local eb = T.mocks.CreateFrame("EditBox")
+    rawset(eb, "SetText", function(box, v) rawset(box, "__text", tostring(v)) end)
+    rawset(eb, "GetText", function(box) return rawget(box, "__text") end)
+    eb.obj, w.editbox = w, eb
+    function w:SetValue(v) self.value = v; eb:SetText(math.floor(v * 100 + 0.5) / 100) end
+    eb:SetScript("OnEnterPressed", function(box)
+      local v = tonumber(box:GetText())
+      if v then w:SetValue(v); w:__fire("OnMouseUp", v) end
+    end)
+    return w
+  end
+  local ok, s = pcall(O.RenderField, ctx, rec.byPath[path], O.AceGUI:Create("SimpleGroup"), 0.5)
+  O.AceGUI.Create = create
+  assert(ok, s)
+  return s, rec, O
+end
+
+test("widgets: a slider's box puts junk back to the value on Enter and on focus loss", function()
+  local s, rec = renderWithBox("barWidth")
+  local eb = s.editbox
+  assertEqual(eb:GetText(), "200", "the box shows the value")
+  eb:SetText("1.5awd")
+  eb:__fire("OnEnterPressed")
+  assertEqual(eb:GetText(), "200", "Enter on junk: the value again")
+  assertEqual(rec.store.barWidth, 200, "nothing stored")
+  eb:SetText("250")
+  eb:__fire("OnEnterPressed")
+  assertEqual(rec.store.barWidth, 250, "a number's Enter still commits")
+  assertEqual(eb:GetText(), "250")
+  eb:SetText("31x")
+  eb:__fire("OnEditFocusLost")
+  assertEqual(eb:GetText(), "250", "focus loss: the stored value, not the junk")
+  eb:SetText("300")
+  eb:__fire("OnEditFocusLost")
+  assertEqual(eb:GetText(), "250", "a number typed and never entered is not shown as if stored")
+  assertEqual(rec.store.barWidth, 250)
+end)
+
+test("widgets: the box hook is set once per pooled box and acts only for the library's widget", function()
+  local s = renderWithBox("barWidth")
+  local eb = s.editbox
+  local before = eb:GetScript("OnEnterPressed")
+  for k in pairs(s.userdata) do s.userdata[k] = nil end   -- AceGUI's Release clears it; another addon acquires the box
+  eb:SetText("junk")
+  eb:__fire("OnEditFocusLost")
+  assertEqual(eb:GetText(), "junk", "a widget this library did not make keeps AceGUI's behavior")
+  assertTrue(before ~= nil, "hooked")
+end)
+
 -- ── dropdown ───────────────────────────────────────────────────────────────────────────────
 
 test("widgets: a string row with values renders a Dropdown, sorted alphabetically by default",

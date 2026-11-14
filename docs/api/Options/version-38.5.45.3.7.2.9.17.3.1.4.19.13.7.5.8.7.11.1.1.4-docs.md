@@ -11,9 +11,9 @@
 | Files and minors | `Options.lua` **38** · `OptionsRegistry.lua` **5** · `OptionsWidgets.lua` **45** · `OptionsFlow.lua` **3** · `OptionsIds.lua` **7** · `OptionsIdSuggest.lua` **2** · `OptionsIdList.lua` **9** · `OptionsTabs.lua` **17** · `OptionsTabbed.lua` **3** · `OptionsHeader.lua` **1** · `OptionsCombat.lua` **4** · `OptionsCompose.lua` **19** · `OptionsScroll.lua` **13** · `OptionsNav.lua` **7** · `OptionsDrawer.lua` **5** · `OptionsKeybinds.lua` **8** · `OptionsAppearance.lua` **7** · `OptionsSkinPicker.lua` **11** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **4** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsHeader>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4` |
 | Shipped in | v1.100.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 38.5.45.3.7.2.9.17.3.1.4.19.13.6.5.8.7.11.1.1.4](./version-38.5.45.3.7.2.9.17.3.1.4.19.13.6.5.8.7.11.1.1.4-docs.md) (v1.93.0) — the same surface without `O.SideTabs`. |
-| Superseded by | — |
+| Superseded by | [version 38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4](./version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `OptionsWidgets.lua` additionally requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 14.14.3.3. `OptionsRegistry.lua`, `OptionsIds.lua`, `OptionsIdList.lua` and `OptionsCombat.lua` declare no floor of their own, and neither do `OptionsDrawer.lua`, `OptionsKeybinds.lua` and `OptionsAppearance.lua` (which reads `LibKa0s-Skin-1.0` at call time, not as a floor). `O.IdList` uses `LibKa0s-Item-1.0`'s `LoadItem` when it is present, looked up at call time; it is not a floor, and without it an uncached item stays unnamed. `O.IdInput`'s pre-warm and name lookup use it too, and fall back to `C_Item.RequestLoadItemDataByID` with `C_Timer.After` without it; `OptionsNav.lua` requires `LibKa0s-Pool-1.0` minor ≥ 1 (`NEEDS_POOL = 1`), since 25.31.5.7.4.1. |
 | Confirm in-game | `LibStub("LibKa0s-Options-1.0").MODULES` → `{ Options = 38, OptionsRegistry = 5, OptionsWidgets = 45, OptionsFlow = 3, OptionsIds = 7, OptionsIdSuggest = 2, OptionsIdList = 9, OptionsTabs = 17, OptionsTabbed = 3, OptionsHeader = 1, OptionsCombat = 4, OptionsCompose = 19, OptionsScroll = 13, OptionsNav = 7, OptionsDrawer = 5, OptionsKeybinds = 8, OptionsAppearance = 7, OptionsSkinPicker = 11, OptionsSkinPickerRows = 1, OptionsSwitch = 1, OptionsMedia = 4 }` |
 
@@ -4351,3 +4351,7 @@ it got.
 - `lib.SKIN_PICKER_STRINGS`: no consumer as of v1.83.0, kept because it holds the default strings a host overrides through `spec.strings`, never by name.
 - `AppearanceRows`: no consumer as of v1.83.0, kept because `AppearanceTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
 - `KeybindRows`: no consumer as of v1.83.0, kept because `KeybindingsTab` calls it; a host takes the tab whole, and the hits are degradation stubs.
+
+## Moving to version 38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4
+
+The same surface; a number row's slider box puts text that is not a number back to the value (`OptionsWidgets.lua` 46). See [version 38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4](./version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md). Re-vendor the whole folder; a host owes nothing.
