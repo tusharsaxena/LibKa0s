@@ -87,7 +87,7 @@ if not lib or type(lib.__methods) ~= "table" or type(lib.__validFor) ~= "functio
 -- `opts.texts = false`, and the Play list's "Countdown 10 to 1"; and (plan row L15) the Glow rows in
 -- Look, AuraMaster's text glow (on/off, Glow color, Use class color, Use the skin's color, Intensity,
 -- Thickness, X and Y offset) in place of the Off / Soft / Strong choice. Needs the shell at minor 3.
--- Minor 5 (plan row L17, v1.101.0): the one tab's layout (`layout = "side"`, both builds) draws no
+-- Minor 5 (plan row L17, v1.102.0): the one tab's layout (`layout = "side"`, both builds) draws no
 -- sample line; its Preview heading, Test countdown and Play, Text to play, Unlock to move and Reset
 -- position stay. The three-tab build keeps its line. `FONT_FACES` leads with the new default face,
 -- Oxanium SemiBold (Callout minor 4), then Oxanium Bold. Needs the shell at minor 3, as minor 4 did.

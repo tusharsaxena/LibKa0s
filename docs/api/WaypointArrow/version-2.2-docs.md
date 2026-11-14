@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-WaypointArrow-1.0` |
 | Files and minors | `WaypointArrow.lua` minor **2** · `WaypointArrowSettings.lua` minor **2** (paired on `WaypointArrow.lua`'s minor) |
-| Shipped in | v1.101.0 (unreleased) |
+| Shipped in | v1.101.0 |
 | Status | **Current** |
 | Supersedes | [version 1.1](./version-1.1-docs.md) (v1.99.0, v1.100.0) — the arrow at 48 px, with no text, position, lock or menu settings. |
 | Superseded by | — |

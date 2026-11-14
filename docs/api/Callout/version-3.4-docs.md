@@ -12,7 +12,7 @@
 | Shipped in | v1.100.0 |
 | Status | Superseded |
 | Supersedes | [version 2.3](./version-2.3-docs.md) (v1.98.0) — the same surface without the one tab (`SettingsTab`, `BuildSettings`' `layout = "side"`), `texts = false`, the Play list's countdown, the glow's settings (an Off / Soft / Strong choice there), the six voice packs added in v1.100.0 or the announcer as the default voice. This document was keyed 2.4 until `Callout.lua` moved to minor 3 for the glow (plan row L15), before either shipped |
-| Superseded by | [version 4.5](./version-4.5-docs.md) (v1.101.0) |
+| Superseded by | [version 4.5](./version-4.5-docs.md) (v1.102.0) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
 | Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row; from 4, for the side layout, `Section` and `SideTabs` (Options' OptionsNav minor 7), each presence-checked), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), from `Callout.lua` 3 the skin facade's `GlowColor` (Use the skin's color) and `LibKa0s-Core-1.0`'s `ClassColor` (Use class color, `RAID_CLASS_COLORS`), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 3, CalloutSettings = 4 }` |

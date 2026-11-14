@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-14, on `feat/2026-11-14-callout-defaults` (off `master` at the v1.100.0 merge, `1dd9680`): two changes the owner asked for to `LibKa0s-Callout-1.0` (plan row L17 of `docs/superpowers/plans/2026-11-13-callout.md`). The one tab's preview block loses its sample line, and the Look defaults become the owner's own in-game settings. Neither adds or removes a member or changes what a call answers, so this is not an API break, but **a host that never stored these values draws differently** after re-vendoring. Its one consumer, Ka0s Combat Trail, adopts the call-out on its unmerged branch `feat/2026-11-13-callout`.
 
-Versions in this release: `LibKa0s-Callout-1.0` key **4.5** (Callout minor 4, CalloutSettings minor 5); every other file at its v1.100.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises, and no payload file is added.
+Versions in this release: `LibKa0s-Callout-1.0` key **4.5** (Callout minor 4, CalloutSettings minor 5); every other file at its v1.101.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises, and no payload file is added.
 
 ### No sample line in the one tab (L17)
 
@@ -33,7 +33,7 @@ Versions in this release: `LibKa0s-Callout-1.0` key **4.5** (Callout minor 4, Ca
 
 ### The release (L17)
 
-- `docs/releasing.md`: repo semver and the provenance template at v1.101.0, and the v1.101.0 re-vendor note. `README.md`'s kit line at v1.101.0. `CLAUDE.md`'s register row: key 4.5 at v1.101.0, and its one-release trigger recorded as fired, with no second consumer named; the choice between the row and moving the module into Combat Trail is put to the owner, awaiting a ruling. The plan's ledger row L17.
+- `docs/releasing.md`: repo semver and the provenance template at v1.102.0, and the v1.102.0 re-vendor note. `README.md`'s kit line at v1.102.0. `CLAUDE.md`'s register row: key 4.5 at v1.102.0, and its one-release trigger recorded as fired, with no second consumer named; the choice between the row and moving the module into Combat Trail is put to the owner, awaiting a ruling. The plan's ledger row L17.
 
 ## v1.101.0 — 2026-11-14
 

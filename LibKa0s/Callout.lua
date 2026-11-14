@@ -70,7 +70,7 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- A stored "off" / "soft" / "strong" reads as the same look (`GLOW_LEGACY`, `MigrateGlow`), and
 -- Set("glow", choice) still takes one, written as those keys. Six more voice packs (plan row L16),
 -- the arena announcer the default `voice`.
--- Minor 4 (plan row L17, v1.101.0): new look defaults, the owner's own in-game settings: the face
+-- Minor 4 (plan row L17, v1.102.0): new look defaults, the owner's own in-game settings: the face
 -- Oxanium SemiBold (`FONT_DEFAULT`), a 1 px shadow up and to the right (`shadowX = 1`,
 -- `shadowY = 1`), and a black glow at full intensity, 1 px thick, 1 px right and 1 px down
 -- (`glowCustom`, `glowColor = { 0, 0, 0 }`, `glowIntensity = 1`, `glowThickness = 1`, `glowX = 1`,

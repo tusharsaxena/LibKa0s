@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Callout-1.0` |
 | Files and minors | `Callout.lua` minor **4** · `CalloutSettings.lua` minor **5** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2, minors 4 and 5 at 3) |
-| Shipped in | v1.101.0 |
+| Shipped in | v1.102.0 |
 | Status | **Current** |
 | Supersedes | [version 3.4](./version-3.4-docs.md) (v1.100.0) — the same surface, with the Look defaults before the owner's (Oxanium Bold, a 2 px shadow down and right, the glow at the old "soft" look in each word's kind color) and a sample line in the one tab's preview block |
 | Superseded by | — |
