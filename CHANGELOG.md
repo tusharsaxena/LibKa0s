@@ -25,6 +25,12 @@ Versions in this release: `LibKa0s-WaypointArrow-1.0` key **1.1** (WaypointArrow
 - Tests: the new `tests/test_waypoint_arrow.lua` (load, the rotation math, the fade, the ground frame and coords, each look's textures, the color with and without the skin's, measuring, secrets, arrival, the sample, suspend, scale, the drag) and `tests/test_waypoint_arrow_settings.lua` (the rows, their defaults and words, the toggle graying the colors, a Schema instance's shape check and a write reaching the arrow) on `tests/fixture_waypoint_arrow.lua`; `tests/test_debuglog_diagnostics.lua` re-pins `DebugLogDiagnostics 10`.
 - Documentation: `docs/api/WaypointArrow/version-1.1-docs.md` and its manifest, the DebugLog pair, `docs/api/README.md`, `docs/api/CONSUMERS.md` (Skill Master, the one consumer, pending its adoption), `CLAUDE.md`'s register (the one-consumer row, accepted by the owner 2026-11-14), `README.md` and `docs/releasing.md`.
 
+Release gate (`docs/automated-tests/20261114-111504/`): lint pass, 0/0 in 339 files;
+tests pass, 4533 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (WaypointArrow 1, WaypointArrowSettings 1 and DebugLogDiagnostics 10 only).
+
 ## v1.98.0 — 2026-11-14
 
 Opened 2026-11-14, on `feat/2026-11-13-callout-schema`: the Callout's settings on a Ka0s host's write route (plan row L11 of `docs/superpowers/plans/2026-11-13-callout.md`). Found while adopting the call-out in Ka0s Combat Trail: CalloutSettings' rows had no path, and their writes went from the instance straight into the host's `profile.callout`, around the host's `NS.SetByPath`. `architecture-§5` wants a schema row for every value a control chooses, every write through the host's one helper, and `/<slash> get|set|reset` reaching every setting. The owner chose a library fix, not a deviation row.
