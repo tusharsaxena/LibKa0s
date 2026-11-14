@@ -32,10 +32,12 @@
 -- ONE TAB (minor 4, the owner's redesign of 2026-11-14, plan row L13): `SettingsTab` answers a single
 -- host tab, "Callout", drawn by `BuildSettings(ctx, { options, layout = "side" })`: a "Preview"
 -- heading over the preview block, then the Options instance's side tabs (O.SideTabs), Look (the
--- face rows and the six colors) and Sound. The stock texts' words and mutes are not drawn: they are
--- the host's to set (the instance's Set and Show still take them), and `SchemaRows(prefix,
--- { texts = false })` leaves their rows out of the host's schema too. The documented shape for a
--- host on the route; `SettingsTabs` and the three-tab build stay as they were.
+-- face rows and the six colors) and Sound. The stock texts' words and mutes are not drawn, and
+-- `SchemaRows(prefix, { texts = false })` leaves their rows out of the host's schema too, so on the
+-- route the host's seam refuses the instance's Set("texts.<KEY>") and Set("muted.<KEY>") and nothing
+-- is stored. A host wanting its own words registers `SchemaRows(prefix)` without the option (the
+-- rows stay undrawn) or passes them per call through Show. The documented shape for a host on the
+-- route; `SettingsTabs` and the three-tab build stay as they were.
 --
 -- WITHOUT one, `parent` is a plain frame and the section is built of plain frames, one control per
 -- line: a check button for a toggle, a value between - and + buttons for a number, a button that

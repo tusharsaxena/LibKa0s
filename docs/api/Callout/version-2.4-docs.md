@@ -23,8 +23,12 @@ The owner's redesign of 2026-11-14, from Ka0s Combat Trail's three tabs (Call-ou
 sound, Call-out texts): **one** "Callout" tab, a **Preview** block at its top, then **side tabs**,
 Look and Sound, a list on the left and the selected tab's rows on the right. The Colors move to
 Look. The stock texts' words and mutes leave the section: the owner's ruling is that the words are
-the addon's to control, so a host sets them itself (the instance's `Set("texts.<KEY>", ...)`,
-`Set("muted.<KEY>", ...)` and `Show` with a custom text are unchanged). Text to play gains
+the addon's to control. The instance's API is unchanged, but on the write route a leaf write
+reaches storage only through a row the host registered: with `SchemaRows(prefix, { texts = false })`
+the host's seam refuses `Set("texts.<KEY>", ...)` and `Set("muted.<KEY>", ...)` (`NOT_FOUND`) and
+nothing is stored. A host that wants its own words registers `SchemaRows(prefix)` without
+`texts = false` (the rows stay undrawn, see [The one tab](#the-one-tab)), or passes them per call
+through `Show` with a custom text. Text to play gains
 "Countdown 10 to 1". `CalloutSettings.lua` moves to **minor 4**; `Callout.lua` does not move. Every
 change is additive: `SettingsTabs`, the three-tab build and `SchemaRows` with no `texts` option are
 as at 2.3. No lib-level member is removed; two constants are added (`members-2.4.json`).
@@ -322,9 +326,13 @@ plain build (no `opts.options`) draws the preview, then Look (its colors in it) 
 under its heading. The view adds `layout = "side"`, `side` (the selected tab's key) and `sideTabs`
 (the list's entry buttons), and `rows` is the selected tab's.
 
-On the host's route every row carries its path, as below. A host registering `SchemaRows(prefix)`
-without `texts = false` may still draw the one tab: the text and mute rows are then registered
-and reachable by `/<slash> set`, but not drawn.
+On the host's route every row carries its path, as below. With `texts = false` the stock texts'
+rows are not in the host's schema, so the instance's `Set("texts.<KEY>", ...)` and
+`Set("muted.<KEY>", ...)` are refused by the host's seam and store nothing: the words are the
+defaults, and a host's own words go per call through `Show` with a custom text. A host registering
+`SchemaRows(prefix)` without `texts = false` may still draw the one tab: the text and mute rows are
+then registered, settable through the instance's `Set` and reachable by `/<slash> set`, but not
+drawn.
 
 ### The schema rows
 

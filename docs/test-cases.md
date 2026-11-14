@@ -737,7 +737,7 @@ Total.
 - callout schema: a stored color is read in either shape
 - callout schema: a host's colorEncode decides the shape the instance writes
 
-### test_callout_layout.lua (15)
+### test_callout_layout.lua (16)
 
 - callout layout: CalloutSettings is at minor 4, and an instance carries SettingsTab
 - callout layout: SettingsTab answers one host tab, Callout, that draws the side layout
@@ -750,6 +750,7 @@ Total.
 - callout layout: the plain build's side layout draws Look and Sound with no stock texts
 - callout layout: SchemaRows with texts = false leaves the stock texts' rows out, colors on Look
 - callout layout: SettingsRows with texts = false is the one tab's rows
+- callout layout: on the route with texts = false, the host's seam refuses a stock text's and a mute's write
 - callout layout: Text to play leads with Countdown 10 to 1, then every stock text
 - callout layout: Play with Countdown 10 to 1 counts the real call-out from 10 to 1, with no finish
 - callout layout: the countdown pick is a session value the route's validate accepts
@@ -5146,7 +5147,7 @@ Total.
 | test_callout_voice.lua | 29 |
 | test_callout_settings.lua | 34 |
 | test_callout_schema.lua | 25 |
-| test_callout_layout.lua | 15 |
+| test_callout_layout.lua | 16 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5324,4 +5325,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4510** |
+| **Total** | **4511** |

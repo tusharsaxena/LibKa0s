@@ -252,6 +252,38 @@ test("callout layout: SettingsRows with texts = false is the one tab's rows", fu
   assertEqual(#c:SettingsRows({ texts = false, tab = "texts" }), 0, "there is no Texts tab")
 end)
 
+--- A host on the write route whose Schema holds `SchemaRows("callout.", opts)`, seeded from the
+--- rows' defaults: a stock text's or a mute's leaf write reaches the host's seam, which stores only a
+--- path a registered row declares (architecture-§5).
+local function routedHost(opts)
+  local Schema = T.schema
+  local host = { profile = { callout = {} } }
+  local c, _, _, _, Callout = newCallout({
+    path = "callout.",
+    db = function() return host.profile.callout end,
+    set = function(path, value) return host.S.Set(path, value) end,
+  })
+  local rows, named = c:SchemaRows("callout.", opts)
+  host.S = Schema:New({ rows = rows, resolveRoot = function() return host.profile, 1 end, writeThrough = named })
+  return c, host, Callout
+end
+
+test("callout layout: on the route with texts = false, the host's seam refuses a stock text's and a mute's write", function()
+  local c, host, Callout = routedHost({ texts = false })
+  local key = Callout.STOCK_ORDER[1]
+  -- red under: the seam storing a path no registered row declares
+  assertFalse(c:Set("texts." .. key, "Custom words"), "no row declares texts.<KEY>: refused")
+  assertFalse(c:Set("muted." .. key, true), "no row declares muted.<KEY>: refused")
+  assertNil(host.profile.callout.texts, "no text stored")
+  assertNil(host.profile.callout.muted, "no mute stored")
+
+  local full, fullHost = routedHost()
+  assertTrue(full:Set("texts." .. key, "Custom words"), "with the rows registered the text lands")
+  assertEqual(fullHost.profile.callout.texts[key], "Custom words")
+  assertTrue(full:Set("muted." .. key, true), "and the mute")
+  assertEqual(fullHost.profile.callout.muted[key], true)
+end)
+
 -- ── Countdown 10 to 1 ────────────────────────────────────────────────────────────────────────
 
 test("callout layout: Text to play leads with Countdown 10 to 1, then every stock text", function()
