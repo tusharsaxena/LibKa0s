@@ -13,7 +13,7 @@
 
 local T = _G.LK_TEST
 local assertTrue = T.assertTrue
-local Loader = dofile("tests/_kit/loader.lua")
+local Loader = (_G.LK_TEST and _G.LK_TEST.loader) or dofile("tests/_kit/loader.lua")
 local buildMocks = dofile("tests/wow_mock.lua")
 local installPaint = dofile("tests/_kit/mock_paint.lua")
 local installLayers = dofile("tests/_kit/mock_layers.lua")

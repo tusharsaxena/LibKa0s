@@ -8,7 +8,7 @@
 -- reads what the renderer told a region, and regions and frames answer the getters a case or the
 -- skin engine needs.
 
-local Loader = dofile("tests/_kit/loader.lua")
+local Loader = (_G.LK_TEST and _G.LK_TEST.loader) or dofile("tests/_kit/loader.lua")
 local buildMocks = dofile("tests/wow_mock.lua")
 
 local F = {}

@@ -494,7 +494,7 @@
   PASS  toast stack: Preview shows at the head, and a full stack sends its tail back to wait
   PASS  toast stack: Clear takes the whole stack down
   PASS  toast stack: without the stack field (or with 1) it is the v1 toast: one frame, one at a time
-  PASS  callout: the major loads at minor 4 and reports its one file
+  PASS  callout: the major loads at minor 3 and reports its one file
   PASS  callout: without Core the major is absent (no NewLibrary)
   PASS  callout: New refuses a descriptor without a db, naming it
   PASS  callout: a method called on something that is not an instance raises
@@ -552,7 +552,7 @@
   PASS  look: a new call-out stops the last one's animation; an unknown opts.anim is the setting's
   PASS  look: a countdown's every number animates, and the fade waits for the finish's hold
   PASS  look: every outline reaches the text as its flags; the halo is always thick
-  PASS  look: the shadow is on by default at (1, 1), follows its offsets, and off is no shadow at all
+  PASS  look: the shadow is on by default at (2, -2), follows its offsets, and off is no shadow at all
   PASS  look: the glow is the halo's alpha (its intensity) and its size over the text (its thickness)
   PASS  look: the size sets the frame's height, its width is WIDTH
   PASS  look: a LibSharedMedia face is drawn by its path; the skin and game choices are the game's here
@@ -603,7 +603,7 @@
   PASS  suspend: before first use it builds nothing; twice is once; Resume twice is harmless
   PASS  suspend: after Resume a countdown runs to its finish as new
   PASS  suspend: settings still read and write while suspended
-  PASS  callout settings: CalloutSettings is at minor 5, paired on the Callout shell's minor
+  PASS  callout settings: CalloutSettings is at minor 4, paired on the Callout shell's minor
   PASS  callout settings: the rows are Look, Sound then Texts, each path-less and bound to the instance
   PASS  callout settings: the Texts tab has a color per kind, and a text box and a mute per stock key
   PASS  callout settings: text to speech rows are there only while the client lists a voice
@@ -626,7 +626,7 @@
   PASS  callout settings: a row's write the call-out refuses leaves the db as it was
   PASS  callout settings: the font list leads with the skin's and the game's faces, then every LSM face
   PASS  callout settings: the call-out's display faces lead the font row, each when it can be drawn
-  PASS  callout settings: FONT_FACES names the default first, Oxanium Bold, then the two Media minor 13 faces
+  PASS  callout settings: FONT_FACES names the default first and the two Media minor 13 faces
   PASS  callout settings: Preview shows the look on the real call-out without a sound
   PASS  callout settings: TestCountdown counts from its argument, 5 by default
   PASS  callout settings: the plain preview is drawn in the chosen look, capped at 64
@@ -662,13 +662,12 @@
   PASS  callout schema: the leaf keys read and write one entry of d.db, as minor 1's tables
   PASS  callout schema: a stored color is read in either shape
   PASS  callout schema: a host's colorEncode decides the shape the instance writes
-  PASS  callout layout: CalloutSettings is at minor 5, and an instance carries SettingsTab
+  PASS  callout layout: CalloutSettings is at minor 4, and an instance carries SettingsTab
   PASS  callout layout: SettingsTab answers one host tab, Callout, that draws the side layout
   PASS  callout layout: a Preview heading over the preview block, then side tabs Look and Sound
   PASS  callout layout: Look holds the face rows and the Colors section; no Sound rows, no stock texts
   PASS  callout layout: the Sound side tab draws the voice rows, and the choice holds across a redraw
-  PASS  callout layout: the one tab's preview block draws no sample line (minor 5); the rest stays
-  PASS  callout layout: a Look row writes the host db; the legacy tab's preview repaints
+  PASS  callout layout: a Look row writes the host db and repaints the preview
   PASS  callout layout: an Options copy without SideTabs draws Look and Sound under their headings
   PASS  callout layout: an unknown layout answers nil; the layout wins over a tab
   PASS  callout layout: the plain build's side layout draws Look and Sound with no stock texts
@@ -679,7 +678,7 @@
   PASS  callout layout: Play with Countdown 10 to 1 counts the real call-out from 10 to 1, with no finish
   PASS  callout layout: the countdown pick is a session value the route's validate accepts
   PASS  callout layout: SettingsTabs and the three-tab build are as they were
-  PASS  callout glow: on by default, black at full intensity, 1 px thick, 1 px right and down (minor 4)
+  PASS  callout glow: on by default at the old soft look; the color companions all off
   PASS  callout glow: the setting rules refuse what is out of range
   PASS  callout glow: intensity is the halo's alpha, thickness its size over the text, the offsets its point
   PASS  callout glow: no OnUpdate is armed for the glow; it is painted with the call-out
@@ -695,7 +694,7 @@
   PASS  callout glow: AuraMaster's two columns; the swatch and its class companion never dim
   PASS  callout glow: the one tab's Look draws the Glow rows beside Colors, and a write reaches the halo
   PASS  callout glow: the plain build draws the intensity as a percent
-  PASS  arrow: the major loads at minor 1 and reports its two files
+  PASS  arrow: the major loads at minor 2 and reports its two files
   PASS  arrow: without Core the major is absent (no NewLibrary)
   PASS  arrow: New refuses a descriptor that does not say where the art sits
   PASS  arrow: a method called on something that is not an instance raises
@@ -709,6 +708,8 @@
   PASS  arrow: Raised, the default, draws the fill, its overlay and a shadow offset down and right
   PASS  arrow: Flat, Ridge and Faceted swap the overlay and drop the shadow
   PASS  arrow: the ground look picks a sheet frame instead of turning
+  PASS  arrow: scale 1 draws the 48-unit art box at 60 px, 1.25x minor 1's 48
+  PASS  arrow: the text sits the gap's 2 units under the art box
   PASS  arrow: leaving the ground look gives the textures back their full coords
   PASS  arrow: a style that is not one reads as Raised, and STYLES lists all five
   PASS  arrow: every look's art ships, uncompressed or RLE 32-bit TGA, power-of-two
@@ -740,6 +741,53 @@
   PASS  arrow settings: a change configures the arrow, then tells the host
   PASS  arrow settings: the rows pass a Schema instance's shape check, and a write reaches the arrow
   PASS  arrow settings: ConfigureFrom reads the host's paths
+  PASS  arrow settings: the Text block is the Font block's six rows, the companion, then three extras
+  PASS  arrow settings: given an Options instance the Font rows are O.FontGroup's own
+  PASS  arrow settings: a Text row's change configures the arrow
+  PASS  arrow settings: every row, the Text block's too, passes a Schema instance's shape check
+  PASS  arrow settings: opts.L reaches the composed flags choices and the swatch's class-color sentence
+  PASS  arrow text: the defaults follow the skin, below the arrow, in yards, with no label line
+  PASS  arrow text: a value that is not valid reads as the default
+  PASS  arrow text: FormatDistance in yards and compact, with the host's strings
+  PASS  arrow text: compact units reach the text, and d.strings words it
+  PASS  arrow text: d.format gets the yards and the units, and its string wins
+  PASS  arrow text: Show the label adds the target's label on a second line
+  PASS  arrow text: with no distance the label shows alone and dim, the label line or not
+  PASS  arrow text: the sample previews the label line with its own label
+  PASS  arrow text: each position anchors the text to its side of the art box
+  PASS  arrow text: the hit rect grows toward the text's side
+  PASS  arrow text: Hidden hides the text and the art still points
+  PASS  arrow text: without a skin, Use the skin's font draws the game's face, outlined, shadowed
+  PASS  arrow text: the player's font, size, flags and shadow
+  PASS  arrow text: the color is the swatch's, or the player's class color
+  PASS  arrow text: with a skin the font goes through its HudFont, the skin's face while it follows
+  PASS  arrow text: the text never takes the skin's Text role, so a skin switch cannot overwrite the font
+  PASS  arrow text: ConfigureFrom reads the companion at the font path plus FromSkin
+  PASS  arrow position: x and y place the arrow from the parent's CENTER; the defaults are today's spot
+  PASS  arrow position: configured x and y win over d.point; SetPosition sets them aside
+  PASS  arrow position: a drag ends CENTER on the parent's CENTER, written to the host's x and y
+  PASS  arrow position: the offsets are in the parent's units at every scale
+  PASS  arrow position: changing Arrow scale leaves the arrow's center where it is
+  PASS  arrow position: a drag past the range stores the range's edge, which VALID keeps
+  PASS  arrow position: Lock the arrow holds it still, and canDrag still applies
+  PASS  arrow position: ResetPosition writes the default spot through the host, then onMoved(nil)
+  PASS  arrow position: a drag with no centers to read keeps minor 1's point and writes no offsets
+  PASS  arrow position: the rows are X offset, Y offset and Lock the arrow, on a Position subgroup
+  PASS  arrow position: with an Options instance the block is O.PositionBlock's, its Reset button hooked
+  PASS  arrow menu: a right-click opens the menu at the pointer with the stock items, Clear first
+  PASS  arrow menu: d.menu = false, or no Widgets major, keeps the old right-click
+  PASS  arrow menu: Clear waypoint goes to the host's onClear with the target, else clears
+  PASS  arrow menu: Share in chat opens the chat box with the /way line and never sends
+  PASS  arrow menu: Share in chat prefers ChatFrameUtil.OpenChat where the client has it
+  PASS  arrow menu: Show on map opens the world map at the target's map, and not in combat
+  PASS  arrow menu: the sample's map items are disabled and its Clear still works
+  PASS  arrow menu: Lock and Unlock toggle the lock through the host; Reset position resets
+  PASS  arrow menu: the host's menuItems adds, reorders or replaces the items
+  PASS  arrow menu: d.strings words the items
+  PASS  arrow menu: OpenMenu opens it as a right-click does
+  PASS  arrow menu: the sample's Clear ends the sample only; the real target under it stays
+  PASS  arrow menu: Clear acts only on the target the menu opened over
+  PASS  arrow menu: the arrow coming down closes its menu, and only its own
   PASS  charts: the major loads and reports its two files
   PASS  charts: no Core means no major, and ChartsRender loads to nothing without the shell
   PASS  charts: New needs a pool, and takes LibKa0s-Pool-1.0's when the host names none
@@ -2322,6 +2370,8 @@
   PASS  widgets: a slider falls back to the row default when the stored value is not a number
   PASS  widgets: releasing a slider snaps the value to the row's step
   PASS  widgets: slider snapping is relative to the row's min, not to zero
+  PASS  widgets: a slider's box puts junk back to the value on Enter and on focus loss
+  PASS  widgets: the box hook is set once per pooled box and acts only for the library's widget
   PASS  widgets: a string row with values renders a Dropdown, sorted alphabetically by default
   PASS  widgets: a row with explicit `sorting` keeps that order instead of alphabetizing
   PASS  widgets: a dropdown falls back to a plain Dropdown when its dialogControl is unregistered
@@ -4578,4 +4628,4 @@
   PASS  client globals: every allowlist row has a reason and a finding to excuse
   PASS  client globals: the check is falsifiable, a planted bare call is flagged for both clients
 
-4576 passed, 0 failed, 3 skipped, 4579 total
+4626 passed, 0 failed, 3 skipped, 4629 total

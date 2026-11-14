@@ -337,7 +337,17 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    packs and never passed `d.packs` passes them (its `LibKa0s sounds:` folders) or it defaults to
    a pack it does not carry and is silent. A host carrying `female-bella` credits SIWIS and
    Koniwa `tnc` in its README, as for `female-kathleen`.
-   v1.101.0 adds no payload file, no member and no kit revision (still 56). `Callout.lua` moves to
+   v1.101.0 (Skill Master round 9) adds no payload file and no kit revision (still 56).
+   `WaypointArrow.lua` and `WaypointArrowSettings.lua` move to minor 2 (key 2.2) and
+   `OptionsWidgets.lua` to minor 46, so a host suite that pins `WaypointArrow 1` re-pins it at 2.
+   The arrow's instance gains `SetLocked`, `IsLocked`, `MenuItems` and `OpenMenu`, its major the
+   members in `members-2.2.json`, and `SettingsRows` a second answer (`{}` in a stub). Four
+   behavior changes reach a host that changes nothing: the arrow draws 1.25x larger at the same
+   scale, its frame is centered on the art, a right-click opens the menu where the Widgets major
+   is loaded (`menu = false` keeps `onClick`), and the text is drawn through the skin's `HudFont`
+   rather than its `Text` role. Skill Master, the one consumer, adopts the new settings in the same
+   round (its rows R9-1 to R9-3). No Skin facade member moves.
+   v1.102.0 adds no payload file, no member and no kit revision (still 56). `Callout.lua` moves to
    minor 4 and `CalloutSettings.lua` to minor 5 (key 4.5), so a host suite that pins the Callout's
    `MODULES` re-pins them; a stub needs no change. Two visible changes reach a host that changes
    nothing: the Look defaults are the owner's (`FONT_DEFAULT` `"Ka0s Oxanium SemiBold"`, the shadow

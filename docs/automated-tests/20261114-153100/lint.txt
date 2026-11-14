@@ -317,7 +317,10 @@ Checking tests/test_tool_windows_scope.lua        OK
 Checking tests/test_tool_windows_skin.lua         OK
 Checking tests/test_versioning.lua                OK
 Checking tests/test_waypoint_arrow.lua            OK
+Checking tests/test_waypoint_arrow_menu.lua       OK
+Checking tests/test_waypoint_arrow_position.lua   OK
 Checking tests/test_waypoint_arrow_settings.lua   OK
+Checking tests/test_waypoint_arrow_text.lua       OK
 Checking tests/test_widgets.lua                   OK
 Checking tests/test_widgets_autocomplete.lua      OK
 Checking tests/test_widgets_draghandle.lua        OK
@@ -341,4 +344,4 @@ Checking tools/client_globals_data.lua            OK
 Checking tools/gen-api-members.lua                OK
 Checking tools/prune-icons.lua                    OK
 
-Total: 0 warnings / 0 errors in 342 files
+Total: 0 warnings / 0 errors in 345 files

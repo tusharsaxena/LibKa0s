@@ -557,7 +557,7 @@ Total.
 
 ### test_callout.lua (52)
 
-- callout: the major loads at minor 4 and reports its one file
+- callout: the major loads at minor 3 and reports its one file
 - callout: without Core the major is absent (no NewLibrary)
 - callout: New refuses a descriptor without a db, naming it
 - callout: a method called on something that is not an instance raises
@@ -618,7 +618,7 @@ Total.
 - look: a new call-out stops the last one's animation; an unknown opts.anim is the setting's
 - look: a countdown's every number animates, and the fade waits for the finish's hold
 - look: every outline reaches the text as its flags; the halo is always thick
-- look: the shadow is on by default at (1, 1), follows its offsets, and off is no shadow at all
+- look: the shadow is on by default at (2, -2), follows its offsets, and off is no shadow at all
 - look: the glow is the halo's alpha (its intensity) and its size over the text (its thickness)
 - look: the size sets the frame's height, its width is WIDTH
 - look: a LibSharedMedia face is drawn by its path; the skin and game choices are the game's here
@@ -675,7 +675,7 @@ Total.
 
 ### test_callout_settings.lua (34)
 
-- callout settings: CalloutSettings is at minor 5, paired on the Callout shell's minor
+- callout settings: CalloutSettings is at minor 4, paired on the Callout shell's minor
 - callout settings: the rows are Look, Sound then Texts, each path-less and bound to the instance
 - callout settings: the Texts tab has a color per kind, and a text box and a mute per stock key
 - callout settings: text to speech rows are there only while the client lists a voice
@@ -698,7 +698,7 @@ Total.
 - callout settings: a row's write the call-out refuses leaves the db as it was
 - callout settings: the font list leads with the skin's and the game's faces, then every LSM face
 - callout settings: the call-out's display faces lead the font row, each when it can be drawn
-- callout settings: FONT_FACES names the default first, Oxanium Bold, then the two Media minor 13 faces
+- callout settings: FONT_FACES names the default first and the two Media minor 13 faces
 - callout settings: Preview shows the look on the real call-out without a sound
 - callout settings: TestCountdown counts from its argument, 5 by default
 - callout settings: the plain preview is drawn in the chosen look, capped at 64
@@ -738,15 +738,14 @@ Total.
 - callout schema: a stored color is read in either shape
 - callout schema: a host's colorEncode decides the shape the instance writes
 
-### test_callout_layout.lua (17)
+### test_callout_layout.lua (16)
 
-- callout layout: CalloutSettings is at minor 5, and an instance carries SettingsTab
+- callout layout: CalloutSettings is at minor 4, and an instance carries SettingsTab
 - callout layout: SettingsTab answers one host tab, Callout, that draws the side layout
 - callout layout: a Preview heading over the preview block, then side tabs Look and Sound
 - callout layout: Look holds the face rows and the Colors section; no Sound rows, no stock texts
 - callout layout: the Sound side tab draws the voice rows, and the choice holds across a redraw
-- callout layout: the one tab's preview block draws no sample line (minor 5); the rest stays
-- callout layout: a Look row writes the host db; the legacy tab's preview repaints
+- callout layout: a Look row writes the host db and repaints the preview
 - callout layout: an Options copy without SideTabs draws Look and Sound under their headings
 - callout layout: an unknown layout answers nil; the layout wins over a tab
 - callout layout: the plain build's side layout draws Look and Sound with no stock texts
@@ -760,7 +759,7 @@ Total.
 
 ### test_callout_glow.lua (16)
 
-- callout glow: on by default, black at full intensity, 1 px thick, 1 px right and down (minor 4)
+- callout glow: on by default at the old soft look; the color companions all off
 - callout glow: the setting rules refuse what is out of range
 - callout glow: intensity is the halo's alpha, thickness its size over the text, the offsets its point
 - callout glow: no OnUpdate is armed for the glow; it is painted with the call-out
@@ -777,9 +776,9 @@ Total.
 - callout glow: the one tab's Look draws the Glow rows beside Colors, and a write reaches the halo
 - callout glow: the plain build draws the intensity as a percent
 
-### test_waypoint_arrow.lua (35)
+### test_waypoint_arrow.lua (37)
 
-- arrow: the major loads at minor 1 and reports its two files
+- arrow: the major loads at minor 2 and reports its two files
 - arrow: without Core the major is absent (no NewLibrary)
 - arrow: New refuses a descriptor that does not say where the art sits
 - arrow: a method called on something that is not an instance raises
@@ -793,6 +792,8 @@ Total.
 - arrow: Raised, the default, draws the fill, its overlay and a shadow offset down and right
 - arrow: Flat, Ridge and Faceted swap the overlay and drop the shadow
 - arrow: the ground look picks a sheet frame instead of turning
+- arrow: scale 1 draws the 48-unit art box at 60 px, 1.25x minor 1's 48
+- arrow: the text sits the gap's 2 units under the art box
 - arrow: leaving the ground look gives the textures back their full coords
 - arrow: a style that is not one reads as Raised, and STYLES lists all five
 - arrow: every look's art ships, uncompressed or RLE 32-bit TGA, power-of-two
@@ -815,7 +816,7 @@ Total.
 - arrow: SetPosition takes either shape; ResetPosition tells the host to forget
 - arrow: a right click reaches onClick
 
-### test_waypoint_arrow_settings.lua (10)
+### test_waypoint_arrow_settings.lua (15)
 
 - arrow settings: five rows in order, each on the host's path, page and group
 - arrow settings: the defaults are the arrow's: Raised, the skin's colors on, scale 1
@@ -827,6 +828,62 @@ Total.
 - arrow settings: a change configures the arrow, then tells the host
 - arrow settings: the rows pass a Schema instance's shape check, and a write reaches the arrow
 - arrow settings: ConfigureFrom reads the host's paths
+- arrow settings: the Text block is the Font block's six rows, the companion, then three extras
+- arrow settings: given an Options instance the Font rows are O.FontGroup's own
+- arrow settings: a Text row's change configures the arrow
+- arrow settings: every row, the Text block's too, passes a Schema instance's shape check
+- arrow settings: opts.L reaches the composed flags choices and the swatch's class-color sentence
+
+### test_waypoint_arrow_text.lua (17)
+
+- arrow text: the defaults follow the skin, below the arrow, in yards, with no label line
+- arrow text: a value that is not valid reads as the default
+- arrow text: FormatDistance in yards and compact, with the host's strings
+- arrow text: compact units reach the text, and d.strings words it
+- arrow text: d.format gets the yards and the units, and its string wins
+- arrow text: Show the label adds the target's label on a second line
+- arrow text: with no distance the label shows alone and dim, the label line or not
+- arrow text: the sample previews the label line with its own label
+- arrow text: each position anchors the text to its side of the art box
+- arrow text: the hit rect grows toward the text's side
+- arrow text: Hidden hides the text and the art still points
+- arrow text: without a skin, Use the skin's font draws the game's face, outlined, shadowed
+- arrow text: the player's font, size, flags and shadow
+- arrow text: the color is the swatch's, or the player's class color
+- arrow text: with a skin the font goes through its HudFont, the skin's face while it follows
+- arrow text: the text never takes the skin's Text role, so a skin switch cannot overwrite the font
+- arrow text: ConfigureFrom reads the companion at the font path plus FromSkin
+
+### test_waypoint_arrow_position.lua (11)
+
+- arrow position: x and y place the arrow from the parent's CENTER; the defaults are today's spot
+- arrow position: configured x and y win over d.point; SetPosition sets them aside
+- arrow position: a drag ends CENTER on the parent's CENTER, written to the host's x and y
+- arrow position: the offsets are in the parent's units at every scale
+- arrow position: changing Arrow scale leaves the arrow's center where it is
+- arrow position: a drag past the range stores the range's edge, which VALID keeps
+- arrow position: Lock the arrow holds it still, and canDrag still applies
+- arrow position: ResetPosition writes the default spot through the host, then onMoved(nil)
+- arrow position: a drag with no centers to read keeps minor 1's point and writes no offsets
+- arrow position: the rows are X offset, Y offset and Lock the arrow, on a Position subgroup
+- arrow position: with an Options instance the block is O.PositionBlock's, its Reset button hooked
+
+### test_waypoint_arrow_menu.lua (14)
+
+- arrow menu: a right-click opens the menu at the pointer with the stock items, Clear first
+- arrow menu: d.menu = false, or no Widgets major, keeps the old right-click
+- arrow menu: Clear waypoint goes to the host's onClear with the target, else clears
+- arrow menu: Share in chat opens the chat box with the /way line and never sends
+- arrow menu: Share in chat prefers ChatFrameUtil.OpenChat where the client has it
+- arrow menu: Show on map opens the world map at the target's map, and not in combat
+- arrow menu: the sample's map items are disabled and its Clear still works
+- arrow menu: Lock and Unlock toggle the lock through the host; Reset position resets
+- arrow menu: the host's menuItems adds, reorders or replaces the items
+- arrow menu: d.strings words the items
+- arrow menu: OpenMenu opens it as a right-click does
+- arrow menu: the sample's Clear ends the sample only; the real target under it stays
+- arrow menu: Clear acts only on the target the menu opened over
+- arrow menu: the arrow coming down closes its menu, and only its own
 
 ### test_charts.lua (15)
 
@@ -2588,7 +2645,7 @@ Total.
 - fontpreload: a page with no renderer loads on its show too
 - fontpreload: the main page loads on its first show, with a buildMain and without
 
-### test_options_widgets.lua (53)
+### test_options_widgets.lua (55)
 
 - widgets: the cross-slice layout constants are published on the instance
 - widgets: a bool row renders a CheckBox labeled and seeded from the schema
@@ -2601,6 +2658,8 @@ Total.
 - widgets: a slider falls back to the row default when the stored value is not a number
 - widgets: releasing a slider snaps the value to the row's step
 - widgets: slider snapping is relative to the row's min, not to zero
+- widgets: a slider's box puts junk back to the value on Enter and on focus loss
+- widgets: the box hook is set once per pooled box and acts only for the library's widget
 - widgets: a string row with values renders a Dropdown, sorted alphabetically by default
 - widgets: a row with explicit `sorting` keeps that order instead of alphabetizing
 - widgets: a dropdown falls back to a plain Dropdown when its dialogControl is unregistered
@@ -5221,10 +5280,13 @@ Total.
 | test_callout_voice.lua | 30 |
 | test_callout_settings.lua | 34 |
 | test_callout_schema.lua | 25 |
-| test_callout_layout.lua | 17 |
+| test_callout_layout.lua | 16 |
 | test_callout_glow.lua | 16 |
-| test_waypoint_arrow.lua | 35 |
-| test_waypoint_arrow_settings.lua | 10 |
+| test_waypoint_arrow.lua | 37 |
+| test_waypoint_arrow_settings.lua | 15 |
+| test_waypoint_arrow_text.lua | 17 |
+| test_waypoint_arrow_position.lua | 11 |
+| test_waypoint_arrow_menu.lua | 14 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5288,7 +5350,7 @@ Total.
 | test_options_render.lua | 27 |
 | test_options_bulk.lua | 11 |
 | test_options_fontpreload.lua | 11 |
-| test_options_widgets.lua | 53 |
+| test_options_widgets.lua | 55 |
 | test_options_choicegrid.lua | 22 |
 | test_options_flow.lua | 48 |
 | test_options_flow_seams.lua | 17 |
@@ -5402,4 +5464,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4576** |
+| **Total** | **4626** |

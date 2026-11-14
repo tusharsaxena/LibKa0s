@@ -757,18 +757,42 @@
        5      3     35      2       5 (anonymous)@667-671@./LibKa0s/OptionsScroll.lua
        5      3     41      2       9 subscribeLate@664-672@./LibKa0s/OptionsScroll.lua
       14      8    118      1      14 lib.__PreloadFonts@681-694@./LibKa0s/OptionsScroll.lua
-       5      3     41      2       5 word@58-62@./LibKa0s/WaypointArrowSettings.lua
-       5      2     49      1       5 lib.StyleValues@65-69@./LibKa0s/WaypointArrowSettings.lua
-       4      4     69      2       4 colorDefault@71-74@./LibKa0s/WaypointArrowSettings.lua
-       4      4     49      1       4 (anonymous)@78-81@./LibKa0s/WaypointArrowSettings.lua
-       4      1     22      2       7 onChangeFor@76-82@./LibKa0s/WaypointArrowSettings.lua
-       4      1     47      2       4 make@86-89@./LibKa0s/WaypointArrowSettings.lua
-       4      1     38      2       4 make@90-93@./LibKa0s/WaypointArrowSettings.lua
-       4      1     47      2       4 make@94-97@./LibKa0s/WaypointArrowSettings.lua
-       4      1     47      2       4 make@98-101@./LibKa0s/WaypointArrowSettings.lua
-       5      1     60      2       5 make@102-106@./LibKa0s/WaypointArrowSettings.lua
-      17     10    170      1      17 lib.SettingsRows@115-131@./LibKa0s/WaypointArrowSettings.lua
-       6      4     55      2       6 lib.__methods.SettingsRows@134-139@./LibKa0s/WaypointArrowSettings.lua
+       5      3     41      2       5 word@102-106@./LibKa0s/WaypointArrowSettings.lua
+       5      2     49      3       5 choices@109-113@./LibKa0s/WaypointArrowSettings.lua
+       1      1     18      1       1 lib.StyleValues@116-116@./LibKa0s/WaypointArrowSettings.lua
+       1      1     18      1       1 lib.TextPositionValues@126-126@./LibKa0s/WaypointArrowSettings.lua
+       1      1     18      1       1 lib.DistanceUnitsValues@127-127@./LibKa0s/WaypointArrowSettings.lua
+       4      4     69      2       4 colorDefault@129-132@./LibKa0s/WaypointArrowSettings.lua
+       4      4     49      1       4 (anonymous)@136-139@./LibKa0s/WaypointArrowSettings.lua
+       4      1     22      2       7 onChangeFor@134-140@./LibKa0s/WaypointArrowSettings.lua
+       4      1     47      2       4 make@144-147@./LibKa0s/WaypointArrowSettings.lua
+       4      1     38      2       4 make@148-151@./LibKa0s/WaypointArrowSettings.lua
+       4      1     47      2       4 make@152-155@./LibKa0s/WaypointArrowSettings.lua
+       4      1     47      2       4 make@156-159@./LibKa0s/WaypointArrowSettings.lua
+       5      1     60      2       5 make@160-164@./LibKa0s/WaypointArrowSettings.lua
+       9      9    106      0       9 (anonymous)@182-190@./LibKa0s/WaypointArrowSettings.lua
+       3      1      7      0      11 fontValues@181-191@./LibKa0s/WaypointArrowSettings.lua
+       5      2     39      1       5 flagValues@193-197@./LibKa0s/WaypointArrowSettings.lua
+      24      6    285      3      24 ownFontRows@202-225@./LibKa0s/WaypointArrowSettings.lua
+       4      4     34      2       4 override@228-231@./LibKa0s/WaypointArrowSettings.lua
+       4      3     31      2       4 overridesAny@234-237@./LibKa0s/WaypointArrowSettings.lua
+       8      5     71      2       8 localizeComposed@244-251@./LibKa0s/WaypointArrowSettings.lua
+      20      8    276      5      20 composedFontRows@255-274@./LibKa0s/WaypointArrowSettings.lua
+       4      1     41      1       4 make@278-281@./LibKa0s/WaypointArrowSettings.lua
+       3      1     28      1       3 make@282-284@./LibKa0s/WaypointArrowSettings.lua
+       4      1     37      1       4 make@285-288@./LibKa0s/WaypointArrowSettings.lua
+       4      1     51      2       4 lockRow@293-296@./LibKa0s/WaypointArrowSettings.lua
+       4      3     24      0       4 (anonymous)@304-307@./LibKa0s/WaypointArrowSettings.lua
+       6      4     53      1       9 resetHandler@300-308@./LibKa0s/WaypointArrowSettings.lua
+      12      5    164      2      12 ownPositionRows@311-322@./LibKa0s/WaypointArrowSettings.lua
+      16     12    294      5      16 composedPositionRows@326-341@./LibKa0s/WaypointArrowSettings.lua
+       7      5     67      4       7 positionRows@344-350@./LibKa0s/WaypointArrowSettings.lua
+       6      4     55      1       6 withCompanion@353-358@./LibKa0s/WaypointArrowSettings.lua
+      17      5    132      4      17 textRows@361-377@./LibKa0s/WaypointArrowSettings.lua
+       5      1     44      3       5 place@380-384@./LibKa0s/WaypointArrowSettings.lua
+      11      5     93      4      11 lookRows@387-397@./LibKa0s/WaypointArrowSettings.lua
+      12     11    176      1      12 lib.SettingsRows@418-429@./LibKa0s/WaypointArrowSettings.lua
+       6      4     55      2       6 lib.__methods.SettingsRows@432-437@./LibKa0s/WaypointArrowSettings.lua
        4      5     29      0       4 lib.__IsCombatLocked@317-320@./LibKa0s/Options.lua
        3      2     14      1       3 (anonymous)@447-449@./LibKa0s/Options.lua
        5      3     39      0       5 runPreload@487-491@./LibKa0s/Options.lua
@@ -891,135 +915,135 @@
        1      1      8      0       1 __navArtHeight@455-455@./LibKa0s/OptionsNav.lua
        1      1      5      0       1 __sideFreeRails@458-458@./LibKa0s/OptionsNav.lua
       15      1     63      1     147 lib.__AttachNav@313-459@./LibKa0s/OptionsNav.lua
-       4      3     28      2       4 inList@209-212@./LibKa0s/Callout.lua
-       1      4     31      1       1 finite@214-214@./LibKa0s/Callout.lua
-       1      3     17      1       1 (anonymous)@216-216@./LibKa0s/Callout.lua
-       1      1     10      2       1 between@216-216@./LibKa0s/Callout.lua
-       1      1     11      1       1 (anonymous)@218-218@./LibKa0s/Callout.lua
-       1      1      8      1       1 oneOf@218-218@./LibKa0s/Callout.lua
-       1      2     17      1       1 nonEmpty@220-220@./LibKa0s/Callout.lua
-       1      1     12      1       1 isBool@222-222@./LibKa0s/Callout.lua
-       7      8     94      1       7 rgb@227-233@./LibKa0s/Callout.lua
-       1      1     13      1       1 validColor@235-235@./LibKa0s/Callout.lua
-       4      8     75      1       4 validPoint@242-245@./LibKa0s/Callout.lua
-       1      3     25      1       1 validVoice@247-247@./LibKa0s/Callout.lua
-       7      5     51      1       7 validTexts@249-255@./LibKa0s/Callout.lua
-       7      5     51      1       7 validMuted@257-263@./LibKa0s/Callout.lua
-       1      2     25      1       1 speakFrom@274-274@./LibKa0s/Callout.lua
-       1      2     13      1       1 ttsVoice@275-275@./LibKa0s/Callout.lua
-       6      3     44      1       6 copy@283-288@./LibKa0s/Callout.lua
-       4      2     32      2       4 debugOut@290-293@./LibKa0s/Callout.lua
-       5      2     31      2       5 logOnce@296-300@./LibKa0s/Callout.lua
-       8      6     73      2       8 call@303-310@./LibKa0s/Callout.lua
-       5      4     38      1       5 store@314-318@./LibKa0s/Callout.lua
-       8      7     77      2       8 get@320-327@./LibKa0s/Callout.lua
-      16      8    118      1      16 offered@332-347@./LibKa0s/Callout.lua
-       8      5     65      1       8 voiceOf@351-358@./LibKa0s/Callout.lua
-       7      5     85      2       7 colorOf@360-366@./LibKa0s/Callout.lua
-       5      4     42      1       5 prefixOf@371-375@./LibKa0s/Callout.lua
-       1      2     24      1       1 hostWrites@378-378@./LibKa0s/Callout.lua
-       5      4     76      5       5 encodeColor@384-388@./LibKa0s/Callout.lua
-       1      1     14      1       1 texts@393-393@./LibKa0s/Callout.lua
-       1      1     14      1       1 muted@394-394@./LibKa0s/Callout.lua
-       1      1     11      1       1 colors@395-395@./LibKa0s/Callout.lua
-       1      1     11      1       1 texts@398-398@./LibKa0s/Callout.lua
-       1      1     11      1       1 muted@399-399@./LibKa0s/Callout.lua
-       6      5     51      1       6 leafOf@404-409@./LibKa0s/Callout.lua
-       1      2     21      1       1 known@412-412@./LibKa0s/Callout.lua
-       7      7     71      3       7 validFor@415-421@./LibKa0s/Callout.lua
-      18     11    154      3      18 defaultOf@426-443@./LibKa0s/Callout.lua
-      10      5     95      3      10 writeWhole@448-457@./LibKa0s/Callout.lua
-      18     11    163      3      18 write@463-480@./LibKa0s/Callout.lua
-       1      2     14      1       1 resolve@484-484@./LibKa0s/Callout.lua
-       4      2     17      0       4 gameFont@486-489@./LibKa0s/Callout.lua
-       9      6     68      1       9 skinFacade@492-500@./LibKa0s/Callout.lua
-       4      4     31      1       4 skinFont@502-505@./LibKa0s/Callout.lua
-       8      6     90      2       8 namedFont@508-515@./LibKa0s/Callout.lua
-       6      6     63      1       6 fontPath@517-522@./LibKa0s/Callout.lua
-       4      3     22      1       4 fontFlags@524-527@./LibKa0s/Callout.lua
-       3      2     38      4       3 setFont@530-532@./LibKa0s/Callout.lua
-       7      6     67      1       7 skinGlow@544-550@./LibKa0s/Callout.lua
-       6      5     56      0       6 classGlow@552-557@./LibKa0s/Callout.lua
-       8      6     89      2       8 glowColorOf@559-566@./LibKa0s/Callout.lua
-       5      1     40      2       5 Scale@599-603@./LibKa0s/Callout.lua
-       4      1     22      2       4 Alpha@604-607@./LibKa0s/Callout.lua
-       1      3     22      2       1 Translation@608-608@./LibKa0s/Callout.lua
-      11      4     82      2      11 buildGroup@611-621@./LibKa0s/Callout.lua
-      10      6     82      2      10 animGroup@623-632@./LibKa0s/Callout.lua
-       4      3     36      1       4 stopAnims@634-637@./LibKa0s/Callout.lua
-       6      3     69      2       6 paint@641-646@./LibKa0s/Callout.lua
-      16      4    212      1      16 applyLook@648-663@./LibKa0s/Callout.lua
-       5      4     58      1       5 applyPosition@665-669@./LibKa0s/Callout.lua
-       8      9     91      1       8 savePosition@673-680@./LibKa0s/Callout.lua
-       5      2     24      1       5 onDragStart@682-686@./LibKa0s/Callout.lua
-       5      1     21      1       5 onDragStop@688-692@./LibKa0s/Callout.lua
-       6      2     29      1       6 endDrag@696-701@./LibKa0s/Callout.lua
-       1      1      8      0       1 canDrag@712-712@./LibKa0s/Callout.lua
-       1      1      8      0       1 onDragStart@713-713@./LibKa0s/Callout.lua
-       1      1     13      0       1 onDragStop@714-714@./LibKa0s/Callout.lua
-      16      7    149      1      16 buildHandle@706-721@./LibKa0s/Callout.lua
-       5      1     25      1       5 finishFade@723-727@./LibKa0s/Callout.lua
-       1      1      7      0       1 (anonymous)@731-731@./LibKa0s/Callout.lua
-       5      1     52      1       5 buildFade@729-733@./LibKa0s/Callout.lua
-       1      1      7      0       1 (anonymous)@747-747@./LibKa0s/Callout.lua
-       1      1      7      0       1 (anonymous)@748-748@./LibKa0s/Callout.lua
-      25      2    178      1      27 build@737-763@./LibKa0s/Callout.lua
-       1      1      7      0       1 (anonymous)@770-770@./LibKa0s/Callout.lua
-       5      2     28      1       5 wake@767-771@./LibKa0s/Callout.lua
-       5      2     28      1       5 sleep@773-777@./LibKa0s/Callout.lua
-       6      3     43      1       6 startFade@779-784@./LibKa0s/Callout.lua
-       6      2     26      1       6 hideNow@786-791@./LibKa0s/Callout.lua
-       6      4     62      1       6 soundsBase@795-800@./LibKa0s/Callout.lua
-      11      3     57      2      11 playFile@802-812@./LibKa0s/Callout.lua
-       8      2     58      3       8 playLine@814-821@./LibKa0s/Callout.lua
-       7      4     49      2       7 ttsVoiceId@824-830@./LibKa0s/Callout.lua
-      12      8     95      0      12 ttsVoices@832-843@./LibKa0s/Callout.lua
-      14      4     80      2      14 speak@845-858@./LibKa0s/Callout.lua
-      11     11    128      2      11 sound@861-871@./LibKa0s/Callout.lua
-       4      1     38      1       4 numberEntry@875-878@./LibKa0s/Callout.lua
-       7      4     78      2       7 stockEntry@880-886@./LibKa0s/Callout.lua
-       6      7     89      1       6 customEntry@888-893@./LibKa0s/Callout.lua
-       7      7     74      2       7 entryFor@896-902@./LibKa0s/Callout.lua
-       7      5     66      2       7 merge@904-910@./LibKa0s/Callout.lua
-      14      4    111      2      14 present@913-926@./LibKa0s/Callout.lua
-       4      2     29      2       4 holdFor@928-931@./LibKa0s/Callout.lua
-       5      1     31      2       5 showHeld@934-938@./LibKa0s/Callout.lua
-       7      4     59      2       7 finishCountdown@942-948@./LibKa0s/Callout.lua
-      14      4     88      2      14 stepCountdown@950-963@./LibKa0s/Callout.lua
-       6      6     55      1       6 tick@965-970@./LibKa0s/Callout.lua
-       5      2     28      1       5 state@976-980@./LibKa0s/Callout.lua
-      12      5    124      2      14 METHODS.Countdown@989-1002@./LibKa0s/Callout.lua
-       8      1     38      1       8 METHODS.Cancel@1005-1012@./LibKa0s/Callout.lua
-       5      2     31      1       5 METHODS.Running@1015-1019@./LibKa0s/Callout.lua
-      11      3     67      3      11 METHODS.Show@1024-1034@./LibKa0s/Callout.lua
-       5      2     29      1       5 METHODS.Hide@1037-1041@./LibKa0s/Callout.lua
-       7      1     39      1       7 METHODS.Suspend@1045-1051@./LibKa0s/Callout.lua
-       1      1     15      1       1 METHODS.Resume@1053-1053@./LibKa0s/Callout.lua
-       1      1     16      1       1 METHODS.Suspended@1055-1055@./LibKa0s/Callout.lua
-       6      4     78      3       6 getLeaf@1059-1064@./LibKa0s/Callout.lua
-       8      4     69      2       8 METHODS.Get@1069-1076@./LibKa0s/Callout.lua
-       8      4     61      3       8 setLegacyGlow@1081-1088@./LibKa0s/Callout.lua
-      11      8     87      1      11 keepLegacyLook@1094-1104@./LibKa0s/Callout.lua
-      10     11    124      3      10 METHODS.Set@1112-1121@./LibKa0s/Callout.lua
-       3      3     26      2       3 METHODS.GetColor@1123-1125@./LibKa0s/Callout.lua
-      12      5     93      5      12 METHODS.SetColor@1129-1140@./LibKa0s/Callout.lua
-       6      2     30      1       6 METHODS.Apply@1143-1148@./LibKa0s/Callout.lua
-      19      8    124      2      19 METHODS.SetLocked@1152-1170@./LibKa0s/Callout.lua
-       1      1     14      1       1 METHODS.Locked@1172-1172@./LibKa0s/Callout.lua
-       5      2     32      1       5 METHODS.ResetPosition@1175-1179@./LibKa0s/Callout.lua
-      10      3    102      1      10 METHODS.Voices@1183-1192@./LibKa0s/Callout.lua
-       3      1     11      1       3 METHODS.TtsVoices@1195-1197@./LibKa0s/Callout.lua
-       1      1     15      1       1 METHODS.Frame@1200-1200@./LibKa0s/Callout.lua
-       7      1    111      1       7 METHODS.Look@1205-1211@./LibKa0s/Callout.lua
-       3      3     26      2       3 METHODS.GetGlowColor@1214-1216@./LibKa0s/Callout.lua
-      12      8    150      1      12 METHODS.Stats@1219-1230@./LibKa0s/Callout.lua
-       8      6     71      2       8 lib.MigrateGlow@1236-1243@./LibKa0s/Callout.lua
-      12      8    144      2      13 lib.New@1246-1258@./LibKa0s/Callout.lua
-       1      1     20      3       1 __validFor@1269-1269@./LibKa0s/Callout.lua
-       1      1     21      2       1 __defaultFor@1270-1270@./LibKa0s/Callout.lua
-       5      1     39      2       5 __colorFor@1271-1275@./LibKa0s/Callout.lua
-       5      1     40      1       5 __glowColorFor@1277-1281@./LibKa0s/Callout.lua
-       1      1     12      1       1 __prefixOf@1282-1282@./LibKa0s/Callout.lua
+       4      3     28      2       4 inList@203-206@./LibKa0s/Callout.lua
+       1      4     31      1       1 finite@208-208@./LibKa0s/Callout.lua
+       1      3     17      1       1 (anonymous)@210-210@./LibKa0s/Callout.lua
+       1      1     10      2       1 between@210-210@./LibKa0s/Callout.lua
+       1      1     11      1       1 (anonymous)@212-212@./LibKa0s/Callout.lua
+       1      1      8      1       1 oneOf@212-212@./LibKa0s/Callout.lua
+       1      2     17      1       1 nonEmpty@214-214@./LibKa0s/Callout.lua
+       1      1     12      1       1 isBool@216-216@./LibKa0s/Callout.lua
+       7      8     94      1       7 rgb@221-227@./LibKa0s/Callout.lua
+       1      1     13      1       1 validColor@229-229@./LibKa0s/Callout.lua
+       4      8     75      1       4 validPoint@236-239@./LibKa0s/Callout.lua
+       1      3     25      1       1 validVoice@241-241@./LibKa0s/Callout.lua
+       7      5     51      1       7 validTexts@243-249@./LibKa0s/Callout.lua
+       7      5     51      1       7 validMuted@251-257@./LibKa0s/Callout.lua
+       1      2     25      1       1 speakFrom@268-268@./LibKa0s/Callout.lua
+       1      2     13      1       1 ttsVoice@269-269@./LibKa0s/Callout.lua
+       6      3     44      1       6 copy@277-282@./LibKa0s/Callout.lua
+       4      2     32      2       4 debugOut@284-287@./LibKa0s/Callout.lua
+       5      2     31      2       5 logOnce@290-294@./LibKa0s/Callout.lua
+       8      6     73      2       8 call@297-304@./LibKa0s/Callout.lua
+       5      4     38      1       5 store@308-312@./LibKa0s/Callout.lua
+       8      7     77      2       8 get@314-321@./LibKa0s/Callout.lua
+      16      8    118      1      16 offered@326-341@./LibKa0s/Callout.lua
+       8      5     65      1       8 voiceOf@345-352@./LibKa0s/Callout.lua
+       7      5     85      2       7 colorOf@354-360@./LibKa0s/Callout.lua
+       5      4     42      1       5 prefixOf@365-369@./LibKa0s/Callout.lua
+       1      2     24      1       1 hostWrites@372-372@./LibKa0s/Callout.lua
+       5      4     76      5       5 encodeColor@378-382@./LibKa0s/Callout.lua
+       1      1     14      1       1 texts@387-387@./LibKa0s/Callout.lua
+       1      1     14      1       1 muted@388-388@./LibKa0s/Callout.lua
+       1      1     11      1       1 colors@389-389@./LibKa0s/Callout.lua
+       1      1     11      1       1 texts@392-392@./LibKa0s/Callout.lua
+       1      1     11      1       1 muted@393-393@./LibKa0s/Callout.lua
+       6      5     51      1       6 leafOf@398-403@./LibKa0s/Callout.lua
+       1      2     21      1       1 known@406-406@./LibKa0s/Callout.lua
+       7      7     71      3       7 validFor@409-415@./LibKa0s/Callout.lua
+      18     11    154      3      18 defaultOf@420-437@./LibKa0s/Callout.lua
+      10      5     95      3      10 writeWhole@442-451@./LibKa0s/Callout.lua
+      18     11    163      3      18 write@457-474@./LibKa0s/Callout.lua
+       1      2     14      1       1 resolve@478-478@./LibKa0s/Callout.lua
+       4      2     17      0       4 gameFont@480-483@./LibKa0s/Callout.lua
+       9      6     68      1       9 skinFacade@486-494@./LibKa0s/Callout.lua
+       4      4     31      1       4 skinFont@496-499@./LibKa0s/Callout.lua
+       8      6     90      2       8 namedFont@502-509@./LibKa0s/Callout.lua
+       6      6     63      1       6 fontPath@511-516@./LibKa0s/Callout.lua
+       4      3     22      1       4 fontFlags@518-521@./LibKa0s/Callout.lua
+       3      2     38      4       3 setFont@524-526@./LibKa0s/Callout.lua
+       7      6     67      1       7 skinGlow@538-544@./LibKa0s/Callout.lua
+       6      5     56      0       6 classGlow@546-551@./LibKa0s/Callout.lua
+       8      6     89      2       8 glowColorOf@553-560@./LibKa0s/Callout.lua
+       5      1     40      2       5 Scale@593-597@./LibKa0s/Callout.lua
+       4      1     22      2       4 Alpha@598-601@./LibKa0s/Callout.lua
+       1      3     22      2       1 Translation@602-602@./LibKa0s/Callout.lua
+      11      4     82      2      11 buildGroup@605-615@./LibKa0s/Callout.lua
+      10      6     82      2      10 animGroup@617-626@./LibKa0s/Callout.lua
+       4      3     36      1       4 stopAnims@628-631@./LibKa0s/Callout.lua
+       6      3     69      2       6 paint@635-640@./LibKa0s/Callout.lua
+      16      4    212      1      16 applyLook@642-657@./LibKa0s/Callout.lua
+       5      4     58      1       5 applyPosition@659-663@./LibKa0s/Callout.lua
+       8      9     91      1       8 savePosition@667-674@./LibKa0s/Callout.lua
+       5      2     24      1       5 onDragStart@676-680@./LibKa0s/Callout.lua
+       5      1     21      1       5 onDragStop@682-686@./LibKa0s/Callout.lua
+       6      2     29      1       6 endDrag@690-695@./LibKa0s/Callout.lua
+       1      1      8      0       1 canDrag@706-706@./LibKa0s/Callout.lua
+       1      1      8      0       1 onDragStart@707-707@./LibKa0s/Callout.lua
+       1      1     13      0       1 onDragStop@708-708@./LibKa0s/Callout.lua
+      16      7    149      1      16 buildHandle@700-715@./LibKa0s/Callout.lua
+       5      1     25      1       5 finishFade@717-721@./LibKa0s/Callout.lua
+       1      1      7      0       1 (anonymous)@725-725@./LibKa0s/Callout.lua
+       5      1     52      1       5 buildFade@723-727@./LibKa0s/Callout.lua
+       1      1      7      0       1 (anonymous)@741-741@./LibKa0s/Callout.lua
+       1      1      7      0       1 (anonymous)@742-742@./LibKa0s/Callout.lua
+      25      2    178      1      27 build@731-757@./LibKa0s/Callout.lua
+       1      1      7      0       1 (anonymous)@764-764@./LibKa0s/Callout.lua
+       5      2     28      1       5 wake@761-765@./LibKa0s/Callout.lua
+       5      2     28      1       5 sleep@767-771@./LibKa0s/Callout.lua
+       6      3     43      1       6 startFade@773-778@./LibKa0s/Callout.lua
+       6      2     26      1       6 hideNow@780-785@./LibKa0s/Callout.lua
+       6      4     62      1       6 soundsBase@789-794@./LibKa0s/Callout.lua
+      11      3     57      2      11 playFile@796-806@./LibKa0s/Callout.lua
+       8      2     58      3       8 playLine@808-815@./LibKa0s/Callout.lua
+       7      4     49      2       7 ttsVoiceId@818-824@./LibKa0s/Callout.lua
+      12      8     95      0      12 ttsVoices@826-837@./LibKa0s/Callout.lua
+      14      4     80      2      14 speak@839-852@./LibKa0s/Callout.lua
+      11     11    128      2      11 sound@855-865@./LibKa0s/Callout.lua
+       4      1     38      1       4 numberEntry@869-872@./LibKa0s/Callout.lua
+       7      4     78      2       7 stockEntry@874-880@./LibKa0s/Callout.lua
+       6      7     89      1       6 customEntry@882-887@./LibKa0s/Callout.lua
+       7      7     74      2       7 entryFor@890-896@./LibKa0s/Callout.lua
+       7      5     66      2       7 merge@898-904@./LibKa0s/Callout.lua
+      14      4    111      2      14 present@907-920@./LibKa0s/Callout.lua
+       4      2     29      2       4 holdFor@922-925@./LibKa0s/Callout.lua
+       5      1     31      2       5 showHeld@928-932@./LibKa0s/Callout.lua
+       7      4     59      2       7 finishCountdown@936-942@./LibKa0s/Callout.lua
+      14      4     88      2      14 stepCountdown@944-957@./LibKa0s/Callout.lua
+       6      6     55      1       6 tick@959-964@./LibKa0s/Callout.lua
+       5      2     28      1       5 state@970-974@./LibKa0s/Callout.lua
+      12      5    124      2      14 METHODS.Countdown@983-996@./LibKa0s/Callout.lua
+       8      1     38      1       8 METHODS.Cancel@999-1006@./LibKa0s/Callout.lua
+       5      2     31      1       5 METHODS.Running@1009-1013@./LibKa0s/Callout.lua
+      11      3     67      3      11 METHODS.Show@1018-1028@./LibKa0s/Callout.lua
+       5      2     29      1       5 METHODS.Hide@1031-1035@./LibKa0s/Callout.lua
+       7      1     39      1       7 METHODS.Suspend@1039-1045@./LibKa0s/Callout.lua
+       1      1     15      1       1 METHODS.Resume@1047-1047@./LibKa0s/Callout.lua
+       1      1     16      1       1 METHODS.Suspended@1049-1049@./LibKa0s/Callout.lua
+       6      4     78      3       6 getLeaf@1053-1058@./LibKa0s/Callout.lua
+       8      4     69      2       8 METHODS.Get@1063-1070@./LibKa0s/Callout.lua
+       8      4     61      3       8 setLegacyGlow@1075-1082@./LibKa0s/Callout.lua
+      11      8     87      1      11 keepLegacyLook@1088-1098@./LibKa0s/Callout.lua
+      10     11    124      3      10 METHODS.Set@1106-1115@./LibKa0s/Callout.lua
+       3      3     26      2       3 METHODS.GetColor@1117-1119@./LibKa0s/Callout.lua
+      12      5     93      5      12 METHODS.SetColor@1123-1134@./LibKa0s/Callout.lua
+       6      2     30      1       6 METHODS.Apply@1137-1142@./LibKa0s/Callout.lua
+      19      8    124      2      19 METHODS.SetLocked@1146-1164@./LibKa0s/Callout.lua
+       1      1     14      1       1 METHODS.Locked@1166-1166@./LibKa0s/Callout.lua
+       5      2     32      1       5 METHODS.ResetPosition@1169-1173@./LibKa0s/Callout.lua
+      10      3    102      1      10 METHODS.Voices@1177-1186@./LibKa0s/Callout.lua
+       3      1     11      1       3 METHODS.TtsVoices@1189-1191@./LibKa0s/Callout.lua
+       1      1     15      1       1 METHODS.Frame@1194-1194@./LibKa0s/Callout.lua
+       7      1    111      1       7 METHODS.Look@1199-1205@./LibKa0s/Callout.lua
+       3      3     26      2       3 METHODS.GetGlowColor@1208-1210@./LibKa0s/Callout.lua
+      12      8    150      1      12 METHODS.Stats@1213-1224@./LibKa0s/Callout.lua
+       8      6     71      2       8 lib.MigrateGlow@1230-1237@./LibKa0s/Callout.lua
+      12      8    144      2      13 lib.New@1240-1252@./LibKa0s/Callout.lua
+       1      1     20      3       1 __validFor@1263-1263@./LibKa0s/Callout.lua
+       1      1     21      2       1 __defaultFor@1264-1264@./LibKa0s/Callout.lua
+       5      1     39      2       5 __colorFor@1265-1269@./LibKa0s/Callout.lua
+       5      1     40      1       5 __glowColorFor@1271-1275@./LibKa0s/Callout.lua
+       1      1     12      1       1 __prefixOf@1276-1276@./LibKa0s/Callout.lua
        7      6     65      1       7 encodeNumber@69-75@./LibKa0s/Perf.lua
        3      2     22      1       3 (anonymous)@83-85@./LibKa0s/Perf.lua
        4      1     25      1       6 encodeString@82-87@./LibKa0s/Perf.lua
@@ -1861,115 +1885,115 @@
        1      1     18      0       1 (anonymous)@585-585@./LibKa0s/DebugLogWindow.lua
        1      1     14      0       1 onResize@608-608@./LibKa0s/DebugLogWindow.lua
       37      7    281      2      57 lib.__buildConsole@560-616@./LibKa0s/DebugLogWindow.lua
-       5      3     41      2       5 word@187-191@./LibKa0s/CalloutSettings.lua
-       1      2     14      1       1 resolve@193-193@./LibKa0s/CalloutSettings.lua
-       1      1     32      1       1 c@196-196@./LibKa0s/CalloutSettings.lua
-       4      1     34      3       4 hex@195-198@./LibKa0s/CalloutSettings.lua
-       1      1     35      3       1 bothShapes@202-202@./LibKa0s/CalloutSettings.lua
-       6      8     84      1       6 fromEither@204-209@./LibKa0s/CalloutSettings.lua
-       5      2     50      2       5 listOf@213-217@./LibKa0s/CalloutSettings.lua
-       4      1     36      1       4 outlineValues@219-222@./LibKa0s/CalloutSettings.lua
-       4      1     48      1       4 animValues@224-227@./LibKa0s/CalloutSettings.lua
-       3      1     30      1       3 channelValues@229-231@./LibKa0s/CalloutSettings.lua
-       3      3     35      1       3 add@243-245@./LibKa0s/CalloutSettings.lua
-      14      9    109      0      16 listedFaces@241-256@./LibKa0s/CalloutSettings.lua
-      15      6    149      0      15 fontChoices@264-278@./LibKa0s/CalloutSettings.lua
-       5      2     64      1       5 playValues@281-285@./LibKa0s/CalloutSettings.lua
-       1      2     21      1       1 playable@287-287@./LibKa0s/CalloutSettings.lua
-       1      1     10      0       1 (anonymous)@313-313@./LibKa0s/CalloutSettings.lua
-       1      1     12      1       1 (anonymous)@314-314@./LibKa0s/CalloutSettings.lua
-       1      1     15      1       1 validate@319-319@./LibKa0s/CalloutSettings.lua
-       1      1      8      0       1 onChange@320-320@./LibKa0s/CalloutSettings.lua
-      15      8    113      5      15 bind@309-323@./LibKa0s/CalloutSettings.lua
-       5      1     40      5       5 row@325-329@./LibKa0s/CalloutSettings.lua
-       3      1     50      7       3 slider@331-333@./LibKa0s/CalloutSettings.lua
-       3      1     38      5       3 choice@335-337@./LibKa0s/CalloutSettings.lua
-       3      1     45      4       3 check@339-341@./LibKa0s/CalloutSettings.lua
-       1      1     11      0       1 off@355-355@./LibKa0s/CalloutSettings.lua
-       4      4     39      3       4 add@356-359@./LibKa0s/CalloutSettings.lua
-       1      1     16      0       1 get@364-364@./LibKa0s/CalloutSettings.lua
-       1      1     12      1       1 set@365-365@./LibKa0s/CalloutSettings.lua
-       1      1     10      0       1 get@366-366@./LibKa0s/CalloutSettings.lua
-      21      1    312      4      24 glowRows@353-376@./LibKa0s/CalloutSettings.lua
-       1      1     11      0       1 noShadow@386-386@./LibKa0s/CalloutSettings.lua
-      17      1    398      3      17 lookRows@378-394@./LibKa0s/CalloutSettings.lua
-       5      2     45      1       5 voiceValues@397-401@./LibKa0s/CalloutSettings.lua
-       5      2     45      1       5 ttsValues@404-408@./LibKa0s/CalloutSettings.lua
-       5      2     56      2       5 ttsSchemaValues@414-418@./LibKa0s/CalloutSettings.lua
-       1      1     15      0       1 notTts@427-427@./LibKa0s/CalloutSettings.lua
-       5      4     45      0       5 pickGet@428-432@./LibKa0s/CalloutSettings.lua
-       1      1     10      0       1 (anonymous)@433-433@./LibKa0s/CalloutSettings.lua
-      14      5    218      5      18 ttsRows@423-440@./LibKa0s/CalloutSettings.lua
-       1      1      8      0       1 (anonymous)@444-444@./LibKa0s/CalloutSettings.lua
-      11      3    176      4      11 soundRows@442-452@./LibKa0s/CalloutSettings.lua
-       1      3     21      1       1 trim@454-454@./LibKa0s/CalloutSettings.lua
-       1      1     13      0       1 get@463-463@./LibKa0s/CalloutSettings.lua
-       4      2     31      1       4 set@464-467@./LibKa0s/CalloutSettings.lua
-       1      1     12      0       1 get@467-467@./LibKa0s/CalloutSettings.lua
-       9      2    117      5      12 colorRows@458-469@./LibKa0s/CalloutSettings.lua
-       4      3     26      1       4 set@480-483@./LibKa0s/CalloutSettings.lua
-       1      3     16      1       1 set@487-487@./LibKa0s/CalloutSettings.lua
-      16      3    216      4      19 textsRows@471-489@./LibKa0s/CalloutSettings.lua
-       4      1     34      3       4 lookTab@492-495@./LibKa0s/CalloutSettings.lua
-       8      9     95      7       8 tabRows@499-506@./LibKa0s/CalloutSettings.lua
-       4      3     55      2       4 METHODS.SettingsRows@511-514@./LibKa0s/CalloutSettings.lua
-       5      2     37      1       5 session@520-524@./LibKa0s/CalloutSettings.lua
-       8      6     93      1       8 sampleText@527-534@./LibKa0s/CalloutSettings.lua
-      13      7    137      3      13 paintPreview@537-549@./LibKa0s/CalloutSettings.lua
-       3      2     24      2       3 METHODS.Preview@553-555@./LibKa0s/CalloutSettings.lua
-       4      2     35      2       4 METHODS.TestCountdown@558-561@./LibKa0s/CalloutSettings.lua
-       7      2     50      1       7 playPicked@565-571@./LibKa0s/CalloutSettings.lua
-       1      1      7      0       1 get@582-582@./LibKa0s/CalloutSettings.lua
-       1      2     16      1       1 set@582-582@./LibKa0s/CalloutSettings.lua
-       1      1     11      0       1 get@585-585@./LibKa0s/CalloutSettings.lua
-       1      1     11      1       1 set@585-585@./LibKa0s/CalloutSettings.lua
-       1      1     11      1       1 validate@591-591@./LibKa0s/CalloutSettings.lua
-      18      2    207      2      18 previewRows@577-594@./LibKa0s/CalloutSettings.lua
-       4      5     40      1       4 asPrefix@597-600@./LibKa0s/CalloutSettings.lua
-      12      8    155      3      12 METHODS.SchemaRows@613-624@./LibKa0s/CalloutSettings.lua
-       1      1     14      0       1 repaint@635-635@./LibKa0s/CalloutSettings.lua
-       1      1      8      0       1 onClick@642-642@./LibKa0s/CalloutSettings.lua
-       1      1      7      0       1 onClick@643-643@./LibKa0s/CalloutSettings.lua
-       1      1      8      0       1 onClick@646-646@./LibKa0s/CalloutSettings.lua
-      18      5    199      6      18 optionsPreview@630-647@./LibKa0s/CalloutSettings.lua
-       7      2     62      1       7 sideEntries@650-656@./LibKa0s/CalloutSettings.lua
-       1      1      9      1       1 onSelect@676-676@./LibKa0s/CalloutSettings.lua
-       5      1     52      2       5 render@677-681@./LibKa0s/CalloutSettings.lua
-      16      3    151      5      20 buildSide@664-683@./LibKa0s/CalloutSettings.lua
-      16      6    183      3      19 buildOptions@688-706@./LibKa0s/CalloutSettings.lua
-       3      1     34      1       3 render@718-720@./LibKa0s/CalloutSettings.lua
-      11      6    114      2      13 METHODS.SettingsTabs@711-723@./LibKa0s/CalloutSettings.lua
-       3      1     34      1       3 render@734-736@./LibKa0s/CalloutSettings.lua
-       6      5     74      2       8 METHODS.SettingsTab@730-737@./LibKa0s/CalloutSettings.lua
-       8      1     56      3       8 plainLabel@741-748@./LibKa0s/CalloutSettings.lua
-       8      1     68      6       8 plainButton@750-757@./LibKa0s/CalloutSettings.lua
-       9      9    112      1       9 valueText@759-767@./LibKa0s/CalloutSettings.lua
-       7      3     71      2       7 cycle@769-775@./LibKa0s/CalloutSettings.lua
-       5      4     77      2       5 nudge@777-781@./LibKa0s/CalloutSettings.lua
-       1      3     22      1       1 (anonymous)@788-788@./LibKa0s/CalloutSettings.lua
-       1      3     17      0       1 (anonymous)@789-789@./LibKa0s/CalloutSettings.lua
-       6      1     55      4       6 bool@785-790@./LibKa0s/CalloutSettings.lua
-       1      1     14      0       1 (anonymous)@795-795@./LibKa0s/CalloutSettings.lua
-       1      1     13      0       1 (anonymous)@798-798@./LibKa0s/CalloutSettings.lua
-       1      1     12      0       1 (anonymous)@799-799@./LibKa0s/CalloutSettings.lua
-       9      2    130      4       9 number@792-800@./LibKa0s/CalloutSettings.lua
-       1      1     13      0       1 (anonymous)@804-804@./LibKa0s/CalloutSettings.lua
-       1      1     12      0       1 (anonymous)@805-805@./LibKa0s/CalloutSettings.lua
-       5      2     66      4       5 string@802-806@./LibKa0s/CalloutSettings.lua
-       4      1     19      0       4 apply@819-822@./LibKa0s/CalloutSettings.lua
-       1      1     19      0       1 cancelFunc@824-824@./LibKa0s/CalloutSettings.lua
-       8      3     73      0      11 (anonymous)@815-825@./LibKa0s/CalloutSettings.lua
-       4      2     36      0       4 (anonymous)@826-829@./LibKa0s/CalloutSettings.lua
-      10      2     98      4      23 color@808-830@./LibKa0s/CalloutSettings.lua
-       6      1     44      3       6 plainHeading@832-837@./LibKa0s/CalloutSettings.lua
-       1      1      8      0       1 (anonymous)@848-848@./LibKa0s/CalloutSettings.lua
-       1      1      7      0       1 (anonymous)@850-850@./LibKa0s/CalloutSettings.lua
-       1      1      8      0       1 (anonymous)@852-852@./LibKa0s/CalloutSettings.lua
-      16      2    157      6      16 plainPreview@839-854@./LibKa0s/CalloutSettings.lua
-       8      2     84      5       8 plainRow@856-863@./LibKa0s/CalloutSettings.lua
-       4      3     40      0       4 refresh@869-872@./LibKa0s/CalloutSettings.lua
-      25      9    233      3      30 buildPlain@865-894@./LibKa0s/CalloutSettings.lua
-      10     10    109      3      10 METHODS.BuildSettings@908-917@./LibKa0s/CalloutSettings.lua
+       5      3     41      2       5 word@181-185@./LibKa0s/CalloutSettings.lua
+       1      2     14      1       1 resolve@187-187@./LibKa0s/CalloutSettings.lua
+       1      1     32      1       1 c@190-190@./LibKa0s/CalloutSettings.lua
+       4      1     34      3       4 hex@189-192@./LibKa0s/CalloutSettings.lua
+       1      1     35      3       1 bothShapes@196-196@./LibKa0s/CalloutSettings.lua
+       6      8     84      1       6 fromEither@198-203@./LibKa0s/CalloutSettings.lua
+       5      2     50      2       5 listOf@207-211@./LibKa0s/CalloutSettings.lua
+       4      1     36      1       4 outlineValues@213-216@./LibKa0s/CalloutSettings.lua
+       4      1     48      1       4 animValues@218-221@./LibKa0s/CalloutSettings.lua
+       3      1     30      1       3 channelValues@223-225@./LibKa0s/CalloutSettings.lua
+       3      3     35      1       3 add@236-238@./LibKa0s/CalloutSettings.lua
+      14      9    109      0      16 listedFaces@234-249@./LibKa0s/CalloutSettings.lua
+      15      6    149      0      15 fontChoices@257-271@./LibKa0s/CalloutSettings.lua
+       5      2     64      1       5 playValues@274-278@./LibKa0s/CalloutSettings.lua
+       1      2     21      1       1 playable@280-280@./LibKa0s/CalloutSettings.lua
+       1      1     10      0       1 (anonymous)@306-306@./LibKa0s/CalloutSettings.lua
+       1      1     12      1       1 (anonymous)@307-307@./LibKa0s/CalloutSettings.lua
+       1      1     15      1       1 validate@312-312@./LibKa0s/CalloutSettings.lua
+       1      1      8      0       1 onChange@313-313@./LibKa0s/CalloutSettings.lua
+      15      8    113      5      15 bind@302-316@./LibKa0s/CalloutSettings.lua
+       5      1     40      5       5 row@318-322@./LibKa0s/CalloutSettings.lua
+       3      1     50      7       3 slider@324-326@./LibKa0s/CalloutSettings.lua
+       3      1     38      5       3 choice@328-330@./LibKa0s/CalloutSettings.lua
+       3      1     45      4       3 check@332-334@./LibKa0s/CalloutSettings.lua
+       1      1     11      0       1 off@348-348@./LibKa0s/CalloutSettings.lua
+       4      4     39      3       4 add@349-352@./LibKa0s/CalloutSettings.lua
+       1      1     16      0       1 get@357-357@./LibKa0s/CalloutSettings.lua
+       1      1     12      1       1 set@358-358@./LibKa0s/CalloutSettings.lua
+       1      1     10      0       1 get@359-359@./LibKa0s/CalloutSettings.lua
+      21      1    312      4      24 glowRows@346-369@./LibKa0s/CalloutSettings.lua
+       1      1     11      0       1 noShadow@379-379@./LibKa0s/CalloutSettings.lua
+      17      1    398      3      17 lookRows@371-387@./LibKa0s/CalloutSettings.lua
+       5      2     45      1       5 voiceValues@390-394@./LibKa0s/CalloutSettings.lua
+       5      2     45      1       5 ttsValues@397-401@./LibKa0s/CalloutSettings.lua
+       5      2     56      2       5 ttsSchemaValues@407-411@./LibKa0s/CalloutSettings.lua
+       1      1     15      0       1 notTts@420-420@./LibKa0s/CalloutSettings.lua
+       5      4     45      0       5 pickGet@421-425@./LibKa0s/CalloutSettings.lua
+       1      1     10      0       1 (anonymous)@426-426@./LibKa0s/CalloutSettings.lua
+      14      5    218      5      18 ttsRows@416-433@./LibKa0s/CalloutSettings.lua
+       1      1      8      0       1 (anonymous)@437-437@./LibKa0s/CalloutSettings.lua
+      11      3    176      4      11 soundRows@435-445@./LibKa0s/CalloutSettings.lua
+       1      3     21      1       1 trim@447-447@./LibKa0s/CalloutSettings.lua
+       1      1     13      0       1 get@456-456@./LibKa0s/CalloutSettings.lua
+       4      2     31      1       4 set@457-460@./LibKa0s/CalloutSettings.lua
+       1      1     12      0       1 get@460-460@./LibKa0s/CalloutSettings.lua
+       9      2    117      5      12 colorRows@451-462@./LibKa0s/CalloutSettings.lua
+       4      3     26      1       4 set@473-476@./LibKa0s/CalloutSettings.lua
+       1      3     16      1       1 set@480-480@./LibKa0s/CalloutSettings.lua
+      16      3    216      4      19 textsRows@464-482@./LibKa0s/CalloutSettings.lua
+       4      1     34      3       4 lookTab@485-488@./LibKa0s/CalloutSettings.lua
+       8      9     95      7       8 tabRows@492-499@./LibKa0s/CalloutSettings.lua
+       4      3     55      2       4 METHODS.SettingsRows@504-507@./LibKa0s/CalloutSettings.lua
+       5      2     37      1       5 session@513-517@./LibKa0s/CalloutSettings.lua
+       8      6     93      1       8 sampleText@520-527@./LibKa0s/CalloutSettings.lua
+      13      7    137      3      13 paintPreview@530-542@./LibKa0s/CalloutSettings.lua
+       3      2     24      2       3 METHODS.Preview@546-548@./LibKa0s/CalloutSettings.lua
+       4      2     35      2       4 METHODS.TestCountdown@551-554@./LibKa0s/CalloutSettings.lua
+       7      2     50      1       7 playPicked@558-564@./LibKa0s/CalloutSettings.lua
+       1      1      7      0       1 get@575-575@./LibKa0s/CalloutSettings.lua
+       1      2     16      1       1 set@575-575@./LibKa0s/CalloutSettings.lua
+       1      1     11      0       1 get@578-578@./LibKa0s/CalloutSettings.lua
+       1      1     11      1       1 set@578-578@./LibKa0s/CalloutSettings.lua
+       1      1     11      1       1 validate@584-584@./LibKa0s/CalloutSettings.lua
+      18      2    207      2      18 previewRows@570-587@./LibKa0s/CalloutSettings.lua
+       4      5     40      1       4 asPrefix@590-593@./LibKa0s/CalloutSettings.lua
+      12      8    155      3      12 METHODS.SchemaRows@606-617@./LibKa0s/CalloutSettings.lua
+       1      1     14      0       1 repaint@626-626@./LibKa0s/CalloutSettings.lua
+       1      1      8      0       1 onClick@633-633@./LibKa0s/CalloutSettings.lua
+       1      1      7      0       1 onClick@634-634@./LibKa0s/CalloutSettings.lua
+       1      1      8      0       1 onClick@637-637@./LibKa0s/CalloutSettings.lua
+      18      3    192      5      18 optionsPreview@621-638@./LibKa0s/CalloutSettings.lua
+       7      2     62      1       7 sideEntries@641-647@./LibKa0s/CalloutSettings.lua
+       1      1      9      1       1 onSelect@665-665@./LibKa0s/CalloutSettings.lua
+       5      1     52      2       5 render@666-670@./LibKa0s/CalloutSettings.lua
+      16      3    149      5      20 buildSide@653-672@./LibKa0s/CalloutSettings.lua
+      16      6    183      3      19 buildOptions@677-695@./LibKa0s/CalloutSettings.lua
+       3      1     34      1       3 render@707-709@./LibKa0s/CalloutSettings.lua
+      11      6    114      2      13 METHODS.SettingsTabs@700-712@./LibKa0s/CalloutSettings.lua
+       3      1     34      1       3 render@723-725@./LibKa0s/CalloutSettings.lua
+       6      5     74      2       8 METHODS.SettingsTab@719-726@./LibKa0s/CalloutSettings.lua
+       8      1     56      3       8 plainLabel@730-737@./LibKa0s/CalloutSettings.lua
+       8      1     68      6       8 plainButton@739-746@./LibKa0s/CalloutSettings.lua
+       9      9    112      1       9 valueText@748-756@./LibKa0s/CalloutSettings.lua
+       7      3     71      2       7 cycle@758-764@./LibKa0s/CalloutSettings.lua
+       5      4     77      2       5 nudge@766-770@./LibKa0s/CalloutSettings.lua
+       1      3     22      1       1 (anonymous)@777-777@./LibKa0s/CalloutSettings.lua
+       1      3     17      0       1 (anonymous)@778-778@./LibKa0s/CalloutSettings.lua
+       6      1     55      4       6 bool@774-779@./LibKa0s/CalloutSettings.lua
+       1      1     14      0       1 (anonymous)@784-784@./LibKa0s/CalloutSettings.lua
+       1      1     13      0       1 (anonymous)@787-787@./LibKa0s/CalloutSettings.lua
+       1      1     12      0       1 (anonymous)@788-788@./LibKa0s/CalloutSettings.lua
+       9      2    130      4       9 number@781-789@./LibKa0s/CalloutSettings.lua
+       1      1     13      0       1 (anonymous)@793-793@./LibKa0s/CalloutSettings.lua
+       1      1     12      0       1 (anonymous)@794-794@./LibKa0s/CalloutSettings.lua
+       5      2     66      4       5 string@791-795@./LibKa0s/CalloutSettings.lua
+       4      1     19      0       4 apply@808-811@./LibKa0s/CalloutSettings.lua
+       1      1     19      0       1 cancelFunc@813-813@./LibKa0s/CalloutSettings.lua
+       8      3     73      0      11 (anonymous)@804-814@./LibKa0s/CalloutSettings.lua
+       4      2     36      0       4 (anonymous)@815-818@./LibKa0s/CalloutSettings.lua
+      10      2     98      4      23 color@797-819@./LibKa0s/CalloutSettings.lua
+       6      1     44      3       6 plainHeading@821-826@./LibKa0s/CalloutSettings.lua
+       1      1      8      0       1 (anonymous)@835-835@./LibKa0s/CalloutSettings.lua
+       1      1      7      0       1 (anonymous)@837-837@./LibKa0s/CalloutSettings.lua
+       1      1      8      0       1 (anonymous)@839-839@./LibKa0s/CalloutSettings.lua
+      14      1    150      5      14 plainPreview@828-841@./LibKa0s/CalloutSettings.lua
+       8      2     84      5       8 plainRow@843-850@./LibKa0s/CalloutSettings.lua
+       4      2     34      0       4 refresh@856-859@./LibKa0s/CalloutSettings.lua
+      25      9    231      3      30 buildPlain@852-881@./LibKa0s/CalloutSettings.lua
+      10     10    109      3      10 METHODS.BuildSettings@894-903@./LibKa0s/CalloutSettings.lua
       12      5     66      1      12 offeredStrata@116-127@./LibKa0s/OptionsCompose.lua
        6      3     27      2       6 offersAny@130-135@./LibKa0s/OptionsCompose.lua
        5      3     31      1       5 shallow@177-181@./LibKa0s/OptionsCompose.lua
@@ -2371,87 +2395,135 @@
        4      1     37      3       4 shellRegions@993-996@./LibKa0s/SkinPaint.lua
       10      5     96      5      10 shellBody@1000-1009@./LibKa0s/SkinPaint.lua
       18     15    240      3      20 Shell@1028-1047@./LibKa0s/SkinPaint.lua
-       1      4     21      1       1 isSecret@119-119@./LibKa0s/WaypointArrow.lua
-       3      5     37      1       3 plainNumber@121-123@./LibKa0s/WaypointArrow.lua
-       4      3     28      2       4 inList@125-128@./LibKa0s/WaypointArrow.lua
-       6      8     78      1       6 rgbOf@131-136@./LibKa0s/WaypointArrow.lua
-       1      1     12      1       1 style@139-139@./LibKa0s/WaypointArrow.lua
-       1      1     11      1       1 useSkinColors@140-140@./LibKa0s/WaypointArrow.lua
-       1      1     12      1       1 farColor@141-141@./LibKa0s/WaypointArrow.lua
-       1      1     12      1       1 nearColor@142-142@./LibKa0s/WaypointArrow.lua
-       1      3     21      1       1 scale@143-143@./LibKa0s/WaypointArrow.lua
-       1      2     14      1       1 resolve@146-146@./LibKa0s/WaypointArrow.lua
-       8      8    101      5       9 lib.Rotation@153-161@./LibKa0s/WaypointArrow.lua
-       5      5     65      4       5 lib.Distance@164-168@./LibKa0s/WaypointArrow.lua
-       6      7     76      3       6 lib.Fade@172-177@./LibKa0s/WaypointArrow.lua
-       7      3     98      3       7 lib.Mix@181-187@./LibKa0s/WaypointArrow.lua
-       5      2     47      1       5 lib.GroundFrame@191-195@./LibKa0s/WaypointArrow.lua
-       6      1     82      1       6 lib.GroundTexCoord@198-203@./LibKa0s/WaypointArrow.lua
-       6      4     40      0       6 facing@207-212@./LibKa0s/WaypointArrow.lua
-       9      5     66      1       9 xyOf@214-222@./LibKa0s/WaypointArrow.lua
-      11     11    132      3      11 mapWorld@225-235@./LibKa0s/WaypointArrow.lua
-      11      7    106      0      11 playerWorld@238-248@./LibKa0s/WaypointArrow.lua
-       5      2     28      1       5 state@256-260@./LibKa0s/WaypointArrow.lua
-       4      2     32      2       4 debugOut@262-265@./LibKa0s/WaypointArrow.lua
-       9      6     77      2       9 call@268-276@./LibKa0s/WaypointArrow.lua
-       5      3     40      2       5 setting@278-282@./LibKa0s/WaypointArrow.lua
-       6      4     49      1       6 skinOwner@284-289@./LibKa0s/WaypointArrow.lua
-       7      5     68      2       7 skinColor@291-297@./LibKa0s/WaypointArrow.lua
-       7      4     60      1       7 colors@301-307@./LibKa0s/WaypointArrow.lua
-       7      4     75      1       7 mediaBase@309-315@./LibKa0s/WaypointArrow.lua
-       8      8    119      1       8 savePoint@319-326@./LibKa0s/WaypointArrow.lua
-       7     12    114      1       7 pointOf@332-338@./LibKa0s/WaypointArrow.lua
-       5      3     55      1       5 applyPoint@340-344@./LibKa0s/WaypointArrow.lua
-       5      3     41      1       5 onDragStart@346-350@./LibKa0s/WaypointArrow.lua
-       6      2     29      1       6 onDragStop@352-357@./LibKa0s/WaypointArrow.lua
-       5      1     29      2       5 texture@361-365@./LibKa0s/WaypointArrow.lua
-       1      1      7      0       1 (anonymous)@378-378@./LibKa0s/WaypointArrow.lua
-       1      1      7      0       1 (anonymous)@379-379@./LibKa0s/WaypointArrow.lua
-       1      1     20      2       1 (anonymous)@380-380@./LibKa0s/WaypointArrow.lua
-       1      1     15      0       1 (anonymous)@381-381@./LibKa0s/WaypointArrow.lua
-       1      1     15      0       1 (anonymous)@382-382@./LibKa0s/WaypointArrow.lua
-      26      5    268      1      27 build@367-393@./LibKa0s/WaypointArrow.lua
-      28      4    317      1      28 applyStyle@397-424@./LibKa0s/WaypointArrow.lua
-       3      1     18      1       3 applyScale@426-428@./LibKa0s/WaypointArrow.lua
-       5      1     26      1       5 hideArt@432-436@./LibKa0s/WaypointArrow.lua
-      15      3    115      2      15 turn@439-453@./LibKa0s/WaypointArrow.lua
-      14      2    133      3      14 paintArt@455-468@./LibKa0s/WaypointArrow.lua
-      12      9     98      2      12 paintRole@472-483@./LibKa0s/WaypointArrow.lua
-       5      2     53      2       5 formatYards@485-489@./LibKa0s/WaypointArrow.lua
-       4      7     47      3       4 paintText@491-494@./LibKa0s/WaypointArrow.lua
-      10      6     99      1      10 targetWorld@499-508@./LibKa0s/WaypointArrow.lua
-       7      6     95      1       7 measureTarget@511-517@./LibKa0s/WaypointArrow.lua
-      12      9    109      1      12 measure@519-530@./LibKa0s/WaypointArrow.lua
-       5      6     45      2       5 arrived@534-538@./LibKa0s/WaypointArrow.lua
-      15      6    104      1      15 update@541-555@./LibKa0s/WaypointArrow.lua
-       6      3     39      2       6 onUpdate@557-562@./LibKa0s/WaypointArrow.lua
-       1      1     12      2       1 (anonymous)@572-572@./LibKa0s/WaypointArrow.lua
-      11      2     55      1      11 present@564-574@./LibKa0s/WaypointArrow.lua
-       6      3     39      1       6 takeDown@579-584@./LibKa0s/WaypointArrow.lua
-      12     10    157      2      12 METHODS.SetTarget@594-605@./LibKa0s/WaypointArrow.lua
-       8      4     76      3       8 METHODS.SetProvider@610-617@./LibKa0s/WaypointArrow.lua
-       6      2     30      1       6 METHODS.Clear@620-625@./LibKa0s/WaypointArrow.lua
-       4      3     24      1       4 METHODS.Target@628-631@./LibKa0s/WaypointArrow.lua
-       7      4     52      2       7 METHODS.ShowSample@635-641@./LibKa0s/WaypointArrow.lua
-       7      3     42      1       7 METHODS.HideSample@644-650@./LibKa0s/WaypointArrow.lua
-       1      1     17      1       1 METHODS.SampleShown@652-652@./LibKa0s/WaypointArrow.lua
-       8      4     66      2       8 METHODS.Configure@656-663@./LibKa0s/WaypointArrow.lua
-       8      5     78      3       8 METHODS.ConfigureFrom@667-674@./LibKa0s/WaypointArrow.lua
-       5      2     33      2       5 METHODS.Get@677-681@./LibKa0s/WaypointArrow.lua
-       6      1     57      1       6 METHODS.Colors@685-690@./LibKa0s/WaypointArrow.lua
-       7      3     44      1       7 METHODS.Apply@693-699@./LibKa0s/WaypointArrow.lua
-       5      2     34      2       5 METHODS.SetPosition@703-707@./LibKa0s/WaypointArrow.lua
-       4      2     49      1       4 METHODS.GetPosition@710-713@./LibKa0s/WaypointArrow.lua
-       6      2     41      1       6 METHODS.ResetPosition@716-721@./LibKa0s/WaypointArrow.lua
-       1      1     14      1       1 METHODS.Update@724-724@./LibKa0s/WaypointArrow.lua
-       4      2     31      1       4 METHODS.IsShown@726-729@./LibKa0s/WaypointArrow.lua
-       5      1     35      1       5 METHODS.Suspend@733-737@./LibKa0s/WaypointArrow.lua
-       1      1     15      1       1 METHODS.Resume@739-739@./LibKa0s/WaypointArrow.lua
-       1      1     16      1       1 METHODS.Suspended@741-741@./LibKa0s/WaypointArrow.lua
-       1      1     15      1       1 METHODS.Frame@744-744@./LibKa0s/WaypointArrow.lua
-      11      5    159      1      11 METHODS.Stats@747-757@./LibKa0s/WaypointArrow.lua
-      11     11    157      2      11 lib.New@761-771@./LibKa0s/WaypointArrow.lua
-       1      1     16      1       1 lib.IsStyle@774-774@./LibKa0s/WaypointArrow.lua
+       1      4     21      1       1 isSecret@156-156@./LibKa0s/WaypointArrow.lua
+       3      5     37      1       3 plainNumber@158-160@./LibKa0s/WaypointArrow.lua
+       4      3     28      2       4 inList@162-165@./LibKa0s/WaypointArrow.lua
+       6      8     78      1       6 rgbOf@168-173@./LibKa0s/WaypointArrow.lua
+       1      1     12      1       1 isBool@175-175@./LibKa0s/WaypointArrow.lua
+       1      1     13      1       1 isColor@176-176@./LibKa0s/WaypointArrow.lua
+       1      1     11      1       1 (anonymous)@177-177@./LibKa0s/WaypointArrow.lua
+       1      1      8      1       1 oneOf@177-177@./LibKa0s/WaypointArrow.lua
+       1      1     12      1       1 style@180-180@./LibKa0s/WaypointArrow.lua
+       1      3     21      1       1 scale@184-184@./LibKa0s/WaypointArrow.lua
+       1      2     16      1       1 font@185-185@./LibKa0s/WaypointArrow.lua
+       1      3     21      1       1 fontSize@187-187@./LibKa0s/WaypointArrow.lua
+       1      3     21      1       1 x@195-195@./LibKa0s/WaypointArrow.lua
+       1      3     21      1       1 y@196-196@./LibKa0s/WaypointArrow.lua
+       1      2     14      1       1 resolve@200-200@./LibKa0s/WaypointArrow.lua
+       1      1     12      0       1 unitPx@203-203@./LibKa0s/WaypointArrow.lua
+       8      8    101      5       9 lib.Rotation@210-218@./LibKa0s/WaypointArrow.lua
+       5      5     65      4       5 lib.Distance@221-225@./LibKa0s/WaypointArrow.lua
+       6      7     76      3       6 lib.Fade@229-234@./LibKa0s/WaypointArrow.lua
+       7      3     98      3       7 lib.Mix@238-244@./LibKa0s/WaypointArrow.lua
+       5      2     47      1       5 lib.GroundFrame@248-252@./LibKa0s/WaypointArrow.lua
+       6      1     82      1       6 lib.GroundTexCoord@255-260@./LibKa0s/WaypointArrow.lua
+       4      4     37      1       4 word@268-271@./LibKa0s/WaypointArrow.lua
+       7      4     71      3      10 lib.FormatDistance@266-275@./LibKa0s/WaypointArrow.lua
+       6      4     40      0       6 facing@279-284@./LibKa0s/WaypointArrow.lua
+       9      5     66      1       9 xyOf@286-294@./LibKa0s/WaypointArrow.lua
+      11     11    132      3      11 mapWorld@297-307@./LibKa0s/WaypointArrow.lua
+      11      7    106      0      11 playerWorld@310-320@./LibKa0s/WaypointArrow.lua
+       5      2     28      1       5 state@328-332@./LibKa0s/WaypointArrow.lua
+       4      2     32      2       4 debugOut@334-337@./LibKa0s/WaypointArrow.lua
+       9      6     77      2       9 call@340-348@./LibKa0s/WaypointArrow.lua
+       5      3     40      2       5 setting@350-354@./LibKa0s/WaypointArrow.lua
+       6      4     49      1       6 skinOwner@356-361@./LibKa0s/WaypointArrow.lua
+       7      5     68      2       7 skinColor@363-369@./LibKa0s/WaypointArrow.lua
+       7      4     60      1       7 colors@373-379@./LibKa0s/WaypointArrow.lua
+       7      4     75      1       7 mediaBase@381-387@./LibKa0s/WaypointArrow.lua
+       8      6     61      2       8 pathOf@392-399@./LibKa0s/WaypointArrow.lua
+       6      5     72      3       6 write@405-410@./LibKa0s/WaypointArrow.lua
+       1      2     13      1       1 parentOf@414-414@./LibKa0s/WaypointArrow.lua
+       4      5     33      1       4 effectiveScale@416-419@./LibKa0s/WaypointArrow.lua
+       1      1     12      1       1 ownScale@422-422@./LibKa0s/WaypointArrow.lua
+       1      1     25      1       1 clampOffset@425-425@./LibKa0s/WaypointArrow.lua
+      10      7    127      1      10 centerOffsets@431-440@./LibKa0s/WaypointArrow.lua
+      13      9    149      1      13 droppedPoint@445-457@./LibKa0s/WaypointArrow.lua
+      10      4     93      1      10 savePoint@461-470@./LibKa0s/WaypointArrow.lua
+       7     12    114      1       7 pointOf@476-482@./LibKa0s/WaypointArrow.lua
+       7      6     90      1       7 currentPoint@486-492@./LibKa0s/WaypointArrow.lua
+       5      1     57      1       5 applyPoint@497-501@./LibKa0s/WaypointArrow.lua
+       6      4     51      1       6 onDragStart@504-509@./LibKa0s/WaypointArrow.lua
+       6      2     29      1       6 onDragStop@511-516@./LibKa0s/WaypointArrow.lua
+       5      1     29      2       5 texture@520-524@./LibKa0s/WaypointArrow.lua
+       1      1      7      0       1 (anonymous)@536-536@./LibKa0s/WaypointArrow.lua
+       1      1      7      0       1 (anonymous)@537-537@./LibKa0s/WaypointArrow.lua
+       1      1     16      2       1 (anonymous)@538-538@./LibKa0s/WaypointArrow.lua
+       1      1     15      0       1 (anonymous)@539-539@./LibKa0s/WaypointArrow.lua
+       1      1     15      0       1 (anonymous)@540-540@./LibKa0s/WaypointArrow.lua
+      21      5    204      1      22 build@526-547@./LibKa0s/WaypointArrow.lua
+       1      4     18      1       1 measured@559-559@./LibKa0s/WaypointArrow.lua
+      12     13    197      1      12 hitRect@564-575@./LibKa0s/WaypointArrow.lua
+      20      2    176      1      20 layout@580-599@./LibKa0s/WaypointArrow.lua
+       6      7     73      1       6 skinFacade@603-608@./LibKa0s/WaypointArrow.lua
+       3      3     15      0       3 gameFace@610-612@./LibKa0s/WaypointArrow.lua
+      10     11    139      2      10 namedFont@615-624@./LibKa0s/WaypointArrow.lua
+      10     10    113      1      10 textColor@628-637@./LibKa0s/WaypointArrow.lua
+       6     10     88      5       6 setOwnFont@643-648@./LibKa0s/WaypointArrow.lua
+      14      7    169      1      14 applyFont@650-663@./LibKa0s/WaypointArrow.lua
+      28      4    323      1      28 applyStyle@667-694@./LibKa0s/WaypointArrow.lua
+       3      1     18      1       3 applyScale@696-698@./LibKa0s/WaypointArrow.lua
+       5      1     26      1       5 hideArt@702-706@./LibKa0s/WaypointArrow.lua
+      15      3    115      2      15 turn@709-723@./LibKa0s/WaypointArrow.lua
+      14      2    133      3      14 paintArt@725-738@./LibKa0s/WaypointArrow.lua
+       6      2     59      2       6 formatYards@742-747@./LibKa0s/WaypointArrow.lua
+       7      8     72      3       7 textLine@751-757@./LibKa0s/WaypointArrow.lua
+      11      6    110      3      11 paintText@759-769@./LibKa0s/WaypointArrow.lua
+      10      6     99      1      10 targetWorld@774-783@./LibKa0s/WaypointArrow.lua
+       7      6     95      1       7 measureTarget@786-792@./LibKa0s/WaypointArrow.lua
+      12      9    109      1      12 measure@794-805@./LibKa0s/WaypointArrow.lua
+       5      6     45      2       5 arrived@810-814@./LibKa0s/WaypointArrow.lua
+      15      6    104      1      15 update@817-831@./LibKa0s/WaypointArrow.lua
+       6      3     39      2       6 onUpdate@833-838@./LibKa0s/WaypointArrow.lua
+       1      1     12      2       1 (anonymous)@850-850@./LibKa0s/WaypointArrow.lua
+      13      2     63      1      13 present@840-852@./LibKa0s/WaypointArrow.lua
+       7      3     43      1       7 takeDown@857-863@./LibKa0s/WaypointArrow.lua
+       4      4     47      2       4 word@875-878@./LibKa0s/WaypointArrow.lua
+       5      3     31      0       5 inCombat@880-884@./LibKa0s/WaypointArrow.lua
+       8      9     84      1       8 zoneName@887-894@./LibKa0s/WaypointArrow.lua
+      10      7    124      1      10 lib.ShareText@899-908@./LibKa0s/WaypointArrow.lua
+       6      6     59      1       6 openChat@918-923@./LibKa0s/WaypointArrow.lua
+       7      8     68      1       7 openMap@928-934@./LibKa0s/WaypointArrow.lua
+       4      4     25      1       4 menuTarget@938-941@./LibKa0s/WaypointArrow.lua
+      10      7     92      0      10 onClick@949-958@./LibKa0s/WaypointArrow.lua
+       4      1     41      3      13 clearItem@947-959@./LibKa0s/WaypointArrow.lua
+       1      2     11      0       1 onClick@967-967@./LibKa0s/WaypointArrow.lua
+       1      1      7      0       1 onClick@970-970@./LibKa0s/WaypointArrow.lua
+      11     10    127      2      11 mapItems@961-971@./LibKa0s/WaypointArrow.lua
+       1      1     10      0       1 onClick@981-981@./LibKa0s/WaypointArrow.lua
+       1      1      8      0       1 onClick@982-982@./LibKa0s/WaypointArrow.lua
+      14      5    143      2      14 menuItems@975-988@./LibKa0s/WaypointArrow.lua
+       4      4     26      0       4 widgets@990-993@./LibKa0s/WaypointArrow.lua
+       9      9    131      3       9 lib.__mouseUp@997-1005@./LibKa0s/WaypointArrow.lua
+       8      9     90      1       8 closeMenu@1010-1017@./LibKa0s/WaypointArrow.lua
+      12     10    157      2      12 METHODS.SetTarget@1027-1038@./LibKa0s/WaypointArrow.lua
+       8      4     76      3       8 METHODS.SetProvider@1043-1050@./LibKa0s/WaypointArrow.lua
+       6      2     30      1       6 METHODS.Clear@1053-1058@./LibKa0s/WaypointArrow.lua
+       4      3     24      1       4 METHODS.Target@1061-1064@./LibKa0s/WaypointArrow.lua
+       9      7     89      2       9 METHODS.ShowSample@1068-1076@./LibKa0s/WaypointArrow.lua
+       8      3     46      1       8 METHODS.HideSample@1079-1086@./LibKa0s/WaypointArrow.lua
+       1      1     17      1       1 METHODS.SampleShown@1088-1088@./LibKa0s/WaypointArrow.lua
+       8      4     66      2       8 METHODS.Configure@1092-1099@./LibKa0s/WaypointArrow.lua
+       9      5     76      3       9 METHODS.ConfigureFrom@1103-1111@./LibKa0s/WaypointArrow.lua
+       5      2     33      2       5 METHODS.Get@1114-1118@./LibKa0s/WaypointArrow.lua
+       6      1     57      1       6 METHODS.Colors@1122-1127@./LibKa0s/WaypointArrow.lua
+      10      3     56      1      10 METHODS.Apply@1130-1139@./LibKa0s/WaypointArrow.lua
+       6      2     49      2       6 METHODS.SetPosition@1144-1149@./LibKa0s/WaypointArrow.lua
+       4      1     43      1       4 METHODS.GetPosition@1152-1155@./LibKa0s/WaypointArrow.lua
+       8      2     65      1       8 METHODS.ResetPosition@1160-1167@./LibKa0s/WaypointArrow.lua
+       3      1     22      2       3 METHODS.SetLocked@1171-1173@./LibKa0s/WaypointArrow.lua
+       1      1     19      1       1 METHODS.IsLocked@1175-1175@./LibKa0s/WaypointArrow.lua
+       4      1     21      1       4 METHODS.MenuItems@1178-1181@./LibKa0s/WaypointArrow.lua
+       6      4     50      1       6 METHODS.OpenMenu@1185-1190@./LibKa0s/WaypointArrow.lua
+       1      1     14      1       1 METHODS.Update@1193-1193@./LibKa0s/WaypointArrow.lua
+       4      2     31      1       4 METHODS.IsShown@1195-1198@./LibKa0s/WaypointArrow.lua
+       5      1     35      1       5 METHODS.Suspend@1202-1206@./LibKa0s/WaypointArrow.lua
+       1      1     15      1       1 METHODS.Resume@1208-1208@./LibKa0s/WaypointArrow.lua
+       1      1     16      1       1 METHODS.Suspended@1210-1210@./LibKa0s/WaypointArrow.lua
+       7      2     36      1       7 METHODS.Frame@1213-1219@./LibKa0s/WaypointArrow.lua
+      11      5    159      1      11 METHODS.Stats@1222-1232@./LibKa0s/WaypointArrow.lua
+      11     11    161      2      11 lib.New@1236-1246@./LibKa0s/WaypointArrow.lua
+       1      1     16      1       1 lib.IsStyle@1249-1249@./LibKa0s/WaypointArrow.lua
        5      2     29      1       5 copyTable@60-64@./LibKa0s/SkinAceConfirm.lua
        5      4     69      1       5 confirmParts@67-71@./LibKa0s/SkinAceConfirm.lua
        8      4     43      1       8 takenByOtherSkin@73-80@./LibKa0s/SkinAceConfirm.lua
@@ -3073,87 +3145,92 @@
        1      1     21      1       1 clamp01@180-180@./LibKa0s/SlashParse.lua
        9      9    142      2      11 parseColor@172-182@./LibKa0s/SlashParse.lua
       11      9    132      3      13 lib.ParseValue@189-201@./LibKa0s/SlashParse.lua
-       3      2     13      1       3 tooltipBody@87-89@./LibKa0s/OptionsWidgets.lua
-       7      2     24      2       7 applyWidth@91-97@./LibKa0s/OptionsWidgets.lua
-       4      2     32      2       4 (anonymous)@138-141@./LibKa0s/OptionsWidgets.lua
-      24     14    217      1      32 enumList@120-151@./LibKa0s/OptionsWidgets.lua
-       4      3     43      3       4 snapToStep@153-156@./LibKa0s/OptionsWidgets.lua
-       9      8     66      2       9 applyLabelFont@172-180@./LibKa0s/OptionsWidgets.lua
-       6      1     30      1       6 startRow@184-189@./LibKa0s/OptionsWidgets.lua
-       7      3     52      3       7 renderRowGuarded@202-208@./LibKa0s/OptionsWidgets.lua
-       1      1      8      0       1 (anonymous)@268-268@./LibKa0s/OptionsWidgets.lua
-      24      8    165      3      27 landingLogo@247-273@./LibKa0s/OptionsWidgets.lua
-       7      4     70      4       8 landingNotes@281-288@./LibKa0s/OptionsWidgets.lua
-       1      1     32      1       1 byte@296-296@./LibKa0s/OptionsWidgets.lua
-       4      1     34      3       4 colorEscape@295-298@./LibKa0s/OptionsWidgets.lua
-       9      4     94      2       9 landingRow@303-311@./LibKa0s/OptionsWidgets.lua
-       9      6     87      3      10 landingSections@323-332@./LibKa0s/OptionsWidgets.lua
-       1      1      3      0       1 (anonymous)@344-344@./LibKa0s/OptionsWidgets.lua
-       1      1     16      4       1 __tipColor@345-345@./LibKa0s/OptionsWidgets.lua
-       6      6     66      1       6 read@353-358@./LibKa0s/OptionsWidgets.lua
-       4      3     38      2       4 readKey@361-364@./LibKa0s/OptionsWidgets.lua
-       3      2     23      1       3 refused@369-371@./LibKa0s/OptionsWidgets.lua
-       5      6     60      2       5 write@373-377@./LibKa0s/OptionsWidgets.lua
-       9      8     60      2       9 isDisabled@388-396@./LibKa0s/OptionsWidgets.lua
-       1      1      4      0       1 noop@398-398@./LibKa0s/OptionsWidgets.lua
-       1      1     15      0       1 apply@410-410@./LibKa0s/OptionsWidgets.lua
-       8      6     54      3       8 bindDisabled@406-413@./LibKa0s/OptionsWidgets.lua
-       4      1     18      2       4 set@424-427@./LibKa0s/OptionsWidgets.lua
-       5      7     61      1       5 decodeColor@432-436@./LibKa0s/OptionsWidgets.lua
-       4      3     55      4       4 encodeColor@437-440@./LibKa0s/OptionsWidgets.lua
-      10      6     87      0      10 show@451-460@./LibKa0s/OptionsWidgets.lua
-       1      2     13      0       1 hide@461-461@./LibKa0s/OptionsWidgets.lua
-      14      6     80      3      25 O.AttachTooltip@446-470@./LibKa0s/OptionsWidgets.lua
-       8      1     46      2       8 O.AddSpacer@474-481@./LibKa0s/OptionsWidgets.lua
-      15      3     98      2      19 O.Section@485-503@./LibKa0s/OptionsWidgets.lua
-       1      1     15      2       1 O.LabelFont@509-509@./LibKa0s/OptionsWidgets.lua
-      14      6     95      3      15 O.TextRow@520-534@./LibKa0s/OptionsWidgets.lua
-       9      3     62      2      12 O.BuildLandingPage@549-560@./LibKa0s/OptionsWidgets.lua
-       8      5     57      0      12 (anonymous)@594-605@./LibKa0s/OptionsWidgets.lua
-      13      6    113      1      35 makeBtn@574-608@./LibKa0s/OptionsWidgets.lua
-      14      2     84      3      51 O.InlineButtonPair@565-615@./LibKa0s/OptionsWidgets.lua
-       1      3     13      0       1 readValue@625-625@./LibKa0s/OptionsWidgets.lua
-       4      1     15      0       4 refresh@629-632@./LibKa0s/OptionsWidgets.lua
-       3      3     18      3       3 (anonymous)@634-636@./LibKa0s/OptionsWidgets.lua
-      15      3    119      4      24 makeCheckbox@619-642@./LibKa0s/OptionsWidgets.lua
-       6      4     41      0       8 refresh@655-662@./LibKa0s/OptionsWidgets.lua
-       3      3     26      1       5 commitSlider@664-668@./LibKa0s/OptionsWidgets.lua
-       1      1     12      3       1 (anonymous)@670-670@./LibKa0s/OptionsWidgets.lua
-       6      2     24      0       6 (anonymous)@691-696@./LibKa0s/OptionsWidgets.lua
-       7      3     45      3      12 (anonymous)@686-697@./LibKa0s/OptionsWidgets.lua
-      22     10    177      4      62 makeSlider@644-705@./LibKa0s/OptionsWidgets.lua
-       8      7     56      1       8 dropdownType@711-718@./LibKa0s/OptionsWidgets.lua
-       8      2     54      0       8 applyList@739-746@./LibKa0s/OptionsWidgets.lua
-       5      1     19      0       5 refresh@751-755@./LibKa0s/OptionsWidgets.lua
-       1      1     14      3       1 (anonymous)@757-757@./LibKa0s/OptionsWidgets.lua
-      19      6    163      4      44 makeDropdown@720-763@./LibKa0s/OptionsWidgets.lua
-       4      2     18      0       4 refresh@778-781@./LibKa0s/OptionsWidgets.lua
-       1      1     14      3       1 (anonymous)@785-785@./LibKa0s/OptionsWidgets.lua
-      15      5    133      4      23 makeEditBox@769-791@./LibKa0s/OptionsWidgets.lua
-       1      1     12      0       1 readColor@806-806@./LibKa0s/OptionsWidgets.lua
-       4      1     15      0       4 refresh@812-815@./LibKa0s/OptionsWidgets.lua
-       4      4     47      4       5 commit@824-828@./LibKa0s/OptionsWidgets.lua
-       6      2     39      0       6 (anonymous)@843-848@./LibKa0s/OptionsWidgets.lua
-       8      4     84      4      13 throttledCommit@837-849@./LibKa0s/OptionsWidgets.lua
-       1      1     24      6       1 (anonymous)@851-851@./LibKa0s/OptionsWidgets.lua
-       1      1     24      6       1 (anonymous)@852-852@./LibKa0s/OptionsWidgets.lua
-      21      3    151      4      66 makeColorPicker@793-858@./LibKa0s/OptionsWidgets.lua
-      17      9    153      4      31 O.RenderField@862-892@./LibKa0s/OptionsWidgets.lua
-       1      3     18      0       1 refresh@908-908@./LibKa0s/OptionsWidgets.lua
-       4      5     35      3       4 (anonymous)@910-913@./LibKa0s/OptionsWidgets.lua
-      14      5    120      4      21 O.SessionCheckbox@899-919@./LibKa0s/OptionsWidgets.lua
-       4      3     34      2       4 choiceLabelRel@940-943@./LibKa0s/OptionsWidgets.lua
-      20      6    149      4      20 choiceHeader@947-966@./LibKa0s/OptionsWidgets.lua
-       1      1     13      0       1 lit@982-982@./LibKa0s/OptionsWidgets.lua
-       4      1     14      0       4 ]@985-988@./LibKa0s/OptionsWidgets.lua
-       4      2     24      0       4 (anonymous)@990-993@./LibKa0s/OptionsWidgets.lua
-      12      1     98      4      20 choiceCell@977-996@./LibKa0s/OptionsWidgets.lua
-       4      3     22      0       4 (anonymous)@1008-1011@./LibKa0s/OptionsWidgets.lua
-      15     10    118      3      18 choiceExtraCell@1001-1018@./LibKa0s/OptionsWidgets.lua
-      11      5    134      5      11 choiceLine@1023-1033@./LibKa0s/OptionsWidgets.lua
-      20      8    151      3      23 drawChoiceGrid@1036-1058@./LibKa0s/OptionsWidgets.lua
-      11      7     84      2      11 O.ChoiceGrid@1086-1096@./LibKa0s/OptionsWidgets.lua
-      47      7    214      2     782 lib.__AttachWidgets@336-1117@./LibKa0s/OptionsWidgets.lua
+       3      2     13      1       3 tooltipBody@92-94@./LibKa0s/OptionsWidgets.lua
+       7      2     24      2       7 applyWidth@96-102@./LibKa0s/OptionsWidgets.lua
+       4      2     32      2       4 (anonymous)@143-146@./LibKa0s/OptionsWidgets.lua
+      24     14    217      1      32 enumList@125-156@./LibKa0s/OptionsWidgets.lua
+       4      3     43      3       4 snapToStep@158-161@./LibKa0s/OptionsWidgets.lua
+       5      3     40      2       5 boxNumber@192-196@./LibKa0s/OptionsWidgets.lua
+       6      8     87      2       6 revertSliderBox@200-205@./LibKa0s/OptionsWidgets.lua
+       1      1     10      1       1 (anonymous)@214-214@./LibKa0s/OptionsWidgets.lua
+       1      1     10      1       1 (anonymous)@215-215@./LibKa0s/OptionsWidgets.lua
+       9      5     86      1       9 sliderBoxGuard@208-216@./LibKa0s/OptionsWidgets.lua
+       9      8     66      2       9 applyLabelFont@218-226@./LibKa0s/OptionsWidgets.lua
+       6      1     30      1       6 startRow@230-235@./LibKa0s/OptionsWidgets.lua
+       7      3     52      3       7 renderRowGuarded@248-254@./LibKa0s/OptionsWidgets.lua
+       1      1      8      0       1 (anonymous)@314-314@./LibKa0s/OptionsWidgets.lua
+      24      8    165      3      27 landingLogo@293-319@./LibKa0s/OptionsWidgets.lua
+       7      4     70      4       8 landingNotes@327-334@./LibKa0s/OptionsWidgets.lua
+       1      1     32      1       1 byte@342-342@./LibKa0s/OptionsWidgets.lua
+       4      1     34      3       4 colorEscape@341-344@./LibKa0s/OptionsWidgets.lua
+       9      4     94      2       9 landingRow@349-357@./LibKa0s/OptionsWidgets.lua
+       9      6     87      3      10 landingSections@369-378@./LibKa0s/OptionsWidgets.lua
+       1      1      3      0       1 (anonymous)@390-390@./LibKa0s/OptionsWidgets.lua
+       1      1     16      4       1 __tipColor@391-391@./LibKa0s/OptionsWidgets.lua
+       6      6     66      1       6 read@399-404@./LibKa0s/OptionsWidgets.lua
+       4      3     38      2       4 readKey@407-410@./LibKa0s/OptionsWidgets.lua
+       3      2     23      1       3 refused@415-417@./LibKa0s/OptionsWidgets.lua
+       5      6     60      2       5 write@419-423@./LibKa0s/OptionsWidgets.lua
+       9      8     60      2       9 isDisabled@434-442@./LibKa0s/OptionsWidgets.lua
+       1      1      4      0       1 noop@444-444@./LibKa0s/OptionsWidgets.lua
+       1      1     15      0       1 apply@456-456@./LibKa0s/OptionsWidgets.lua
+       8      6     54      3       8 bindDisabled@452-459@./LibKa0s/OptionsWidgets.lua
+       4      1     18      2       4 set@470-473@./LibKa0s/OptionsWidgets.lua
+       5      7     61      1       5 decodeColor@478-482@./LibKa0s/OptionsWidgets.lua
+       4      3     55      4       4 encodeColor@483-486@./LibKa0s/OptionsWidgets.lua
+      10      6     87      0      10 show@497-506@./LibKa0s/OptionsWidgets.lua
+       1      2     13      0       1 hide@507-507@./LibKa0s/OptionsWidgets.lua
+      14      6     80      3      25 O.AttachTooltip@492-516@./LibKa0s/OptionsWidgets.lua
+       8      1     46      2       8 O.AddSpacer@520-527@./LibKa0s/OptionsWidgets.lua
+      15      3     98      2      19 O.Section@531-549@./LibKa0s/OptionsWidgets.lua
+       1      1     15      2       1 O.LabelFont@555-555@./LibKa0s/OptionsWidgets.lua
+      14      6     95      3      15 O.TextRow@566-580@./LibKa0s/OptionsWidgets.lua
+       9      3     62      2      12 O.BuildLandingPage@595-606@./LibKa0s/OptionsWidgets.lua
+       8      5     57      0      12 (anonymous)@640-651@./LibKa0s/OptionsWidgets.lua
+      13      6    113      1      35 makeBtn@620-654@./LibKa0s/OptionsWidgets.lua
+      14      2     84      3      51 O.InlineButtonPair@611-661@./LibKa0s/OptionsWidgets.lua
+       1      3     13      0       1 readValue@671-671@./LibKa0s/OptionsWidgets.lua
+       4      1     15      0       4 refresh@675-678@./LibKa0s/OptionsWidgets.lua
+       3      3     18      3       3 (anonymous)@680-682@./LibKa0s/OptionsWidgets.lua
+      15      3    119      4      24 makeCheckbox@665-688@./LibKa0s/OptionsWidgets.lua
+       6      4     41      0       8 refresh@702-709@./LibKa0s/OptionsWidgets.lua
+       3      3     26      1       5 commitSlider@711-715@./LibKa0s/OptionsWidgets.lua
+       1      1     12      3       1 (anonymous)@717-717@./LibKa0s/OptionsWidgets.lua
+       6      2     24      0       6 (anonymous)@738-743@./LibKa0s/OptionsWidgets.lua
+       7      3     45      3      12 (anonymous)@733-744@./LibKa0s/OptionsWidgets.lua
+      23     10    181      4      63 makeSlider@690-752@./LibKa0s/OptionsWidgets.lua
+       8      7     56      1       8 dropdownType@758-765@./LibKa0s/OptionsWidgets.lua
+       8      2     54      0       8 applyList@786-793@./LibKa0s/OptionsWidgets.lua
+       5      1     19      0       5 refresh@798-802@./LibKa0s/OptionsWidgets.lua
+       1      1     14      3       1 (anonymous)@804-804@./LibKa0s/OptionsWidgets.lua
+      19      6    163      4      44 makeDropdown@767-810@./LibKa0s/OptionsWidgets.lua
+       4      2     18      0       4 refresh@825-828@./LibKa0s/OptionsWidgets.lua
+       1      1     14      3       1 (anonymous)@832-832@./LibKa0s/OptionsWidgets.lua
+      15      5    133      4      23 makeEditBox@816-838@./LibKa0s/OptionsWidgets.lua
+       1      1     12      0       1 readColor@853-853@./LibKa0s/OptionsWidgets.lua
+       4      1     15      0       4 refresh@859-862@./LibKa0s/OptionsWidgets.lua
+       4      4     47      4       5 commit@871-875@./LibKa0s/OptionsWidgets.lua
+       6      2     39      0       6 (anonymous)@890-895@./LibKa0s/OptionsWidgets.lua
+       8      4     84      4      13 throttledCommit@884-896@./LibKa0s/OptionsWidgets.lua
+       1      1     24      6       1 (anonymous)@898-898@./LibKa0s/OptionsWidgets.lua
+       1      1     24      6       1 (anonymous)@899-899@./LibKa0s/OptionsWidgets.lua
+      21      3    151      4      66 makeColorPicker@840-905@./LibKa0s/OptionsWidgets.lua
+      17      9    153      4      31 O.RenderField@909-939@./LibKa0s/OptionsWidgets.lua
+       1      3     18      0       1 refresh@955-955@./LibKa0s/OptionsWidgets.lua
+       4      5     35      3       4 (anonymous)@957-960@./LibKa0s/OptionsWidgets.lua
+      14      5    120      4      21 O.SessionCheckbox@946-966@./LibKa0s/OptionsWidgets.lua
+       4      3     34      2       4 choiceLabelRel@987-990@./LibKa0s/OptionsWidgets.lua
+      20      6    149      4      20 choiceHeader@994-1013@./LibKa0s/OptionsWidgets.lua
+       1      1     13      0       1 lit@1029-1029@./LibKa0s/OptionsWidgets.lua
+       4      1     14      0       4 ]@1032-1035@./LibKa0s/OptionsWidgets.lua
+       4      2     24      0       4 (anonymous)@1037-1040@./LibKa0s/OptionsWidgets.lua
+      12      1     98      4      20 choiceCell@1024-1043@./LibKa0s/OptionsWidgets.lua
+       4      3     22      0       4 (anonymous)@1055-1058@./LibKa0s/OptionsWidgets.lua
+      15     10    118      3      18 choiceExtraCell@1048-1065@./LibKa0s/OptionsWidgets.lua
+      11      5    134      5      11 choiceLine@1070-1080@./LibKa0s/OptionsWidgets.lua
+      20      8    151      3      23 drawChoiceGrid@1083-1105@./LibKa0s/OptionsWidgets.lua
+      11      7     84      2      11 O.ChoiceGrid@1133-1143@./LibKa0s/OptionsWidgets.lua
+      47      7    214      2     783 lib.__AttachWidgets@382-1164@./LibKa0s/OptionsWidgets.lua
        1      2     21      1       1 isFrame@45-45@./LibKa0s/CorePixel.lua
        8      9     91      2       8 lib.__PixelSize@49-56@./LibKa0s/CorePixel.lua
        1      1     17      2       1 lib.__OnPixelScale@59-59@./LibKa0s/CorePixel.lua
@@ -3368,6 +3445,14 @@
       19      2    217      0      19 (anonymous)@105-123@./tests/test_waypoint_arrow_settings.lua
        1      1      9      1       1 (anonymous)@128-128@./tests/test_waypoint_arrow_settings.lua
        8      1     75      0       8 (anonymous)@125-132@./tests/test_waypoint_arrow_settings.lua
+       5      2     38      1       5 keysOf@145-149@./tests/test_waypoint_arrow_settings.lua
+      26      3    279      0      26 (anonymous)@151-176@./tests/test_waypoint_arrow_settings.lua
+      21      2    251      0      21 (anonymous)@178-198@./tests/test_waypoint_arrow_settings.lua
+       8      1     65      0       8 (anonymous)@200-207@./tests/test_waypoint_arrow_settings.lua
+       1      1      7      0       1 resolveRoot@218-218@./tests/test_waypoint_arrow_settings.lua
+       1      1     12      1       1 print@219-219@./tests/test_waypoint_arrow_settings.lua
+      15      4    188      0      15 (anonymous)@209-223@./tests/test_waypoint_arrow_settings.lua
+      12      1    163      0      12 (anonymous)@225-236@./tests/test_waypoint_arrow_settings.lua
        4      1     25      2       4 scheduleTimer@28-31@./tests/test_options_throttle.lua
        4      1     23      2       4 set@32-35@./tests/test_options_throttle.lua
        5      2     32      0       5 probe.fire@41-45@./tests/test_options_throttle.lua
@@ -3445,29 +3530,64 @@
        4      1     15      0       7 For@26-32@./tests/test_callout_glow.lua
        5      1     32      2      11 withSkin@23-33@./tests/test_callout_glow.lua
        4      1     18      1       4 halo@35-38@./tests/test_callout_glow.lua
-      25      4    271      0      26 (anonymous)@42-67@./tests/test_callout_glow.lua
-      14      1    143      0      14 (anonymous)@69-82@./tests/test_callout_glow.lua
-      20      1    209      0      20 (anonymous)@86-105@./tests/test_callout_glow.lua
-       5      1     30      0       5 (anonymous)@107-111@./tests/test_callout_glow.lua
-      13      1    185      0      13 (anonymous)@115-127@./tests/test_callout_glow.lua
-       1      1     16      1       1 (anonymous)@148-148@./tests/test_callout_glow.lua
-      23      1    277      0      24 (anonymous)@129-152@./tests/test_callout_glow.lua
-       1      1     10      1       1 (anonymous)@159-159@./tests/test_callout_glow.lua
-      10      1    152      0      10 (anonymous)@154-163@./tests/test_callout_glow.lua
-       1      1     15      2       1 set@170-170@./tests/test_callout_glow.lua
-      10      1    140      0      10 (anonymous)@165-174@./tests/test_callout_glow.lua
-      16      3    200      0      16 (anonymous)@178-193@./tests/test_callout_glow.lua
-       1      1     15      2       1 set@209-209@./tests/test_callout_glow.lua
-       1      1      5      0       1 set@214-214@./tests/test_callout_glow.lua
-      21      1    207      0      22 (anonymous)@195-216@./tests/test_callout_glow.lua
-       1      1     15      2       1 set@234-234@./tests/test_callout_glow.lua
-      22      1    197      0      23 (anonymous)@218-240@./tests/test_callout_glow.lua
-      19      1    167      0      19 (anonymous)@242-260@./tests/test_callout_glow.lua
-       1      1     15      1       1 Apply@273-273@./tests/test_callout_glow.lua
-      38      6    475      0      38 (anonymous)@267-304@./tests/test_callout_glow.lua
-      23     10    245      0      25 (anonymous)@306-330@./tests/test_callout_glow.lua
-      21      5    222      0      21 (anonymous)@332-352@./tests/test_callout_glow.lua
-      10      3     80      0      10 (anonymous)@354-363@./tests/test_callout_glow.lua
+      21      4    203      0      22 (anonymous)@42-63@./tests/test_callout_glow.lua
+      14      1    143      0      14 (anonymous)@65-78@./tests/test_callout_glow.lua
+      20      1    209      0      20 (anonymous)@82-101@./tests/test_callout_glow.lua
+       5      1     30      0       5 (anonymous)@103-107@./tests/test_callout_glow.lua
+      12      1    172      0      12 (anonymous)@111-122@./tests/test_callout_glow.lua
+       1      1     16      1       1 (anonymous)@143-143@./tests/test_callout_glow.lua
+      23      1    277      0      24 (anonymous)@124-147@./tests/test_callout_glow.lua
+       1      1     10      1       1 (anonymous)@154-154@./tests/test_callout_glow.lua
+      10      1    146      0      10 (anonymous)@149-158@./tests/test_callout_glow.lua
+       1      1     15      2       1 set@165-165@./tests/test_callout_glow.lua
+      10      1    140      0      10 (anonymous)@160-169@./tests/test_callout_glow.lua
+      16      3    200      0      16 (anonymous)@173-188@./tests/test_callout_glow.lua
+       1      1     15      2       1 set@204-204@./tests/test_callout_glow.lua
+       1      1      5      0       1 set@209-209@./tests/test_callout_glow.lua
+      21      1    207      0      22 (anonymous)@190-211@./tests/test_callout_glow.lua
+       1      1     15      2       1 set@229-229@./tests/test_callout_glow.lua
+      22      1    197      0      23 (anonymous)@213-235@./tests/test_callout_glow.lua
+      19      1    167      0      19 (anonymous)@237-255@./tests/test_callout_glow.lua
+       1      1     15      1       1 Apply@268-268@./tests/test_callout_glow.lua
+      34      5    417      0      34 (anonymous)@262-295@./tests/test_callout_glow.lua
+      23     10    245      0      25 (anonymous)@297-321@./tests/test_callout_glow.lua
+      21      5    222      0      21 (anonymous)@323-343@./tests/test_callout_glow.lua
+      10      3     78      0      10 (anonymous)@345-354@./tests/test_callout_glow.lua
+       1      1     13      1       1 shown.IsShown@19-19@./tests/test_waypoint_arrow_menu.lua
+       5      1     48      3       5 W.ContextMenu@20-24@./tests/test_waypoint_arrow_menu.lua
+       3      1     21      0       3 W.CloseMenu@25-27@./tests/test_waypoint_arrow_menu.lua
+       1      1     16      1       1 ChatFrame_OpenChat@28-28@./tests/test_waypoint_arrow_menu.lua
+       1      1     16      1       1 OpenWorldMap@29-29@./tests/test_waypoint_arrow_menu.lua
+       1      2     16      1       1 GetMapInfo@30-30@./tests/test_waypoint_arrow_menu.lua
+       1      1      9      0       1 InCombatLockdown@31-31@./tests/test_waypoint_arrow_menu.lua
+      13      2     69      1      19 (anonymous)@15-33@./tests/test_waypoint_arrow_menu.lua
+       6      2     69      2      24 menuArrow@13-36@./tests/test_waypoint_arrow_menu.lua
+       5      3     40      1       5 ids@40-44@./tests/test_waypoint_arrow_menu.lua
+       3      3     28      2       3 item@46-48@./tests/test_waypoint_arrow_menu.lua
+       1      1     17      1       1 rightClick@50-50@./tests/test_waypoint_arrow_menu.lua
+      17      2    167      0      17 (anonymous)@52-68@./tests/test_waypoint_arrow_menu.lua
+      12      1    102      0      12 (anonymous)@70-81@./tests/test_waypoint_arrow_menu.lua
+       1      2     14      1       1 onClear@85-85@./tests/test_waypoint_arrow_menu.lua
+      14      1    123      0      14 (anonymous)@83-96@./tests/test_waypoint_arrow_menu.lua
+       1      1      8      0       1 SendChatMessage@101-101@./tests/test_waypoint_arrow_menu.lua
+      15      1    156      0      15 (anonymous)@98-112@./tests/test_waypoint_arrow_menu.lua
+       1      1     12      1       1 OpenChat@117-117@./tests/test_waypoint_arrow_menu.lua
+      10      1     74      0      10 (anonymous)@114-123@./tests/test_waypoint_arrow_menu.lua
+      15      1    117      0      15 (anonymous)@125-139@./tests/test_waypoint_arrow_menu.lua
+      11      1     94      0      11 (anonymous)@141-151@./tests/test_waypoint_arrow_menu.lua
+       1      1     12      2       1 set@156-156@./tests/test_waypoint_arrow_menu.lua
+      20      1    181      0      20 (anonymous)@153-172@./tests/test_waypoint_arrow_menu.lua
+       1      1      3      0       1 onClick@178-178@./tests/test_waypoint_arrow_menu.lua
+       5      1     44      3       5 menuItems@176-180@./tests/test_waypoint_arrow_menu.lua
+      10      1     82      0      14 (anonymous)@174-187@./tests/test_waypoint_arrow_menu.lua
+       6      1     54      0       6 (anonymous)@189-194@./tests/test_waypoint_arrow_menu.lua
+       6      1     37      0       6 (anonymous)@196-201@./tests/test_waypoint_arrow_menu.lua
+       1      1      8      0       1 onClear@205-205@./tests/test_waypoint_arrow_menu.lua
+       1      1      8      0       1 onSampleClear@214-214@./tests/test_waypoint_arrow_menu.lua
+      17      1    155      0      17 (anonymous)@203-219@./tests/test_waypoint_arrow_menu.lua
+       1      1      8      0       1 onClear@223-223@./tests/test_waypoint_arrow_menu.lua
+      11      1    102      0      11 (anonymous)@221-231@./tests/test_waypoint_arrow_menu.lua
+      17      1    101      0      17 (anonymous)@233-249@./tests/test_waypoint_arrow_menu.lua
        7      1     49      0       7 env@26-32@./tests/test_sim_autoplay.lua
        1      1      5      0       1 Probe@38-38@./tests/test_sim_autoplay.lua
        1      1      5      0       1 deliver@42-42@./tests/test_sim_autoplay.lua
@@ -4184,6 +4304,50 @@
       16      9    136      2      18 isAssigned@57-74@./tests/test_register.lua
       23      7    176      0      30 (anonymous)@76-105@./tests/test_register.lua
       18      5    153      0      20 (anonymous)@120-139@./tests/test_register.lua
+       1      2     27      2       1 near@15-15@./tests/test_waypoint_arrow_text.lua
+       1      1      7      0       1 (anonymous)@18-18@./tests/test_waypoint_arrow_text.lua
+       3      2     20      3       3 pointAhead@17-19@./tests/test_waypoint_arrow_text.lua
+       4      1     24      1       4 textOf@21-24@./tests/test_waypoint_arrow_text.lua
+       4      2     17      1       4 (anonymous)@28-31@./tests/test_waypoint_arrow_text.lua
+       3      1     15      2       6 arrowWithFace@27-32@./tests/test_waypoint_arrow_text.lua
+      15      1    160      0      15 (anonymous)@36-50@./tests/test_waypoint_arrow_text.lua
+      12      1    123      0      12 (anonymous)@52-63@./tests/test_waypoint_arrow_text.lua
+       1      1      8      2       1 __index@78-78@./tests/test_waypoint_arrow_text.lua
+       1      1      8      2       1 __index@81-81@./tests/test_waypoint_arrow_text.lua
+      17      1    182      0      17 (anonymous)@67-83@./tests/test_waypoint_arrow_text.lua
+       6      1     47      0       6 (anonymous)@85-90@./tests/test_waypoint_arrow_text.lua
+       4      2     33      2       4 format@94-97@./tests/test_waypoint_arrow_text.lua
+      11      1     88      0      14 (anonymous)@92-105@./tests/test_waypoint_arrow_text.lua
+       1      1      7      0       1 (anonymous)@115-115@./tests/test_waypoint_arrow_text.lua
+       9      1     77      0       9 (anonymous)@109-117@./tests/test_waypoint_arrow_text.lua
+       1      1      7      0       1 (anonymous)@122-122@./tests/test_waypoint_arrow_text.lua
+       8      1     62      0       8 (anonymous)@119-126@./tests/test_waypoint_arrow_text.lua
+       6      1     46      0       6 (anonymous)@128-133@./tests/test_waypoint_arrow_text.lua
+      22      3    270      0      22 (anonymous)@137-158@./tests/test_waypoint_arrow_text.lua
+       1      1      5      0       1 (anonymous)@168-168@./tests/test_waypoint_arrow_text.lua
+      16      2    156      0      16 (anonymous)@160-175@./tests/test_waypoint_arrow_text.lua
+      11      1     88      0      11 (anonymous)@177-187@./tests/test_waypoint_arrow_text.lua
+      10      1     77      0      10 (anonymous)@191-200@./tests/test_waypoint_arrow_text.lua
+       1      3     23      3       1 LSM.Fetch@205-205@./tests/test_waypoint_arrow_text.lua
+       4      1     19      1       4 (anonymous)@203-206@./tests/test_waypoint_arrow_text.lua
+      14      1    130      0      17 (anonymous)@202-218@./tests/test_waypoint_arrow_text.lua
+      11      1    174      0      11 (anonymous)@220-230@./tests/test_waypoint_arrow_text.lua
+       1      1      9      1       1 Skin.Color@237-237@./tests/test_waypoint_arrow_text.lua
+       1      3     14      2       1 HudFontSize@240-240@./tests/test_waypoint_arrow_text.lua
+       4      2     32      2       4 HudFont@241-244@./tests/test_waypoint_arrow_text.lua
+       6      1     20      1       9 Skin.For@238-246@./tests/test_waypoint_arrow_text.lua
+       1      2     19      3       1 LSM.Fetch@248-248@./tests/test_waypoint_arrow_text.lua
+       7      1     36      1      15 (anonymous)@235-249@./tests/test_waypoint_arrow_text.lua
+       3      1     17      1      17 skinned@234-250@./tests/test_waypoint_arrow_text.lua
+      15      1    116      0      15 (anonymous)@252-266@./tests/test_waypoint_arrow_text.lua
+       1      1      9      1       1 Skin.Color@272-272@./tests/test_waypoint_arrow_text.lua
+       1      1      8      0       1 Text@273-273@./tests/test_waypoint_arrow_text.lua
+       1      1     14      1       1 Skin.For@273-273@./tests/test_waypoint_arrow_text.lua
+       5      1     21      1       5 (anonymous)@270-274@./tests/test_waypoint_arrow_text.lua
+       1      1      7      0       1 (anonymous)@276-276@./tests/test_waypoint_arrow_text.lua
+       7      1     42      0      11 (anonymous)@268-278@./tests/test_waypoint_arrow_text.lua
+       1      1      9      1       1 (anonymous)@285-285@./tests/test_waypoint_arrow_text.lua
+       8      1     81      0       8 (anonymous)@282-289@./tests/test_waypoint_arrow_text.lua
        1      1     10      1       1 (anonymous)@30-30@./tests/test_options_skin_picker_close.lua
        5      1     21      1       5 hoverable@28-32@./tests/test_options_skin_picker_close.lua
        6      4     69      1       6 armHover@36-41@./tests/test_options_skin_picker_close.lua
@@ -4798,6 +4962,29 @@
       10      1    100      0      11 (anonymous)@108-118@./tests/test_kit_limits.lua
       11      3     97      0      11 (anonymous)@120-130@./tests/test_kit_limits.lua
       19      4    153      0      19 (anonymous)@132-150@./tests/test_kit_limits.lua
+       1      1      7      0       1 (anonymous)@14-14@./tests/test_waypoint_arrow_position.lua
+       1      1     14      1       1 pointAhead@14-14@./tests/test_waypoint_arrow_position.lua
+       4      1     29      2       4 set@19-22@./tests/test_waypoint_arrow_position.lua
+       7      3     73      1      10 hosted@17-26@./tests/test_waypoint_arrow_position.lua
+       1      1      7      0       1 (anonymous)@30-30@./tests/test_waypoint_arrow_position.lua
+       1      2      7      0       1 (anonymous)@31-31@./tests/test_waypoint_arrow_position.lua
+       1      1      7      0       1 (anonymous)@33-33@./tests/test_waypoint_arrow_position.lua
+       1      2      7      0       1 (anonymous)@34-34@./tests/test_waypoint_arrow_position.lua
+       7      1     57      6       7 centers@29-35@./tests/test_waypoint_arrow_position.lua
+      17      1    167      0      17 (anonymous)@37-53@./tests/test_waypoint_arrow_position.lua
+      10      1    119      0      10 (anonymous)@55-64@./tests/test_waypoint_arrow_position.lua
+      15      1    154      0      15 (anonymous)@66-80@./tests/test_waypoint_arrow_position.lua
+      13      1    115      0      13 (anonymous)@82-94@./tests/test_waypoint_arrow_position.lua
+      11      2    111      0      11 (anonymous)@96-106@./tests/test_waypoint_arrow_position.lua
+      12      1    101      0      12 (anonymous)@108-119@./tests/test_waypoint_arrow_position.lua
+       1      1      5      0       1 canDrag@133-133@./tests/test_waypoint_arrow_position.lua
+      20      1    161      0      20 (anonymous)@121-140@./tests/test_waypoint_arrow_position.lua
+      11      1    108      0      11 (anonymous)@142-152@./tests/test_waypoint_arrow_position.lua
+      10      1     79      0      10 (anonymous)@154-163@./tests/test_waypoint_arrow_position.lua
+       5      2     31      1       5 byKey@167-171@./tests/test_waypoint_arrow_position.lua
+      21      3    232      0      21 (anonymous)@173-193@./tests/test_waypoint_arrow_position.lua
+       1      1      8      0       1 onResetPosition@200-200@./tests/test_waypoint_arrow_position.lua
+      14      2    167      0      14 (anonymous)@195-208@./tests/test_waypoint_arrow_position.lua
        1      3     27      1       1 keyOf@29-29@./tests/fixture_compose_golden.lua
        1      1     16      2       1 (anonymous)@38-38@./tests/fixture_compose_golden.lua
       12      6    136      1      12 G.serialize@31-42@./tests/fixture_compose_golden.lua
@@ -4893,68 +5080,76 @@
        6      1     56      0       7 (anonymous)@135-141@./tests/test_options_widgets.lua
        6      1     52      0       6 (anonymous)@143-148@./tests/test_options_widgets.lua
        6      1     74      0       9 (anonymous)@150-158@./tests/test_options_widgets.lua
-       8      1     74      0      10 (anonymous)@163-172@./tests/test_options_widgets.lua
-       7      2     54      0       8 (anonymous)@175-182@./tests/test_options_widgets.lua
-       5      1     32      0       8 (anonymous)@185-192@./tests/test_options_widgets.lua
-       1      1     12      0       1 (anonymous)@199-199@./tests/test_options_widgets.lua
-       4      1     39      0       4 (anonymous)@200-203@./tests/test_options_widgets.lua
-       9      2     65      0      14 (anonymous)@194-207@./tests/test_options_widgets.lua
-       9      2     81      0      11 (anonymous)@210-220@./tests/test_options_widgets.lua
-       8      1     72      0       8 (anonymous)@222-229@./tests/test_options_widgets.lua
-       4      1     20      0       6 (anonymous)@231-236@./tests/test_options_widgets.lua
-      12      3     85      0      17 (anonymous)@239-255@./tests/test_options_widgets.lua
-       6      1     33      0       9 (anonymous)@257-265@./tests/test_options_widgets.lua
-       1      1     14      3       1 SetCallback@273-273@./tests/test_options_widgets.lua
-       9      1     74      0      13 (anonymous)@267-279@./tests/test_options_widgets.lua
-       6      1     46      0       6 (anonymous)@281-286@./tests/test_options_widgets.lua
-      11      1     97      0      11 (anonymous)@288-298@./tests/test_options_widgets.lua
-      17      1    173      0      21 (anonymous)@300-320@./tests/test_options_widgets.lua
-       6      1     40      0       8 (anonymous)@324-331@./tests/test_options_widgets.lua
-       8      2     65      0       8 (anonymous)@333-340@./tests/test_options_widgets.lua
-       9      1    120      0       9 (anonymous)@344-352@./tests/test_options_widgets.lua
-       7      1     68      0       7 (anonymous)@354-360@./tests/test_options_widgets.lua
-       1      1     24      1       1 colorDecode@368-368@./tests/test_options_widgets.lua
-       1      1     20      4       1 colorEncode@369-369@./tests/test_options_widgets.lua
-      13      1    147      0      17 (anonymous)@363-379@./tests/test_options_widgets.lua
-       9      2     87      0      10 (anonymous)@381-390@./tests/test_options_widgets.lua
-       3      2     21      1       3 runRefreshers@400-402@./tests/test_options_widgets.lua
-       5      4     46      3       5 widgetLabeled@415-419@./tests/test_options_widgets.lua
-       1      1     12      1       1 disabledIf@426-426@./tests/test_options_widgets.lua
-      18      3    162      0      21 (anonymous)@421-441@./tests/test_options_widgets.lua
-      13      2    108      0      14 (anonymous)@443-456@./tests/test_options_widgets.lua
-      10      2     91      0      12 (anonymous)@458-469@./tests/test_options_widgets.lua
-       1      1      7      0       1 disabledIf@474-474@./tests/test_options_widgets.lua
-       8      1     68      0       9 (anonymous)@471-479@./tests/test_options_widgets.lua
-       1      1      3      0       1 onClick@486-486@./tests/test_options_widgets.lua
-       1      1      3      0       1 onClick@487-487@./tests/test_options_widgets.lua
-       1      1      5      0       1 get@489-489@./tests/test_options_widgets.lua
-       1      1      3      0       1 set@489-489@./tests/test_options_widgets.lua
-       6      1     60      1       6 Size@485-490@./tests/test_options_widgets.lua
-      18      4    155      0      28 (anonymous)@482-509@./tests/test_options_widgets.lua
-      12      1    105      0      14 (anonymous)@512-525@./tests/test_options_widgets.lua
-       1      1     18      1       1 Master@529-529@./tests/test_options_widgets.lua
-       8      1     69      0       9 (anonymous)@527-535@./tests/test_options_widgets.lua
-       1      1      7      0       1 Master@539-539@./tests/test_options_widgets.lua
-       7      1     65      0       8 (anonymous)@537-544@./tests/test_options_widgets.lua
-       7      1     86      0       7 (anonymous)@547-553@./tests/test_options_widgets.lua
-      14      1    182      0      18 (anonymous)@555-572@./tests/test_options_widgets.lua
-       1      1      8      0       1 ]@580-580@./tests/test_options_widgets.lua
-      11      1    119      0      13 (anonymous)@574-586@./tests/test_options_widgets.lua
-       1      1      8      0       1 ]@594-594@./tests/test_options_widgets.lua
-       9      1     82      0      11 (anonymous)@588-598@./tests/test_options_widgets.lua
-       7      1     58      0       7 (anonymous)@602-608@./tests/test_options_widgets.lua
-       5      1     49      0       5 (anonymous)@610-614@./tests/test_options_widgets.lua
-       5      1     43      0       5 (anonymous)@616-620@./tests/test_options_widgets.lua
-       4      1     20      0       4 (anonymous)@636-639@./tests/test_options_widgets.lua
-       8      1     66      0       8 (anonymous)@641-648@./tests/test_options_widgets.lua
-       5      1     46      0       5 (anonymous)@650-654@./tests/test_options_widgets.lua
-       6      1     55      0       6 (anonymous)@656-661@./tests/test_options_widgets.lua
-       4      1     18      0       6 (anonymous)@663-668@./tests/test_options_widgets.lua
-       1      1      6      0       1 values@676-676@./tests/test_options_widgets.lua
-       9      1     83      0      12 (anonymous)@670-681@./tests/test_options_widgets.lua
-      12      3    106      0      18 (anonymous)@686-703@./tests/test_options_widgets.lua
-       1      1      6      0       1 values@714-714@./tests/test_options_widgets.lua
-      11      2     91      0      16 (anonymous)@705-720@./tests/test_options_widgets.lua
+       1      1     17      2       1 (anonymous)@170-170@./tests/test_options_widgets.lua
+       1      1     11      1       1 (anonymous)@171-171@./tests/test_options_widgets.lua
+       1      1     34      2       1 w.SetValue@173-173@./tests/test_options_widgets.lua
+       4      2     34      1       4 (anonymous)@174-177@./tests/test_options_widgets.lua
+      11      2     77      2      14 Create@166-179@./tests/test_options_widgets.lua
+       9      1     86      2      22 renderWithBox@163-184@./tests/test_options_widgets.lua
+      20      1    158      0      20 (anonymous)@186-205@./tests/test_options_widgets.lua
+      10      2     77      0      10 (anonymous)@207-216@./tests/test_options_widgets.lua
+       8      1     74      0      10 (anonymous)@221-230@./tests/test_options_widgets.lua
+       7      2     54      0       8 (anonymous)@233-240@./tests/test_options_widgets.lua
+       5      1     32      0       8 (anonymous)@243-250@./tests/test_options_widgets.lua
+       1      1     12      0       1 (anonymous)@257-257@./tests/test_options_widgets.lua
+       4      1     39      0       4 (anonymous)@258-261@./tests/test_options_widgets.lua
+       9      2     65      0      14 (anonymous)@252-265@./tests/test_options_widgets.lua
+       9      2     81      0      11 (anonymous)@268-278@./tests/test_options_widgets.lua
+       8      1     72      0       8 (anonymous)@280-287@./tests/test_options_widgets.lua
+       4      1     20      0       6 (anonymous)@289-294@./tests/test_options_widgets.lua
+      12      3     85      0      17 (anonymous)@297-313@./tests/test_options_widgets.lua
+       6      1     33      0       9 (anonymous)@315-323@./tests/test_options_widgets.lua
+       1      1     14      3       1 SetCallback@331-331@./tests/test_options_widgets.lua
+       9      1     74      0      13 (anonymous)@325-337@./tests/test_options_widgets.lua
+       6      1     46      0       6 (anonymous)@339-344@./tests/test_options_widgets.lua
+      11      1     97      0      11 (anonymous)@346-356@./tests/test_options_widgets.lua
+      17      1    173      0      21 (anonymous)@358-378@./tests/test_options_widgets.lua
+       6      1     40      0       8 (anonymous)@382-389@./tests/test_options_widgets.lua
+       8      2     65      0       8 (anonymous)@391-398@./tests/test_options_widgets.lua
+       9      1    120      0       9 (anonymous)@402-410@./tests/test_options_widgets.lua
+       7      1     68      0       7 (anonymous)@412-418@./tests/test_options_widgets.lua
+       1      1     24      1       1 colorDecode@426-426@./tests/test_options_widgets.lua
+       1      1     20      4       1 colorEncode@427-427@./tests/test_options_widgets.lua
+      13      1    147      0      17 (anonymous)@421-437@./tests/test_options_widgets.lua
+       9      2     87      0      10 (anonymous)@439-448@./tests/test_options_widgets.lua
+       3      2     21      1       3 runRefreshers@458-460@./tests/test_options_widgets.lua
+       5      4     46      3       5 widgetLabeled@473-477@./tests/test_options_widgets.lua
+       1      1     12      1       1 disabledIf@484-484@./tests/test_options_widgets.lua
+      18      3    162      0      21 (anonymous)@479-499@./tests/test_options_widgets.lua
+      13      2    108      0      14 (anonymous)@501-514@./tests/test_options_widgets.lua
+      10      2     91      0      12 (anonymous)@516-527@./tests/test_options_widgets.lua
+       1      1      7      0       1 disabledIf@532-532@./tests/test_options_widgets.lua
+       8      1     68      0       9 (anonymous)@529-537@./tests/test_options_widgets.lua
+       1      1      3      0       1 onClick@544-544@./tests/test_options_widgets.lua
+       1      1      3      0       1 onClick@545-545@./tests/test_options_widgets.lua
+       1      1      5      0       1 get@547-547@./tests/test_options_widgets.lua
+       1      1      3      0       1 set@547-547@./tests/test_options_widgets.lua
+       6      1     60      1       6 Size@543-548@./tests/test_options_widgets.lua
+      18      4    155      0      28 (anonymous)@540-567@./tests/test_options_widgets.lua
+      12      1    105      0      14 (anonymous)@570-583@./tests/test_options_widgets.lua
+       1      1     18      1       1 Master@587-587@./tests/test_options_widgets.lua
+       8      1     69      0       9 (anonymous)@585-593@./tests/test_options_widgets.lua
+       1      1      7      0       1 Master@597-597@./tests/test_options_widgets.lua
+       7      1     65      0       8 (anonymous)@595-602@./tests/test_options_widgets.lua
+       7      1     86      0       7 (anonymous)@605-611@./tests/test_options_widgets.lua
+      14      1    182      0      18 (anonymous)@613-630@./tests/test_options_widgets.lua
+       1      1      8      0       1 ]@638-638@./tests/test_options_widgets.lua
+      11      1    119      0      13 (anonymous)@632-644@./tests/test_options_widgets.lua
+       1      1      8      0       1 ]@652-652@./tests/test_options_widgets.lua
+       9      1     82      0      11 (anonymous)@646-656@./tests/test_options_widgets.lua
+       7      1     58      0       7 (anonymous)@660-666@./tests/test_options_widgets.lua
+       5      1     49      0       5 (anonymous)@668-672@./tests/test_options_widgets.lua
+       5      1     43      0       5 (anonymous)@674-678@./tests/test_options_widgets.lua
+       4      1     20      0       4 (anonymous)@694-697@./tests/test_options_widgets.lua
+       8      1     66      0       8 (anonymous)@699-706@./tests/test_options_widgets.lua
+       5      1     46      0       5 (anonymous)@708-712@./tests/test_options_widgets.lua
+       6      1     55      0       6 (anonymous)@714-719@./tests/test_options_widgets.lua
+       4      1     18      0       6 (anonymous)@721-726@./tests/test_options_widgets.lua
+       1      1      6      0       1 values@734-734@./tests/test_options_widgets.lua
+       9      1     83      0      12 (anonymous)@728-739@./tests/test_options_widgets.lua
+      12      3    106      0      18 (anonymous)@744-761@./tests/test_options_widgets.lua
+       1      1      6      0       1 values@772-772@./tests/test_options_widgets.lua
+      11      2     91      0      16 (anonymous)@763-778@./tests/test_options_widgets.lua
        6      1     62      0       6 (anonymous)@24-29@./tests/test_options.lua
       15      2    112      0      15 (anonymous)@31-45@./tests/test_options.lua
        7      1     52      0       9 (anonymous)@47-55@./tests/test_options.lua
@@ -5399,29 +5594,32 @@
        1      1     14      2       1 (anonymous)@22-22@./tests/fixture_waypoint_arrow.lua
        1      1     14      2       1 (anonymous)@23-23@./tests/fixture_waypoint_arrow.lua
        1      2     13      1       1 (anonymous)@24-24@./tests/fixture_waypoint_arrow.lua
-       1      1     12      1       1 (anonymous)@25-25@./tests/fixture_waypoint_arrow.lua
-       1      1     16      1       1 (anonymous)@26-26@./tests/fixture_waypoint_arrow.lua
-       5      2     45      1       5 (anonymous)@27-31@./tests/fixture_waypoint_arrow.lua
-       1      1     12      1       1 (anonymous)@32-32@./tests/fixture_waypoint_arrow.lua
-       1      1     12      1       1 (anonymous)@33-33@./tests/fixture_waypoint_arrow.lua
-      13      1     97      1      17 instrument@19-35@./tests/fixture_waypoint_arrow.lua
-       1      1     12      1       1 GetXY@39-39@./tests/fixture_waypoint_arrow.lua
-       1      1     21      2       1 CreateVector2D@39-39@./tests/fixture_waypoint_arrow.lua
-       1      1      7      0       1 GetPlayerFacing@40-40@./tests/fixture_waypoint_arrow.lua
-       1      3     11      0       1 GetBestMapForUnit@42-42@./tests/fixture_waypoint_arrow.lua
-       5      2     31      0       5 GetPlayerMapPosition@43-47@./tests/fixture_waypoint_arrow.lua
-       9      4     92      2       9 GetWorldPosFromMapPos@48-56@./tests/fixture_waypoint_arrow.lua
-      10      1     44      1      22 installWorld@37-58@./tests/fixture_waypoint_arrow.lua
-       5      1     28      0       5 CreateFrame@67-71@./tests/fixture_waypoint_arrow.lua
-       1      1     16      1       1 (anonymous)@73-73@./tests/fixture_waypoint_arrow.lua
-       1      1      6      0       1 geterrorhandler@73-73@./tests/fixture_waypoint_arrow.lua
-      15      2    102      1      19 F.env@62-80@./tests/fixture_waypoint_arrow.lua
-       1      2     18      1       1 onMoved@88-88@./tests/fixture_waypoint_arrow.lua
-       1      1     16      1       1 onArrive@89-89@./tests/fixture_waypoint_arrow.lua
-       1      1     18      2       1 onClick@90-90@./tests/fixture_waypoint_arrow.lua
-      10      3     99      2      10 F.newArrow@84-93@./tests/fixture_waypoint_arrow.lua
-      14      8    129      1      14 F.parts@97-110@./tests/fixture_waypoint_arrow.lua
-       5      2     36      2       5 F.tick@113-117@./tests/fixture_waypoint_arrow.lua
+       1      1     20      3       1 (anonymous)@25-25@./tests/fixture_waypoint_arrow.lua
+       4      2     29      1       4 (anonymous)@26-29@./tests/fixture_waypoint_arrow.lua
+       1      1     12      1       1 (anonymous)@30-30@./tests/fixture_waypoint_arrow.lua
+       1      1     16      1       1 (anonymous)@31-31@./tests/fixture_waypoint_arrow.lua
+       5      2     45      1       5 (anonymous)@32-36@./tests/fixture_waypoint_arrow.lua
+       1      1     16      1       1 (anonymous)@37-37@./tests/fixture_waypoint_arrow.lua
+       1      1     12      1       1 (anonymous)@38-38@./tests/fixture_waypoint_arrow.lua
+       1      1     12      1       1 (anonymous)@39-39@./tests/fixture_waypoint_arrow.lua
+      16      1    124      1      23 instrument@19-41@./tests/fixture_waypoint_arrow.lua
+       1      1     12      1       1 GetXY@45-45@./tests/fixture_waypoint_arrow.lua
+       1      1     21      2       1 CreateVector2D@45-45@./tests/fixture_waypoint_arrow.lua
+       1      1      7      0       1 GetPlayerFacing@46-46@./tests/fixture_waypoint_arrow.lua
+       1      3     11      0       1 GetBestMapForUnit@48-48@./tests/fixture_waypoint_arrow.lua
+       5      2     31      0       5 GetPlayerMapPosition@49-53@./tests/fixture_waypoint_arrow.lua
+       9      4     92      2       9 GetWorldPosFromMapPos@54-62@./tests/fixture_waypoint_arrow.lua
+      10      1     44      1      22 installWorld@43-64@./tests/fixture_waypoint_arrow.lua
+       5      1     28      0       5 CreateFrame@73-77@./tests/fixture_waypoint_arrow.lua
+       1      1     16      1       1 (anonymous)@79-79@./tests/fixture_waypoint_arrow.lua
+       1      1      6      0       1 geterrorhandler@79-79@./tests/fixture_waypoint_arrow.lua
+      15      2    102      1      19 F.env@68-86@./tests/fixture_waypoint_arrow.lua
+       1      2     18      1       1 onMoved@94-94@./tests/fixture_waypoint_arrow.lua
+       1      1     16      1       1 onArrive@95-95@./tests/fixture_waypoint_arrow.lua
+       1      1     18      2       1 onClick@96-96@./tests/fixture_waypoint_arrow.lua
+      10      3     99      2      10 F.newArrow@90-99@./tests/fixture_waypoint_arrow.lua
+      14      8    129      1      14 F.parts@103-116@./tests/fixture_waypoint_arrow.lua
+       5      2     36      2       5 F.tick@119-123@./tests/fixture_waypoint_arrow.lua
        3      3     35      1       3 render@21-23@./tests/test_mock_record.lua
        5      2     45      1       5 names@25-29@./tests/test_mock_record.lua
        1      1      3      0       1 PLAYER_LOGIN@33-33@./tests/test_mock_record.lua
@@ -6368,37 +6566,35 @@
        1      1      9      0       1 (anonymous)@284-284@./tests/test_lifecycle.lua
        6      1     30      0       6 (anonymous)@280-285@./tests/test_lifecycle.lua
        8      1     53      0       8 (anonymous)@287-294@./tests/test_lifecycle.lua
-       6      1     50      1       6 page@21-26@./tests/test_callout_layout.lua
-       5      3     33      2       5 labeled@28-32@./tests/test_callout_layout.lua
-       5      4     41      3       5 texted@34-38@./tests/test_callout_layout.lua
-       7      3     53      1       7 headings@40-46@./tests/test_callout_layout.lua
-       8      6     55      2       8 topIndex@49-56@./tests/test_callout_layout.lua
-       5      2     31      1       5 shown@58-62@./tests/test_callout_layout.lua
-       8      1     69      0       8 (anonymous)@66-73@./tests/test_callout_layout.lua
-      14      2    144      0      14 (anonymous)@77-90@./tests/test_callout_layout.lua
-      22      4    239      0      23 (anonymous)@92-114@./tests/test_callout_layout.lua
-      25      7    264      0      26 (anonymous)@116-141@./tests/test_callout_layout.lua
-       4      1     30      1       4 (anonymous)@147-150@./tests/test_callout_layout.lua
-       8      1     51      2      11 renderedSide@144-154@./tests/test_callout_layout.lua
-      15      2    156      0      16 (anonymous)@156-171@./tests/test_callout_layout.lua
-       7      3     44      1       7 labels@174-180@./tests/test_callout_layout.lua
-      19      4    234      0      22 (anonymous)@182-203@./tests/test_callout_layout.lua
-      16      1    189      0      16 (anonymous)@205-220@./tests/test_callout_layout.lua
-       9      1     82      0       9 (anonymous)@222-230@./tests/test_callout_layout.lua
-       8      1     80      0       8 (anonymous)@232-239@./tests/test_callout_layout.lua
-      20     10    247      0      21 (anonymous)@241-261@./tests/test_callout_layout.lua
-       8      5     62      2       8 stockRows@266-273@./tests/test_callout_layout.lua
-      16      6    160      0      17 (anonymous)@275-291@./tests/test_callout_layout.lua
-      10      4    116      0      10 (anonymous)@293-302@./tests/test_callout_layout.lua
-       1      1      9      0       1 db@312-312@./tests/test_callout_layout.lua
-       1      1     17      2       1 set@313-313@./tests/test_callout_layout.lua
-       1      1      9      0       1 resolveRoot@316-316@./tests/test_callout_layout.lua
-      12      1     96      1      12 routedHost@307-318@./tests/test_callout_layout.lua
-      13      1    153      0      15 (anonymous)@320-334@./tests/test_callout_layout.lua
-      13      3    120      0      13 (anonymous)@338-350@./tests/test_callout_layout.lua
-      22      1    193      0      23 (anonymous)@352-374@./tests/test_callout_layout.lua
-      14      3     99      0      14 (anonymous)@376-389@./tests/test_callout_layout.lua
-      10      1     86      0      10 (anonymous)@393-402@./tests/test_callout_layout.lua
+       6      1     50      1       6 page@19-24@./tests/test_callout_layout.lua
+       5      3     33      2       5 labeled@26-30@./tests/test_callout_layout.lua
+       5      4     41      3       5 texted@32-36@./tests/test_callout_layout.lua
+       7      3     53      1       7 headings@38-44@./tests/test_callout_layout.lua
+       8      6     55      2       8 topIndex@47-54@./tests/test_callout_layout.lua
+       5      2     31      1       5 shown@56-60@./tests/test_callout_layout.lua
+       8      1     69      0       8 (anonymous)@64-71@./tests/test_callout_layout.lua
+      14      2    144      0      14 (anonymous)@75-88@./tests/test_callout_layout.lua
+      22      4    243      0      23 (anonymous)@90-112@./tests/test_callout_layout.lua
+      25      7    264      0      26 (anonymous)@114-139@./tests/test_callout_layout.lua
+       4      1     30      1       4 (anonymous)@145-148@./tests/test_callout_layout.lua
+       8      1     51      2      11 renderedSide@142-152@./tests/test_callout_layout.lua
+      15      2    156      0      16 (anonymous)@154-169@./tests/test_callout_layout.lua
+      11      1    126      0      11 (anonymous)@171-181@./tests/test_callout_layout.lua
+       9      1     82      0       9 (anonymous)@183-191@./tests/test_callout_layout.lua
+       8      1     80      0       8 (anonymous)@193-200@./tests/test_callout_layout.lua
+      15      8    179      0      15 (anonymous)@202-216@./tests/test_callout_layout.lua
+       8      5     62      2       8 stockRows@221-228@./tests/test_callout_layout.lua
+      16      6    160      0      17 (anonymous)@230-246@./tests/test_callout_layout.lua
+      10      4    116      0      10 (anonymous)@248-257@./tests/test_callout_layout.lua
+       1      1      9      0       1 db@267-267@./tests/test_callout_layout.lua
+       1      1     17      2       1 set@268-268@./tests/test_callout_layout.lua
+       1      1      9      0       1 resolveRoot@271-271@./tests/test_callout_layout.lua
+      12      1     96      1      12 routedHost@262-273@./tests/test_callout_layout.lua
+      13      1    153      0      15 (anonymous)@275-289@./tests/test_callout_layout.lua
+      13      3    120      0      13 (anonymous)@293-305@./tests/test_callout_layout.lua
+      22      1    193      0      23 (anonymous)@307-329@./tests/test_callout_layout.lua
+      14      3     99      0      14 (anonymous)@331-344@./tests/test_callout_layout.lua
+      10      1     86      0      10 (anonymous)@348-357@./tests/test_callout_layout.lua
        3      1     24      2       3 has@15-17@./tests/test_kit_asserts.lua
        1      1      9      0       1 (anonymous)@22-22@./tests/test_kit_asserts.lua
        1      1      9      0       1 (anonymous)@26-26@./tests/test_kit_asserts.lua
@@ -10960,37 +11156,39 @@
        3      1     18      3       3 pointAhead@155-157@./tests/test_waypoint_arrow.lua
       16      2    172      0      16 (anonymous)@159-174@./tests/test_waypoint_arrow.lua
       12      2    124      0      12 (anonymous)@176-187@./tests/test_waypoint_arrow.lua
-      17      1    175      0      17 (anonymous)@189-205@./tests/test_waypoint_arrow.lua
-      10      1     85      0      10 (anonymous)@207-216@./tests/test_waypoint_arrow.lua
-       8      1     67      0       8 (anonymous)@218-225@./tests/test_waypoint_arrow.lua
-      17      3    212      0      17 (anonymous)@227-243@./tests/test_waypoint_arrow.lua
-       1      1      7      0       1 (anonymous)@251-251@./tests/test_waypoint_arrow.lua
-      17      1    174      0      17 (anonymous)@247-263@./tests/test_waypoint_arrow.lua
-       5      4     60      3       5 Skin.Color@268-272@./tests/test_waypoint_arrow.lua
-       4      1     19      1       8 (anonymous)@266-273@./tests/test_waypoint_arrow.lua
-      10      1    134      0      17 (anonymous)@265-281@./tests/test_waypoint_arrow.lua
-       5      1     32      0       5 (anonymous)@283-287@./tests/test_waypoint_arrow.lua
-      15      2    168      0      15 (anonymous)@291-305@./tests/test_waypoint_arrow.lua
-      16      1    171      0      16 (anonymous)@307-322@./tests/test_waypoint_arrow.lua
-       1      1      8      1       1 issecretvalue@326-326@./tests/test_waypoint_arrow.lua
-       3      1     10      1       3 (anonymous)@325-327@./tests/test_waypoint_arrow.lua
-       1      1      5      0       1 GetPlayerMapPosition@332-332@./tests/test_waypoint_arrow.lua
-      11      1    107      0      13 (anonymous)@324-336@./tests/test_waypoint_arrow.lua
-      13      1    118      0      13 (anonymous)@338-350@./tests/test_waypoint_arrow.lua
-       7      1     73      0       7 (anonymous)@352-358@./tests/test_waypoint_arrow.lua
-       1      1      7      0       1 (anonymous)@362-362@./tests/test_waypoint_arrow.lua
-       7      1     53      0       7 (anonymous)@360-366@./tests/test_waypoint_arrow.lua
-       1      1     17      1       1 format@369-369@./tests/test_waypoint_arrow.lua
-       6      1     50      0       6 (anonymous)@368-373@./tests/test_waypoint_arrow.lua
-      11      1     72      0      11 (anonymous)@377-387@./tests/test_waypoint_arrow.lua
-      20      2    160      0      20 (anonymous)@389-408@./tests/test_waypoint_arrow.lua
-      11      1     93      0      11 (anonymous)@410-420@./tests/test_waypoint_arrow.lua
-       8      1     71      0       8 (anonymous)@424-431@./tests/test_waypoint_arrow.lua
-      17      1    163      0      17 (anonymous)@433-449@./tests/test_waypoint_arrow.lua
-       1      1      5      0       1 canDrag@452-452@./tests/test_waypoint_arrow.lua
-       9      1     68      0       9 (anonymous)@451-459@./tests/test_waypoint_arrow.lua
-       9      1     87      0       9 (anonymous)@461-469@./tests/test_waypoint_arrow.lua
-       6      1     46      0       6 (anonymous)@471-476@./tests/test_waypoint_arrow.lua
+      17      1    183      0      17 (anonymous)@189-205@./tests/test_waypoint_arrow.lua
+      25      1    304      0      25 (anonymous)@209-233@./tests/test_waypoint_arrow.lua
+      10      1     86      0      10 (anonymous)@235-244@./tests/test_waypoint_arrow.lua
+      10      1     85      0      10 (anonymous)@246-255@./tests/test_waypoint_arrow.lua
+       8      1     67      0       8 (anonymous)@257-264@./tests/test_waypoint_arrow.lua
+      17      3    212      0      17 (anonymous)@266-282@./tests/test_waypoint_arrow.lua
+       1      1      7      0       1 (anonymous)@290-290@./tests/test_waypoint_arrow.lua
+      17      1    174      0      17 (anonymous)@286-302@./tests/test_waypoint_arrow.lua
+       5      4     60      3       5 Skin.Color@307-311@./tests/test_waypoint_arrow.lua
+       4      1     19      1       8 (anonymous)@305-312@./tests/test_waypoint_arrow.lua
+      10      1    134      0      17 (anonymous)@304-320@./tests/test_waypoint_arrow.lua
+       5      1     32      0       5 (anonymous)@322-326@./tests/test_waypoint_arrow.lua
+      15      2    168      0      15 (anonymous)@330-344@./tests/test_waypoint_arrow.lua
+      16      1    171      0      16 (anonymous)@346-361@./tests/test_waypoint_arrow.lua
+       1      1      8      1       1 issecretvalue@365-365@./tests/test_waypoint_arrow.lua
+       3      1     10      1       3 (anonymous)@364-366@./tests/test_waypoint_arrow.lua
+       1      1      5      0       1 GetPlayerMapPosition@371-371@./tests/test_waypoint_arrow.lua
+      11      1    107      0      13 (anonymous)@363-375@./tests/test_waypoint_arrow.lua
+      13      1    118      0      13 (anonymous)@377-389@./tests/test_waypoint_arrow.lua
+       7      1     73      0       7 (anonymous)@391-397@./tests/test_waypoint_arrow.lua
+       1      1      7      0       1 (anonymous)@401-401@./tests/test_waypoint_arrow.lua
+       7      1     53      0       7 (anonymous)@399-405@./tests/test_waypoint_arrow.lua
+       1      1     17      1       1 format@408-408@./tests/test_waypoint_arrow.lua
+       6      1     50      0       6 (anonymous)@407-412@./tests/test_waypoint_arrow.lua
+      11      1     72      0      11 (anonymous)@416-426@./tests/test_waypoint_arrow.lua
+      20      2    160      0      20 (anonymous)@428-447@./tests/test_waypoint_arrow.lua
+      11      1     93      0      11 (anonymous)@449-459@./tests/test_waypoint_arrow.lua
+       8      1     71      0       8 (anonymous)@463-470@./tests/test_waypoint_arrow.lua
+      17      1    163      0      17 (anonymous)@472-488@./tests/test_waypoint_arrow.lua
+       1      1      5      0       1 canDrag@491-491@./tests/test_waypoint_arrow.lua
+       9      1     68      0       9 (anonymous)@490-498@./tests/test_waypoint_arrow.lua
+       9      1     87      0       9 (anonymous)@500-508@./tests/test_waypoint_arrow.lua
+       6      1     46      0       6 (anonymous)@510-515@./tests/test_waypoint_arrow.lua
        8      3     73      0       8 (anonymous)@15-22@./tests/test_slash_parse.lua
        7      1     59      0       9 (anonymous)@24-32@./tests/test_slash_parse.lua
        9      3     85      0       9 (anonymous)@36-44@./tests/test_slash_parse.lua
@@ -11931,8 +12129,8 @@
       16      1    132      0      16 (anonymous)@111-126@./tests/test_callout_look.lua
       13      1    104      0      13 (anonymous)@128-140@./tests/test_callout_look.lua
       10      6    121      0      10 (anonymous)@144-153@./tests/test_callout_look.lua
-      16      1    158      0      16 (anonymous)@155-170@./tests/test_callout_look.lua
-      16      1    166      0      16 (anonymous)@172-187@./tests/test_callout_look.lua
+      16      1    156      0      16 (anonymous)@155-170@./tests/test_callout_look.lua
+      16      1    168      0      16 (anonymous)@172-187@./tests/test_callout_look.lua
        9      2     91      0       9 (anonymous)@189-197@./tests/test_callout_look.lua
        4      3     22      3       4 Fetch@202-205@./tests/test_callout_look.lua
        1      1      7      0       1 List@206-206@./tests/test_callout_look.lua
@@ -11940,23 +12138,23 @@
       12      1    111      0      12 (anonymous)@209-220@./tests/test_callout_look.lua
        4      2     30      4       4 (anonymous)@226-229@./tests/test_callout_look.lua
       12      1     82      0      15 (anonymous)@222-236@./tests/test_callout_look.lua
-      13      2    159      0      13 (anonymous)@240-252@./tests/test_callout_look.lua
-      15      3    172      0      15 (anonymous)@254-268@./tests/test_callout_look.lua
-      15      1    213      0      15 (anonymous)@270-284@./tests/test_callout_look.lua
-       9      1     86      0       9 (anonymous)@288-296@./tests/test_callout_look.lua
-      16      1    179      0      16 (anonymous)@298-313@./tests/test_callout_look.lua
-       1      1     15      0       1 (anonymous)@320-320@./tests/test_callout_look.lua
-      10      1     97      0      10 (anonymous)@315-324@./tests/test_callout_look.lua
-      22      1    191      0      22 (anonymous)@326-347@./tests/test_callout_look.lua
-      11      1    100      0      11 (anonymous)@349-359@./tests/test_callout_look.lua
-      11      1    116      0      11 (anonymous)@361-371@./tests/test_callout_look.lua
-      13      1    105      0      13 (anonymous)@373-385@./tests/test_callout_look.lua
-       6      1     31      0       6 (anonymous)@387-392@./tests/test_callout_look.lua
-      14      1    168      0      14 (anonymous)@394-407@./tests/test_callout_look.lua
-      10      1     74      0      10 (anonymous)@409-418@./tests/test_callout_look.lua
-      16      1    126      0      16 (anonymous)@420-435@./tests/test_callout_look.lua
-       9      1     55      0       9 (anonymous)@437-445@./tests/test_callout_look.lua
-       9      1     55      0       9 (anonymous)@447-455@./tests/test_callout_look.lua
+      12      2    154      0      12 (anonymous)@240-251@./tests/test_callout_look.lua
+      15      3    172      0      15 (anonymous)@253-267@./tests/test_callout_look.lua
+      15      1    213      0      15 (anonymous)@269-283@./tests/test_callout_look.lua
+       9      1     86      0       9 (anonymous)@287-295@./tests/test_callout_look.lua
+      16      1    179      0      16 (anonymous)@297-312@./tests/test_callout_look.lua
+       1      1     15      0       1 (anonymous)@319-319@./tests/test_callout_look.lua
+      10      1     97      0      10 (anonymous)@314-323@./tests/test_callout_look.lua
+      22      1    191      0      22 (anonymous)@325-346@./tests/test_callout_look.lua
+      11      1    100      0      11 (anonymous)@348-358@./tests/test_callout_look.lua
+      11      1    116      0      11 (anonymous)@360-370@./tests/test_callout_look.lua
+      13      1    105      0      13 (anonymous)@372-384@./tests/test_callout_look.lua
+       6      1     31      0       6 (anonymous)@386-391@./tests/test_callout_look.lua
+      14      1    168      0      14 (anonymous)@393-406@./tests/test_callout_look.lua
+      10      1     74      0      10 (anonymous)@408-417@./tests/test_callout_look.lua
+      16      1    126      0      16 (anonymous)@419-434@./tests/test_callout_look.lua
+       9      1     55      0       9 (anonymous)@436-444@./tests/test_callout_look.lua
+       9      1     55      0       9 (anonymous)@446-454@./tests/test_callout_look.lua
        3      1     15      1       3 fire@26-28@./tests/test_options_combat_debug.lua
        1      1      5      0       1 InCombatLockdown@32-32@./tests/test_options_combat_debug.lua
        4      1     14      0       4 enterCombat@30-33@./tests/test_options_combat_debug.lua
@@ -13230,31 +13428,31 @@
        1      1      5      0       1 Fetch@405-405@./tests/test_callout_settings.lua
        5      1     29      1       5 (anonymous)@402-406@./tests/test_callout_settings.lua
        9      2    116      0      13 (anonymous)@401-413@./tests/test_callout_settings.lua
-       6      2     58      1       6 values@420-425@./tests/test_callout_settings.lua
-       3      1     15      0       3 List@428-430@./tests/test_callout_settings.lua
-       1      1      5      0       1 Fetch@431-431@./tests/test_callout_settings.lua
-       5      1     29      1       7 (anonymous)@426-432@./tests/test_callout_settings.lua
-       4      1     36      1       4 (anonymous)@437-440@./tests/test_callout_settings.lua
-       4      1     43      1       4 (anonymous)@444-447@./tests/test_callout_settings.lua
-       1      1      9      0       1 List@460-460@./tests/test_callout_settings.lua
-       1      1      5      0       1 Fetch@461-461@./tests/test_callout_settings.lua
-       7      1     68      1       7 (anonymous)@458-464@./tests/test_callout_settings.lua
-      19      1    119      0      53 (anonymous)@415-467@./tests/test_callout_settings.lua
-       8      1     67      0       8 (anonymous)@469-476@./tests/test_callout_settings.lua
-       9      1     75      0       9 (anonymous)@480-488@./tests/test_callout_settings.lua
-      11      1     81      0      11 (anonymous)@490-500@./tests/test_callout_settings.lua
-      19      1    169      0      19 (anonymous)@502-520@./tests/test_callout_settings.lua
-      10      1    107      0      10 (anonymous)@522-531@./tests/test_callout_settings.lua
-       8      2     83      1       8 plainView@535-542@./tests/test_callout_settings.lua
-      12      1    118      0      12 (anonymous)@544-555@./tests/test_callout_settings.lua
-       6      1     40      0       6 (anonymous)@557-562@./tests/test_callout_settings.lua
-       1      1      9      2       1 SetupColorPickerAndShow@568-568@./tests/test_callout_settings.lua
-       1      1     15      0       1 GetColorRGB@569-569@./tests/test_callout_settings.lua
-       6      1     20      1       6 (anonymous)@566-571@./tests/test_callout_settings.lua
-      12      1    118      0      17 (anonymous)@564-580@./tests/test_callout_settings.lua
-       5      1     34      0       5 (anonymous)@582-586@./tests/test_callout_settings.lua
-       6      1     46      0       6 (anonymous)@588-593@./tests/test_callout_settings.lua
-      12      6    136      0      12 (anonymous)@595-606@./tests/test_callout_settings.lua
+       6      2     58      1       6 values@419-424@./tests/test_callout_settings.lua
+       3      1     15      0       3 List@427-429@./tests/test_callout_settings.lua
+       1      1      5      0       1 Fetch@430-430@./tests/test_callout_settings.lua
+       5      1     29      1       7 (anonymous)@425-431@./tests/test_callout_settings.lua
+       4      1     36      1       4 (anonymous)@436-439@./tests/test_callout_settings.lua
+       4      1     43      1       4 (anonymous)@443-446@./tests/test_callout_settings.lua
+       1      1      9      0       1 List@459-459@./tests/test_callout_settings.lua
+       1      1      5      0       1 Fetch@460-460@./tests/test_callout_settings.lua
+       7      1     68      1       7 (anonymous)@457-463@./tests/test_callout_settings.lua
+      19      1    119      0      52 (anonymous)@415-466@./tests/test_callout_settings.lua
+       5      1     45      0       5 (anonymous)@468-472@./tests/test_callout_settings.lua
+       9      1     75      0       9 (anonymous)@476-484@./tests/test_callout_settings.lua
+      11      1     81      0      11 (anonymous)@486-496@./tests/test_callout_settings.lua
+      19      1    169      0      19 (anonymous)@498-516@./tests/test_callout_settings.lua
+      10      1    107      0      10 (anonymous)@518-527@./tests/test_callout_settings.lua
+       8      2     83      1       8 plainView@531-538@./tests/test_callout_settings.lua
+      12      1    118      0      12 (anonymous)@540-551@./tests/test_callout_settings.lua
+       6      1     40      0       6 (anonymous)@553-558@./tests/test_callout_settings.lua
+       1      1      9      2       1 SetupColorPickerAndShow@564-564@./tests/test_callout_settings.lua
+       1      1     15      0       1 GetColorRGB@565-565@./tests/test_callout_settings.lua
+       6      1     20      1       6 (anonymous)@562-567@./tests/test_callout_settings.lua
+      12      1    118      0      17 (anonymous)@560-576@./tests/test_callout_settings.lua
+       5      1     34      0       5 (anonymous)@578-582@./tests/test_callout_settings.lua
+       6      1     46      0       6 (anonymous)@584-589@./tests/test_callout_settings.lua
+      12      6    136      0      12 (anonymous)@591-602@./tests/test_callout_settings.lua
        5      1     28      2       5 fs.SetText@25-29@./tests/test_widgets_draghandle_fit.lua
        1      2     21      1       1 fs.GetStringWidth@30-30@./tests/test_widgets_draghandle_fit.lua
        1      1     17      2       1 host.SetScale@31-31@./tests/test_widgets_draghandle_fit.lua
@@ -14816,7 +15014,7 @@
        9      4     65      1       9 rootGit@865-873@./testkit/vendor_sync.lua
       17      4    134      0      17 (anonymous)@884-900@./testkit/vendor_sync.lua
       33      7    171      2     321 VendorSync.register@581-901@./testkit/vendor_sync.lua
-342 file analyzed.
+345 file analyzed.
 ==============================================================
 NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
 --------------------------------------------------------------
@@ -14839,7 +15037,7 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
      69      14.8     5.2      141.2         4     ./LibKa0s/OptionsHeader.lua
     152      11.1     5.9       95.1        14     ./LibKa0s/OptionsTabbed.lua
     394       9.0     5.1       66.0        44     ./LibKa0s/OptionsScroll.lua
-     90       5.5     2.8       57.8        12     ./LibKa0s/WaypointArrowSettings.lua
+    306       6.7     3.4       74.6        36     ./LibKa0s/WaypointArrowSettings.lua
     456       8.7     4.1       59.9        50     ./LibKa0s/Options.lua
     271       9.2     5.3       61.3        27     ./LibKa0s/Role.lua
     768       0.0     0.0        0.0         0     ./LibKa0s/MediaIcons.lua
@@ -14864,7 +15062,7 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
     494       5.7     2.6       47.9        87     ./LibKa0s/Sim.lua
      31       5.5     3.5       30.2         4     ./LibKa0s/Env.lua
     355       7.7     2.1       71.3        43     ./LibKa0s/DebugLogWindow.lua
-    625       5.4     2.5       60.8       109     ./LibKa0s/CalloutSettings.lua
+    623       5.3     2.5       60.6       109     ./LibKa0s/CalloutSettings.lua
     503       9.8     4.6       76.5        47     ./LibKa0s/OptionsCompose.lua
     319       6.3     3.7       60.6        47     ./LibKa0s/WidgetsAutocomplete.lua
     250       8.0     4.3       55.6        29     ./LibKa0s/OptionsCombat.lua
@@ -14875,7 +15073,7 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
      59       7.5     5.5       62.0         6     ./LibKa0s/Item.lua
     273       7.1     4.0       63.3        35     ./LibKa0s/Widgets.lua
     668       8.5     5.3       87.2        72     ./LibKa0s/SkinPaint.lua
-    550       6.2     3.6       60.1        81     ./LibKa0s/WaypointArrow.lua
+    881       6.1     4.0       61.8       129     ./LibKa0s/WaypointArrow.lua
     122       6.9     3.9       56.2        16     ./LibKa0s/SkinAceConfirm.lua
     165       8.8     3.9       73.8        18     ./LibKa0s/WidgetsCopyWindow.lua
     463       8.5     4.2       67.6        56     ./LibKa0s/OptionsIdSuggest.lua
@@ -14894,7 +15092,7 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
     574       7.6     5.2       94.9         9     ./LibKa0s/SkinDefsOthers.lua
     457       9.1     4.5       67.3        52     ./LibKa0s/Schema.lua
      99       8.0     5.3       80.6        11     ./LibKa0s/SlashParse.lua
-    592       7.9     3.7       60.8        81     ./LibKa0s/OptionsWidgets.lua
+    615       7.7     3.7       60.1        86     ./LibKa0s/OptionsWidgets.lua
     105       5.8     4.3       55.8        16     ./LibKa0s/CorePixel.lua
     360       7.2     4.4       59.9        43     ./LibKa0s/SkinEUI.lua
      61       6.5     2.2       43.4         8     ./LibKa0s/Pool.lua
@@ -14902,11 +15100,12 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
     434       8.5     4.3       73.1        46     ./LibKa0s/SimTimeline.lua
     117       4.9     1.1       33.6        25     ./tests/test_lifecycle_debug.lua
     226       6.3     1.5       67.9        37     ./tests/test_options_compose_arm.lua
-    114       6.6     1.3       70.4        17     ./tests/test_waypoint_arrow_settings.lua
+    208       8.1     1.5       88.0        25     ./tests/test_waypoint_arrow_settings.lua
      84       6.9     1.4       57.5        12     ./tests/test_options_throttle.lua
      14       0.0     0.0        0.0         0     ./tests/fixture_guard.lua
     517       9.0     1.3       70.0        58     ./tests/test_perf_panel.lua
-    315      10.6     1.9      114.0        30     ./tests/test_callout_glow.lua
+    306      10.3     1.8      109.1        30     ./tests/test_callout_glow.lua
+    223       6.7     1.3       57.8        35     ./tests/test_waypoint_arrow_menu.lua
     245       8.1     1.1       67.3        31     ./tests/test_sim_autoplay.lua
      81       6.0     2.1       43.7        15     ./tests/fixture_idsuggest.lua
      59       4.7     1.3       37.9        13     ./tests/test_surface_parity.lua
@@ -14924,6 +15123,7 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
     140       8.2     2.2       92.4        18     ./tests/fixture_options.lua
      79       4.9     1.6       31.7        20     ./tests/mock_menu.lua
      86      11.3     4.1       88.6         7     ./tests/test_register.lua
+    245       5.9     1.3       53.5        44     ./tests/test_waypoint_arrow_text.lua
     191       8.5     1.7       72.8        22     ./tests/test_options_skin_picker_close.lua
     251       6.5     1.6       58.1        41     ./tests/test_sim_host.lua
      89       3.0     1.4       25.1        41     ./tests/fixture_geom.lua
@@ -14939,9 +15139,10 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
     235       9.3     1.6       88.4        25     ./tests/test_skin_ace_confirm.lua
      68       5.0     1.1       41.4        14     ./tests/test_slash_refusal.lua
     116       6.8     1.8       57.8        17     ./tests/test_kit_limits.lua
+    183       8.0     1.4       76.8        23     ./tests/test_waypoint_arrow_position.lua
      75       4.2     1.6       41.7        18     ./tests/fixture_compose_golden.lua
     364       6.1     1.3       44.5        63     ./tests/test_options_keybinds_model.lua
-    508       6.6     1.3       58.8        76     ./tests/test_options_widgets.lua
+    560       6.7     1.3       59.1        84     ./tests/test_options_widgets.lua
     594       5.9     1.1       44.4       106     ./tests/test_options.lua
     245      11.4     1.8      127.2        20     ./tests/test_skin_ace_tree.lua
     103       6.8     2.1       52.9        17     ./tests/fixture_ids.lua
@@ -14950,7 +15151,7 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
     575      13.0     1.7      137.1        44     ./tests/test_options_appearance.lua
     188       5.6     2.1       58.8        35     ./tests/test_options_tooltip_skin.lua
     602       6.8     1.6       58.3        88     ./tests/test_kit_vendor_sync.lua
-     94       3.9     1.7       33.9        28     ./tests/fixture_waypoint_arrow.lua
+    100       3.8     1.7       33.6        31     ./tests/fixture_waypoint_arrow.lua
     441       6.4     1.0       45.5        72     ./tests/test_mock_record.lua
     460      10.4     1.3       99.2        45     ./tests/test_icon_browser.lua
     295       6.2     1.2       63.9        49     ./tests/test_options_idlist.lua
@@ -14973,7 +15174,7 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
     275       8.3     1.6       93.5        33     ./tests/test_widgets_pixel_edges.lua
     175       4.7     1.3       37.4        40     ./tests/test_slash_debug.lua
     199       4.8     1.1       36.4        45     ./tests/test_lifecycle.lua
-    335      10.7     2.7      103.6        31     ./tests/test_callout_layout.lua
+    299      10.2     2.6       96.8        29     ./tests/test_callout_layout.lua
      99       4.6     1.1       44.0        23     ./tests/test_kit_asserts.lua
     203       5.9     1.1       58.3        36     ./tests/test_sim_isolation.lua
     168       4.8     1.2       38.6        40     ./tests/test_options_banner_acts.lua
@@ -15067,7 +15268,7 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
     144       7.1     1.1       70.8        20     ./tests/test_charts.lua
     212       5.3     1.4       47.8        43     ./tests/test_options_sidetabs.lua
     336       5.9     1.3       53.2        60     ./tests/test_options_tabbed.lua
-    413       7.8     1.3       75.8        54     ./tests/test_waypoint_arrow.lua
+    448       8.1     1.2       80.2        56     ./tests/test_waypoint_arrow.lua
     294       6.3     1.3       61.4        47     ./tests/test_slash_parse.lua
     340       7.4     1.9       74.4        47     ./tests/test_options_chrome_skin.lua
     214       4.8     1.4       41.7        50     ./tests/test_options_bulk.lua
@@ -15087,7 +15288,7 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
     324       7.0     1.4       52.9        46     ./tests/test_slash_profile.lua
      19       6.3     1.3       41.7         3     ./tests/fixture_widgets.lua
     115       3.0     1.1       22.8        38     ./tests/test_kit_secrets.lua
-    405      10.7     1.4      101.1        38     ./tests/test_callout_look.lua
+    404      10.7     1.4      100.9        38     ./tests/test_callout_look.lua
     264       6.1     1.4       46.3        44     ./tests/test_options_combat_debug.lua
     205       7.1     1.2       59.6        29     ./tests/test_perf_command.lua
     585       5.1     1.3       42.7       129     ./tests/test_mock_ace.lua
@@ -15112,7 +15313,7 @@ NLOC    Avg.NLOC  AvgCCN  Avg.token  function_cnt    file
     111       8.8     1.9       94.5        12     ./tests/test_skin_ace_dropdown.lua
     190       5.2     1.4       44.5        40     ./tests/test_options_clients.lua
     175       8.6     1.4       83.7        20     ./tests/test_skin_step_arrows.lua
-    528       8.4     1.6       83.4        65     ./tests/test_callout_settings.lua
+    525       8.3     1.6       83.0        65     ./tests/test_callout_settings.lua
     105       5.0     1.0       34.0        21     ./tests/test_widgets_draghandle_fit.lua
     220       4.8     1.1       33.3        49     ./tests/test_widgets_searchbox.lua
     122       5.2     2.3       40.7        23     ./tests/fixture_appearance.lua
@@ -15168,4 +15369,4 @@ No thresholds exceeded (cyclomatic_complexity > 15 or length > 1500 or nloc > 10
 ==========================================================================================
 Total nloc   Avg.NLOC  AvgCCN  Avg.token   Fun Cnt  Warning cnt   Fun Rt   nloc Rt
 ------------------------------------------------------------------------------------------
-    103941       6.9     2.1       60.6    14815            0      0.00    0.00
+    105298       6.8     2.1       60.6    15013            0      0.00    0.00

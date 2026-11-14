@@ -130,3 +130,107 @@ test("arrow settings: ConfigureFrom reads the host's paths", function()
   assertEqual(a:Get("scale"), 0.75)
   assertEqual(a:Get("useSkinColors"), true, "an unset path reads the default")
 end)
+
+-- ── the Text block (minor 2, round 9 L2) ─────────────────────────────────────────────────────
+
+local TEXT_PATHS = {
+  font = "w.font", fontSize = "w.fontSize", fontColor = "w.fontColor", useClassColorFont = "w.fontClass",
+  fontFlags = "w.fontFlags", fontShadow = "w.fontShadow", textPosition = "w.textPos",
+  showLabel = "w.showLabel", distanceUnits = "w.units",
+}
+
+local TEXT_ORDER = "font,fontSize,fontColor,useClassColorFont,fontFlags,fontShadow,fontFromSkin,"
+  .. "textPosition,showLabel,distanceUnits"
+
+local function keysOf(rows)
+  local out = {}
+  for i, r in ipairs(rows) do out[i] = r.key end
+  return table.concat(out, ",")
+end
+
+test("arrow settings: the Text block is the Font block's six rows, the companion, then three extras", function()
+  local _, Arrow = F.env()
+  local rows = Arrow.SettingsRows({ paths = TEXT_PATHS, page = "p", group = "g", subgroup = "Arrow" })
+  assertEqual(keysOf(rows), TEXT_ORDER)
+  local r = byKey(rows)
+  assertEqual(r.fontFromSkin.path, "w.fontFromSkin", "the companion lives at the font path plus FromSkin")
+  assertEqual(r.font.disabledIf, "w.fontFromSkin", "the picker grays while the skin's font is used")
+  assertEqual(r.font.dialogControl, "Ka0sMedia_Font")
+  assertEqual(r.font.default, "Ka0s Prototype")
+  assertEqual(r.fontFromSkin.default, true)
+  assertEqual(r.fontFlags.default, "@skin")
+  assertEqual(r.fontFlags.values["@skin"], "From skin")
+  assertEqual(r.fontShadow.default, true)
+  assertEqual(r.fontSize.default, 12)
+  assertEqual(r.textPosition.default, "BELOW")
+  assertEqual(r.distanceUnits.default, "yards")
+  assertEqual(r.showLabel.default, false)
+  for _, k in ipairs({ "font", "fontColor", "fontFromSkin", "textPosition" }) do
+    assertTrue(r[k].startsLine == true, k .. " starts its line")
+  end
+  assertEqual(r.useClassColorFont.label, "Use class color")
+  assertEqual(r.textPosition.subgroup, "Arrow", "the host's subgroup")
+  local values = {}
+  for i, v in ipairs(r.textPosition.values) do values[i] = v.text end
+  assertEqual(table.concat(values, ","), "Below,Above,Left,Right,Hidden")
+end)
+
+test("arrow settings: given an Options instance the Font rows are O.FontGroup's own", function()
+  local O = dofile("tests/fixture_options.lua").new()
+  local Arrow = T.arrow
+  local L = { FONT_SHADOW = "Ombre" }
+  local rows = Arrow.SettingsRows({ paths = TEXT_PATHS, options = O, page = "p", group = "g",
+    textSubgroup = "Text", L = L })
+  assertEqual(keysOf(rows), TEXT_ORDER, "the same keys in the same order")
+  local own = Arrow.SettingsRows({ paths = TEXT_PATHS, page = "p", group = "g", textSubgroup = "Text" })
+  for i, r in ipairs(rows) do
+    assertEqual(r.path, own[i].path, r.key .. ": the same path either way")
+    assertEqual(r.type, own[i].type, r.key .. ": the same type")
+    assertEqual(r.subgroup, "Text", r.key .. ": on the Text subgroup")
+    assertTrue(type(r.onChange) == "function", r.key .. ": the arrow's change route")
+  end
+  local r = byKey(rows)
+  assertEqual(r.fontShadow.label, "Ombre", "opts.L overrides a composed word")
+  assertEqual(r.fontSize.label, "Font size", "the composer's words for the rest")
+  assertEqual(r.fontFlags.default, "@skin", "flagsFromSkin")
+  assertEqual(r.fontShadow.default, true, "the arrow's default, not the composer's")
+  assertTrue(type(r.font.skinValue) == "function", "the composer's skin-governed picker")
+end)
+
+test("arrow settings: a Text row's change configures the arrow", function()
+  local a = F.newArrow()
+  local r = byKey(a:SettingsRows({ paths = TEXT_PATHS }))
+  r.textPosition.onChange("LEFT")
+  r.fontFromSkin.onChange(false)
+  assertEqual(a:Get("textPosition"), "LEFT")
+  assertEqual(a:Get("fontFromSkin"), false)
+end)
+
+test("arrow settings: every row, the Text block's too, passes a Schema instance's shape check", function()
+  local a = F.newArrow()
+  local all = {}
+  for k, v in pairs(PATHS) do all[k] = v end
+  for k, v in pairs(TEXT_PATHS) do all[k] = v:gsub("^w%.", "waypoints.") end
+  local rows = a:SettingsRows({ paths = all, page = "p", group = "g" })
+  local db = { waypoints = {} }
+  for _, r in ipairs(rows) do db.waypoints[r.path:match("%.(.+)$")] = r.default end
+  local printed = {}
+  local S = T.schema:New({ rows = rows, resolveRoot = function() return db, 1 end,
+    print = function(line) printed[#printed + 1] = line end })
+  assertEqual((S.Validate()), 0, "no shape problems: " .. table.concat(printed, " | "))
+  S.Set("waypoints.units", "compact")
+  assertEqual(a:Get("distanceUnits"), "compact")
+end)
+
+test("arrow settings: opts.L reaches the composed flags choices and the swatch's class-color sentence", function()
+  local O = dofile("tests/fixture_options.lua").new()
+  local L = { FLAGS_SKIN = "Du skin", FLAGS_NONE = "Aucun", CLASS_COLOR_NOTE = "Non lu en couleur de classe." }
+  local r = byKey(T.arrow.SettingsRows({ paths = TEXT_PATHS, options = O, page = "p", group = "g", L = L }))
+  assertEqual(r.fontFlags.values["@skin"], "Du skin", "a localized flags choice")
+  assertEqual(r.fontFlags.values[""], "Aucun")
+  assertEqual(r.fontFlags.values.OUTLINE, "Outline", "the rest in the US-English words")
+  assertEqual(r.fontColor.tooltip, "The color the text is drawn in. Non lu en couleur de classe.",
+    "the composer's English sentence replaced")
+  local again = byKey(T.arrow.SettingsRows({ paths = TEXT_PATHS, options = O, page = "p", group = "g" }))
+  assertEqual(again.fontFlags.values["@skin"], "From skin", "the composer's shared table untouched")
+end)

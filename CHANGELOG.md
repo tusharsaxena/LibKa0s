@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.101.0 — 2026-11-14
+## v1.102.0 — unreleased
 
 Opened 2026-11-14, on `feat/2026-11-14-callout-defaults` (off `master` at the v1.100.0 merge, `1dd9680`): two changes the owner asked for to `LibKa0s-Callout-1.0` (plan row L17 of `docs/superpowers/plans/2026-11-13-callout.md`). The one tab's preview block loses its sample line, and the Look defaults become the owner's own in-game settings. Neither adds or removes a member or changes what a call answers, so this is not an API break, but **a host that never stored these values draws differently** after re-vendoring. Its one consumer, Ka0s Combat Trail, adopts the call-out on its unmerged branch `feat/2026-11-13-callout`.
 
@@ -27,15 +27,77 @@ Versions in this release: `LibKa0s-Callout-1.0` key **4.5** (Callout minor 4, Ca
 - Tests: `tests/test_callout.lua` re-pins the minor; `tests/test_callout_look.lua` the shadow at (1, 1), the halo at full alpha and 1 px, and the kind colors with the swatch turned off; `tests/test_callout_glow.lua` the new defaults (the black swatch on, drawn at (1, −1)), the kind color with the swatch off, and the rows' defaults; `tests/test_callout_settings.lua` the minor, `FONT_DEFAULT`, `FONT_FACES` and the font row's order with SemiBold first; `tests/test_callout_layout.lua` the minor, the one tab with no sample line and the rest of the block kept, the legacy builds keeping their line and repainting, and the plain side layout with no sample line and a safe `refresh`.
 - Documentation: `docs/api/Callout/version-4.5-docs.md` (3.4 superseded, with its *Moving to version 4.5*) and `members-4.5.json`, the index row in `docs/api/README.md`, `README.md`'s Callout row, `docs/releasing.md`'s re-vendor note, `CLAUDE.md` (the register's Callout row and the line-count record), `docs/test-cases.md` regenerated, and the plan's ledger row L17.
 
+### The merge of v1.101.0
+
+- **Tests**: `tests/fixture_charts.lua`, `tests/fixture_icon_browser.lua`, `tests/fixture_skin_picker.lua`, `tests/fixture_media.lua` and `tests/fixture_appearance.lua` share the runner's source loader (`LK_TEST.loader`) instead of each dofile building its own, as `tests/fixture_skin_paint.lua` and `tests/fixture_sim_panel.lua` have since v1.87.0. With v1.101.0's arrow suites and this release's Callout suites in one run, the private chunk caches took the run past the kit's 256 MB leak gate (299 MB after `test_eol.lua`, measured; each parent alone stayed under it by a few MB). The peak is now about 225 MB above the start. No case changes.
+
 ### The release (L17)
 
 - `docs/releasing.md`: repo semver and the provenance template at v1.101.0, and the v1.101.0 re-vendor note. `README.md`'s kit line at v1.101.0. `CLAUDE.md`'s register row: key 4.5 at v1.101.0, and its one-release trigger recorded as fired, with no second consumer named; the choice between the row and moving the module into Combat Trail is put to the owner, awaiting a ruling. The plan's ledger row L17.
 
-Release gate (`docs/automated-tests/20261114-154613/`): lint pass, 0/0 in 342 files;
-tests pass, 4579 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+## v1.101.0 — 2026-11-14
+
+Opened 2026-11-14, on `feat/2026-11-14-arrow-text-position-menu`: Ka0s Skill Master's round-9 feedback on the waypoint arrow (Skill Master `docs/superpowers/plans/2026-11-14-feedback-round9.md`, rows L0 to L5): its text, its position, its size and a right-click menu, and a slider box that kept junk text. The owner named this release v1.101.0 (the plan's owner decisions); the date is written at release.
+
+Versions in this release: `LibKa0s-WaypointArrow-1.0` key **2.2** (WaypointArrow minor 2, WaypointArrowSettings minor 2); `LibKa0s-Options-1.0` key **38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4** (OptionsWidgets minor 46); every other file at its v1.100.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises. No file is added.
+
+### The size (L1)
+
+- **WaypointArrow minor 2** ([docs](docs/api/WaypointArrow/version-2.2-docs.md)): the art at scale 1 draws 1.25x larger (`ART` 60, from 48), the owner's new scale 1.0. Everything is measured in units of the art's 48-unit box (`UNITS`) at `ART / UNITS` px a unit: Raised's shadow and its offset, the ground cell, the text's gap (`TEXT_GAP`) and the frame round the art (`HIT_PAD`). The TGAs are not regenerated (128 and 512 px, sampled down). The frame is now the art box with `HIT_PAD` round it, centered on the art, so moving the text (L2) never moves the arrow; the hit rect grows toward the text (`SetHitRectInsets`, by the string's measured size, else `TEXT_ROOM`).
+- Tests: `tests/test_waypoint_arrow.lua` pins the 60 px box, the body and overlay at 60, the shadow canvas at 80 and its offset at 1.875, -3.75, the ground cell at 62.5 x 42.97, the frame and its hit rect, the text's 2.5 px gap, and the minor.
+
+### The text (L2)
+
+- **WaypointArrow minor 2**: ten settings for the distance text. The canonical Font block's six (`font`, `fontSize`, `fontColor`, `useClassColorFont`, `fontFlags` led by From skin, `fontShadow`) and its "Use the skin's font" companion (`fontFromSkin`, on by default), drawn through the skin facade's `HudFont` (the skin's HUD face and size while it follows the skin), or on the string without a skin; `textPosition` (Below, the default, Above, Left, Right, Hidden); `showLabel` (a second line with the target's label, off by default); `distanceUnits` (`yards`, or `compact`: `4.2k yd` from 1000 yd). `FormatDistance(yards, units, strings)` is the formatter; `d.format(yards, units)` is asked first and its string wins, so a host's own words for both units go there or in `d.strings` (new, read raw: `DISTANCE`, `DISTANCE_COMPACT`, `SAMPLE` and the menu's words). The text no longer takes the skin's `Text` role, which a skin switch would replay over the player's font.
+- **WaypointArrowSettings minor 2**: the Text block after the look's rows: the Font block's six rows and the companion (at the font path plus "FromSkin"), then Text position, Show the target's name and Distance units, on `opts.textSubgroup`. Given `opts.options` (the host's Options instance) the Font rows are `O.FontGroup{ fromSkin = true, flagsFromSkin = true }`'s own; without one the same leaves are built here in the same order with the same words. `TextPositionValues`, `DistanceUnitsValues`, and the new `SETTINGS_STRINGS` keys.
+- Tests: the new `tests/test_waypoint_arrow_text.lua` (the defaults and validation, `FormatDistance` in both units with a host's strings, `d.format` with the units, the label line and the dim label, the sample's label, the four sides and Hidden, the hit rect, the font without a skin and with the player's face, flags and shadow, the swatch and the class color, `HudFont` with a skin, no `Text` role, `ConfigureFrom`'s companion path); `tests/test_waypoint_arrow_settings.lua` adds the Text block's rows, built here and composed by `O.FontGroup`, a row's change, and a Schema instance's shape check over every row.
+
+### The position (L3)
+
+- **WaypointArrow minor 2**: `x` and `y` (pixels from the parent's CENTER, defaults 0 and 200, `DEFAULT_POINT`'s) and `lock`. Configured offsets win over a saved point; `SetPosition` sets them aside. A drag's end re-anchors the frame CENTER on CENTER and writes `x` and `y` through the host: `d.set(path, value)` at `d.paths.x` and `d.paths.y` (both new descriptor fields), the host's architecture-§5 helper, so the sliders follow; `onMoved` still hears the point. `lock` refuses a drag (and `d.canDrag` still applies); `SetLocked` and `IsLocked`. `ResetPosition` writes the defaults through the host.
+- **WaypointArrowSettings minor 2**: the Position block: X offset and Y offset (-2000 .. 2000, step 1) and Lock the arrow, on `opts.positionSubgroup`. Given `opts.options` the offsets are `O.PositionBlock`'s with Lock as its extra, and its Reset position button (the instance's `ResetPosition`, then `opts.onResetPosition`) comes back as `SettingsRows`' new second answer, the `afterSubgroup` hooks keyed by subgroup.
+- Tests: the new `tests/test_waypoint_arrow_position.lua` (the offsets from CENTER and the defaults, offsets over a saved point, a drag written through `d.set` at two scales, the lock and `canDrag`, `ResetPosition`, a drag with no centers to read, and the rows built here and composed with their hook).
+
+### The menu (L4)
+
+- **WaypointArrow minor 2**: a right-click opens `LibKa0s-Widgets-1.0`'s `W.ContextMenu` at the pointer, in the host's skin, in place of `d.onClick(frame, "RightButton")`: Clear waypoint (`d.onClear(target)`, else the arrow clears itself; under the sample too), Share in chat (opens the chat box with `/way <zone> 45.2, 63.1 <label>` through `ChatFrameUtil.OpenChat`, else `ChatFrame_OpenChat`, and never sends; `ShareText`), Show on map (`C_Map.OpenWorldMap`, else `OpenWorldMap`; disabled and refused in combat), Lock / Unlock the arrow and Reset position (both through the host's `set`). Share and Show on map are disabled with no map point, the sample's included. `d.menuItems(items, target, arrow)` adds, reorders or replaces items; `d.menu = false`, or no Widgets major, keeps the old right-click. `MenuItems`, `OpenMenu`, `MENU_ITEMS`. `.luacheckrc` reads `ChatFrameUtil`, `ChatFrame_OpenChat` and `OpenWorldMap`.
+- Tests: the new `tests/test_waypoint_arrow_menu.lua` (the stock items in order at the pointer in the host's skin, the left button still reaching `onClick`, `menu = false` and no Widgets, Clear through `onClear` and without it, the `/way` line through either chat API with nothing sent, the map and combat, the sample's items, Lock / Unlock and Reset through `set`, the host's items, `d.strings`, `OpenMenu`).
+
+### The review's fixes (LFIX)
+
+- **Share in chat posts the line.** A chat box runs any text whose first character is `/` as a slash command on the player's own client, so a box opened with `/way ...` set a local waypoint (or said "unknown command") on Enter and posted nothing. The box now opens with `SHARE_LEAD` (one space) before the line, so Enter sends it to the box's channel; `MENU_SHARE_TIP` says so. `ShareText` is unchanged.
+- **The offsets are in the parent's units.** `x` and `y`, every saved point and what `onMoved` hears are offsets in UIParent's units, and the frame is anchored at `x / scale`, `y / scale`: changing Arrow scale no longer moves the arrow, a slider value and Reset position are the same spot at every scale, and a drag converts its center through both effective scales. A drag's offsets are held to `POSITION_MIN` .. `POSITION_MAX`, so a low UI scale with a small Arrow scale can no longer store a value `VALID` refuses and snap the arrow back. X offset's and Y offset's tooltips no longer say pixels.
+- **The menu follows the arrow.** The arrow closes the shared menu (`W.CloseMenu`) when it comes down (arrival, `Clear`, `Suspend`) and when the sample starts or ends, while the menu is still its own. Clear waypoint acts only on the target the menu opened over. Under the sample it ends the sample only, through the new `d.onSampleClear()` (else `HideSample()`), and neither clears the real target waiting under it nor calls `onClear`.
+- **`opts.L` reaches the composed Font rows' English.** With `opts.options`, the flags row's choices (`FLAGS_*`) and the swatch's class-color sentence (`CLASS_COLOR_NOTE`), which OptionsCompose writes in English, are put back in `opts.L`'s words.
+- **The Position block keeps its own heading.** Its subgroup is `opts.positionSubgroup`, else "Position"; `opts.subgroup` no longer folds X, Y, Lock and Reset into the look's subgroup. The `SettingsRows` doc comment sits on `SettingsRows` again, and says Reset position needs `opts.options`.
+- Tests: `tests/test_waypoint_arrow_menu.lua` (the opened line's first character is not `/`; the sample's Clear with and without `onSampleClear`, the real target kept; a stale Clear; the menu closed by `Clear` and `Suspend`, and another owner's left), `tests/test_waypoint_arrow_position.lua` (a drag at scale 2 stores scale 1's numbers; changing the scale keeps the center; a drag past the range stores its edge; `opts.subgroup` alone keeps the Position heading), `tests/test_waypoint_arrow_settings.lua` (a localized `L` in the composed flags choices and the swatch's tooltip, the composer's table untouched).
+- **The shared line's shape** (the owner's ruling of 2026-11-14, after the review): `/way <zone> 45.2, 63.1 <label>`, the zone and the label kept so a reader in another zone can use it. The zone name is localized and not unique across maps; TomTom's `#<mapID>` form was not taken.
+
+### What a consumer owes (L1 to L4)
+
+- **Nothing breaks**, but four things change for a host that changes nothing: the arrow draws 1.25x larger at the same scale; the frame is centered on the art (about 11 px lower at `DEFAULT_POINT`); a right-click opens the menu where the Widgets major is loaded and no longer reaches `onClick` (pass `menu = false` to keep it, `onClear` so the menu's Clear clears the host's waypoint, and `onSampleClear` so its Clear under the sample ends the host's test mode); a saved point's offsets are read in the parent's units, the same as 1.1's at scale 1; the text is drawn through the skin's `HudFont` in a white swatch, no longer in the skin's `text.body`. `format(yards)` is called with a second argument, the units.
+- **To adopt the new settings**: add the thirteen paths to `SettingsRows`' `opts.paths` and seed them from `DEFAULTS` (the companion at the font path plus "FromSkin"); pass `paths` and `set` to `New`; pass `options` for the composers' rows and draw the second answer as `afterSubgroup`; stop persisting `onMoved`'s point when the offsets are stored.
+- A stub of the instance gains `SetLocked`, `IsLocked`, `MenuItems` and `OpenMenu`; a stub of the major gains the members in `members-2.2.json`, and `SettingsRows` answers `{}, {}`.
+
+### A slider's box takes no junk (L0)
+
+- **OptionsWidgets minor 46** ([docs](docs/api/Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md)): the owner's screenshot showed a number row's slider box reading `1.5awd`. The box is AceGUI's (`AceGUIWidget-Slider.lua`): its Enter ignores text that is not a number and nothing re-reads it on focus loss. `makeSlider` marks its widget in AceGUI's `userdata` and post-hooks the box once per pooled box: an Enter on junk, and every focus loss, put the box back to the widget's value. A number's Enter commits as before. A pooled box another addon acquires next (its `userdata` cleared by Release) keeps AceGUI's behavior. Not covered: a percent slider's Enter on junk raises inside AceGUI's own handler first.
+- Tests: `tests/test_options_widgets.lua` (junk put back on Enter and on focus loss, a number's Enter still committing, a typed number never entered not shown as stored, and a box whose widget the library did not make left alone).
+- What a consumer owes: nothing.
+
+### Docs and record (L5)
+
+- `docs/api/WaypointArrow/version-2.2-docs.md` (1.1 superseded, with *Moving to version 2.2*) and `members-2.2.json`; `docs/api/Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md` (the previous key superseded) and its manifest; the index rows in `docs/api/README.md`; `README.md` (the WaypointArrow and Options rows, the overview line, the layout); `CLAUDE.md` (the register's WaypointArrow row, the OptionsWidgets measurement in its tracker row and in the band record, and `WaypointArrow.lua` entering the band at 1204, on notice); `docs/releasing.md`'s re-vendor note for v1.101.0; `docs/test-cases.md` regenerated.
+
+### Release
+
+- `docs/releasing.md`: repo semver and the provenance template at v1.101.0. `README.md`'s kit line at v1.101.0. The owner's rulings after the review: Share in chat keeps the zone and the label (` /way <zone> 45.2, 63.1 <label>`, the leading space so Enter posts it), and Skill Master records the arrow's own lock as its own deviation.
+
+Release gate (`docs/automated-tests/20261114-153100/`): lint pass, 0/0 in 345 files;
+tests pass, 4629 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
-Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (Callout 4 and CalloutSettings 5 only).
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (WaypointArrow 2, WaypointArrowSettings 2 and OptionsWidgets 46 only).
 
 ## v1.100.0 — 2026-11-14
 

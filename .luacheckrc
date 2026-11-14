@@ -93,6 +93,9 @@ read_globals = {
   -- LibKa0s-WaypointArrow-1.0: the player's facing and the map vector its world reads build, each
   -- read at call time, presence-checked and pcall'd.
   "GetPlayerFacing", "CreateVector2D",
+  -- Its right-click menu (minor 2): the chat box Share in chat opens (12.0's ChatFrameUtil, else the
+  -- older global) and the world map Show on map opens, each read at call time and guarded.
+  "ChatFrameUtil", "ChatFrame_OpenChat", "OpenWorldMap",
   StaticPopupDialogs = { other_fields = true, read_only = false },
 }
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes

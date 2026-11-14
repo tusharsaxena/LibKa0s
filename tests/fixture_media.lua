@@ -7,7 +7,7 @@
 -- Loaded as `dofile("tests/fixture_media.lua")`. Every env() is a fresh client.
 
 local A = dofile("tests/fixture_skin_ace.lua")
-local Loader = dofile("tests/_kit/loader.lua")
+local Loader = (_G.LK_TEST and _G.LK_TEST.loader) or dofile("tests/_kit/loader.lua")
 
 local FACE = { ["Ka0s Expressway"] = "Fonts\\Expressway.ttf", ["Ka0s Fira Sans"] = "Fonts\\FiraSans.ttf",
                ["Ka0s Prototype"] = "Fonts\\Prototype.ttf" }

@@ -7,7 +7,7 @@
 
 local F = dofile("tests/fixture_skin_paint.lua")
 local E = dofile("tests/fixture_skin_eui.lua")
-local Loader = dofile("tests/_kit/loader.lua")
+local Loader = (_G.LK_TEST and _G.LK_TEST.loader) or dofile("tests/_kit/loader.lua")
 
 local OWNER, OTHER, THIRD = "LootHistory", "BankLedger", "KickCD"
 local SKIN_FILES = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls", "SkinEUI" }
