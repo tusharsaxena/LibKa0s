@@ -47,6 +47,12 @@ Versions in this release: `LibKa0s-Callout-1.0` key **3.4** (Callout minor 3, Ca
 - The branch review's findings, in `394da9a`: a `glow` write over a stored old choice keeps the look it implied; a freed side rail goes back to client art before another instance takes it; the 2.3 document's *Moving to version 3.4* names the boolean `glow` read and the voice-pack changes; the default-voice note for a host without `d.packs`; the SIWIS and Koniwa `tnc` creators in `female-bella`'s credits and the README; the ledger's L13 row.
 - `docs/releasing.md`: repo semver and the provenance template at v1.99.0, and the v1.99.0 re-vendor note (the stub members, the voice packs, the two behavior changes). `README.md`'s kit line at v1.99.0.
 
+Release gate (`docs/automated-tests/20261114-114216/`): lint pass, 0/0 in 337 files;
+tests pass, 4532 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (Callout 3, CalloutSettings 4 and OptionsNav 7 only).
+
 ## v1.98.0 — 2026-11-14
 
 Opened 2026-11-14, on `feat/2026-11-13-callout-schema`: the Callout's settings on a Ka0s host's write route (plan row L11 of `docs/superpowers/plans/2026-11-13-callout.md`). Found while adopting the call-out in Ka0s Combat Trail: CalloutSettings' rows had no path, and their writes went from the instance straight into the host's `profile.callout`, around the host's `NS.SetByPath`. `architecture-§5` wants a schema row for every value a control chooses, every write through the host's one helper, and `/<slash> get|set|reset` reaching every setting. The owner chose a library fix, not a deviation row.
