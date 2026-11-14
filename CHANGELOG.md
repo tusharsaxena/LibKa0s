@@ -35,6 +35,12 @@ Versions in this release: `LibKa0s-Callout-1.0` key **4.5** (Callout minor 4, Ca
 
 - `docs/releasing.md`: repo semver and the provenance template at v1.102.0, and the v1.102.0 re-vendor note. `README.md`'s kit line at v1.102.0. `CLAUDE.md`'s register row: key 4.5 at v1.102.0, and its v1.101.0 trigger recorded as fired when v1.101.0 shipped with no second consumer named; the owner ruled on 2026-11-14 to keep the module in LibKa0s and relax `library-stack-§7`'s bar 1 to a SHOULD (WowAddonStandards v2.109.0, not yet merged), and the row retires when that merges. This release was prepared as v1.101.0 and renumbered: another branch's WaypointArrow release took v1.101.0 first and is merged in. The plan's ledger row L17.
 
+Release gate (`docs/automated-tests/20261114-163156/`): lint pass, 0/0 in 345 files;
+tests pass, 4630 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (Callout 4 and CalloutSettings 5 only).
+
 ## v1.101.0 — 2026-11-14
 
 Opened 2026-11-14, on `feat/2026-11-14-arrow-text-position-menu`: Ka0s Skill Master's round-9 feedback on the waypoint arrow (Skill Master `docs/superpowers/plans/2026-11-14-feedback-round9.md`, rows L0 to L5): its text, its position, its size and a right-click menu, and a slider box that kept junk text. The owner named this release v1.101.0 (the plan's owner decisions); the date is written at release.
