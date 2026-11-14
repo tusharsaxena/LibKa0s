@@ -865,6 +865,20 @@ Total.
 - arrow position: the rows are X offset, Y offset and Lock the arrow, on a Position subgroup
 - arrow position: with an Options instance the block is O.PositionBlock's, its Reset button hooked
 
+### test_waypoint_arrow_menu.lua (11)
+
+- arrow menu: a right-click opens the menu at the pointer with the stock items, Clear first
+- arrow menu: d.menu = false, or no Widgets major, keeps the old right-click
+- arrow menu: Clear waypoint goes to the host's onClear with the target, else clears
+- arrow menu: Share in chat opens the chat box with the /way line and never sends
+- arrow menu: Share in chat prefers ChatFrameUtil.OpenChat where the client has it
+- arrow menu: Show on map opens the world map at the target's map, and not in combat
+- arrow menu: the sample's map items are disabled and its Clear still works
+- arrow menu: Lock and Unlock toggle the lock through the host; Reset position resets
+- arrow menu: the host's menuItems adds, reorders or replaces the items
+- arrow menu: d.strings words the items
+- arrow menu: OpenMenu opens it as a right-click does
+
 ### test_charts.lua (15)
 
 - charts: the major loads and reports its two files
@@ -5266,6 +5280,7 @@ Total.
 | test_waypoint_arrow_settings.lua | 14 |
 | test_waypoint_arrow_text.lua | 17 |
 | test_waypoint_arrow_position.lua | 9 |
+| test_waypoint_arrow_menu.lua | 11 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5443,4 +5458,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4609** |
+| **Total** | **4620** |

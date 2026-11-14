@@ -137,7 +137,15 @@ lib.THROTTLE = 0.03                          -- seconds between two measures whi
 lib.SAMPLE_YARDS, lib.SAMPLE_ROTATION = 240, math.rad(35)   -- the sample: 35 degrees to the left
 lib.STRATA = "MEDIUM"
 lib.DEFAULT_POINT = { point = "CENTER", relPoint = "CENTER", x = 0, y = 200 }
-lib.STRINGS = { DISTANCE = "%d yd", DISTANCE_COMPACT = "%.1fk yd", SAMPLE = "Waypoint" }
+lib.STRINGS = { DISTANCE = "%d yd", DISTANCE_COMPACT = "%.1fk yd", SAMPLE = "Waypoint",
+  -- Minor 2 (L4): the right-click menu's words.
+  MENU_CLEAR = "Clear waypoint", MENU_SHARE = "Share in chat", MENU_MAP = "Show on map",
+  MENU_LOCK = "Lock the arrow", MENU_UNLOCK = "Unlock the arrow", MENU_RESET = "Reset position",
+  MENU_SHARE_TIP = "Opens the chat box with a /way line for this waypoint, ready to send or edit. Nothing is sent.",
+  MENU_NO_MAP = "This waypoint has no map point to share or show.",
+  MENU_COMBAT = "Not available in combat.",
+}
+lib.MENU_ITEMS = { "clear", "share", "map", "lock", "reset" }   -- the stock items' ids, in order
 
 local TAG = "ARROW"
 local DIM = 0.6                 -- the label's alpha while no distance shows
@@ -513,7 +521,7 @@ local function build(S)
   f:RegisterForDrag("LeftButton")
   f:SetScript("OnDragStart", function() onDragStart(S) end)
   f:SetScript("OnDragStop", function() onDragStop(S) end)
-  f:SetScript("OnMouseUp", function(_, button) call(S, S.d.onClick, f, button) end)
+  f:SetScript("OnMouseUp", function(_, button) lib.__mouseUp(S, f, button) end)
   f:SetScript("OnEnter", function() call(S, S.d.onEnter, f) end)
   f:SetScript("OnLeave", function() call(S, S.d.onLeave, f) end)
   -- The art box: the 48-unit box every look is drawn in, at the top of the frame.
@@ -838,6 +846,129 @@ takeDown = function(S)
   S.frame:Hide()
 end
 
+-- ── the right-click menu (minor 2, L4) ───────────────────────────────────────────────────────
+--
+-- A right-click opens LibKa0s-Widgets-1.0's shared context menu (`W.ContextMenu`) at the pointer,
+-- with the stock items in MENU_ITEMS order, then whatever the host's `d.menuItems(items, target,
+-- arrow)` makes of them. `d.menu = false`, or a payload without the Widgets major, keeps minor 1's
+-- right-click: `d.onClick(frame, "RightButton")`. The sample has no map point, so Share in chat and
+-- Show on map are disabled under it; its Clear still works.
+
+local function word(S, key)
+  local own = type(S.d.strings) == "table" and rawget(S.d.strings, key)
+  return type(own) == "string" and own or lib.STRINGS[key]
+end
+
+local function inCombat()
+  if type(InCombatLockdown) ~= "function" then return false end
+  local ok, v = pcall(InCombatLockdown)
+  return ok and v == true
+end
+
+--- The zone's name of `mapID` (C_Map.GetMapInfo), or nil.
+local function zoneName(mapID)
+  local api = C_Map
+  if type(api) ~= "table" or type(api.GetMapInfo) ~= "function" then return nil end
+  local ok, info = pcall(api.GetMapInfo, mapID)
+  local name = ok and type(info) == "table" and info.name or nil
+  if isSecret(name) or type(name) ~= "string" or name == "" then return nil end
+  return name
+end
+
+--- The `/way` line for a map target `spec` (`mapID`, `x`, `y` 0..1, optional `label`):
+--- "/way <zone> 45.2, 63.1 <label>", the zone from C_Map.GetMapInfo, the coordinates in percent to
+--- one decimal; the zone or the label left out when there is none. nil for a spec with no map point.
+function lib.ShareText(spec)
+  if type(spec) ~= "table" or not (plainNumber(spec.mapID) and plainNumber(spec.x) and plainNumber(spec.y)) then
+    return nil
+  end
+  local parts = { "/way" }
+  parts[#parts + 1] = zoneName(spec.mapID)
+  parts[#parts + 1] = ("%.1f, %.1f"):format(spec.x * 100, spec.y * 100)
+  if type(spec.label) == "string" and spec.label ~= "" then parts[#parts + 1] = spec.label end
+  return table.concat(parts, " ")
+end
+
+--- Open the chat box with `text` in it, never sending: ChatFrameUtil.OpenChat (12.0 and the clients
+--- built on it), else the older ChatFrame_OpenChat global. True when one was called.
+local function openChat(text)
+  local util = type(ChatFrameUtil) == "table" and ChatFrameUtil.OpenChat or nil
+  local fn = type(util) == "function" and util or ChatFrame_OpenChat
+  if type(fn) ~= "function" then return false end
+  return (pcall(fn, text))
+end
+
+--- Open the world map on `mapID`: C_Map.OpenWorldMap, else the OpenWorldMap global. Refused in
+--- combat (the map is a UI panel, and opening it from addon code in combat is the taint the frame
+--- otherwise avoids). True when one was called.
+local function openMap(mapID)
+  if inCombat() or not plainNumber(mapID) then return false end
+  local api = type(C_Map) == "table" and C_Map.OpenWorldMap or nil
+  local fn = type(api) == "function" and api or OpenWorldMap
+  if type(fn) ~= "function" then return false end
+  return (pcall(fn, mapID))
+end
+lib.__openChat, lib.__openMap = openChat, openMap
+
+--- The target's spec, or nil (none, or the sample showing over it).
+local function menuTarget(S)
+  if S.sample then return nil end
+  return S.target and S.target.spec or nil
+end
+
+local function clearItem(S, inst, target)
+  return { id = "clear", label = word(S, "MENU_CLEAR"), onClick = function()
+    if type(S.d.onClear) == "function" then return call(S, S.d.onClear, target) end
+    inst:Clear()
+    if S.sample then inst:HideSample() end
+  end }
+end
+
+local function mapItems(S, target)
+  local line = lib.ShareText(target)
+  local mapID = line and target.mapID or nil
+  local noMap = word(S, "MENU_NO_MAP")
+  return { id = "share", label = word(S, "MENU_SHARE"), disabled = line == nil,
+      tooltip = line and word(S, "MENU_SHARE_TIP") or noMap,
+      onClick = function() if line then openChat(line) end end },
+    { id = "map", label = word(S, "MENU_MAP"), disabled = mapID == nil or inCombat(),
+      tooltip = mapID == nil and noMap or (inCombat() and word(S, "MENU_COMBAT")) or nil,
+      onClick = function() openMap(mapID) end }
+end
+
+--- The menu's rows: the stock items, then the host's `d.menuItems(items, target, inst)`, whose
+--- answer (a list) replaces them; a host that edits the list in place may answer nothing.
+local function menuItems(S, inst)
+  local target = menuTarget(S)
+  local share, map = mapItems(S, target)
+  local locked = setting(S, "lock") == true
+  local items = { clearItem(S, inst, target), share, map,
+    { id = "lock", label = word(S, locked and "MENU_UNLOCK" or "MENU_LOCK"),
+      onClick = function() inst:SetLocked(not locked) end },
+    { id = "reset", label = word(S, "MENU_RESET"), onClick = function() inst:ResetPosition() end } }
+  if type(S.d.menuItems) == "function" then
+    local out = call(S, S.d.menuItems, items, target, inst)
+    if type(out) == "table" then items = out end
+  end
+  return items
+end
+
+local function widgets()
+  local W = resolve("LibKa0s-Widgets-1.0")
+  return W and type(W.ContextMenu) == "function" and W or nil
+end
+
+--- A mouse-up on the frame: the right button opens the menu where there is one, and everything
+--- else, the right button included without one, reaches `d.onClick`.
+function lib.__mouseUp(S, f, button)
+  local W = button == "RightButton" and S.d.menu ~= false and widgets() or nil
+  if not W then return call(S, S.d.onClick, f, button) end
+  local rows = menuItems(S, S.inst)
+  if #rows == 0 then return end
+  local ok, err = pcall(W.ContextMenu, f, rows, { owner = S.d.skin, cursor = true })
+  if not ok then debugOut(S, "menu failed: " .. tostring(err)) end
+end
+
 -- ── the methods ──────────────────────────────────────────────────────────────────────────────
 
 local METHODS = {}
@@ -994,6 +1125,21 @@ end
 
 function METHODS:IsLocked() return setting(state(self), "lock") == true end
 
+--- Minor 2: the right-click menu's rows as they would open now (the stock items and the host's).
+function METHODS:MenuItems()
+  local S = state(self)
+  return menuItems(S, self)
+end
+
+--- Minor 2: open the right-click menu at the pointer, as a right-click does. False with no frame,
+--- no Widgets major or `d.menu = false`.
+function METHODS:OpenMenu()
+  local S = state(self)
+  if not S.frame or S.d.menu == false or not widgets() then return false end
+  lib.__mouseUp(S, S.frame, "RightButton")
+  return true
+end
+
 --- One measure now (a shown arrow measures on its own every THROTTLE seconds).
 function METHODS:Update() update(state(self)) end
 
@@ -1045,7 +1191,7 @@ function lib:New(d)   -- luacheck: ignore 212/self
   end
   local inst = {}
   for name, fn in pairs(METHODS) do inst[name] = fn end
-  STATE[inst] = { d = d, settings = {}, suspended = false, elapsed = 0, point = pointOf(d.point),
+  STATE[inst] = { d = d, inst = inst, settings = {}, suspended = false, elapsed = 0, point = pointOf(d.point),
     near = plainNumber(d.near) and d.near or lib.NEAR, far = plainNumber(d.far) and d.far or lib.FAR }
   return inst
 end
