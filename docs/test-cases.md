@@ -776,9 +776,9 @@ Total.
 - callout glow: the one tab's Look draws the Glow rows beside Colors, and a write reaches the halo
 - callout glow: the plain build draws the intensity as a percent
 
-### test_waypoint_arrow.lua (35)
+### test_waypoint_arrow.lua (37)
 
-- arrow: the major loads at minor 1 and reports its two files
+- arrow: the major loads at minor 2 and reports its two files
 - arrow: without Core the major is absent (no NewLibrary)
 - arrow: New refuses a descriptor that does not say where the art sits
 - arrow: a method called on something that is not an instance raises
@@ -792,6 +792,8 @@ Total.
 - arrow: Raised, the default, draws the fill, its overlay and a shadow offset down and right
 - arrow: Flat, Ridge and Faceted swap the overlay and drop the shadow
 - arrow: the ground look picks a sheet frame instead of turning
+- arrow: scale 1 draws the 48-unit art box at 60 px, 1.25x minor 1's 48
+- arrow: the text sits the gap's 2 units under the art box
 - arrow: leaving the ground look gives the textures back their full coords
 - arrow: a style that is not one reads as Raised, and STYLES lists all five
 - arrow: every look's art ships, uncompressed or RLE 32-bit TGA, power-of-two
@@ -5224,7 +5226,7 @@ Total.
 | test_callout_schema.lua | 25 |
 | test_callout_layout.lua | 16 |
 | test_callout_glow.lua | 16 |
-| test_waypoint_arrow.lua | 35 |
+| test_waypoint_arrow.lua | 37 |
 | test_waypoint_arrow_settings.lua | 10 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
@@ -5403,4 +5405,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4577** |
+| **Total** | **4579** |

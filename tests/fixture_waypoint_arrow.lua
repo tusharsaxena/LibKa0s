@@ -22,6 +22,11 @@ local function instrument(f)
   rawset(f, "SetFrameStrata", function(self, s) rawset(self, "__strata", s) end)
   rawset(f, "SetScale", function(self, s) rawset(self, "__scale", s) end)
   rawset(f, "GetScale", function(self) return rawget(self, "__scale") or 1 end)
+  rawset(f, "SetSize", function(self, w, h) rawset(self, "__size", { w, h }) end)
+  rawset(f, "GetSize", function(self)
+    local s = rawget(self, "__size") or { 0, 0 }
+    return s[1], s[2]
+  end)
   rawset(f, "ClearAllPoints", function(self) rawset(self, "__point", nil) end)
   rawset(f, "SetPoint", function(self, ...) rawset(self, "__point", { ... }) end)
   rawset(f, "GetPoint", function(self)

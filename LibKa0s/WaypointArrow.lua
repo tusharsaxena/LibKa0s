@@ -50,7 +50,7 @@ local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-WaypointArrow-1.0", 1
+local MAJOR, MINOR = "LibKa0s-WaypointArrow-1.0", 2
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -76,9 +76,18 @@ local LOOK = {
 }
 lib.MEDIA_DIR = "media\\waypoint"
 
-lib.ART = 48                        -- the drawn size of the 48-unit art box, px, at scale 1
+-- Minor 2 (L1 of Skill Master docs/superpowers/plans/2026-11-14-feedback-round9.md): the art draws
+-- 1.25x larger at scale 1, the owner's new 1.0. Everything below is in UNITS of the art's 48-unit
+-- design box and is drawn at ART / UNITS pixels per unit (`unitPx`): the art, the shadow and its
+-- offset, the ground cells, the text's gap and the frame's hit rect around the art. The TGAs are
+-- not regenerated: they are 128 and 512 px, so a 60 px box still samples them down.
+lib.UNITS = 48                      -- the art's design box, units
+lib.ART = 60                        -- the drawn size of that box, px, at scale 1 (48 at minor 1)
 lib.SHADOW_BOX = 64                 -- raised's shadow canvas, units (the blur is never cut as it turns)
 lib.SHADOW_OFFSET = { 1.5, -3 }     -- units, x right and y up: the mockup's translate(1.5 3)
+lib.TEXT_GAP = 2                    -- units between the art box and the text
+lib.HIT_PAD = 8                     -- units of hit rect past the art box on its left and right
+lib.TEXT_ROOM = 22                  -- units of hit rect under the art box, for the text
 
 --- The ground look's angle sheet, as the generator lays it out.
 lib.GROUND = {
@@ -111,7 +120,6 @@ lib.DEFAULT_POINT = { point = "CENTER", relPoint = "CENTER", x = 0, y = 200 }
 lib.STRINGS = { DISTANCE = "%d yd", SAMPLE = "Waypoint" }
 
 local TAG = "ARROW"
-local PAD_W, PAD_H, TEXT_GAP = 16, 22, 2
 local DIM = 0.6                 -- the label's alpha with no distance and no skin
 
 -- ── small readers ────────────────────────────────────────────────────────────────────────────
@@ -144,6 +152,9 @@ local VALID = {
 }
 
 local function resolve(major) return LibStub and LibStub(major, true) end
+
+--- Pixels per art unit at scale 1 (minor 2).
+local function unitPx() return lib.ART / lib.UNITS end
 
 -- ── the pure math ────────────────────────────────────────────────────────────────────────────
 
@@ -374,7 +385,6 @@ local function build(S)
   f:SetMovable(true)
   f:EnableMouse(true)
   f:RegisterForDrag("LeftButton")
-  f:SetSize(lib.ART + PAD_W, lib.ART + PAD_H)
   f:SetScript("OnDragStart", function() onDragStart(S) end)
   f:SetScript("OnDragStop", function() onDragStop(S) end)
   f:SetScript("OnMouseUp", function(_, button) call(S, S.d.onClick, f, button) end)
@@ -382,14 +392,22 @@ local function build(S)
   f:SetScript("OnLeave", function() call(S, S.d.onLeave, f) end)
   -- The art box: the 48-unit box every look is drawn in, at the top of the frame.
   local box = CreateFrame("Frame", nil, f)
-  box:SetSize(lib.ART, lib.ART)
-  box:SetPoint("TOP", f, "TOP", 0, 0)
   S.box = box
   S.shadow, S.body, S.overlay = texture(box, 0), texture(box, 1), texture(box, 2)
   S.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  S.text:SetPoint("TOP", box, "BOTTOM", 0, -TEXT_GAP)
   S.textRole = nil
   return f
+end
+
+--- The frame (its hit rect), the art box in it and the text beside the box, in art units.
+local function layout(S)
+  local k, f, box = unitPx(), S.frame, S.box
+  f:SetSize(lib.ART + 2 * lib.HIT_PAD * k, lib.ART + lib.TEXT_ROOM * k)
+  box:SetSize(lib.ART, lib.ART)
+  box:ClearAllPoints()
+  box:SetPoint("TOP", f, "TOP", 0, 0)
+  S.text:ClearAllPoints()
+  S.text:SetPoint("TOP", box, "BOTTOM", 0, -lib.TEXT_GAP * k)
 end
 
 --- Lay the current look onto the three textures: files, sizes, anchors, and the coords a turn or a
@@ -397,7 +415,7 @@ end
 local function applyStyle(S)
   local style = setting(S, "style")
   local look = LOOK[style]
-  local base, k = mediaBase(S), lib.ART / 48
+  local base, k, half = mediaBase(S), unitPx(), lib.UNITS / 2
   S.body:SetTexture(base .. look.body)
   S.overlay:SetTexture(base .. look.overlay)
   for _, t in ipairs({ S.body, S.overlay }) do
@@ -408,7 +426,7 @@ local function applyStyle(S)
       local G = lib.GROUND
       local b = G.box
       t:SetSize((b[3] - b[1]) * k, (b[4] - b[2]) * k)
-      t:SetPoint("CENTER", S.box, "CENTER", ((b[1] + b[3]) / 2 - 24) * k, -((b[2] + b[4]) / 2 - 24) * k)
+      t:SetPoint("CENTER", S.box, "CENTER", ((b[1] + b[3]) / 2 - half) * k, -((b[2] + b[4]) / 2 - half) * k)
     else
       t:SetSize(lib.ART, lib.ART)
       t:SetPoint("CENTER", S.box, "CENTER", 0, 0)
@@ -564,6 +582,7 @@ end
 local function present(S)
   if S.suspended then return end
   build(S)
+  layout(S)
   applyStyle(S)
   applyScale(S)
   applyPoint(S)
@@ -693,6 +712,7 @@ end
 function METHODS:Apply()
   local S = state(self)
   if not S.frame then return end
+  layout(S)
   applyStyle(S)
   applyScale(S)
   if S.frame:IsShown() then update(S) end
@@ -741,7 +761,13 @@ function METHODS:Resume() state(self).suspended = false end
 function METHODS:Suspended() return state(self).suspended == true end
 
 --- The frame, built on first use.
-function METHODS:Frame() return build(state(self)) end
+function METHODS:Frame()
+  local S = state(self)
+  if S.frame then return S.frame end
+  build(S)
+  layout(S)
+  return S.frame
+end
 
 --- The instance's state, for a host's diagnostics report and its suites.
 function METHODS:Stats()

@@ -14,7 +14,14 @@ cannot drift. Release order is in
 
 Opened 2026-11-14, on `feat/2026-11-14-arrow-text-position-menu`: Ka0s Skill Master's round-9 feedback on the waypoint arrow (Skill Master `docs/superpowers/plans/2026-11-14-feedback-round9.md`, rows L0 to L5): its text, its position, its size and a right-click menu, and a slider box that kept junk text. Written as the next release; the version is named at release.
 
-Versions in this release: `LibKa0s-Options-1.0` key **38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4** (OptionsWidgets minor 46); every other file at its v1.100.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises. No file is added.
+Versions in this release: `LibKa0s-WaypointArrow-1.0` key **2.2** (WaypointArrow minor 2, WaypointArrowSettings minor 2); `LibKa0s-Options-1.0` key **38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4** (OptionsWidgets minor 46); every other file at its v1.100.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises. No file is added.
+
+### The size (L1)
+
+- **WaypointArrow minor 2** ([docs](docs/api/WaypointArrow/version-2.2-docs.md)): the art at scale 1 draws 1.25x larger (`ART` 60, from 48), the owner's new scale 1.0. Everything is measured in units of the art's 48-unit box (`UNITS`) at `ART / UNITS` px a unit: Raised's shadow and its offset, the ground cell, the text's gap (`TEXT_GAP`) and the hit rect around the art (`HIT_PAD`, `TEXT_ROOM`). The TGAs are not regenerated (128 and 512 px, sampled down).
+- **WaypointArrowSettings minor 2**: paired on WaypointArrow minor 2.
+- Tests: `tests/test_waypoint_arrow.lua` pins the 60 px box, the body and overlay at 60, the shadow canvas at 80 and its offset at 1.875, -3.75, the ground cell at 62.5 x 42.97, the hit rect and the text's 2.5 px gap, and the minor.
+- What a consumer owes: a stored scale draws 1.25x larger than before; a suite that pinned the frame's or the box's size re-pins it.
 
 ### A slider's box takes no junk (L0)
 

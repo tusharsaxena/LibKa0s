@@ -30,7 +30,9 @@ local lib = LibStub and LibStub("LibKa0s-WaypointArrow-1.0", true)
 if not lib or type(lib.__methods) ~= "table" then return end
 
 -- Minor 1: the rows (plan row L1).
-local SETTINGS_MINOR = 1
+-- Minor 2 (Skill Master docs/superpowers/plans/2026-11-14-feedback-round9.md, rows L1 to L4): paired
+-- on WaypointArrow minor 2 (the larger art); the Text and Position blocks and the Lock toggle.
+local SETTINGS_MINOR = 2
 if lib.__settingsMinor and lib.__settingsMinor >= SETTINGS_MINOR
   and lib.__settingsShellMinor == lib.MINOR then return end
 lib.__settingsMinor      = SETTINGS_MINOR
