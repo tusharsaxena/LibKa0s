@@ -1,4 +1,4 @@
--- tests/test_callout_settings.lua — LibKa0s-Callout-1.0's CalloutSettings.lua (minor 4): the settings
+-- tests/test_callout_settings.lua — LibKa0s-Callout-1.0's CalloutSettings.lua (minor 5): the settings
 -- section a consumer drops into its own panel (plan row L4), its font row led by the call-out's
 -- display faces from minor 2 (plan row L2).
 --
@@ -53,10 +53,10 @@ end
 
 -- ── the version ──────────────────────────────────────────────────────────────────────────────
 
-test("callout settings: CalloutSettings is at minor 4, paired on the Callout shell's minor", function()
+test("callout settings: CalloutSettings is at minor 5, paired on the Callout shell's minor", function()
   local c, _, _, _, Callout = newCallout()
-  assertEqual(Callout.MODULES.CalloutSettings, 4)
-  assertEqual(Callout.__settingsMinor, 4)
+  assertEqual(Callout.MODULES.CalloutSettings, 5)
+  assertEqual(Callout.__settingsMinor, 5)
   assertEqual(Callout.__settingsShellMinor, Callout.MINOR)
   for _, name in ipairs({ "BuildSettings", "SettingsRows", "SchemaRows", "SettingsTabs", "SettingsTab", "Preview", "TestCountdown", "Look" }) do
     assertEqual(type(c[name]), "function", "an instance has " .. name)
@@ -82,7 +82,7 @@ test("callout settings: the rows are Look, Sound then Texts, each path-less and 
   local fonts = {}
   for i, v in ipairs(by.font.values()) do fonts[i] = v.value end
   assertEqual(fonts[1] .. "," .. fonts[2], "Skin font,Game default", "the skin's and the game's face lead")
-  assertTrue(table.concat(fonts, ","):find("Ka0s Oxanium Bold", 1, true) ~= nil, "the default face is offered")
+  assertTrue(table.concat(fonts, ","):find("Ka0s Oxanium SemiBold", 1, true) ~= nil, "the default face is offered")
 end)
 
 test("callout settings: the Texts tab has a color per kind, and a text box and a mute per stock key", function()
@@ -415,7 +415,8 @@ end)
 test("callout settings: the call-out's display faces lead the font row, each when it can be drawn", function()
   -- Plan row L2 (minor 2). red under: the faces sorted in among the rest, a face offered that neither
   -- LibSharedMedia lists nor the Media copy ships (an older copy, before Media minor 13), a face
-  -- listed twice, or Oxanium, the default, missing with neither present.
+  -- listed twice, or Oxanium SemiBold, the default (Callout minor 4), missing with neither present.
+  -- Oxanium Bold, the default to Callout minor 3, is offered as the others are: when it is listed.
   local function values(before)
     local c = newCallout(nil, before)
     local out = {}
@@ -430,14 +431,14 @@ test("callout settings: the call-out's display faces lead the font row, each whe
     LSM.Fetch = function() return nil end
   end)
   assertEqual(table.concat(listed, ","),
-    "Skin font,Game default,Ka0s Oxanium Bold,Ka0s Bebas Neue,Ka0s Russo One,Alpha Face,Zulu Face",
-    "the skin's, the game's, then the three faces in their order, then the rest sorted, each once")
+    "Skin font,Game default,Ka0s Oxanium SemiBold,Ka0s Oxanium Bold,Ka0s Bebas Neue,Ka0s Russo One,Alpha Face,Zulu Face",
+    "the skin's, the game's, then the four faces in their order, then the rest sorted, each once")
 
   local old = values(function(m)
     local Media = m.LibStub:NewLibrary("LibKa0s-Media-1.0", 12)
     Media.FONTS = { ["Ka0s Oxanium Bold"] = {}, ["Ka0s Prototype"] = {} }
   end)
-  assertEqual(table.concat(old, ","), "Skin font,Game default,Ka0s Oxanium Bold,Ka0s Prototype",
+  assertEqual(table.concat(old, ","), "Skin font,Game default,Ka0s Oxanium SemiBold,Ka0s Oxanium Bold,Ka0s Prototype",
     "a Media copy without the two faces offers neither")
 
   local shipped = values(function(m)
@@ -445,11 +446,11 @@ test("callout settings: the call-out's display faces lead the font row, each whe
     Media.FONTS = { ["Ka0s Russo One"] = {}, ["Ka0s Bebas Neue"] = {}, ["Ka0s Prototype"] = {} }
   end)
   assertEqual(table.concat(shipped, ","),
-    "Skin font,Game default,Ka0s Oxanium Bold,Ka0s Bebas Neue,Ka0s Russo One,Ka0s Prototype",
+    "Skin font,Game default,Ka0s Oxanium SemiBold,Ka0s Bebas Neue,Ka0s Russo One,Ka0s Prototype",
     "with no LibSharedMedia the Media copy's faces stand in, the default offered regardless")
 
   local bare = values()
-  assertEqual(table.concat(bare, ","), "Skin font,Game default,Ka0s Oxanium Bold", "nothing installed: the default alone")
+  assertEqual(table.concat(bare, ","), "Skin font,Game default,Ka0s Oxanium SemiBold", "nothing installed: the default alone")
 
   -- red under: a face offered because the Media copy ships it while LibSharedMedia, present, does
   -- not list it. LSM holds no face Media's RegisterLSM refused for the client's locale (its
@@ -461,14 +462,17 @@ test("callout settings: the call-out's display faces lead the font row, each whe
     local Media = m.LibStub:NewLibrary("LibKa0s-Media-1.0", 13)
     Media.FONTS = { ["Ka0s Oxanium Bold"] = {}, ["Ka0s Russo One"] = {}, ["Ka0s Bebas Neue"] = {} }
   end)
-  assertEqual(table.concat(refused, ","), "Skin font,Game default,Ka0s Oxanium Bold,Alpha Face",
+  assertEqual(table.concat(refused, ","), "Skin font,Game default,Ka0s Oxanium SemiBold,Ka0s Oxanium Bold,Alpha Face",
     "a face LibSharedMedia does not list is not offered, though the Media copy ships it")
 end)
 
-test("callout settings: FONT_FACES names the default first and the two Media minor 13 faces", function()
+test("callout settings: FONT_FACES names the default first, Oxanium Bold, then the two Media minor 13 faces", function()
   local _, _, _, _, Callout = newCallout()
-  assertEqual(table.concat(Callout.FONT_FACES, ","), "Ka0s Oxanium Bold,Ka0s Bebas Neue,Ka0s Russo One")
+  assertEqual(table.concat(Callout.FONT_FACES, ","),
+    "Ka0s Oxanium SemiBold,Ka0s Oxanium Bold,Ka0s Bebas Neue,Ka0s Russo One")
   assertEqual(Callout.FONT_FACES[1], Callout.FONT_DEFAULT)
+  assertEqual(Callout.FONT_DEFAULT, "Ka0s Oxanium SemiBold", "the owner's face (Callout minor 4)")
+  assertEqual(Callout.DEFAULTS.font, Callout.FONT_DEFAULT)
 end)
 
 -- ── the preview, in depth ────────────────────────────────────────────────────────────────────
@@ -503,7 +507,7 @@ test("callout settings: the plain preview is drawn in the chosen look, capped at
   assertEqual(size, 64, "the default 96 is capped")
   assertEqual(flags, "THICKOUTLINE")
   local x, y = view.preview:GetShadowOffset()
-  assertEqual(x .. "," .. y, "2,-2")
+  assertEqual(x .. "," .. y, "1,1")
   c:Set("size", 40)
   c:Set("outline", "NONE")
   c:Set("shadow", false)

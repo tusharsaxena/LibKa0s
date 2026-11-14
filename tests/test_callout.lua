@@ -27,11 +27,11 @@ local function live(m) return #m.__timers() end
 
 -- ── load and construction ────────────────────────────────────────────────────────────────────
 
-test("callout: the major loads at minor 3 and reports its one file", function()
+test("callout: the major loads at minor 4 and reports its one file", function()
   local _, Callout = env()
   assertEqual(Callout.MAJOR, MAJOR)
-  assertEqual(Callout.MINOR, 3)
-  assertEqual(Callout.MODULES.Callout, 3)
+  assertEqual(Callout.MINOR, 4)
+  assertEqual(Callout.MODULES.Callout, 4)
   assertEqual(T.callout, T.mocks.LibStub(MAJOR), "the runner's whole-payload load carries it too")
 end)
 

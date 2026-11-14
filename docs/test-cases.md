@@ -557,7 +557,7 @@ Total.
 
 ### test_callout.lua (52)
 
-- callout: the major loads at minor 3 and reports its one file
+- callout: the major loads at minor 4 and reports its one file
 - callout: without Core the major is absent (no NewLibrary)
 - callout: New refuses a descriptor without a db, naming it
 - callout: a method called on something that is not an instance raises
@@ -618,7 +618,7 @@ Total.
 - look: a new call-out stops the last one's animation; an unknown opts.anim is the setting's
 - look: a countdown's every number animates, and the fade waits for the finish's hold
 - look: every outline reaches the text as its flags; the halo is always thick
-- look: the shadow is on by default at (2, -2), follows its offsets, and off is no shadow at all
+- look: the shadow is on by default at (1, 1), follows its offsets, and off is no shadow at all
 - look: the glow is the halo's alpha (its intensity) and its size over the text (its thickness)
 - look: the size sets the frame's height, its width is WIDTH
 - look: a LibSharedMedia face is drawn by its path; the skin and game choices are the game's here
@@ -675,7 +675,7 @@ Total.
 
 ### test_callout_settings.lua (34)
 
-- callout settings: CalloutSettings is at minor 4, paired on the Callout shell's minor
+- callout settings: CalloutSettings is at minor 5, paired on the Callout shell's minor
 - callout settings: the rows are Look, Sound then Texts, each path-less and bound to the instance
 - callout settings: the Texts tab has a color per kind, and a text box and a mute per stock key
 - callout settings: text to speech rows are there only while the client lists a voice
@@ -698,7 +698,7 @@ Total.
 - callout settings: a row's write the call-out refuses leaves the db as it was
 - callout settings: the font list leads with the skin's and the game's faces, then every LSM face
 - callout settings: the call-out's display faces lead the font row, each when it can be drawn
-- callout settings: FONT_FACES names the default first and the two Media minor 13 faces
+- callout settings: FONT_FACES names the default first, Oxanium Bold, then the two Media minor 13 faces
 - callout settings: Preview shows the look on the real call-out without a sound
 - callout settings: TestCountdown counts from its argument, 5 by default
 - callout settings: the plain preview is drawn in the chosen look, capped at 64
@@ -738,14 +738,15 @@ Total.
 - callout schema: a stored color is read in either shape
 - callout schema: a host's colorEncode decides the shape the instance writes
 
-### test_callout_layout.lua (16)
+### test_callout_layout.lua (17)
 
-- callout layout: CalloutSettings is at minor 4, and an instance carries SettingsTab
+- callout layout: CalloutSettings is at minor 5, and an instance carries SettingsTab
 - callout layout: SettingsTab answers one host tab, Callout, that draws the side layout
 - callout layout: a Preview heading over the preview block, then side tabs Look and Sound
 - callout layout: Look holds the face rows and the Colors section; no Sound rows, no stock texts
 - callout layout: the Sound side tab draws the voice rows, and the choice holds across a redraw
-- callout layout: a Look row writes the host db and repaints the preview
+- callout layout: the one tab's preview block draws no sample line (minor 5); the rest stays
+- callout layout: a Look row writes the host db; the legacy tab's preview repaints
 - callout layout: an Options copy without SideTabs draws Look and Sound under their headings
 - callout layout: an unknown layout answers nil; the layout wins over a tab
 - callout layout: the plain build's side layout draws Look and Sound with no stock texts
@@ -759,7 +760,7 @@ Total.
 
 ### test_callout_glow.lua (16)
 
-- callout glow: on by default at the old soft look; the color companions all off
+- callout glow: on by default, black at full intensity, 1 px thick, 1 px right and down (minor 4)
 - callout glow: the setting rules refuse what is out of range
 - callout glow: intensity is the halo's alpha, thickness its size over the text, the offsets its point
 - callout glow: no OnUpdate is armed for the glow; it is painted with the call-out
@@ -5220,7 +5221,7 @@ Total.
 | test_callout_voice.lua | 30 |
 | test_callout_settings.lua | 34 |
 | test_callout_schema.lua | 25 |
-| test_callout_layout.lua | 16 |
+| test_callout_layout.lua | 17 |
 | test_callout_glow.lua | 16 |
 | test_waypoint_arrow.lua | 35 |
 | test_waypoint_arrow_settings.lua | 10 |
@@ -5401,4 +5402,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4575** |
+| **Total** | **4576** |

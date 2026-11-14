@@ -3,6 +3,8 @@
 -- preview block, then Look and Sound side tabs (Options' O.SideTabs, OptionsNav minor 7), the
 -- colors in Look, no stock texts; `SchemaRows`' and `SettingsRows`' `texts = false`; and the Play
 -- list's "Countdown 10 to 1". The three-tab shape stays, and is re-pinned here beside the new one.
+-- Minor 5 (plan row L17): the one tab's preview block draws no sample line, in either build; the
+-- three-tab build keeps its line.
 --
 -- The benches are tests/test_callout_settings.lua's: the call-out from tests/fixture_callout.lua,
 -- the page from tests/fixture_options.lua's host, widgets driven through their AceGUI callbacks.
@@ -61,10 +63,10 @@ end
 
 -- ── the version ──────────────────────────────────────────────────────────────────────────────
 
-test("callout layout: CalloutSettings is at minor 4, and an instance carries SettingsTab", function()
+test("callout layout: CalloutSettings is at minor 5, and an instance carries SettingsTab", function()
   local c, _, _, _, Callout = newCallout()
-  assertEqual(Callout.MODULES.CalloutSettings, 4)
-  assertEqual(Callout.__settingsMinor, 4)
+  assertEqual(Callout.MODULES.CalloutSettings, 5)
+  assertEqual(Callout.__settingsMinor, 5)
   assertEqual(type(c.SettingsTab), "function")
   assertEqual(table.concat(Callout.SETTINGS_SIDE_TABS, ","), "look,sound")
   assertEqual(Callout.PLAY_COUNTDOWN, "countdown10")
@@ -101,7 +103,7 @@ test("callout layout: a Preview heading over the preview block, then side tabs L
   assertTrue(body ~= nil, "the side tabs are drawn in the page")
   local sideAt = topIndex(scroll, body)
   -- red under: the preview controls drawn inside a side tab, or under the side tabs
-  for _, w in ipairs({ view.preview, texted(scroll, "Button", "Test countdown"), texted(scroll, "Button", "Play"),
+  for _, w in ipairs({ texted(scroll, "Button", "Test countdown"), texted(scroll, "Button", "Play"),
     labeled(scroll, "Text to play"), labeled(scroll, "Unlock to move"), texted(scroll, "Button", "Reset position") }) do
     assertTrue(w ~= nil, "a preview control is drawn")
     assertTrue(topIndex(scroll, w) < sideAt, "every preview control is above the side tabs")
@@ -168,16 +170,53 @@ test("callout layout: the Sound side tab draws the voice rows, and the choice ho
     "the side tab is the instance's session state")
 end)
 
-test("callout layout: a Look row writes the host db and repaints the preview", function()
-  local c, _, db = newCallout()
+--- Every Label widget in `root` (the Options build's TextRow is one).
+local function labels(root)
+  local out = {}
+  for _, w in ipairs(Fixture.flatten(root)) do
+    if w.type == "Label" then out[#out + 1] = w end
+  end
+  return out
+end
+
+test("callout layout: the one tab's preview block draws no sample line (minor 5); the rest stays", function()
+  local c = newCallout()
   local O, ctx, scroll = page()
   local view = c:BuildSettings(ctx, { options = O, layout = "side" })
+  -- red under: the sample line still drawn in the side layout
+  assertNil(view.preview, "no sample line in the view")
+  assertNil(view.repaint, "and no repaint for it")
+  for _, w in ipairs(labels(scroll)) do
+    assertFalse(tostring(w.text or ""):find("STOP", 1, true) ~= nil, "no Label carries the sample text")
+  end
+  -- red under: the rest of the block dropped with the line
+  assertTrue(texted(scroll, "Heading", "Preview") ~= nil, "the Preview heading stays")
+  for _, w in ipairs({ texted(scroll, "Button", "Test countdown"), texted(scroll, "Button", "Play"),
+    labeled(scroll, "Text to play"), labeled(scroll, "Unlock to move"), texted(scroll, "Button", "Reset position") }) do
+    assertTrue(w ~= nil, "a preview control is drawn")
+  end
+  -- The three-tab build keeps its line.
+  local O2, ctx2 = page()
+  assertTrue(c:BuildSettings(ctx2, { options = O2, tab = "look" }).preview ~= nil, "a legacy tab keeps the line")
+  local O3, ctx3 = page()
+  assertTrue(c:BuildSettings(ctx3, { options = O3 }).preview ~= nil, "and so does the build with no tab")
+end)
+
+test("callout layout: a Look row writes the host db; the legacy tab's preview repaints", function()
+  local c, _, db = newCallout()
+  local O, ctx, scroll = page()
+  c:BuildSettings(ctx, { options = O, layout = "side" })
   labeled(scroll, "Outline"):__fire("OnValueChanged", "MONOCHROME")
   assertEqual(db.outline, "MONOCHROME")
   labeled(scroll, "Numbers"):__fire("OnValueConfirmed", 0, 0, 1, 1)
   assertEqual(table.concat(db.colors.number, ","), "0,0,1")
   O.RefreshScalars()
-  assertTrue(view.preview.text:find("0000ff", 1, true) ~= nil, "the preview repaints in the new color")
+  local O2, ctx2 = page()
+  local legacy = c:BuildSettings(ctx2, { options = O2, tab = "look" })
+  assertTrue(legacy.preview.text:find("0000ff", 1, true) ~= nil, "the legacy preview paints in the new color")
+  c:SetColor("number", 1, 0, 0)
+  O2.RefreshScalars()
+  assertTrue(legacy.preview.text:find("ff0000", 1, true) ~= nil, "and repaints on a write")
 end)
 
 test("callout layout: an Options copy without SideTabs draws Look and Sound under their headings", function()
@@ -204,6 +243,12 @@ test("callout layout: the plain build's side layout draws Look and Sound with no
   local parent = m.CreateFrame("Frame", nil, m.UIParent)
   local view = c:BuildSettings(parent, { layout = "side" })
   assertEqual(view.kind, "plain")
+  -- red under: the plain side layout still drawing its sample FontString (minor 5)
+  assertNil(view.preview, "no sample line")
+  view.refresh()   -- red under: a refresh that paints a preview it does not have
+  assertTrue(view.testButton ~= nil and view.playButton ~= nil and view.resetButton ~= nil, "the buttons stay")
+  assertTrue(c:BuildSettings(m.CreateFrame("Frame", nil, m.UIParent), {}).preview ~= nil,
+    "the plain build with no layout keeps its line")
   local groups, colors = {}, 0
   for _, r in ipairs(view.rows) do
     groups[r.group] = true

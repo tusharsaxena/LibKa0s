@@ -337,6 +337,14 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    packs and never passed `d.packs` passes them (its `LibKa0s sounds:` folders) or it defaults to
    a pack it does not carry and is silent. A host carrying `female-bella` credits SIWIS and
    Koniwa `tnc` in its README, as for `female-kathleen`.
+   v1.101.0 adds no payload file, no member and no kit revision (still 56). `Callout.lua` moves to
+   minor 4 and `CalloutSettings.lua` to minor 5 (key 4.5), so a host suite that pins the Callout's
+   `MODULES` re-pins them; a stub needs no change. Two visible changes reach a host that changes
+   nothing: the Look defaults are the owner's (`FONT_DEFAULT` `"Ka0s Oxanium SemiBold"`, the shadow
+   at 1, 1, a black glow at 100%, 1 px thick, at 1, −1, `glowCustom` on), so a suite that pins the
+   old defaults or a schema row's default re-pins them, and a stored `"soft"` or `"strong"` glow
+   draws in the black swatch unless the host stores `glowCustom = false`; and the one tab's preview
+   block draws no sample line, so a suite that reads `view.preview` from `layout = "side"` reads nil.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 

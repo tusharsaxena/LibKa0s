@@ -39,15 +39,16 @@ end
 
 -- ── the defaults ─────────────────────────────────────────────────────────────────────────────
 
-test("callout glow: on by default at the old soft look; the color companions all off", function()
+test("callout glow: on by default, black at full intensity, 1 px thick, 1 px right and down (minor 4)", function()
   local c, _, _, _, Callout = newCallout()
   local D = Callout.DEFAULTS
   assertEqual(D.glow, true)
-  assertEqual(D.glowIntensity, 0.35)
-  assertEqual(D.glowThickness, 2)
-  assertEqual(D.glowX .. "," .. D.glowY, "0,0")
-  -- red under: any of the three color choices defaulting on
-  assertFalse(D.glowCustom, "Glow color is off: the glow takes the kind color")
+  assertEqual(D.glowIntensity, 1)
+  assertEqual(D.glowThickness, 1)
+  assertEqual(D.glowX .. "," .. D.glowY, "1,-1")
+  -- red under: the swatch off, or the class or skin color defaulting on over it
+  assertTrue(D.glowCustom, "Glow color is on: the glow takes the swatch")
+  assertEqual(table.concat(D.glowColor, ","), "0,0,0", "and the swatch is black")
   assertFalse(D.useClassColorGlow, "Use class color is off")
   assertFalse(D.glowColorFromSkin, "Use the skin's color is off")
   for _, key in ipairs({ "glow", "glowIntensity", "glowThickness", "glowX", "glowY", "glowCustom", "glowColor",
@@ -58,8 +59,11 @@ test("callout glow: on by default at the old soft look; the color companions all
   end
   c:Show("GO")
   local h = halo(c)
-  assertEqual(rgb(h:GetTextColor()), rgb(unpack(D.colors.go)), "the halo is in the kind's color")
-  assertEqual(h:GetAlpha(), 0.35)
+  assertEqual(rgb(h:GetTextColor()), rgb(0, 0, 0), "the halo is the swatch's black")
+  assertEqual(h:GetAlpha(), 1)
+  assertEqual(select(2, h:GetFont()), 98, "1 px out on every side: 96 + 2")
+  local point, _, relPoint, x, y = h:GetPoint(1)
+  assertEqual(point .. "," .. relPoint .. "," .. x .. "," .. y, "CENTER,CENTER,1,-1")
 end)
 
 test("callout glow: the setting rules refuse what is out of range", function()
@@ -110,6 +114,7 @@ end)
 
 test("callout glow: Glow color draws the swatch; off, the kind's color", function()
   local c = newCallout()
+  assertTrue(c:Set("glowCustom", false), "on by default from minor 4; off first")
   c:Show("WARNING")
   local h = halo(c)
   assertTrue(c:Set("glowColor", { 0.1, 0.2, 0.3 }))
@@ -148,7 +153,7 @@ end)
 
 test("callout glow: the skin's color needs a registered owner answering one, else it falls through", function()
   local c, _, db = newCallout(nil, withSkin)           -- no d.skin
-  db.glowColorFromSkin = true
+  db.glowColorFromSkin, db.glowCustom = true, false
   c:Show("GO")
   assertEqual(rgb(halo(c):GetTextColor()), rgb(0.3, 1, 0.45), "no owner: the kind's color")
   local c2, _, db2 = newCallout({ skin = "tester" }, function(m) withSkin(m, true) end)
@@ -283,8 +288,12 @@ test("callout glow: SchemaRows carries every glow row with its path, default, bo
   end
   assertTrue(by["callout.glowIntensity"].isPercent, "Intensity reads as a percent")
   assertEqual(by["callout.glow"].default, true)
-  for _, key in ipairs({ "glowCustom", "useClassColorGlow", "glowColorFromSkin" }) do
+  assertEqual(by["callout.glowCustom"].default, true, "Glow color defaults on (minor 4)")
+  for _, key in ipairs({ "useClassColorGlow", "glowColorFromSkin" }) do
     assertEqual(by["callout." .. key].default, false, key .. " defaults off")
+  end
+  for key, want in pairs({ glowIntensity = 1, glowThickness = 1, glowX = 1, glowY = -1 }) do
+    assertEqual(by["callout." .. key].default, want, key .. "'s default (minor 4)")
   end
   local color = by["callout.glowColor"]
   assertEqual(color.type, "color")
@@ -348,7 +357,7 @@ test("callout glow: the plain build draws the intensity as a percent", function(
   local view = c:BuildSettings(parent, { layout = "side" })
   for _, ctl in ipairs(view.controls) do
     if ctl.row.key == "glowIntensity" then
-      assertEqual(ctl.control.text:GetText(), "35%")
+      assertEqual(ctl.control.text:GetText(), "100%", "the default, full intensity (Callout minor 4)")
     end
   end
 end)

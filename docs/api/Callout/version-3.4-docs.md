@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Callout-1.0` |
 | Files and minors | `Callout.lua` minor **3** · `CalloutSettings.lua` minor **4** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2, minor 4 at 3) |
 | Shipped in | v1.100.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 2.3](./version-2.3-docs.md) (v1.98.0) — the same surface without the one tab (`SettingsTab`, `BuildSettings`' `layout = "side"`), `texts = false`, the Play list's countdown, the glow's settings (an Off / Soft / Strong choice there), the six voice packs added in v1.100.0 or the announcer as the default voice. This document was keyed 2.4 until `Callout.lua` moved to minor 3 for the glow (plan row L15), before either shipped |
-| Superseded by | — |
+| Superseded by | [version 4.5](./version-4.5-docs.md) (v1.101.0) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
 | Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row; from 4, for the side layout, `Section` and `SideTabs` (Options' OptionsNav minor 7), each presence-checked), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), from `Callout.lua` 3 the skin facade's `GlowColor` (Use the skin's color) and `LibKa0s-Core-1.0`'s `ClassColor` (Use class color, `RAID_CLASS_COLORS`), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 3, CalloutSettings = 4 }` |
@@ -691,3 +691,11 @@ order, so the whole-folder copy brings them in with no load-list change in the h
 **Consumer census.** Not measured: the major is new at v1.96.0, after the v1.83.0 stamp of
 [`CONSUMERS.md`](../CONSUMERS.md). Ka0s Combat Trail is its one planned consumer (LibKa0s#85); every
 export's verdict is *zero — planned at v1.96.0* until the next re-run.
+
+## Moving to version 4.5
+
+The same surface: no member is added or removed. See [version 4.5](./version-4.5-docs.md). Re-vendor the whole folder; a stub needs no change.
+
+**The Look defaults move to the owner's** (`Callout.lua` 4): `FONT_DEFAULT` and `DEFAULTS.font` are `"Ka0s Oxanium SemiBold"` (it was `"Ka0s Oxanium Bold"`), the shadow is `1`, `1` (it was `2`, `-2`), and the glow is black at full intensity, 1 px thick, 1 px right and 1 px down (`glowCustom = true`, `glowColor = { 0, 0, 0 }`, `glowIntensity = 1`, `glowThickness = 1`, `glowX = 1`, `glowY = -1`; it was the old "soft" look in each word's kind color). A host that stored its own values keeps them; one that never did draws the new look. `FONT_FACES` (`CalloutSettings.lua` 5) leads with SemiBold, then Bold. `GLOW_LEGACY` is unchanged, but a stored `"soft"` or `"strong"` now draws in the black swatch unless the host stores `glowCustom = false`.
+
+**The one tab draws no sample line** (`CalloutSettings.lua` 5): `BuildSettings(ctx, { layout = "side" })` answers a view whose `preview` is nil, in either build. A host that read `view.preview` from the side layout reads nothing there; the three-tab build keeps its line.
