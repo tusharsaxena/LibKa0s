@@ -134,17 +134,24 @@ test("callout schema: SchemaRows answers a row with a path under the prefix for 
   assertEqual(#rows, want + #Callout.KINDS + 2 * #Callout.STOCK_ORDER + 2)
 end)
 
+--- A color's channels in either stored shape, as one string.
+local function channels(c) return table.concat({ c.r or c[1], c.g or c[2], c.b or c[3] }, ",") end
+
+local SKIP_SAME = { texts = true, muted = true, glowColor = true }   -- glowColor: by its channels
+
 test("callout schema: every stored row's default is what the instance reads with nothing stored", function()
   local c, _, _, _, Callout = newCallout()
   local rows = c:SchemaRows(PREFIX)
   local by = rowsByPath(rows)
   for _, key in ipairs(Callout.SETTINGS) do
     local r = by[PREFIX .. key]
-    if r then
+    if r and key ~= "glowColor" then   -- a color's default is in the host's shape, below
       assertTrue(Schema.SameValue(r.default, Callout.DEFAULTS[key]), key .. "'s default is DEFAULTS'")
       assertTrue(r.validate(r.default), key .. "'s default passes its own validate")
     end
   end
+  local gd = by[PREFIX .. "glowColor"].default
+  assertEqual(gd.r .. "," .. gd.g .. "," .. gd.b, table.concat(Callout.DEFAULTS.glowColor, ","), "the glow's DEFAULTS color")
   for _, kind in ipairs(Callout.KINDS) do
     local d, want = by[PREFIX .. "colors." .. kind].default, Callout.DEFAULTS.colors[kind]
     assertEqual(d.r .. "," .. d.g .. "," .. d.b, table.concat(want, ","), kind .. ": DEFAULTS' color")
@@ -161,7 +168,7 @@ test("callout schema: every stored row's default is what the instance reads with
   local a = newCallout({ db = seeded.callout })
   local b = newCallout({ db = {} })
   for _, key in ipairs(Callout.SETTINGS) do
-    if key ~= "texts" and key ~= "muted" then
+    if not SKIP_SAME[key] then
       assertTrue(Schema.SameValue(a:Get(key), b:Get(key)), key .. " reads the same")
     end
   end
@@ -169,6 +176,7 @@ test("callout schema: every stored row's default is what the instance reads with
     assertEqual(a:Get("texts." .. key), b:Get("texts." .. key))
     assertEqual(a:Get("muted." .. key), b:Get("muted." .. key))
   end
+  assertEqual(channels(a:Get("glowColor")), channels(b:Get("glowColor")), "glowColor reads the same channels")
   for _, kind in ipairs(Callout.KINDS) do
     assertEqual(table.concat({ a:GetColor(kind) }, ","), table.concat({ b:GetColor(kind) }, ","), kind)
   end
@@ -477,8 +485,8 @@ test("callout schema: SettingsTabs on the host's route hands its prefix to each 
   -- The descriptor names "other.", the tabs "callout.": the tabs' prefix is the one drawn.
   local tabs = c:SettingsTabs({ options = O, prefix = PREFIX })
   tabs[1].render(ctx)
-  widgetLabeled(scroll, "Glow"):__fire("OnValueChanged", "strong")
-  assertEqual(host.profile.callout.glow, "strong")
+  widgetLabeled(scroll, "Glow behind the text"):__fire("OnValueChanged", false)
+  assertEqual(host.profile.callout.glow, false)
 end)
 
 -- ── the leaf keys, off the host's route ──────────────────────────────────────────────────────

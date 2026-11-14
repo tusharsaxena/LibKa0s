@@ -127,7 +127,7 @@ test("tts: present, the line's words are spoken at the player's rate and volume,
   c:Set("ttsVolume", 35)
   c:Show("LAST_TEN")
   local s = m.__spoken[1]
-  assertEqual(s.text, "Last ten seconds", "the stock key's say, not its shown text")
+  assertEqual(s.text, "Ten seconds", "the stock key's say, not its shown text")
   assertEqual(s.id, 3)
   assertEqual(s.rate, -4)
   assertEqual(s.volume, 35)
@@ -231,6 +231,19 @@ test("packs: d.packs offers only the shipped packs, and an undeclared pack is ne
   assertFalse(c:Set("voice", "female"), "a pack the host does not ship is refused")
   c:Show("GO")
   assertEqual(#m.__files, 1)
+  assertTrue(m.__files[1].file:find("\\male-joe\\go.ogg", 1, true) ~= nil, m.__files[1].file)
+end)
+
+test("packs: a v1.96.0 host's two packs, without the announcer, keep the female default and its keys", function()
+  -- red under: the default announcer read as off, or the old keys female / male no longer resolving
+  local c, m, db = newCallout({ packs = { "callout/female-kathleen", "callout/male-joe" } })
+  local keys = {}
+  for i, v in ipairs(c:Voices()) do keys[i] = v.key end
+  assertEqual(table.concat(keys, ","), "female,male,tts,off")
+  assertEqual(c:Get("voice"), "female", "the announcer is not shipped: the first shipped pack speaks")
+  assertFalse(c:Set("voice", "male-arena-john"), "the announcer is refused where it is not shipped")
+  db.voice = "male"
+  c:Show("GO")
   assertTrue(m.__files[1].file:find("\\male-joe\\go.ogg", 1, true) ~= nil, m.__files[1].file)
 end)
 

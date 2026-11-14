@@ -9,10 +9,10 @@
 |---|---|
 | Major | `LibKa0s-Callout-1.0` |
 | Files and minors | `Callout.lua` minor **2** · `CalloutSettings.lua` minor **3** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2) |
-| Shipped in | unreleased (v1.98.0) |
-| Status | **Current** |
+| Shipped in | v1.98.0 – v1.99.0 |
+| Status | Superseded |
 | Supersedes | [version 1.2](./version-1.2-docs.md) (v1.97.0) — the same surface with no host write route, no leaf keys and no `SchemaRows` |
-| Superseded by | — |
+| Superseded by | [version 3.4](./version-3.4-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
 | Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 2, CalloutSettings = 3 }` |
@@ -493,3 +493,11 @@ order, so the whole-folder copy brings them in with no load-list change in the h
 **Consumer census.** Not measured: the major is new at v1.96.0, after the v1.83.0 stamp of
 [`CONSUMERS.md`](../CONSUMERS.md). Ka0s Combat Trail is its one planned consumer (LibKa0s#85); every
 export's verdict is *zero — planned at v1.96.0* until the next re-run.
+
+## Moving to version 3.4
+
+The same surface, with the section as one tab added (`SettingsTab`, `BuildSettings`' `layout = "side"`, `SchemaRows`' and `SettingsRows`' `texts = false`), "Countdown 10 to 1" in Text to play, and the glow as AuraMaster's (an on/off `glow` with intensity, thickness, offsets and color, the Off / Soft / Strong choice read as the same look; `Callout:MigrateGlow`). See [version 3.4](./version-3.4-docs.md). Re-vendor the whole folder; a stub of the instance gains `SettingsTab` and `GetGlowColor`.
+
+**The one break: `glow` reads as a boolean.** `Get("glow")` and `Look().glow` answer `true` or `false` at 3.4, where 2.3 answered `"off"`, `"soft"` or `"strong"`. A caller comparing the answer to a string compares it to `true` or `false` instead. `Set("glow", "off" | "soft" | "strong")` still lands, written as the choice's keys, and a stored string still reads as the look it drew; `Callout:MigrateGlow(t)` rewrites it in a host's own migration.
+
+**The voice packs (plan row L16).** Eight packs ship where 2.3 had two (`female-kathleen` and `male-joe` keep their keys, `female` and `male`). `DEFAULTS.voice` is `"male-arena-john"` (it was `"female"`): a host that passes `d.packs` and leaves the announcer out keeps its first shipped pack, but a host that pruned its copy and never passed `d.packs` now defaults to a pack it does not carry, which plays as silence, so it passes `d.packs` (its `LibKa0s sounds:` folders) or ships `callout/male-arena-john`. Text to speech says `PAUSE` as "Pause" (it said "Paused") and `LAST_TEN` as "Ten seconds" (it said "Last ten seconds"); the words shown do not change.

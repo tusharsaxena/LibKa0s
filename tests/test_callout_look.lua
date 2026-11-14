@@ -169,19 +169,21 @@ test("look: the shadow is on by default at (2, -2), follows its offsets, and off
   assertFalse(c:Set("shadowX", 21), "offsets are -20 to 20")
 end)
 
-test("look: the glow is the halo's alpha and its size over the text", function()
+test("look: the glow is the halo's alpha (its intensity) and its size over the text (its thickness)", function()
   local c = newCallout()
   local _, text, halo = parts(c)
-  local want = { off = { 0, 96 }, soft = { 0.35, 100 }, strong = { 0.7, 106 } }
-  for name, w in pairs(want) do
-    c:Set("glow", name)
-    assertEqual(halo:GetAlpha(), w[1], name .. ": the halo's alpha")
-    assertEqual(select(2, halo:GetFont()), w[2], name .. ": the halo's size")
-    assertEqual(select(2, text:GetFont()), 96, name .. ": the text keeps its size")
-  end
+  assertEqual(halo:GetAlpha(), 0.35, "on by default, at the old soft look's alpha")
+  assertEqual(select(2, halo:GetFont()), 100, "and 2 px out on every side: 96 + 4")
+  c:Set("glowIntensity", 0.7)
+  c:Set("glowThickness", 5)
+  assertEqual(halo:GetAlpha(), 0.7)
+  assertEqual(select(2, halo:GetFont()), 106, "the old strong look's size at 96")
+  assertEqual(select(2, text:GetFont()), 96, "the text keeps its size")
+  c:Set("glow", false)
+  assertEqual(halo:GetAlpha(), 0, "off is no glow")
+  c:Set("glow", true)
   c:Set("size", 50)
-  c:Set("glow", "strong")
-  assertEqual(select(2, halo:GetFont()), 55, "the halo follows the size")
+  assertEqual(select(2, halo:GetFont()), 60, "the halo follows the size, thickness px out")
 end)
 
 test("look: the size sets the frame's height, its width is WIDTH", function()
