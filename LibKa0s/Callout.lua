@@ -71,7 +71,7 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Set("glow", choice) still takes one, written as those keys. Six more voice packs (plan row L16),
 -- the arena announcer the default `voice`.
 -- Minor 4 (plan row L17, v1.101.0): new look defaults, the owner's own in-game settings: the face
--- Oxanium SemiBold (`FONT_DEFAULT`), a 1 px shadow down and to the right (`shadowX = 1`,
+-- Oxanium SemiBold (`FONT_DEFAULT`), a 1 px shadow up and to the right (`shadowX = 1`,
 -- `shadowY = 1`), and a black glow at full intensity, 1 px thick, 1 px right and 1 px down
 -- (`glowCustom`, `glowColor = { 0, 0, 0 }`, `glowIntensity = 1`, `glowThickness = 1`, `glowX = 1`,
 -- `glowY = -1`). A host that stored its own values reads them as before; `GLOW_LEGACY` is unchanged.
