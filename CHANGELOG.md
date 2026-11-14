@@ -31,7 +31,7 @@ Versions in this release: `LibKa0s-Callout-1.0` key **4.5** (Callout minor 4, Ca
 
 - `docs/releasing.md`: repo semver and the provenance template at v1.101.0, and the v1.101.0 re-vendor note. `README.md`'s kit line at v1.101.0. `CLAUDE.md`'s register row: key 4.5 at v1.101.0, and its one-release trigger recorded as fired, with no second consumer named; the choice between the row and moving the module into Combat Trail is put to the owner, awaiting a ruling. The plan's ledger row L17.
 
-Release gate (`docs/automated-tests/20261114-153219/`): lint pass, 0/0 in 342 files;
+Release gate (`docs/automated-tests/20261114-154613/`): lint pass, 0/0 in 342 files;
 tests pass, 4579 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
