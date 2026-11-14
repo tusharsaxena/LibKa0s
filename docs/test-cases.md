@@ -757,7 +757,7 @@ Total.
 - callout layout: the countdown pick is a session value the route's validate accepts
 - callout layout: SettingsTabs and the three-tab build are as they were
 
-### test_callout_glow.lua (15)
+### test_callout_glow.lua (16)
 
 - callout glow: on by default at the old soft look; the color companions all off
 - callout glow: the setting rules refuse what is out of range
@@ -769,6 +769,7 @@ Total.
 - callout glow: a glow color in either shape is stored in the instance's
 - callout glow: a stored off / soft / strong reads as the same look it drew
 - callout glow: Set takes an old choice and writes it as the new keys; Get answers the boolean
+- callout glow: toggling over a stored old choice keeps the look that choice implied
 - callout glow: MigrateGlow rewrites the old choice as the new keys, once
 - callout glow: SchemaRows carries every glow row with its path, default, bounds, validate and onChange
 - callout glow: AuraMaster's two columns; the swatch and its class companion never dim
@@ -2935,7 +2936,7 @@ Total.
 - nav: a live scroll moves right of the rail at once, and back when the rail is released, with or without a band
 - nav: with OptionsNav.lua absent there is no NavRail and nothing is inset
 
-### test_options_sidetabs.lua (11)
+### test_options_sidetabs.lua (12)
 
 - side tabs: OptionsNav is at minor 7 and every instance carries SideTabs
 - side tabs: the group lands where the page has got to, a rail entry per tab, the body drawn by render
@@ -2946,6 +2947,7 @@ Total.
 - side tabs: a click hands its key to onSelect, then the page re-renders on the new tab
 - side tabs: a click in combat is refused, and nothing changes
 - side tabs: a released group hands its rail back, and the next group takes it rather than building one
+- side tabs: a released rail goes back to client art before another instance can take it
 - side tabs: a registered skin owner's rail and entries paint through its facade
 - side tabs: the layout puts the body right of the rail, takes the rest of the width, and sizes the group
 
@@ -5167,7 +5169,7 @@ Total.
 | test_callout_settings.lua | 34 |
 | test_callout_schema.lua | 25 |
 | test_callout_layout.lua | 16 |
-| test_callout_glow.lua | 15 |
+| test_callout_glow.lua | 16 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5245,7 +5247,7 @@ Total.
 | test_gate_clients.lua | 8 |
 | test_options_banner_acts.lua | 10 |
 | test_options_nav.lua | 14 |
-| test_options_sidetabs.lua | 11 |
+| test_options_sidetabs.lua | 12 |
 | test_options_drawer.lua | 26 |
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
@@ -5345,4 +5347,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4527** |
+| **Total** | **4529** |

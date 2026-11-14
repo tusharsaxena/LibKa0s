@@ -525,10 +525,12 @@ changes, and its license texts ship beside it (or, for a public-domain source, t
 - **`female-bella`**, Kokoro-82M v1.0 voice `af_bella` by hexgrad, on the StyleTTS 2 architecture
   (MIT), run through kokoro-onnx (MIT); the weights' license text ships in the pack (its terms are in
   `DEPENDENCIES.md`). Its
-  training data credited as CC BY: the SIWIS French Speech Synthesis Database
-  ([datashare.ed.ac.uk/handle/10283/2353](https://datashare.ed.ac.uk/handle/10283/2353)), CC BY 4.0
-  (`LICENSE-CC-BY-4.0.txt`), and Koniwa `tnc` ([koniwa/koniwa](https://github.com/koniwa/koniwa)),
-  CC BY 3.0 ([creativecommons.org/licenses/by/3.0](https://creativecommons.org/licenses/by/3.0/)).
+  training data credited as CC BY: the SIWIS French Speech Synthesis Database by Junichi Yamagishi,
+  Pierre-Edouard Honnet, Philip Garner and Alexandros Lazaridis, published by the University of
+  Edinburgh ([doi.org/10.7488/ds/1705](https://doi.org/10.7488/ds/1705)), CC BY 4.0
+  (`LICENSE-CC-BY-4.0.txt`), and Koniwa `tnc`, read-aloud audio by the announcers of TV Nishi-Nippon
+  ([tnc.co.jp/forchildren/roudoku](https://www.tnc.co.jp/forchildren/roudoku)), collected in Koniwa
+  ([koniwa/koniwa](https://github.com/koniwa/koniwa), maintained by shirayu), CC BY 3.0 ([creativecommons.org/licenses/by/3.0](https://creativecommons.org/licenses/by/3.0/)).
   Changed: that audio was one part of a model's training data, and the clips are the model's
   output, resampled, trimmed and normalized. The rest of the model's training data is not
   published; `CREDITS.md` records that caveat and the owner's acceptance of it (2026-11-14).

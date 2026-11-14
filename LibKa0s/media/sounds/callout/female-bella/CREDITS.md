@@ -25,8 +25,13 @@ these lines.
   verified from the published material. The owner reviewed this and accepted the risk on
   2026-11-14.
 - Attribution owed for the CC BY audio the model card lists in the v1.0 training set: SIWIS French
-  Speech Synthesis Database, <https://datashare.ed.ac.uk/handle/10283/2353>, CC BY 4.0, text in
-  `LICENSE-CC-BY-4.0.txt`; and Koniwa `tnc`, <https://github.com/koniwa/koniwa>, CC BY 3.0,
+  Speech Synthesis Database, 2016, by Junichi Yamagishi, Pierre-Edouard Honnet, Philip Garner and
+  Alexandros Lazaridis, published by the University of Edinburgh, School of Informatics, The Centre
+  for Speech Technology Research (2017), <https://doi.org/10.7488/ds/1705>,
+  <https://datashare.ed.ac.uk/handle/10283/2353>, CC BY 4.0, text in `LICENSE-CC-BY-4.0.txt`; and
+  Koniwa `tnc`, read-aloud audio by the announcers of TV Nishi-Nippon (TNC),
+  <https://www.tnc.co.jp/forchildren/roudoku>, March 2020, as collected in the Koniwa corpus
+  (maintained by shirayu), <https://github.com/koniwa/koniwa>, CC BY 3.0,
   <https://creativecommons.org/licenses/by/3.0/>. Changes: that audio was one part of the data a model
   was trained on, and these clips are the model's output, resampled, trimmed and normalized as below.
   CC BY 3.0 asks for "a copy of, or the Uniform Resource Identifier (URI) for, this License"

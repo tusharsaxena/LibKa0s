@@ -185,6 +185,22 @@ test("side tabs: a released group hands its rail back, and the next group takes 
   assertEqual(O.__sideFreeRails(), free, "the next group took it")
 end)
 
+test("side tabs: a released rail goes back to client art before another instance can take it", function()
+  -- red under: a release that only parks the rail, so a host with no skin that reuses it keeps the
+  -- previous owner's skin backdrop (FREE_RAILS is shared by every instance)
+  local O, ctx = bench()
+  O.SideTabs(ctx, { entries = ENTRIES, render = function() end })
+  local group = groupOf(ctx.scroll)
+  local given = {}
+  local real = lib.__chromeUnpaint
+  lib.__chromeUnpaint = function(target) given[#given + 1] = target end
+  local ok, err = pcall(function() O.AceGUI:Release(group) end)
+  lib.__chromeUnpaint = real
+  if not ok then error(err, 0) end
+  assertEqual(#given, 1, "the rail is handed back once")
+  assertTrue(type(given[1]) == "table" and given[1].__ka0sSidePool ~= nil, "and it is the rail")
+end)
+
 test("side tabs: a registered skin owner's rail and entries paint through its facade", function()
   local O, ctx = bench()
   local painted = {}

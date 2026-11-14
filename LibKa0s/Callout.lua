@@ -1081,6 +1081,22 @@ local function setLegacyGlow(self, S, choice)
   return true
 end
 
+--- Before a `glow` write replaces a stored minor-2 choice, store the intensity and thickness that
+--- choice implied where no valid one is (MigrateGlow's rule), so a toggle leaves the look as it was:
+--- "strong" ticked off and on again still reads 70% and 5, not the defaults. Answers whether every
+--- write landed (minor 3).
+local function keepLegacyLook(S)
+  local t = store(S)
+  local row = t and lib.GLOW_LEGACY[t.glow]
+  if not row then return true end
+  for _, key in ipairs(LEGACY_KEYS) do
+    if key ~= "glow" and row[key] ~= nil and not VALID[key](t[key]) and not write(S, key, row[key]) then
+      return false
+    end
+  end
+  return true
+end
+
 --- Write one setting and apply it. nil clears it back to the default. On the host's route (`d.path`
 --- and `d.set`) the write is `d.set(d.path .. key, value)`, a whole `texts` / `muted` as one write
 --- per stock key's leaf; otherwise it lands in `d.db`. A `glowColor` in either shape is stored in
@@ -1092,6 +1108,7 @@ function METHODS:Set(key, value)
   if key == "glow" and lib.GLOW_LEGACY[value] then return setLegacyGlow(self, S, value) end
   if not known(key) or (value ~= nil and not validFor(S, key, value)) then return false end
   if key == "glowColor" and value ~= nil then value = encodeColor(S, rgb(value)) end
+  if key == "glow" and not keepLegacyLook(S) then return false end
   if not write(S, key, value) then return false end
   self:Apply()
   return true

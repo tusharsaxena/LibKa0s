@@ -17,7 +17,7 @@
 | Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row; from 4, for the side layout, `Section` and `SideTabs` (Options' OptionsNav minor 7), each presence-checked), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), from `Callout.lua` 3 the skin facade's `GlowColor` (Use the skin's color) and `LibKa0s-Core-1.0`'s `ClassColor` (Use class color, `RAID_CLASS_COLORS`), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 3, CalloutSettings = 4 }` |
 
-## What changed at this version: eight voice packs, and two contract changes (plan row L16)
+## What changed at this version: eight voice packs, a new default voice, and one contract change (plan row L16)
 
 The owner chose six more voices on 2026-11-14, shipped beside v1.96.0's two, so `PACKS` has eight
 rows. The arena announcer is the **default voice**, and `PACKS` is in the Voice row's order: the
@@ -39,7 +39,11 @@ announcer, then the female voices, then the male. v1.96.0's two packs keep their
 **The default where the announcer is not shipped.** `DEFAULTS.voice` is `"male-arena-john"`. A host
 whose `d.packs` leaves it out reads the first pack it does ship, in `PACKS` order, as before: a
 v1.96.0 consumer declaring `callout/female-kathleen, callout/male-joe` keeps `female` as its voice
-with no change of its own.
+with no change of its own, **when it passes `d.packs`**. Without `d.packs` every `PACKS` row is
+offered, so the default is the announcer whether or not the copy carries it, and a pack the copy does
+not carry plays as silence (see *The packs a host ships*). A v1.98.0 host that pruned its copy to
+kathleen and joe and never passed `d.packs` is silent by default after re-vendoring v1.99.0: it
+passes `d.packs` (its `LibKa0s sounds:` folders) to keep a voice that plays, or ships the announcer.
 
 **The spoken words match the packs.** Text to speech says what the packs say: `PAUSE` says "Pause"
 (it said "Paused") and `LAST_TEN` "Ten seconds" (it said "Last ten seconds"). The words shown are
@@ -88,7 +92,11 @@ paint.
 intensity 0.7, thickness 5. At the default size 96 that is the same halo to the pixel (100 and 106
 points); at another size the halo is the same number of pixels out rather than the same ratio (at
 50, strong drew 55 and draws 60). The instance **reads** a stored `glow` string through the map,
-without rewriting it, and a key stored on its own wins over the map. `Callout:MigrateGlow(t)`
+without rewriting it, and a key stored on its own wins over the map. **A `glow` write over a stored
+string keeps its look**: before `Set("glow", true | false | nil)` replaces the string, the intensity
+and thickness the choice implied are stored where no valid one is (`MigrateGlow`'s rule, through the
+same write route), so a player who unticks and reticks the glow over a stored `"strong"` still reads
+70% and 5, not the defaults. `Callout:MigrateGlow(t)`
 rewrites it in a host's own migration: `t.glow` becomes the boolean and the intensity and thickness
 the choice implied are stored where no valid one is; it answers whether it changed `t`. A host on
 the route calls it on its stored call-out table before its Schema's boot check, so the `glow` row

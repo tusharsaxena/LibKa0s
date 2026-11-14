@@ -210,6 +210,30 @@ test("callout glow: Set takes an old choice and writes it as the new keys; Get a
   assertFalse(c3:Set("glow", "soft"), "a refused write answers false")
 end)
 
+test("callout glow: toggling over a stored old choice keeps the look that choice implied", function()
+  -- red under: the first boolean write dropping "strong"'s 70% and 5 back to the defaults
+  local c, _, db = newCallout()
+  db.glow = "strong"
+  assertTrue(c:Set("glow", false))
+  assertTrue(c:Set("glow", true))
+  assertEqual(c:Get("glowIntensity"), 0.7, "the intensity stays strong's")
+  assertEqual(c:Get("glowThickness"), 5, "the thickness stays strong's")
+  local kept, _, kdb = newCallout()
+  kdb.glow, kdb.glowIntensity = "strong", 0.5
+  assertTrue(kept:Set("glow", true))
+  assertEqual(kdb.glowIntensity, 0.5, "a valid stored setting is kept")
+  assertEqual(kdb.glowThickness, 5)
+  local host = {}
+  local hdb
+  local c2
+  c2, _, hdb = newCallout({ path = "co.", set = function(path, v) host[path] = v; return true end })
+  hdb.glow = "strong"
+  assertTrue(c2:Set("glow", true))
+  assertEqual(host["co.glowIntensity"], 0.7, "on the host's route too")
+  assertEqual(host["co.glowThickness"], 5)
+  assertEqual(host["co.glow"], true)
+end)
+
 test("callout glow: MigrateGlow rewrites the old choice as the new keys, once", function()
   local _, _, _, _, Callout = newCallout()
   local strong = { glow = "strong" }

@@ -285,8 +285,12 @@ local function sideRail(group, width)
   return rail
 end
 
---- The group's OnRelease: the rail off the pooled frame and back on the free list.
+--- The group's OnRelease: the rail off the pooled frame and back on the free list. FREE_RAILS is
+--- shared by every instance, so the rail goes back to client art first (lib.__chromeUnpaint, the
+--- Skin record's saved backdrop, and untracked): a host with no skin that takes it next never draws
+--- another owner's skin on its list, and the old owner's replays no longer reach it.
 local function releaseSideRail(group, rail)
+  if lib.__chromeUnpaint then lib.__chromeUnpaint(rail) end
   Pool.ReleaseAll(rail.__ka0sSidePool)
   rail:Hide()
   rail:ClearAllPoints()
