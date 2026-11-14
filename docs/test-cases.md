@@ -674,7 +674,7 @@ Total.
 
 ### test_callout_settings.lua (34)
 
-- callout settings: CalloutSettings is at minor 3, paired on the Callout shell's minor
+- callout settings: CalloutSettings is at minor 4, paired on the Callout shell's minor
 - callout settings: the rows are Look, Sound then Texts, each path-less and bound to the instance
 - callout settings: the Texts tab has a color per kind, and a text box and a mute per stock key
 - callout settings: text to speech rows are there only while the client lists a voice
@@ -736,6 +736,24 @@ Total.
 - callout schema: the leaf keys read and write one entry of d.db, as minor 1's tables
 - callout schema: a stored color is read in either shape
 - callout schema: a host's colorEncode decides the shape the instance writes
+
+### test_callout_layout.lua (15)
+
+- callout layout: CalloutSettings is at minor 4, and an instance carries SettingsTab
+- callout layout: SettingsTab answers one host tab, Callout, that draws the side layout
+- callout layout: a Preview heading over the preview block, then side tabs Look and Sound
+- callout layout: Look holds the face rows and the Colors section; no Sound rows, no stock texts
+- callout layout: the Sound side tab draws the voice rows, and the choice holds across a redraw
+- callout layout: a Look row writes the host db and repaints the preview
+- callout layout: an Options copy without SideTabs draws Look and Sound under their headings
+- callout layout: an unknown layout answers nil; the layout wins over a tab
+- callout layout: the plain build's side layout draws Look and Sound with no stock texts
+- callout layout: SchemaRows with texts = false leaves the stock texts' rows out, colors on Look
+- callout layout: SettingsRows with texts = false is the one tab's rows
+- callout layout: Text to play leads with Countdown 10 to 1, then every stock text
+- callout layout: Play with Countdown 10 to 1 counts the real call-out from 10 to 1, with no finish
+- callout layout: the countdown pick is a session value the route's validate accepts
+- callout layout: SettingsTabs and the three-tab build are as they were
 
 ### test_charts.lua (15)
 
@@ -2896,6 +2914,20 @@ Total.
 - nav: an empty entry list releases the rail and gives the page its full width back
 - nav: a live scroll moves right of the rail at once, and back when the rail is released, with or without a band
 - nav: with OptionsNav.lua absent there is no NavRail and nothing is inset
+
+### test_options_sidetabs.lua (11)
+
+- side tabs: OptionsNav is at minor 7 and every instance carries SideTabs
+- side tabs: the group lands where the page has got to, a rail entry per tab, the body drawn by render
+- side tabs: a value no drawn entry has selects the first, and clients gates an entry
+- side tabs: section headings inside the body start fresh, and the page's trackers come back
+- side tabs: a raising render is reported, and the page's scroll still comes back
+- side tabs: nothing to draw answers nil and draws nothing
+- side tabs: a click hands its key to onSelect, then the page re-renders on the new tab
+- side tabs: a click in combat is refused, and nothing changes
+- side tabs: a released group hands its rail back, and the next group takes it rather than building one
+- side tabs: a registered skin owner's rail and entries paint through its facade
+- side tabs: the layout puts the body right of the rail, takes the rest of the width, and sizes the group
 
 ### test_options_drawer.lua (26)
 
@@ -5114,6 +5146,7 @@ Total.
 | test_callout_voice.lua | 29 |
 | test_callout_settings.lua | 34 |
 | test_callout_schema.lua | 25 |
+| test_callout_layout.lua | 15 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5191,6 +5224,7 @@ Total.
 | test_gate_clients.lua | 8 |
 | test_options_banner_acts.lua | 10 |
 | test_options_nav.lua | 14 |
+| test_options_sidetabs.lua | 11 |
 | test_options_drawer.lua | 26 |
 | test_options_keybinds_model.lua | 26 |
 | test_options_keybinds.lua | 30 |
@@ -5290,4 +5324,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4484** |
+| **Total** | **4510** |
