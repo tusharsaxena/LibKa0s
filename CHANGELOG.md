@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.102.0 — unreleased
+## v1.102.0 — 2026-11-14
 
 Opened 2026-11-14, on `feat/2026-11-14-callout-defaults` (off `master` at the v1.100.0 merge, `1dd9680`): two changes the owner asked for to `LibKa0s-Callout-1.0` (plan row L17 of `docs/superpowers/plans/2026-11-13-callout.md`). The one tab's preview block loses its sample line, and the Look defaults become the owner's own in-game settings. Neither adds or removes a member or changes what a call answers, so this is not an API break, but **a host that never stored these values draws differently** after re-vendoring. Its one consumer, Ka0s Combat Trail, adopts the call-out on its unmerged branch `feat/2026-11-13-callout`.
 
@@ -33,7 +33,7 @@ Versions in this release: `LibKa0s-Callout-1.0` key **4.5** (Callout minor 4, Ca
 
 ### The release (L17)
 
-- `docs/releasing.md`: repo semver and the provenance template at v1.102.0, and the v1.102.0 re-vendor note. `README.md`'s kit line at v1.102.0. `CLAUDE.md`'s register row: key 4.5 at v1.102.0, and its one-release trigger recorded as fired, with no second consumer named; the choice between the row and moving the module into Combat Trail is put to the owner, awaiting a ruling. The plan's ledger row L17.
+- `docs/releasing.md`: repo semver and the provenance template at v1.102.0, and the v1.102.0 re-vendor note. `README.md`'s kit line at v1.102.0. `CLAUDE.md`'s register row: key 4.5 at v1.102.0, and its v1.101.0 trigger recorded as fired when v1.101.0 shipped with no second consumer named; the owner ruled on 2026-11-14 to keep the module in LibKa0s and relax `library-stack-§7`'s bar 1 to a SHOULD (WowAddonStandards v2.109.0, not yet merged), and the row retires when that merges. This release was prepared as v1.101.0 and renumbered: another branch's WaypointArrow release took v1.101.0 first and is merged in. The plan's ledger row L17.
 
 ## v1.101.0 — 2026-11-14
 
