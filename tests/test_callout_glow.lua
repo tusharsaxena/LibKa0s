@@ -64,7 +64,7 @@ end)
 
 test("callout glow: the setting rules refuse what is out of range", function()
   local c = newCallout()
-  assertFalse(c:Set("glow", "soft"), "the toggle is a boolean now")
+  assertFalse(c:Set("glow", "bright"), "the toggle is a boolean or an old choice")
   assertFalse(c:Set("glowIntensity", 0.01))
   assertFalse(c:Set("glowIntensity", 1.5))
   assertFalse(c:Set("glowThickness", 0))
@@ -185,6 +185,29 @@ test("callout glow: a stored off / soft / strong reads as the same look it drew"
   db.glow, db.glowIntensity = "strong", 0.5
   c:Show("GO")
   assertEqual(halo(c):GetAlpha(), 0.5, "a setting stored on its own wins over the old choice")
+end)
+
+test("callout glow: Set takes an old choice and writes it as the new keys; Get answers the boolean", function()
+  -- red under: Set refusing "soft" (v1.98.0 callers break), or storing the string itself
+  local c, _, db = newCallout()
+  db.glowIntensity = 0.9
+  assertTrue(c:Set("glow", "strong"), "a v1.98.0 caller's write lands")
+  assertEqual(db.glow, true)
+  assertEqual(db.glowIntensity, 0.7, "the choice is the player's, so it overwrites")
+  assertEqual(db.glowThickness, 5)
+  assertEqual(c:Get("glow"), true, "Get answers the boolean")
+  assertEqual(c:Look().glow, true)
+  assertTrue(c:Set("glow", "off"))
+  assertEqual(db.glow, false)
+  assertEqual(db.glowThickness, 5, "off names no thickness")
+  local host = {}
+  local c2 = newCallout({ path = "co.", set = function(path, v) host[path] = v; return true end })
+  assertTrue(c2:Set("glow", "soft"))
+  assertEqual(host["co.glow"], true, "on the host's route too")
+  assertEqual(host["co.glowIntensity"], 0.35)
+  assertEqual(host["co.glowThickness"], 2)
+  local c3 = newCallout({ path = "co.", set = function() return false end })
+  assertFalse(c3:Set("glow", "soft"), "a refused write answers false")
 end)
 
 test("callout glow: MigrateGlow rewrites the old choice as the new keys, once", function()

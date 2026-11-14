@@ -158,9 +158,10 @@ python3 -I tools/artwork/fonts.py --fetch --build                          # net
 
 A clean rebuild must leave `git status` clean — the committed TGAs are what the tool produces.
 
-**The voice packs are build-time art too, and the text-to-speech models never ship.** The 86 clips
-in `LibKa0s/media/sounds/callout/` (43 lines in each of two packs) were synthesized once, on
-2026-11-13, and are committed; nothing in the suite, a re-vendor or a release reads a model. No
+**The voice packs are build-time art too, and the text-to-speech models never ship.** The 344 clips
+in `LibKa0s/media/sounds/callout/` (43 lines in each of eight packs, 362 files with the credits and
+license files, about 2.7 MB) were synthesized once, two packs on 2026-11-13 and six on 2026-11-14,
+and are committed; nothing in the suite, a re-vendor or a release reads a model. No
 generator script is committed: each pack's `CREDITS.md` is the recipe, naming the model and its
 SHA-256, the synthesis settings, the text of each line, the trim and normalize step and the
 encoding. Regenerating a pack, which only a changed line or a new voice needs, takes:
@@ -168,15 +169,31 @@ encoding. Regenerating a pack, which only a changed line or a new voice needs, t
 | Tool | Why | Where |
 |---|---|---|
 | piper-tts 1.8.0 (Python) | Synthesizes each line ([OHF-Voice/piper1-gpl](https://github.com/OHF-Voice/piper1-gpl); GPL-3.0, a build tool only, so none of its code is in the payload) | `pip install piper-tts==1.8.0` in a venv (the PEP 668 trap below applies) |
-| The Piper voice models `en_US-kathleen-medium` and `en_US-joe-medium` (`.onnx` and `.onnx.json`) | The two voices, from [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices) (MIT); the SHA-256 of each `.onnx` is in its pack's `CREDITS.md` | downloaded beside the script, never committed |
+| The Piper voice models `en_US-kathleen-medium`, `en_US-joe-medium`, `en_US-kristin-medium`, `en_GB-cori-high`, `en_US-john-medium` and `en_US-norman-medium` (`.onnx` and `.onnx.json`) | The Piper voices, from [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices) (MIT); the SHA-256 of each `.onnx` is in its pack's `CREDITS.md` | downloaded beside the script, never committed |
+| kokoro-onnx 0.6.1, with `kokoro-v1.0.onnx` and `voices-v1.0.bin` | Synthesizes `female-bella` ([thewh1teagle/kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx), MIT; the Kokoro-82M weights, Apache 2.0; its espeak-ng phonemizer is GPL-3.0, a build tool only); the two files' SHA-256 are in the pack's `CREDITS.md` | `pip install kokoro-onnx==0.6.1` in the same venv; the model files downloaded beside the script, never committed |
+| ffmpeg (the imageio-ffmpeg build, 9.0.2), with rubberband and soxr | `female-bella`'s resample from 24,000 Hz, and `male-arena-john`'s pitch shift and filter chain (EQ, compressor, soft clip, limiter); the hall reverb is NumPy | `pip install imageio-ffmpeg` in the same venv |
 | python-soundfile over libsndfile 1.2.2, and NumPy | The silence trim, the peak normalize and the Ogg Vorbis encode | in the same venv: `pip install soundfile numpy` |
 
-What ships, and under what terms (the texts beside each pack):
+What ships, and under what terms (the texts beside each pack). **The shape of a pack's license
+files:** a `LICENSE-<id>.txt` is the verbatim text of a license that covers a source of the pack
+(`LICENSE-CC0-1.0.txt`, `LICENSE-CC-BY-4.0.txt`, `LICENSE-Apache-2.0.txt`). A public-domain source
+has no license text to carry, so its pack carries `LICENSE-PUBLIC-DOMAIN.txt` in that place: a
+status note, not a license, naming the source, why it is in the public domain, and where its author
+says so. Either way the file sits in the pack's folder beside its `CREDITS.md`, so it travels with
+the pack under `library-stack-§7`'s sound subset, which keeps each pack whole. A license that lets
+its URI stand in for its text (CC BY 3.0 §4(a): "a copy of, or the Uniform Resource Identifier
+(URI) for, this License") is credited by that URI in `CREDITS.md`, and no text ships for it.
 
 | Pack | Model | Licenses shipped | Attribution |
 |---|---|---|---|
 | `callout/female-kathleen/` | Piper `en_US-kathleen-medium`, fine-tuned from `en_US-hifi_tts_92-medium` | CC0 1.0 (the Nabu Casa kathleen dataset, `LICENSE-CC0-1.0.txt`); CC BY 4.0 (the Hi-Fi Multi-Speaker English TTS Dataset the base model was trained on, NVIDIA, `LICENSE-CC-BY-4.0.txt`) | **Required** by CC BY 4.0: `CREDITS.md`, this repo's README *Credits*, and the README of every consumer that ships the pack |
 | `callout/male-joe/` | Piper `en_US-joe-medium`, fine-tuned from `nl_BE-rdh-medium` | CC0 1.0 (the Nabu Casa joe dataset and the base model's data, `LICENSE-CC0-1.0.txt`) | Not required; credited anyway in `CREDITS.md` and this repo's README |
+| `callout/male-arena-john/` (the default voice) | Piper `en_US-john-medium` (as `male-john`), processed into an arena-announcer sound | Public domain (LibriVox, `LICENSE-PUBLIC-DOMAIN.txt`); the processing is own work and adds no terms | Not required; credited anyway in `CREDITS.md` and this repo's README |
+| `callout/female-kristin/` | Piper `en_US-kristin-medium`, trained from scratch | Public domain (LibriVox, `LICENSE-PUBLIC-DOMAIN.txt`) | Not required; credited anyway |
+| `callout/female-cori/` | Piper `en_GB-cori-high`, trained from scratch | Public domain (LibriVox, `LICENSE-PUBLIC-DOMAIN.txt`) | Not required; credited anyway |
+| `callout/female-bella/` | Kokoro-82M v1.0, voice `af_bella` | Apache 2.0 (the model weights, `LICENSE-Apache-2.0.txt`); CC BY 4.0 (the SIWIS French Speech Synthesis Database in its training data, `LICENSE-CC-BY-4.0.txt`); CC BY 3.0 (Koniwa `tnc` in its training data, by its license's URI) | **Required** by CC BY 4.0 and CC BY 3.0: `CREDITS.md`, this repo's README *Credits*, and the README of every consumer that ships the pack. The rest of the training data is undisclosed (in part synthetic audio from closed commercial TTS); `CREDITS.md` records the caveat and the owner's acceptance of the risk on 2026-11-14 |
+| `callout/male-john/` | Piper `en_US-john-medium`, fine-tuned from `en_US-kristin-medium` | Public domain (LibriVox, `LICENSE-PUBLIC-DOMAIN.txt`) | Not required; credited anyway |
+| `callout/male-norman/` | Piper `en_US-norman-medium`, trained from scratch | Public domain (LibriVox, `LICENSE-PUBLIC-DOMAIN.txt`) | Not required; credited anyway |
 
 ## What this repo is verified with
 

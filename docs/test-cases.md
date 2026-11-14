@@ -640,7 +640,7 @@ Total.
 - unlock: the lock is never written into the host's db, and SetLocked twice is one change
 - unlock: locking during a countdown leaves the countdown on screen
 
-### test_callout_voice.lua (29)
+### test_callout_voice.lua (30)
 
 - speak from: a countdown from 10 speaks 5 to 1 and GO, and shows every number
 - speak from: the setting moves the line, from 1 to 20
@@ -657,6 +657,7 @@ Total.
 - custom sound: a missing file is silence, logged once by its path; an empty path is no sound
 - custom sound: no PlaySoundFile in the client is silence, logged once
 - packs: d.packs offers only the shipped packs, and an undeclared pack is never played
+- packs: a v1.96.0 host's two packs, without the announcer, keep the female default and its keys
 - packs: a stored pack the host no longer ships reads as the first it does; none shipped is off
 - finish false: at zero nothing new shows or plays, the 1 fades, onDone runs once
 - finish false: an endsAt already past is onDone at the call, with nothing on screen
@@ -756,7 +757,7 @@ Total.
 - callout layout: the countdown pick is a session value the route's validate accepts
 - callout layout: SettingsTabs and the three-tab build are as they were
 
-### test_callout_glow.lua (14)
+### test_callout_glow.lua (15)
 
 - callout glow: on by default at the old soft look; the color companions all off
 - callout glow: the setting rules refuse what is out of range
@@ -767,6 +768,7 @@ Total.
 - callout glow: the skin's color needs a registered owner answering one, else it falls through
 - callout glow: a glow color in either shape is stored in the instance's
 - callout glow: a stored off / soft / strong reads as the same look it drew
+- callout glow: Set takes an old choice and writes it as the new keys; Get answers the boolean
 - callout glow: MigrateGlow rewrites the old choice as the new keys, once
 - callout glow: SchemaRows carries every glow row with its path, default, bounds, validate and onChange
 - callout glow: AuraMaster's two columns; the swatch and its class companion never dim
@@ -5161,11 +5163,11 @@ Total.
 | test_toast_stack.lua | 36 |
 | test_callout.lua | 52 |
 | test_callout_look.lua | 27 |
-| test_callout_voice.lua | 29 |
+| test_callout_voice.lua | 30 |
 | test_callout_settings.lua | 34 |
 | test_callout_schema.lua | 25 |
 | test_callout_layout.lua | 16 |
-| test_callout_glow.lua | 14 |
+| test_callout_glow.lua | 15 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5343,4 +5345,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4525** |
+| **Total** | **4527** |

@@ -67,7 +67,9 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- Minor 3 (plan row L15, v1.99.0): the glow behind the text as AuraMaster's text glow is: an on/off
 -- `glow`, `glowIntensity`, `glowThickness`, `glowX` / `glowY`, and its color (`glowCustom` with
 -- `glowColor`, `useClassColorGlow`, `glowColorFromSkin`; off, each word's kind color, as before).
--- A stored "off" / "soft" / "strong" reads as the same look (`GLOW_LEGACY`, `MigrateGlow`).
+-- A stored "off" / "soft" / "strong" reads as the same look (`GLOW_LEGACY`, `MigrateGlow`), and
+-- Set("glow", choice) still takes one, written as those keys. Six more voice packs (plan row L16),
+-- the arena announcer the default `voice`.
 local MAJOR, MINOR = "LibKa0s-Callout-1.0", 3
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -80,11 +82,19 @@ lib.MODULES.Callout = MINOR
 -- ── the voice packs ──────────────────────────────────────────────────────────────────────────
 --
 -- One row per bundled pack: the `voice` setting's key, the folder under media/sounds/callout/ its
--- lines sit in, and the name a settings row shows. Order is the settings row's order. A new pack is
--- a row here and a folder of LINES; nothing else names a pack.
+-- lines sit in, and the name a settings row shows. Order is the settings row's order: the arena
+-- announcer (the default), then the female voices, then the male. A new pack is a row here and a
+-- folder of LINES; nothing else names a pack. The first two packs (v1.96.0) keep their keys
+-- `female` and `male`, so a stored choice still reads; every pack since is keyed by its folder.
 lib.PACKS = {
-  { key = "female", folder = "female-kathleen", name = "Female (Kathleen)" },
-  { key = "male",   folder = "male-joe",        name = "Male (Joe)" },
+  { key = "male-arena-john", folder = "male-arena-john", name = "Arena announcer (John)" },
+  { key = "female",          folder = "female-kathleen", name = "Female (Kathleen)" },
+  { key = "female-kristin",  folder = "female-kristin",  name = "Female (Kristin)" },
+  { key = "female-cori",     folder = "female-cori",     name = "Female (Cori)" },
+  { key = "female-bella",    folder = "female-bella",    name = "Female (Bella)" },
+  { key = "male",            folder = "male-joe",        name = "Male (Joe)" },
+  { key = "male-john",       folder = "male-john",       name = "Male (John)" },
+  { key = "male-norman",     folder = "male-norman",     name = "Male (Norman)" },
 }
 lib.TTS, lib.OFF = "tts", "off"           -- the two `voice` values that are not a pack
 
@@ -98,8 +108,9 @@ lib.KINDS = { "number", "info", "go", "stop", "warn", "error" }
 local KIND = {}
 for _, k in ipairs(lib.KINDS) do KIND[k] = true end
 
--- The stock call-outs: key -> the text shown, its kind and what a voice says. Each key's pack line
--- is its lower-case name (`NEW_BEST` -> `new_best.ogg`); the numbers 1 to 20 are `1.ogg` .. `20.ogg`.
+-- The stock call-outs: key -> the text shown, its kind and what a voice says. `say` is the words
+-- the packs speak (text to speech says the same), so PAUSE says "Pause" and LAST_TEN "Ten
+-- seconds" whatever the text shown. Each key's pack line is its lower-case name (`NEW_BEST` -> `new_best.ogg`); the numbers 1 to 20 are `1.ogg` .. `20.ogg`.
 lib.STOCK = {
   READY     = { text = "READY",     kind = "info",  say = "Ready" },
   GO        = { text = "GO!",       kind = "go",    say = "Go" },
@@ -110,7 +121,7 @@ lib.STOCK = {
   DONE      = { text = "DONE",      kind = "info",  say = "Done" },
   FINISH    = { text = "FINISH",    kind = "go",    say = "Finish" },
   NEW_BEST  = { text = "NEW BEST",  kind = "go",    say = "New best" },
-  PAUSE     = { text = "PAUSED",    kind = "warn",  say = "Paused" },
+  PAUSE     = { text = "PAUSED",    kind = "warn",  say = "Pause" },
   RESUME    = { text = "RESUME",    kind = "info",  say = "Resume" },
   CANCELED = { text = "CANCELED", kind = "stop",  say = "Canceled" },
   PULL      = { text = "PULL",      kind = "warn",  say = "Pull" },
@@ -123,7 +134,7 @@ lib.STOCK = {
   TIME_UP   = { text = "TIME UP",   kind = "stop",  say = "Time up" },
   VICTORY   = { text = "VICTORY",   kind = "go",    say = "Victory" },
   FAILED    = { text = "FAILED",    kind = "error", say = "Failed" },
-  LAST_TEN  = { text = "LAST TEN",  kind = "warn",  say = "Last ten seconds" },
+  LAST_TEN  = { text = "LAST TEN",  kind = "warn",  say = "Ten seconds" },
 }
 lib.STOCK_ORDER = { "READY", "GO", "START", "STOP", "WARNING", "ERROR", "DONE", "FINISH", "NEW_BEST",
   "PAUSE", "RESUME", "CANCELED", "PULL", "INTERRUPT", "MOVE", "DEFENSIVE", "REBUFF", "EXPIRING",
@@ -166,7 +177,7 @@ lib.DEFAULTS = {
   glowCustom = false, glowColor = { 1, 1, 1 }, useClassColorGlow = false, glowColorFromSkin = false,
   anim = "slam", hold = 1.5,
   point = { "CENTER", "CENTER", 0, 180 },
-  voice = "female", channel = "Master", speakFrom = 5,
+  voice = "male-arena-john", channel = "Master", speakFrom = 5,
   ttsVoice = false, ttsRate = 0, ttsVolume = 100,   -- false: the client's first voice
   texts = {},                                        -- key -> the player's own text for a stock key
   muted = {},                                        -- key -> true: that stock key shows unspoken
@@ -1058,13 +1069,27 @@ function METHODS:Get(key)
   return copy(get(S, key))
 end
 
+--- A minor-2 glow choice ("off" / "soft" / "strong") given to Set: written as the keys its
+--- `GLOW_LEGACY` row names, `glow` first, so a v1.98.0 caller's write still lands (minor 3).
+local LEGACY_KEYS = { "glow", "glowIntensity", "glowThickness" }
+local function setLegacyGlow(self, S, choice)
+  local row = lib.GLOW_LEGACY[choice]
+  for _, key in ipairs(LEGACY_KEYS) do
+    if row[key] ~= nil and not write(S, key, row[key]) then return false end
+  end
+  self:Apply()
+  return true
+end
+
 --- Write one setting and apply it. nil clears it back to the default. On the host's route (`d.path`
 --- and `d.set`) the write is `d.set(d.path .. key, value)`, a whole `texts` / `muted` as one write
 --- per stock key's leaf; otherwise it lands in `d.db`. A `glowColor` in either shape is stored in
---- the instance's (minor 3), as SetColor's is. Answers
+--- the instance's (minor 3), as SetColor's is. `glow` takes the boolean, and still takes a minor-2
+--- choice, written as its `GLOW_LEGACY` keys; Get answers the boolean either way. Answers
 --- false for an unknown key, an invalid value, no table to write into, or a host seam that refused.
 function METHODS:Set(key, value)
   local S = state(self)
+  if key == "glow" and lib.GLOW_LEGACY[value] then return setLegacyGlow(self, S, value) end
   if not known(key) or (value ~= nil and not validFor(S, key, value)) then return false end
   if key == "glowColor" and value ~= nil then value = encodeColor(S, rgb(value)) end
   if not write(S, key, value) then return false end

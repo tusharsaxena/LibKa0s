@@ -365,7 +365,8 @@ test("callout settings: each list offers exactly the major's choices, in its ord
   assertEqual(keys(by.outline), table.concat(Callout.OUTLINES, ","))
   assertEqual(keys(by.anim), table.concat(Callout.ANIMS, ","))
   assertEqual(keys(by.channel), table.concat(Callout.CHANNELS, ","))
-  assertEqual(keys(by.voice), "female,male,tts,off")
+  assertEqual(keys(by.voice),
+    "male-arena-john,female,female-kristin,female-cori,female-bella,male,male-john,male-norman,tts,off")
   for _, key in ipairs({ "outline", "anim", "channel", "voice" }) do
     for _, v in ipairs(by[key].values) do
       assertTrue(type(v.text) == "string" and v.text ~= "", key .. " " .. tostring(v.value) .. " has a word")

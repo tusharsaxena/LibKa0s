@@ -80,9 +80,15 @@ test("callout: the stock texts, the packs and the lines are data", function()
   assertEqual(#Callout.LINES, 43, "23 stock lines and the numbers 1 to 20")
   assertEqual(Callout.LINES[1], "ready")
   assertEqual(Callout.LINES[43], "20")
-  assertEqual(Callout.PACKS[1].key, "female")
-  assertEqual(Callout.PACKS[2].folder, "male-joe")
-  assertEqual(Callout.DEFAULTS.voice, "female", "the default voice is the first pack")
+  local keys, folders = {}, {}
+  for _, p in ipairs(Callout.PACKS) do keys[#keys + 1], folders[#folders + 1] = p.key, p.folder end
+  assertEqual(table.concat(keys, ","),
+    "male-arena-john,female,female-kristin,female-cori,female-bella,male,male-john,male-norman",
+    "the announcer, then the female voices, then the male; the v1.96.0 packs keep their keys")
+  assertEqual(table.concat(folders, ","),
+    "male-arena-john,female-kathleen,female-kristin,female-cori,female-bella,male-joe,male-john,male-norman")
+  assertEqual(Callout.PACKS[1].name, "Arena announcer (John)")
+  assertEqual(Callout.DEFAULTS.voice, "male-arena-john", "the default voice is the first pack")
 end)
 
 test("texts: every pack folder ships exactly LINES as .ogg, beside its credits", function()
@@ -535,7 +541,7 @@ test("sound: a stock key plays its pack line on the chosen channel", function()
   local c, m = newCallout()
   c:Show("NEW_BEST")
   assertEqual(#m.__files, 1)
-  assertEqual(m.__files[1].file, PACK_DIR .. "female-kathleen\\new_best.ogg")
+  assertEqual(m.__files[1].file, PACK_DIR .. "male-arena-john\\new_best.ogg")
   assertEqual(m.__files[1].channel, "Master")
   c:Set("voice", "male")
   c:Set("channel", "Dialog")
@@ -547,10 +553,10 @@ end)
 test("sound: soundsBase and vendorPath move where the packs are found", function()
   local c, m = newCallout({ vendorPath = "lib\\Ka0s" })
   c:Show("GO")
-  assertEqual(m.__files[1].file, "Interface\\AddOns\\TestAddon\\lib\\Ka0s\\media\\sounds\\callout\\female-kathleen\\go.ogg")
+  assertEqual(m.__files[1].file, "Interface\\AddOns\\TestAddon\\lib\\Ka0s\\media\\sounds\\callout\\male-arena-john\\go.ogg")
   local c2, m2 = newCallout({ soundsBase = "Interface\\AddOns\\Mine\\voices" })
   c2:Show("GO")
-  assertEqual(m2.__files[1].file, "Interface\\AddOns\\Mine\\voices\\female-kathleen\\go.ogg")
+  assertEqual(m2.__files[1].file, "Interface\\AddOns\\Mine\\voices\\male-arena-john\\go.ogg")
 end)
 
 test("sound: a countdown speaks only from speakFrom down", function()
@@ -560,14 +566,14 @@ test("sound: a countdown speaks only from speakFrom down", function()
   assertEqual(#m.__files, 0, "7 and 6 are shown, not spoken")
   frameAt(m, 2)
   assertEqual(#m.__files, 1)
-  assertEqual(m.__files[1].file, PACK_DIR .. "female-kathleen\\5.ogg")
+  assertEqual(m.__files[1].file, PACK_DIR .. "male-arena-john\\5.ogg")
   frameAt(m, 7)
-  assertEqual(m.__files[#m.__files].file, PACK_DIR .. "female-kathleen\\go.ogg")
+  assertEqual(m.__files[#m.__files].file, PACK_DIR .. "male-arena-john\\go.ogg")
 end)
 
 test("sound: a missing file falls back to silence, logged once", function()
   local c, m, _, logs = newCallout()
-  m.__missing[PACK_DIR .. "female-kathleen\\go.ogg"] = true
+  m.__missing[PACK_DIR .. "male-arena-john\\go.ogg"] = true
   assertTrue(c:Show("GO"), "the call-out still shows")
   assertTrue(c:Show("GO"))
   local n = 0
@@ -647,7 +653,8 @@ test("sound: Voices lists the packs, then text to speech and off", function()
   local c = newCallout()
   local keys = {}
   for i, v in ipairs(c:Voices()) do keys[i] = v.key end
-  assertEqual(table.concat(keys, ","), "female,male,tts,off")
+  assertEqual(table.concat(keys, ","),
+    "male-arena-john,female,female-kristin,female-cori,female-bella,male,male-john,male-norman,tts,off")
 end)
 
 -- ── the stand-down ───────────────────────────────────────────────────────────────────────────

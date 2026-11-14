@@ -11,11 +11,49 @@
 | Files and minors | `Callout.lua` minor **3** · `CalloutSettings.lua` minor **4** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2, minor 4 at 3) |
 | Shipped in | unreleased (v1.99.0) |
 | Status | **Current** |
-| Supersedes | [version 2.3](./version-2.3-docs.md) (v1.98.0) — the same surface without the one tab (`SettingsTab`, `BuildSettings`' `layout = "side"`), `texts = false`, the Play list's countdown or the glow's settings (an Off / Soft / Strong choice there). This document was keyed 2.4 until `Callout.lua` moved to minor 3 for the glow (plan row L15), before either shipped |
+| Supersedes | [version 2.3](./version-2.3-docs.md) (v1.98.0) — the same surface without the one tab (`SettingsTab`, `BuildSettings`' `layout = "side"`), `texts = false`, the Play list's countdown, the glow's settings (an Off / Soft / Strong choice there), the six voice packs added in v1.99.0 or the announcer as the default voice. This document was keyed 2.4 until `Callout.lua` moved to minor 3 for the glow (plan row L15), before either shipped |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
 | Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row; from 4, for the side layout, `Section` and `SideTabs` (Options' OptionsNav minor 7), each presence-checked), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), from `Callout.lua` 3 the skin facade's `GlowColor` (Use the skin's color) and `LibKa0s-Core-1.0`'s `ClassColor` (Use class color, `RAID_CLASS_COLORS`), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 3, CalloutSettings = 4 }` |
+
+## What changed at this version: eight voice packs, and two contract changes (plan row L16)
+
+The owner chose six more voices on 2026-11-14, shipped beside v1.96.0's two, so `PACKS` has eight
+rows. The arena announcer is the **default voice**, and `PACKS` is in the Voice row's order: the
+announcer, then the female voices, then the male. v1.96.0's two packs keep their keys (`female`,
+`male`), so a stored choice still reads; each new pack is keyed by its folder. All of it folds into
+`Callout.lua` minor 3 (unreleased), so no minor moves for it:
+
+| `voice` key | Folder | Name in the Voice row |
+|---|---|---|
+| `male-arena-john` | `male-arena-john` | Arena announcer (John): the default |
+| `female` | `female-kathleen` | Female (Kathleen) |
+| `female-kristin` | `female-kristin` | Female (Kristin) |
+| `female-cori` | `female-cori` | Female (Cori) |
+| `female-bella` | `female-bella` | Female (Bella) |
+| `male` | `male-joe` | Male (Joe) |
+| `male-john` | `male-john` | Male (John) |
+| `male-norman` | `male-norman` | Male (Norman) |
+
+**The default where the announcer is not shipped.** `DEFAULTS.voice` is `"male-arena-john"`. A host
+whose `d.packs` leaves it out reads the first pack it does ship, in `PACKS` order, as before: a
+v1.96.0 consumer declaring `callout/female-kathleen, callout/male-joe` keeps `female` as its voice
+with no change of its own.
+
+**The spoken words match the packs.** Text to speech says what the packs say: `PAUSE` says "Pause"
+(it said "Paused") and `LAST_TEN` "Ten seconds" (it said "Last ten seconds"). The words shown are
+unchanged.
+
+**Contract change: `glow` reads as a boolean.** `Get("glow")` and `Look().glow` answer `true` or
+`false` from 3.4, where 2.3 answered `"off"`, `"soft"` or `"strong"`. A v1.98.0 caller comparing the
+answer to a string has to compare to the boolean. This is the one change at 3.4 that a caller
+cannot keep working through. **`Set("glow", choice)` still takes the old choice**: `"off"`,
+`"soft"` or `"strong"` is written as the keys of its `GLOW_LEGACY` row, `glow` first (`"strong"`
+writes `glow = true`, `glowIntensity = 0.7`, `glowThickness = 5`; `"off"` writes `glow = false` alone),
+on the host's route as one write per key, and answers false when any write is refused. Unlike
+`MigrateGlow`, which keeps a valid stored intensity or thickness, `Set` overwrites them: it is the
+player's choice, made now.
 
 ## What changed at this version: the glow behind the text (plan row L15)
 
@@ -209,7 +247,7 @@ Read straight off the LibStub table.
 | `New(d)` | 1 | A new instance (below). Raises without `d.db` |
 | `DEFAULTS` | 1 | The settings' defaults (below), and the table a host **off the write route** seeds its profile with. A host on the route (`d.path`, from 2) seeds from `SchemaRows`' defaults instead: `DEFAULTS.texts` and `muted` are `{}` where the rows are one leaf per stock key, and `DEFAULTS.colors` are arrays where the rows' defaults are the host's shape (see [Adopting it](#adopting-it)). Never mutate it |
 | `SETTINGS` | 1 | The setting keys `Get`/`Set` take, sorted |
-| `PACKS` | 1 | `{ { key, folder, name }, ... }`: the bundled voice packs, in settings order: `female` (folder `female-kathleen`, Piper kathleen) and `male` (folder `male-joe`, Piper joe), each with its `CREDITS.md` and license texts |
+| `PACKS` | 1 | `{ { key, folder, name }, ... }`: the bundled voice packs, in settings order: `male-arena-john` (the default), `female` (folder `female-kathleen`), `female-kristin`, `female-cori`, `female-bella`, `male` (folder `male-joe`), `male-john`, `male-norman` (eight from 3.4; two before), each with its `CREDITS.md` and license texts |
 | `TTS`, `OFF` | 1 | `"tts"`, `"off"`: the two `voice` values that are not a pack |
 | `KINDS` | 1 | `number`, `info`, `go`, `stop`, `warn`, `error` |
 | `STOCK` | 1 | key → `{ text, kind, say }` for the 23 stock call-outs |
@@ -251,7 +289,7 @@ never what is said; `muted[key]` silences it.
 | `DONE` | DONE | info | Done | `done.ogg` |
 | `FINISH` | FINISH | go | Finish | `finish.ogg` |
 | `NEW_BEST` | NEW BEST | go | New best | `new_best.ogg` |
-| `PAUSE` | PAUSED | warn | Paused | `pause.ogg` |
+| `PAUSE` | PAUSED | warn | Pause (from 3.4; Paused before) | `pause.ogg` |
 | `RESUME` | RESUME | info | Resume | `resume.ogg` |
 | `CANCELED` | CANCELED | stop | Canceled | `canceled.ogg` |
 | `PULL` | PULL | warn | Pull | `pull.ogg` |
@@ -264,7 +302,7 @@ never what is said; `muted[key]` silences it.
 | `TIME_UP` | TIME UP | stop | Time up | `time_up.ogg` |
 | `VICTORY` | VICTORY | go | Victory | `victory.ogg` |
 | `FAILED` | FAILED | error | Failed | `failed.ogg` |
-| `LAST_TEN` | LAST TEN | warn | Last ten seconds | `last_ten.ogg` |
+| `LAST_TEN` | LAST TEN | warn | Ten seconds (from 3.4; Last ten seconds before) | `last_ten.ogg` |
 | `1` .. `20` | the number | number | the number | `1.ogg` .. `20.ogg` |
 
 ### What is spoken
@@ -315,7 +353,7 @@ the route. Every leaf is sent, and `Set` answers false when the seam refused any
 | `outline` | `"THICKOUTLINE"` | `OUTLINES` |
 | `shadow`, `shadowX`, `shadowY` | `true`, `2`, `-2` | a boolean; −20 – 20 |
 | `colors` | per kind (below) | through `GetColor` / `SetColor`, or the leaf `colors.<kind>` (from 2); a stored color is read with named keys or as an array |
-| `glow` | `true` | a boolean (from 3.4; a stored `GLOWS` value reads through `GLOW_LEGACY`): the halo behind the text |
+| `glow` | `true` | a boolean (from 3.4; a stored `GLOWS` value reads through `GLOW_LEGACY`, and `Set` still takes one, written as its keys; `Get` answers the boolean): the halo behind the text |
 | `glowIntensity`, `glowThickness` | `0.35`, `2` | 0.05 – 1, the halo's alpha; 1 – 6 px past the text on every side (from 3.4) |
 | `glowX`, `glowY` | `0`, `0` | −20 – 20 px, the halo's offset (from 3.4) |
 | `glowCustom`, `glowColor` | `false`, `{ 1, 1, 1 }` | a boolean; a color in either shape: the halo takes the swatch while on, else the kind's color (from 3.4) |
@@ -323,7 +361,7 @@ the route. Every leaf is sent, and `Set` answers false when the seam refused any
 | `anim` | `"slam"` | `ANIMS` |
 | `hold` | `1.5` | 0.2 – 10 seconds before a call-out fades |
 | `point` | `{ "CENTER", "CENTER", 0, 180 }` | `{ point, relativePoint, x, y }` in UIParent's units, both anchors one of the nine region points; written by a drag (through `d.set` on the host's route, from 2) |
-| `voice` | `"female"` | a `PACKS` key, `"tts"` or `"off"`; a pack outside `d.packs` reads as the first pack in it, else `"off"` |
+| `voice` | `"male-arena-john"` (from 3.4; `"female"` before) | a `PACKS` key, `"tts"` or `"off"`; a pack outside `d.packs` reads as the first pack in it, else `"off"` |
 | `channel` | `"Master"` | `CHANNELS` |
 | `speakFrom` | `5` | an integer 1 – 20: higher numbers are shown, not spoken |
 | `ttsVoice` | `false` | false (the client's first voice) or a `voiceID` |
@@ -354,7 +392,7 @@ Default colors: `number` white, `info` (0.35, 0.75, 1), `go` (0.3, 1, 0.45), `st
 | `TtsVoices()` | The client's voices, `{ voiceID, name }` each; empty without `C_VoiceChat` |
 | `Frame()` | The frame, built on first use |
 | `Stats()` | `built`, `shown`, `running`, `number`, `endsAt`, `key`, `text`, `kind`, `awake` (the OnUpdate is armed), `suspended`, `locked`, `logged` |
-| `Look()` | From 1.1: `{ font, size, flags, shadow, shadowX, shadowY, glow }`, the look the frame draws, the font resolved to a file path; from `Callout.lua` 3 `glow` is a boolean and `glowIntensity`, `glowThickness`, `glowX`, `glowY` join it. A fresh table |
+| `Look()` | From 1.1: `{ font, size, flags, shadow, shadowX, shadowY, glow }`, the look the frame draws, the font resolved to a file path; from `Callout.lua` 3 `glow` is a boolean (it was the `GLOWS` string: a contract change) and `glowIntensity`, `glowThickness`, `glowX`, `glowY` join it. A fresh table |
 | `Preview(what)` | From 1.1: `Show(what, { voice = false })`, `READY` by default: the look on the real call-out, silent |
 | `TestCountdown(from)` | From 1.1: `Countdown{ endsAt = GetTime() + from, from = from }`, `from` 5 by default |
 | `SettingsRows(opts)` | From 1.1: the section's path-less rows (below); `opts.tab` one tab's, `opts.L` the words, `opts.plain` without the text boxes |
@@ -502,8 +540,19 @@ The packs ship in the payload at `media/sounds/callout/<folder>/`, each folder h
 
 | `voice` key | Folder | Voice | Licenses in the folder |
 |---|---|---|---|
+| `male-arena-john` | `male-arena-john` | Piper `en_US-john-medium`, US English, processed into an arena-announcer sound (pitch, EQ, compression, reverb) | `LICENSE-PUBLIC-DOMAIN.txt` (LibriVox source) |
 | `female` | `female-kathleen` | Piper `en_US-kathleen-medium`, US English | `LICENSE-CC0-1.0.txt`, `LICENSE-CC-BY-4.0.txt` (the base model's Hi-Fi TTS data, credited in `CREDITS.md`) |
+| `female-kristin` | `female-kristin` | Piper `en_US-kristin-medium`, US English | `LICENSE-PUBLIC-DOMAIN.txt` (LibriVox source) |
+| `female-cori` | `female-cori` | Piper `en_GB-cori-high`, British English | `LICENSE-PUBLIC-DOMAIN.txt` (LibriVox source) |
+| `female-bella` | `female-bella` | Kokoro-82M v1.0 `af_bella`, US English | `LICENSE-Apache-2.0.txt` (the model), `LICENSE-CC-BY-4.0.txt` (SIWIS in its training data; Koniwa, CC BY 3.0, credited by its license's URI in `CREDITS.md`) |
 | `male` | `male-joe` | Piper `en_US-joe-medium`, US English | `LICENSE-CC0-1.0.txt` |
+| `male-john` | `male-john` | Piper `en_US-john-medium`, US English | `LICENSE-PUBLIC-DOMAIN.txt` (LibriVox source) |
+| `male-norman` | `male-norman` | Piper `en_US-norman-medium`, US English | `LICENSE-PUBLIC-DOMAIN.txt` (LibriVox source) |
+
+A `LICENSE-<id>.txt` is a license's own text. A public-domain source has no license text to carry,
+so its pack carries `LICENSE-PUBLIC-DOMAIN.txt` in that place instead: a status note naming the
+source, why it is in the public domain, and where its author says so. `female-bella`'s
+`CREDITS.md` records the owner's acceptance (2026-11-14) of its training-data caveat.
 
 `media/sounds/` is the second carve-out from whole-folder vendoring (`library-stack-§7`, *The sound
 subset*; kit revision 55). A consumer declares the packs it ships in one line of its root
@@ -514,6 +563,10 @@ LibKa0s sounds: none.
 LibKa0s sounds: all.
 LibKa0s sounds: callout/female-kathleen, callout/male-joe.
 ```
+
+The eight pack names a list may carry, from v1.99.0: `callout/male-arena-john`,
+`callout/female-kathleen`, `callout/female-kristin`, `callout/female-cori`, `callout/female-bella`,
+`callout/male-joe`, `callout/male-john`, `callout/male-norman`.
 
 **No line means none.** A consumer that keeps only some packs offers only those by passing the same
 folders as `d.packs`: `Voices()`, and through it the settings section's Voice row, then lists only
