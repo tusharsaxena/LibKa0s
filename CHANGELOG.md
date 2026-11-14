@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.101.0 — unreleased
+## v1.101.0 — 2026-11-14
 
 Opened 2026-11-14, on `feat/2026-11-14-callout-defaults` (off `master` at the v1.100.0 merge, `1dd9680`): two changes the owner asked for to `LibKa0s-Callout-1.0` (plan row L17 of `docs/superpowers/plans/2026-11-13-callout.md`). The one tab's preview block loses its sample line, and the Look defaults become the owner's own in-game settings. Neither adds or removes a member or changes what a call answers, so this is not an API break, but **a host that never stored these values draws differently** after re-vendoring. Its one consumer, Ka0s Combat Trail, adopts the call-out on its unmerged branch `feat/2026-11-13-callout`.
 
@@ -26,6 +26,10 @@ Versions in this release: `LibKa0s-Callout-1.0` key **4.5** (Callout minor 4, Ca
 - **Visible change for a host that never stored these values.** A host whose players never set them draws the new face, shadow and glow after re-vendoring, and its schema rows' defaults (and so a reset) move with them. A stored value still wins. `GLOW_LEGACY` is unchanged, so a stored minor-2 `"soft"` or `"strong"` still reads as its intensity and thickness, but it names no color: such a host now draws that look in the black swatch, since `glowCustom` defaults on, where v1.100.0 drew each word's kind color. A host that wants the kind color stores `glowCustom = false`.
 - Tests: `tests/test_callout.lua` re-pins the minor; `tests/test_callout_look.lua` the shadow at (1, 1), the halo at full alpha and 1 px, and the kind colors with the swatch turned off; `tests/test_callout_glow.lua` the new defaults (the black swatch on, drawn at (1, −1)), the kind color with the swatch off, and the rows' defaults; `tests/test_callout_settings.lua` the minor, `FONT_DEFAULT`, `FONT_FACES` and the font row's order with SemiBold first; `tests/test_callout_layout.lua` the minor, the one tab with no sample line and the rest of the block kept, the legacy builds keeping their line and repainting, and the plain side layout with no sample line and a safe `refresh`.
 - Documentation: `docs/api/Callout/version-4.5-docs.md` (3.4 superseded, with its *Moving to version 4.5*) and `members-4.5.json`, the index row in `docs/api/README.md`, `README.md`'s Callout row, `docs/releasing.md`'s re-vendor note, `CLAUDE.md` (the register's Callout row and the line-count record), `docs/test-cases.md` regenerated, and the plan's ledger row L17.
+
+### The release (L17)
+
+- `docs/releasing.md`: repo semver and the provenance template at v1.101.0, and the v1.101.0 re-vendor note. `README.md`'s kit line at v1.101.0. `CLAUDE.md`'s register row: key 4.5 at v1.101.0, and its one-release trigger recorded as fired, with no second consumer named; the choice between the row and moving the module into Combat Trail is put to the owner, awaiting a ruling. The plan's ledger row L17.
 
 ## v1.100.0 — 2026-11-14
 
