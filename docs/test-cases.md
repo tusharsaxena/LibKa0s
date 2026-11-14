@@ -737,6 +737,57 @@ Total.
 - callout schema: a stored color is read in either shape
 - callout schema: a host's colorEncode decides the shape the instance writes
 
+### test_waypoint_arrow.lua (35)
+
+- arrow: the major loads at minor 1 and reports its two files
+- arrow: without Core the major is absent (no NewLibrary)
+- arrow: New refuses a descriptor that does not say where the art sits
+- arrow: a method called on something that is not an instance raises
+- arrow: nothing is built or armed before a target
+- arrow: Rotation is the bearing (x north, y west) less the facing, counter-clockwise
+- arrow: Rotation folds every answer into -pi .. pi
+- arrow: Rotation answers nil for anything that is not a plain number, a secret included
+- arrow: Distance, Fade and Mix
+- arrow: GroundFrame picks the nearest 5 degrees, counter-clockwise, wrapping at 72
+- arrow: GroundTexCoord lays the frames 8 to a row of 64x44 cells on a 512 sheet
+- arrow: Raised, the default, draws the fill, its overlay and a shadow offset down and right
+- arrow: Flat, Ridge and Faceted swap the overlay and drop the shadow
+- arrow: the ground look picks a sheet frame instead of turning
+- arrow: leaving the ground look gives the textures back their full coords
+- arrow: a style that is not one reads as Raised, and STYLES lists all five
+- arrow: every look's art ships, uncompressed or RLE 32-bit TGA, power-of-two
+- arrow: the body fades from the far color to the near color by distance
+- arrow: Use the skin's colors draws the skin's accent far and its good color near
+- arrow: with no skin, Use the skin's colors falls back to the custom pair
+- arrow: SetTarget measures the player against a map point, every tick
+- arrow: world targets, another instance, and no facing
+- arrow: a secret facing or a secret position is no value
+- arrow: within arrive yards onArrive gets the spec and the arrow comes down
+- arrow: arrive = false never arrives
+- arrow: a provider that raises is no value, and the arrow runs on
+- arrow: format(yards) writes the distance
+- arrow: Clear hides and disarms; SetTarget refuses a spec without a place
+- arrow: the sample shows at its fixed distance and angle, and a real target waits under it
+- arrow: Suspend takes everything down and refuses until Resume
+- arrow: scale applies to the frame and is clamped to 0.5 .. 2
+- arrow: the saved point places the frame; a drag hands the new point back
+- arrow: canDrag false holds the frame still
+- arrow: SetPosition takes either shape; ResetPosition tells the host to forget
+- arrow: a right click reaches onClick
+
+### test_waypoint_arrow_settings.lua (10)
+
+- arrow settings: five rows in order, each on the host's path, page and group
+- arrow settings: the defaults are the arrow's: Raised, the skin's colors on, scale 1
+- arrow settings: the style row offers the five looks by name
+- arrow settings: the color rows gray out while the skin's colors are drawn
+- arrow settings: a setting with no path has no row
+- arrow settings: encodeColor shapes the color defaults the host's way
+- arrow settings: opts.L overrides a word, read raw so a locale fallback never answers the key
+- arrow settings: a change configures the arrow, then tells the host
+- arrow settings: the rows pass a Schema instance's shape check, and a write reaches the arrow
+- arrow settings: ConfigureFrom reads the host's paths
+
 ### test_charts.lua (15)
 
 - charts: the major loads and reports its two files
@@ -4774,9 +4825,10 @@ Total.
 - prose: no non-ASCII byte reaches a player, the em dash excepted
 - prose: no retired §N.M section reference in the shipped library or the shipped kit
 
-### test_register.lua (1)
+### test_register.lua (2)
 
 - every deviation id the register cites is assigned by a bundle in docs/audits/
+- the register's prose gives the table's own row count
 
 ### test_kit_inventory.lua (42)
 
@@ -5114,6 +5166,8 @@ Total.
 | test_callout_voice.lua | 29 |
 | test_callout_settings.lua | 34 |
 | test_callout_schema.lua | 25 |
+| test_waypoint_arrow.lua | 35 |
+| test_waypoint_arrow_settings.lua | 10 |
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
@@ -5274,7 +5328,7 @@ Total.
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
 | test_prose.lua | 6 |
-| test_register.lua | 1 |
+| test_register.lua | 2 |
 | test_kit_inventory.lua | 42 |
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
@@ -5290,4 +5344,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4484** |
+| **Total** | **4530** |

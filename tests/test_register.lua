@@ -103,3 +103,37 @@ test("every deviation id the register cites is assigned by a bundle in docs/audi
     "cited by a register row and assigned by no bundle under docs/audits/: "
       .. table.concat(offenders, ", "))
 end)
+
+-- ── The register's own row count is the table's ────────────────────────────────
+
+-- The prose under the table opens with the count in words (`**Eleven rows.**`) and then walks the
+-- rows by ordinal. A row added or retired without touching that sentence leaves every ordinal after
+-- it pointing at the wrong row, and nothing else reads the sentence: the off-by-one this case was
+-- written for was carried forward once (`Nine rows` over ten, then `Ten rows` over eleven).
+
+local COUNT_WORDS = {
+  "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+  "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen",
+  "nineteen", "twenty",
+}
+
+test("the register's prose gives the table's own row count", function()
+  local body = readFile("CLAUDE.md") .. "\n## \n"
+  local section = body:match("\n## Documented deviations\r?\n(.-)\r?\n## ")
+  assertTrue(section ~= nil, "CLAUDE.md has no `## Documented deviations` section to read")
+
+  local rows = 0
+  for line in (section .. "\n"):gmatch("([^\n]*)\n") do
+    if line:match("^| `[^`]+` |") then rows = rows + 1 end
+  end
+  assertTrue(rows > 0, "the register's table has no rows to count")
+
+  local word = section:match("%*%*(%a+) rows?%.%*%*")
+  assertTrue(word ~= nil, "the register's prose has no `**N rows.**` count to check")
+  local said
+  for n, w in ipairs(COUNT_WORDS) do
+    if w == word:lower() then said = n end
+  end
+  assertTrue(said ~= nil, "the count word `" .. word .. "` is not one this case can read")
+  assertEqual(said, rows, "the prose says " .. word:lower() .. " rows and the table has " .. rows)
+end)

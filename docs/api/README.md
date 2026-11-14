@@ -69,6 +69,7 @@ the file you need:
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Toast-1.0` | `<Toast>` | `LibStub("LibKa0s-Toast-1.0").MODULES` |
 | `LibKa0s-Callout-1.0` | `<Callout>.<CalloutSettings>` | `LibStub("LibKa0s-Callout-1.0").MODULES` |
+| `LibKa0s-WaypointArrow-1.0` | `<WaypointArrow>.<WaypointArrowSettings>` | `LibStub("LibKa0s-WaypointArrow-1.0").MODULES` |
 | `LibKa0s-Charts-1.0` | `<Charts>.<ChartsRender>` | `LibStub("LibKa0s-Charts-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Skin-1.0` | `<Skin>.<SkinOwnerTokens>.<SkinDefs>.<SkinDefsOthers>.<SkinPaint>.<SkinPaintExtras>.<SkinPaintHud>.<SkinAceConfirm>.<SkinPaintControls>.<SkinEUI>.<SkinAce>` (six numbers through 3.3.2.1.1.1, never shipped; nine through 17.1.27.8.19.18.17.4.9) | `LibStub("LibKa0s-Skin-1.0").MODULES` |
@@ -214,6 +215,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [1.2](./Callout/version-1.2-docs.md) | `Callout.lua` 1 · **`CalloutSettings.lua` 2** (`FONT_FACES`: the font row leads with Oxanium Bold, Bebas Neue and Russo One, each when it can be drawn) | v1.97.0 | Superseded |
 | [1.1](./Callout/version-1.1-docs.md) | **`Callout.lua` 1** (the new major: `New`, `Countdown`, `Show`, the look and sound settings, `Suspend`/`Resume`, LibKa0s#85) · **`CalloutSettings.lua` 1** (the settings section: `BuildSettings`, `SettingsTabs`, the preview) | v1.96.0 | Superseded |
 
+### `LibKa0s-WaypointArrow-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1.1](./WaypointArrow/version-1.1-docs.md) | **`WaypointArrow.lua` 1** (the new major: `New`, `SetTarget`, `SetProvider`, five looks, the distance fade, the sample, the drag handed back; Skill Master round 8, L1) · **`WaypointArrowSettings.lua` 1** (`SettingsRows`: path rows for the host's schema) | v1.99.0 | **Current** |
+
 ### `LibKa0s-Charts-1.0`
 
 | Version | Files | Shipped in | Status |
@@ -324,7 +331,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.9.1.4](./DebugLog/version-22.9.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 9** (the identity header names Callout) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.96.0 | **Current** |
+| [22.10.1.4](./DebugLog/version-22.10.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 10** (the identity header names WaypointArrow) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.99.0 | **Current** |
+| [22.9.1.4](./DebugLog/version-22.9.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 9** (the identity header names Callout) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.96.0 – v1.97.0 | Superseded |
 | [22.8.1.4](./DebugLog/version-22.8.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 8** (the identity header names Role) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.95.0 | Superseded |
 | [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 – v1.94.0 | Superseded |
 | [22.6.1.4](./DebugLog/version-22.6.1.4-docs.md) | `DebugLog.lua` 22 · `DebugLogDiagnostics.lua` 6 · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 4** (an owned console's header on the band, `R5-L3`) | v1.85.0 | Superseded |
