@@ -90,6 +90,9 @@ read_globals = {
   "PlaySoundFile",   -- the sound picker's play button, read at call time and guarded (OptionsMedia.lua)
   -- LibKa0s-Callout-1.0's text to speech (SpeakText, GetTtsVoices), read at call time and guarded.
   "C_VoiceChat",
+  -- LibKa0s-WaypointArrow-1.0: the player's facing and the map vector its world reads build, each
+  -- read at call time, presence-checked and pcall'd.
+  "GetPlayerFacing", "CreateVector2D",
   StaticPopupDialogs = { other_fields = true, read_only = false },
 }
 -- The host's SavedVariables global is named at runtime by the descriptor, so persistence writes

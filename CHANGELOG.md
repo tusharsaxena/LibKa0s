@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.99.0 — 2026-11-14
+## v1.100.0 — 2026-11-14
 
 Opened 2026-11-14, on `feat/2026-11-14-callout-layout`: the Callout's settings as one tab (plan row L13 of `docs/superpowers/plans/2026-11-13-callout.md`), the owner's redesign after seeing Ka0s Combat Trail's three tabs (Call-out look, Call-out sound, Call-out texts). One "Callout" tab: a Preview block at the top, then Look and Sound as side tabs, the Colors in Look, and no stock texts, whose words the owner rules are the addon's to control. Text to play gains "Countdown 10 to 1". The glow behind the text becomes AuraMaster's (plan row L15): an on/off toggle with intensity, thickness, offsets and its own color choices, in place of Off / Soft / Strong. Six more voice packs ship beside the two of v1.96.0 (plan row L16), the owner's choice of 2026-11-14, and an arena announcer is the default voice. The release itself is plan row L14.
 
@@ -52,6 +52,27 @@ tests pass, 4532 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
 Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (Callout 3, CalloutSettings 4 and OptionsNav 7 only).
+
+## v1.99.0 — 2026-11-14
+
+Opened 2026-11-14, on `feat/2026-11-14-waypoint-arrow`: the waypoint arrow major, `LibKa0s-WaypointArrow-1.0`, moved out of Ka0s Skill Master on the owner's decisions of 2026-11-14 (Skill Master `docs/superpowers/plans/2026-11-14-feedback-round8.md`, row L1). Released as v1.99.0 on the owner's go-ahead of 2026-11-14, after `master` (v1.98.0) was merged into the branch.
+
+Versions in this release: `LibKa0s-WaypointArrow-1.0` key **1.1** (WaypointArrow minor 1 and WaypointArrowSettings minor 1, a new major); `LibKa0s-DebugLog-1.0` key **22.10.1.4** (DebugLogDiagnostics minor 10); every other file at its v1.98.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises. The payload gains a fifth media folder, `media/waypoint/` (eight generated TGAs, about 450 KB), which ships whole.
+
+### The arrow (L1)
+
+- **WaypointArrow minor 1** ([docs](docs/api/WaypointArrow/version-1.1-docs.md)), `LibKa0s/WaypointArrow.lua`, loaded after `CalloutSettings.lua`: `New(d)` with the host's `addon` (or `mediaBase`); `SetTarget{ mapID, x, y }` or `{ instance, wx, wy }`, measured against the player's world position and `GetPlayerFacing` every 0.03 s while shown, or `SetProvider(fn)` for a host that measures its own way; the rotation (`Rotation`: world x north and y west, the bearing less the facing, counter-clockwise, folded into -pi .. pi), the distance text (`format`), the color fade from far to near by distance (`Fade`, `Mix`; the skin's `text.accent` and `sem.good` while "Use the skin's colors" is on, else the host's two colors), the scale, the drag handed back through `onMoved(point)` for the host to persist, the sample (`ShowSample` / `HideSample`), arrival (`onArrive`), `Suspend` / `Resume`. Five looks, `flat`, `ridge`, `raised` (the default), `faceted` and `ground`: each a tinted body and an untinted overlay, Raised's shadow a separate texture anchored down and right so the light stays put while the arrow turns, and the ground look an angle sheet of 72 frames picked with `SetTexCoord` (`GroundFrame`, `GroundTexCoord`). Every client read is pcall'd and checked for secret values; the frame is never secure.
+- **WaypointArrowSettings minor 1** (same document), `LibKa0s/WaypointArrowSettings.lua`, paired on the arrow's minor: `SettingsRows(opts)` answers path schema rows on the host's own paths (Style, Use the skin's colors, Far color, Near color, Scale; the colors `disabledIf` the toggle), each row's `onChange` configuring the arrow; `StyleValues`, `SETTINGS_STRINGS`.
+- **DebugLogDiagnostics minor 10** ([docs](docs/api/DebugLog/version-22.10.1.4-docs.md)): the report's `LibKa0s running:` line names WaypointArrow. No member change.
+- The art: `tools/artwork/waypoint_arrow.py` (new) draws every pixel from the mockup's geometry (Skill Master's round-8 design canvas, top artboard) into `LibKa0s/media/waypoint/`: `arrow-fill`, the four overlays, `raised-shadow`, and the two 512 x 512 ground sheets; `--check` compares the files on disk with a fresh render.
+- Tests: the new `tests/test_waypoint_arrow.lua` (load, the rotation math, the fade, the ground frame and coords, each look's textures, the color with and without the skin's, measuring, secrets, arrival, the sample, suspend, scale, the drag) and `tests/test_waypoint_arrow_settings.lua` (the rows, their defaults and words, the toggle graying the colors, a Schema instance's shape check and a write reaching the arrow) on `tests/fixture_waypoint_arrow.lua`; `tests/test_debuglog_diagnostics.lua` re-pins `DebugLogDiagnostics 10`.
+- Documentation: `docs/api/WaypointArrow/version-1.1-docs.md` and its manifest, the DebugLog pair, `docs/api/README.md`, `docs/api/CONSUMERS.md` (Skill Master, the one consumer, pending its adoption), `CLAUDE.md`'s register (the one-consumer row, accepted by the owner 2026-11-14), `README.md` and `docs/releasing.md`.
+
+Release gate (`docs/automated-tests/20261114-111504/`): lint pass, 0/0 in 339 files;
+tests pass, 4533 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (WaypointArrow 1, WaypointArrowSettings 1 and DebugLogDiagnostics 10 only).
 
 ## v1.98.0 — 2026-11-14
 
