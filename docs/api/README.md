@@ -220,7 +220,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.2](./WaypointArrow/version-2.2-docs.md) | **`WaypointArrow.lua` 2** (the art 1.25x larger at scale 1; Skill Master round 9, L1 to L4) · **`WaypointArrowSettings.lua` 2** | the next release (unreleased) | **Current** |
+| [2.2](./WaypointArrow/version-2.2-docs.md) | **`WaypointArrow.lua` 2** (the art 1.25x larger at scale 1; the distance text's font, side, name line and units; `x`, `y` and `lock`, a drag written back through the host's `set`; the right-click menu; Skill Master round 9, L1 to L4) · **`WaypointArrowSettings.lua` 2** (the Text block, the canonical Font block's rows and its extras, and the Position block with Lock the arrow, composed by the host's Options instance when given) | the next release (unreleased) | **Current** |
 | [1.1](./WaypointArrow/version-1.1-docs.md) | **`WaypointArrow.lua` 1** (the new major: `New`, `SetTarget`, `SetProvider`, five looks, the distance fade, the sample, the drag handed back; Skill Master round 8, L1) · **`WaypointArrowSettings.lua` 1** (`SettingsRows`: path rows for the host's schema) | v1.99.0 – v1.100.0 | Superseded |
 
 ### `LibKa0s-Charts-1.0`

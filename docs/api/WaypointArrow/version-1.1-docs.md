@@ -211,7 +211,27 @@ repaints at once.
 
 ## Moving to version 2.2
 
-Both files move to minor 2 (Skill Master's round 9). See [version 2.2](./version-2.2-docs.md).
+Both files move to minor 2 (Skill Master's round 9: the arrow's text, position, size and menu).
+See [version 2.2](./version-2.2-docs.md). Every 1.1 member, descriptor field, setting and row is
+kept. What a 1.1 host sees without changing anything:
 
-- **The arrow draws 1.25x larger at the same scale** (`ART` 60): a host that pinned the frame's or
-  the box's size re-pins it.
+- **The arrow draws 1.25x larger at the same scale** (`ART` 60). A suite that pinned the frame's or
+  the box's size, or the ground cell's, re-pins it.
+- **The frame is centered on the art**, with the text outside it and the hit rect grown toward it,
+  so a saved point places the art's center: the arrow sits some 11 px lower at `DEFAULT_POINT`
+  than 1.1 drew it.
+- **A right-click opens the menu** when the Widgets major is loaded, and no longer reaches
+  `onClick`. Pass `menu = false` to keep 1.1's right-click, or `onClear` for the menu's Clear
+  waypoint to clear the host's waypoint (without it the arrow clears only itself).
+- **The text no longer takes the skin's `Text` role**: it is drawn through the skin's `HudFont` in
+  the HUD face, outlined from the skin and shadowed, in a white swatch, so its color under a skin
+  is no longer the skin's `text.body`.
+- **A drag ends CENTER on CENTER** where the client answers the centers, so `onMoved` hears a
+  CENTER point.
+- `format(yards)` is called as `format(yards, units)`; one that ignores the second argument is
+  unchanged.
+
+To adopt the new settings, add their paths to `SettingsRows`' `opts.paths` (and seed them from
+`DEFAULTS`), pass `paths` and `set` to `New` so a drag, the lock and a reset write through the
+host, pass `options` so the Font and Position rows are the composers' own, and draw the second
+answer as `afterSubgroup`.
