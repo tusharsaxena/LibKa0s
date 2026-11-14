@@ -9,10 +9,10 @@
 |---|---|
 | Major | `LibKa0s-Callout-1.0` |
 | Files and minors | `Callout.lua` minor **1** · `CalloutSettings.lua` minor **2** (paired on `Callout.lua`'s minor) |
-| Shipped in | unreleased (v1.97.0) |
-| Status | **Current** |
+| Shipped in | v1.97.0 |
+| Status | Superseded |
 | Supersedes | [version 1.1](./version-1.1-docs.md) (v1.96.0) — the same surface, the font row sorted with no face leading |
-| Superseded by | — |
+| Superseded by | [version 2.3](./version-2.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
 | Optional at call time | the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 1, CalloutSettings = 2 }` |

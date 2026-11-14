@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.97.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.98.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -306,6 +306,15 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    adds a lib-level `FONT_FACES` to the Callout major, so a host's Callout stub, if any, gains it.
    The kit moves to revision 56 (the glyph guard's face list, the safe set unchanged at 117), which a
    consumer's whole-folder re-vendor of `tests/_kit/` carries; no string changes verdict.
+   v1.98.0 adds no payload file, no lib-level member and no kit revision. `Callout.lua` moves to
+   minor 2 and `CalloutSettings.lua` to minor 3 (key 2.3): the instance gains `SchemaRows`, so a
+   host's Callout instance stub gains it (`SchemaRows = function() return {}, {} end`), and the
+   descriptor gains `path`, `set` and `colorEncode`. A host that passes none of them is unchanged. A
+   Ka0s host adopting the call-out takes the route in the same change: it registers
+   `SchemaRows("callout.")` in its schema, lists the second answer (`callout.point`) in its Schema
+   descriptor's `writeThrough` and names it as non-setting state, and passes `path` and `set`
+   (`NS.SetByPath`) to `New`; a suite that reads `profile.callout` the instance wrote directly now
+   reads what the seam stored, colors in the host's shape.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 
@@ -373,7 +382,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.97.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.98.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
