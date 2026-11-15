@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-WaypointArrow-1.0` |
 | Files and minors | `WaypointArrow.lua` minor **2** · `WaypointArrowSettings.lua` minor **2** (paired on `WaypointArrow.lua`'s minor) |
-| Shipped in | v1.101.0 (unreleased) |
+| Shipped in | v1.101.0 |
 | Status | **Current** |
 | Supersedes | [version 1.1](./version-1.1-docs.md) (v1.99.0, v1.100.0) — the arrow at 48 px, with no text, position, lock or menu settings. |
 | Superseded by | — |
@@ -166,8 +166,20 @@ for test mode. Five looks ship: **Flat**, **Ridge**, **Raised** (the default), *
 It owns no SavedVariables: the host keeps the arrow's settings at its own paths (the settings rows
 below), hands them over with `Configure` or `ConfigureFrom`, and stores what the arrow writes (a
 drag, the lock, a reset) through its own `set`. It is never secure and calls nothing protected,
-so it stays shown and movable in combat. Skill Master is its one consumer; the one-consumer
-promotion is a row in the repo's register (`CLAUDE.md`, *Documented deviations*).
+so it stays shown and movable in combat. Skill Master is its one consumer.
+
+### Promoted with one consumer, on the owner's ruling
+
+The owner decided on 2026-11-14, in Skill Master's round-8 plan (Skill Master
+`docs/superpowers/plans/2026-11-14-feedback-round8.md`, *Owner decisions*: "The waypoint arrow
+becomes a LibKa0s widget ... the owner accepts the deviation from the standard's two-consumer rule";
+this repo's plan row L1), to move the arrow into the library, so that any Ka0s addon that sets a
+waypoint draws the same arrow, with the same rotation math, secret-value guards, looks and settings
+rows, instead of writing its own. It entered at v1.99.0 with one consumer, Ka0s Skill Master
+(`modules/WaypointArrow.lua`, its round-8 row R8-5). WowAddonStandards v2.109.0 made
+`library-stack-§7`'s bar 1 a SHOULD, so the ruling is recorded here and takes no deviation-register
+row; until v1.104.0 it was a row in `CLAUDE.md`'s *Documented deviations*. No second consumer is
+known.
 
 ## The lib-level surface
 

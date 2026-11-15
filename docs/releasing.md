@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.103.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.104.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -347,6 +347,14 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    is loaded (`menu = false` keeps `onClick`), and the text is drawn through the skin's `HudFont`
    rather than its `Text` role. Skill Master, the one consumer, adopts the new settings in the same
    round (its rows R9-1 to R9-3). No Skin facade member moves.
+   v1.102.0 adds no payload file, no member and no kit revision (still 56). `Callout.lua` moves to
+   minor 4 and `CalloutSettings.lua` to minor 5 (key 4.5), so a host suite that pins the Callout's
+   `MODULES` re-pins them; a stub needs no change. Two visible changes reach a host that changes
+   nothing: the Look defaults are the owner's (`FONT_DEFAULT` `"Ka0s Oxanium SemiBold"`, the shadow
+   at 1, 1, a black glow at 100%, 1 px thick, at 1, −1, `glowCustom` on), so a suite that pins the
+   old defaults or a schema row's default re-pins them, and a stored `"soft"` or `"strong"` glow
+   draws in the black swatch unless the host stores `glowCustom = false`; and the one tab's preview
+   block draws no sample line, so a suite that reads `view.preview` from `layout = "side"` reads nil.
    v1.103.0 (the owner's window-chrome rulings of 2026-11-15, WowAddonStandards v2.110.0) adds no
    payload file and no kit revision (still 56). `Widgets.lua` moves to minor 27 (key 27.1.6.13.7.8.5):
    the major gains `Footer`, `FOOTER` and `DockTestStrip`, so a host's Widgets stub gains them, and a
@@ -359,6 +367,11 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    re-vendor report names the move, for step 5's re-look. No Skin facade member moves: the footer
    paints through `Divider`, `Text` and `Mark`, which every facade already answers. v1.102.0 is a
    separate tag on another branch (the call-out defaults), not in this tree's history.
+   v1.104.0 joins v1.102.0 and v1.103.0, both cut from v1.101.0, and adds no payload file, no member
+   and no kit revision (still 56). It carries `Callout.lua` 4 and `CalloutSettings.lua` 5 (key 4.5)
+   from v1.102.0 and `Widgets.lua` 27 from v1.103.0, so a host owes the notes of whichever of the
+   two it does not already hold: v1.102.0's above for the Callout, v1.103.0's above for the Widgets
+   footer and docking. No Skin facade member moves. The tag is the first that holds both.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 
@@ -426,7 +439,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.103.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.104.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
@@ -675,7 +688,7 @@ which hosts' descriptors a change to one module can reach.
 | `LibKa0s-Glow-1.0` | DropWatcher, KickCD, QuickComms | `core/GlowSetup.lua` as `NS.GlowLib` (all three). New at v1.75.0, a stateless driver over the host's own vendored `LibCustomGlow-1.0`; the three adopt on `feat/2026-10-22-libka0s-issues-45-58` |
 | `LibKa0s-Toast-1.0` | DpsRace, DropWatcher | New at v1.79.0 (LibKa0s#60). `core/ToastSetup.lua` as `NS.NewToast` in both, with `NS.ToastStub` as the degraded answer: Ka0s DPS Race's new-best toast in `modules/BestToast.lua` (DpsRace#5), Drop Watcher's upgrade toast in `modules/Toast.lua`, which keeps its content, its qualification and its combat hold (`Hold` / `Release`). From Toast minor 4 (v1.88.0) Drop Watcher is to take the stack (`stack`, `stackGrow`, `SetStack`; its issue #14) at its re-vendor; DpsRace stays one toast at a time |
 | `LibKa0s-Role-1.0` | QuickComms, DropWatcher | New at v1.95.0 (`QFE-LK1`). **This row did not exist until the v1.96.0 sweep.** Both look the major up in `core/Compat.lua` as `RoleLib` and keep `NS.Compat`'s spec and role reads as the call surface: Quick Comms for `Resolve`, `SetOverride` and `SpecsForClass` over its per-character store, with a library-absent ladder of its own; Drop Watcher for `Spec`, and a second time in `core/CompatClient.lua` for `Groups` and `Resolve`. Drop Watcher is the second consumer, so `CLAUDE.md`'s one-consumer deviation row for the major is retired at v1.96.0 (its trigger: a second addon reads the role through it). |
-| `LibKa0s-Callout-1.0` | none yet (CombatTrail planned) | New at v1.96.0 (LibKa0s#85), built for Ka0s Combat Trail's race countdown on the owner's rulings of 2026-11-13 (`docs/superpowers/plans/2026-11-13-callout.md`). Combat Trail's re-vendor of v1.96.0 replaces its own countdown, its cue sounds and their settings with one `Callout:New` instance, puts the `CalloutSettings.lua` section on its Race page and declares its packs on a `LibKa0s sounds:` line; until it lands no host looks the major up. Combat Trail vendors LibKa0s (v1.94.0 today) but is in neither step 9's loop nor the other rows of this table, and joins both at its first sweep after the re-vendor. |
+| `LibKa0s-Callout-1.0` | CombatTrail | New at v1.96.0 (LibKa0s#85), built for Ka0s Combat Trail's race countdown on the owner's rulings of 2026-11-13 (`docs/superpowers/plans/2026-11-13-callout.md`). Combat Trail adopted it on `feat/2026-11-13-callout`, merged to its `main` on 2026-11-15 vendoring v1.102.0: one `Callout:New` instance in `core/CalloutSetup.lua` replaces its own countdown, its cue sounds and their settings, the `CalloutSettings.lua` tab sits on its Race page and its packs are declared on a `LibKa0s sounds:` line. Combat Trail is in neither step 9's loop nor the other rows of this table yet, and joins both at its first sweep. |
 | `LibKa0s-Charts-1.0` | DpsRace (LootHistory planned) | New at v1.84.0 (LibKa0s#66). **DpsRace adopted it** (`XX-ADOPT`, DpsRace `3a43be4`): `core/ChartsSetup.lua` looks the major up as `NS.Charts` and builds `NS.ChartsHost()`, and `modules/Results_Insights.lua` draws through both; the v1.86.0 step-9 sweep found the lookup, which this row did not carry. The rest of this cell is the v1.84.0 record. LootHistory draws its Insights tab from its own `modules/AnalyticsCharts.lua` and DpsRace from its private port, `modules/Results_InsightsCharts.lua`; both adopt at this release's re-vendor. BankLedger and DropWatcher are named as later consumers |
 | `LibKa0s-IconBrowser-1.0` | none yet (QuickComms and OutfitterReborn planned) | New at v1.86.0, promoted from Quick Comms' `settings/IconBrowser.lua` and `settings/IconBrowser_Sources.lua` (OutfitterReborn `docs/superpowers/plans/2026-11-04-sheet-window-feedback.md`, M1). Quick Comms keeps its own copy until its re-vendor (M2), where `settings/IconBrowser.lua` becomes the adapter that calls `IB:New`; Outfitter Reborn's outfit icon picker is its second host (M3). The major's verdict is *zero — planned at v1.86.0* until both call `IB:New`. The v1.87.0 step-9 sweep finds both lookups on the hosts' unmerged branches: Quick Comms at `core/IconBrowserSetup.lua` (`feat/2026-11-04-icon-browser-revendor`) and Outfitter Reborn at `modules/IconBrowserSetup.lua`; the Consumers column moves when they merge. |
 | `LibKa0s-Compat-1.0` | AuraMaster, ConsumableMaster, KickCD, LootHistory, MultiMeters, PartyFrameEnhanced, WhatGroup, DropWatcher, PremadeGroupsFilterExtension, QuickComms, DpsRace | `core/Compat.lua` (all eleven), each wiring only the members it calls and keeping `NS.Compat.X` as the call surface: AuraMaster `GetSpellInfo`; ConsumableMaster `GetSpecialization`, `GetSpecializationInfo`, `GetSpellName`, `IsSecret`; KickCD `GetSpecialization`, `GetSpecializationInfo`, `GetSpellCooldown`, `GetSpellInfo`, `GetSpellTexture`, `IsSecret`; LootHistory `GetSpellName`; MultiMeters `GetSpecialization`, `GetSpecializationInfo`, `GetSpellInfo`, `GetSpellTexture`; PartyFrameEnhanced `IsSecret` alone; WhatGroup `GetSpellCooldown`, `GetSpellName`, `GetSpellTexture`; DropWatcher the three guards alone, `IsSecret`, `CanAccess` and `IsSafeKey`; PremadeGroupsFilterExtension `GetSpecialization`, `GetSpecializationInfo`; QuickComms the two guards alone, `IsSecret` and `IsSafeKey`. AuraMaster and MultiMeters have a **second lookup at `core/Secrets.lua`** for the three guards, `IsSecret`, `CanAccess` and `IsSafeKey`. Every host takes the reader arm (a reader answers the documented no-rung value) and, where it wires a guard, the guard arm's one-rung body ([Degradation](api/Compat/version-1-docs.md#degradation)). AbsorbTracker, BankLedger, PanelMaster and PrettyChat keep their own `core/Compat.lua` and do not look the major up (v1.55.0 sweep) |

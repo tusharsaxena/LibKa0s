@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Options-1.0` |
 | Files and minors | `Options.lua` **38** · `OptionsRegistry.lua` **5** · `OptionsWidgets.lua` **46** · `OptionsFlow.lua` **3** · `OptionsIds.lua` **7** · `OptionsIdSuggest.lua` **2** · `OptionsIdList.lua` **9** · `OptionsTabs.lua` **17** · `OptionsTabbed.lua` **3** · `OptionsHeader.lua` **1** · `OptionsCombat.lua` **4** · `OptionsCompose.lua` **19** · `OptionsScroll.lua` **13** · `OptionsNav.lua` **7** · `OptionsDrawer.lua` **5** · `OptionsKeybinds.lua` **8** · `OptionsAppearance.lua` **7** · `OptionsSkinPicker.lua` **11** · `OptionsSkinPickerRows.lua` **1** · `OptionsSwitch.lua` **1** · `OptionsMedia.lua` **4** |
 | Version key | `<Options>.<OptionsRegistry>.<OptionsWidgets>.<OptionsFlow>.<OptionsIds>.<OptionsIdSuggest>.<OptionsIdList>.<OptionsTabs>.<OptionsTabbed>.<OptionsHeader>.<OptionsCombat>.<OptionsCompose>.<OptionsScroll>.<OptionsNav>.<OptionsDrawer>.<OptionsKeybinds>.<OptionsAppearance>.<OptionsSkinPicker>.<OptionsSkinPickerRows>.<OptionsSwitch>.<OptionsMedia>` = `38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4` |
-| Shipped in | v1.101.0 (unreleased) |
+| Shipped in | v1.101.0 |
 | Status | **Current** |
 | Supersedes | [version 38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4](./version-38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md) — the same surface; a number row's slider box no longer keeps text that is not a number. |
 | Superseded by | — |
@@ -2591,6 +2591,18 @@ under every heading — `BuildLandingPage` therefore does not draw a second one,
 values diverge every landing heading loses its gap. `tests/test_options.lua` pins the equality.
 
 ## The drawer
+
+**Promoted with one consumer, on the owner's ruling** (`library-stack-§7`, whose bar 1 is a SHOULD
+from WowAddonStandards v2.109.0). The owner ruled on 2026-10-18 to build the drawer in LibKa0s
+rather than inside Ka0s Quick Comms (Quick Comms
+`docs/superpowers/specs/2026-10-18-when-drawers-design.md`, goal 2: "If needed, create a new LibKa0s
+component to build this"; L1 of its plan), so that any Ka0s page with a list of conditions or
+filters folds them the way the settings panel the library draws already looks. It shipped at v1.73.0
+(`OptionsDrawer.lua` 1) with one consumer, Quick Comms' When tab (`settings/Groups_When.lua`);
+LootHistory carries only a no-op stub. On 2026-10-31, one release after v1.84.0 named no second
+consumer, the owner ruled to keep it here. No second consumer is known. Until v1.104.0 the ruling
+was a row in `CLAUDE.md`'s *Documented deviations*; an owner-ruled promotion is now conformant and
+records its ruling here instead.
 
 ### `O.Drawer(ctx, spec)` → drawer or `nil`
 
