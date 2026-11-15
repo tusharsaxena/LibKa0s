@@ -60,10 +60,10 @@ local pickRow = Bench.pickRow
 
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
-test("skin picker: OptionsSkinPicker is minor 11, paired on the shell, and attaches three members", function()
+test("skin picker: OptionsSkinPicker is minor 12, paired on the shell, and attaches three members", function()
   local _, _, lib = env()
-  assertEqual(lib.MODULES.OptionsSkinPicker, 11)
-  assertEqual(lib.__pickerMinor, 11)
+  assertEqual(lib.MODULES.OptionsSkinPicker, 12)
+  assertEqual(lib.__pickerMinor, 12)
   assertTrue(lib.SKIN_PICKER_STRINGS.APPLY_ALL_TIP:find("skin source, skin, scope, font, texture and font outline", 1, true) ~= nil,
     "the tooltip words it as the Skin tab's copy does")
   assertEqual(lib.__pickerShellMinor, lib.MINOR, "paired on the shell's minor")
@@ -75,6 +75,9 @@ test("skin picker: OptionsSkinPicker is minor 11, paired on the shell, and attac
   assertEqual(lib.SKIN_PICKER_STRINGS.APPLY_ALL, "Apply to all Ka0s addons")
   assertEqual(type(lib.__pickerQueue), "table", "the library-level queue")
   assertEqual(type(lib.__pickerQueue.waiting), "table")
+  assertEqual(lib.MODULES.OptionsSkinPickerQueue, 1, "the queue, peeled at picker minor 12 (LK-P1)")
+  assertEqual(lib.__pickerQueueMinor, 1)
+  assertEqual(lib.__pickerQueueShellMinor, lib.MINOR, "the queue paired on the shell's minor")
   local O = instance(lib, OWNER)
   assertEqual(type(O.SkinPicker), "function")
   assertEqual(type(O.HideSkinPicker), "function")
@@ -83,16 +86,22 @@ end)
 
 test("skin picker: a newer attach of the file adopts the queue already on the library table", function()
   -- red under: a queue created per file load (a second copy's picker would not see the first's).
+  -- The queue lives in OptionsSkinPickerQueue.lua since picker minor 12 (LK-P1), so both files run
+  -- again, as a newer copy of each would.
   local m, _, lib = env()
   local q = lib.__pickerQueue
   q.waiting[1] = { owner = "Kept" }
   lib.__pickerMinor = nil   -- as a newer minor would find it: the guard lets the file run again
+  lib.__pickerQueueMinor = nil
   Loader.load("LibKa0s/OptionsSkinPicker.lua", nil, m)
+  Loader.load("LibKa0s/OptionsSkinPickerQueue.lua", nil, m)
   assertTrue(lib.__pickerQueue == q, "the same table")
   assertEqual(q.waiting[1].owner, "Kept", "with what it held")
   lib.__pickerQueue = { current = false }
   lib.__pickerMinor = nil
+  lib.__pickerQueueMinor = nil
   Loader.load("LibKa0s/OptionsSkinPicker.lua", nil, m)
+  Loader.load("LibKa0s/OptionsSkinPickerQueue.lua", nil, m)
   assertEqual(type(lib.__pickerQueue.waiting), "table", "a queue missing its list gains one")
 end)
 

@@ -3285,7 +3285,7 @@ Total.
 
 ### test_options_skin_picker.lua (41)
 
-- skin picker: OptionsSkinPicker is minor 11, paired on the shell, and attaches three members
+- skin picker: OptionsSkinPicker is minor 12, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -3358,7 +3358,7 @@ Total.
 
 ### test_options_skin_picker_preview.lua (23)
 
-- skin picker preview: OptionsSkinPicker is minor 11, with the eye's per-mode words
+- skin picker preview: OptionsSkinPicker is minor 12, with the eye's per-mode words
 - skin picker preview: a fresh show with the surface hidden and the mode off enters it, then raises
 - skin picker preview: a host with no isShown counts as hidden
 - skin picker preview: a shown surface, or a mode already on, is not entered and not undone

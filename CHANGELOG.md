@@ -10,6 +10,16 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.105.0 — unreleased
+
+Opened 2026-11-16, on `feat/2026-11-16-libka0s-75-plus` (off `master` at v1.104.0): the LibKa0s issues #75 and up (Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`). A draft block, extended item by item; the version line below names only what has moved so far.
+
+Versions in this release so far: `LibKa0s-Options-1.0` key **38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.12.1.1.1.4** (OptionsSkinPicker minor 12, OptionsSkinPickerQueue minor 1, new); every other file at its v1.104.0 minor.
+
+### Hygiene peels
+
+- **The skin picker's queue peels out (`LK-P1`).** `OptionsSkinPicker.lua` was at 1493 lines, past its 1400-line trigger (`CLAUDE.md`'s `FX-LK-SIZE` row). Its queue section and the two header notes on it move, unchanged, to a new file, `OptionsSkinPickerQueue.lua` (OptionsSkinPickerQueue minor 1), loaded by `LibKa0s.xml` directly after it; OptionsSkinPicker minor 12 reads it through the internal `lib.__pickerQueueKit` at call time. 1493 -> 1396. No member and no behavior moves. A host whose tests list library files by name adds the new file after `OptionsSkinPicker.lua` at its re-vendor (`docs/api/Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.12.1.1.1.4-docs.md`).
+
 ## v1.104.0 — 2026-11-16
 
 Opened 2026-11-16, on `feat/2026-11-16-v1.104.0` (off `master` at the v1.103.0 merge, `e37c353d`): the join of two releases cut from v1.101.0 on separate branches. v1.103.0 (Widgets minor 27, the footer and the strip's docking) shipped on `master`; v1.102.0 (`LibKa0s-Callout-1.0` key 4.5, the owner's Look defaults and no sample line in the one tab) shipped as a tag on `feat/2026-11-14-callout-defaults` (`27485495`) and was in neither `master` nor v1.103.0's history. This release merges that branch (`0f4e2722`), so one tag holds both again, and retires the deviation register's three one-consumer rows as WowAddonStandards v2.109.0 allows. No code changes beyond what the two tags already shipped.

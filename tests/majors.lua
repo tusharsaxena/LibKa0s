@@ -157,7 +157,7 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Options-1.0",
-    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" },
+    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerQueue", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" },
     primary = "Options",
     paired = {
       { file = "OptionsRegistry", minorField = "__registryMinor", probeField = "__registryShellMinor" },
@@ -177,6 +177,7 @@ local MAJORS = {
       { file = "OptionsKeybinds", minorField = "__keybindsMinor", probeField = "__keybindsShellMinor" },
       { file = "OptionsAppearance", minorField = "__appearanceMinor", probeField = "__appearanceShellMinor" },
       { file = "OptionsSkinPicker", minorField = "__pickerMinor", probeField = "__pickerShellMinor" },
+      { file = "OptionsSkinPickerQueue", minorField = "__pickerQueueMinor", probeField = "__pickerQueueShellMinor" },
       { file = "OptionsSkinPickerRows", minorField = "__pickerRowsMinor", probeField = "__pickerRowsShellMinor" },
       { file = "OptionsSwitch", minorField = "__switchMinor", probeField = "__switchShellMinor" },
       { file = "OptionsMedia", minorField = "__mediaMinor", probeField = "__mediaShellMinor" },
