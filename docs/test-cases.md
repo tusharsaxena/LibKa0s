@@ -1922,6 +1922,50 @@ Total.
 - TestStrip: a sim without steps offers only End sim; onEnd wins over the instance's Stop
 - TestStrip: with neither onEnd nor sim the mouse stays off, as before
 
+### test_widgets_teststrip_dock.lua (20)
+
+- TestStrip dock: 'title' anchors the strip full width directly under the title bar
+- TestStrip dock: 'title' with an inset pulls both sides in
+- TestStrip dock: BodyOffset is the strip's height while it shows and 0 while hidden
+- TestStrip dock: onOffset is told the offset on each show and hide
+- TestStrip dock: with the title bar hidden the strip sits on the window's top edge
+- TestStrip dock: a title-docked strip keeps its menu and its mouse rule
+- TestStrip dock: 'hud' sits on the display's top edge, outside it, full width
+- TestStrip dock: 'hud' flips under the bottom edge when the top would leave the screen
+- TestStrip dock: a HUD strip that just fits stays on top, and Place re-reads after a move
+- TestStrip dock: the flip reads screen pixels, the display's scale and the strip's
+- TestStrip dock: a HUD strip with unreadable edges stays on top
+- TestStrip dock: a HUD strip takes no mouse and opens no menu, even given onEnd
+- TestStrip dock: docking a menu strip to a HUD later turns the mouse and menu off
+- TestStrip dock: a HUD strip takes the display's strata, one chrome band over its level
+- TestStrip dock: a HUD strip stacks beyond a shown drag handle, and back when it hides
+- TestStrip dock: the display's show and resize re-place its strip
+- TestStrip dock: a spec naming no usable dock changes nothing and answers nil
+- TestStrip dock: an undocked strip is minor 26's: unanchored, hidden, no methods
+- TestStrip dock: docking again replaces the dock, and hooks each frame once
+- TestStrip dock: the dock never shows or hides the strip
+
+### test_widgets_footer.lua (18)
+
+- Footer: FOOTER publishes HEIGHT 24 and the slot's figures
+- Footer: a write to FOOTER.HEIGHT does not move the next footer
+- Footer: born shown, 24 tall, across the window's bottom edge, with no fill
+- Footer: the hairline is one pixel along the top, 1 in from each side, in Ka0s Default's divider
+- Footer: opts.inset moves the hairline's ends
+- Footer: the left and right lines are one line each, in Ka0s Default's muted gray
+- Footer: the left line sits on the padding and runs up to the right line
+- Footer: SetLeft and SetRight set the lines; nil and non-strings give ''
+- Footer: marks lay right to left from the corner, outermost first, the right line beside them
+- Footer: a mark rests gray, lights white under the pointer, and runs the host's scripts
+- Footer: a mark spec that is not a table is skipped
+- Footer: opts.grip clears the grip's corner; SetGrip moves it either way
+- Footer: opts.resize builds Core.MakeResizable's grip on the footer, in its corner
+- Footer: a host's own gripParent in opts.resize wins
+- Footer: two footers share no regions
+- Footer skin: a registered owner's hairline is its divider and its lines its text.muted
+- Footer skin: an owned mark rests in icon.tint and lights in icon.hot
+- Footer skin: an unregistered owner draws the owner-less footer
+
 ### test_widgets_reorder.lua (7)
 
 - reorder: a host OnUpdate on a row frame survives a drag start and end
@@ -5325,6 +5369,8 @@ Total.
 | test_widgets_autocomplete.lua | 37 |
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 21 |
+| test_widgets_teststrip_dock.lua | 20 |
+| test_widgets_footer.lua | 18 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
 | test_widgets_skin_scope.lua | 20 |
@@ -5464,4 +5510,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4626** |
+| **Total** | **4664** |
