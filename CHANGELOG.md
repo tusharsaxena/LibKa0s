@@ -32,6 +32,10 @@ Versions in this release: `LibKa0s-Widgets-1.0` key **27.1.6.13.7.8.5** (Widgets
 
 - `docs/releasing.md` (the repo semver and the provenance template at v1.104.0, the v1.104.0 re-vendor note), `README.md` (the kit line). The standards pointer stays at **v2.110.0**: the live standard is v2.112.2, and v2.112.0 (*Tooltip placement*) makes `LibKa0s` owe the tooltip placers first, which this release does not ship, so the pointer moves with the release that builds them. v2.111.0 (clients-§10, seed lists) and v2.112.1 (Blizzard tooltips out of scope) ask nothing of the library.
 
+Release gate (`docs/automated-tests/20261116-010115/`): lint pass, 0/0 in 347 files;
+tests pass, 4668 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
 Preview and simulation re-look: Not applicable — no Sim or Widgets minor moves against v1.103.0, and v1.102.0 moved none.
 
 ## v1.103.0 — 2026-11-15
