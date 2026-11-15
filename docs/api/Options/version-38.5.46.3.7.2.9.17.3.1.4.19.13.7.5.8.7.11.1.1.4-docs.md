@@ -2592,6 +2592,18 @@ values diverge every landing heading loses its gap. `tests/test_options.lua` pin
 
 ## The drawer
 
+**Promoted with one consumer, on the owner's ruling** (`library-stack-§7`, whose bar 1 is a SHOULD
+from WowAddonStandards v2.109.0). The owner ruled on 2026-10-18 to build the drawer in LibKa0s
+rather than inside Ka0s Quick Comms (Quick Comms
+`docs/superpowers/specs/2026-10-18-when-drawers-design.md`, goal 2: "If needed, create a new LibKa0s
+component to build this"; L1 of its plan), so that any Ka0s page with a list of conditions or
+filters folds them the way the settings panel the library draws already looks. It shipped at v1.73.0
+(`OptionsDrawer.lua` 1) with one consumer, Quick Comms' When tab (`settings/Groups_When.lua`);
+LootHistory carries only a no-op stub. On 2026-10-31, one release after v1.84.0 named no second
+consumer, the owner ruled to keep it here. No second consumer is known. Until v1.104.0 the ruling
+was a row in `CLAUDE.md`'s *Documented deviations*; an owner-ruled promotion is now conformant and
+records its ruling here instead.
+
 ### `O.Drawer(ctx, spec)` → drawer or `nil`
 
 **D1.** One drawer, added to `O.EnsureScroll(ctx)` — the page, or the box of the drawer whose body

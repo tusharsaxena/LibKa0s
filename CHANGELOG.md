@@ -10,6 +10,30 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.104.0 — 2026-11-16
+
+Opened 2026-11-16, on `feat/2026-11-16-v1.104.0` (off `master` at the v1.103.0 merge, `e37c353d`): the join of two releases cut from v1.101.0 on separate branches. v1.103.0 (Widgets minor 27, the footer and the strip's docking) shipped on `master`; v1.102.0 (`LibKa0s-Callout-1.0` key 4.5, the owner's Look defaults and no sample line in the one tab) shipped as a tag on `feat/2026-11-14-callout-defaults` (`27485495`) and was in neither `master` nor v1.103.0's history. This release merges that branch (`0f4e2722`), so one tag holds both again, and retires the deviation register's three one-consumer rows as WowAddonStandards v2.109.0 allows. No code changes beyond what the two tags already shipped.
+
+Versions in this release: `LibKa0s-Widgets-1.0` key **27.1.6.13.7.8.5** (Widgets minor 27, as v1.103.0) and `LibKa0s-Callout-1.0` key **4.5** (Callout minor 4, CalloutSettings minor 5, as v1.102.0); every other file at its v1.101.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises, no member changes against either tag, and no file is added.
+
+### The join (v1.102.0 into v1.103.0)
+
+- **Code.** The two payloads do not overlap (`Callout.lua` and `CalloutSettings.lua` against `Widgets.lua`), and the merge took each file whole from the tag that moved it. The v1.102.0 and v1.103.0 blocks below stay as each tag shipped them.
+- **Release records.** Both `docs/automated-tests/` bundles and both `RESULTS.md` rows are kept; `CLAUDE.md`'s band census takes `Callout.lua` at minor 4 (1283) from v1.102.0 and `WaypointArrow.lua` at 1253 from v1.103.0; `docs/test-cases.md` is regenerated over both (4665 run, 3 skipped).
+- **What a consumer owes.** A host re-vendoring from v1.103.0 owes v1.102.0's Callout notes (`docs/releasing.md`, the v1.102.0 re-vendor note); one re-vendoring from v1.102.0 owes v1.103.0's Widgets notes and the standard's v2.110.0 MUSTs; one from v1.101.0 or earlier owes both. Ka0s Combat Trail, which vendors v1.102.0, is the one host that holds Callout 4.5 today.
+
+### The one-consumer rows retired (`library-stack-§7`, standard v2.109.0)
+
+- `CLAUDE.md`'s *Documented deviations* loses its three one-consumer promotion rows, the Options `Drawer` (the owner's ruling of 2026-10-18, consumer Ka0s Quick Comms), `LibKa0s-Callout-1.0` (2026-11-13, consumer Ka0s Combat Trail) and `LibKa0s-WaypointArrow-1.0` (2026-11-14, consumer Ka0s Skill Master): bar 1 is a SHOULD from v2.109.0, so an owner-ruled suite-wide promotion is conformant and takes no row. The register reads **eight rows**.
+- Each ruling, which the row was the library's only home for, is recorded in its major's current API document, as v2.109.0 requires: `docs/api/Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md` (*The drawer*), `docs/api/Callout/version-4.5-docs.md` and `docs/api/WaypointArrow/version-2.2-docs.md` (*What this major is*, *Promoted with one consumer, on the owner's ruling*): who ruled, the date, where it was decided, the consumer it ships with, and that no second consumer is known. No minor moves, so no document is superseded.
+- `docs/releasing.md`'s Consumers table: the Callout row names CombatTrail, which adopted the major on 2026-11-15 (`core/CalloutSetup.lua`).
+
+### Docs
+
+- `docs/releasing.md` (the repo semver and the provenance template at v1.104.0, the v1.104.0 re-vendor note), `README.md` (the kit line). The standards pointer stays at **v2.110.0**: the live standard is v2.112.2, and v2.112.0 (*Tooltip placement*) makes `LibKa0s` owe the tooltip placers first, which this release does not ship, so the pointer moves with the release that builds them. v2.111.0 (clients-§10, seed lists) and v2.112.1 (Blizzard tooltips out of scope) ask nothing of the library.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moves against v1.103.0, and v1.102.0 moved none.
+
 ## v1.103.0 — 2026-11-15
 
 Opened 2026-11-15, on `feat/2026-11-15-window-chrome`: the owner's window-chrome rulings of 2026-11-15 (Drop Watcher `docs/superpowers/specs/2026-11-15-rolls-panel-round2-and-window-chrome-design.md`, part B), which WowAddonStandards v2.110.0 writes into standalone-windows (*Window chrome geometry*, *The footer*) and preview-mode (*Where the strip sits*) and cites as "LibKa0s-Widgets-1.0 Footer and TestStrip docking (Widgets minor 27, LibKa0s v1.103.0)". v1.102.0 is a separate tag cut on another branch (`feat/2026-11-14-callout-defaults`) and is not in this release's history; this release is cut from v1.101.0.

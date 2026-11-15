@@ -261,6 +261,23 @@ a "MOVE", a host's own text. The instance owns the frame, its font, color, glow 
 saved position and its voice; the host owns when it speaks and what a custom text says. Settings
 live in the host's own profile table, never in SavedVariables of the library's.
 
+### Promoted with one consumer, on the owner's ruling
+
+`LibKa0s-Callout-1.0` entered the library at v1.96.0 with one consumer, Ka0s Combat Trail's race
+countdown (`core/CalloutSetup.lua`, adopted on its `feat/2026-11-13-callout` branch and merged to
+its `main` on 2026-11-15, vendoring v1.102.0). The owner ruled on 2026-11-13, in the Combat Trail
+session (`docs/superpowers/plans/2026-11-13-callout.md`, *Owner decisions*; adoption issue
+LibKa0s#85), to build it as a suite-wide LibKa0s component rather than inside Combat Trail: a
+countdown read off one `endsAt`, a big center-screen text, its look, its animations and its voice
+packs are what every Ka0s addon that wants a "3, 2, 1, GO" or a "MOVE" would otherwise write again.
+On 2026-11-14 the owner kept it here three times: when v1.97.0 named no second consumer, when
+v1.100.0's `glow` change broke its contract (accepted, Combat Trail adopting it on its unmerged
+branch), and when v1.101.0 named none either. The third time the owner relaxed the standard instead:
+`library-stack-§7`'s bar 1 is a SHOULD from WowAddonStandards v2.109.0, and a module the owner rules
+a suite-wide component records its ruling in its API document and takes no deviation-register row.
+Until v1.104.0 the ruling was a row in `CLAUDE.md`'s *Documented deviations*. No second consumer is
+known.
+
 ### Timing
 
 `Countdown{ endsAt = <a GetTime() value> }` shows `math.ceil(endsAt - GetTime())`, read in an
