@@ -40,6 +40,36 @@ tests pass, 4667 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
 Preview and simulation re-look: Refreshed — Widgets minor 27 moves the strip's placement: `tests/test_widgets_teststrip.lua` (unchanged, green), the new `tests/test_widgets_teststrip_dock.lua`, `docs/api/Widgets/version-27.1.6.13.7.8.5-docs.md` reviewed (`fd70cbd`); no Sim minor moves; every host that draws a test or sim strip re-looks at its placement at its re-vendor.
+## v1.102.0 — 2026-11-14
+
+Opened 2026-11-14, on `feat/2026-11-14-callout-defaults` (off `master` at the v1.100.0 merge, `1dd9680`): two changes the owner asked for to `LibKa0s-Callout-1.0` (plan row L17 of `docs/superpowers/plans/2026-11-13-callout.md`). The one tab's preview block loses its sample line, and the Look defaults become the owner's own in-game settings. Neither adds or removes a member or changes what a call answers, so this is not an API break, but **a host that never stored these values draws differently** after re-vendoring. Its one consumer, Ka0s Combat Trail, adopts the call-out on its unmerged branch `feat/2026-11-13-callout`.
+
+Versions in this release: `LibKa0s-Callout-1.0` key **4.5** (Callout minor 4, CalloutSettings minor 5); every other file at its v1.101.0 minor, and the test kit at revision **56**. No `NEEDS_*` floor rises, and no payload file is added.
+
+### No sample line in the one tab (L17)
+
+- **CalloutSettings minor 5** ([docs](docs/api/Callout/version-4.5-docs.md)): `BuildSettings` with `layout = "side"` (what `SettingsTab` draws), in the Options build and the plain build, no longer draws the `5  GO!  STOP` sample line. Everything else in the Preview block stays: the "Preview" heading, Test countdown and Play, Text to play, Unlock to move and Reset position. The real call-out is where the look shows. In that layout the view's `preview` (and the Options build's `repaint`) is nil, and the plain build's `refresh` paints only its controls. The three-tab build (`SettingsTabs`, or no `opts.layout`) keeps its line unchanged. `FONT_FACES` leads with the new default face, then Oxanium Bold (below).
+
+### The owner's Look defaults (L17)
+
+- **Callout minor 4** ([docs](docs/api/Callout/version-4.5-docs.md)): `DEFAULTS`, and so every row `SchemaRows` answers, takes the owner's in-game settings. `FONT_DEFAULT` is `"Ka0s Oxanium SemiBold"` (it was `"Ka0s Oxanium Bold"`), so `DEFAULTS.font`, the face a name nothing resolves falls back to, and the first of `FONT_FACES` all move together; SemiBold is a LibKa0s-Media-1.0 face on both clients, with Bold's western-only langmask, and the font row still offers Bold whenever it is listed. The shadow is `shadowX = 1`, `shadowY = 1` (it was 2, −2). The glow is black at full intensity, 1 px thick, 1 px right and 1 px down: `glowCustom = true`, `glowColor = { 0, 0, 0 }`, `glowIntensity = 1`, `glowThickness = 1`, `glowX = 1`, `glowY = -1` (it was the old "soft" look, 0.35 and 2 px at (0, 0), in each word's kind color). Unchanged: size 96, `THICKOUTLINE`, shadow and glow on, Use class color and Use the skin's color off, `slam`, hold 1.5. Every new value is inside its row's range.
+- **Visible change for a host that never stored these values.** A host whose players never set them draws the new face, shadow and glow after re-vendoring, and its schema rows' defaults (and so a reset) move with them. A stored value still wins. `GLOW_LEGACY` is unchanged, so a stored minor-2 `"soft"` or `"strong"` still reads as its intensity and thickness, but it names no color: such a host now draws that look in the black swatch, since `glowCustom` defaults on, where v1.100.0 drew each word's kind color. A host that wants the kind color stores `glowCustom = false`.
+- Tests: `tests/test_callout.lua` re-pins the minor; `tests/test_callout_look.lua` the shadow at (1, 1), the halo at full alpha and 1 px, and the kind colors with the swatch turned off; `tests/test_callout_glow.lua` the new defaults (the black swatch on, drawn at (1, −1)), the kind color with the swatch off, and the rows' defaults; `tests/test_callout_settings.lua` the minor, `FONT_DEFAULT`, `FONT_FACES` and the font row's order with SemiBold first; `tests/test_callout_layout.lua` the minor, the one tab with no sample line and the rest of the block kept, the legacy builds keeping their line and repainting, and the plain side layout with no sample line and a safe `refresh`.
+- Documentation: `docs/api/Callout/version-4.5-docs.md` (3.4 superseded, with its *Moving to version 4.5*) and `members-4.5.json`, the index row in `docs/api/README.md`, `README.md`'s Callout row, `docs/releasing.md`'s re-vendor note, `CLAUDE.md` (the register's Callout row and the line-count record), `docs/test-cases.md` regenerated, and the plan's ledger row L17.
+
+### The merge of v1.101.0
+
+- **Tests**: `tests/fixture_charts.lua`, `tests/fixture_icon_browser.lua`, `tests/fixture_skin_picker.lua`, `tests/fixture_media.lua` and `tests/fixture_appearance.lua` share the runner's source loader (`LK_TEST.loader`) instead of each dofile building its own, as `tests/fixture_skin_paint.lua` and `tests/fixture_sim_panel.lua` have since v1.87.0. With v1.101.0's arrow suites and this release's Callout suites in one run, the private chunk caches took the run past the kit's 256 MB leak gate (299 MB after `test_eol.lua`, measured; each parent alone stayed under it by a few MB). The peak is now about 225 MB above the start. No case changes.
+
+### The release (L17)
+
+- `docs/releasing.md`: repo semver and the provenance template at v1.102.0, and the v1.102.0 re-vendor note. `README.md`'s kit line at v1.102.0. `CLAUDE.md`'s register row: key 4.5 at v1.102.0, and its v1.101.0 trigger recorded as fired when v1.101.0 shipped with no second consumer named; the owner ruled on 2026-11-14 to keep the module in LibKa0s and relax `library-stack-§7`'s bar 1 to a SHOULD (WowAddonStandards v2.109.0, not yet merged), and the row retires when that merges. This release was prepared as v1.101.0 and renumbered: another branch's WaypointArrow release took v1.101.0 first and is merged in. The plan's ledger row L17.
+
+Release gate (`docs/automated-tests/20261114-163156/`): lint pass, 0/0 in 345 files;
+tests pass, 4630 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim or Widgets minor moved (Callout 4 and CalloutSettings 5 only).
 
 ## v1.101.0 — 2026-11-14
 

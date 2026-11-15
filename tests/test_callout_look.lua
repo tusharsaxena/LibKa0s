@@ -152,11 +152,11 @@ test("look: every outline reaches the text as its flags; the halo is always thic
   end
 end)
 
-test("look: the shadow is on by default at (2, -2), follows its offsets, and off is no shadow at all", function()
+test("look: the shadow is on by default at (1, 1), follows its offsets, and off is no shadow at all", function()
   local c = newCallout()
   local _, text = parts(c)
   local x, y = text:GetShadowOffset()
-  assertEqual(x .. "," .. y, "2,-2")
+  assertEqual(x .. "," .. y, "1,1", "the owner's 1 px (Callout minor 4)")
   assertEqual(select(4, text:GetShadowColor()), 1, "an opaque black shadow")
   c:Set("shadowX", -5)
   c:Set("shadowY", 7)
@@ -172,8 +172,8 @@ end)
 test("look: the glow is the halo's alpha (its intensity) and its size over the text (its thickness)", function()
   local c = newCallout()
   local _, text, halo = parts(c)
-  assertEqual(halo:GetAlpha(), 0.35, "on by default, at the old soft look's alpha")
-  assertEqual(select(2, halo:GetFont()), 100, "and 2 px out on every side: 96 + 4")
+  assertEqual(halo:GetAlpha(), 1, "on by default, at full intensity (Callout minor 4)")
+  assertEqual(select(2, halo:GetFont()), 98, "and 1 px out on every side: 96 + 2")
   c:Set("glowIntensity", 0.7)
   c:Set("glowThickness", 5)
   assertEqual(halo:GetAlpha(), 0.7)
@@ -238,8 +238,9 @@ end)
 -- ── the colors ───────────────────────────────────────────────────────────────────────────────
 
 test("colors: every stock key paints its kind's default on the text and the halo", function()
-  local c, _, _, _, Callout = newCallout()
+  local c, _, db, _, Callout = newCallout()
   local _, text, halo = parts(c)
+  db.glowCustom = false   -- the default glow is the swatch's black (minor 4); off, the kind's color
   for _, key in ipairs(Callout.STOCK_ORDER) do
     c:Show(key)
     local d = Callout.DEFAULTS.colors[Callout.STOCK[key].kind]

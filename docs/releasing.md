@@ -347,6 +347,14 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    is loaded (`menu = false` keeps `onClick`), and the text is drawn through the skin's `HudFont`
    rather than its `Text` role. Skill Master, the one consumer, adopts the new settings in the same
    round (its rows R9-1 to R9-3). No Skin facade member moves.
+   v1.102.0 adds no payload file, no member and no kit revision (still 56). `Callout.lua` moves to
+   minor 4 and `CalloutSettings.lua` to minor 5 (key 4.5), so a host suite that pins the Callout's
+   `MODULES` re-pins them; a stub needs no change. Two visible changes reach a host that changes
+   nothing: the Look defaults are the owner's (`FONT_DEFAULT` `"Ka0s Oxanium SemiBold"`, the shadow
+   at 1, 1, a black glow at 100%, 1 px thick, at 1, −1, `glowCustom` on), so a suite that pins the
+   old defaults or a schema row's default re-pins them, and a stored `"soft"` or `"strong"` glow
+   draws in the black swatch unless the host stores `glowCustom = false`; and the one tab's preview
+   block draws no sample line, so a suite that reads `view.preview` from `layout = "side"` reads nil.
    v1.103.0 (the owner's window-chrome rulings of 2026-11-15, WowAddonStandards v2.110.0) adds no
    payload file and no kit revision (still 56). `Widgets.lua` moves to minor 27 (key 27.1.6.13.7.8.5):
    the major gains `Footer`, `FOOTER` and `DockTestStrip`, so a host's Widgets stub gains them, and a
