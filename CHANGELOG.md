@@ -35,6 +35,12 @@ Versions in this release: `LibKa0s-Widgets-1.0` key **27.1.6.13.7.8.5** (Widgets
 
 - `docs/api/Widgets/version-27.1.6.13.7.8.5-docs.md` (26.1.6.13.7.8.5 superseded, with *Moving to version 27.1.6.13.7.8.5*) and `members-27.1.6.13.7.8.5.json`; the index rows in `docs/api/README.md`; `README.md` (the standards pointer at v2.110.0, the Widgets overview and row, the kit line); `docs/releasing.md` (the repo semver and the provenance template at v1.103.0, the v1.103.0 re-vendor note); `docs/test-cases.md` regenerated.
 
+Release gate (`docs/automated-tests/20261115-133322/`): lint pass, 0/0 in 347 files;
+tests pass, 4667 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Refreshed — Widgets minor 27 moves the strip's placement: `tests/test_widgets_teststrip.lua` (unchanged, green), the new `tests/test_widgets_teststrip_dock.lua`, `docs/api/Widgets/version-27.1.6.13.7.8.5-docs.md` reviewed (`fd70cbd`); no Sim minor moves; every host that draws a test or sim strip re-looks at its placement at its re-vendor.
+
 ## v1.101.0 — 2026-11-14
 
 Opened 2026-11-14, on `feat/2026-11-14-arrow-text-position-menu`: Ka0s Skill Master's round-9 feedback on the waypoint arrow (Skill Master `docs/superpowers/plans/2026-11-14-feedback-round9.md`, rows L0 to L5): its text, its position, its size and a right-click menu, and a slider box that kept junk text. The owner named this release v1.101.0 (the plan's owner decisions); the date is written at release.
