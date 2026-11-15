@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.101.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.103.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -347,6 +347,18 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    is loaded (`menu = false` keeps `onClick`), and the text is drawn through the skin's `HudFont`
    rather than its `Text` role. Skill Master, the one consumer, adopts the new settings in the same
    round (its rows R9-1 to R9-3). No Skin facade member moves.
+   v1.103.0 (the owner's window-chrome rulings of 2026-11-15, WowAddonStandards v2.110.0) adds no
+   payload file and no kit revision (still 56). `Widgets.lua` moves to minor 27 (key 27.1.6.13.7.8.5):
+   the major gains `Footer`, `FOOTER` and `DockTestStrip`, so a host's Widgets stub gains them, and a
+   docked strip gains `Place`, `BodyOffset` and `IsFlipped`. Nothing changes for a host that changes
+   nothing: an undocked strip is minor 26's. The standard makes both MUST from this re-vendor: every
+   window's strip docks under its title bar (`dock = "title"`) and every HUD display drawing test or
+   sim data carries one on its top edge (`dock = "hud"`, `clear` = its drag handle, `Place()` after
+   a move), the header's mode word goes while the strip shows, and every window footer is `Footer`,
+   24 px (`FOOTER.HEIGHT`), its grip through `resize` or `gripParent = foot`. Each affected host's
+   re-vendor report names the move, for step 5's re-look. No Skin facade member moves: the footer
+   paints through `Divider`, `Text` and `Mark`, which every facade already answers. v1.102.0 is a
+   separate tag on another branch (the call-out defaults), not in this tree's history.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 
@@ -414,7 +426,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.101.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.103.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:

@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **26** · `WidgetsDropdown.lua` **1** · `WidgetsReorder.lua` **6** · `WidgetsDragHandle.lua` **13** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **5** |
 | Shipped in | v1.91.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 25.6.13.6.8.5](./version-25.6.13.6.8.5-docs.md) (v1.90.0) — the line chart's axis, grid, markers, crosshair and series drew `Line` thicknesses in UI units, so a 1 UI-unit line was 1 or 2 px by the UI scale, and the dropdown and its shared menu were in `Widgets.lua`. |
-| Superseded by | — |
+| Superseded by | [version 27.1.6.13.7.8.5](./version-27.1.6.13.7.8.5-docs.md) (v1.103.0) — `Footer` and `FOOTER`, and the mode strip's docking under a title bar or on a HUD's top edge (the owner's 2026-11-15 window-chrome rulings). |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 26, WidgetsDropdown = 1, WidgetsReorder = 6, WidgetsDragHandle = 13, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 5 }` |
 
@@ -2087,3 +2087,7 @@ visual fidelity as unverified.
 **Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
+
+## Moving to version 27.1.6.13.7.8.5
+
+`Widgets.lua` moves to minor 27 and no other file moves. Nothing a host calls at this version changes: an undocked strip is the same strip. The new version adds `Footer(parent, opts)` and `FOOTER` (a window's footer, 24 px, no fill), and `DockTestStrip(strip, spec)` with the `TestStrip` dock fields (`dock = "title"` under a title bar, `dock = "hud"` on a HUD's top edge with the flip). WowAddonStandards v2.110.0 requires both from a host's re-vendor of `LibKa0s v1.103.0`; [version 27.1.6.13.7.8.5](./version-27.1.6.13.7.8.5-docs.md), *What a consumer owes*, lists the steps.
