@@ -150,6 +150,30 @@ Total.
 - tooltip place: launcher: the button's own scale (the minimap's) is applied before the third is read
 - tooltip place: Replace re-runs the last placement after the tooltip grew
 
+### test_tooltip_sites.lua (15)
+
+- tooltip sites: an icon browser cell opens beside the browser window
+- tooltip sites: the icon browser's toolbar tips attach below their control
+- tooltip sites: a dropdown entry's string tip opens beside the menu
+- tooltip sites: a host's tooltip renderer draws, then the library places it beside the menu
+- tooltip sites: the reorder handle's tip opens beside its window
+- tooltip sites: the sim panel's controls open their tips beside the panel
+- tooltip sites: a HUD drag strip's tooltip attaches below the strip, owned by UIParent
+- tooltip sites: tooltipOwner = "cursor" and tooltipAnchor are retired to the attached placer
+- tooltip sites: a strip's mark places by its strip, not by the mark
+- tooltip sites: a host placement that fails falls back to the attached placer, never the cursor
+- tooltip sites: a host placement that answers true keeps its own point
+- tooltip sites: a chart mark's default tooltip opens beside the chart's window group
+- tooltip sites: a host's tip seam gets the legacy anchor and a fourth argument, the context
+- tooltip sites: the launcher re-places its own minimap button's tooltip, and no one else's
+- tooltip sites: the skin picker's toolbar controls attach their tips below
+
+### test_tooltip_guard.lua (3)
+
+- tooltip guard: no library file outside the Settings-canvas Options files anchors a tooltip itself
+- tooltip guard: the skin picker is read and the Settings-canvas files are not
+- tooltip guard: the check is falsifiable, a planted anchor is flagged and a comment is not
+
 ### test_env.lua (9)
 
 - env: GetAddOnMetadata reads the TOC through C_AddOns
@@ -1790,9 +1814,9 @@ Total.
 - draghandle: the mark shows the same tooltip the strip does
 - draghandle: a body line that answers nil is dropped, not drawn empty
 - draghandle: a footer line is re-evaluated on EVERY hover, not captured at build time
-- draghandle: the owner is the host's call, because for one host it is not a style choice
-- draghandle: a second descriptor gives the mark its own tooltip, owner and anchor
-- draghandle: a descriptor may own by the cursor while its neighbor owns by the frame
+- draghandle: every tooltip is owned by UIParent at ANCHOR_NONE, whatever owner the host names
+- draghandle: a second descriptor gives the mark its own tooltip lines
+- draghandle: a descriptor's own owner is retired on the mark as on the strip
 - draghandle: a line may carry its own color, so a gold line in a white band stays gold
 - draghandle: the strip is a plain Button with a fill, never a BackdropTemplate
 - draghandle: a host with its own edge painter gets its own pixels
@@ -1804,19 +1828,19 @@ Total.
 - draghandle: a left click on the X calls onClose once, and a right click does not
 - draghandle: an X on a host with no right-click registers the left click alone
 - draghandle: the X takes the strip's drag scripts, so a drag that starts on it moves the frame
-- draghandle: the X brightens under the cursor and shows closeTooltip, owned by the X
-- draghandle: an X with no closeTooltip shows the strip's, and follows a cursor owner
+- draghandle: the X brightens under the cursor and shows closeTooltip
+- draghandle: an X with no closeTooltip shows the strip's
 - draghandle: an X on a strip whose '?' could not be built sits where the '?' would
 
 ### test_widgets_draghandle_place.lua (10)
 
-- draghandle: without tooltipPlace the call sequence is exactly minor 3's, for both owners
+- draghandle: without tooltipPlace the calls are own by UIParent, draw, one Show, whatever the owner field
 - draghandle: tooltipPlace owns by UIParent at ANCHOR_NONE, draws, shows, then places
 - draghandle: tooltipPlace runs after Show, so the tooltip is measured when it is placed
 - draghandle: the mark and the X hand tooltipPlace the frame hovered, not the strip
-- draghandle: a tooltipPlace that raises falls back to the cursor and redraws the same lines
-- draghandle: a tooltipPlace that answers anything but true falls back to the cursor
-- draghandle: a descriptor's own place wins over the spec's, as owner and anchor do
+- draghandle: a tooltipPlace that raises falls back to the library's placement, drawn once
+- draghandle: a tooltipPlace that answers anything but true falls back to the library's placement
+- draghandle: a descriptor's own place wins over the spec's
 - draghandle: a descriptor may place while the spec does not, and its neighbor is untouched
 - draghandle: a tooltipPlace that is not a function is ignored, not called
 - draghandle: DragHandle is at minor 4 or later, the placement hook's floor
@@ -5443,6 +5467,8 @@ Total.
 | test_core_resize.lua | 26 |
 | test_tooltip.lua | 29 |
 | test_tooltip_place.lua | 19 |
+| test_tooltip_sites.lua | 15 |
+| test_tooltip_guard.lua | 3 |
 | test_env.lua | 9 |
 | test_compat.lua | 64 |
 | test_role.lua | 29 |
@@ -5654,4 +5680,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4776** |
+| **Total** | **4794** |

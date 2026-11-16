@@ -95,7 +95,7 @@ test("host: the default tooltip shows a title and its lines, and an empty one sh
   local row = pool.active[1]
   row:GetScript("OnEnter")(row)
   assertEqual(m.GameTooltip.__owner, row)
-  assertEqual(m.GameTooltip.__anchor, "ANCHOR_CURSOR_RIGHT")
+  assertEqual(m.GameTooltip.__anchor, "ANCHOR_NONE", "owned for a placement (minor 2), never the cursor")
   assertEqual(m.GameTooltip.__text, "Title")
   assertEqual(m.GameTooltip.__lines[2], "3")
   row:GetScript("OnLeave")(row)

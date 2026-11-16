@@ -520,34 +520,27 @@ test("draghandle: a footer line is re-evaluated on EVERY hover, not captured at 
   assertEqual(calls, 2, "called once per hover, and only on hover")
 end)
 
-test("draghandle: the owner is the host's call, because for one host it is not a style choice", function()
-  -- AuraMaster's anchor inherits DisableUntrustedLayoutScriptsTemplate and the restriction reaches
-  -- every frame under it, so the client REFUSES SetOwner on the strip or the mark. It must own by
-  -- UIParent at the cursor. A widget that hard-coded the ConsumableMaster reading would leave that
-  -- host with no tooltip at all, and only in-game.
+test("draghandle: every tooltip is owned by UIParent at ANCHOR_NONE, whatever owner the host names", function()
+  -- Minor 14 (LK-92B, LibKa0s#92): AuraMaster's anchor inherits DisableUntrustedLayoutScriptsTemplate,
+  -- so the client REFUSES SetOwner on the strip or the mark; UIParent at ANCHOR_NONE is the owner every
+  -- tree accepts, and the library then places it below the strip (tests/test_tooltip_sites.lua).
+  -- `tooltipOwner = "cursor"`, `tooltipAnchor` and a descriptor's `owner` and `anchor` are retired:
+  -- accepted, not read. red under: the cursor owner (#119) or the hovered frame as the owner.
   local tip = { title = "Buffs" }
-  local cursor = W.DragHandle(mocks.UIParent, baseSpec({ tooltip = tip, tooltipOwner = "cursor" }))
-  local seenCursor = hover(cursor)
-  assertEqual(seenCursor.owner, mocks.UIParent)
-  assertEqual(seenCursor.anchor, "ANCHOR_CURSOR")
-
-  local own = W.DragHandle(mocks.UIParent, baseSpec({ tooltip = tip }))
-  local seenSelf = hover(own)
-  assertEqual(seenSelf.owner, own, "the default owns by the hovered frame")
-  assertEqual(seenSelf.anchor, "ANCHOR_TOP")
-  -- AND THE MARK OWNS BY THE MARK. red under: an owner taken from the strip on every hover, which
-  -- is what the first draft did while four places documented the opposite.
-  assertEqual(hover(own.help).owner, own.help, "the mark is a hovered frame too")
-
-  local anchored = W.DragHandle(mocks.UIParent, baseSpec({ tooltip = tip, tooltipAnchor = "ANCHOR_TOPRIGHT" }))
-  assertEqual(hover(anchored).anchor, "ANCHOR_TOPRIGHT")
+  for _, spec in ipairs({ { tooltip = tip, tooltipOwner = "cursor" }, { tooltip = tip },
+                          { tooltip = tip, tooltipAnchor = "ANCHOR_TOPRIGHT" } }) do
+    local h = W.DragHandle(mocks.UIParent, baseSpec(spec))
+    local seen = hover(h)
+    assertEqual(seen.owner, mocks.UIParent)
+    assertEqual(seen.anchor, "ANCHOR_NONE")
+    assertEqual(hover(h.help).owner, mocks.UIParent, "the mark too")
+  end
 end)
 
-test("draghandle: a second descriptor gives the mark its own tooltip, owner and anchor", function()
+test("draghandle: a second descriptor gives the mark its own tooltip lines", function()
   -- ConsumableMaster titles its strip "Consumable Master" and its mark "Macro bar", with different
-  -- bodies and different anchors. red under: one descriptor for both frames, which would have
-  -- silently merged two tooltips that host draws today -- and it is the host this widget exists
-  -- for, so "adopt it and lose one" was never an option.
+  -- bodies. red under: one descriptor for both frames, which would have silently merged two
+  -- tooltips that host draws today. The descriptor's `anchor` is retired at minor 14.
   local h = W.DragHandle(mocks.UIParent, baseSpec({
     tooltip     = { title = "Consumable Master", body = { "Drag to move the bar." } },
     helpTooltip = {
@@ -558,26 +551,26 @@ test("draghandle: a second descriptor gives the mark its own tooltip, owner and 
   }))
   local strip = hover(h)
   assertEqual(strip.lines[1].text, "Consumable Master")
-  assertEqual(strip.anchor, "ANCHOR_TOP", "the strip keeps the spec-level default")
+  assertEqual(strip.anchor, "ANCHOR_NONE")
 
   local mark = hover(h.help)
   assertEqual(mark.lines[1].text, "Macro bar")
   assertEqual(mark.lines[2].text, "Drag a button onto another to swap them.")
-  assertEqual(mark.owner, h.help)
-  assertEqual(mark.anchor, "ANCHOR_TOPRIGHT", "and the descriptor's own anchor wins")
+  assertEqual(mark.anchor, "ANCHOR_NONE", "a descriptor's own anchor is retired")
 end)
 
-test("draghandle: a descriptor may own by the cursor while its neighbor owns by the frame", function()
-  -- The owner is per descriptor as well as per spec, because the two frames are separately
-  -- restricted: nothing in the collection needs this split today, and the field is where it is so
-  -- a host that hits AuraMaster's SetOwner refusal on one frame only is not stuck.
+test("draghandle: a descriptor's own owner is retired on the mark as on the strip", function()
+  -- Through minor 13 the owner was per descriptor, so a host hitting AuraMaster's SetOwner refusal
+  -- on one frame only could own that frame by the cursor. Minor 14 owns both by UIParent, which no
+  -- tree refuses, so the split has nothing left to choose. red under: a descriptor's `owner` read.
   local h = W.DragHandle(mocks.UIParent, baseSpec({
     tooltip     = { title = "Strip" },
     helpTooltip = { title = "Mark", owner = "cursor" },
   }))
-  assertEqual(hover(h).owner, h)
+  assertEqual(hover(h).owner, mocks.UIParent)
   assertEqual(hover(h.help).owner, mocks.UIParent)
-  assertEqual(hover(h.help).anchor, "ANCHOR_CURSOR")
+  assertEqual(hover(h.help).anchor, "ANCHOR_NONE")
+  assertEqual(hover(h.help).lines[1].text, "Mark", "the mark keeps its own lines")
 end)
 
 test("draghandle: a line may carry its own color, so a gold line in a white band stays gold", function()
@@ -795,7 +788,7 @@ function()
   assertEqual(closes, 0, "and a drag is not a close")
 end)
 
-test("draghandle: the X brightens under the cursor and shows closeTooltip, owned by the X", function()
+test("draghandle: the X brightens under the cursor and shows closeTooltip", function()
   local h = W.DragHandle(mocks.UIParent, baseSpec({
     onClose = function() end,
     tooltip = { title = "Buffs" },
@@ -804,7 +797,7 @@ test("draghandle: the X brightens under the cursor and shows closeTooltip, owned
   local seen = hover(h.close)
   assertEqual(seen.lines[1].text, "Disable Buffs")
   assertEqual(seen.lines[2].text, "Turn it back on in settings.")
-  assertEqual(seen.owner, h.close, "the frame hovered is the X")
+  assertEqual(seen.owner, mocks.UIParent, "owned by UIParent (minor 14), placed below the strip")
   assertEqual(h.close.icon.__vertex[1], 1, "full white under the cursor: there is always a click here")
   assertEqual(h.close.icon.__vertex[3], 1)
   assertEqual(hover(h).lines[1].text, "Buffs", "the strip keeps its own descriptor")
@@ -818,14 +811,14 @@ test("draghandle: the X brightens under the cursor and shows closeTooltip, owned
   assertEqual(h.close.icon.__vertex[3], 0.72, "and restores the resting tint")
 end)
 
-test("draghandle: an X with no closeTooltip shows the strip's, and follows a cursor owner", function()
+test("draghandle: an X with no closeTooltip shows the strip's", function()
   local h = W.DragHandle(mocks.UIParent, baseSpec({
     onClose = function() end, tooltip = { title = "Buffs" }, tooltipOwner = "cursor",
   }))
   local seen = hover(h.close)
   assertEqual(seen.lines[1].text, "Buffs")
   assertEqual(seen.owner, mocks.UIParent)
-  assertEqual(seen.anchor, "ANCHOR_CURSOR")
+  assertEqual(seen.anchor, "ANCHOR_NONE", "a cursor owner is retired (minor 14)")
 end)
 
 test("draghandle: an X on a strip whose '?' could not be built sits where the '?' would", function()

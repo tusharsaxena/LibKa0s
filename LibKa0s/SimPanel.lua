@@ -84,7 +84,9 @@ local SIM_PANEL_MINOR = 11
 -- key column's token, whose Ka0s Default is the gold the client drew. An owner-less title names none.
 -- Minor 11 (LibKa0s#78, LK-78 of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS): the default
 -- title is the string PANEL_TITLE, "%s - SIM" (was the literal name .. " - Simulation"), so a host's d.L
--- overrides it like every other panel string.
+-- overrides it like every other panel string. Still minor 11 (LK-92B of the same bundle, LibKa0s#92): a
+-- control's or a row's tooltip opens beside the panel's window group (LibKa0s-Tooltip-1.0's body rule),
+-- where it owned at ANCHOR_RIGHT on the control; unreadable geometry attaches it below the control.
 -- Paired on the SHELL's minor as well as this file's own, as SimTimeline.lua is.
 if lib.__panelMinor and lib.__panelMinor >= SIM_PANEL_MINOR
   and lib.__panelShellMinor == lib.MINOR then return end
@@ -358,7 +360,7 @@ local function showTip(owner, row, pal)
   local tip = GameTooltip
   if type(tip) ~= "table" then return end
   local k, v = (pal or DEFAULT).tipKey or DEFAULT.tipKey, (pal or DEFAULT).tipValue or DEFAULT.tipValue
-  tip:SetOwner(owner, "ANCHOR_RIGHT")
+  tip:SetOwner(owner, "ANCHOR_NONE")
   if pal and pal ~= DEFAULT then
     tip:SetText(tostring(row.label), k[1], k[2], k[3])
   else
@@ -374,6 +376,11 @@ local function showTip(owner, row, pal)
     end
   end
   tip:Show()
+  local Tip = LibStub("LibKa0s-Tooltip-1.0", true)
+  if not (Tip and Tip.PlaceBeside(tip, owner)) then
+    tip:ClearAllPoints()
+    tip:SetPoint("TOP", owner, "BOTTOM", 0, -2)
+  end
 end
 
 -- ── the picker and the controls ─────────────────────────────────────────────────────────────

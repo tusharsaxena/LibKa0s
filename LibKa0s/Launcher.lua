@@ -58,12 +58,20 @@
 -- Minor 10 (QFE-LK2): `lib:New`'s descriptor checks move to the file-local `checkDescriptor`, so no
 -- function is over CCN 15 (releasing.md's tag gate). No behavior change: the same checks, in the same
 -- order, raising the same messages at the host's line.
+--
+-- Minor 11 (LK-92B of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS, LibKa0s#92;
+-- WowAddonStandards launcher-§7 and standalone-windows, *Tooltip placement*): the minimap button's
+-- tooltip opens toward the screen's center, TIP_GAP off the button, through LibKa0s-Tooltip-1.0's
+-- PlaceLauncher, where LibDBIcon's own `getAnchors` put it flush. LibDBIcon is not patched: it owns
+-- its tooltip at ANCHOR_NONE, points it, then calls our OnTooltipShow, and the tooltip is re-placed at
+-- the end of that call, only when it is LibDBIcon's own tooltip owned by THIS addon's button. A broker
+-- display's tooltip and the addon compartment's keep their anchors.
 
 local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-Launcher-1.0", 10
+local MAJOR, MINOR = "LibKa0s-Launcher-1.0", 11
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -400,6 +408,24 @@ function lib:New(d)
   --- panel and the right one the options menu, in either state (launcher-§2). Since minor 6 the
   --- lines and the words take the host's skin; the frame stays the client's (skinning-§7), and the
   --- host's own lines are the host's to color.
+  --- Re-place `tt` toward the screen's center (minor 11), when it is LibDBIcon's tooltip and its
+  --- owner is this addon's minimap button: GetMinimapButton(name), else a button carrying this
+  --- launcher's data object.
+  local function placeOwnTooltip(tt)
+    local icons = LibStub and LibStub(ICON_MAJOR, true)
+    local Tip = LibStub and LibStub("LibKa0s-Tooltip-1.0", true)
+    if not (icons and Tip and tt == icons.tooltip and type(tt.GetOwner) == "function") then return end
+    local btn = tt:GetOwner()
+    if type(btn) ~= "table" then return end
+    local mine
+    if type(icons.GetMinimapButton) == "function" then
+      mine = icons:GetMinimapButton(name) == btn
+    else
+      mine = object ~= nil and btn.dataObject == object
+    end
+    if mine then Tip.PlaceLauncher(tt, btn) end
+  end
+
   local function drawTooltip(tt)
     if type(tt) ~= "table" or type(tt.AddLine) ~= "function" then return end
     local enabled = enabledNow("tooltip: isEnabled")
@@ -420,6 +446,7 @@ function lib:New(d)
     end
     addLine(tt, text("TOOLTIP_LEFT"):format(text("TOOLTIP_OPEN_SETTINGS")), pal.line)
     addLine(tt, text("TOOLTIP_RIGHT"):format(text("TOOLTIP_OPTIONS_MENU")), pal.line)
+    placeOwnTooltip(tt)
   end
 
   --- The menu's response to a click: close. The next open reads every state afresh, which is

@@ -17,6 +17,10 @@
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 11, SimPanelRender = 3 }` |
 
+## What changed at this version: the panel's tooltips go through the placers (`LK-92B`, LibKa0s#92)
+
+Still `SimPanel.lua` minor **11** (one bump for the release). WowAddonStandards v2.112.0 (standalone-windows, *Tooltip placement*): the step panel is a library-drawn window, the library's to move in the same release. The panel's `showTip`, which every control and every step row's tooltip goes through (`d.tooltip` of the step panel), is owned at `ANCHOR_NONE`, filled, shown, and then placed **beside the panel's window group** by `LibKa0s-Tooltip-1.0`'s `PlaceBeside` (the group `GroupOf` finds: the panel, the outermost frame under UIParent): `TOPLEFT` at its right edge + 2 when it fits, else `TOPRIGHT` at its left edge - 2, level with the control's top. It was `SetOwner(control, "ANCHOR_RIGHT")`, over the panel. With unreadable geometry, or no Tooltip major, it attaches below the control. No member and no string moves. **A consumer owes nothing** at its re-vendor; it is a smoke line in every host with a sim panel. A host whose tests load library files by name adds `Tooltip.lua` after `CorePixel.lua`.
+
 ## What changed at this version: the default title says SIM (`LK-78`)
 
 **`SimPanel.lua` moves to minor 11** (LibKa0s#78, plan row LK-78 of Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`). A panel whose host sets no `d.panel.title` is titled by a new string, `PANEL_TITLE` = `%s - SIM` (the descriptor's `name`), where it read the literal `name .. " - Simulation"`. A host overrides the string through `d.L` like every other panel string. `Sim.STRINGS` gains the key; no other member moves. Every live host sets its own `"<Brand> - SIM"` title, so no player sees the change.

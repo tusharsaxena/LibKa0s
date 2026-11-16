@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 27.1.6.14.1.7.8.5
+# `LibKa0s-Widgets-1.0` — version 27.2.7.14.1.7.8.5
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,15 +8,32 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` **27** · `WidgetsDropdown.lua` **1** · `WidgetsReorder.lua` **6** · `WidgetsDragHandle.lua` **14** · `WidgetsDragHandleTip.lua` **1** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **5** |
+| Files and minors | `Widgets.lua` **27** · `WidgetsDropdown.lua` **2** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **14** · `WidgetsDragHandleTip.lua` **1** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **5** |
 | Shipped in | v1.105.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 27.1.6.13.7.8.5](./version-27.1.6.13.7.8.5-docs.md) (v1.103.0 – v1.104.0) — the drag handle's tooltip half was in `WidgetsDragHandle.lua`. |
+| Supersedes | [version 27.1.6.13.7.8.5](./version-27.1.6.13.7.8.5-docs.md) (v1.103.0 – v1.104.0) — the drag handle's tooltip half was in `WidgetsDragHandle.lua`, and every library tooltip owned itself at an anchor: a dropdown entry's and the reorder handle's at `ANCHOR_RIGHT`, a drag strip's at `ANCHOR_TOP` or the cursor. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 27, WidgetsDropdown = 1, WidgetsReorder = 6, WidgetsDragHandle = 14, WidgetsDragHandleTip = 1, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 5 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 27, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 14, WidgetsDragHandleTip = 1, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 5 }` |
 
-## What changed at this version: the drag handle's tooltip half peels out (`LK-92B`)
+## What changed at this version: the library's tooltips go through the placers (`LK-92B`, LibKa0s#92)
+
+WowAddonStandards v2.112.0 (standalone-windows, *Tooltip placement*; anti-pattern #119): "a window the library draws is the library's to move, in that same release". Each tooltip below is now owned at `ANCHOR_NONE`, filled, shown, and then placed by `LibKa0s-Tooltip-1.0` (read at call time; [its document](../Tooltip/version-1-docs.md)). Where the geometry cannot be read, or the Tooltip major is absent, it is attached below its element by a relative point instead, never at the cursor. No member and no field is added or removed.
+
+| Site | File (minor) | Was | Now |
+|---|---|---|---|
+| A dropdown or context-menu entry's string `tooltip` | `WidgetsDropdown.lua` **2** | `SetOwner(row, "ANCHOR_RIGHT")`, over the menu | the body rule beside the entry's **menu level** (`row.__menu`, the group), top level with the entry |
+| An entry's host renderer `tooltip = fn(row, opt)` | `WidgetsDropdown.lua` **2** | the renderer's own anchor | the renderer draws as before; a tooltip it **showed, owned by the row** (`IsOwned(row)`), is then placed beside the menu. A renderer that shows nothing is not touched. |
+| `ReorderList`'s `handleTooltip` | `WidgetsReorder.lua` **7** | `SetOwner(handle, "ANCHOR_RIGHT")` | beside the window the list sits in (`GroupOf(handle)`; on a Settings page that is the Settings frame, harmless and out of the standard's scope) |
+| `DragHandle`'s strip, help mark and close mark | `WidgetsDragHandleTip.lua` **1** (`WidgetsDragHandle.lua` **14**) | the hovered frame at `tooltipAnchor` (`ANCHOR_TOP`), or `UIParent` at `ANCHOR_CURSOR` for `tooltipOwner = "cursor"` | a HUD strip is the display's **top chrome**: owned by `UIParent` at `ANCHOR_NONE` (restricted-tree safe) and attached, centered, **below the strip** (`PlaceAttached(tip, strip, "top")`); a mark places by its strip |
+
+**Retired fields (accepted, no longer read; the frozen -1.0 major removes nothing):** `DragHandle`'s `tooltipOwner` and `tooltipAnchor`, and a tooltip descriptor's `owner` and `anchor`. **`tooltipPlace` and a descriptor's `place` keep working** (minor 4): called after Show under pcall, and a literal `true` keeps the host's point. A raise or any other answer now falls back to the attached placement, where it fell back to the cursor owner with the lines redrawn; the lines are drawn once.
+
+**What a consumer owes at its re-vendor (visible, smoke lines):** library dropdown entries everywhere open beside the menu; a drag strip with no `tooltipPlace` hook (Ka0s Consumable Master's mark, any host's owner-less strip) opens below the strip, not above it or at the cursor; a strip whose hook answers `true` (AbsorbTracker, KickCD, Consumable Master, AuraMaster) is unchanged until its adoption. A suite that pinned `ANCHOR_RIGHT`, `ANCHOR_TOP` or `ANCHOR_CURSOR` on these tooltips re-pins `ANCHOR_NONE` and the placement. A host whose tests load library files by name adds `Tooltip.lua` after `CorePixel.lua` and `WidgetsDragHandleTip.lua` after `WidgetsDragHandle.lua`.
+
+## What changed at version 27.1.6.14.1.7.8.5: the drag handle's tooltip half peels out (`LK-92B`)
+
+An earlier step of this release, unreleased: `WidgetsDragHandle.lua` minor 14 and the new `WidgetsDragHandleTip.lua` minor 1, the half moved unchanged (below).
 
 **`WidgetsDragHandle.lua` moves to minor 14 and a new file, `WidgetsDragHandleTip.lua`, joins the major at minor 1**, loaded by `LibKa0s.xml` directly after it and paired on the shell's minor (`__dragTipMinor`, `__dragTipShellMinor`). The drag handle stood at 1022 lines against the 1100 trigger `CLAUDE.md`'s band census set, with the seam "its tooltip half", and LibKa0s#92 rewrites exactly that half. The descriptor's bands, the owner a tooltip is shown by and the `tooltipPlace` hook move there **unchanged**; `WidgetsDragHandle.lua` reads them through the internal `lib.__dragTipKit` (`show(handle, frame, spec, t, defaultPal)`, `hide()`) at hover time. No member, field or behavior moves: `lib.DragHandle`'s descriptor (below) is the same.
 
@@ -1513,9 +1530,9 @@ also spends it in its clamp reach, `HEIGHT + GAP`.
 | `closeTooltip` | **Since 3.** a descriptor of the tooltip shape, shown by the close mark alone | the close mark shows `tooltip` |
 | `tooltip` | the descriptor below — shown by the strip, and by the mark unless `helpTooltip` says otherwise | no tooltip |
 | `helpTooltip` | a **second** descriptor of the same shape, shown by the help mark alone | the mark shows `tooltip` |
-| `tooltipOwner` | the default for both descriptors: `"cursor"` owns by `UIParent` at `ANCHOR_CURSOR`; anything else owns by the frame hovered | by the frame hovered |
-| `tooltipAnchor` | the default anchor point used when owning by the frame | `"ANCHOR_TOP"` |
-| `tooltipPlace` | **Since 4.** `function(tip, frame) -> true` when it placed the tooltip. Set, every hover owns by `UIParent` at `"ANCHOR_NONE"`, draws the lines, shows, then calls it under `pcall` with the frame hovered; a raise or any answer but `true` falls back to the `"cursor"` owner with the same lines redrawn. Owner and anchor are not read while it is in force. A descriptor's own `place` wins; a non-function is ignored | the owner and anchor above |
+| `tooltipOwner` | **Retired at DragHandle 14** (accepted, not read). Through 13: `"cursor"` owned by `UIParent` at `ANCHOR_CURSOR`, anything else by the frame hovered. From 14 every tooltip is owned by `UIParent` at `ANCHOR_NONE` and attached centered below the strip (`LibKa0s-Tooltip-1.0`'s `PlaceAttached`). | — |
+| `tooltipAnchor` | **Retired at DragHandle 14**, as `tooltipOwner`. Through 13: the anchor point used when owning by the frame. | — |
+| `tooltipPlace` | **Since 4.** `function(tip, frame) -> true` when it placed the tooltip. Set, every hover owns by `UIParent` at `"ANCHOR_NONE"`, draws the lines, shows, then calls it under `pcall` with the frame hovered; a raise or any answer but `true` falls back to the library's attached placement below the strip (**DragHandle 14**; through 13 the `"cursor"` owner with the same lines redrawn). A descriptor's own `place` wins; a non-function is ignored | the library's attached placement |
 | `edge` | `function(frame, size, r, g, b, a)` — the host's own 1px edge painter, called with `size = 1` | the widget's four strips, one physical pixel each (**Since 13**; one UI unit before it) |
 | `number` | `function(v, fallback) -> number` — a secret-safe numeric guard | `tonumber(v) or fallback` |
 | `labelFont` | the font object the label is **drawn in and measured in**; on an owned strip the skin's body face goes over it (DragHandle 12) | `"GameFontNormalSmall"` |
@@ -1536,7 +1553,14 @@ its mark is titled *"Macro bar"* with three body lines, a gray footer and a diff
 on adoption, silently, in the host this widget exists for. `helpTooltip` is absent in the simple
 case and costs the simple host nothing.
 
-**`tooltipOwner` is a correctness knob, not a style one, and it is why the field exists.**
+**Where the tooltip opens, from DragHandle 14.** A HUD strip is its display's top chrome
+(WowAddonStandards standalone-windows, *Tooltip placement*), so the strip's tooltip and both marks'
+attach centered **below the strip**, through `LibKa0s-Tooltip-1.0`, owned by `UIParent` at
+`ANCHOR_NONE` and placed by an absolute point, which the restricted tree described next accepts. A
+host's `tooltipPlace` still wins when it answers `true`. The history below is why the owner was a
+field through minor 13; minor 14 answers it once, for every host.
+
+**`tooltipOwner` was a correctness knob, not a style one, and it is why the field existed.**
 AuraMaster's anchor inherits `DisableUntrustedLayoutScriptsTemplate` and the restriction reaches
 every frame anchored under it, so the client **refuses** `GameTooltip:SetOwner` on the strip or the
 mark — *"Anchoring disallowed as dependent object would inherit forbidden aspects:
@@ -1580,8 +1604,8 @@ tooltip = {
   title  = <entry>,              -- gold, 1, 0.82, 0 (Since 7, an owned strip: gtip.title)
   body   = { <entry>, … },       -- white, wrapped (Since 7, an owned strip: gtip.value)
   footer = { <entry>, … },       -- gray, 0.6, after one blank line (Since 7: gtip.footer)
-  owner  = <"cursor" | nil>,     -- overrides spec.tooltipOwner for this descriptor
-  anchor = <string | nil>,       -- overrides spec.tooltipAnchor for this descriptor
+  owner  = <"cursor" | nil>,     -- retired at DragHandle 14 (accepted, not read)
+  anchor = <string | nil>,       -- retired at DragHandle 14 (accepted, not read)
   place  = <function | nil>,     -- Since 4. overrides spec.tooltipPlace for this descriptor
 }
 
@@ -1716,8 +1740,8 @@ could not be built it takes the mark's own place, `RIGHT` at `-HELP_INSET`.
   click — the client fires no `OnClick` for it.
 - **The drag passes through.** The X takes the strip's `OnDragStart` / `OnDragStop`, as the `?` does,
   so a left-drag that starts on it moves the frame and closes nothing.
-- **The tooltip** is `closeTooltip`, read on every hover, falling back to `tooltip`; it is owned by
-  the X itself, or by `UIParent` at the cursor under `tooltipOwner = "cursor"`.
+- **The tooltip** is `closeTooltip`, read on every hover, falling back to `tooltip`; from DragHandle
+  14 it is owned by `UIParent` and attached below the strip, as the strip's is.
 - **The label stays centered.** `handle:Reserve()` is `RESERVE + HELP_HIT + CLOSE_GAP` (47) on
   **each** side, so `Measure()` grows by 36px and the label's bounds move in by 18px on both sides.
   The clearance between the label's right bound and the X's ink is then `HELP_CLEAR`, exactly what

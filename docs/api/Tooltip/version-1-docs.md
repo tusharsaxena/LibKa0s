@@ -26,9 +26,9 @@ tooltip placement", that is to publish a beside-the-window placer, an attached-c
 launcher placer and `TIP_GAP = 2`. This major is that surface. It is loaded by `LibKa0s.xml`
 directly after `CorePixel.lua`, before every major that will place a tooltip through it.
 
-At this version no library widget calls it yet. Moving the library's own sites onto the placers
-(IconBrowser, the Widgets dropdown, reorder handle and drag handle, SimPanel, Charts, the Launcher's
-minimap tooltip and the skin picker) is `LK-92B`, in the same release.
+The library's own sites moved onto the placers in the same release (`LK-92B`): IconBrowser, the
+Widgets dropdown, reorder handle and drag handle, SimPanel, Charts, the Launcher's minimap tooltip
+and the skin picker (*The library's own sites*, below).
 
 ## What this major is
 
@@ -158,6 +158,28 @@ That is the standard's headless SHOULD (*Tooltip placement*, Verification): a ri
 right-does-not-fit layout, asserting the side, the top alignment and the gap from the recorded
 points. This repo's own cases are `tests/test_tooltip.lua` (the solvers) and
 `tests/test_tooltip_place.lua` (the placers).
+
+## The library's own sites (`LK-92B`)
+
+Every library tooltip goes through these placers in the same release, each reading this major at
+call time, and attaching below its element by a relative point when a placer answers nil:
+
+| Site | Placer | Element and group |
+|---|---|---|
+| IconBrowser cell | `PlaceBeside` | the cell; the browser window |
+| IconBrowser toolbar control | `PlaceAttached(…, "top")` | the control |
+| Dropdown and context-menu entry (a string, or a host renderer's tooltip it showed, owned by the row) | `PlaceBeside` | the entry; its menu level |
+| ReorderList handle | `PlaceBeside` | the handle; `GroupOf` |
+| SimPanel control and step row | `PlaceBeside` | the control; `GroupOf` (the panel) |
+| DragHandle strip and marks | `PlaceAttached(…, "top")`, owned by UIParent | the strip (a mark places by its strip); a host `tooltipPlace` answering `true` wins |
+| Charts default tooltip, and `ctx:PlaceTip` for a host's own | `PlaceBeside` | the mark; `host.group`, else `GroupOf` |
+| Launcher, LibDBIcon's tooltip on the addon's own button | `PlaceLauncher` | the button |
+| Skin picker toolbar (gear, eye, dropdown) | `PlaceAttached(…, "top")` | the control |
+
+`tests/test_tooltip_sites.lua` drives each on the fake screen, and `tests/test_tooltip_guard.lua`
+holds the payload, outside the Settings-canvas Options files, to no `ANCHOR_CURSOR`,
+`ANCHOR_CURSOR_RIGHT`, `ANCHOR_RIGHT` or `ANCHOR_TOP`, with a closed allowlist (the comparison side
+here, and the Charts host seam's legacy anchors).
 
 ## What a consumer owes
 

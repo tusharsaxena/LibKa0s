@@ -112,7 +112,10 @@ if not lib then return end
 -- lib.__pixelLine (Widgets minor 25), where they were one UI unit. A host's `spec.edge` is unchanged.
 -- Minor 14 (LK-92B of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS, LibKa0s#92): the
 -- tooltip half (the descriptor's bands, its owner and the placement hook) peeled, unchanged, to
--- WidgetsDragHandleTip.lua, read through lib.__dragTipKit at hover time.
+-- WidgetsDragHandleTip.lua, read through lib.__dragTipKit at hover time; then the strip's tooltip, and
+-- its marks', attaches centered below the strip through LibKa0s-Tooltip-1.0 (a HUD strip is top
+-- chrome), owned by UIParent, and `tooltipOwner`, `tooltipAnchor` and a descriptor's `owner` and
+-- `anchor` are retired (accepted, not read). WidgetsDragHandleTip.lua's WHERE IT OPENS.
 local DRAG_MINOR = 14
 -- Paired on the SHELL's minor as well as this file's own: a handle that attached to an older shell
 -- would publish `lib.DragHandle` beside a `lib.MODULES` the shell owns, and nothing would say the
@@ -825,6 +828,7 @@ end
 ---   tooltip     table|nil         the descriptor the STRIP shows, and the mark's too unless
 ---                                 `helpTooltip` says otherwise:
 ---                                   { title, body = {…}, footer = {…}, owner, anchor, place }
+---                                 (`owner` and `anchor` retired at minor 14: accepted, not read)
 ---                                 every band entry may be a string, a function called on each
 ---                                 hover whose nil return drops the line, or a
 ---                                 { <either>, r, g, b } table carrying its own color. No tooltip
@@ -834,19 +838,17 @@ end
 ---                                 `tooltip` and this stays absent; ConsumableMaster titles its
 ---                                 strip "Consumable Master" and its mark "Macro bar", with
 ---                                 different bodies and different anchors, and writes both.
----   tooltipOwner string|nil       the default for both descriptors: "cursor" owns by UIParent at
----                                 ANCHOR_CURSOR; anything else owns by the FRAME HOVERED -- the
----                                 strip on the strip, the mark on the mark. A descriptor's own
----                                 `owner` wins. See dhOwnTooltip -- this is correctness.
----   tooltipAnchor string|nil      the default "self" anchor point, overridden by a descriptor's
----                                 own `anchor`. Defaults to "ANCHOR_TOP".
+---   tooltipOwner string|nil       RETIRED at minor 14 (accepted, not read). Every tooltip is owned
+---                                 by UIParent at ANCHOR_NONE and attached centered below the strip
+---                                 (LibKa0s-Tooltip-1.0's PlaceAttached; WidgetsDragHandleTip.lua).
+---   tooltipAnchor string|nil      RETIRED at minor 14, as `tooltipOwner`.
 ---   tooltipPlace function|nil     minor 4. tooltipPlace(tip, frame) -> true when it placed the
----                                 tooltip. Set, the tooltip is owned by UIParent at ANCHOR_NONE,
+---                                 tooltip. The tooltip is owned by UIParent at ANCHOR_NONE,
 ---                                 drawn, shown, and then handed to this under pcall with the
----                                 frame hovered; the owner and anchor fields are not read. A raise
----                                 or any answer but `true` falls back to the "cursor" owner, with
----                                 the same lines redrawn. A descriptor's own `place` wins; a value
----                                 that is not a function is ignored. See dhShowPlaced.
+---                                 frame hovered. A raise or any answer but `true` falls back to the
+---                                 library's attached placement below the strip (minor 14; the
+---                                 cursor before). A descriptor's own `place` wins; a value that is
+---                                 not a function is ignored.
 ---   edge        function|nil      the host's own 1px edge painter, called as
 ---                                 edge(frame, size, r, g, b, a). Defaults to four strips of ours.
 ---   number      function|nil      number(v, fallback) -- a secret-safe numeric guard.

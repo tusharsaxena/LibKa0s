@@ -14,6 +14,17 @@
 --
 -- A file of the Widgets major, paired on the shell's minor with the same multi-file idiom as
 -- WidgetsDragHandle.lua itself.
+--
+-- WHERE IT OPENS (still minor 1, LK-92B of the same bundle, LibKa0s#92 part B; design section 3.6).
+-- A HUD strip is the display's TOP CHROME (WowAddonStandards standalone-windows, *Tooltip
+-- placement*, the chrome reading v2.112.0 flagged), so its tooltip, and its marks', attaches
+-- centered BELOW THE STRIP through LibKa0s-Tooltip-1.0's PlaceAttached, read at hover time. It is
+-- always owned by UIParent at ANCHOR_NONE and placed by absolute points, which a restricted layout
+-- tree (AuraMaster's anchors) accepts. A host's `tooltipPlace` (or a descriptor's `place`) still
+-- wins when it answers `true`; a raise or any other answer falls back to the attached placer, never
+-- the cursor (anti-pattern #119). `tooltipOwner = "cursor"`, `tooltipAnchor` and a descriptor's
+-- `owner` and `anchor` are RETIRED: still accepted, no longer read (the frozen -1.0 major removes
+-- no field).
 
 local lib = LibStub and LibStub("LibKa0s-Widgets-1.0", true)
 if not lib then return end
@@ -65,25 +76,8 @@ local function dhBand(entries, r, g, b)
   return out
 end
 
---- Own the tooltip for THIS hover, by the frame actually under the cursor.
----
---- The OWNER is the host's call and it is a correctness knob, not a style one. AuraMaster's anchor
---- inherits DisableUntrustedLayoutScriptsTemplate and the restriction reaches every frame under it,
---- so the client refuses SetOwner on the strip or the mark ("Anchoring disallowed as dependent
---- object would inherit forbidden aspects"); it must own by UIParent at the cursor. ConsumableMaster
---- owns by the hovered frame -- ANCHOR_TOP off the strip, ANCHOR_TOPRIGHT off the mark, which is
---- why the descriptor may carry its own `owner` and `anchor` and not only the spec.
-local function dhOwnTooltip(tip, frame, spec, t)
-  local owner = t.owner or spec.tooltipOwner
-  if owner == "cursor" then
-    tip:SetOwner(UIParent, "ANCHOR_CURSOR")
-  else
-    tip:SetOwner(frame, t.anchor or spec.tooltipAnchor or "ANCHOR_TOP")
-  end
-end
-
 --- The host's placement hook for this descriptor, or nil (minor 4). The descriptor's own `place`
---- wins over `spec.tooltipPlace`, as `owner` and `anchor` win over theirs. A value that is not a
+--- wins over `spec.tooltipPlace`. A value that is not a
 --- function is ignored rather than called, so a typo costs the hook and not the tooltip's owner.
 local function dhPlacer(spec, t)
   if type(t.place) == "function" then return t.place end
@@ -93,8 +87,7 @@ end
 
 --- The three-band shape both copies built out of different text, EVALUATED ONCE for this hover: a
 --- gold title, white wrapped body lines, then -- only when at least one survives -- gray footer
---- lines. Evaluated apart from the drawing so a placement fallback (dhShowPlaced) redraws the same
---- lines rather than calling a host's line functions a second time. The band colors are `pal`'s, the
+--- lines. Evaluated apart from the drawing, once per hover. The band colors are `pal`'s, the
 --- handle's palette at this hover (minor 7), so an owned strip's tooltip follows its skin's switches.
 local function dhTooltipLines(t, pal)
   local title, tr, tg, tb = dhEntry(t.title)
@@ -119,36 +112,35 @@ local function dhDrawTooltip(tip, lines)
   tip:Show()
 end
 
---- THE HOST PLACES IT (minor 4). Owned by UIParent at ANCHOR_NONE -- the owner AuraMaster's
---- restricted anchor allows -- drawn and SHOWN first, so the host's placement can read the
---- tooltip's measured size, then handed to `place(tip, frame)` under pcall. Only a literal `true`
---- means placed. A raise or any other answer falls back to the cursor owner, re-owned and redrawn
---- from the same evaluated lines, because SetOwner clears the tooltip.
-local function dhShowPlaced(tip, frame, lines, place)
-  tip:SetOwner(UIParent, "ANCHOR_NONE")
-  dhDrawTooltip(tip, lines)
-  local ok, placed = pcall(place, tip, frame)
-  if ok and placed == true then return end
-  tip:SetOwner(UIParent, "ANCHOR_CURSOR")
-  dhDrawTooltip(tip, lines)
+--- The library's placement: attached and centered below the STRIP (`handle`), whichever of its
+--- frames is hovered (a mark places by its strip, as AuraMaster's StripOf did). Unreadable geometry,
+--- or no Tooltip major, attaches it below the strip by a relative point, which a restricted tree
+--- refuses, so under pcall; the tooltip is then where the client left it, never at the cursor.
+local function dhPlaceAttached(tip, handle)
+  local Tip = LibStub("LibKa0s-Tooltip-1.0", true)
+  if Tip and Tip.PlaceAttached(tip, handle, "top") then return end
+  tip:ClearAllPoints()
+  pcall(tip.SetPoint, tip, "TOP", handle, "BOTTOM", 0, -2)
 end
 
---- Show the descriptor's tooltip for `frame`, which is the frame hovered and therefore the frame
---- a non-cursor owner owns by and the frame a placement hook is handed. Without a hook the calls
---- are minor 3's, in minor 3's order: own, evaluate and draw, Show. `handle` is the strip, whose
+--- Show the descriptor's tooltip for `frame`, the frame hovered and the frame a placement hook is
+--- handed: owned by UIParent at ANCHOR_NONE, evaluated and drawn, SHOWN (so a placement reads the
+--- tooltip's measured size), then the host's hook under pcall when there is one, and the library's
+--- attached placement unless that hook answered a literal `true`. `handle` is the strip, whose
 --- palette colors the bands (minor 7); `defaultPal` is WidgetsDragHandle.lua's owner-less palette,
 --- for a handle that carries none.
 local function dhShowTooltip(handle, frame, spec, t, defaultPal)
   local tip = GameTooltip
   if not (t and tip and tip.SetOwner and tip.SetText) then return end
-  local pal = handle.__pal or defaultPal
+  local lines = dhTooltipLines(t, handle.__pal or defaultPal)
+  tip:SetOwner(UIParent, "ANCHOR_NONE")
+  dhDrawTooltip(tip, lines)
   local place = dhPlacer(spec, t)
   if place then
-    dhShowPlaced(tip, frame, dhTooltipLines(t, pal), place)
-    return
+    local ok, placed = pcall(place, tip, frame)
+    if ok and placed == true then return end
   end
-  dhOwnTooltip(tip, frame, spec, t)
-  dhDrawTooltip(tip, dhTooltipLines(t, pal))
+  dhPlaceAttached(tip, handle)
 end
 
 local function dhHideTooltip()

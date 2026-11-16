@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Charts-1.0` |
 | Files and minors | `Charts.lua` minor **1** · `ChartsRender.lua` minor **1** |
 | Shipped in | v1.84.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (first version) |
-| Superseded by | — |
+| Superseded by | [version 2.1](./version-2.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`) |
 | Optional at call time | `LibKa0s-Pool-1.0` (the default `host.pool`), `LibKa0s-Skin-1.0` (`host.owner`), `GameTooltip` (the default tooltip) |
 | Confirm in-game | `LibStub("LibKa0s-Charts-1.0").MODULES` → `{ Charts = 1, ChartsRender = 1 }` |
@@ -195,3 +195,7 @@ until it adopts. `ChartsRender.lua` is paired on the shell's minor (`__renderMin
 
 None as of v1.84.0's first cut. Loot History and DPS Race adopt it at their re-vendor
 (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`, step 4).
+
+## Moving to version 2.1
+
+`Charts.lua` moves to 2: the default tooltip opens beside the window group through `LibKa0s-Tooltip-1.0` (`ctx:PlaceTip`, `host.group`), and a host's `tip` gets the context as a fourth argument (`LK-92B`, LibKa0s#92). See [version 2.1](./version-2.1-docs.md). A host with its own `tip` owes nothing at its re-vendor.

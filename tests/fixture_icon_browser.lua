@@ -67,7 +67,7 @@ local function env(opts)
   installLayers(m)
   armFrames(m)
   m.prints, m.timers = {}, {}
-  local files = { "Core", "Compat", "Media" }
+  local files = { "Core", "Tooltip", "Compat", "Media" }
   if opts.catalog then files[#files + 1] = "MediaIcons" end
   for _, f in ipairs(SKIN) do files[#files + 1] = f end
   files[#files + 1] = "Pool"

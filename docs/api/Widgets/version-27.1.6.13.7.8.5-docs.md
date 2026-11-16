@@ -12,7 +12,7 @@
 | Shipped in | v1.103.0 |
 | Status | Superseded |
 | Supersedes | [version 26.1.6.13.7.8.5](./version-26.1.6.13.7.8.5-docs.md) (v1.91.0 – v1.101.0) — no footer primitive, and the mode strip was born unanchored with its placement the host's. |
-| Superseded by | [version 27.1.6.14.1.7.8.5](./version-27.1.6.14.1.7.8.5-docs.md) |
+| Superseded by | [version 27.2.7.14.1.7.8.5](./version-27.2.7.14.1.7.8.5-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 27, WidgetsDropdown = 1, WidgetsReorder = 6, WidgetsDragHandle = 13, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 5 }` |
 
@@ -2150,6 +2150,6 @@ visual fidelity as unverified.
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
 
-## Moving to version 27.1.6.14.1.7.8.5
+## Moving to version 27.2.7.14.1.7.8.5
 
-The same surface; `WidgetsDragHandle.lua` moves to 14 and its tooltip half peels, unchanged, to the new `WidgetsDragHandleTip.lua` (minor 1), so the key gains a number (`LK-92B`, LibKa0s#92). See [version 27.1.6.14.1.7.8.5](./version-27.1.6.14.1.7.8.5-docs.md). A host that loads library files by name adds the new file after `WidgetsDragHandle.lua`; nothing else.
+`WidgetsDragHandle.lua` moves to 14 and its tooltip half peels to the new `WidgetsDragHandleTip.lua` (minor 1), so the key gains a number; `WidgetsDropdown.lua` 2, `WidgetsReorder.lua` 7 and that half place their tooltips through `LibKa0s-Tooltip-1.0` (`LK-92B`, LibKa0s#92). See [version 27.2.7.14.1.7.8.5](./version-27.2.7.14.1.7.8.5-docs.md). A host that loads library files by name adds the new file after `WidgetsDragHandle.lua` and `Tooltip.lua` after `CorePixel.lua`; the visible changes and the retired fields are listed there.

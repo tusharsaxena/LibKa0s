@@ -49,7 +49,7 @@ local function env(spec)
   armGeometry(m)
   m.uiHeight = 768
   rawset(m.UIParent, "GetHeight", function() return m.uiHeight end)
-  local files = {}
+  local files = { "Tooltip" }
   if spec.media then files[#files + 1] = "Media"; files[#files + 1] = "MediaIcons" end
   if not spec.noSkin then
     for _, f in ipairs(SKIN_FILES) do files[#files + 1] = f end
