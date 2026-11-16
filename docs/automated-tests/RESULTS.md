@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261117-013407`](20261117-013407/) | `c2c7ce38` | clean | 1.105.0 → 1.105.0 | 0/0 | 369 | 4891/3/4894 | skip | 110643 | 15876 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261116-184422`](20261116-184422/) | `fa7d5b51` | clean | 1.104.0 → 1.105.0 | 0/0 | 368 | 4870/3/4873 | skip | 110214 | 15807 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261116-010115`](20261116-010115/) | `3235d426` | clean | 1.102.0 → 1.104.0 | 0/0 | 347 | 4665/3/4668 | skip | 106113 | 15164 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261115-133322`](20261115-133322/) | `fd70cbdd` | clean | 1.101.0 → 1.103.0 | 0/0 | 347 | 4664/3/4667 | skip | 106062 | 15162 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -219,18 +220,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**4873 cases** — 4870 passed, 0 failed, 3 skipped. The generated inventory
-[`20261116-184422/test-cases.md`](20261116-184422/test-cases.md) is the authority on which cases existed at this run;
+**4894 cases** — 4891 passed, 0 failed, 3 skipped. The generated inventory
+[`20261117-013407/test-cases.md`](20261117-013407/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **4668 → 4873** since the previous run.
+Moved **4873 → 4894** since the previous run.
 
 **3 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 368 files** (`luacheck .`).
+**0 warnings / 0 errors over 369 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -247,8 +248,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261116-184422`](20261116-184422/) — **this run's measurement, not its diff.** Max CCN **15** across 15807
-functions, **0** of them warned on; 13 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261117-013407`](20261117-013407/) — **this run's measurement, not its diff.** Max CCN **15** across 15876
+functions, **0** of them warned on; 14 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -280,6 +281,7 @@ None.
 | 1000–1500 (on notice) | `LibKa0s/SkinPaintControls.lua` | 1073 | **Accepted, ruled in `CLAUDE.md`'s band census (2026-11-02, `R3-L1`, `R3-L3`).** The minor is not yet shipped, and a peel is a release. Seam: the navigation, drawer and list-row section, to a file of its own paired on the Skin shell. **Re-check trigger: 1100 lines, or the next SkinPaintControls minor.** The minor half fired at minor 17 (`R4-L4`); this `R4-REL3` re-cut carries it unpeeled, and the peel is the lead's and the owner's call (`CLAUDE.md`'s census row). |
 | 1000–1500 (on notice) | `LibKa0s/WaypointArrow.lua` | 1253 | **On notice, unruled: `CLAUDE.md`'s band census (2026-11-14, Skill Master round 9, rows L1 to L4).** New to the band at minor 2: 778 at minor 1 -> 1204 with the text, position and menu, 1253 with the review's fixes (the menu's lifecycle, the share lead, offsets in the parent's units). The seam is the menu section or the font section, to a secondary paired on the shell; trigger 1300 lines or the next minor |
 | 1000–1500 (on notice) | `tests/test_media.lua` | 1048 | **Newly crossed with `R3-L6` and `R3-L7`. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's `R3-REL` re-cut.** A suite, so a peel is no release. Seam: the font inventory and license section, to a suite of its own. **Re-check trigger: 1100 lines, or the next face added to `FONTS`.** |
+| 1000–1500 (on notice) | `tests/test_skin_defs.lua` | 1058 | **Newly crossed with `SR-L4`. Accepted, ruled in `CLAUDE.md`'s band census at v1.105.0's `SR-REL` re-close (2026-11-17).** 999 -> 1058 with the section-header band floors. A suite, so a peel is no release. Seam: the list-row contrast section (`apart` and `lstar` through the band floors), to a suite of its own. **Re-check trigger: 1100 lines, or the next contrast floor added to it.** |
 
 `lizard` counts every `and`/`or` short-circuit as a decision, so in Lua a run of
 `t.k = rec.k or D.k` defaulting lines scores high with no visible branching at all: a large CCN
