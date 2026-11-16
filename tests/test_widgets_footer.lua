@@ -255,7 +255,7 @@ end)
 -- ── the skin ─────────────────────────────────────────────────────────────────────────────────
 
 local OWNER = "LootHistory"
-local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart",
+local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart",
                  "WidgetsAutocomplete", "WidgetsCopyWindow" }
 
 local function env()

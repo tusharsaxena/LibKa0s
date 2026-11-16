@@ -128,12 +128,13 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Widgets-1.0",
-    files = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete", "WidgetsCopyWindow" },
+    files = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart", "WidgetsAutocomplete", "WidgetsCopyWindow" },
     primary = "Widgets",
     paired = {
       { file = "WidgetsDropdown",   minorField = "__dropdownMinor", probeField = "__dropdownShellMinor" },
       { file = "WidgetsReorder",    minorField = "__reorderMinor", probeField = "__reorderShellMinor" },
       { file = "WidgetsDragHandle", minorField = "__dragMinor",    probeField = "__dragShellMinor" },
+      { file = "WidgetsDragHandleTip", minorField = "__dragTipMinor", probeField = "__dragTipShellMinor" },
       { file = "WidgetsLineChart",  minorField = "__chartMinor",   probeField = "__chartShellMinor" },
       { file = "WidgetsAutocomplete", minorField = "__autocompleteMinor", probeField = "__autocompleteShellMinor" },
       { file = "WidgetsCopyWindow", minorField = "__copyMinor", probeField = "__copyShellMinor" },

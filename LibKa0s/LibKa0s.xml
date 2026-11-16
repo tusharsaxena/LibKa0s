@@ -35,6 +35,7 @@
 	<Script file="WidgetsDropdown.lua"/>
 	<Script file="WidgetsReorder.lua"/>
 	<Script file="WidgetsDragHandle.lua"/>
+	<Script file="WidgetsDragHandleTip.lua"/>
 	<Script file="WidgetsLineChart.lua"/>
 	<Script file="WidgetsAutocomplete.lua"/>
 	<Script file="WidgetsCopyWindow.lua"/>
