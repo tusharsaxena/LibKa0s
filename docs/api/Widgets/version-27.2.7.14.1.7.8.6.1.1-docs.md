@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 27.2.7.14.1.7.8.6.1
+# `LibKa0s-Widgets-1.0` — version 27.2.7.14.1.7.8.6.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,15 +8,34 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` **27** · `WidgetsDropdown.lua` **2** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **14** · `WidgetsDragHandleTip.lua` **1** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** |
+| Files and minors | `Widgets.lua` **27** · `WidgetsDropdown.lua` **2** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **14** · `WidgetsDragHandleTip.lua` **1** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **1** |
 | Shipped in | v1.105.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 27.1.6.13.7.8.5](./version-27.1.6.13.7.8.5-docs.md) (v1.103.0 – v1.104.0) — the drag handle's tooltip half was in `WidgetsDragHandle.lua`, and every library tooltip owned itself at an anchor: a dropdown entry's and the reorder handle's at `ANCHOR_RIGHT`, a drag strip's at `ANCHOR_TOP` or the cursor; and every window built its own header marks, with no settings mark. |
+| Supersedes | [version 27.1.6.13.7.8.5](./version-27.1.6.13.7.8.5-docs.md) (v1.103.0 – v1.104.0) — the drag handle's tooltip half was in `WidgetsDragHandle.lua`, and every library tooltip owned itself at an anchor: a dropdown entry's and the reorder handle's at `ANCHOR_RIGHT`, a drag strip's at `ANCHOR_TOP` or the cursor; and every window built its own header marks, with no settings mark; and the library drew no data bar. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 27, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 14, WidgetsDragHandleTip = 1, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 27, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 14, WidgetsDragHandleTip = 1, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 1 }` |
 
-## What changed at this version: one strip of header marks, `HeaderButtons` (`LK-86`, LibKa0s#86)
+## What changed at this version: a data bar, `Bar` (`LK-80`, LibKa0s#80)
+
+Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.8, research note R4 §3. `WidgetsBar.lua` is new (minor **1**, paired on the shell, loaded by `LibKa0s.xml` directly after `WidgetsHeader.lua`): Ka0s Skill Master's `modules/Bar.lua` (`NS.Bar`), promoted with its behavior kept and its host ties cut. Every other file stays at its minor. The reference is [The data bar](#the-data-bar) below.
+
+**One consumer, by the owner's ruling (library-stack-§7, bar 1).** library-stack-§7 asks a one-consumer promotion to wait for a second consumer unless the owner rules it a suite-wide component, and asks the ruling to be recorded here. **Who:** the owner. **When:** 2026-11-16. **Where:** the session that opened Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, recorded in its `inputs/owner-rulings.md`, question Q1 ("#80 (bar widget) and #81 (launcher extra entries) have one consumer, Skill Master: **Build both now.** Record the one-consumer ruling in their API docs and in the CHANGELOG."). **The consumer:** Ka0s Skill Master, whose skill and stat rows, detached blocks, row tooltip, journal and broker tooltip draw through its `modules/Bar.lua`. It adopts `W.Bar` in that run's phase [3], after re-homing the edge and color helpers (`MakeEdges`, `PaintBorder`, `Color`, `WithClass`) its other frames share with `Bar.lua`. The ruling takes no deviation-register row.
+
+**What changed from the host copy, and why:**
+
+| Skill Master | Here | Why |
+|---|---|---|
+| `Bar.Create(parent, styleKey)` and `Bar.ResolveStyle(styleKey)`, reading `profile.bars` | `W.Bar(parent, { owner, style \| preset })` and `W.BarStyle(presetKey, overrides)` | the library never reads a profile: the host resolves its settings into a style |
+| colors resolved once from owner tokens (`sm.barFill`, ...) and re-resolved on the host's own bus | token **names** (or literals) resolved at paint time against `owner`, repainted after each of the owner's skin changes | a skin switch follows with no host call |
+| `tiers`, `tiered`, `{rank}`, `TIER_SHADE`, `TierShade` | `segments`, `segmented`, `{value}` (`{rank}` an alias), `BAR.SHADE`, `BarShade` | the profession words are Skill Master's |
+| `WithClass`, `PlayerColor`, `Swatch`, `ShowMarkers`, `TooltipRowHeight` | not here | profile and class-color logic (options-ui-§16/§17) stays in the host |
+| 1 UI unit edges (`MakeEdges`) | pixel-exact edges (the shell's `__pixelLine`) at `borderSize` physical pixels | the house edge (`SF2-L1`); a small visible change, a smoke line at adoption |
+| `NS.Pool` | `LibKa0s-Pool-1.0` read at call time, its ordered contract inline without it | the Widgets shell keeps its no-dependency stance |
+
+**What a consumer owes at its re-vendor:** a host whose tests load library files by name adds `WidgetsBar.lua` after `WidgetsHeader.lua` (PGFE, WhatGroup and the Skin Tester's hand-written loaders). Nothing else: no host calls it at the tag.
+
+## What changed at version 27.2.7.14.1.7.8.6.1: one strip of header marks, `HeaderButtons` (`LK-86`, LibKa0s#86)
 
 Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7, research notes R4 §1 and R9 C2, C8 and M10; the owner's ruling Q3 (2026-11-16): **left to right, extras · settings · close**, settings opening the owning addon's settings, found through its launcher. `WidgetsHeader.lua` is new (minor **1**, paired on the shell, loaded by `LibKa0s.xml` directly after `WidgetsCopyWindow.lua`); `WidgetsCopyWindow.lua` moves 5 -> **6**; `WidgetsDragHandle.lua` stays at **14** (this release's bump). The shell stays at 27.
 
@@ -2160,6 +2179,73 @@ in `modules/Browser.lua` and LootHistory's `NS.MakeAutocomplete` seam in `core/W
 so its line above no longer holds; LootHistory's Timeline no longer hand-rolls its own list.
 `lib.AUTOCOMPLETE`'s line stands.
 
+## The data bar
+
+`WidgetsBar.lua` (minor 1, since this version). A bar of data on any frame: a base fill, a bonus segment past it, segments, threshold marks, a spark, a text and an expiry timer. Not a StatusBar: the bonus, the segments and the marks are textures `Layout` places, which one StatusBar fill cannot carry.
+
+### `lib.Bar(parent, opts)` → `bar`
+
+`parent` is a frame (anything else raises at the caller). `opts`, all optional:
+
+- `owner` (string): the skin owner, the addon's folder name. While it is a registered skin owner, the bar's token names resolve through its skin and the bar repaints after each of its skin changes (the shell's per-owner repaint list). Otherwise the bar paints Ka0s Default's values.
+- `style`: a `BarStyle` table. Or `preset`: a preset key (default `row`), for `BarStyle(preset)`.
+
+### `lib.BarStyle(presetKey, overrides)` → `style`
+
+A fresh table: the defaults below, then `BAR.PRESETS[presetKey]` (`row` for an unknown key), then `overrides`. It carries `key`, so `ApplyStyle` takes it whole. The fields:
+
+| Field | Default | Meaning |
+|---|---|---|
+| `key` | the preset's | marks a full style (see `ApplyStyle`) |
+| `height` | the preset's | the bar's height, UI units |
+| `showText`, `showMarkers` | the preset's | draw the text; draw the markers |
+| `showTimer` | `true` | `false` makes `SetTimer` draw nothing |
+| `segmented` | `false` | lay a bar carrying `segments` on a scale to its last cap |
+| `fill`, `bg`, `border`, `marker`, `text`, `timer` | `"bar.fill"`, `"bar.bg"`, `"bar.border"`, `"hud.label"`, `"hud.text"`, `"sem.info"` | colors: a token name or `{ r, g, b, a }` |
+| `bonusTemp`, `bonusPerm` | `"sem.info"`, `"sem.good"` | the bonus segment's color for `bonusKind` `temp` and `perm` (no new skin token exists for them, R4 Q10) |
+| `spark` | `false` | `true` draws a 1 px line at the fill's end in `hud.text`; a color or name draws it in that |
+| `borderShow`, `borderStyle`, `borderSize`, `borderFromSkin` | `false`, `"Solid"`, `1`, `false` | the border: through the owner's `S.BarBorder(style, show, size, fromSkin)` (skinning-§6: a skin that states a real style wins over Show border while the companion is on); `None` or size 0 draws none; Solid is four pixel-exact edges `borderSize` physical pixels thick; any other style is a LibSharedMedia border key, drawn on a `BackdropTemplate` child |
+| `texture` | nil | the fill's texture: a LibSharedMedia statusbar key or a path. Without it an owned bar wears its skin's bar texture (`S.BarTexture`, recorded) and an owner-less bar a flat color |
+| `alpha` | `1` | multiplies the fill's and the bonus's alpha |
+| `font` | nil | `{ face, flags, shadow, shadowFromSkin, fromSkin }`: an owned bar's text goes through `S.HudFont` at `S.HudFontSize(fontSize, fromSkin)`; an owner-less one keeps `GameFontHighlightSmall` unless `face` is given |
+| `fontSize` | `11` | the text's stored size |
+| `textAnchor` | `"CENTER"` | `LEFT`, `CENTER` or `RIGHT`; the timer takes the far end, or the near end when the text sits right |
+| `reverse` | `false` | fill from the right edge |
+| `template` | nil | the text template (`BAR.TEMPLATE` when nil) |
+
+A remap is a name: `BarStyle("row", { bonusTemp = "sm.bonusTemp" })` points the slot at an owner token (registered with `Skin:RegisterOwner(owner, { tokens = ... })`), or at any library token. A name the owner's skin does not answer, and any name on an owner-less bar, reads Ka0s Default's value (the bar's own copy for the default names, `__barFallback`, held to Ka0s Default by the suite; the Skin major's Ka0s Default for any other).
+
+### Instance methods and fields
+
+- **`bar:SetValues(v)`**, `v = { value, max, bonus, bonusKind = "temp" | "perm", segments = { caps... }, markers = { { at, label } }, text, color }`: recomputes `bar.geom`, repaints the fill (`v.color`, a color or a name, else the style's `fill`) and the bonus when their color changed, sets the text (`v.text`, else the template), and lays the bar out.
+- **`bar:SetTimer(expires)`**: the time left until `expires` (a `GetTime()` second) inside the bar's far end, redrawn every `BAR.TIMER_TICK` seconds; nil, a past time or `showTimer = false` clears it. **The OnUpdate runs only while a timer does**, and is disarmed when the timer is cleared or runs out.
+- **`bar:ApplyStyle(style)`**: a table with `key` (a `BarStyle` answer) **replaces** the current style, its absent fields meaning none; one without `key` merges over it. Then `Repaint`.
+- **`bar:Repaint()`**: paints the current style again (height, background, border, spark, text face and colors, then the values). What the owner's skin change runs.
+- **`bar:Park()`**: the release hook: the timer off and the points cleared.
+- **`bar:Layout()`**: anchors and widths only, from the current width; run by `OnSizeChanged`. A width that is a secret number (a tooltip-anchored bar on tainted WoW Forever) is replaced by the last plain width, `bar.knownWidth`, which a caller may seed.
+- **`bar.geom`**: the last `BarCompute`: `fill` and `bonus` as fractions of the inner width, `markers` (`{ at, label }`, `at` a fraction; **the labels are carried here and never drawn**, R4 Q11), `segments` (`{ from, to, tier }`) when segmented, and `text`. Read by tests and tooltips.
+- **Regions a host may read:** `bar.bg`, `bar.fill`, `bar.bonus`, `bar.spark`, `bar.edges` (four), `bar.edgeFrame` (made on first non-Solid border), `bar.segmentTextures`, `bar.markerTextures`, `bar.text`, `bar.timer`; and `bar.fillColor`, `bar.bonusColor`, the resolved colors last painted. `__`-prefixed fields are internal.
+
+### The pure helpers
+
+- **`lib.BarCompute(values, template, segmented)`** → `geom`. The base clamps to [0, 1] of the cap (or of the last segment cap when segmented and `values.segments` is non-empty); the bonus reaches at most the end; markers from 0 up to and including the cap; an empty or zero cap is all zeros. The text keeps the full numbers.
+- **`lib.BarText(value, bonus, max, template)`** → string. `{value}` (and its alias `{rank}`), `{bonus}` (`+25`, `-3` or nothing), `{max}`, `{pct}` (whole percent of the cap, 0 for an empty cap), `{left}` (to the cap, never negative). A token with nothing to say leaves no double space; an unknown token stays as written.
+- **`lib.BarFormatTimer(seconds)`** → `m:ss`, or `h:mm:ss` from an hour; never negative.
+- **`lib.BarShade(color, i)`** → `color` times `BAR.SHADE[i]` (its last past the table), the alpha kept.
+
+### The pool
+
+- **`lib.AcquireBar(pool, parent, opts)`** → `bar`: a bar from `pool` (a `LibKa0s-Pool-1.0` `New()` table, or a plain `{ free = {}, active = {} }`), reparented to `parent`, restyled from `opts` (`style` or `preset`, and `owner` when given) so a skin or setting change reaches every bar on the next render, and shown.
+- **`lib.ReleaseBars(pool)`**: parks, hides and frees every active bar, last first, so position n gets its bar back on the next render. Both read `LibKa0s-Pool-1.0` at call time; without it the same contract runs inline.
+
+### `lib.BAR`
+
+`{ TIMER_TICK = 0.2, TIMER_W = 38, INSET = 1, TEMPLATE = "{value} {bonus} / {max}", SHADE = { 1, 0.8, 0.64, 0.5 }, PRESETS = { row = { height = 14, showText = true, showMarkers = false }, compact = { height = 14, showText = true, showMarkers = false }, tooltip = { height = 8, showText = false, showMarkers = true }, mini = { height = 10, showText = false, showMarkers = false } } }`. Skill Master's four kinds of bar at its default sizes; a host passes its own through `BarStyle`'s overrides. Read-only in effect.
+
+### What it deliberately is not
+
+No tick lines (what the issue called tier ticks are the segments), no drawn marker labels (Skill Master's row tooltip draws them as lines of its own), no profile reads and no class color.
+
 ## Degraded
 
 **With the major absent there is no reorder handle, no row box and — from this version — no drag
@@ -2173,7 +2259,8 @@ for any other major. The secondary files cannot half-attach: each is paired on t
 and one that is missing leaves only its own members `nil` (`ReorderList` and `ROW_BOX` without
 `WidgetsReorder.lua`, `DragHandle` without `WidgetsDragHandle.lua`, `LineChart`, `LINE_CHART` and `ChartMath` without
 `WidgetsLineChart.lua`, `Autocomplete` and `AUTOCOMPLETE` without `WidgetsAutocomplete.lua`, `CopyWindow`
-without `WidgetsCopyWindow.lua`).
+without `WidgetsCopyWindow.lua`, and `Bar`, `BarStyle`, `BarCompute`, `BarText`, `BarFormatTimer`, `BarShade`,
+`AcquireBar`, `ReleaseBars` and `BAR` without `WidgetsBar.lua`).
 `TestStrip` and `TEST_STRIP` live in the shell, so they are present exactly when the major is; a
 host with no Widgets copy shows no strip, and marks test mode however it did before.
 The host must have a plan for `nil`

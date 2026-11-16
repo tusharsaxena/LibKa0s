@@ -2049,6 +2049,33 @@ Total.
 - Footer skin: an owned mark rests in icon.tint and lights in icon.hot
 - Footer skin: an unregistered owner draws the owner-less footer
 
+### test_widgets_bar.lua (24)
+
+- bar: a bonus past the cap clamps the base, draws to the end and keeps the full text
+- bar: the bonus segment wears the temp or the permanent color
+- bar: an empty cap draws nothing and raises nothing
+- bar: a segmented bar draws to its last cap, its fill one segment per cap entered
+- bar: markers keep the end and drop what is past it; labels are carried in geom, not drawn
+- bar: the timer formats m:ss and h:mm:ss
+- bar: SetTimer shows the time left, ticks it, and SetTimer(nil) disarms the OnUpdate
+- bar: a timer that runs out clears itself, and a style with showTimer false draws none
+- bar: the presets carry Skill Master's sizes and switches; overrides win; an unknown key is row
+- bar: the pool hands bars back in order and clears their timers on release
+- bar: a secret width lays out on the last plain width
+- bar: the template's tokens, and {rank} as an alias of {value}
+- bar: a reverse fill mirrors the geometry from the right edge
+- bar: Park disarms the timer and clears the points
+- bar: an invalid parent raises at the caller
+- bar: an owner-less bar paints Ka0s Default, with the Skin major and without it
+- bar: the owner-less fallback is Ka0s Default's values, token for token
+- bar: a registered owner's token names repaint on a skin switch; a literal does not move
+- bar: a style slot remapped onto an owner token reads it
+- bar: a values color is a literal or a token name, and the segments shade it
+- bar: a Solid border draws four edges; None and size 0 draw none; another style a backdrop
+- bar: a non-Solid border style draws through LibSharedMedia's border on a backdrop child
+- bar: an acquire with no Pool major degrades to the same order
+- bar: the suite releases its two benches
+
 ### test_header_buttons.lua (20)
 
 - header buttons: Core's registry records an opener, answers HasSettings, and OpenSettings calls it
@@ -5580,6 +5607,7 @@ Total.
 | test_widgets_teststrip.lua | 21 |
 | test_widgets_teststrip_dock.lua | 20 |
 | test_widgets_footer.lua | 18 |
+| test_widgets_bar.lua | 24 |
 | test_header_buttons.lua | 20 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
@@ -5727,4 +5755,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4833** |
+| **Total** | **4857** |

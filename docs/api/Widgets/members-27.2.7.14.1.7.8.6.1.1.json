@@ -1,6 +1,6 @@
 {
   "major": "LibKa0s-Widgets-1.0",
-  "versionKey": "27.2.7.14.1.7.8.6.1",
+  "versionKey": "27.2.7.14.1.7.8.6.1.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Widgets", "minor": 27 },
@@ -11,11 +11,20 @@
     { "file": "WidgetsLineChart", "minor": 7 },
     { "file": "WidgetsAutocomplete", "minor": 8 },
     { "file": "WidgetsCopyWindow", "minor": 6 },
-    { "file": "WidgetsHeader", "minor": 1 }
+    { "file": "WidgetsHeader", "minor": 1 },
+    { "file": "WidgetsBar", "minor": 1 }
   ],
   "members": [
     { "name": "AUTOCOMPLETE", "kind": "table" },
+    { "name": "AcquireBar", "kind": "function" },
     { "name": "Autocomplete", "kind": "function" },
+    { "name": "BAR", "kind": "table" },
+    { "name": "Bar", "kind": "function" },
+    { "name": "BarCompute", "kind": "function" },
+    { "name": "BarFormatTimer", "kind": "function" },
+    { "name": "BarShade", "kind": "function" },
+    { "name": "BarStyle", "kind": "function" },
+    { "name": "BarText", "kind": "function" },
     { "name": "ChartMath", "kind": "table" },
     { "name": "CloseMenu", "kind": "function" },
     { "name": "ContextMenu", "kind": "function" },
@@ -34,6 +43,7 @@
     { "name": "LINE_CHART", "kind": "table" },
     { "name": "LineChart", "kind": "function" },
     { "name": "ROW_BOX", "kind": "table" },
+    { "name": "ReleaseBars", "kind": "function" },
     { "name": "ReorderList", "kind": "function" },
     { "name": "SearchBox", "kind": "function" },
     { "name": "TEST_STRIP", "kind": "table" },

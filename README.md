@@ -113,7 +113,7 @@ modules and points you there. It does not restate them.
    bails that way, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsFlow.lua`, `OptionsIds.lua`, `OptionsIdSuggest.lua`, `OptionsIdList.lua`,
    `OptionsTabs.lua`, `OptionsTabbed.lua`, `OptionsHeader.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua`,
    `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua`, `OptionsSkinPicker.lua`, `OptionsSkinPickerRows.lua`, `OptionsSwitch.lua` and `OptionsMedia.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole twenty-one-file module
-   is absent instead of half-attached. `WidgetsDropdown.lua`, `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsDragHandleTip.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua`, `WidgetsCopyWindow.lua` and `WidgetsHeader.lua` do the same
+   is absent instead of half-attached. `WidgetsDropdown.lua`, `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsDragHandleTip.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua`, `WidgetsCopyWindow.lua`, `WidgetsHeader.lua` and `WidgetsBar.lua` do the same
    behind `Widgets.lua`, `SkinOwnerTokens.lua`, `SkinDefs.lua`, `SkinDefsOthers.lua`, `SkinPaint.lua`, `SkinPaintExtras.lua`, `SkinPaintHud.lua`, `SkinAceConfirm.lua`, `SkinPaintControls.lua`, `SkinEUI.lua` and `SkinAce.lua` behind `Skin.lua` (the extras, the HUD looks, the confirmation box, the controls and the AceGUI rows also behind `SkinPaint.lua`, whose painter helpers they use), `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
    `PerfPanel.lua` behind `Perf.lua`, `CorePixel.lua` behind `Core.lua`, `CalloutSettings.lua` behind `Callout.lua`, `WaypointArrowSettings.lua` behind `WaypointArrow.lua`, and `SimTimeline.lua`, `SimPanel.lua` and `SimPanelRender.lua` behind `Sim.lua`, and `IconBrowserWindow.lua` and `IconBrowser.lua` behind
    `IconBrowserSources.lua`, which also returns when Media is absent or older than the minor it needs.
@@ -396,6 +396,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   WidgetsAutocomplete.lua -- the autocomplete list, same module, AUTOCOMPLETE_MINOR of its own
   WidgetsCopyWindow.lua -- the copy window, same module, COPY_MINOR of its own
   WidgetsHeader.lua  -- the window header's marks (extras, settings, close), same module, HEADER_MINOR of its own
+  WidgetsBar.lua     -- the data bar (fill, bonus, segments, markers, text, timer) and its pool helpers, same module, BAR_MINOR of its own
   DebugLog.lua       -- LibKa0s-DebugLog-1.0, MINOR at the top of the file; needs Core
   DebugLogDiagnostics.lua -- the diagnostics report, same module, DIAG_MINOR of its own
   DebugLogGates.lua  -- the change gates and the at-enable queue, same module, GATES_MINOR

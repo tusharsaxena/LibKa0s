@@ -128,7 +128,7 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Widgets-1.0",
-    files = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart", "WidgetsAutocomplete", "WidgetsCopyWindow", "WidgetsHeader" },
+    files = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart", "WidgetsAutocomplete", "WidgetsCopyWindow", "WidgetsHeader", "WidgetsBar" },
     primary = "Widgets",
     paired = {
       { file = "WidgetsDropdown",   minorField = "__dropdownMinor", probeField = "__dropdownShellMinor" },
@@ -139,6 +139,7 @@ local MAJORS = {
       { file = "WidgetsAutocomplete", minorField = "__autocompleteMinor", probeField = "__autocompleteShellMinor" },
       { file = "WidgetsCopyWindow", minorField = "__copyMinor", probeField = "__copyShellMinor" },
       { file = "WidgetsHeader", minorField = "__headerMinor", probeField = "__headerShellMinor" },
+      { file = "WidgetsBar", minorField = "__barMinor", probeField = "__barShellMinor" },
     },
   },
   {

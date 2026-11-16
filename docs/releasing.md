@@ -25,13 +25,13 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   eighty-one, by their exact constant names: `MINOR` in `Core.lua`, `PIXEL_MINOR` in `CorePixel.lua`, `MINOR` in `Tooltip.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   eighty-two, by their exact constant names: `MINOR` in `Core.lua`, `PIXEL_MINOR` in `CorePixel.lua`, `MINOR` in `Tooltip.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Role.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Glow.lua`, `MINOR` in `Toast.lua`, `MINOR` in `Callout.lua`, `SETTINGS_MINOR` in `CalloutSettings.lua`, `MINOR` in `WaypointArrow.lua`, `SETTINGS_MINOR` in `WaypointArrowSettings.lua`, `MINOR` in `Charts.lua`, `RENDER_MINOR` in `ChartsRender.lua`, `MINOR` in `Media.lua`, `ICONS_MINOR` in `MediaIcons.lua` (a generated file: change the
    constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `TOKENS_MINOR` in `SkinOwnerTokens.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `OTHERS_MINOR` in `SkinDefsOthers.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `HUD_MINOR` in `SkinPaintHud.lua`, `CONFIRM_MINOR` in `SkinAceConfirm.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
    `Slash.lua`, `PARSE_MINOR` in `SlashParse.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `DROPDOWN_MINOR` in `WidgetsDropdown.lua`, `REORDER_MINOR` in
    `WidgetsReorder.lua`, `DRAG_MINOR` in
-   `WidgetsDragHandle.lua`, `DRAGTIP_MINOR` in `WidgetsDragHandleTip.lua`, `CHART_MINOR` in `WidgetsLineChart.lua`, `AUTOCOMPLETE_MINOR` in `WidgetsAutocomplete.lua`, `COPY_MINOR` in `WidgetsCopyWindow.lua`, `HEADER_MINOR` in `WidgetsHeader.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WINDOW_MINOR` in `DebugLogWindow.lua`, `WIDGETS_MINOR` in
+   `WidgetsDragHandle.lua`, `DRAGTIP_MINOR` in `WidgetsDragHandleTip.lua`, `CHART_MINOR` in `WidgetsLineChart.lua`, `AUTOCOMPLETE_MINOR` in `WidgetsAutocomplete.lua`, `COPY_MINOR` in `WidgetsCopyWindow.lua`, `HEADER_MINOR` in `WidgetsHeader.lua`, `BAR_MINOR` in `WidgetsBar.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WINDOW_MINOR` in `DebugLogWindow.lua`, `WIDGETS_MINOR` in
    `OptionsWidgets.lua`, `FLOW_MINOR` in `OptionsFlow.lua`, `IDS_MINOR` in `OptionsIds.lua`, `SUGGEST_MINOR` in `OptionsIdSuggest.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
    `TABS_MINOR` in `OptionsTabs.lua`, `TABBED_MINOR` in `OptionsTabbed.lua`, `HEADER_MINOR` in `OptionsHeader.lua`, `COMBAT_MINOR` in `OptionsCombat.lua`, `SCROLL_MINOR`
    in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `DRAWER_MINOR` in `OptionsDrawer.lua`, `KEYBINDS_MINOR` in `OptionsKeybinds.lua`, `APPEARANCE_MINOR` in `OptionsAppearance.lua`, `PICKER_MINOR` in `OptionsSkinPicker.lua`, `QUEUE_MINOR` in `OptionsSkinPickerQueue.lua`, `ROWS_MINOR` in `OptionsSkinPickerRows.lua`, `SWITCH_MINOR` in `OptionsSwitch.lua`, `MEDIA_MINOR` in `OptionsMedia.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
@@ -390,7 +390,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the eighty-one `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the eighty-two `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
