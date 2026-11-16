@@ -67,7 +67,7 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
-**v1.105.0, not in the census (unreleased, 2026-11-16).** DebugLog shell minor 23 and DebugLogDiagnostics minor 11
+**v1.105.0, not in the census (2026-11-16).** DebugLog shell minor 23 and DebugLogDiagnostics minor 11
 add the report seam (`LK-79`, LibKa0s#79): the instance's `Report` and `Serialize`, the lib-level `Serialize` and
 the string `REPORT_WRITTEN` ([the document](DebugLog/version-23.11.1.5-docs.md)). None gets a row here yet. **No host
 consumes them at the tag**: Ka0s Consumable Master's addon-local `DL.Report` and `SlashDump.Serialize` are the
@@ -75,24 +75,33 @@ reference they were lifted from, and its one-line lift onto `D:Report` is its ad
 host's report verb. Every host with a by-name DebugLog parity case (fourteen) adds `Report` and `Serialize` to its
 library-absent stub at its re-vendor.
 
-**v1.105.0, not in the census (unreleased, 2026-11-16), the header marks.** WidgetsHeader minor 1 (new) adds
+**v1.105.0, not in the census (2026-11-16), the header marks.** WidgetsHeader minor 1 (new) adds
 `W.HeaderButtons`, `W.HeaderButton`, `W.HEADER` and `W.HEADER_STRINGS`, and Core minor 18 adds
 `Core.RegisterSettingsOpener`, `Core.HasSettings` and `Core.OpenSettings` (`LK-86`, LibKa0s#86;
 [the Widgets document](Widgets/version-27.2.7.14.1.7.8.6.1.1-docs.md), [the Core document](Core/version-18.1-docs.md)).
 None gets a row here yet. **No host calls them at the tag:** the library's own windows use them, the launcher fills the
 registry in every host from the re-vendor alone, and a host window's strip is its adoption item (LibKa0s#86).
 
-**v1.105.0, not in the census (unreleased, 2026-11-16), the sample characters.** Sim minor 3 adds the lib-level
+**v1.105.0, not in the census (2026-11-16), the sample characters.** Sim minor 3 adds the lib-level
 `Sim.SAMPLE` and `Sim.Sample` (`LK-87`, LibKa0s#87; [the Sim document](Sim/version-3.3.11.4-docs.md)). Neither gets a
 row here yet. **No host reads them at the tag:** each host's own sample characters (Combat Trail's, DpsRace's, Bank
 Ledger's, What Group's and the others research note R6 of Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`
 lists) move onto them at its adoption, in that run's phase [3].
 
-**v1.105.0, not in the census (unreleased, 2026-11-16), the data bar.** WidgetsBar minor 1 (new) adds `W.Bar`,
+**v1.105.0, not in the census (2026-11-16), the data bar.** WidgetsBar minor 1 (new) adds `W.Bar`,
 `W.BarStyle`, `W.BarCompute`, `W.BarText`, `W.BarFormatTimer`, `W.BarShade`, `W.AcquireBar`, `W.ReleaseBars` and
 `W.BAR` (`LK-80`, LibKa0s#80; [the Widgets document](Widgets/version-27.2.7.14.1.7.8.6.1.1-docs.md)). None gets a row here yet. **No
 host calls them at the tag:** Ka0s Skill Master, the one consumer by the owner's 2026-11-16 ruling, adopts them in
 phase [3] of Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/` and drops its `modules/Bar.lua`.
+
+**v1.105.0, not in the census (2026-11-16), the tooltip placers and the launcher's own rows.** The new major
+`LibKa0s-Tooltip-1.0` (`Tooltip.lua` minor 1: `TIP_GAP`, `Own`, `PlaceBeside`, `PlaceAttached`, `PlaceLauncher`,
+`SetGroup`, `GroupOf`, `Replace`; `LK-92A`, LibKa0s#92; [the document](Tooltip/version-1-docs.md)), Charts minor 2's
+`host.group` and `ctx:PlaceTip` ([the document](Charts/version-2.1-docs.md)), a drag handle's opt-in `spec.settings`
+(WidgetsDragHandle minor 14) and Launcher minor 11's `extraEntries` descriptor field ([the document](Launcher/version-11-docs.md)).
+None gets a row here yet. **No host calls them at the tag:** the library's own widgets are the Tooltip major's only callers,
+each host's own tooltips move onto it at its adoption (LibKa0s#92), and `extraEntries` has one consumer by the owner's
+2026-11-16 ruling, Ka0s Skill Master, which adopts it in phase [3] of the same bundle.
 
 **v1.99.0, not in the census (2026-11-14).** The release adds a major,
 `LibKa0s-WaypointArrow-1.0` (its lib-level members in `docs/api/WaypointArrow/members-1.1.json`, the descriptor's

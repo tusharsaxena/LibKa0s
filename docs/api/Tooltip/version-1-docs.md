@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Tooltip-1.0` |
 | Files and minors | `Tooltip.lua` minor **1** |
-| Shipped in | v1.105.0 (unreleased) |
+| Shipped in | v1.105.0 |
 | Status | **Current** |
 | Supersedes | — (the first version of this major) |
 | Superseded by | — |

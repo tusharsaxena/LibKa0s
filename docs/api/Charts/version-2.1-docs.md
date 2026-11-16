@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Charts-1.0` |
 | Files and minors | `Charts.lua` minor **2** · `ChartsRender.lua` minor **1** |
-| Shipped in | v1.105.0 (unreleased) |
+| Shipped in | v1.105.0 |
 | Status | **Current** |
 | Supersedes | [version 1.1](./version-1.1-docs.md) (v1.84.0 – v1.104.0) — the default tooltip followed the cursor (`ANCHOR_CURSOR_RIGHT`), and a host's `tip` had no way to place through the library. |
 | Superseded by | — |

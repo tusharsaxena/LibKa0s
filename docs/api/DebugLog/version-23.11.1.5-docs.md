@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **23** · `DebugLogDiagnostics.lua` minor **11** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **5** |
-| Shipped in | v1.105.0 (unreleased) |
+| Shipped in | v1.105.0 |
 | Status | **Current** |
 | Supersedes | [version 22.10.1.4](./version-22.10.1.4-docs.md) (shipped in v1.99.0) — Copy carried each message's color, texture and hyperlink escapes, and there was no report seam or serializer. |
 | Superseded by | — |

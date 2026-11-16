@@ -116,6 +116,26 @@ local function hideTip(b)
   tip:Hide()
 end
 
+--- The mark's face: `spec.icon`'s art out of the owner's copy, else a word or a glyph.
+local function dress(b, spec)
+  local path = artOf(spec.owner, spec.icon)
+  if path then
+    b:SetSize(SIZE, SIZE)
+    local tex = b:CreateTexture(nil, "OVERLAY")
+    tex:SetPoint("CENTER")
+    tex:SetSize(ART, ART)
+    tex:SetTexture(path)
+    b.icon = tex
+    return
+  end
+  b:SetSize(spec.label and spec.width or SIZE, SIZE)
+  local fs = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  if lib.__skinFont then lib.__skinFont(fs, spec.owner, lib.__skinOf and lib.__skinOf(spec.owner), "GameFontNormalSmall") end
+  fs:SetPoint("CENTER")
+  fs:SetText(spec.label or spec.glyph or "")
+  b.label = fs
+end
+
 --- One header mark (minor 1): a SIZE-square Button with `spec.icon`'s art at ART, out of the owner's
 --- copy; without the art, `spec.label` as a word `spec.width` wide, else `spec.glyph`. Painted by the
 --- one path above; `spec.tip` (also `b.__tip`, read on each hover) unless `spec.tips == false`.
@@ -127,22 +147,7 @@ function lib.HeaderButton(parent, spec)
   local b = type(CreateFrame) == "function" and CreateFrame("Button", nil, parent) or nil
   if not b then return nil end
   b.__owner, b.__tip = spec.owner, spec.tip
-  local path = artOf(spec.owner, spec.icon)
-  if path then
-    b:SetSize(SIZE, SIZE)
-    local tex = b:CreateTexture(nil, "OVERLAY")
-    tex:SetPoint("CENTER")
-    tex:SetSize(ART, ART)
-    tex:SetTexture(path)
-    b.icon = tex
-  else
-    b:SetSize(spec.label and spec.width or SIZE, SIZE)
-    local fs = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    if lib.__skinFont then lib.__skinFont(fs, spec.owner, lib.__skinOf and lib.__skinOf(spec.owner), "GameFontNormalSmall") end
-    fs:SetPoint("CENTER")
-    fs:SetText(spec.label or spec.glyph or "")
-    b.label = fs
-  end
+  dress(b, spec)
   paint(b, false)
   -- A word's color is read, not recorded, so an owned mark is painted again after each skin switch.
   local Skin = lib.__skinOf and lib.__skinOf(spec.owner)

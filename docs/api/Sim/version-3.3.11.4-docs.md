@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Sim-1.0` |
 | Files and minors | `Sim.lua` **3** · `SimTimeline.lua` **3** · `SimPanel.lua` **11** · `SimPanelRender.lua` **4** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `3.3.11.4` |
-| Shipped in | v1.105.0 (unreleased) |
+| Shipped in | v1.105.0 |
 | Status | **Current** |
 | Supersedes | [version 2.3.10.3](./version-2.3.10.3-docs.md) — the same surface without `SAMPLE` and `Sample`, which are new; the panel's title band carried the close mark alone, and the default panel title read `name .. " - Simulation"` and was no string a host could override. |
 | Superseded by | — |

@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Launcher-1.0` |
 | Files and minors | `Launcher.lua` minor **11** |
-| Shipped in | v1.105.0 (unreleased) |
+| Shipped in | v1.105.0 |
 | Status | **Current** |
 | Supersedes | [version 10](./version-10-docs.md) (v1.95.0 – v1.104.0) — the minimap button's tooltip sat where LibDBIcon's `getAnchors` put it, flush against the button. |
 | Superseded by | — |

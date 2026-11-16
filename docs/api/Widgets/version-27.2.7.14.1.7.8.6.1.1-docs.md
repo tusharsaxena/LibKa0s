@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **27** · `WidgetsDropdown.lua` **2** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **14** · `WidgetsDragHandleTip.lua` **1** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **1** |
-| Shipped in | v1.105.0 (unreleased) |
+| Shipped in | v1.105.0 |
 | Status | **Current** |
 | Supersedes | [version 27.1.6.13.7.8.5](./version-27.1.6.13.7.8.5-docs.md) (v1.103.0 – v1.104.0) — the drag handle's tooltip half was in `WidgetsDragHandle.lua`, and every library tooltip owned itself at an anchor: a dropdown entry's and the reorder handle's at `ANCHOR_RIGHT`, a drag strip's at `ANCHOR_TOP` or the cursor; and every window built its own header marks, with no settings mark; and the library drew no data bar. |
 | Superseded by | — |

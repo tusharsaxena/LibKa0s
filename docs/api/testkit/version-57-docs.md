@@ -9,7 +9,7 @@
 | Payload | `testkit/`, the files version 56 lists, plus `mock_screen.lua` |
 | Version | **57** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | unreleased (v1.105.0) |
+| First released in | v1.105.0 |
 | Status | **Current** |
 | Supersedes | [version 56](version-56-docs.md) — a frame held only by its registration could be collected, and no suite could fake a screen to place a tooltip on |
 | Superseded by | — |

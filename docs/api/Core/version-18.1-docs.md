@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **18** · `CorePixel.lua` minor **1** |
-| Shipped in | v1.105.0 (unreleased) |
+| Shipped in | v1.105.0 |
 | Status | **Current** |
 | Supersedes | [version 17.1](./version-17.1-docs.md) (v1.91.0 – v1.104.0) — the same members, with no settings-opener registry. |
 | Superseded by | — |

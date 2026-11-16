@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Perf-1.0` |
 | Files and minors | `Perf.lua` **16** · `PerfSampler.lua` **1** · `PerfCommands.lua` **1** · `PerfPanel.lua` **14** |
 | Version key | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>`, in load order — the same four numbers `lib.MODULES` reports |
-| Shipped in | v1.105.0 (unreleased) |
+| Shipped in | v1.105.0 |
 | Status | **Current** |
 | Supersedes | [version 16.1.1.13](./version-16.1.1.13-docs.md) (v1.92.0 – v1.104.0) — the panel's title band carried the close mark alone. |
 | Superseded by | — |

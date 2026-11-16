@@ -1,6 +1,6 @@
 # LibKa0s
 
-Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.110.0,
+Built to the **[Ka0s WoW Addon Standard](https://github.com/tusharsaxena/WowAddonStandards)**, v2.112.2,
 as a library repo. That is a scope of its own. What binds here is `library-stack-§7`'s applicability
 list, not the addon rule set, because there is no TOC, no player-facing README, no settings canvas and
 no install. [`CLAUDE.md`](CLAUDE.md) says which sections apply and which do not, and you should read it
@@ -82,7 +82,7 @@ LibStub major, and twenty-five of them ship today:
   value parser.
 - `LibKa0s-Launcher-1.0` builds the minimap button and the broker plugin as ONE LibDataBroker
   object, registered twice. Neither broker library is a dependency.
-- `LibKa0s-Options-1.0` has the most files: twenty-one, under one major. It holds the Blizzard
+- `LibKa0s-Options-1.0` has the most files: twenty-two, under one major. It holds the Blizzard
   settings-canvas shell, the translation from schema row to AceGUI widget, the page's chrome (the tab
   strip, the banner, the header block, the secondary strip and the nav rail), the two-column flow
   engine that lays a page out, the drawer that folds a row of choices under a header bar, the key binding model under a
@@ -112,7 +112,7 @@ modules and points you there. It does not restate them.
    registering anything when `Core.lua` is missing or older than the minor it needs. If `Options.lua`
    bails that way, `OptionsRegistry.lua`, `OptionsWidgets.lua`, `OptionsFlow.lua`, `OptionsIds.lua`, `OptionsIdSuggest.lua`, `OptionsIdList.lua`,
    `OptionsTabs.lua`, `OptionsTabbed.lua`, `OptionsHeader.lua`, `OptionsCombat.lua`, `OptionsCompose.lua`, `OptionsScroll.lua`, `OptionsNav.lua`,
-   `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua`, `OptionsSkinPicker.lua`, `OptionsSkinPickerRows.lua`, `OptionsSwitch.lua` and `OptionsMedia.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole twenty-one-file module
+   `OptionsDrawer.lua`, `OptionsKeybinds.lua`, `OptionsAppearance.lua`, `OptionsSkinPicker.lua`, `OptionsSkinPickerQueue.lua`, `OptionsSkinPickerRows.lua`, `OptionsSwitch.lua` and `OptionsMedia.lua` bail too, on their own `LibStub("LibKa0s-Options-1.0", true)` lookup, so the whole twenty-one-file module
    is absent instead of half-attached. `WidgetsDropdown.lua`, `WidgetsReorder.lua`, `WidgetsDragHandle.lua`, `WidgetsDragHandleTip.lua`, `WidgetsLineChart.lua`, `WidgetsAutocomplete.lua`, `WidgetsCopyWindow.lua`, `WidgetsHeader.lua` and `WidgetsBar.lua` do the same
    behind `Widgets.lua`, `SkinOwnerTokens.lua`, `SkinDefs.lua`, `SkinDefsOthers.lua`, `SkinPaint.lua`, `SkinPaintExtras.lua`, `SkinPaintHud.lua`, `SkinAceConfirm.lua`, `SkinPaintControls.lua`, `SkinEUI.lua` and `SkinAce.lua` behind `Skin.lua` (the extras, the HUD looks, the confirmation box, the controls and the AceGUI rows also behind `SkinPaint.lua`, whose painter helpers they use), `SlashParse.lua` behind `Slash.lua`, and `PerfSampler.lua`, `PerfCommands.lua` and
    `PerfPanel.lua` behind `Perf.lua`, `CorePixel.lua` behind `Core.lua`, `CalloutSettings.lua` behind `Callout.lua`, `WaypointArrowSettings.lua` behind `WaypointArrow.lua`, and `SimTimeline.lua`, `SimPanel.lua` and `SimPanelRender.lua` behind `Sim.lua`, and `IconBrowserWindow.lua` and `IconBrowser.lua` behind
@@ -291,8 +291,8 @@ somebody eventually runs without the pipeline.
 `testkit/` holds the registry, the assertions, the source loader and the universal half of the
 WoW-API mock. The whole collection shares it, and each addon vendors it as `tests/_kit/`. It is not a
 LibStub major and it never ships, but it does carry a plain revision integer, `Kit.VERSION` (exposed
-to suites as `KIT_VERSION`), so a consumer can say which copy it holds; v1.104.0 carries revision
-56. Its full surface is in
+to suites as `KIT_VERSION`), so a consumer can say which copy it holds; v1.105.0 carries revision
+57. Its full surface is in
 [`docs/api/testkit/`](docs/api/testkit/), indexed alongside the majors, and
 [`testkit/README.md`](./testkit/README.md) covers what it is and the vendoring discipline.
 
@@ -422,6 +422,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   OptionsKeybinds.lua -- the Keybindings tab and its binding model, same module, KEYBINDS_MINOR
   OptionsAppearance.lua -- the Skin tab: skin source, skin, font and texture, copy to every addon, APPEARANCE_MINOR
   OptionsSkinPicker.lua -- the first-run skin picker, same module, PICKER_MINOR of its own
+  OptionsSkinPickerQueue.lua -- the picker's queue every addon's picker shares, same module, QUEUE_MINOR
   OptionsSkinPickerRows.lua -- the picker's media, outline and scope rows, same module, ROWS_MINOR
   OptionsSwitch.lua  -- the switched sections (shownWhen, its any form), same module, SWITCH_MINOR
   OptionsMedia.lua   -- the Ka0sMedia_* preview pickers for fonts, bars, borders, backgrounds and sounds, MEDIA_MINOR

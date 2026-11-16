@@ -141,15 +141,12 @@ if not lib then return end
 -- Minor 9 (SG-L3 of the same bundle): O.SkinNotice, the one-time announcement that skins exist.
 -- Once per account, keyed by lib.SKIN_NOTICE_VERSION: the first addon to ask in a session claims it
 -- and shows the picker, every other addon records the version in its own store and stays quiet.
--- Minor 10 (R5-L3 of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND5): the title and the close mark
--- are anchored to the band S.Shell lays (the facade's Header) at y 0, where they sat TOP-anchored at
--- -8 and -6, off the band's middle and font-dependent.
--- Still minor 10, not yet vendored (R5-L4 of the same bundle, the owner's item 6): the open list
--- closes on a press outside it and its dropdown button, the window's own body, title, eye and gear
--- included; see AN OUTSIDE PRESS CLOSES THE LIST, at buildList.
--- Minor 11 (R6-L1 of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND6, the owner's images 62, 63
--- and 66): spec.preview, the preview contract; see THE PREVIEW, at the eye. Every minor-10 copy sits
--- in a vendored tree, so the minor moves although v1.85.0 is a local cut.
+-- Minor 10 (R5-L3 and R5-L4, the owner's item 6, of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND5): the
+-- title and the close mark sit on the band S.Shell lays (the facade's Header) at y 0, not TOP-anchored at -8
+-- and -6; the open list closes on a press outside it and its dropdown button, the window's own body, title,
+-- eye and gear included (AN OUTSIDE PRESS CLOSES THE LIST, at buildList).
+-- Minor 11 (R6-L1 of Ka0sAddonsCommonTasks docs/2026-11-03-SMOKE_ROUND6, the owner's images 62, 63, 66):
+-- spec.preview, the preview contract (THE PREVIEW, at the eye); moved within v1.85.0's local cut, as minor 10 was vendored.
 -- Minor 12: the queue's section and its header notes moved out, unchanged, to
 -- OptionsSkinPickerQueue.lua (LK-P1 of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS,
 -- the seam CLAUDE.md's band census named); this file reads it through lib.__pickerQueueKit. Still 12
@@ -1118,6 +1115,17 @@ function lib.__AttachSkinPicker(O, d)
     return fs
   end
 
+  --- Minor 12 (LibKa0s#86): the gear and the close are the header's marks (HeaderButtons), the gear's
+  --- click the one it had on the dropdown row; without HeaderButtons, the close alone.
+  local function buildMarks(f, title, core)
+    local Wd = LibStub("LibKa0s-Widgets-1.0", true)
+    local hb = Wd and type(Wd.HeaderButtons) == "function" and Wd.HeaderButtons(f, { owner = P.owner, point = "TOPRIGHT",
+      y = -6, close = hide, settingsTip = P.S.SETTINGS_TIP, settings = function() dropFocus(P); openSettings() end })
+    f.close, f.settings = hb and hb.close or (core and core.MakeCloseButton and core.MakeCloseButton(f, hide, P.owner)), hb and hb.settings
+    if f.close and not hb then f.close:SetPoint("TOPRIGHT", f, "TOPRIGHT", -6, -6) end
+    if P.Sk.Header then P.Sk.Header(f, { title = title, right = hb and hb.right or { f.close } }) end   -- minor 10
+  end
+
   local function buildChrome(f)
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     title:SetPoint("TOPLEFT", f, "TOPLEFT", 28, -8)
@@ -1137,14 +1145,7 @@ function lib.__AttachSkinPicker(O, d)
     f.scopeLabel = sectionLine(f)
     local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
     if core and type(core.ApplySkin) == "function" then core.ApplySkin(f, nil, P.owner) else P.Sk.Shell(f) end
-    -- Minor 12 (LibKa0s#86): the gear and the close are the header's marks (HeaderButtons), the gear's
-    -- click the one it had on the dropdown row; without HeaderButtons, the close alone.
-    local Wd = LibStub("LibKa0s-Widgets-1.0", true)
-    local hb = Wd and type(Wd.HeaderButtons) == "function" and Wd.HeaderButtons(f, { owner = P.owner, point = "TOPRIGHT",
-      y = -6, close = hide, settingsTip = P.S.SETTINGS_TIP, settings = function() dropFocus(P); openSettings() end })
-    f.close, f.settings = hb and hb.close or (core and core.MakeCloseButton and core.MakeCloseButton(f, hide, P.owner)), hb and hb.settings
-    if f.close and not hb then f.close:SetPoint("TOPRIGHT", f, "TOPRIGHT", -6, -6) end
-    if P.Sk.Header then P.Sk.Header(f, { title = title, right = hb and hb.right or { f.close } }) end   -- minor 10
+    buildMarks(f, title, core)
   end
 
   -- The Skin tab's rows live in OptionsSkinPickerRows.lua, which answers the three functions the

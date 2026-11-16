@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-IconBrowser-1.0` |
 | Files and minors | `IconBrowserSources.lua` minor **1** · `IconBrowserWindow.lua` minor **2** · `IconBrowser.lua` minor **2** |
-| Shipped in | v1.105.0 (unreleased) |
+| Shipped in | v1.105.0 |
 | Status | **Current** |
 | Supersedes | [version 1.1.1](./version-1.1.1-docs.md) (v1.86.0 – v1.104.0) — a cell's tooltip and the toolbar's (through the host's `AttachTooltip`) owned at `ANCHOR_RIGHT`. |
 | Superseded by | — |
