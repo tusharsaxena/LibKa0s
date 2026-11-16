@@ -10,7 +10,9 @@
 -- WHO CALLS IN. WidgetsDragHandle.lua reads lib.__dragTipKit (show, hide) at call time, on each
 -- hover, never caching it, so the newest copy of this file is every handle's. `show(handle, frame,
 -- spec, t, defaultPal)` shows descriptor `t` for the hovered `frame` of `handle`; `hide()` hides
--- it. Nothing else crosses the cut.
+-- it; `default(spec, key)` is a mark's descriptor where its host wrote none (still minor 1, SR-L2 of
+-- the same bundle's smoke round 1, ruling 3: every title-bar control carries a tooltip). Nothing
+-- else crosses the cut.
 --
 -- A file of the Widgets major, paired on the shell's minor with the same multi-file idiom as
 -- WidgetsDragHandle.lua itself.
@@ -149,4 +151,21 @@ local function dhHideTooltip()
   if GameTooltip and GameTooltip.Hide then GameTooltip:Hide() end
 end
 
-lib.__dragTipKit = { show = dhShowTooltip, hide = dhHideTooltip }
+-- A mark's own words (SR-L2), for a strip whose host wrote no descriptor for the mark nor for the
+-- strip; `spec.L` overrides any key (rawget, as every library string). The X's is LibKa0s-Tooltip-1.0's
+-- CloseTip for the strip's `owner`: "Close" unless that owner said otherwise.
+lib.DRAG_HANDLE_STRINGS = { HELP_TIP = "Drag to move", SETTINGS_TIP = "Open settings" }
+
+--- The library's descriptor for mark `key` (HELP_TIP, CLOSE_TIP, SETTINGS_TIP): its words as a title.
+local function dhDefaultTip(spec, key)
+  local L = type(spec.L) == "table" and spec.L or nil
+  local v = L and rawget(L, key)
+  if type(v) == "string" then return { title = v } end
+  if key == "CLOSE_TIP" then
+    local Tip = LibStub("LibKa0s-Tooltip-1.0", true)
+    return { title = Tip and type(Tip.CloseTip) == "function" and Tip.CloseTip(spec.owner) or "Close" }
+  end
+  return { title = lib.DRAG_HANDLE_STRINGS[key] }
+end
+
+lib.__dragTipKit = { show = dhShowTooltip, hide = dhHideTooltip, default = dhDefaultTip }

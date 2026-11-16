@@ -63,7 +63,16 @@
 --   3. Globals (UIParent, issecretvalue) are read bare at call time, so a suite's fake screen moves
 --      them after load.
 --
+-- -- THE TITLE-BAR TOOLTIP (still minor 1: SR-L2, the same bundle's smoke round 1, ruling 3) ------
+--
+-- Every control on a library window's title bar carries a tooltip, the close included (whose
+-- docblock said "none, as it has always been"). `AttachTitleTip(btn, words, owner)` hooks one onto a
+-- control: the game tooltip owned by it at ANCHOR_NONE, one line in the owner's `gtip.title`, placed
+-- by PlaceAttached above it, hidden on leave. Core.MakeCloseButton gives every close one, with
+-- `CloseTip(owner)`: CLOSE_STRINGS' "Close", or the owner's own words (SetCloseTip).
+--
 -- Depends on LibStub only. No frames of its own, no events, no addon framework, no SavedVariables.
+-- A title-bar tooltip reads LibKa0s-Core-1.0's skin facade at hover time when it is there.
 
 local MAJOR, MINOR = "LibKa0s-Tooltip-1.0", 1
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
@@ -429,4 +438,79 @@ function lib.Replace(tip)
   local last = type(tip) == "table" and rawget(tip, "__ka0sTip")
   if type(last) ~= "table" or not lib[last.kind] then return nil end
   return lib[last.kind](tip, last.a, last.b, last.c)
+end
+
+-- -- the title-bar tooltip (SR-L2) ---------------------------------------------------------------
+
+--- The close's words, keyed for a host override (rawget, as every library string).
+lib.CLOSE_STRINGS = { CLOSE_TIP = "Close" }
+
+-- An owner's own words for its close (SetCloseTip). Kept across a minor upgrade, as the groups are.
+lib.__closeTips = lib.__closeTips or {}
+
+--- Record `words` as what `owner`'s close controls say (a translation): every close built with that
+--- owner reads it on each hover, so one call reaches the ones already built. nil or "" clears it.
+--- @return boolean  whether it was recorded or cleared (a non-empty owner string)
+function lib.SetCloseTip(owner, words)
+  if type(owner) ~= "string" or owner == "" then return false end
+  lib.__closeTips[owner] = type(words) == "string" and words ~= "" and words or nil
+  return true
+end
+
+--- What `owner`'s close says: its own words (SetCloseTip), else CLOSE_STRINGS.CLOSE_TIP.
+function lib.CloseTip(owner)
+  local v = type(owner) == "string" and rawget(lib.__closeTips, owner)
+  if type(v) == "string" then return v end
+  return lib.CLOSE_STRINGS.CLOSE_TIP
+end
+
+local function titleWords(b)
+  local w = rawget(b, "__titleTip")
+  if type(w) == "function" then w = w(b) end
+  return type(w) == "string" and w ~= "" and w or nil
+end
+
+--- `owner`'s `gtip.title`, through Core's facade (a registered skin owner only), or nil.
+local function titleColor(owner)
+  local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
+  local S = core and type(core.__SkinFacade) == "function" and core.__SkinFacade(owner)
+  local c = S and type(S.Token) == "function" and S.Token("gtip.title")
+  return type(c) == "table" and c or nil
+end
+
+local function showTitle(b)
+  local tip, words = GameTooltip, titleWords(b)
+  if not (words and tip and tip.SetOwner) then return end
+  tip:SetOwner(b, "ANCHOR_NONE")
+  local c = titleColor(rawget(b, "__titleTipOwner"))
+  if c then tip:SetText(words, c[1], c[2], c[3], 1, true) else tip:SetText(words, nil, nil, nil, nil, true) end
+  tip:Show()
+  if lib.PlaceAttached(tip, b) then return end
+  tip:ClearAllPoints()
+  tip:SetPoint("BOTTOM", b, "TOP", 0, TIP_GAP)
+end
+
+local function hideTitle(b)
+  local tip = GameTooltip
+  if not (tip and tip.Hide) then return end
+  if type(tip.IsOwned) == "function" and not tip:IsOwned(b) then return end
+  tip:Hide()
+end
+
+--- Give title-bar control `btn` its tooltip: `words`, a string or a function(btn) read on each
+--- hover, in `owner`'s `gtip.title` (a registered skin owner; else the tooltip's own color), above
+--- the control (PlaceAttached; unreadable geometry, above by a relative point). Hooked
+--- (HookScript), so the control's own hover pair keeps running; a second call replaces only the
+--- words and the owner. For a control a window builds outside Widgets' HeaderButton, whose marks
+--- show their own `tip` the same way.
+--- @return table|nil  `btn`, or nil where it is not a frame that takes scripts
+function lib.AttachTitleTip(btn, words, owner)
+  if type(btn) ~= "table" or type(btn.HookScript) ~= "function" then return nil end
+  local hooked = rawget(btn, "__titleTip") ~= nil
+  rawset(btn, "__titleTip", words or false)
+  rawset(btn, "__titleTipOwner", owner)
+  if hooked then return btn end
+  btn:HookScript("OnEnter", showTitle)
+  btn:HookScript("OnLeave", hideTitle)
+  return btn
 end

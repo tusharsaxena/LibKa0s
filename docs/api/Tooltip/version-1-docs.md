@@ -41,6 +41,35 @@ the amendment; Ka0s Aura Master's `Anchors.PlaceAttached` is its own, unrelated 
 third argument is now `opts`. A string there is no table, so it reads as no options and moves
 nothing. Still minor 1: the major is new in this unreleased version.
 
+**Amended before the tag, smoke round 1 (`SR-L2`, ruling 3 of the same `SR1_SMOKE_ROUND1.md`).**
+Every title-bar control on every library window carries a tooltip, the debug console's included. The
+mechanism is here, beside the placer it uses: `AttachTitleTip`, and the close's words, `CLOSE_STRINGS`,
+`SetCloseTip` and `CloseTip` (*The title-bar tooltip*, below). Still minor 1.
+
+## The title-bar tooltip (`SR-L2`)
+
+`AttachTitleTip(btn, words, owner)` hooks a tooltip onto one title-bar control (`HookScript`, so the
+control's own hover pair keeps running): on enter, the game tooltip owned by `btn` at `ANCHOR_NONE`,
+one line, `words` (a string, or a function of `btn` read on each hover; empty or nil shows nothing),
+in `owner`'s `gtip.title` when `owner` is a registered skin owner (through LibKa0s-Core-1.0's facade,
+read at hover time; the tooltip's own color otherwise), wrapped, shown, then `PlaceAttached` above the
+control (unreadable geometry: `BOTTOM` on its `TOP` + `TIP_GAP`, never the cursor); on leave, hidden
+when `btn` still owns it. A second call replaces only the words and the owner. The words are kept on
+the control as the private `__titleTip` and `__titleTipOwner`.
+
+Who calls it: `Core.MakeCloseButton` (Core minor 18) for every close, with `CloseTip(addonName)`;
+Widgets' `HeaderButtons` for an adopted or host-made close (or the window's `closeTip`); the debug
+console for its Debug toggle and Diagnostics link (DebugLogWindow minor 5). Widgets' header marks
+show their own `tip` the same way (WidgetsHeader minor 1), and a HUD drag strip's marks through its
+descriptors, with the library's words where the host wrote none (WidgetsDragHandleTip minor 1). An
+addon's own title-bar controls take it at adoption.
+
+The close's words: `CLOSE_STRINGS` is `{ CLOSE_TIP = "Close" }`; `SetCloseTip(owner, words)` records
+`owner`'s own (a translation; `nil` or `""` clears; `false` for an owner that is not a non-empty
+string), read on each hover, so one call reaches closes already built; `CloseTip(owner)` answers
+them, else `CLOSE_STRINGS.CLOSE_TIP`. The per-owner table (`__closeTips`) is kept across a minor
+upgrade, as the groups are.
+
 ## What this major is
 
 **Three placers, a window-group registry and the pure solvers behind them.** It owns no frames, no
@@ -139,6 +168,10 @@ beyond the main window. Either way it sits outside the whole group. `opts.prefer
 | `PlaceLauncher(tip, button, opts)` | function | 1 | The launcher rule: `ClearAllPoints`, then `SetPoint(point, button, relativePoint, 0, ±TIP_GAP / tooltipScale)`. Answers the tooltip's point (`"TOPRIGHT"`, `"BOTTOM"`, ...), or nil with nothing placed. |
 | `SetGroup(window, companions)` | function | 1 | Registers `window` as a group's main frame with `companions` (a list, or a function answering one). `nil` registers the window alone; `false` removes the registration. Weak-keyed: a released window is not kept alive. |
 | `GroupOf(element)` | function | 1 | `frames, main, host` (above), or nil for a non-table. |
+| `AttachTitleTip(btn, words, owner)` | function | 1 | Hooks a title-bar control's tooltip (*The title-bar tooltip*): `words` a string or a function of `btn`, in `owner`'s `gtip.title`, above the control. Answers `btn`, or nil for a non-frame. A second call replaces the words and the owner. |
+| `CLOSE_STRINGS` | table | 1 | `{ CLOSE_TIP = "Close" }`, a close's default tooltip words. |
+| `SetCloseTip(owner, words)` | function | 1 | Records `owner`'s own words for its closes; `nil` or `""` clears. Answers `true`, or `false` for an owner that is not a non-empty string. |
+| `CloseTip(owner)` | function | 1 | `owner`'s words, else `CLOSE_STRINGS.CLOSE_TIP`. |
 | `Replace(tip)` | function | 1 | Runs `tip`'s last placement again with the same arguments; answers what that placer answers, or nil when nothing was placed on it yet. The last call is kept on the tooltip as the private `__ka0sTip`. |
 | `__solveBeside(gl, gr, elemTop, tipW, tipH, screenW, screenH, gap, prefer)` | function | 1 | Pure. `side, point, x, y` (`"right", "TOPLEFT", gr + gap, y` or `"left", "TOPRIGHT", gl - gap, y`, with `y` the element's top clamped so the tooltip stays on screen), or nil when neither side fits. Right fits when `gr + gap + tipW <= screenW`, left when `gl - gap - tipW >= 0`; `prefer = "left"` tries the left first. |
 | `__solveAttached(el, eb, er, et, tipW, tipH, screenW, screenH, gap)` | function | 1 | Pure. `side, point, x, y`: `"above", "BOTTOM", cx, et + gap` or `"below", "TOP", cx, eb - gap`, `cx` the element's center slid so the tooltip stays on screen (its left edge on the screen's when it is wider than the screen). Above (room when `et + gap + tipH <= screenH`) unless there is no room above and room below (`eb - gap - tipH >= 0`); with room on neither side, above. A tenth argument, the retired zone, is ignored. |
@@ -146,7 +179,7 @@ beyond the main window. Either way it sits outside the whole group. `opts.prefer
 
 Every solver figure is in screen units from the screen's bottom-left. The solvers touch no frame, so
 a host test can drive them directly. `MAJOR`, `MINOR` and `MODULES` are the usual bookkeeping, and
-`__groups` (the registry) is private. None of these, and none of the three `__solve*` (a leading
+`__groups` (the registry) and `__closeTips` are private. None of these, and none of the three `__solve*` (a leading
 `__` is outside `Kit.publicMembers`' surface), is in the member manifest, `members-1.json`, so a
 library-absent stub need not carry them; they are documented here because a host test may call them.
 
@@ -189,6 +222,7 @@ placer answers nil:
 | Launcher, LibDBIcon's tooltip on the addon's own button | `PlaceLauncher` | the button |
 | Skin picker toolbar (gear, eye, dropdown) | `PlaceAttached` | the control |
 | Header mark (`W.HeaderButtons`, every library window's title-bar strip) | `PlaceAttached` | the mark |
+| Title-bar control (`AttachTitleTip`: every close, the console's toggle and Diagnostics link; `SR-L2`) | `PlaceAttached` | the control |
 
 `tests/test_tooltip_sites.lua` drives each on the fake screen, and `tests/test_tooltip_guard.lua`
 holds the payload, outside the Settings-canvas Options files, to no `ANCHOR_CURSOR`,

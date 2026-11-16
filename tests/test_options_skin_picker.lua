@@ -959,3 +959,12 @@ test("skin picker: the header reads settings, close, the gear moved into it from
   assertEqual(table.concat(hb.order, ","), "settings,close")
   assertTrue(f.settings == hb.settings and f.close == hb.close, "the gear and the close are the header's")
 end)
+
+test("skin picker: every header control shows a tooltip on enter and hides it on leave", function()
+  -- red under: the picker's close with no tooltip (smoke round 1, ruling 3; SR-L2)
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
+  dofile("tests/fixture_title_tips.lua").check({ { "settings", f.settings }, { "close", f.close } }, "skin picker",
+    m.GameTooltip)
+end)

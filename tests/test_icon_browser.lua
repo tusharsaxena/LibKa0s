@@ -560,3 +560,12 @@ test("icon browser: the window opts out of the settings mark, with its reason", 
   assertTrue(type(hb.optOut) == "string" and hb.optOut:find("settings row", 1, true) ~= nil, tostring(hb.optOut))
   assertEqual(table.concat(hb.order, ","), "close")
 end)
+
+test("icon browser: its close shows a tooltip on enter and hides it on leave", function()
+  -- red under: the template's X, or the fallback's, with no tooltip (smoke round 1, ruling 3; SR-L2)
+  local m, B = boot()
+  openOn(B, nil)
+  local said = dofile("tests/fixture_title_tips.lua").check({ { "close", B.frame.headerButtons.close } }, "icon browser",
+    m.GameTooltip)
+  assertEqual(said.close, "Close")
+end)

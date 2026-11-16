@@ -136,7 +136,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1](./Tooltip/version-1-docs.md) | **`Tooltip.lua` 1** (the new major: `TIP_GAP`, `Own`, `PlaceBeside`, `PlaceAttached`, `PlaceLauncher`, `SetGroup`, `GroupOf`, `Replace` and the pure `__solve*`; LibKa0s#92, plan row LK-92A) | v1.105.0 | **Current** |
+| [1](./Tooltip/version-1-docs.md) | **`Tooltip.lua` 1** (the new major: `TIP_GAP`, `Own`, `PlaceBeside`, `PlaceAttached`, `PlaceLauncher`, `SetGroup`, `GroupOf`, `Replace` and the pure `__solve*`; LibKa0s#92, plan row LK-92A; `AttachTitleTip`, `CLOSE_STRINGS`, `SetCloseTip` and `CloseTip`, smoke round 1's SR-L2) | v1.105.0 | **Current** |
 
 ### `LibKa0s-Env-1.0`
 

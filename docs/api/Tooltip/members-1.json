@@ -6,12 +6,16 @@
     { "file": "Tooltip", "minor": 1 }
   ],
   "members": [
+    { "name": "AttachTitleTip", "kind": "function" },
+    { "name": "CLOSE_STRINGS", "kind": "table" },
+    { "name": "CloseTip", "kind": "function" },
     { "name": "GroupOf", "kind": "function" },
     { "name": "Own", "kind": "function" },
     { "name": "PlaceAttached", "kind": "function" },
     { "name": "PlaceBeside", "kind": "function" },
     { "name": "PlaceLauncher", "kind": "function" },
     { "name": "Replace", "kind": "function" },
+    { "name": "SetCloseTip", "kind": "function" },
     { "name": "SetGroup", "kind": "function" },
     { "name": "TIP_GAP", "kind": "number" }
   ]

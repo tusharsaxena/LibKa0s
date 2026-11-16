@@ -73,13 +73,13 @@
 Still `DebugLogWindow.lua` minor **5** and `DebugLog.lua` minor **23** (Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7, R9 C2).
 
 - **The marks.** The console's title bar is LibKa0s-Widgets-1.0's `HeaderButtons` (`WidgetsHeader.lua` 1): left to right **Copy, Clear, settings, close**, one size and one pitch (6 px), the art out of the host's copy where `addonName` answers it, else the COPY and CLEAR words and the settings glyph `*`. Settings sits beside the close, so `f.titleBarOffsets` reads `{ close = -6, settings = -30, clear = -54, copy = -78 }` with the art and `copy = -102` with the words (Core's 18 px close). `f.settingsButton` and `f.headerButtons` are recorded beside `f.closeButton`, `f.clearButton` and `f.copyButton`; an owned console's `S.Header` places the marks HeaderButtons laid.
-- **No tooltip on any of them** (`tips = false`), the documented choice the window has kept since the shell's minor 9: a tooltip under the title bar sits on the log's first line, which is where the chrome rule would put it (R9 C2).
+- **A tooltip on every title-bar control** (smoke round 1's `SR-L2`, ruling 3 of `SR1_SMOKE_ROUND1.md` in the same bundle, superseding R9 C2's "no tooltips"): Copy, Clear, settings, the Debug toggle and the Diagnostics link show `COPY_TIP` ("Copy the log"), `CLEAR_TIP` ("Clear the log"), `SETTINGS_TIP` ("Open settings"), `TOGGLE_TIP` ("Turn debug logging on or off") and `DIAGNOSTICS_TIP` ("Write a diagnostics report to this console"), new `lib.STRINGS` read through `D:Text` on each hover, so the descriptor's `L` overrides each (rawget); the close shows LibKa0s-Tooltip-1.0's `CloseTip(addonName)`, "Close". Each is owned by its control at `ANCHOR_NONE`, in an owned console's `gtip.title`, and attached ABOVE the control (`SR-L1`), so it no longer sits on the log's first line, which was R9 C2's reason.
 - **One paint path.** Every mark, the words included, paints `icon.tint` at rest and `icon.hot` under the pointer (Ka0s Default's 0.7 gray and white with no owner), where the console's own Copy and Clear drew `text.muted` and `text.accent`.
 - **What settings opens.** The descriptor's new optional **`onSettings`**, else the addon's registered opener, LibKa0s-Core-1.0 minor 18's `OpenSettings(addonName)`, which the launcher fills. The console stays open. The copy window's settings mark (Widgets' `CopyWindow` minor 6) is handed the same `onSettings`.
 - **The minimum width** reads the marks' reach, so it grows by the settings mark's 24 px where the marks are the wider side.
 - Without Widgets' `HeaderButtons`, the bar carries the close alone.
 
-**What a consumer owes at its re-vendor:** a suite that pinned `titleBarOffsets`, the console's minimum width or Copy and Clear's colors re-pins it; none is known outside this repo.
+**What a consumer owes at its re-vendor:** a suite that pinned `titleBarOffsets`, the console's minimum width or Copy and Clear's colors re-pins it, and one that pinned that hovering a console control shows nothing re-pins that; none is known outside this repo.
 
 ## What changed at version 22.10.1.4: the identity header names WaypointArrow
 
@@ -781,7 +781,7 @@ unchanged `DebugLog.lua` is still the one that draws (see
 [The empty `makeCloseButton`](#the-empty-makeclosebutton)), which means it has to carry **every**
 argument Core takes or the upgrade arrives half-applied.
 
-The icon controls also carry **no tooltip**. Version 9's anchored `ANCHOR_BOTTOM`, which put it on
+The icon controls also carried **no tooltip** from version 10 until version 23's `SR-L2` (*Also at this version* above), which gives every title-bar control one, above it. Version 9's anchored `ANCHOR_BOTTOM`, which put it on
 top of the first line of the log — the thing the window exists to show — every time the pointer
 crossed the title bar. The `label` argument is still passed and still used: it is what the
 **text-button fallback** draws when there is no art.
@@ -794,7 +794,7 @@ version-8 windows down to the pixel, and every existing field behaves exactly as
 | | | Since |
 |---|---|---|
 | `addonName` | The host's own addon FOLDER name, from its first vararg. Given it, both windows draw the collection's own art — `close`, `copy` and `clear` out of `LibKa0s-Media-1.0` — instead of a multiplication sign and two words. | **9** |
-| Icon title-bar controls | Copy and Clear become 18×18 icon buttons with 12px of art, matching the close control, so the three are one size and one pitch. **No tooltip** — see above; version 9 had one. | **9** |
+| Icon title-bar controls | Copy and Clear become 18×18 icon buttons with 12px of art, matching the close control, so the three are one size and one pitch. **No tooltip** — see above; version 9 had one, and version 23 gives one back, above the control. | **9** |
 | `frame.clearButton` / `frame.copyButton` | The two controls, recorded on the frame the way `titleBarOffsets` and `titleText` already are — the only handle a host's test has on which of the two shapes it got. | **9** |
 | `frame.diagnosticsButton` | The Diagnostics link beside the toggle, recorded the same way; see [What changed at this version](#what-changed-at-version-1821). | **16** |
 
@@ -846,7 +846,7 @@ rather than paying it with a tooltip over the log. A host that wants the words b
 | `lib.DIAG_MAX_PER_LIST` | **D1** | **40**. The default cap of `out:list`. |
 | `lib.MakeCloseButton` | 1 | Re-exported from Core, so a host that draws a close button on its own windows gets it from **one** factory rather than growing a lookalike. Forwards through the `core` table at call time, not captured at load. |
 | `lib.Serialize(value, opts)` | **D11** | A value as report lines, `lines, truncated`, written nowhere; values through Core's `SafeToString`. See [What changed at this version](#what-changed-at-this-version-the-report-seam-and-plain-text-copy-libka0s79). |
-| `lib.STRINGS` | 1 (`DIAGNOSTICS`: **16**; `REPORT_WRITTEN`: **23**) | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
+| `lib.STRINGS` | 1 (`DIAGNOSTICS`: **16**; `REPORT_WRITTEN`, `TOGGLE_TIP`, `DIAGNOSTICS_TIP`, `COPY_TIP`, `CLEAR_TIP`, `SETTINGS_TIP`: **23**) | Every user-visible string, keyed for the descriptor's `L` override. Tags (`[Debug]`, `[Init]`) are deliberately *not* here — log-scrapers and host tests read them, so they are structure rather than prose. |
 | `lib.GATE_MAX_KEYS` | **G1** | **256**. The most keys one change gate remembers before it is wiped. |
 | `lib.AT_ENABLE_MAX` | **G1** | **32**. The most lines the at-enable queue holds; later ones are dropped and counted. |
 | `lib.MODULES` | 1 | `{ DebugLog = <minor>, DebugLogDiagnostics = <minor>, DebugLogGates = <minor>, DebugLogWindow = <minor> }` — the live minor of every file in this major (the second from D1, the third from G1, the fourth from W1). |

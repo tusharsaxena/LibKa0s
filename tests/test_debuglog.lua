@@ -789,14 +789,27 @@ test("dbg: with addonName the title bar draws icons, and they are narrower than 
   assertEqual(f.titleBarOffsets.copy, -78, "-54 - 18 - 6, where a 42-wide word gave -102")
 end)
 
-test("dbg: an icon control carries NO tooltip", function()
+test("dbg: an icon control's tooltip opens above it, never under it on the log", function()
   -- Minor 9 gave them one, anchored under the control -- which put it on top of the first line of
-  -- the log, the thing the window exists to show, every time the pointer crossed the title bar.
-  -- red under: the ANCHOR_BOTTOM GameTooltip minor 9 shipped.
+  -- the log, the thing the window exists to show, every time the pointer crossed the title bar --
+  -- and the window's minor 5 then drew none. Smoke round 1's ruling 3 (SR-L2 of Ka0sAddonsCommonTasks
+  -- docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS) gives every title-bar control one, and its ruling 2 puts
+  -- each above its control (LibKa0s-Tooltip-1.0's PlaceAttached), so the log stays clear.
+  -- red under: the ANCHOR_BOTTOM GameTooltip minor 9 shipped, or the legacy `tooltipText` field.
   local D = newLog{ addonName = "TestHost" }
   D:Show()
-  assertEqual(D._frameForTest.copyButton.tooltipText, nil)
-  assertEqual(D._frameForTest.clearButton.tooltipText, nil)
+  local f = D._frameForTest
+  assertEqual(f.copyButton.tooltipText, nil)
+  assertEqual(f.clearButton.tooltipText, nil)
+  dofile("tests/fixture_title_tips.lua").record(function(rec)
+    for _, b in ipairs({ f.copyButton, f.clearButton }) do
+      rec.placed = 0
+      b:__fire("OnEnter")
+      assertEqual(rec.anchor, "ANCHOR_NONE", "owned at no anchor, never ANCHOR_BOTTOM")
+      assertEqual(rec.placed, 1, "placed above the control by the chrome rule")
+      b:__fire("OnLeave")
+    end
+  end)
 end)
 
 test("dbg: the close button is told the addon name too, not just copy and clear", function()

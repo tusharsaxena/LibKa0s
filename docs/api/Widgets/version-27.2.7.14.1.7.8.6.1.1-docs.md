@@ -43,11 +43,11 @@ Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7, r
 
 - **`HeaderButtons(bar, spec)`** builds a window's header marks on `bar`, right-aligned from its corner (`spec.point`, default `RIGHT`, at `spec.y`, default 0), `PAD` (6) in and `GAP` (6) apart, left to right `spec.extras` in their order, then settings, then close. It answers `hb = { close, settings, extras = { [key] = btn }, order = { keys, left to right }, offsets = { [key] = x }, right = { { frame, x }, ... }, optOut }` (`right` outermost first, which is what `S.Header`'s `right` takes, so an owned window's header places the same marks at the same offsets), and sets `(spec.frame or bar).headerButtons = hb`.
   - `owner` (string): the addon's folder: the Media icon folder, the skin owner when it registered one, and the settings key.
-  - `close` (function or `false`): the close mark's click, by default hiding `spec.frame` (else the bar's parent); `false` builds none. `makeClose(parent, onClick, owner)` replaces Core's `MakeCloseButton`, called with three arguments as standalone-windows asks; `closeButton` adopts a close the window already has.
+  - `close` (function or `false`): the close mark's click, by default hiding `spec.frame` (else the bar's parent); `false` builds none. `makeClose(parent, onClick, owner)` replaces Core's `MakeCloseButton`, called with three arguments as standalone-windows asks; `closeButton` adopts a close the window already has. Whichever it is carries a tooltip (`SR-L2`): `spec.closeTip`, else `spec.L`'s `CLOSE_TIP`, else LibKa0s-Tooltip-1.0's `CloseTip(owner)`, "Close" (Core's own close already shows that).
   - `settings` (nil, `true`, a function or `false`): nil or `true` opens the owner's registered opener (LibKa0s-Core-1.0 minor 18's `OpenSettings(owner)`, which the launcher fills); a function replaces it; **`false` opts out and needs `settingsOptOut`, the reason, or it raises** at the caller. `hideOnSettings` (a frame) is hidden first, for a window that would cover the settings panel. `settingsTip` replaces the tooltip.
   - `extras`: `{ { key, icon, label, width, glyph, tip, onClick }, ... }`, left to right.
-  - `tips = false`: no mark carries a tooltip (the debug console, R9 C2).
-  - `pad`, `gap`, `place = false` (record the offsets, anchor nothing), `L` (a locale override keyed to `HEADER_STRINGS`).
+  - Every mark shows its tooltip: the first cut's `tips = false` (the debug console's, R9 C2) is **retired**, accepted and not read, by smoke round 1's ruling 3 (`SR-L2`).
+  - `pad`, `gap`, `place = false` (record the offsets, anchor nothing), `L` (a locale override keyed to `HEADER_STRINGS`, and `CLOSE_TIP`).
 - **`HeaderButton(parent, spec)`**, the one mark factory: an 18 px (`HEADER.SIZE`) Button with `spec.icon`'s art at 12 px (`HEADER.ART`), out of the owner's copy through `LibKa0s-Media-1.0`; without the art, `spec.label` as a word `spec.width` wide, else `spec.glyph`. One paint path: a registered skin owner's mark through its facade's `Mark` (`icon.tint` at rest, `icon.hot` under the pointer, recorded, so a switch repaints it; a word's color read from the same tokens and painted again after each switch), every other mark in Ka0s Default's two colors (0.7, 0.7, 0.72 and white). `spec.tip`, kept as `btn.__tip` and read on each hover, is shown in the game tooltip in the owner's `gtip.title`, owned at `ANCHOR_NONE` and placed by the chrome rule, attached and centered **above the mark** (below only when the screen has no room above; `SR-L1`, smoke round 1), through `LibKa0s-Tooltip-1.0`'s `PlaceAttached` (without it, the same by a relative point).
 - **`HEADER`** `{ SIZE = 18, ART = 12, PAD = 6, GAP = 6 }` and **`HEADER_STRINGS`** `{ SETTINGS_TIP = "Open settings", SETTINGS_GLYPH = "*" }`. Read-only in effect.
 - **The `help` icon is not used** by any library window: twelve addons do not declare it, and a pruned icon draws blank (R9 M10). The settings mark draws `settings`, which every rostered addon declares; it joins `docs/releasing.md`'s *Library-drawn icons*.
@@ -56,13 +56,13 @@ Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7, r
 
 | Window | Marks, left to right | Settings |
 |---|---|---|
-| Debug console (`LibKa0s-DebugLog-1.0`, DebugLogWindow 5) | Copy, Clear, settings, close; **no tooltips** | the descriptor's `onSettings`, else the registry by `addonName` |
+| Debug console (`LibKa0s-DebugLog-1.0`, DebugLogWindow 5) | Copy, Clear, settings, close, each with a tooltip (`SR-L2`; the toggle and the Diagnostics link too) | the descriptor's `onSettings`, else the registry by `addonName` |
 | Copy window (`CopyWindow`, minor 6) | settings, close | hides itself first (FULLSCREEN), then the descriptor's `onSettings`, else the registry by `addonName` |
 | Perf panel (PerfPanel 14) | settings, close | `onSettings`, else the registry by `addonName` else `name` |
 | Sim panel (SimPanelRender 4) | settings, close (settings alone under `d.close == false`) | the registry by the Sim descriptor's `name`, the host's folder |
 | Skin picker (OptionsSkinPicker 12) | settings, close: **the gear moves from the dropdown row into the header** | the gear's own click: save the pending pick, then `spec.onSettings` or the page at `spec.page`, then close |
 | Icon browser (IconBrowserWindow 2) | close | **opted out**: opened from a settings row, the panel is already beneath it |
-| Drag handle, a HUD strip (`DragHandle`, minor 14) | settings (opt-in), close, help | **`spec.settings = true`** (or a function) builds it, left of the X; `onSettings`, else the registry by `settingsOwner` or `owner` |
+| Drag handle, a HUD strip (`DragHandle`, minor 14) | settings (opt-in), close, help, each with a tooltip (the library's words without the host's, `SR-L2`) | **`spec.settings = true`** (or a function) builds it, left of the X; `onSettings`, else the registry by `settingsOwner` or `owner` |
 
 ### `CopyWindow` (minor 6)
 
@@ -72,12 +72,17 @@ The title bar's marks are `HeaderButtons`' (settings beside the close), and the 
 
 `spec.settings` (true, or a function) builds a settings mark, the close mark's twin in frame, art size, tint, drag scripts and right-click pass-through, anchored left of the X, else of the "?", else the corner, and each side of the label keeps its frame clear (the reserve grows by `HELP_HIT + CLOSE_GAP`, as for the X). A left click calls the function, else `spec.onSettings`, else LibKa0s-Core-1.0's `OpenSettings(spec.settingsOwner or spec.owner)`. `spec.settingsIcon` is its art (else an owned strip's Ka0s `settings` icon, else the client's options button) and `spec.settingsTooltip` its tooltip (else `spec.tooltip`). **Opt-in for this run** (R4 Q4): a third mark on every HUD strip would widen it at re-vendor, so the adoption phase turns it on per addon. Without `spec.settings` the strip is exactly minor 13's in this respect.
 
+### Every title-bar control carries a tooltip (`SR-L2`, smoke round 1, ruling 3)
+
+Still WidgetsHeader **1**, DragHandle **14** and WidgetsDragHandleTip **1**. Every library window's title-bar control shows a tooltip on hover, above it (`SR-L1`), in the owner's `gtip.title`, and hides it on leave; the windows' controls, audited, are the table above plus a toast's close (Core's). On `HeaderButtons`, every mark shows its `tip` and every close its close tooltip (above). On a HUD strip, a mark whose host wrote no descriptor for it nor for the strip now shows the library's words, **`DRAG_HANDLE_STRINGS`** (new) `{ HELP_TIP = "Drag to move", SETTINGS_TIP = "Open settings" }`, and on the X LibKa0s-Tooltip-1.0's `CloseTip(owner)`; a new **`spec.L`** overrides `HELP_TIP`, `CLOSE_TIP` and `SETTINGS_TIP` (rawget). A host's `helpTooltip`, `closeTooltip`, `settingsTooltip` and `tooltip` win as before, and a strip with no descriptor still shows nothing on the strip itself. `tests/fixture_title_tips.lua` is the acceptance check each window's suite runs.
+
 ### What a consumer owes at 27.2.7.14.1.7.8.6.1
 
 - A host whose tests load library files by name adds `WidgetsHeader.lua` after `WidgetsCopyWindow.lua` (PGFE, WhatGroup and the Skin Tester's hand-written loaders).
 - A suite that pinned a library window's title-bar frames, the console's `titleBarOffsets` (Clear and Copy move 24 px inward for the settings mark) or the skin picker's gear on its dropdown row re-pins it.
 - The library windows' settings marks work from the re-vendor alone where the host's launcher `name` is its windows' `addonName` (R9 C8; checked at each re-vendor).
 - `W.HeaderButtons` for an addon's own windows is adoption (LibKa0s#86's open adoption), not re-vendor.
+- A suite that pinned that a library close, a console control or a descriptor-less strip mark shows no tooltip re-pins it (`SR-L2`).
 
 ## What changed at version 27.2.7.14.1.7.8.5: the library's tooltips go through the placers (`LK-92B`, LibKa0s#92)
 
@@ -1068,6 +1073,7 @@ library's.
 | `HeaderButton(parent, spec)` | `WidgetsHeader` **1** | One header mark: art, word or glyph, the one paint path, an optional tooltip above it. |
 | `HEADER` | `WidgetsHeader` **1** | `{ SIZE = 18, ART = 12, PAD = 6, GAP = 6 }`. Read-only in effect. |
 | `HEADER_STRINGS` | `WidgetsHeader` **1** | `{ SETTINGS_TIP, SETTINGS_GLYPH }`, the strip's words; a host overrides them through `spec.L`. |
+| `DRAG_HANDLE_STRINGS` | `WidgetsDragHandleTip` **1** | `{ HELP_TIP = "Drag to move", SETTINGS_TIP = "Open settings" }`, a strip mark's words where its host wrote no descriptor; `spec.L` overrides them (and `CLOSE_TIP`). |
 | `CopyWindow(descriptor)` | **6** (in `WidgetsCopyWindow` **1** from 16; the skin owner **Since 16**; the grip's skin **Since CopyWindow 2**; `onSettings` and the settings mark **Since CopyWindow 6**) | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
 | `IconText(icon[, size[, width]])` | **22** | Inline `\|T` markup for Blizzard icon art, cropped 5..59 of 64 a side. See *What changed at version 22.5.12.6.7.5*. |
 | `ContextMenu(anchor, rows[, opts])` | **21** (`submenu`, `radio`, `selected` and `opts.check` **Since 23**) | Opens the shared popup menu on `rows` from `anchor`, a row with `submenu` opening a child menu beside it. Answers the menu (depth 1), or nil with no anchor or no rows. See *What changed at version 21.5.12.6.6.4* and *What changed at this version*. |

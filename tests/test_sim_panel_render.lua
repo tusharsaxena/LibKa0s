@@ -643,3 +643,12 @@ test("sim panel render: the title band reads settings, close, opening the host's
   alone.Show()
   assertEqual(table.concat(alone.Frame().headerButtons.order, ","), "settings", "d.close == false: settings alone")
 end)
+
+test("sim panel render: every title-band control shows a tooltip on enter and hides it on leave", function()
+  -- red under: SimPanelRender's close with no tooltip (smoke round 1, ruling 3; SR-L2)
+  local p = newPanel({ row("a", "ready", true) })
+  p.Show()
+  local f = p.Frame()
+  dofile("tests/fixture_title_tips.lua").check({ { "settings", f.settingsButton }, { "close", f.closeButton } }, "sim panel",
+    mocks.GameTooltip)
+end)

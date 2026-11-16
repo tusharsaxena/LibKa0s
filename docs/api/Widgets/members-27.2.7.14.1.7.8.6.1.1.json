@@ -30,6 +30,7 @@
     { "name": "ContextMenu", "kind": "function" },
     { "name": "CopyWindow", "kind": "function" },
     { "name": "DRAG_HANDLE", "kind": "table" },
+    { "name": "DRAG_HANDLE_STRINGS", "kind": "table" },
     { "name": "DockTestStrip", "kind": "function" },
     { "name": "DragHandle", "kind": "function" },
     { "name": "Dropdown", "kind": "function" },

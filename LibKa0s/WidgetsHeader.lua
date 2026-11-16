@@ -25,16 +25,19 @@
 --
 -- The close mark stays Core.MakeCloseButton's, called with three arguments (standalone-windows,
 -- *The Ka0s window edge*), or the host's own factory (`makeClose`), or a button the window already
--- has (`closeButton`, the icon browser's template X). Its tooltip is none, as it has always been.
+-- has (`closeButton`, the icon browser's template X). Whichever it is, it says "Close"
+-- (LibKa0s-Tooltip-1.0's CloseTip for the owner, or the window's `closeTip`), attached above it in
+-- the owner's `gtip.title` by that major's AttachTitleTip; until smoke round 1's ruling 3 (SR-L2 of
+-- the same bundle) it said nothing.
 --
 -- ── TOOLTIPS ─────────────────────────────────────────────────────────────────────────────────
 --
 -- A mark with a `tip` shows it in the game tooltip, owned at ANCHOR_NONE and placed by the chrome
 -- rule, attached and centered ABOVE the mark (below only without room above; SR-L1 of the same
 -- bundle's smoke round 1), through LibKa0s-Tooltip-1.0's PlaceAttached (read at hover time; without
--- it, above by a relative point, never at the cursor). `tips = false` draws
--- none: the debug console's choice (DebugLogWindow.lua's makeIconButton note, research note R9 C2),
--- where a tooltip under the title bar sits on the log's first line.
+-- it, above by a relative point, never at the cursor). Every mark carries one (SR-L2, ruling 3):
+-- the first cut's `tips = false`, the debug console's, is retired and accepted unread, because a
+-- tooltip above the title bar no longer sits on the log's first line (research note R9 C2's case).
 --
 -- A file of the Widgets major, paired on the shell's minor with the same multi-file idiom as
 -- WidgetsCopyWindow.lua. Depends on LibStub and the Widgets shell; Core, Media, Skin and Tooltip are
@@ -139,9 +142,9 @@ end
 
 --- One header mark (minor 1): a SIZE-square Button with `spec.icon`'s art at ART, out of the owner's
 --- copy; without the art, `spec.label` as a word `spec.width` wide, else `spec.glyph`. Painted by the
---- one path above; `spec.tip` (also `b.__tip`, read on each hover) unless `spec.tips == false`.
+--- one path above; `spec.tip` (also `b.__tip`, read on each hover) is its tooltip.
 --- @param parent table
---- @param spec table  { owner, icon, label, width, glyph, tip, tips, onClick(btn, button) }
+--- @param spec table  { owner, icon, label, width, glyph, tip, onClick(btn, button) }
 --- @return table|nil  the Button (`.icon` or `.label`), nil where the client cannot make one
 function lib.HeaderButton(parent, spec)
   spec = type(spec) == "table" and spec or {}
@@ -153,14 +156,13 @@ function lib.HeaderButton(parent, spec)
   -- A word's color is read, not recorded, so an owned mark is painted again after each skin switch.
   local Skin = lib.__skinOf and lib.__skinOf(spec.owner)
   if Skin and lib.__onSkin then lib.__onSkin(Skin, spec.owner, b, function(t) paint(t, false) end) end
-  local tips = spec.tips ~= false
   b:SetScript("OnEnter", function(self)
     paint(self, true)
-    if tips then showTip(self) end
+    showTip(self)
   end)
   b:SetScript("OnLeave", function(self)
     paint(self, false)
-    if tips then hideTip(self) end
+    hideTip(self)
   end)
   local onClick = spec.onClick
   b:SetScript("OnClick", function(self, button)
@@ -192,12 +194,29 @@ local function settingsClick(spec)
   end
 end
 
+--- The close mark's tooltip (SR-L2): the window's `closeTip` or `spec.L`'s CLOSE_TIP, else the
+--- Tooltip major's CloseTip for the owner, read on each hover. Core's close already carries that; an
+--- adopted or a host-made close gets it here, and a window's own words replace either.
+local function tipClose(btn, spec)
+  local Tip = LibStub("LibKa0s-Tooltip-1.0", true)
+  if not (btn and Tip and type(Tip.AttachTitleTip) == "function") then return btn end
+  local L = type(spec.L) == "table" and spec.L or nil
+  local own = spec.closeTip or (L and rawget(L, "CLOSE_TIP"))
+  if type(own) == "string" and own ~= "" then
+    Tip.AttachTitleTip(btn, own, spec.owner)
+  elseif rawget(btn, "__titleTip") == nil then
+    local owner = spec.owner
+    Tip.AttachTitleTip(btn, function() return Tip.CloseTip(owner) end, owner)
+  end
+  return btn
+end
+
 --- The close mark: the window's own (`closeButton`), else the host's factory or Core's, built with
 --- the owner; nil where `close == false` or nothing can build one.
 local function buildClose(bar, spec)
-  if spec.closeButton ~= nil then return spec.closeButton or nil end
-  if spec.close == false then return nil end
   local core = LibStub("LibKa0s-Core-1.0", true)
+  if spec.closeButton ~= nil then return tipClose(spec.closeButton or nil, spec) end
+  if spec.close == false then return nil end
   local make = spec.makeClose or (core and core.MakeCloseButton)
   if type(make) ~= "function" then return nil end
   local onClose = spec.close
@@ -205,7 +224,7 @@ local function buildClose(bar, spec)
     local f = spec.frame or (type(bar.GetParent) == "function" and bar:GetParent())
     onClose = function() if f and f.Hide then f:Hide() end end
   end
-  return make(bar, onClose, spec.owner)
+  return tipClose(make(bar, onClose, spec.owner), spec)
 end
 
 --- The settings mark, or nil where the window opted out (`settings = false`, with its reason).
@@ -217,7 +236,7 @@ local function buildSettings(bar, spec)
     return nil
   end
   return lib.HeaderButton(bar, { owner = spec.owner, icon = "settings", glyph = text(spec, "SETTINGS_GLYPH"),
-    tip = spec.settingsTip or text(spec, "SETTINGS_TIP"), tips = spec.tips, onClick = settingsClick(spec) })
+    tip = spec.settingsTip or text(spec, "SETTINGS_TIP"), onClick = settingsClick(spec) })
 end
 
 --- Place `list` (outermost first) from `bar`'s corner in: `spec.point` (RIGHT) at `spec.y` (0), PAD
@@ -248,14 +267,15 @@ end
 ---                           false opts out and needs `settingsOptOut`, the reason, or it raises
 ---   hideOnSettings frame    optional: hidden before settings opens (a FULLSCREEN window)
 ---   settingsTip    string   optional: the settings mark's tooltip (default HEADER_STRINGS.SETTINGS_TIP)
----   extras         table    { { key, icon, label, width, glyph, tip, onClick }, ... }, left to right
----   tips           bool     false: no mark carries a tooltip (the debug console)
+---   closeTip       string   optional: the close mark's tooltip (default Tooltip's CloseTip(owner), "Close")
+---   extras         table    { { key, icon, label, width, glyph, tip, onClick }, ... }, left to right;
+---                           every mark shows its `tip` (`tips = false` is retired, accepted unread)
 ---   point, y       anchor   the corner point (RIGHT) and its y (0): a frame with no title bar passes
 ---                           TOPRIGHT and the band's middle
 ---   pad, gap       number   the corner inset (6) and the gap between marks (6)
 ---   place          bool     false: record the offsets, anchor nothing (a template's own close)
 ---   frame          frame    the window; `frame.headerButtons` is set to the answer (else `bar`'s)
----   L              table    optional locale override, keyed to HEADER_STRINGS
+---   L              table    optional locale override, keyed to HEADER_STRINGS (and CLOSE_TIP)
 ---
 --- @return table  { close, settings, extras = { [key] = btn }, order = { keys, left to right },
 ---                  offsets = { [key] = x from the corner, negative }, right = { { frame, x }, ... }
@@ -272,7 +292,7 @@ function lib.HeaderButtons(bar, spec)
   for i = #extras, 1, -1 do
     local x = extras[i]
     local b = lib.HeaderButton(bar, { owner = spec.owner, icon = x.icon, label = x.label, width = x.width,
-      glyph = x.glyph, tip = x.tip, tips = spec.tips, onClick = x.onClick })
+      glyph = x.glyph, tip = x.tip, onClick = x.onClick })
     if b then
       hb.extras[x.key] = b
       list[#list + 1] = { key = x.key, btn = b, width = x.width }

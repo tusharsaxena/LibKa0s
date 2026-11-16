@@ -33,6 +33,14 @@ as long as any consumer could have had this major".
 
 **What a consumer owes at its re-vendor:** nothing. Core is parity-checked by no host.
 
+## Also at this version: the close's tooltip (`SR-L2`, smoke round 1)
+
+Still `Core.lua` minor **18**: ruling 3 of the same bundle's `SR1_SMOKE_ROUND1.md`, every title-bar control on every library window carries a tooltip. No Core member is added.
+
+- **`MakeCloseButton`'s close says "Close".** Its docblock said it had no tooltip, "as it has always been"; that ends. It is `LibKa0s-Tooltip-1.0`'s `AttachTitleTip` with that major's `CloseTip(addonName)` (`CLOSE_STRINGS.CLOSE_TIP`, "Close", or the owner's own words through `SetCloseTip`), resolved at call time: on hover the game tooltip owned by the close at `ANCHOR_NONE`, one line in the owner's `gtip.title` when `addonName` is a registered skin owner, attached and centered **above** the close by `PlaceAttached`, hidden on leave. It is hooked (`HookScript`) after the skin's own hover pair, so the rest and hover colors are unchanged. A payload without the Tooltip major builds the close with no tooltip, as before. See the Tooltip 1 document's *The title-bar tooltip*.
+
+**What a consumer owes at its re-vendor:** a suite that hovers a library close and pinned that nothing shows re-pins it.
+
 ## What changed at version 17.1: the pixel edges peel (FU-L2)
 
 A pure move, on the seam `CLAUDE.md`'s census named (FU-L2 of Ka0sAddonsCommonTasks `docs/2026-11-06-FOLLOWUPS_V1_91/`); no public or internal member and no behavior changes, so `members-17.1.json` lists the same names as version 16.
@@ -511,7 +519,7 @@ Read straight off the LibStub table — `LibStub("LibKa0s-Core-1.0").SafeToStrin
 | `RegisterSettingsOpener(owner, fn)` | **18** | Record `fn` as how `owner`'s settings open (LibKa0s-Launcher-1.0's `New` calls it with the addon's folder name). Answers whether it was recorded. See *What changed at this version*. |
 | `HasSettings(owner)` | **18** | Whether `owner` has a registered settings opener. |
 | `OpenSettings(owner, ...)` | **18** | Call `owner`'s opener under `pcall`; `true` when it ran clean, `false` with none or after a raise. Every library window's settings mark calls this. |
-| `MakeCloseButton(parent, onClick[, addonName])` | 1 (3rd arg: **6**) | The close control a Ka0s window closes with, returned unanchored for the caller to place. Returns `nil` where `CreateFrame` is unavailable (headless harness, or a load path with no UI). With `addonName` it draws the collection's own `close` icon; without, the multiplication sign. A registered skin owner's `addonName` also colors it from that owner's skin (`close.rest`, `close.hot`; **13**). See [Which close control you get](#which-close-control-you-get). |
+| `MakeCloseButton(parent, onClick[, addonName])` | 1 (3rd arg: **6**) | The close control a Ka0s window closes with, returned unanchored for the caller to place. From **18** it carries a "Close" tooltip above it (LibKa0s-Tooltip-1.0's `CloseTip(addonName)`, in the owner's `gtip.title`). Returns `nil` where `CreateFrame` is unavailable (headless harness, or a load path with no UI). With `addonName` it draws the collection's own `close` icon; without, the multiplication sign. A registered skin owner's `addonName` also colors it from that owner's skin (`close.rest`, `close.hot`; **13**). See [Which close control you get](#which-close-control-you-get). |
 | `MODULES` | 1 | `{ Core = <minor> }` — the live minor of every file in this major. The in-game answer to "which version am I actually running?", and the value that picks this document. |
 | `lib:New(descriptor)` | 1 | Build a prefixed chat printer for one host. See below. |
 

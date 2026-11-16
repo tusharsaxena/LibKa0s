@@ -10,11 +10,16 @@
 -- panel, the skin picker and the icon browser (its recorded opt-out) in their own window suites
 -- (tests/test_sim_panel_render.lua, tests/test_options_skin_picker.lua, tests/test_icon_browser.lua),
 -- whose benches they share: built here too, the three extra benches tipped the run's leak gate.
+--
+-- Smoke round 1, ruling 3 (SR-L2 of the same bundle): every title-bar control carries a tooltip, the
+-- console's included, so each acceptance case also runs tests/fixture_title_tips.lua's check, every
+-- control showing a non-empty tooltip on enter and hiding it on leave.
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertNil = T.test, T.assertEqual, T.assertTrue, T.assertNil
 local mocks = T.mocks
 local W, core = T.widgets, T.core
+local TitleTips = dofile("tests/fixture_title_tips.lua")
 
 local seq = 0
 local function nextName(stem)
@@ -209,8 +214,9 @@ test("header buttons: the art comes from the owner's copy, else the word, else t
   assertEqual(plain.offsets.copy, -54, "the word's own width")
 end)
 
-test("header buttons: a mark's tooltip is attached above it, and tips = false draws none", function()
-  -- red under: a mark showing its tooltip at an anchor, or passing the retired "top" zone (SR-L1)
+test("header buttons: a mark's tooltip is attached above it, and tips = false is retired", function()
+  -- red under: a mark showing its tooltip at an anchor, or passing the retired "top" zone (SR-L1);
+  -- and under WidgetsHeader's first cut, where `tips = false` drew none (smoke round 1, ruling 3)
   spyAttached(function(calls)
     local hb = W.HeaderButtons(bar(), { owner = nextName() })
     hb.settings:__fire("OnEnter")
@@ -221,8 +227,64 @@ test("header buttons: a mark's tooltip is attached above it, and tips = false dr
     hb.settings:__fire("OnLeave")
     local quiet = W.HeaderButtons(bar(), { owner = nextName(), tips = false })
     quiet.settings:__fire("OnEnter")
-    assertEqual(#calls, 1, "no tooltip")
+    assertEqual(#calls, 2, "a retired `tips = false` silences nothing")
+    quiet.settings:__fire("OnLeave")
   end)
+end)
+
+-- ── the close mark's tooltip (Core minor 18 and Tooltip minor 1, SR-L2) ──────────────────────────────────────────
+
+test("header buttons: Core's close mark says Close above itself, and an owner's words replace it", function()
+  -- red under: Core.MakeCloseButton's close with no tooltip ("as it has always been")
+  local owner = nextName("HBClose")
+  local close = core.MakeCloseButton(bar(), function() end, owner)
+  local said = TitleTips.check({ { "close", close } }, "Core's close")
+  assertEqual(said.close, "Close")
+  assertEqual(T.tooltip.CLOSE_STRINGS.CLOSE_TIP, "Close")
+  spyAttached(function(calls)
+    close:__fire("OnEnter")
+    assertEqual(#calls, 1, "placed by the chrome rule")
+    assertTrue(calls[1].el == close, "against the close")
+    close:__fire("OnLeave")
+  end)
+  assertTrue(T.tooltip.SetCloseTip(owner, "Fermer"))
+  assertEqual(T.tooltip.CloseTip(owner), "Fermer")
+  assertEqual(TitleTips.check({ { "close", close } }, "Core's close").close, "Fermer", "read at hover time")
+  local plain = core.MakeCloseButton(bar(), function() end)
+  assertEqual(TitleTips.check({ { "close", plain } }, "an unnamed close").close, "Close")
+  assertTrue(T.tooltip.SetCloseTip(owner, nil), "nil clears the owner's words")
+  assertEqual(T.tooltip.CloseTip(owner), "Close")
+  assertEqual(T.tooltip.SetCloseTip("", "x"), false, "an empty owner is refused")
+end)
+
+test("header buttons: a title-bar tooltip is drawn in the owner's gtip.title", function()
+  -- red under: the close's tooltip in the tooltip's own default color
+  local Skin = T.skin
+  local owner = nextName("HBTipColor")
+  Skin:RegisterOwner(owner)
+  local want = Skin:Token(owner, "gtip.title")
+  assertTrue(type(want) == "table", "the owner answers gtip.title")
+  local close = core.MakeCloseButton(bar(), function() end, owner)
+  TitleTips.record(function(rec)
+    close:__fire("OnEnter")
+    assertEqual(rec.text, "Close")
+    assertTrue(rec.color and rec.color[1] == want[1] and rec.color[2] == want[2] and rec.color[3] == want[3],
+      "the owner's gtip.title")
+    close:__fire("OnLeave")
+  end)
+end)
+
+test("header buttons: an adopted or host-made close carries the Close tooltip too", function()
+  -- red under: HeaderButtons recording a close it did not build with no tooltip on it
+  local adopted = mocks.CreateFrame("Button", nil, mocks.UIParent)
+  local hb = W.HeaderButtons(bar(), { owner = nextName(), closeButton = adopted, settings = false,
+    settingsOptOut = "a test", place = false })
+  local made = W.HeaderButtons(bar(), { owner = nextName(),
+    makeClose = function(parent) return mocks.CreateFrame("Button", nil, parent) end })
+  local said = TitleTips.check({ { "adopted close", hb.close }, { "made close", made.close },
+    { "made settings", made.settings } }, "HeaderButtons")
+  assertEqual(said["adopted close"], "Close")
+  assertEqual(said["made close"], "Close")
 end)
 
 -- ── the drag handle (WidgetsDragHandle minor 14), opt-in ─────────────────────────────────────
@@ -249,6 +311,27 @@ DH.test("header buttons: a drag strip carries no settings mark unless it opts in
   assertEqual(own, 1, "a function is the override")
 end)
 
+DH.test("header buttons: a drag strip's marks each carry a tooltip, the library's words without the host's", function()
+  -- red under: WidgetsDragHandle minor 14's first cut, where a strip with no descriptor showed nothing
+  -- on its "?", its X or its settings mark (smoke round 1, ruling 3)
+  local h = W.DragHandle(mocks.UIParent, DH.baseSpec({ onClose = function() end, settings = true }))
+  local said = TitleTips.check({ { "help", h.help }, { "close", h.close }, { "settings", h.settings } }, "drag strip")
+  assertEqual(said.help, W.DRAG_HANDLE_STRINGS.HELP_TIP)
+  assertEqual(said.close, "Close")
+  assertEqual(said.settings, W.HEADER_STRINGS.SETTINGS_TIP)
+  local own = W.DragHandle(mocks.UIParent, DH.baseSpec({ onClose = function() end, settings = true,
+    tooltip = { title = "Buffs" }, closeTooltip = { title = "Hide the bar" },
+    L = { SETTINGS_TIP = "Configure" } }))
+  local mine = TitleTips.check({ { "help", own.help }, { "close", own.close }, { "settings", own.settings } }, "a host's strip")
+  assertEqual(mine.help, "Buffs", "the strip's descriptor still wins on the mark")
+  assertEqual(mine.close, "Hide the bar")
+  assertEqual(mine.settings, "Buffs", "a host descriptor wins over the library's words")
+  local worded = W.DragHandle(mocks.UIParent, DH.baseSpec({ onClose = function() end, settings = true,
+    L = { SETTINGS_TIP = "Configure", CLOSE_TIP = "Hide", HELP_TIP = "Move me" } }))
+  local w = TitleTips.check({ { "help", worded.help }, { "close", worded.close }, { "settings", worded.settings } }, "worded")
+  assertEqual(w.help .. "," .. w.close .. "," .. w.settings, "Move me,Hide,Configure", "spec.L, rawget-keyed")
+end)
+
 -- ── acceptance: every library window ─────────────────────────────────────────────────────────
 
 --- Assert `hb` reads ... settings, close at its right end, both present.
@@ -261,7 +344,9 @@ local function assertSettingsThenClose(hb, label)
   assertEqual(hb.order[n - 1], "settings", label .. ": settings beside it")
 end
 
-test("header buttons: the debug console reads Copy, Clear, settings, close, with no tooltips", function()
+test("header buttons: the debug console reads Copy, Clear, settings, close, every control with a tooltip", function()
+  -- red under: DebugLogWindow minor 5's first cut, `tips = false` (research note R9 C2), superseded
+  -- by smoke round 1's ruling 3: the toggle, the Diagnostics link and every mark carry one
   local owner, n = nextName("HBConsole"), 0
   core.RegisterSettingsOpener(owner, function() n = n + 1 end)
   local D = T.debuglog:New{ name = owner, addonName = owner, title = "Host", font = "Interface\\Fonts\\ARIALN.TTF",
@@ -271,13 +356,40 @@ test("header buttons: the debug console reads Copy, Clear, settings, close, with
   assertSettingsThenClose(f.headerButtons, "console")
   assertEqual(joined(f.headerButtons.order), "copy,clear,settings,close")
   assertTrue(f.settingsButton == f.headerButtons.settings)
+  local said = TitleTips.check({ { "Debug toggle", f.debugToggleBtn }, { "Diagnostics", f.diagnosticsButton },
+    { "Copy", f.copyButton }, { "Clear", f.clearButton }, { "settings", f.settingsButton },
+    { "close", f.closeButton } }, "console")
+  local S = T.debuglog.STRINGS
+  assertEqual(said["Debug toggle"], S.TOGGLE_TIP)
+  assertEqual(said.Diagnostics, S.DIAGNOSTICS_TIP)
+  assertEqual(said.Copy, S.COPY_TIP)
+  assertEqual(said.Clear, S.CLEAR_TIP)
+  assertEqual(said.settings, S.SETTINGS_TIP)
+  assertEqual(said.close, "Close")
   spyAttached(function(calls)
-    f.settingsButton:__fire("OnEnter")
     f.copyButton:__fire("OnEnter")
-    assertEqual(#calls, 0, "the console's marks carry no tooltip (R9 C2)")
+    f.debugToggleBtn:__fire("OnEnter")
+    assertEqual(#calls, 2, "each placed by the chrome rule, above the control, never on the log")
+    assertTrue(calls[1].el == f.copyButton and calls[2].el == f.debugToggleBtn)
+    f.copyButton:__fire("OnLeave")
+    f.debugToggleBtn:__fire("OnLeave")
   end)
   f.settingsButton:__fire("OnClick")
   assertEqual(n, 1, "the addon's settings, by addonName")
+end)
+
+test("header buttons: the console's tooltips are module strings a host's L overrides, rawget-keyed", function()
+  -- red under: tooltips read with a plain index, or not through D:Text at all
+  local L = setmetatable({ COPY_TIP = "Kopieren", TOGGLE_TIP = "Umschalten" }, { __index = function(_, k) return k end })
+  local name = nextName("HBConsoleL")
+  local D = T.debuglog:New{ name = name, addonName = name, title = "Host", font = "Interface\\Fonts\\ARIALN.TTF",
+    isEnabled = function() return false end, setEnabled = function() end, print = function() end, L = L }
+  D:Show()
+  local f = D._frameForTest
+  local said = TitleTips.check({ { "Copy", f.copyButton }, { "toggle", f.debugToggleBtn }, { "Clear", f.clearButton } }, "console L")
+  assertEqual(said.Copy, "Kopieren")
+  assertEqual(said.toggle, "Umschalten")
+  assertEqual(said.Clear, T.debuglog.STRINGS.CLEAR_TIP, "an AceLocale-style __index answers no key")
 end)
 
 test("header buttons: the console's onSettings overrides the registry, on both its windows", function()
@@ -300,6 +412,7 @@ test("header buttons: the copy window reads settings, close, and hides itself be
   local f = win:Show("text")
   assertSettingsThenClose(f.headerButtons, "copy window")
   assertEqual(joined(f.headerButtons.order), "settings,close")
+  TitleTips.check({ { "settings", f.settingsButton }, { "close", f.closeButton } }, "copy window")
   local hide = f.Hide
   rawset(f, "Hide", function(self) order[#order + 1] = "hide"; return hide(self) end)
   f.settingsButton:__fire("OnClick")
@@ -315,6 +428,7 @@ test("header buttons: the perf panel reads settings, close", function()
   P.ShowPanel()
   local f = P.__panel()
   assertSettingsThenClose(f.headerButtons, "perf panel")
+  TitleTips.check({ { "settings", f.settingsButton }, { "close", f.closeButton } }, "perf panel")
   f.settingsButton:__fire("OnClick")
   assertEqual(n, 1)
 end)
