@@ -2487,7 +2487,7 @@ Total.
 - sl debug: a non-function debug field is ignored
 - sl debug: the chat is byte for byte the same with and without a debug sink
 
-### test_launcher.lua (58)
+### test_launcher.lua (50)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
 - launcher: a descriptor error names the host's line, not the library's
@@ -2535,6 +2535,13 @@ Total.
 - launcher: a name LibDataBroker already holds takes that object rather than none
 - launcher: a host locale overrides a report, and a key-echoing fallback does not
 - launcher: with no descriptor print, a report reaches the chat frame
+- launcher: Sim mode is a live checkbox that toggles through toggleSim, once
+- launcher: Sim mode reads the host's 'window shown or running' and one click closes an idle window (R7-L1)
+- launcher: Open settings opens the panel from the menu, enabled or not
+- launcher: one Register is one broker object and one minimap button, with no compartment entry (SG-L2)
+
+### test_launcher_skin.lua (8)
+
 - launcher: an owner's tooltip lines take its skin's tokens, and a switch reaches the next show
 - launcher: Ka0s Default keeps the tooltip's look to the byte
 - launcher: the descriptor's owner names the skin where it is not the folder
@@ -2543,10 +2550,6 @@ Total.
 - launcher: the menu ends with Open skin selector for a skin owner that passes openSkinPicker
 - launcher: Open skin selector is grayed with the note while the addon is disabled
 - launcher: it alone makes a menu, and a host that is no skin owner or passes nothing gets none
-- launcher: Sim mode is a live checkbox that toggles through toggleSim, once
-- launcher: Sim mode reads the host's 'window shown or running' and one click closes an idle window (R7-L1)
-- launcher: Open settings opens the panel from the menu, enabled or not
-- launcher: one Register is one broker object and one minimap button, with no compartment entry (SG-L2)
 
 ### test_atenable.lua (21)
 
@@ -5391,7 +5394,8 @@ Total.
 | test_slash_refusal.lua | 7 |
 | test_slash_profile.lua | 30 |
 | test_slash_debug.lua | 14 |
-| test_launcher.lua | 58 |
+| test_launcher.lua | 50 |
+| test_launcher_skin.lua | 8 |
 | test_atenable.lua | 21 |
 | test_options.lua | 57 |
 | test_options_render.lua | 27 |

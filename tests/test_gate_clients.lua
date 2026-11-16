@@ -151,8 +151,8 @@ end)
 -- ── launcher ──────────────────────────────────────────────────────────────────────────────────
 
 local launcher = T.launcher
--- Built inside the case, not at load: the mock installs itself on `mocks`, and test_launcher.lua's
--- own menu mock must be the one in place when that suite runs.
+-- Built inside the case, not at load: the mock installs itself on `mocks`, and tests/fixture_launcher.lua's
+-- menu mock must be the one in place when the launcher suites run.
 local MENU
 local OWNER = { name = "LibDBIcon10_GateHost" }
 if not mocks.LibStub("LibDataBroker-1.1", true) then
