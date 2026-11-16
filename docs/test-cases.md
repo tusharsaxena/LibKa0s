@@ -2048,7 +2048,7 @@ Total.
 - pixel lines: the line chart's axis, grid, markers, crosshair and series are physical pixels, re-sized
 - pixel lines: an owned line chart keeps physical pixels through a skin switch
 
-### test_debuglog.lua (75)
+### test_debuglog.lua (73)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
 - dbg: FormatPlain tolerates a nil tag
@@ -2096,8 +2096,6 @@ Total.
 - dbg: New requires a name, a title, a font and an isEnabled/setEnabled pair
 - dbg: a host that overrides a string gets its own wording
 - dbg: DebugLog re-exports Core's close button so a host has one factory, not two
-- dbg: a newer Core loading after DebugLog supplies the console's close button
-- dbg: an instance built after the upgrade draws the newer Core's button
 - dbg: Add renders a secret message as the sentinel
 - an L whose metatable synthesizes every key does NOT mask the module's own strings
 - a REAL entry in an L that also has a fallback still overrides
@@ -2125,6 +2123,11 @@ Total.
 - dbg: the converged copy window keeps its global frame name
 - dbg: the copy window still shows the whole buffer, in order
 - dbg: the copy window re-anchors to the console instead of a fixed center
+
+### test_debuglog_coreskew.lua (2)
+
+- dbg: a newer Core loading after DebugLog supplies the console's close button
+- dbg: an instance built after the upgrade draws the newer Core's button
 
 ### test_debuglog_copytiming.lua (10)
 
@@ -5379,7 +5382,8 @@ Total.
 | test_widgets_skin.lua | 29 |
 | test_widgets_skin_scope.lua | 20 |
 | test_widgets_pixel_edges.lua | 13 |
-| test_debuglog.lua | 75 |
+| test_debuglog.lua | 73 |
+| test_debuglog_coreskew.lua | 2 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
 | test_debuglog_gates.lua | 20 |
