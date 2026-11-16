@@ -58,6 +58,10 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- Contrast white, Ember #FFE0B8, WoW Default, WoW Midnight and WoW Forever white. `icon.tint`: Glass
 -- #9AA2B3 and High Contrast #A0A0A0, whose hot stands 9.3 off its yellow heading by the owner's named
 -- exemption. No stripe or hover of the eight moves.
+-- Then (SR-L3 of the same bundle, smoke round 1's ruling 4, still minor 10): `close.rest` is each
+-- skin's `icon.tint` through FOLLOW, so the close X rests as every other title-bar control does; the
+-- mockups' `closeColor` (and its MOCK_MAP row) is retired. A skin may still set its own `close.rest`
+-- (none does), and a host's owner token over it still paints. `close.hot` does not move.
 local OTHERS_MINOR = 10
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
@@ -125,7 +129,6 @@ local MOCK_MAP = {
   { "muted", "text.muted", "icon.tint", "drawer.summary", "handle.rest" },
   { "accent", "text.accent", "text.link", "btn.hover", "input.focus", "menu.textSel",
     "drawer.textSet", "icon.hot" },
-  { "closeColor", "close.rest" },
   { "btnBg", "btn.bg" }, { "btnBorder", edge = "btn" }, { "btnText", "btn.text", "btn.icon" },
   { "btnRadius", "btn.radius" },
   { "priBg", "btnPrimary.bg" }, { "priBorder", edge = "btnPrimary" },
@@ -182,6 +185,8 @@ local FOLLOW = {
   { "text.command", "text.accent" }, { "text.strong", "text.body" }, { "gtip.emphasis", "text.accent" },
   { "menu.suggestBg", "menu.bg" }, { "menu.suggestBorder", "menu.border" }, { "list.ghostIcon", "icon.tint" },
   { "hud.text", "text.body" }, { "hud.label", "text.accent" }, { "bar.fill", "slider.fill" },
+  -- Minor 10 (SR-L3, smoke round 1's ruling 4): the close X rests as every title-bar control does.
+  { "close.rest", "icon.tint" },
 }
 
 local function blend(a, b)
@@ -411,7 +416,6 @@ register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool 
     titleBg = hex("#1E1E22"), titleColor = hex("#2A86D1"), divider = hex("#4A4A54"),
     headColor = hex("#F2F2F4"),
     text = hex("#E8E8EC"), muted = hex("#9B9BA4"), accent = hex("#4DB8FF"),
-    closeColor = hex("#9B9BA4"),
     btnBg = hex("#141416"), btnBorder = edge(1, "flat", hex("#2a2a30")), btnText = hex("#E8E8EC"),
     btnRadius = 0,
     priBg = hex("#2A86D1"), priBorder = edge(1, "flat", hex("#4DB8FF")), priText = hex("#FFFFFF"),
@@ -460,7 +464,7 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
     barTex = "Ka0s Parchment",
     win = AZ_LEATHER, winBorder = edge(1, "flat", AZ_EDGE), winInner = hex("#8a6a36"), radius = 0,
     titleBg = hex("#1a110a"), titleColor = hex("#F5C542"), divider = AZ_EDGE,
-    text = AZ_TEXT, muted = hex("#B8A07A"), accent = AZ_GOLD, closeColor = hex("#F5C542"),
+    text = AZ_TEXT, muted = hex("#B8A07A"), accent = AZ_GOLD,
     btnBg = grad(hex("#5a3d1d"), hex("#3a2614")), btnBorder = edge(1, "flat", hex("#24160a")),
     btnText = hex("#F2E3BD"), btnRadius = 0,
     priBg = AZ_WAX, priBorder = edge(1, "flat", AZ_GOLD), priText = hex("#FFD866"),
@@ -510,7 +514,6 @@ register("glass", "Glass", "Translucent frosted panels with rounded corners and 
     titleBg = rgba(255, 255, 255, 0.1), titleColor = hex("#FFFFFF"),
     divider = rgba(255, 255, 255, 0.22),
     text = hex("#F2F4F8"), muted = hex("#C9CFDB"), accent = hex("#B69CFF"),
-    closeColor = hex("#C9CFDB"),
     btnBg = rgba(255, 255, 255, 0.08), btnBorder = edge(1, "flat", rgba(255, 255, 255, 0.22)),
     btnText = hex("#F2F4F8"), btnRadius = 0,
     priBg = hex("#B69CFF"), priBorder = edge(1, "flat", hex("#B69CFF")),
@@ -561,7 +564,7 @@ register("contrast", "High Contrast", "Black and white with yellow focus, crisp 
     barTex = "Ka0s Solid",
     win = hex("#000000"), winBorder = edge(1, "flat", HC_WHITE), winInner = false, radius = 0,
     titleBg = hex("#1F1F1F"), titleColor = HC_YELLOW, divider = HC_WHITE,
-    text = HC_WHITE, muted = hex("#E0E0E0"), accent = HC_YELLOW, closeColor = HC_WHITE,
+    text = HC_WHITE, muted = hex("#E0E0E0"), accent = HC_YELLOW,
     btnBg = hex("#000000"), btnBorder = edge(1, "flat", HC_WHITE), btnText = HC_WHITE,
     btnRadius = 0,
     priBg = hex("#000000"), priBorder = edge(1, "flat", HC_YELLOW), priText = HC_YELLOW,
@@ -618,7 +621,6 @@ register("ember", "Ember", "Charred browns lit by an orange accent, Emblem type.
     titleBg = grad(hex("#3a1a0f"), hex("#24100a")), titleColor = hex("#FFB45A"),
     divider = hex("#6a2e17"),
     text = hex("#F4E7DC"), muted = hex("#C7A993"), accent = hex("#FF7A33"),
-    closeColor = hex("#C7A993"),
     btnBg = grad(hex("#4a2012"), hex("#2a120a")), btnBorder = edge(1, "flat", hex("#8a3c1c")),
     btnText = hex("#FFCF9A"), btnRadius = 0,
     priBg = grad(hex("#e0662a"), hex("#a63d12")), priBorder = edge(1, "flat", hex("#ff9a5a")),
@@ -673,7 +675,6 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
     titleBg = grad(hex("#4b4b4b"), hex("#252525")), titleColor = hex("#FFD100"),
     divider = hex("#6e6e6e"),
     text = hex("#FFFFFF"), muted = hex("#B8B8B8"), accent = hex("#FFD100"),
-    closeColor = hex("#D9D9D9"),
     btnBg = WOW_RED, btnBorder = edge(1, "flat", hex("#1a0805")), btnText = hex("#FFD100"),
     btnRadius = 0,
     priBg = grad(hex("#d42a16"), hex("#7e1007")), priBorder = edge(1, "flat", hex("#e0b040")),
@@ -733,7 +734,6 @@ register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, c
     titleBg = grad(hex("#2a2347"), hex("#17142b")), titleColor = hex("#F6D27A"),
     titleAlign = "CENTER", divider = hex("#4a3d1e"),
     text = hex("#F2EEF8"), muted = hex("#B4AFC8"), accent = hex("#B48CFF"),
-    closeColor = hex("#F6D27A"),
     btnBg = grad(hex("#3a2f6b"), hex("#1d1838")), btnBorder = edge(1, "flat", MN_GOLD),
     btnText = hex("#F6D27A"), btnRadius = 0,
     priBg = grad(hex("#7a5ad6"), hex("#3f2c86")), priBorder = edge(1, "flat", hex("#F6D27A")),
@@ -783,7 +783,7 @@ register("forever", "WoW Forever", "Warm charcoal, black title bars with centere
     win = FV_BG, winBorder = edge(1, "flat", FV_EDGE), winInner = false, radius = 0,
     titleBg = hex("#050505"), titleColor = hex("#FFFFFF"), titleAlign = "CENTER",
     divider = hex("#48433d"), headColor = hex("#F2B33D"),
-    text = hex("#FFFFFF"), muted = hex("#A39E97"), accent = FV_TAN, closeColor = hex("#FFFFFF"),
+    text = hex("#FFFFFF"), muted = hex("#A39E97"), accent = FV_TAN,
     btnBg = hex("#1f1d1b"), btnBorder = edge(1, "flat", hex("#48433d")), btnText = hex("#FFFFFF"),
     btnRadius = 0,
     priBg = hex("#9C7A58"), priBorder = edge(1, "flat", FV_TAN), priText = hex("#FFFFFF"),

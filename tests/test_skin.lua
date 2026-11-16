@@ -267,7 +267,11 @@ local PINS = {
   { "OptionsScroll.lua", "THUMB_ON", "scroll.thumbOn" },
   { "OptionsScroll.lua", "THUMB_OFF", "scroll.thumbOff" },
   { "OptionsScroll.lua", "GUTTER", "scroll.gutter" },
-  { "DebugLogWindow.lua", "DIAG_REST", "text.link" }, { "DebugLogWindow.lua", "DIAG_HOT", "text.linkHot" },
+  -- SR-L3 (smoke round 1, ruling 4): the Diagnostics link rests in icon.tint (REST) and hovers
+  -- text.link (DIAG_HOT); a header mark the same, and the close rests in icon.tint as well.
+  { "DebugLogWindow.lua", "REST", "icon.tint" }, { "DebugLogWindow.lua", "DIAG_HOT", "text.link" },
+  { "WidgetsHeader.lua", "REST", "icon.tint" }, { "WidgetsHeader.lua", "HOT", "text.link" },
+  { "Core.lua", "CLOSE_REST", "icon.tint" },
   { "DebugLogWindow.lua", "REST", "text.muted" }, { "DebugLogWindow.lua", "HOT", "text.accent" },
   { "DebugLogWindow.lua", "BAR_W", "scroll.width" },
   { "PerfPanel.lua", "CMD_COLOR", "text.faint" }, { "SimPanel.lua", "CMD_COLOR", "text.faint" },

@@ -621,18 +621,19 @@ test("diag link: anchored to the right edge of the Debug On/Off label, with a ga
   assertEqual(found[5], 0)
 end)
 
-test("diag link: orange at rest, brighter under the pointer, orange again after", function()
-  -- red under: draw it in the gray/gold of the other text controls
+test("diag link: gray at rest, orange under the pointer, gray again after", function()
+  -- SR-L3 (smoke round 1, ruling 4): a title-bar control like every other, Ka0s Default's
+  -- `icon.tint` at rest and `text.link` hot, where minor 16 drew it orange at rest and a lighter
+  -- orange hot. red under: DebugLogWindow minor 5 as first cut (orange at rest)
   local _, _, link = shownLink()
   local rest = lastColor(link)
-  assertEqual(rest[1], 1); assertEqual(rest[2], 0.5); assertEqual(rest[3], 0)
+  assertEqual(rest[1], 0.7); assertEqual(rest[2], 0.7); assertEqual(rest[3], 0.72)
   link:__fire("OnEnter")
   local hot = lastColor(link)
-  assertEqual(hot[1], 1); assertEqual(hot[2], 0.72); assertEqual(hot[3], 0.28)
-  assertTrue(hot[2] > rest[2] and hot[3] > rest[3], "brighter, and still orange")
+  assertEqual(hot[1], 1); assertEqual(hot[2], 0.5); assertEqual(hot[3], 0)
   link:__fire("OnLeave")
   local back = lastColor(link)
-  assertEqual(back[1], 1); assertEqual(back[2], 0.5); assertEqual(back[3], 0)
+  assertEqual(back[1], 0.7); assertEqual(back[2], 0.7); assertEqual(back[3], 0.72)
 end)
 
 test("diag link: a click runs the report with logging off, and turns it on first", function()

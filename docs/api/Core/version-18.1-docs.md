@@ -41,6 +41,14 @@ Still `Core.lua` minor **18**: ruling 3 of the same bundle's `SR1_SMOKE_ROUND1.m
 
 **What a consumer owes at its re-vendor:** a suite that hovers a library close and pinned that nothing shows re-pins it.
 
+## Also at this version: the close rests as every title-bar control does (`SR-L3`, smoke round 1)
+
+Still `Core.lua` minor **18**: ruling 4 of the same bundle's `SR1_SMOKE_ROUND1.md`, every title-bar control rests in `icon.tint` and lights in `text.link`, the close X in `close.hot`. No code in `MakeCloseButton` moves: its gray (`CLOSE_REST`, 0.7, 0.7, 0.72) is Ka0s Default's `icon.tint` and its red (`CLOSE_HOT`) is `close.hot`, and an owned close is still painted by the facade's `S.CloseButton` in `close.rest` / `close.hot`. What moves is the skins: **every skin's `close.rest` is its `icon.tint`** (LibKa0s-Skin-1.0, SkinDefsOthers 10, through `FOLLOW`), where the eight other skins each set their mockup's `closeColor`. `tests/test_skin.lua` pins `CLOSE_REST` to Ka0s Default's `icon.tint` as well as its `close.rest`.
+
+**Why an alias, not the close painted in `icon.tint`.** `close.rest` stays the token the close is painted from, so a host owner token over it (or a skin that sets one) still draws, and `S.CloseButton`'s contract does not move; each skin's value equals its `icon.tint`. A host that overrides `icon.tint` with an owner token and wants its close to follow sets `close.rest` to the same value.
+
+**What a consumer owes at its re-vendor:** a suite that pinned a skin's close color at its old `close.rest` re-pins it. No Core member moves.
+
 ## What changed at version 17.1: the pixel edges peel (FU-L2)
 
 A pure move, on the seam `CLAUDE.md`'s census named (FU-L2 of Ka0sAddonsCommonTasks `docs/2026-11-06-FOLLOWUPS_V1_91/`); no public or internal member and no behavior changes, so `members-17.1.json` lists the same names as version 16.

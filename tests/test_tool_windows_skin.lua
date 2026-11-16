@@ -156,14 +156,14 @@ test("tool windows skin: a registered owner's console paints from its skin", fun
   assertEqual(rgba(survey(m, f.debugToggle).textColor), tok3(Skin, "obsidian", "text.accent"), "its hover")
   f.debugToggleBtn:__fire("OnLeave")
   -- The CLEAR word is a header mark from DebugLogWindow minor 5 (LibKa0s#86, Widgets' HeaderButtons):
-  -- one paint path for every mark, `icon.tint` at rest and `icon.hot` under the pointer, where the
-  -- console's own text button drew `text.muted` and `text.accent`.
+  -- one paint path for every mark, `icon.tint` at rest and `text.link` under the pointer (SR-L3; the
+  -- first cut lit `icon.hot`), where the console's own text button drew `text.muted` and `text.accent`.
   local clearLabel = f.clearButton:GetRegions()
   assertEqual(rgba(survey(m, clearLabel).textColor), tok3(Skin, "obsidian", "icon.tint"), "Clear at rest")
   f.clearButton:__fire("OnEnter")
-  assertEqual(rgba(survey(m, clearLabel).textColor), tok3(Skin, "obsidian", "icon.hot"), "Clear hot")
+  assertEqual(rgba(survey(m, clearLabel).textColor), tok3(Skin, "obsidian", "text.link"), "Clear hot")
   local diag = f.diagnosticsButton:GetRegions()
-  assertEqual(rgba(survey(m, diag).textColor), tok3(Skin, "obsidian", "text.link"), "the Diagnostics link")
+  assertEqual(rgba(survey(m, diag).textColor), tok3(Skin, "obsidian", "icon.tint"), "the Diagnostics link at rest")
   -- The counter is the footer's right line in text.muted from DebugLogWindow minor 5 (LibKa0s#90).
   assertEqual(rgba(survey(m, f.lineCount).textColor), tok3(Skin, "obsidian", "text.muted"), "the line count")
   assertEqual(rgba(survey(m, f.statusDivider).color), tok(Skin, "obsidian", "divider"), "the footer's hairline")
@@ -453,4 +453,92 @@ test("tool windows skin: every skin's tool-window text reads on its own window",
       assertTrue(ratio >= want, ("%s: %s contrast %.2f on win.bg, want >= %.1f"):format(def.key, name, ratio, want))
     end
   end
+end)
+
+-- ── title-bar control colors (SR-L3, smoke round 1's ruling 4) ──────────────────────────────
+--
+-- Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/SR1_SMOKE_ROUND1.md, ruling 4: every
+-- title-bar control rests in `icon.tint`, the close X and the Diagnostics link included, and under
+-- the pointer takes `text.link`, the close X `close.hot`. The Debug ON/OFF toggle keeps its state
+-- colors. Pinned on the console, whose bar carries every kind: a mark (settings, Copy, Clear), the
+-- close and the link.
+
+local SKIN_KEYS = { "ka0s", "obsidian", "azeroth", "glass", "contrast", "ember", "wow", "midnight", "forever" }
+
+--- What a title-bar control's art was last painted, as "r,g,b,1": a texture's vertex color, else a
+--- font string's text color.
+local function artColor(m, b)
+  local art = b.icon or b.glyph or b.label
+  local rec = survey(m, art)
+  local c = (b.icon and rec.vertex) or rec.textColor
+  return rgba({ c[1], c[2], c[3], 1 })
+end
+
+--- A control's rest, hover and rest-again colors.
+local function restHot(m, b)
+  local rest = artColor(m, b)
+  b:__fire("OnEnter")
+  local hot = artColor(m, b)
+  b:__fire("OnLeave")
+  return rest, hot, artColor(m, b)
+end
+
+local function rgb1(c) return rgba({ c[1], c[2], c[3], 1 }) end
+
+local function assertBar(m, f, want, label)
+  local controls = { { "settings", f.settingsButton }, { "copy", f.copyButton }, { "clear", f.clearButton } }
+  for _, c in ipairs(controls) do
+    local rest, hot, back = restHot(m, c[2])
+    assertEqual(rest, want.rest, label .. ": " .. c[1] .. " at rest")
+    assertEqual(hot, want.hot, label .. ": " .. c[1] .. " under the pointer")
+    assertEqual(back, want.rest, label .. ": " .. c[1] .. " back at rest")
+  end
+  local rest, hot, back = restHot(m, f.closeButton)
+  assertEqual(rest, want.rest, label .. ": the close at rest")
+  assertEqual(hot, want.closeHot, label .. ": the close under the pointer")
+  assertEqual(back, want.rest, label .. ": the close back at rest")
+  rest, hot, back = restHot(m, f.diagnosticsButton)
+  assertEqual(rest, want.rest, label .. ": the Diagnostics link at rest")
+  assertEqual(hot, want.hot, label .. ": the Diagnostics link under the pointer")
+  assertEqual(back, want.rest, label .. ": the Diagnostics link back at rest")
+end
+
+test("tool windows skin: the close X rests in icon.tint in every skin, its hover a red of its own", function()
+  -- SR-L3: `close.rest` is each skin's `icon.tint` (SkinDefsOthers FOLLOW; Ka0s Default's two are
+  -- the one gray). Pinned here, not in tests/test_skin_defs.lua, which sits one line under the band.
+  -- red under: SkinDefsOthers minor 10 as first cut, each skin's close.rest its mockup's closeColor
+  -- (Azeroth's #F5C542, High Contrast's white, ...).
+  local _, Skin = env()
+  for _, key in ipairs(SKIN_KEYS) do
+    local t = Skin:ResolveSkin(key)
+    assertEqual(rgba(t["close.rest"]), rgba(t["icon.tint"]), key .. ": close.rest is icon.tint")
+    local hot = t["close.hot"]
+    assertTrue(hot[1] > hot[2] and hot[1] > hot[3], key .. ": close.hot is a red")
+  end
+end)
+
+test("tool windows skin: every skin's title-bar controls rest in icon.tint and hover text.link, the close close.hot", function()
+  -- red under: WidgetsHeader minor 1 as first cut (hover icon.hot), DebugLogWindow minor 5 as first
+  -- cut (the link at rest text.link, hover text.linkHot), SkinDefsOthers minor 10 as first cut (each
+  -- skin's own close.rest, its mockup's closeColor)
+  local m, Skin = env()
+  F.owner(Skin, OWNER, "ka0s")
+  local D, f = console(m, OWNER)
+  assertTrue(f.diagnosticsButton ~= nil, "the console draws the Diagnostics link")
+  for _, key in ipairs(SKIN_KEYS) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    local t = Skin:ResolveSkin(key)
+    assertBar(m, f, { rest = rgb1(t["icon.tint"]), hot = rgb1(t["text.link"]), closeHot = rgb1(t["close.hot"]) }, key)
+    -- The toggle carries meaning in its color and keeps it.
+    D:SetEnabled(false)
+    assertEqual(rgba(survey(m, f.debugToggle).textColor), tok3(Skin, key, "sem.off"), key .. ": the OFF toggle")
+  end
+end)
+
+test("tool windows skin: an unowned console's title bar is Ka0s Default's icon.tint, text.link and close.hot", function()
+  local m, Skin = env()
+  local _, f = console(m, OTHER)
+  local t = Skin:ResolveSkin("ka0s")
+  assertBar(m, f, { rest = rgb1(t["icon.tint"]), hot = rgb1(t["text.link"]), closeHot = rgb1(t["close.hot"]) },
+    "unowned")
 end)

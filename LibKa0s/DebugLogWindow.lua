@@ -128,11 +128,13 @@ local CONSOLE_W, CONSOLE_H = 700, 344
 -- The header toggle's slot, at the bar's left edge. Named because the minimum width reads it.
 local TOGGLE_X, TOGGLE_W = 8, 80
 
--- The Diagnostics link (minor 16): its gap after the toggle's label, and its orange at rest and
--- under the pointer, so it reads as an action beside a state word. Plain text, like that label.
+-- The Diagnostics link (minor 16): its gap after the toggle's label, and its color under the
+-- pointer. Plain text, like that label. From minor 5 (SR-L3 of Ka0sAddonsCommonTasks
+-- docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS, smoke round 1's ruling 4) it is a title-bar control like
+-- every other: REST (`icon.tint`) at rest and the orange it rested in before (`text.link`) under the
+-- pointer, where it was that orange at rest and `text.linkHot` hot.
 local DIAG_GAP  = 10
-local DIAG_REST = { 1, 0.5, 0 }
-local DIAG_HOT  = { 1, 0.72, 0.28 }
+local DIAG_HOT  = { 1, 0.5, 0 }
 
 -- Gray at rest, gold under the pointer -- what the text labels have done since minor 1, kept so the
 -- title bar does not change temperature just because its controls changed shape.
@@ -149,7 +151,8 @@ local TITLE_CHAR_W = 7
 -- Every color the console draws outside the skin's window primitives, as `name = { token,
 -- constant }`. The constant is what the console has drawn since the minor that added it, and what
 -- every console without a registered owner draws; Ka0s Default's token is the same value: REST and
--- HOT for the text and icon controls, the Diagnostics link's two oranges, the toggle's green ON and
+-- HOT for the text and icon controls, the Diagnostics link's gray rest and orange hover (minor 5,
+-- SR-L3; the toggle's hover keeps HOT, `text.accent`, and its state colors), the toggle's green ON and
 -- red OFF, the line counter, and the log line's stamp, tag and message. The counter is `text.muted`
 -- from minor 5, the footer's text color, where it was `log.count` (Ka0s Default's 0.6 gray). The
 -- footer's hairline is not here: Widgets draws it in Ka0s Default's `divider`, and an owned console
@@ -158,8 +161,8 @@ local PALETTE = {
   rest    = { "text.muted",   REST },
   icon    = { "icon.tint",    REST },
   hot     = { "text.accent",  HOT },
-  diag    = { "text.link",    DIAG_REST },
-  diagHot = { "text.linkHot", DIAG_HOT },
+  diag    = { "icon.tint",    REST },
+  diagHot = { "text.link",    DIAG_HOT },
   on      = { "sem.on",       { 0.30, 0.85, 0.30 } },
   off     = { "sem.off",      { 0.90, 0.30, 0.30 } },
   count   = { "text.muted",   REST },

@@ -17,8 +17,12 @@
 --
 -- One SIZE (an 18 px slot, the close mark's), one ART (12 px, the console's measured shape), one
 -- pitch (PAD from the corner, GAP between marks, the console's 6 and 6), one paint path: a registered
--- skin owner's marks through its facade's `Mark` (`icon.tint` at rest, `icon.hot` under the pointer,
+-- skin owner's marks through its facade's `Mark` (`icon.tint` at rest, `text.link` under the pointer,
 -- recorded, so a skin switch repaints them), every other window's in Ka0s Default's two colors. The
+-- hover is `text.link` from smoke round 1's ruling 4 (SR-L3 of the same bundle), where the first cut
+-- lit `icon.hot`, a brightening the owner could hardly see: the mark still lights under the pointer,
+-- now in the skin's link color, the color the debug console's Diagnostics link wore. The close X
+-- rests in `icon.tint` too (every skin's `close.rest` is its `icon.tint`) and keeps `close.hot`. The
 -- art is the LibKa0s icon set's, out of the owner's copy (`Media.Icon`); a mark whose art does not
 -- answer draws its word or its glyph instead. The `help` icon is not used: twelve addons do not
 -- declare it, and a pruned icon draws blank.
@@ -66,9 +70,9 @@ lib.HEADER = { SIZE = SIZE, ART = ART, PAD = PAD, GAP = GAP }
 --- The strip's own words, keyed for a host's `spec.L` override (rawget, as every library string).
 lib.HEADER_STRINGS = { SETTINGS_TIP = "Open settings", SETTINGS_GLYPH = "*" }
 
--- Ka0s Default's `icon.tint` and `icon.hot`, for a window with no registered skin owner.
+-- Ka0s Default's `icon.tint` and `text.link` (SR-L3), for a window with no registered skin owner.
 local REST = { 0.7, 0.7, 0.72 }
-local HOT  = { 1, 1, 1 }
+local HOT  = { 1, 0.5, 0 }
 
 local function text(spec, key)
   local L = type(spec.L) == "table" and spec.L or nil
@@ -89,12 +93,12 @@ end
 local function paint(b, hot)
   local Skin = lib.__skinOf and lib.__skinOf(b.__owner)
   if b.icon then
-    if Skin then return Skin:For(b.__owner).Mark(b.icon, hot and { token = "icon.hot" } or nil) end
+    if Skin then return Skin:For(b.__owner).Mark(b.icon, hot and { token = "text.link" } or nil) end
     local c = hot and HOT or REST
     return b.icon:SetVertexColor(c[1], c[2], c[3])
   end
   local c = hot and HOT or REST
-  if Skin then c = Skin:Token(b.__owner, hot and "icon.hot" or "icon.tint") or c end
+  if Skin then c = Skin:Token(b.__owner, hot and "text.link" or "icon.tint") or c end
   b.label:SetTextColor(c[1], c[2], c[3])
 end
 

@@ -2333,7 +2333,7 @@ Total.
 - diag link: its label is a module string the host's L overrides
 - diag link: not drawn when the diagnostics file did not install the report
 - diag link: anchored to the right edge of the Debug On/Off label, with a gap
-- diag link: orange at rest, brighter under the pointer, orange again after
+- diag link: gray at rest, orange under the pointer, gray again after
 - diag link: a click runs the report with logging off, and turns it on first
 - diag link: opted out, a click writes the report and leaves logging off
 
@@ -2464,7 +2464,7 @@ Total.
 - core: RaiseStaticPopups never shows, hides or re-stratas a popup
 - tool windows: with no RaiseStaticPopups in Core the three windows build and show
 
-### test_tool_windows_skin.lua (17)
+### test_tool_windows_skin.lua (20)
 
 - tool windows skin: without a registered owner each window is the previous minors' paint
 - tool windows skin: an unregistered console logs Ka0s Default's colored line, as before
@@ -2483,6 +2483,9 @@ Total.
 - tool windows skin: under Ka0s Default the sim key column is gtip.title's gold, the rest white
 - tool windows skin: Ka0s Default's tool-window tokens are the constants the windows drew
 - tool windows skin: every skin's tool-window text reads on its own window
+- tool windows skin: the close X rests in icon.tint in every skin, its hover a red of its own
+- tool windows skin: every skin's title-bar controls rest in icon.tint and hover text.link, the close close.hot
+- tool windows skin: an unowned console's title bar is Ka0s Default's icon.tint, text.link and close.hot
 
 ### test_tool_windows_scope.lua (10)
 
@@ -5656,7 +5659,7 @@ Total.
 | test_debuglog_footer.lua | 7 |
 | test_resize_windows.lua | 23 |
 | test_tool_windows_layering.lua | 8 |
-| test_tool_windows_skin.lua | 17 |
+| test_tool_windows_skin.lua | 20 |
 | test_tool_windows_scope.lua | 10 |
 | test_slash.lua | 77 |
 | test_slash_parse.lua | 33 |
@@ -5788,4 +5791,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4886** |
+| **Total** | **4889** |
