@@ -14,13 +14,17 @@ cannot drift. Release order is in
 
 Opened 2026-11-16, on `feat/2026-11-16-libka0s-75-plus` (off `master` at v1.104.0): the LibKa0s issues #75 and up (Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`). A draft block, extended item by item; the version line below names only what has moved so far.
 
-Versions in this release so far: `LibKa0s-Options-1.0` key **38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.12.1.1.1.4** (OptionsSkinPicker minor 12, OptionsSkinPickerQueue minor 1, new); every other file at its v1.104.0 minor.
+Versions in this release so far: `LibKa0s-Options-1.0` key **38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.12.1.1.1.4** (OptionsSkinPicker minor 12, OptionsSkinPickerQueue minor 1, new); every other file at its v1.104.0 minor, and the test kit at revision **57**.
 
 ### Hygiene peels
 
 - **The skin picker's queue peels out (`LK-P1`).** `OptionsSkinPicker.lua` was at 1493 lines, past its 1400-line trigger (`CLAUDE.md`'s `FX-LK-SIZE` row). Its queue section and the two header notes on it move, unchanged, to a new file, `OptionsSkinPickerQueue.lua` (OptionsSkinPickerQueue minor 1), loaded by `LibKa0s.xml` directly after it; OptionsSkinPicker minor 12 reads it through the internal `lib.__pickerQueueKit` at call time. 1493 -> 1396. No member and no behavior moves. A host whose tests list library files by name adds the new file after `OptionsSkinPicker.lua` at its re-vendor (`docs/api/Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.12.1.1.1.4-docs.md`).
 - **The launcher suite peels (`LK-P2`).** `tests/test_launcher.lua` was at 1235 lines, past its 1200-line trigger. Its skin sections (the tooltip following the skin, and Open skin selector) move, unchanged, to `tests/test_launcher_skin.lua`, and the bench the two suites share to `tests/fixture_launcher.lua`. 1235 -> 963. A suite, not payload: no file's minor moves and the total stays at 4665 cases.
 - **The debug log suite peels (`LK-P3`).** `tests/test_debuglog.lua` was at 1002 lines, in the band with a *next console case added* trigger that #90's footer cases would fire. Its Core-upgrade section (the close-button factory across a Core upgrade: `coreCopy`, `loadSkewed` and their two cases) moves, unchanged, to `tests/test_debuglog_coreskew.lua`. 1002 -> 939. A suite, not payload: no file's minor moves and the total stays at 4665 cases.
+
+### Test kit
+
+- **A registered frame stays alive (`LK-75`, LibKa0s#75 half 2; kit revision 57).** The client never frees a frame, but through revision 56 a frame the addon registered and then let go of was reachable only through the kit's weak `frameSet`, so a garbage collection freed it and `M.__fire` silently stopped reaching it. `mock_events.lua` now holds a tracked frame strongly while it has a raw or per-unit registration, in a set on the build (never module-level, so a dropped build is still collected), and releases it when `UnregisterEvent` or `UnregisterAllEvents` leaves nothing registered; `mock_ace.lua`'s embedded-frame `UnregisterAllEvents` releases it too. New build seams `M.__heldFrame(f)` and `M.__releaseFrame(f)`. A frame that never registered is still not held. Seven new cases in `tests/test_mock_events.lua`; `docs/api/testkit/version-57-docs.md`. Half 1 (the guarded `unregisterAll`) shipped in revision 51 (`367a9f10`). A consumer owes the re-vendor and a full-suite run.
 
 ## v1.104.0 — 2026-11-16
 

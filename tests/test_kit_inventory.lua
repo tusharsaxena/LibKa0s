@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 56", function()
-  assertEqual(Kit.VERSION, 56, "v1.97.0 ships revision 56: the glyph guard's face list gains the Callout's two faces")
-  assertEqual(T.KIT_VERSION, 56, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 57", function()
+  assertEqual(Kit.VERSION, 57, "v1.105.0 ships revision 57: a frame is held while it has a raw registration (LibKa0s#75)")
+  assertEqual(T.KIT_VERSION, 57, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

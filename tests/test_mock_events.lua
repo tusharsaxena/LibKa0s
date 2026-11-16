@@ -207,3 +207,111 @@ test("events: a suite may remove C_EventUtils to model an older client", functio
   f:RegisterEvent("PLAYER_LOGIN")
   assertTrue(f:IsEventRegistered("PLAYER_LOGIN"))
 end)
+
+-- ── A registered frame stays alive (kit revision 57, LibKa0s#75) ──────────────────────────────
+--
+-- The client never frees a frame, so a frame an addon registered and then let go of keeps hearing
+-- its events. Through revision 56 the kit's only reference to such a frame was the weak `frameSet`,
+-- so the next collection dropped it and `M.__fire` silently stopped reaching it. The kit now holds a
+-- frame strongly while it has a raw registration, per build, and lets go when the last one is gone.
+
+--- Build a frame nobody outside the kit holds, register it through `register`, and answer a counter
+--- its OnEvent bumps and a weak sentinel that tells whether the frame is still alive.
+local function looseFrame(M, register)
+  local heard, alive = { n = 0 }, setmetatable({}, { __mode = "k" })
+  local function make()
+    local f = M.CreateFrame("Frame")
+    f:SetScript("OnEvent", function() heard.n = heard.n + 1 end)
+    register(f)
+    alive[f] = true
+  end
+  make()
+  return heard, alive
+end
+
+local function gc()
+  collectgarbage("collect")
+  collectgarbage("collect")
+end
+
+test("events: a frame held only by its RegisterEvent survives a collection and still hears the event", function()
+  -- red under: revision 56, where only the weak frameSet reaches the frame
+  local M = buildMocks()
+  local heard, alive = looseFrame(M, function(f) f:RegisterEvent("PLAYER_LOGIN") end)
+  gc()
+  assertTrue(next(alive) ~= nil, "the registered frame was collected")
+  M.__fire("PLAYER_LOGIN")
+  assertEqual(heard.n, 1, "the registered frame heard the event after a collection")
+end)
+
+test("events: a frame held only by its RegisterUnitEvent survives a collection and still hears the event", function()
+  -- red under: revision 56, where only the weak frameSet reaches the frame
+  local M = buildMocks()
+  local heard = looseFrame(M, function(f) f:RegisterUnitEvent("UNIT_AURA", "player") end)
+  gc()
+  M.__fire("UNIT_AURA", "player")
+  assertEqual(heard.n, 1, "the per-unit registered frame heard the event after a collection")
+end)
+
+test("events: a frame that never registered is not held", function()
+  -- red under: making frameSet strong, or holding every tracked frame
+  local M = buildMocks()
+  local _, alive = looseFrame(M, function() end)
+  gc()
+  assertNil(next(alive), "an unregistered frame nobody holds was kept alive")
+end)
+
+test("events: UnregisterEvent of the last registration releases the hold", function()
+  -- red under: a hold that never releases (hold-once-registered)
+  local M = buildMocks()
+  local _, alive = looseFrame(M, function(f)
+    f:RegisterEvent("PLAYER_LOGIN")
+    f:RegisterEvent("PLAYER_LOGOUT")
+    f:UnregisterEvent("PLAYER_LOGIN")
+  end)
+  gc()
+  assertTrue(next(alive) ~= nil, "a frame with one registration left is still held")
+  local f = next(alive)
+  f:UnregisterEvent("PLAYER_LOGOUT")
+  f = nil -- luacheck: ignore 311
+  gc()
+  assertNil(next(alive), "the frame was still held after its last UnregisterEvent")
+end)
+
+test("events: UnregisterAllEvents releases the hold", function()
+  -- red under: a hold that UnregisterAllEvents does not release
+  local M = buildMocks()
+  local _, alive = looseFrame(M, function(f)
+    f:RegisterEvent("PLAYER_LOGIN")
+    f:RegisterUnitEvent("UNIT_AURA", "player")
+    f:UnregisterAllEvents()
+  end)
+  gc()
+  assertNil(next(alive), "the frame was still held after UnregisterAllEvents")
+end)
+
+test("events: an AceEvent-embedded frame's UnregisterAllEvents releases the hold", function()
+  -- red under: mock_ace's embedded-frame override clearing the raw tables without the release.
+  -- AceEvent's `embeds` holds an embedded target for the build's life, so a collection cannot see
+  -- this release; the build's own `__heldFrame` answers it.
+  local M = buildMocks()
+  local f = M.CreateFrame("Frame")
+  f:RegisterEvent("PLAYER_LOGIN")
+  assertTrue(M.__heldFrame(f), "a raw registration holds the frame")
+  M.LibStub("AceEvent-3.0"):Embed(f)
+  f:UnregisterAllEvents()
+  assertFalse(f.__frameEvents.PLAYER_LOGIN ~= nil, "the override cleared the raw registration")
+  assertFalse(M.__heldFrame(f), "and released the hold with it")
+end)
+
+test("events: a registered frame is collected with its dropped build", function()
+  -- red under: a module-level hold, which outlives the build (the kit revision 22 leak's shape)
+  local alive = setmetatable({}, { __mode = "k" })
+  for _ = 1, 3 do
+    local M = buildMocks()
+    local _, a = looseFrame(M, function(f) f:RegisterEvent("PLAYER_LOGIN") end)
+    for f in pairs(a) do alive[f] = true end
+  end
+  gc()
+  assertNil(next(alive), "a registered frame outlived its dropped build")
+end)
