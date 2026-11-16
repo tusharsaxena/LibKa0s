@@ -315,3 +315,17 @@ test("events: a registered frame is collected with its dropped build", function(
   gc()
   assertNil(next(alive), "a registered frame outlived its dropped build")
 end)
+
+test("events: the hold adds no closure per frame -- the unregister methods are the stub's own", function()
+  -- red under: the first kit-57 cut, which wrapped UnregisterEvent and UnregisterAllEvents on every
+  -- frame and cost a 26,000-frame consumer suite (LootHistory) about 6 MB of its leak budget
+  local M = buildMocks()
+  local f = M.CreateFrame("Frame")
+  for _, name in ipairs({ "UnregisterEvent", "UnregisterAllEvents" }) do
+    local src = debug.getinfo(f[name], "S").source
+    assertTrue(src:find("mock_base.lua", 1, true) ~= nil, name .. " is wrapped outside the frame stub: " .. src)
+  end
+  -- and the hooks belong to the build, never to the module
+  assertTrue(rawget(M, "__kitFrameHooks") ~= nil, "the build has its frame hooks")
+  assertTrue(rawget(buildMocks(), "__kitFrameHooks") ~= M.__kitFrameHooks, "each build has its own hooks")
+end)

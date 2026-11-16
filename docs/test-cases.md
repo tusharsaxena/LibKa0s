@@ -5080,7 +5080,7 @@ Total.
 - record: __aceguiLive counts a Create per type and gives it back on Release
 - record: __aceguiLive ignores a Release it never saw created, and a registered type counts
 
-### test_mock_events.lua (21)
+### test_mock_events.lua (22)
 
 - events: an EventRegistry callback appears in __registrations as kind 'callback'
 - events: UnregisterCallback removes the callback from __registrations
@@ -5103,6 +5103,7 @@ Total.
 - events: UnregisterAllEvents releases the hold
 - events: an AceEvent-embedded frame's UnregisterAllEvents releases the hold
 - events: a registered frame is collected with its dropped build
+- events: the hold adds no closure per frame -- the unregister methods are the stub's own
 
 ### test_mock_resize.lua (6)
 
@@ -5744,7 +5745,7 @@ Total.
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 40 |
 | test_mock_record.lua | 42 |
-| test_mock_events.lua | 21 |
+| test_mock_events.lua | 22 |
 | test_mock_resize.lua | 6 |
 | test_mock_client.lua | 4 |
 | test_mock_lines.lua | 5 |
@@ -5772,4 +5773,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4870** |
+| **Total** | **4871** |

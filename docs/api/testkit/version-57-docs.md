@@ -41,11 +41,17 @@ keeps hearing that event. Through revision 56 the kit's only reference to such a
 frame's events with no error (OutfitterReborn worked around it in `0694218` by holding the frame
 itself).
 
-- **The hold.** `mock_events.lua`'s `Events.decorateFrame` wraps a tracked frame's `RegisterEvent` and
-  `RegisterUnitEvent`: once the stub has recorded the registration (after the `__badEvents` check,
-  which still raises before anything is recorded or held), the frame goes into a strong set.
-- **The release.** `UnregisterEvent` and `UnregisterAllEvents` are wrapped too. After the stub runs,
-  the frame leaves the set when both `__frameEvents` and `__unitEvents` are empty. The stub's
+- **The hold.** `mock_base.lua`'s frame stub holds the frame itself: its `RegisterEvent` and
+  `RegisterUnitEvent` put the frame into a strong set once they have recorded the registration. The
+  `__badEvents` check in `mock_events.lua`'s `Events.decorateFrame` still runs first and still raises
+  before anything is recorded or held.
+- **The release.** The stub's `UnregisterEvent` and `UnregisterAllEvents` release it: after they run,
+  the frame leaves the set when both `__frameEvents` and `__unitEvents` are empty.
+- **No closure per frame.** The stub reaches the hold through one hooks table per build
+  (`Events.frameHooks(M)`, kept on `M.__kitFrameHooks`), so the hold adds no wrapper to any frame. A
+  first cut wrapped the two unregister methods on every frame, and a consumer suite that makes about
+  26,000 frames (LootHistory) went about 6 MB over its leak budget; `tests/test_mock_events.lua` pins
+  that the unregister methods are the stub's own. The stub's
   `UnregisterEvent` clears only the raw table, as before, so a frame with a per-unit registration
   left stays held, and stays in the survey.
 - **The embedded frame.** `AceEvent:Embed` replaces a frame's `UnregisterAllEvents` with
