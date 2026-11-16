@@ -1,9 +1,9 @@
 {
   "major": "LibKa0s-Sim-1.0",
-  "versionKey": "2.3.11.4",
+  "versionKey": "3.3.11.4",
   "generator": "tools/gen-api-members.lua",
   "modules": [
-    { "file": "Sim", "minor": 2 },
+    { "file": "Sim", "minor": 3 },
     { "file": "SimTimeline", "minor": 3 },
     { "file": "SimPanel", "minor": 11 },
     { "file": "SimPanelRender", "minor": 4 }
@@ -11,6 +11,8 @@
   "members": [
     { "name": "New", "kind": "function" },
     { "name": "NewSeam", "kind": "function" },
-    { "name": "STRINGS", "kind": "table" }
+    { "name": "SAMPLE", "kind": "table" },
+    { "name": "STRINGS", "kind": "table" },
+    { "name": "Sample", "kind": "function" }
   ]
 }

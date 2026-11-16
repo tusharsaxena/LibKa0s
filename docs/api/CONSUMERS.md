@@ -82,6 +82,12 @@ library-absent stub at its re-vendor.
 None gets a row here yet. **No host calls them at the tag:** the library's own windows use them, the launcher fills the
 registry in every host from the re-vendor alone, and a host window's strip is its adoption item (LibKa0s#86).
 
+**v1.105.0, not in the census (unreleased, 2026-11-16), the sample characters.** Sim minor 3 adds the lib-level
+`Sim.SAMPLE` and `Sim.Sample` (`LK-87`, LibKa0s#87; [the Sim document](Sim/version-3.3.11.4-docs.md)). Neither gets a
+row here yet. **No host reads them at the tag:** each host's own sample characters (Combat Trail's, DpsRace's, Bank
+Ledger's, What Group's and the others research note R6 of Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`
+lists) move onto them at its adoption, in that run's phase [3].
+
 **v1.105.0, not in the census (unreleased, 2026-11-16), the data bar.** WidgetsBar minor 1 (new) adds `W.Bar`,
 `W.BarStyle`, `W.BarCompute`, `W.BarText`, `W.BarFormatTimer`, `W.BarShade`, `W.AcquireBar`, `W.ReleaseBars` and
 `W.BAR` (`LK-80`, LibKa0s#80; [the Widgets document](Widgets/version-27.2.7.14.1.7.8.6.1.1-docs.md)). None gets a row here yet. **No

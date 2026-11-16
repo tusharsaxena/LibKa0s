@@ -4815,6 +4815,22 @@ Total.
 - sim host: a stand-down mid-run stops first, suppresses cleanup delivery and hides the panel
 - sim host: a latch set without a stop is caught by Fire's self-stop backstop
 
+### test_sim_sample.lua (13)
+
+- sim sample: SAMPLE holds a retail and a forever set of five characters, and nothing else
+- sim sample: every name, surname and pet is fictional by the convention
+- sim sample: names and full names are unique within a set
+- sim sample: a retail character is Name-Realm, with a specID and role of its own class
+- sim sample: a forever character is First Surname on a forever class and a classic talent tree
+- sim sample: a pet only on a class that has one, and each set shows one
+- sim sample: each set covers a tank, a healer and damage
+- sim sample: Sample names its client, and answers a copy the caller owns
+- sim sample: Sample() answers the active client's set through LibKa0s-Compat-1.0
+- sim sample: Sample() reads the client at call time, not at load
+- sim sample: with no Compat, or a client that is neither, Sample() answers retail
+- sim sample: an unknown client raises at the caller's line
+- sim sample: the shell's minor is 3
+
 ### test_loader.lua (6)
 
 - loader: a cached chunk gives each instance its own global namespace
@@ -5716,6 +5732,7 @@ Total.
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
 | test_sim_host.lua | 7 |
+| test_sim_sample.lua | 13 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -5755,4 +5772,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4857** |
+| **Total** | **4870** |

@@ -1,4 +1,4 @@
-# `LibKa0s-Sim-1.0` — version 2.3.11.4
+# `LibKa0s-Sim-1.0` — version 3.3.11.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Sim surface points here rather than restating it. It describes the
@@ -8,16 +8,22 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Sim-1.0` |
-| Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **11** · `SimPanelRender.lua` **4** |
-| Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `2.3.11.4` |
+| Files and minors | `Sim.lua` **3** · `SimTimeline.lua` **3** · `SimPanel.lua` **11** · `SimPanelRender.lua` **4** |
+| Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `3.3.11.4` |
 | Shipped in | v1.105.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 2.3.10.3](./version-2.3.10.3-docs.md) — the same surface; the panel's title band carried the close mark alone, and the default panel title read `name .. " - Simulation"` and was no string a host could override. |
+| Supersedes | [version 2.3.10.3](./version-2.3.10.3-docs.md) — the same surface without `SAMPLE` and `Sample`, which are new; the panel's title band carried the close mark alone, and the default panel title read `name .. " - Simulation"` and was no string a host could override. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
-| Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 11, SimPanelRender = 4 }` |
+| Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 3, SimTimeline = 3, SimPanel = 11, SimPanelRender = 4 }` |
 
-## What changed at this version: the panel's header marks (`LK-86`, LibKa0s#86)
+## What changed at this version: the sample characters (`LK-87`, LibKa0s#87)
+
+**`Sim.lua` moves 2 -> 3** (this release's one bump; Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.9, the owner's ruling Q4). Two lib-level members are added, `SAMPLE` (a retail and a forever set of five sample characters) and `Sample(client)` (a copy of the active client's set), with the naming convention they follow: *Sample characters*, below. No instance or seam member moves, and no behavior of the seam or the session.
+
+**What a consumer owes at its re-vendor:** nothing (*What a consumer owes*, under *Sample characters*). Adopting the data is phase [3].
+
+## What changed at version 2.3.11.4: the panel's header marks (`LK-86`, LibKa0s#86)
 
 `SimPanelRender.lua` moves 3 -> **4**, and `SimPanel.lua` stays at **11** (this release's one bump; Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7). No member is added or removed.
 
@@ -306,8 +312,47 @@ Read straight off the LibStub table.
 | `Sim:NewSeam(compat, opts) -> seam` | 1 | Wraps the host's Compat table in place, once, and answers its seam. Below. |
 | `Sim:New(d) -> sim` | 1 | Binds one session to a seam and answers its instance. Below. |
 | `STRINGS` | 1 | The built-in English lines, every key overridable through `d.L` (below). |
+| `SAMPLE` | 3 | `{ retail = rows, forever = rows }`: the collection's sample characters, five per client. Read-only. *Sample characters*, below. |
+| `Sample(client) -> rows` | 3 | A copy of one client's set; nil is the active client. *Sample characters*, below. |
 | `MAJOR` · `MINOR` | 1 | `"LibKa0s-Sim-1.0"` and the live minor. |
 | `MODULES` | 1 | `{ Sim = <minor>, SimTimeline = <minor>, SimPanel = <minor>, SimPanelRender = <minor> }`: the live minors, and the values that pick this document. |
+
+## Sample characters: `Sim.SAMPLE` and `Sim.Sample(client)` (`Sim.lua` minor 3)
+
+The collection's one set of named sample characters: the protagonists a test mode, a sim or a showcase draws (LibKa0s#87; the owner's ruling Q4 of 2026-11-16 in Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`: the standard owns the naming convention, in preview-mode, and LibKa0s owns the data). They are pure data on the shell: no frame, no event, no read of the client until `Sample()` asks which client it is. They are not tied to `Sim:New`; a host's test mode reads them with no session.
+
+### The naming convention
+
+WowAddonStandards preview-mode mirrors this list (`STD-02` of the same run). `tests/test_sim_sample.lua` holds the library's data to it, case by case.
+
+1. **Obviously fictional.** A character name, a surname and a pet name is one capitalized word of 2 to 12 letters (a name the client could hold) that **starts `Sample` or `Mock`**: `Samplehunter`, `Mockflame`, `Mockfang`. A guild follows the same pattern (`Sample Company`, `Mock Brigade`).
+2. **Fixed fictional realms.** `Samplerealm`, and `Mockrealm` for a character from another realm. **Never a real realm name**, and so never a real-looking `Name-Realm` pair, and never a real player's name.
+3. **The client's identity shape** (the standard's `clients` and `client-quirks-§5`). Retail: `Name-Realm`, with a `specID` that is one of the class's own. WoW Forever: `First Surname`, with **no realm in the identity**, a class the client has (no Death Knight, Monk, Demon Hunter or Evoker), and a classic talent tree (1 to 3, in `LibKa0s-Role-1.0`'s `TALENT_GROUP_ROLE` order) in place of a spec ID, which is class-wide there and the client's alone.
+4. **A pet only on a class that has one** (Hunter, Warlock).
+5. **Names are data, never localized**, and never pass through a host's `L` table. A spec label in the data is English, for docs and tests; a host that draws a spec name asks the client for its own.
+6. **The protagonists converge; roster pools do not.** A host that seeds a crowd (DropWatcher's sim roster, MultiMeters' sim world) keeps its own pool for its seeded determinism, and a new pool name still follows rules 1 to 5.
+
+### The data
+
+`Sim.SAMPLE` is `{ retail = { ... }, forever = { ... } }`, each an array of five character rows in this order. The same five people appear on both clients: only the identity shape and the spec form differ.
+
+| # | `name` | Retail `fullName` · `specID` | Forever `fullName` · `tree` | `realm` | `classFile` | `spec` | `role` | `pet` |
+|---|---|---|---|---|---|---|---|---|
+| 1 | `Samplehunter` | `Samplehunter-Samplerealm` · 253 | `Samplehunter Mockstride` · 1 | `Samplerealm` | `HUNTER` | Beast Mastery | `DAMAGER` | `Mockfang` |
+| 2 | `Sampleblade` | `Sampleblade-Samplerealm` · 70 | `Sampleblade Mockvale` · 3 | `Samplerealm` | `PALADIN` | Retribution | `DAMAGER` | — |
+| 3 | `Mockflame` | `Mockflame-Mockrealm` · 63 | `Mockflame Samplewick` · 2 | `Mockrealm` | `MAGE` | Fire | `DAMAGER` | — |
+| 4 | `Samplemender` | `Samplemender-Samplerealm` · 257 | `Samplemender Mockbrook` · 2 | `Samplerealm` | `PRIEST` | Holy | `HEALER` | — |
+| 5 | `Mockshield` | `Mockshield-Mockrealm` · 73 | `Mockshield Sampleforge` · 3 | `Mockrealm` | `WARRIOR` | Protection | `TANK` | — |
+
+A row's fields: `name`, `realm`, `fullName`, `classFile`, `spec`, `role`; Retail's `specID`; Forever's `surname` and `tree`; `pet` where the class has one. On Forever, `realm` is the sample stand-in for what the client's realm label would be, and it is **never part of `fullName`**. `SAMPLE` is read-only by contract: a host that wants to change a row takes a copy.
+
+### `Sim.Sample(client) -> rows`
+
+A fresh copy of one client's set, which the caller owns (a write to it never reaches `SAMPLE` or another host). `client` is `"retail"` or `"forever"`; nil asks `LibKa0s-Compat-1.0`'s `ClientKey()` **at call time** and answers Retail's set where Compat is absent or the client is neither. Anything else raises `Sample: unknown client "<value>"` at the caller's line.
+
+### What a consumer owes
+
+**At its re-vendor: nothing.** The two members are lib-level; the five hosts that check a Sim stub by name (BankLedger, KickCD, LootHistory, Skill Master, DropWatcher) compare it with the **instance** `Sim:New` builds, which gains no member, so no stub moves. A host that also stubs the library table by name adds `SAMPLE` and `Sample`. **At adoption** (phase [3] of the same run), a host's own sample characters move onto the data and its names onto the convention; a host that reads them without the library degrades to a copy of the rows above.
 
 ## The seam: `Sim:NewSeam(compat, opts)`
 

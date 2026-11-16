@@ -545,7 +545,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.3.11.4](./Sim/version-2.3.11.4-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 11** (the default title is the string `PANEL_TITLE`, `%s - SIM`; LibKa0s#78, `LK-78`; the controls' and rows' tooltips beside the panel, LibKa0s#92, `LK-92B`) · **`SimPanelRender.lua` 4** (the title band's marks are Widgets' `HeaderButtons`: settings beside the close; LibKa0s#86, `LK-86`) | v1.105.0 (unreleased) | **Current** |
+| [3.3.11.4](./Sim/version-3.3.11.4-docs.md) | **`Sim.lua` 3** (the sample characters, `SAMPLE` and `Sample(client)`; LibKa0s#87, `LK-87`) · `SimTimeline.lua` 3 · **`SimPanel.lua` 11** (the default title is the string `PANEL_TITLE`, `%s - SIM`; LibKa0s#78, `LK-78`; the controls' and rows' tooltips beside the panel, LibKa0s#92, `LK-92B`) · **`SimPanelRender.lua` 4** (the title band's marks are Widgets' `HeaderButtons`: settings beside the close; LibKa0s#86, `LK-86`) | v1.105.0 (unreleased) | **Current** |
 | [2.3.10.3](./Sim/version-2.3.10.3-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · `SimPanel.lua` 10 · **`SimPanelRender.lua` 3** (an owned panel's header on the band, `R5-L3`) | v1.85.0 – v1.104.0 | Superseded |
 | [2.3.10.2](./Sim/version-2.3.10.2-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · `SimPanel.lua` 10 · **`SimPanelRender.lua` 2** (a 30 high title band) | v1.85.0 | Superseded |
 | [2.3.10.1](./Sim/version-2.3.10.1-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 10** (an owned panel's tooltip title `gtip.title`) · `SimPanelRender.lua` 1 | v1.85.0 | Superseded |
