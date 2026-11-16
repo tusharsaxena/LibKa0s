@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-16, on `feat/2026-11-16-libka0s-75-plus` (off `master` at v1.104.0): the LibKa0s issues #75 and up (Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`). A draft block, extended item by item; the version line below names only what has moved so far.
 
-Versions in this release so far: `LibKa0s-Options-1.0` key **38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.12.1.1.1.4** (OptionsSkinPicker minor 12, OptionsSkinPickerQueue minor 1, new), `LibKa0s-Sim-1.0` key **2.3.11.3** (SimPanel minor 11); every other file at its v1.104.0 minor, and the test kit at revision **57**.
+Versions in this release so far: `LibKa0s-Options-1.0` key **38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.12.1.1.1.4** (OptionsSkinPicker minor 12, OptionsSkinPickerQueue minor 1, new), `LibKa0s-Sim-1.0` key **2.3.11.3** (SimPanel minor 11), `LibKa0s-Skin-1.0` key **18.1.28.10.19.19.1.1.17.4.9** (SkinDefs minor 28, SkinDefsOthers minor 10); every other file at its v1.104.0 minor, and the test kit at revision **57**.
 
 ### Hygiene peels
 
@@ -25,6 +25,10 @@ Versions in this release so far: `LibKa0s-Options-1.0` key **38.5.46.3.7.2.9.17.
 ### Sim
 
 - **The panel's default title says SIM (`LK-78`, LibKa0s#78; SimPanel minor 11).** A panel whose host sets no `d.panel.title` is titled by a new string, `PANEL_TITLE` = `%s - SIM`, where it read the literal `name .. " - Simulation"`; a host overrides it through `d.L` like every other panel string. Every live host sets its own `"<Brand> - SIM"` title, so no player sees the change. One new case in `tests/test_sim_panel_controls.lua`; `docs/api/Sim/version-2.3.11.3-docs.md`.
+
+### Skin
+
+- **Rows and hot marks read in every skin (`LK-82 + LK-84`, LibKa0s#82 and #84; SkinDefs minor 28, SkinDefsOthers minor 10).** Ka0s Default's `list.stripe` is white .08 (was .03, 3 L* off its window against about 10 for every other skin), `list.hover` gold .16 (was .10) and `list.sel` gold .26 (was .18). WoW Forever's hot `#C9A07A` stood 3.4 L* off its rest, and six skins' `icon.hot` was their heading color, so a mark resting at `text.heading` showed no hover: `icon.hot` is now Obsidian `#A6DAFF`, Azeroth `#FFE7A6`, Glass `#D8CCFF`, Ember `#FFE0B8`, and High Contrast, WoW Default, WoW Midnight and WoW Forever white; Glass's `icon.tint` drops to `#9AA2B3` and High Contrast's to `#A0A0A0`. `tests/test_skin_defs.lua` holds every skin to CIE L* floors, each wash composited over every window stop: hot 10 off rest and 10 off heading (High Contrast exempt on the heading by the owner's ruling, held at 9.3), stripe 6 off the window with Ka0s Default's exemption dropped, hover 12 off the window and 3 off a stripe, Ka0s Default's selection 6 off its hover, and the rest tint at contrast 3. No token or member moves; `docs/api/Skin/version-18.1.28.10.19.19.1.1.17.4.9-docs.md`. A host whose `SKIN_FALLBACK` copies Ka0s Default's stripe or hover (LootHistory, BankLedger, DropWatcher) re-copies it at its re-vendor; a host owner token with its own faint `default` (Combat Trail, DpsRace) stays faint until raised; OutfitterReborn's `of.bar.worn`, which follows `icon.hot`, turns white under WoW Default, WoW Midnight and WoW Forever.
 
 ### Test kit
 

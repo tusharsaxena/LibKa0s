@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **18** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **27** · `SkinDefsOthers.lua` **9** · `SkinPaint.lua` **19** · `SkinPaintExtras.lua` **19** · `SkinPaintHud.lua` **1** · `SkinAceConfirm.lua` **1** · `SkinPaintControls.lua` **17** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
 | Shipped in | unreleased (v1.97.0) |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 18.1.27.8.19.19.1.1.17.4.9](./version-18.1.27.8.19.19.1.1.17.4.9-docs.md) (v1.94.0) — the same surface, with no `__FACE_SIZES` row for the two Callout faces. |
-| Superseded by | — |
+| Superseded by | [version 18.1.28.10.19.19.1.1.17.4.9](./version-18.1.28.10.19.19.1.1.17.4.9-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). Core members are used optionally, resolved at call time: `SkinEUI.lua`'s `SafeRegisterEvent` (with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner`), and from `SkinPaintExtras.lua` 18 Core 16's pixel edges (with a Core that lacks them `P.px` answers its `n` and no edge is re-sized on a scale change) |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 18, SkinOwnerTokens = 1, SkinDefs = 27, SkinDefsOthers = 9, SkinPaint = 19, SkinPaintExtras = 19, SkinPaintHud = 1, SkinAceConfirm = 1, SkinPaintControls = 17, SkinEUI = 4, SkinAce = 9 }` |
 
@@ -2196,3 +2196,7 @@ the LibStub race later keeps every owner, record and facade; the resolve cache a
 - `addonName`: no consumer as of v1.83.0, kept because the scan counts a read of the Options descriptor inside a Skin file; it is `lib:New`'s `addonName`, which is passed there.
 - `thirdPartySkinAddons`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
 - `thirdPartySkinsOff`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
+
+## Moving to version 18.1.28.10.19.19.1.1.17.4.9
+
+Nothing breaks, and no member moves. Values do (`LK-82 + LK-84`, LibKa0s#82 and #84): Ka0s Default's `list.stripe` is white .08, `list.hover` gold .16 and `list.sel` gold .26; seven skins' `icon.hot` and Glass's and High Contrast's `icon.tint` change so a mark goes hot visibly. A host whose fallback copies Ka0s Default's stripe or hover re-copies them; a host token that follows `icon.hot` for another meaning draws the new hot. See [version 18.1.28.10.19.19.1.1.17.4.9](./version-18.1.28.10.19.19.1.1.17.4.9-docs.md).

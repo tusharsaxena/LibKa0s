@@ -292,8 +292,11 @@ end)
 -- restated here with their sites in that repo as the inventory named them.
 local LOOTHISTORY = {
   { "text.headingAlt", { 0.91, 0.77, 0.42 } },          -- Panel.lua GOLD_RGB (AH header)
-  { "list.stripe", { 1, 1, 1, 0.03 } },                 -- BrowserTable / HoldingsTab stripe
-  { "list.hover", { 1, 0.82, 0, 0.10 } },               -- BrowserTable / HoldingsTab hover
+  -- BrowserTable / HoldingsTab stripe and hover, .03 and gold .10 until SkinDefs minor 28 raised them
+  -- (LibKa0s#84); LootHistory's SKIN_FALLBACK re-copies them at its re-vendor.
+  { "list.stripe", { 1, 1, 1, 0.08 } },
+  { "list.hover", { 1, 0.82, 0, 0.16 } },
+  { "list.sel", { 1, 0.82, 0, 0.26 } },                 -- SkinDefs minor 28, with the hover
   { "menu.borderAlt", { 0.62, 0.5, 0.18, 1 } },         -- BrowserTable row menu edge
   { "btn.bg", { 0.1, 0.1, 0.12, 0.9 } },                -- the three flat button copies
   { "btn.border", { 0.24, 0.24, 0.27, 0.9 } },
