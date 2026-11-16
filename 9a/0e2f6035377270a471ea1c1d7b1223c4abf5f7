@@ -1,0 +1,6 @@
+LK-75 review (independent): APPROVE.
+- Matches design 3.2: Events.decorateFrame wraps RegisterEvent/RegisterUnitEvent (hold) and UnregisterEvent/UnregisterAllEvents (release when no raw or per-unit registration is left). The hold is per build (M.__kitHeldFrames, made lazily on M), never module-level. mock_ace embedded-frame UnregisterAllEvents releases through build.M.__releaseFrame, nil-guarded.
+- Red-first verified: with the parent's testkit + tests/_kit, the new cases RegisterEvent+GC, RegisterUnitEvent+GC, UnregisterEvent-release and embedded-override-release fail (plus the revision pins). The guard cases (never-registered frame not held, UnregisterAllEvents, dropped build collected) pass on both, as intended.
+- Kit.VERSION 56->57, version-57 doc added, 56 marked superseded, docs/api index + testkit/README + CHANGELOG updated; tests/_kit byte-identical to testkit/. No LibStub payload minor moves (kit only). No test weakened; the only edited existing test is the revision pin.
+- Gate re-run: 4672 passed / 0 failed / 3 skipped; luacheck 0/0 in 351 files. Sizes: mock_events 198, mock_ace 824, test_mock_events 317 lines.
+- Note (not a defect): the base stub's UnregisterEvent clears only __frameEvents, so a per-unit registration keeps the hold until UnregisterAllEvents. That is consistent with __registrations() and predates this item.
