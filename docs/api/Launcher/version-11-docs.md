@@ -18,7 +18,7 @@
 
 ## What changed at this version: the minimap button's tooltip opens toward the screen's center (`LK-92B`, LibKa0s#92)
 
-`Launcher.lua` moves 10 -> **11** for WowAddonStandards launcher-§7 ("no host re-anchors the button's tooltip itself", so the gap is the library's) and standalone-windows, *Tooltip placement*'s launcher rule. No member, descriptor field or string is added or removed.
+`Launcher.lua` moves 10 -> **11** for WowAddonStandards launcher-§7 ("no host re-anchors the button's tooltip itself", so the gap is the library's) and standalone-windows, *Tooltip placement*'s launcher rule. This change adds or removes no member, descriptor field or string.
 
 - **Where it opens.** At the end of the data object's `OnTooltipShow`, after every line is drawn, the tooltip is re-placed by `LibKa0s-Tooltip-1.0`'s `PlaceLauncher`: toward the screen's center by the button center's screen half (upper half: below the button; lower: above) and third (right: right edges level; left: left edges; middle: centered), `TIP_GAP` (2) off the button, one relative point.
 - **Only LibDBIcon's own tooltip on this addon's own button.** LibDBIcon is **not patched**: it owns its tooltip at `ANCHOR_NONE`, points it with its `getAnchors`, then calls `OnTooltipShow`, then shows it. The re-place runs only when the tooltip handed in **is** `LibDBIcon-1.0.tooltip` and its owner is `LibDBIcon:GetMinimapButton(name)` (or, on a LibDBIcon without that call, a button whose `dataObject` is this launcher's object). A broker display's tooltip (Titan Panel, ChocolateBar) and the addon compartment's (same tooltip, the compartment button as owner) keep their anchors, which the client and the display own.
@@ -35,6 +35,35 @@ Still `Launcher.lua` minor **11** (one bump for the release; Ka0sAddonsCommonTas
 - **Why the key matters** (R9 C8): a host whose launcher `name` is not its windows' `addonName` gets settings marks that open nothing. `tests/test_header_buttons.lua` pins the lookup, and each host is checked at its re-vendor.
 
 **What a consumer owes at its re-vendor:** nothing.
+
+## Also at this version: `extraEntries`, the host's own menu rows (`LK-81`, LibKa0s#81)
+
+Still `Launcher.lua` minor **11** (design §3.7; research note R4 §2 and its question 8). One optional descriptor field. No member of the instance or the library is added, and no string: the launcher instance is parity-checked by name in nine addons (R9 M7).
+
+```lua
+extraEntries = {
+  { label   = L["Journal"],                              -- REQUIRED: a plain, non-empty string, the host's own words
+    checked = function() return NS.Journal.IsShown() end, -- optional: a checkbox, its tick asked live; nil: a plain button
+    onClick = function() NS.Journal.Toggle() end,         -- REQUIRED: called with no argument
+    gated   = true,                                       -- optional, default true: grayed while the addon is disabled
+    clients = { "retail", "forever" } },                  -- optional: what LibKa0s-Compat-1.0's ForClient takes
+}
+```
+
+- **At most two.** A third raises at `New`. The menu is a short list of the addon's states, not a second slash help.
+- **Where they go.** After the last supplied toggle (Show window, when the host has it) and before Open settings, in declared order. Open skin selector stays after Open settings.
+- **The row rule** (version 7's). A row with `checked` is a checkbox whose tick is asked on every draw, and a raising `checked` reads unchecked and is reported to `debug`. A row without it is a plain button, built as Open settings is. Either kind grays the same way: while `isEnabled()` answers false, a gated row (the default) is `SetEnabled(false)` and reads `<label> (enable the addon first)`, and a click the client dispatches anyway calls nothing. `gated = false` keeps it live.
+- **The label** is the host's string as given. It is not looked up in `lib.STRINGS` or the descriptor's `L`; only the gray note goes through them.
+- **A click** calls `onClick` once, `pcall`'d, and answers `MenuResponse.Close`. A raise prints `MENU_FAILED` naming the addon, the row's label and what raised.
+- **Per client.** `clients` gates that one row, as `entryClients` gates a built-in one. `entryClients` does not reach the extras.
+- **Checked once, at `New`,** raising at the host's line (`error` level 3, as every descriptor check does): `extraEntries must be a list of entries`, `extraEntries holds at most 2 entries, not <n>`, `extraEntries[<i>] must be a table`, `extraEntries[<i>].label must be a non-empty string`, `extraEntries[<i>].onClick must be a function`, `extraEntries[<i>].checked must be nil or a function`, `extraEntries[<i>].gated must be nil or a boolean`, and `extraEntries[<i>].clients has invalid clients: ...` (with Compat present). The checked list is **copied** at `New`, so a later edit of the host's table never reaches the menu.
+- **What a row may be** (WowAddonStandards launcher-§2, as this run amends it): a secondary window or action the addon already exposes through a slash verb, whose click is that verb's own handler. Never a duplicate of a built-in entry, and never a settings shortcut.
+
+Cases in `tests/test_launcher_extras.lua`.
+
+**The one-consumer ruling (library-stack-§7, bar 1).** `extraEntries` has one consumer: Ka0s Skill Master, whose approved mockup shows a **Journal** entry after Show window (its `NS.Journal.IsShown` / `Toggle`), a gap it records under Known Limitations. The owner ruled on **2026-11-16**, in the session that opened Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/` (`inputs/owner-rulings.md`, question Q1), to **build it now** as a suite-wide part of the launcher rather than wait for a second consumer, and to record the ruling here and in the CHANGELOG. It takes no deviation-register row. Skill Master adopts it in that run's phase [3], which is planned and not yet executed. No second consumer is known.
+
+**What a consumer owes at its re-vendor:** nothing. A host that passes no `extraEntries` draws the same menu as before.
 
 ## What changed at version 10: `New`'s descriptor checks move to a helper (`QFE-LK2`)
 
@@ -238,8 +267,9 @@ Every one of those reports one line naming the addon and the missing piece, thro
 
 ## The descriptor
 
-`lib:New(d)` raises on a missing `name`, `icon` or `openSettings`, and on an `entryClients` value
-`LibKa0s-Compat-1.0`'s `ForClient` refuses (since minor 9, above), and on nothing else. None of the
+`lib:New(d)` raises on a missing `name`, `icon` or `openSettings`, on an `entryClients` value
+`LibKa0s-Compat-1.0`'s `ForClient` refuses (since minor 9, above), and on a malformed `extraEntries`
+(since minor 11, above), and on nothing else. None of the
 three required fields has a defensible default: the folder name keys LibDBIcon's saved position, the icon is the
 addon's face in three places, and left-click **always** opens the panel.
 
@@ -267,6 +297,7 @@ addon's face in three places, and left-click **always** opens the panel.
 | `debugAtEnable` | **L5** | no | `debugAtEnable(tag, message)` — where `Register`'s four state lines go (a broker library absent, no minimap table, `registered`), with the tag `"Launcher"`: the console's `D.DebugAtEnable`, so they land when logging is first turned on rather than being gated off at `OnEnable`. Absent, they go to `debug`. |
 | `owner` | **L6** | no | The `LibKa0s-Skin-1.0` owner the tooltip reads. Defaults to `name`, so a host passes it only where the two differ. See *The status tooltip*. |
 | `openSkinPicker` | **L6** (SF-F2) | no | `function()`: opens the addon's skin picker, the act of its `/<slash> skin` verb. With it, and while `owner` (default `name`) is a registered skin owner, the right-click menu ends with **Open skin selector** (`MENU_SKIN`); on its own it makes a menu where the host supplied no toggle. A raise is caught and printed through the host's printer. |
+| `extraEntries` | **L11** (LK-81) | no | At most two of the host's own menu rows, `{ { label, onClick, checked, gated, clients }, ... }`, drawn after the last toggle and before Open settings. See *Also at this version: `extraEntries`* above. Checked and copied at `New`. |
 | `L` | **L1** | no | Locale override, keyed to `lib.STRINGS`. Read with `rawget`, so a host table that answers an unknown key **with the key** (which every Ka0s locale table does — **anti-pattern #2**) falls through to the library's English rather than printing `MENU_LOCKED` at the player. |
 
 **Consumer census, v1.67.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these:
@@ -315,6 +346,10 @@ generator runs when the menu opens:
    label rather than in an entry tooltip because the client does not run a disabled button's
    motion scripts by default, and a note in a tooltip nobody can raise is no note. *Enabled* stays
    live.
+5. **The host's extra rows** (since version 11), at most two, in declared order: a checkbox where
+   the row passes `checked`, else a plain button, gated by default like the toggles above.
+6. **The actions:** *Open settings* on every host, never grayed, then *Open skin selector* for a
+   skin owner that passes `openSkinPicker`.
 
 **A click** calls the host's handler **once** — `setEnabled(not isEnabled())` for *Enabled*, the
 toggle with no argument for the rest — and answers `MenuResponse.Close`, so the next open reads

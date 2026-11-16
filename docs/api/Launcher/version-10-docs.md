@@ -486,4 +486,4 @@ reconcile. `MenuUtil` is the client's own and needs nothing vendored.
 
 ## Moving to version 11
 
-`Launcher.lua` moves to 11: the minimap button's own tooltip is re-placed toward the screen's center through `LibKa0s-Tooltip-1.0` (`LK-92B`, LibKa0s#92). See [version 11](./version-11-docs.md). No host change is owed.
+`Launcher.lua` moves to 11: the minimap button's own tooltip is re-placed toward the screen's center through `LibKa0s-Tooltip-1.0` (`LK-92B`, LibKa0s#92), and the descriptor gains the optional `extraEntries` (`LK-81`, LibKa0s#81). See [version 11](./version-11-docs.md). No host change is owed.

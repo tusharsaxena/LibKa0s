@@ -406,7 +406,8 @@ end)
 
 test("launcher: minor 6 is live", function()
   -- red under: a change that forgot its bump, which reaches no host holding an older minor.
-  -- Minor 11 re-places its own minimap button's tooltip toward the screen's center (LK-92B, tests/test_tooltip_sites.lua);
+  -- Minor 11 re-places its own minimap button's tooltip toward the screen's center (LK-92B, tests/test_tooltip_sites.lua)
+  -- and takes the host's own menu rows, extraEntries (LK-81, tests/test_launcher_extras.lua);
   -- minor 10 moves New's descriptor checks to a helper (QFE-LK2); 9 validates entryClients; 8 is the per-client entry gate (WFP-LK-04); 7 is Sim mode, Open settings and one row rule; 6 the tooltip following the skin; minor 5 the at-enable queue (tests/test_atenable.lua).
   assertEqual(lib.MINOR, 11)
   assertEqual(lib.MODULES.Launcher, 11)

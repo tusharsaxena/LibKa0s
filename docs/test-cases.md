@@ -2716,6 +2716,25 @@ Total.
 - launcher: Open skin selector is grayed with the note while the addon is disabled
 - launcher: it alone makes a menu, and a host that is no skin owner or passes nothing gets none
 
+### test_launcher_extras.lua (16)
+
+- launcher extras: they sit after Show window and before Open settings, in declared order
+- launcher extras: they follow Open skin selector's rule, staying above Open settings
+- launcher extras: a host with extras and no toggle still gets them, above Open settings
+- launcher extras: no field, or an empty one, leaves the menu exactly as it was
+- launcher extras: `checked` makes a checkbox whose tick is asked live; none makes a button
+- launcher extras: a click calls the host's onClick once and closes the menu
+- launcher extras: gated by default, grayed with the note while disabled, and calling nothing
+- launcher extras: `gated = false` stays live while the addon is disabled
+- launcher extras: the label is the host's plain string, through no lib.STRINGS key
+- launcher extras: a raising onClick is reported as MENU_FAILED, named by its label
+- launcher extras: a raising `checked` costs its tick, not the menu
+- launcher extras: an entry's `clients` builds it only on those clients
+- launcher extras: each malformed field raises at New with a named message
+- launcher extras: two well-formed entries register
+- launcher extras: the menu reads the list New checked, not a later edit of the host's table
+- launcher extras: the instance gains no member
+
 ### test_atenable.lua (21)
 
 - atenable: the instance carries DebugAtEnable, with its bound pinned
@@ -5587,6 +5606,7 @@ Total.
 | test_slash_debug.lua | 14 |
 | test_launcher.lua | 50 |
 | test_launcher_skin.lua | 8 |
+| test_launcher_extras.lua | 16 |
 | test_atenable.lua | 21 |
 | test_options.lua | 57 |
 | test_options_render.lua | 27 |
@@ -5707,4 +5727,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4817** |
+| **Total** | **4833** |
