@@ -1,0 +1,8 @@
+SR-L4 review (independent): APPROVE.
+- Ruling 5 met: Ka0s Default list.header.bg white .04 -> black .35 (Skill Master sm.headerBg); seven mockup hdrBg moved to a darker shade of their own window, High Contrast #3D3D3D (nothing darker than black), WoW Forever .35 kept. MOCK_MAP hdrBg -> list.header.bg only, so no other token moves; S.SortHeaderBar follows.
+- Tests: two new cases in tests/test_skin_defs.lua over every window stop (LK-82 CIE L* method): dark band >=1.5 under row / light band >=6 over, >=6 off stripe, >=6 off hover, header text >=45 off band. Verified red-first: with the parent's SkinDefs/SkinDefsOthers the band test FAILS (ka0s 4.2 L* over row, want >=6). The text test is a declared guard (green from the start). No test weakened; only additions.
+- Minors: SkinDefs 28, SkinDefsOthers 10 = the branch's single bumps vs master (27, 9); reused, not re-bumped.
+- Docs: docs/api Skin 18.1.28... amended (what-changed bullet, host-owes, token table, eight-skin table); CHANGELOG #84 entry amended; test-cases.md regenerated. No members/aliases involved.
+- EOL: all six touched files CRLF-only. Sizes: SkinDefs 543, SkinDefsOthers 826, test_skin_defs 1058 (<1500).
+- Gate re-run: ka0s-bounded lua tests/run.lua 4891 passed, 0 failed, 3 skipped; ka0s-bounded luacheck . 0/0 in 369 files.
+- Minor (non-blocking): LibKa0s/SkinPaintControls.lua:948 doc comment still says list.header.bg is 'nil in Ka0s Default' (stale since before this item, now plainly wrong: black .35). The 1.5 L* dark-band floor is low but justified by the owner-passed SM reference; in-client smoke owed.
