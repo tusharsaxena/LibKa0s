@@ -58,6 +58,7 @@ the file you need:
 | Major | Key shape | In-game check |
 |---|---|---|
 | `LibKa0s-Core-1.0` | `<Core>.<CorePixel>` (one number through 16) | `LibStub("LibKa0s-Core-1.0").MODULES` |
+| `LibKa0s-Tooltip-1.0` | `<Tooltip>` | `LibStub("LibKa0s-Tooltip-1.0").MODULES` |
 | `LibKa0s-Env-1.0` | `<Env>` | `LibStub("LibKa0s-Env-1.0").MODULES` |
 | `LibKa0s-Compat-1.0` | `<Compat>` | `LibStub("LibKa0s-Compat-1.0").MODULES` |
 | `LibKa0s-Role-1.0` | `<Role>` | `LibStub("LibKa0s-Role-1.0").MODULES` |
@@ -129,6 +130,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [4](./Core/version-4-docs.md) | `Core.lua` 4 | v1.7.0 | Superseded |
 | [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0 – v1.6.3 | Superseded |
 | [2](./Core/version-2-docs.md) | `Core.lua` 2 | v1.0.0 – v1.2.0 | Superseded |
+
+### `LibKa0s-Tooltip-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Tooltip/version-1-docs.md) | **`Tooltip.lua` 1** (the new major: `TIP_GAP`, `Own`, `PlaceBeside`, `PlaceAttached`, `PlaceLauncher`, `SetGroup`, `GroupOf`, `Replace` and the pure `__solve*`; LibKa0s#92, plan row LK-92A) | unreleased (v1.105.0) | **Current** |
 
 ### `LibKa0s-Env-1.0`
 
@@ -556,7 +563,7 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [57](./testkit/version-57-docs.md) | same files; **`mock_events.lua`**, **`mock_ace.lua`**: a frame is held, per build, while it has a raw event registration, and released by `UnregisterEvent`, `UnregisterAllEvents` or the embedded-frame override (`M.__heldFrame`, `M.__releaseFrame`; LibKa0s#75, plan row LK-75) | unreleased (v1.105.0) | **Current** |
+| [57](./testkit/version-57-docs.md) | **adds `mock_screen.lua`**, the opt-in fake screen and tooltip recorder (LibKa0s#92, plan row LK-92A); **`mock_events.lua`**, **`mock_ace.lua`**: a frame is held, per build, while it has a raw event registration, and released by `UnregisterEvent`, `UnregisterAllEvents` or the embedded-frame override (`M.__heldFrame`, `M.__releaseFrame`; LibKa0s#75, plan row LK-75) | unreleased (v1.105.0) | **Current** |
 | [56](./testkit/version-56-docs.md) | same files; **`glyphs.lua`**: the generated face list gains `BebasNeue-Regular.ttf` and `RussoOne-Regular.ttf` (`LibKa0s-Media-1.0` 13.1), the safe set unchanged at 117 non-ASCII code points (plan row L2) | v1.97.0 – v1.104.0 | Superseded |
 | [55](./testkit/version-55-docs.md) | same files; **`vendor_sync.lua`** reads the consumer's `LibKa0s sounds:` line (directly under the icons line: `none.`, `all.` or a comma-separated list of `callout/<voice>` packs; **no line means none**) and holds `libs/LibKa0s/media/sounds/` to exactly the declared packs, credits and license included; publishes `parseSoundLine`, `soundDeclaration`, `soundCatalog` and `requiredSounds` for `tools/prune-icons.lua`; a pair takes a `sounds` field and `register` a `soundsPattern` opt (plan row L5) | v1.96.0 | Superseded |
 | [54](./testkit/version-54-docs.md) | same files; **`client_globals.lua`**: `strip`, `scan` and `judge` split into helpers so no function is over CCN 15, no behavior change (`QFE-LK2`) | v1.95.0 | Superseded |

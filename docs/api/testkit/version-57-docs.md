@@ -6,18 +6,20 @@
 
 | | |
 |---|---|
-| Payload | `testkit/`, the files version 56 lists |
+| Payload | `testkit/`, the files version 56 lists, plus `mock_screen.lua` |
 | Version | **57** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | unreleased (v1.105.0) |
 | Status | **Current** |
-| Supersedes | [version 56](version-56-docs.md) — the same surface, where a frame held only by its registration could be collected |
+| Supersedes | [version 56](version-56-docs.md) — a frame held only by its registration could be collected, and no suite could fake a screen to place a tooltip on |
 | Superseded by | — |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `57` |
 
-Everything revision 56 describes is unchanged here except what follows. No file is added. Three
-change: `framework.lua`, whose `Kit.VERSION` is 57, `mock_events.lua` and `mock_ace.lua`.
+Everything revision 56 describes is unchanged here except what follows. One file is added,
+`mock_screen.lua` (LibKa0s#92, plan row LK-92A). Three change: `framework.lua`, whose `Kit.VERSION`
+is 57, `mock_events.lua` and `mock_ace.lua` (LibKa0s#75, plan row LK-75). Both rode the one
+revision on purpose (design section 3.2): a consumer re-vendors the kit once for v1.105.0.
 
 ## What changed
 
@@ -58,9 +60,43 @@ itself).
 Both appear on a build once it has made its first tracked frame. `M.__kitHeldFrames` is the set
 itself and is internal.
 
+### A fake screen and a tooltip recorder (LibKa0s#92): `mock_screen.lua`
+
+Through revision 56 every geometry read on a base frame (`GetLeft`, `GetTop`,
+`GetEffectiveScale`, `GetCenter`) answered from `mock_base.lua`'s metatable, with the frame itself,
+so a tooltip placer that guards its reads (as `LibKa0s-Tooltip-1.0` does) placed nothing and no
+suite could assert where a tooltip opened. WowAddonStandards standalone-windows' *Tooltip placement*
+asks for exactly that assertion (Verification, SHOULD): "driving the fake screen through a
+right-fits and a right-does-not-fit layout and asserting the side, the top alignment and the gap
+from the tooltip's recorded points".
+
+**Opt-in**, a file of its own, as `mock_layers.lua` is, because most suites never ask. It returns an
+installer, called on a finished mock, which returns the screen:
+
+```lua
+local scr = dofile("tests/_kit/mock_screen.lua")(M, { width = 1920, height = 1080, scale = 1 })
+```
+
+| Member | What it does |
+|---|---|
+| the installer `(M, opts)` | Sets `M.UIParent`'s `GetWidth`, `GetHeight`, `GetEffectiveScale`, `GetLeft` (0), `GetBottom` (0), `GetRight`, `GetTop` and `GetCenter` by rawset, from `opts.width`, `opts.height` and `opts.scale` (defaults 1920, 1080, 1). Answers `scr` |
+| `scr.restore()` | Puts UIParent's previous raw fields back |
+| `scr.resize(w, h, s)` | Moves the screen (each optional) |
+| `scr.frame(spec)` | A tracked frame (`M.CreateFrame`) answering `GetLeft`, `GetBottom`, `GetRight`, `GetTop`, `GetWidth`, `GetHeight`, `GetCenter` from `spec.left`, `spec.bottom`, `spec.width`, `spec.height` in its own units (a missing figure answers nil: an unplaced frame), `GetEffectiveScale` (`spec.scale`, 1), `GetParent` (`spec.parent`, UIParent) and `IsShown` (`spec.shown`, true). `frame:__place(l, b, w, h)` moves it |
+| `scr.tooltip(spec)` | A tracked frame that records `SetOwner`, `ClearAllPoints`, `SetPoint` and `SetAnchorType` in one ordered log (`tip.__log`), keeps its points (`tip.__points`, the last in `tip.__point`), answers `GetOwner`, `GetAnchorType`, `GetWidth` / `GetHeight` (`spec.width`, `spec.height`, defaults 200 and 80) and `GetEffectiveScale` (`spec.scale`). `tip:__size(w, h)` grows it |
+| `scr.rectOf(tip)` | The tooltip's `left, bottom, right, top` in **screen units**, from its last point, when that point is on UIParent or on a frame this screen built; nil otherwise. An unknown point name raises naming it |
+| `scr.ops(tip)` | The log's op names in order, as one string (`"SetOwner SetAnchorType ClearAllPoints SetPoint"`) |
+
+Figures a case gives are in the frame's **own** units, as the client's `GetLeft` answers; screen
+units are own units times the frame's effective scale. Frames built before the install and frames
+the base builds for itself are not touched; `M.GameTooltip` stays the base's, so a suite builds its
+tooltip with `scr.tooltip` and hands it to the code under test. Cases in LibKa0s's
+`tests/test_mock_screen.lua`; the library's own use is `tests/test_tooltip_place.lua`.
+
 ## What a consumer owes
 
-Re-vendor the kit with the library, per `docs/releasing.md`, and run the full suite. A suite that
+Re-vendor the kit with the library, per `docs/releasing.md` (the whole folder, so the new
+`mock_screen.lua` arrives with it; nothing loads it unless a suite asks), and run the full suite. A suite that
 relied, knowingly or not, on a collection dropping a registered frame (for example a teardown check
 that counted `M.__registrations()` after letting the frame go out of scope) now sees the registration
 and turns red. That is the client's behavior. A suite that held a frame only to keep its events alive

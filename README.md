@@ -10,13 +10,17 @@ before changing anything. [`DEPENDENCIES.md`](DEPENDENCIES.md) lists what to ins
 
 LibKa0s is a Ka0s-owned shared library. Ka0s WoW addons vendor it the way they vendor Ace3: each one
 copies it into its own `libs/` folder instead of depending on it at runtime. Every module is one
-LibStub major, and twenty-four of them ship today:
+LibStub major, and twenty-five of them ship today:
 
 - `LibKa0s-Core-1.0`: the small stateless seams every other module sits on. That means secret-safe
   stringification, the window skin and its close button, a prefixed chat printer,
   `SafeRegisterEvent`, the pcalled event registration helper that stops one unknown event name from
   taking the rest of a registration block down with it, and `MakeResizable`, the bottom-right grip
   the debug console, the copy windows and the perf panel resize from.
+- `LibKa0s-Tooltip-1.0` places a tooltip where WowAddonStandards' tooltip-placement rule puts it:
+  beside the window group for a body element, attached and centered for a chrome element, and toward
+  the screen's center for a minimap button, 2 px (`TIP_GAP`) off what it is placed against. It reads
+  the frames' geometry and writes one point; it depends on LibStub and nothing else.
 - `LibKa0s-Env-1.0` reads the handful of client facts every addon needs, and reads them one way: the
   TOC manifest, the player's map id and the player's zone labels.
 - `LibKa0s-Compat-1.0` holds the version-variant spell and spec readers that two or more addons had
@@ -152,7 +156,7 @@ addon must work with no other addon installed.
 
 ## The modules
 
-There are twenty-four LibStub majors, and a host adopts each one independently. The full contract for
+There are twenty-five LibStub majors, and a host adopts each one independently. The full contract for
 each (the descriptor, every public member, every row field) lives in [`docs/api/`](docs/api/), one
 document per shipped version. This section is the map and that directory is the reference. Nothing
 here restates a signature, because a second copy of a contract is a contract that drifts.
@@ -160,6 +164,7 @@ here restates a signature, because a second copy of a contract is a contract tha
 | Major | What it is | Files | Current version |
 |---|---|---|---|
 | `LibKa0s-Core-1.0` | The secret-safe seam, the shared window skin, and the prefixed chat printer. It depends on LibStub and nothing else, and that is what keeps the rest adoptable by non-Ace addons. | `Core.lua`, `CorePixel.lua` | [17.1](docs/api/Core/version-17.1-docs.md) |
+| `LibKa0s-Tooltip-1.0` | Tooltip placement (WowAddonStandards standalone-windows, *Tooltip placement*). `PlaceBeside` (the body rule: beside the window group, right when it fits else left, top level with the element, a companion's tips on its side away from the main window), `PlaceAttached` (the chrome rule: centered below the top chrome or above the footer, flipping only at the screen's edge), `PlaceLauncher` (toward the screen's center), `SetGroup` / `GroupOf` (window groups), `Replace` and `TIP_GAP = 2`. No dependency, no frames, no events. | `Tooltip.lua` | [1](docs/api/Tooltip/version-1-docs.md) |
 | `LibKa0s-Env-1.0` | The handful of client facts every Ka0s addon reads, read one way: the TOC manifest, the player's map id and the player's zone labels. It has no state, no frames and no events. | `Env.lua` | [2](docs/api/Env/version-2-docs.md) |
 | `LibKa0s-Compat-1.0` | The version-variant client readers that two or more Ka0s addons wrote the same way: `GetSpellInfo`, `GetSpellName`, `GetSpellTexture`, `GetSpellCooldown`, `GetSpecialization` and `GetSpecializationInfo`, each a ladder from the namespaced API down to the deprecated global. Add the secret-value seam every guard asks before it compares (`IsSecret`, `CanAccess`, `IsSafeKey`) and you have nine stateless functions, with no frames, no events and no addon framework. | `Compat.lua` | [4](docs/api/Compat/version-4-docs.md) |
 | `LibKa0s-Role-1.0` | The player's specialization and the role it plays. `Spec()`, `SpecsForClass(classFile)` (read from the client, so WoW Forever needs no seed), `Groups()` (WoW Forever's talent groups and the points in each), `Resolve(store)` (`role, source, detail`: the player's override, the group-assigned role, on Forever the talent group with the most points through a per-class seed, the spec API's role, then the last saved answer) and `SetOverride(store, role)`. Framework-free; the host passes its per-character store. | `Role.lua` | [1](docs/api/Role/version-1-docs.md) |
@@ -324,7 +329,7 @@ then **re-vendor every consumer**. That last step is the one that gets forgotten
 forgotten once already, with both repos' suites green the whole time.
 
 Re-vendoring is **whole-folder**, never file by file, with two carve-outs: `media/icons/` and
-`media/sounds/` ship only the icons and voice packs the consumer declares (see *Installing* above). Every major except Core (Env, Compat, Role, Lifecycle,
+`media/sounds/` ship only the icons and voice packs the consumer declares (see *Installing* above). Every major except Core and Tooltip (Env, Compat, Role, Lifecycle,
 Bus, Schema, Pool, Item, Glow, Toast, Callout, Charts, Media, Skin, Widgets, DebugLog, Slash, Launcher, Options, IconBrowser, Perf and Sim) resolves
 `LibKa0s-Core-1.0` before it calls `NewLibrary`, and returns outright if Core is missing or below the
 minor it needs. A consumer that copied a new `Perf.lua` over an old `Core.lua` gets no probe at all,
@@ -339,6 +344,7 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   LibKa0s.xml        -- lib load list, referenced from the host addon's TOC lib block; Core first
   Core.lua           -- LibKa0s-Core-1.0, MINOR at the top of the file
   CorePixel.lua      -- pixel edges, shared by Widgets and the Skin major, same module, PIXEL_MINOR of its own
+  Tooltip.lua        -- LibKa0s-Tooltip-1.0, MINOR at the top of the file; needs nothing but LibStub
   Env.lua            -- LibKa0s-Env-1.0, MINOR at the top of the file; needs Core
   Compat.lua         -- LibKa0s-Compat-1.0, MINOR at the top of the file; needs Core
   Role.lua           -- LibKa0s-Role-1.0, MINOR at the top of the file; needs Core (Compat at call time)

@@ -23,6 +23,11 @@ local MAJORS = {
     },
   },
   {
+    major = "LibKa0s-Tooltip-1.0",
+    files = { "Tooltip" },
+    primary = "Tooltip",
+  },
+  {
     major = "LibKa0s-Env-1.0",
     files = { "Env" },
     primary = "Env",

@@ -1,0 +1,18 @@
+{
+  "major": "LibKa0s-Tooltip-1.0",
+  "versionKey": "1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Tooltip", "minor": 1 }
+  ],
+  "members": [
+    { "name": "GroupOf", "kind": "function" },
+    { "name": "Own", "kind": "function" },
+    { "name": "PlaceAttached", "kind": "function" },
+    { "name": "PlaceBeside", "kind": "function" },
+    { "name": "PlaceLauncher", "kind": "function" },
+    { "name": "Replace", "kind": "function" },
+    { "name": "SetGroup", "kind": "function" },
+    { "name": "TIP_GAP", "kind": "number" }
+  ]
+}

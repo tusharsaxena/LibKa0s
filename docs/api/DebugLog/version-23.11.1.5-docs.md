@@ -45,6 +45,8 @@
 - The window keeps its **700 × 344** default (debug-logging-§1) and its **four-line minimum**, now over 24 px of footer: `30 + 6 + 4 × (fontSize + 2) + 24 + 4`, 112 at the default font size (104 through minor 4). The log and the scrollbar end `FOOTER.HEIGHT + 4` above the bottom, so the visible log loses 8 px at any size.
 - **The handles stay**: `f.lineCount` is the footer's right line (the shell's `UpdateStatus` writes it, unchanged), `f.statusDivider` is its hairline, and `f.footer` is the footer. Resolved at call time and guarded: a Widgets without `Footer` (a load failure, since every payload that carries this file carries Widgets 27) builds a console with no counter, which `UpdateStatus` already tolerates. Cases in `tests/test_debuglog_footer.lua`.
 
+**The identity header names Tooltip** (Diagnostics minor 11, the same bump; LibKa0s#92, `LK-92A` of the same bundle). The new `LibKa0s-Tooltip-1.0` is added to the report's `LibKa0s running:` line, in `tests/majors.lua` order, directly after `Core`: `Core`, `Tooltip`, `Env`, `Compat`, `Role`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Glow`, `Toast`, `Callout`, `WaypointArrow`, `Charts`, `Media`, `Skin`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `IconBrowser`, `Perf`, `Sim`. A major absent from the client is still skipped. No member change.
+
 **What a host owes at its re-vendor** (D9):
 
 - **Its library-absent DebugLog stub gains `Report` and `Serialize`**, because `Kit.assertSurfaceParity` compares the stub against the instance by name: 14 hosts have that case (R9 C4). The stub streams the report to chat with no pointer, the ruling's library-absent arm, and answers a serialize with one line. Both are methods:

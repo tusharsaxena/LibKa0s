@@ -1,6 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 	<Script file="Core.lua"/>
 	<Script file="CorePixel.lua"/>
+	<Script file="Tooltip.lua"/>
 	<Script file="Env.lua"/>
 	<Script file="Compat.lua"/>
 	<Script file="Role.lua"/>

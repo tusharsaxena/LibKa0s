@@ -96,6 +96,60 @@ Total.
 - resize: a frame anchored to a cell comes back onto its anchor, with the new size
 - resize: a window anchored to the screen is left where the drag put it
 
+### test_tooltip.lua (29)
+
+- tooltip: the major registers minor 1 and publishes TIP_GAP = 2
+- tooltip beside: right fits
+- tooltip beside: right fits exactly
+- tooltip beside: right misses by one, left fits
+- tooltip beside: left preferred and fits
+- tooltip beside: left preferred, misses: right
+- tooltip beside: left fits exactly
+- tooltip beside: bottom clamp: slides up to fit
+- tooltip beside: top clamp: slides down to the top
+- tooltip beside: taller than the screen: top kept
+- tooltip beside: neither side fits answers nil, the fallback's cue
+- tooltip beside: the tooltip never covers the group on either side
+- tooltip attached: top zone: below, centered
+- tooltip attached: top zone named
+- tooltip attached: top zone at the bottom: flips up
+- tooltip attached: bottom zone: above, centered
+- tooltip attached: bottom zone at the top: flips down
+- tooltip attached: x clamp at the left edge
+- tooltip attached: x clamp at the right edge
+- tooltip attached: no room either side: own side
+- tooltip attached: bottom zone, no room: own side
+- tooltip attached: a tooltip wider than the screen keeps its left edge on screen
+- tooltip launcher: upper right opens toward the center
+- tooltip launcher: upper middle opens toward the center
+- tooltip launcher: upper left opens toward the center
+- tooltip launcher: lower right opens toward the center
+- tooltip launcher: lower middle opens toward the center
+- tooltip launcher: lower left opens toward the center
+- tooltip launcher: the thirds and the half are read from the button's center
+
+### test_tooltip_place.lua (19)
+
+- tooltip place: Own: ANCHOR_NONE on the element, or on opts.owner
+- tooltip place: beside: right fits, TOPLEFT on UIParent at the group's right + 2, top level with the row
+- tooltip place: beside: right does not fit, TOPRIGHT at the group's left - 2
+- tooltip place: beside: the comparison side is set before the point, ANCHOR_NONE-owned
+- tooltip place: beside: neither side fits, centered 2 under the row; at the bottom, above it
+- tooltip place: beside: clamped vertically, sliding only as far as needed
+- tooltip place: beside: scale, a 0.8 window and a 1.0 tooltip measure in one space
+- tooltip place: beside: a 0.5 tooltip's point is written in its own units
+- tooltip place: beside: a companion docked right of the main window opens its tips on its right
+- tooltip place: beside: a companion docked left prefers the left; the far side when that misses
+- tooltip place: beside: a hidden companion drops out of the group
+- tooltip place: beside: the group may be a frame, a list, a { main, panels } table or a function
+- tooltip place: GroupOf: a registered ancestor decides; else the outermost frame under UIParent
+- tooltip place: unreadable geometry places nothing and answers nil
+- tooltip place: a secret geometry read counts as unreadable
+- tooltip place: attached: below the top chrome, above the bottom chrome, centered
+- tooltip place: launcher: relative to the button, 2 off it, toward the screen's center
+- tooltip place: launcher: the button's own scale (the minimap's) is applied before the third is read
+- tooltip place: Replace re-runs the last placement after the tooltip grew
+
 ### test_env.lua (9)
 
 - env: GetAddOnMetadata reads the TOC through C_AddOns
@@ -5011,6 +5065,13 @@ Total.
 - paint mock: a StatusBar records its fill texture and color, and answers them back
 - paint mock: only a StatusBar answers the StatusBar family
 
+### test_mock_screen.lua (4)
+
+- screen mock: UIParent answers the screen's size and scale, and restore puts them back
+- screen mock: a frame answers its edges, center, scale, parent and shown state
+- screen mock: a tooltip records owner, points and anchor type in one ordered log
+- screen mock: rectOf reads a point relative to a frame the screen built, at the tooltip's scale
+
 ### test_surface_parity.lua (7)
 
 - parity: a stub carrying every public member of a live major passes
@@ -5380,6 +5441,8 @@ Total.
 |-------|------:|
 | test_core.lua | 52 |
 | test_core_resize.lua | 26 |
+| test_tooltip.lua | 29 |
+| test_tooltip_place.lua | 19 |
 | test_env.lua | 9 |
 | test_compat.lua | 64 |
 | test_role.lua | 29 |
@@ -5570,6 +5633,7 @@ Total.
 | test_mock_bindings.lua | 17 |
 | test_mock_layers.lua | 7 |
 | test_mock_paint.lua | 16 |
+| test_mock_screen.lua | 4 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
@@ -5590,4 +5654,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4724** |
+| **Total** | **4776** |
