@@ -28,8 +28,8 @@
 `IconBrowser.lua` moves 1 -> **2** for WowAddonStandards v2.112.0 (standalone-windows, *Tooltip placement*: the icon browser is a library-drawn window, the library's to move in the same release). No member, `spec` field or string is added or removed.
 
 - **A cell's tooltip** (the icon's name, a credit, the click hint) is owned at `ANCHOR_NONE`, filled, shown, then placed **beside the browser window** (`LibKa0s-Tooltip-1.0`'s `PlaceBeside`, the window as the group): `TOPLEFT` at its right edge + 2 when it fits, else `TOPRIGHT` at its left edge - 2, level with the cell's top. It was `SetOwner(cell, "ANCHOR_RIGHT")`, inside the window.
-- **A toolbar control's tooltip** (the filter, the set, the swatch, the search) is the window's top chrome, so it attaches centered **below the control** (`PlaceAttached(tip, control, "top")`). The browser draws it itself, in `AttachTooltip`'s lines and colors (the host Options instance's `__tipColor`: the title `gtip.value`, the body `gtip.line`), and no longer calls `spec.helpers.AttachTooltip`, whose `ANCHOR_RIGHT` the Settings canvas keeps.
-- With unreadable geometry, or no Tooltip major, either is attached below its element by a relative point, never at the cursor.
+- **A toolbar control's tooltip** (the filter, the set, the swatch, the search) attaches centered **above the control** (`PlaceAttached(tip, control)`; below only when the screen has no room above, `SR-L1` of the run's smoke round 1, where it opened below). The browser draws it itself, in `AttachTooltip`'s lines and colors (the host Options instance's `__tipColor`: the title `gtip.value`, the body `gtip.line`), and no longer calls `spec.helpers.AttachTooltip`, whose `ANCHOR_RIGHT` the Settings canvas keeps.
+- With unreadable geometry, or no Tooltip major, either is attached above its element by a relative point, never at the cursor.
 
 **What a consumer owes at its re-vendor:** nothing; both are smoke lines in every host that opens the browser (Ka0s Quick Comms, OutfitterReborn). A host whose tests load library files by name adds `Tooltip.lua` after `CorePixel.lua`.
 

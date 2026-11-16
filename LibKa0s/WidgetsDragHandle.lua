@@ -113,8 +113,8 @@ if not lib then return end
 -- Minor 14 (LK-92B of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS, LibKa0s#92): the
 -- tooltip half (the descriptor's bands, its owner and the placement hook) peeled, unchanged, to
 -- WidgetsDragHandleTip.lua, read through lib.__dragTipKit at hover time; then the strip's tooltip, and
--- its marks', attaches centered below the strip through LibKa0s-Tooltip-1.0 (a HUD strip is top
--- chrome), owned by UIParent, and `tooltipOwner`, `tooltipAnchor` and a descriptor's `owner` and
+-- its marks', attaches centered above the strip through LibKa0s-Tooltip-1.0 (below only without
+-- room above: SR-L1 of the same bundle's smoke round 1), owned by UIParent, and `tooltipOwner`, `tooltipAnchor` and a descriptor's `owner` and
 -- `anchor` are retired (accepted, not read). WidgetsDragHandleTip.lua's WHERE IT OPENS.
 -- Also minor 14 (LK-86 of the same run, LibKa0s#86): `spec.settings` (true, or a function) opts the
 -- strip into a settings mark, the close mark's twin, left of the X (else of the "?"), opening
@@ -912,14 +912,14 @@ end
 ---                                 strip "Consumable Master" and its mark "Macro bar", with
 ---                                 different bodies and different anchors, and writes both.
 ---   tooltipOwner string|nil       RETIRED at minor 14 (accepted, not read). Every tooltip is owned
----                                 by UIParent at ANCHOR_NONE and attached centered below the strip
+---                                 by UIParent at ANCHOR_NONE and attached centered above the strip
 ---                                 (LibKa0s-Tooltip-1.0's PlaceAttached; WidgetsDragHandleTip.lua).
 ---   tooltipAnchor string|nil      RETIRED at minor 14, as `tooltipOwner`.
 ---   tooltipPlace function|nil     minor 4. tooltipPlace(tip, frame) -> true when it placed the
 ---                                 tooltip. The tooltip is owned by UIParent at ANCHOR_NONE,
 ---                                 drawn, shown, and then handed to this under pcall with the
 ---                                 frame hovered. A raise or any answer but `true` falls back to the
----                                 library's attached placement below the strip (minor 14; the
+---                                 library's attached placement above the strip (minor 14; the
 ---                                 cursor before). A descriptor's own `place` wins; a value that is
 ---                                 not a function is ignored.
 ---   edge        function|nil      the host's own 1px edge painter, called as

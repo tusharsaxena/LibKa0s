@@ -30,8 +30,9 @@
 -- ── TOOLTIPS ─────────────────────────────────────────────────────────────────────────────────
 --
 -- A mark with a `tip` shows it in the game tooltip, owned at ANCHOR_NONE and placed by the chrome
--- rule, attached and centered below the mark, through LibKa0s-Tooltip-1.0's PlaceAttached (read at
--- hover time; without it, the same by a relative point, never at the cursor). `tips = false` draws
+-- rule, attached and centered ABOVE the mark (below only without room above; SR-L1 of the same
+-- bundle's smoke round 1), through LibKa0s-Tooltip-1.0's PlaceAttached (read at hover time; without
+-- it, above by a relative point, never at the cursor). `tips = false` draws
 -- none: the debug console's choice (DebugLogWindow.lua's makeIconButton note, research note R9 C2),
 -- where a tooltip under the title bar sits on the log's first line.
 --
@@ -94,7 +95,7 @@ local function paint(b, hot)
   b.label:SetTextColor(c[1], c[2], c[3])
 end
 
---- The mark's tooltip: its `__tip`, read at hover time, in the owner's `gtip.title`, placed below it.
+--- The mark's tooltip: its `__tip`, read at hover time, in the owner's `gtip.title`, placed above it.
 local function showTip(b)
   local tip, words = GameTooltip, b.__tip
   if type(words) ~= "string" or words == "" or not (tip and tip.SetOwner) then return end
@@ -104,9 +105,9 @@ local function showTip(b)
   if type(c) == "table" then tip:SetText(words, c[1], c[2], c[3], 1, true) else tip:SetText(words, nil, nil, nil, nil, true) end
   tip:Show()
   local Tip = LibStub("LibKa0s-Tooltip-1.0", true)
-  if Tip and type(Tip.PlaceAttached) == "function" and Tip.PlaceAttached(tip, b, "top") then return end
+  if Tip and type(Tip.PlaceAttached) == "function" and Tip.PlaceAttached(tip, b) then return end
   tip:ClearAllPoints()
-  tip:SetPoint("TOP", b, "BOTTOM", 0, -2)
+  tip:SetPoint("BOTTOM", b, "TOP", 0, 2)
 end
 
 local function hideTip(b)

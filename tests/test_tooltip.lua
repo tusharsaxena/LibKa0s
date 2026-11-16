@@ -65,21 +65,29 @@ end)
 
 -- ── the chrome rule ──────────────────────────────────────────────────────────────────────────
 
--- { name, el, eb, er, et, tipW, tipH, zone, side, point, x, y }
+-- One rule for every attached tooltip (smoke round 1, ruling 2, SR-L1): ABOVE the element, centered,
+-- the gap off it, because the pointer hangs down from its hotspot and above is the side it never
+-- covers; BELOW only when there is no room above. The tenth argument, the zone that once chose the
+-- side ("top" below, "bottom" above), is retired: a caller still passing one moves nothing.
+-- { name, el, eb, er, et, tipW, tipH, retired zone, side, point, x, y }
 local ATTACHED = {
-  { "top zone: below, centered",          900, 500, 1000, 520, 200, 80, nil,      "below", "TOP",    950, 498 },
-  { "top zone named",                     900, 500, 1000, 520, 200, 80, "top",    "below", "TOP",    950, 498 },
-  { "top zone at the bottom: flips up",   900, 40, 1000, 60, 200, 80, "top",      "above", "BOTTOM", 950, 62 },
-  { "bottom zone: above, centered",       900, 500, 1000, 520, 200, 80, "bottom", "above", "BOTTOM", 950, 522 },
-  { "bottom zone at the top: flips down", 900, 1020, 1000, 1040, 200, 80, "bottom", "below", "TOP",  950, 1018 },
-  { "x clamp at the left edge",           0, 500, 40, 520, 200, 80, "top",        "below", "TOP",    100, 498 },
-  { "x clamp at the right edge",          1880, 500, 1920, 520, 200, 80, "top",   "below", "TOP",    1820, 498 },
-  { "no room either side: own side",      900, 40, 1000, 1060, 200, 80, "top",    "below", "TOP",    950, 38 },
-  { "bottom zone, no room: own side",     900, 40, 1000, 1060, 200, 80, "bottom", "above", "BOTTOM", 950, 1062 },
+  { "fits above: above, centered",          900, 500, 1000, 520, 200, 80, nil,      "above", "BOTTOM", 950, 522 },
+  { "a retired \"top\" chooses nothing",     900, 500, 1000, 520, 200, 80, "top",    "above", "BOTTOM", 950, 522 },
+  { "a retired \"bottom\" chooses nothing",  900, 500, 1000, 520, 200, 80, "bottom", "above", "BOTTOM", 950, 522 },
+  { "at the screen's bottom: still above",  900, 40, 1000, 60, 200, 80, nil,        "above", "BOTTOM", 950, 62 },
+  { "fits above exactly",                   900, 980, 1000, 998, 200, 80, nil,      "above", "BOTTOM", 950, 1000 },
+  { "no room above: flips below",           900, 1020, 1000, 1040, 200, 80, nil,    "below", "TOP",    950, 1018 },
+  { "misses above by one: flips below",     900, 980, 1000, 999, 200, 80, "top",    "below", "TOP",    950, 978 },
+  { "x clamp at the left edge",             0, 500, 40, 520, 200, 80, nil,          "above", "BOTTOM", 100, 522 },
+  { "x clamp at the right edge",            1880, 500, 1920, 520, 200, 80, nil,     "above", "BOTTOM", 1820, 522 },
+  { "x clamp after the flip",               1880, 1020, 1920, 1040, 200, 80, nil,   "below", "TOP",    1820, 1018 },
+  { "no room either side: above",           900, 40, 1000, 1060, 200, 80, nil,      "above", "BOTTOM", 950, 1062 },
+  { "no room either side, retired zone",    900, 40, 1000, 1060, 200, 80, "top",    "above", "BOTTOM", 950, 1062 },
 }
 
 for _, c in ipairs(ATTACHED) do
   test("tooltip attached: " .. c[1], function()
+    -- red under: the zone rule (a "top" or absent zone below the element, a "bottom" one above)
     local side, point, x, y = Tip.__solveAttached(c[2], c[3], c[4], c[5], c[6], c[7], SW, SH, GAP, c[8])
     assertEqual(side, c[9], "side")
     assertEqual(point, c[10], "point")
@@ -89,7 +97,7 @@ for _, c in ipairs(ATTACHED) do
 end
 
 test("tooltip attached: a tooltip wider than the screen keeps its left edge on screen", function()
-  local _, _, x = Tip.__solveAttached(900, 500, 1000, 520, 2000, 80, SW, SH, GAP, "top")
+  local _, _, x = Tip.__solveAttached(900, 500, 1000, 520, 2000, 80, SW, SH, GAP)
   assertEqual(x - 1000, 0, "its left edge at 0")
 end)
 

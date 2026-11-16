@@ -96,7 +96,7 @@ Total.
 - resize: a frame anchored to a cell comes back onto its anchor, with the new size
 - resize: a window anchored to the screen is left where the drag put it
 
-### test_tooltip.lua (29)
+### test_tooltip.lua (32)
 
 - tooltip: the major registers minor 1 and publishes TIP_GAP = 2
 - tooltip beside: right fits
@@ -110,15 +110,18 @@ Total.
 - tooltip beside: taller than the screen: top kept
 - tooltip beside: neither side fits answers nil, the fallback's cue
 - tooltip beside: the tooltip never covers the group on either side
-- tooltip attached: top zone: below, centered
-- tooltip attached: top zone named
-- tooltip attached: top zone at the bottom: flips up
-- tooltip attached: bottom zone: above, centered
-- tooltip attached: bottom zone at the top: flips down
+- tooltip attached: fits above: above, centered
+- tooltip attached: a retired "top" chooses nothing
+- tooltip attached: a retired "bottom" chooses nothing
+- tooltip attached: at the screen's bottom: still above
+- tooltip attached: fits above exactly
+- tooltip attached: no room above: flips below
+- tooltip attached: misses above by one: flips below
 - tooltip attached: x clamp at the left edge
 - tooltip attached: x clamp at the right edge
-- tooltip attached: no room either side: own side
-- tooltip attached: bottom zone, no room: own side
+- tooltip attached: x clamp after the flip
+- tooltip attached: no room either side: above
+- tooltip attached: no room either side, retired zone
 - tooltip attached: a tooltip wider than the screen keeps its left edge on screen
 - tooltip launcher: upper right opens toward the center
 - tooltip launcher: upper middle opens toward the center
@@ -128,13 +131,13 @@ Total.
 - tooltip launcher: lower left opens toward the center
 - tooltip launcher: the thirds and the half are read from the button's center
 
-### test_tooltip_place.lua (19)
+### test_tooltip_place.lua (20)
 
 - tooltip place: Own: ANCHOR_NONE on the element, or on opts.owner
 - tooltip place: beside: right fits, TOPLEFT on UIParent at the group's right + 2, top level with the row
 - tooltip place: beside: right does not fit, TOPRIGHT at the group's left - 2
 - tooltip place: beside: the comparison side is set before the point, ANCHOR_NONE-owned
-- tooltip place: beside: neither side fits, centered 2 under the row; at the bottom, above it
+- tooltip place: beside: neither side fits, centered 2 above the row; at the top, below it
 - tooltip place: beside: clamped vertically, sliding only as far as needed
 - tooltip place: beside: scale, a 0.8 window and a 1.0 tooltip measure in one space
 - tooltip place: beside: a 0.5 tooltip's point is written in its own units
@@ -145,20 +148,21 @@ Total.
 - tooltip place: GroupOf: a registered ancestor decides; else the outermost frame under UIParent
 - tooltip place: unreadable geometry places nothing and answers nil
 - tooltip place: a secret geometry read counts as unreadable
-- tooltip place: attached: below the top chrome, above the bottom chrome, centered
+- tooltip place: attached: above the element, centered; below only when there is no room above
+- tooltip place: attached: opts is the third argument (the zone slot is retired)
 - tooltip place: launcher: relative to the button, 2 off it, toward the screen's center
 - tooltip place: launcher: the button's own scale (the minimap's) is applied before the third is read
 - tooltip place: Replace re-runs the last placement after the tooltip grew
 
-### test_tooltip_sites.lua (15)
+### test_tooltip_sites.lua (18)
 
 - tooltip sites: an icon browser cell opens beside the browser window
-- tooltip sites: the icon browser's toolbar tips attach below their control
+- tooltip sites: the icon browser's toolbar tips attach above their control
 - tooltip sites: a dropdown entry's string tip opens beside the menu
 - tooltip sites: a host's tooltip renderer draws, then the library places it beside the menu
 - tooltip sites: the reorder handle's tip opens beside its window
 - tooltip sites: the sim panel's controls open their tips beside the panel
-- tooltip sites: a HUD drag strip's tooltip attaches below the strip, owned by UIParent
+- tooltip sites: a HUD drag strip's tooltip attaches above the strip, owned by UIParent
 - tooltip sites: tooltipOwner = "cursor" and tooltipAnchor are retired to the attached placer
 - tooltip sites: a strip's mark places by its strip, not by the mark
 - tooltip sites: a host placement that fails falls back to the attached placer, never the cursor
@@ -166,7 +170,10 @@ Total.
 - tooltip sites: a chart mark's default tooltip opens beside the chart's window group
 - tooltip sites: a host's tip seam gets the legacy anchor and a fourth argument, the context
 - tooltip sites: the launcher re-places its own minimap button's tooltip, and no one else's
-- tooltip sites: the skin picker's toolbar controls attach their tips below
+- tooltip sites: the skin picker's toolbar controls attach their tips above
+- tooltip sites: unreadable geometry attaches every chrome tip above its element by hand
+- tooltip sites: a drag strip with unreadable geometry attaches its tip above by hand
+- tooltip sites: a body site with unreadable geometry falls back above its element
 
 ### test_tooltip_guard.lua (3)
 
@@ -2092,7 +2099,7 @@ Total.
 - header buttons: a raising settings override is caught
 - header buttons: settings = false needs a reason, and records it
 - header buttons: the art comes from the owner's copy, else the word, else the glyph
-- header buttons: a mark's tooltip is attached below it, and tips = false draws none
+- header buttons: a mark's tooltip is attached above it, and tips = false draws none
 - header buttons: a drag strip carries no settings mark unless it opts in
 - header buttons: the debug console reads Copy, Clear, settings, close, with no tooltips
 - header buttons: the console's onSettings overrides the registry, on both its windows
@@ -5554,9 +5561,9 @@ Total.
 |-------|------:|
 | test_core.lua | 52 |
 | test_core_resize.lua | 26 |
-| test_tooltip.lua | 29 |
-| test_tooltip_place.lua | 19 |
-| test_tooltip_sites.lua | 15 |
+| test_tooltip.lua | 32 |
+| test_tooltip_place.lua | 20 |
+| test_tooltip_sites.lua | 18 |
 | test_tooltip_guard.lua | 3 |
 | test_env.lua | 9 |
 | test_compat.lua | 64 |
@@ -5773,4 +5780,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4871** |
+| **Total** | **4878** |

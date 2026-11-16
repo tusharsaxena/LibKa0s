@@ -7,8 +7,9 @@
 --   body    beside the window group: TOPLEFT on UIParent's BOTTOMLEFT at the group's right + 2,
 --           level with the element's top (IconBrowser cell, dropdown entries, the reorder handle,
 --           the sim panel's controls and rows, a chart's marks)
---   chrome  attached and centered: TOP on UIParent at the element's center, its bottom - 2 (the
---           icon browser's toolbar, the skin picker's toolbar, a HUD drag strip and its marks)
+--   chrome  attached and centered ABOVE the element: BOTTOM on UIParent at the element's center, its
+--           top + 2 (the icon browser's toolbar, the skin picker's toolbar, a HUD drag strip and its
+--           marks, a header mark), below only when there is no room above (smoke round 1, SR-L1)
 --   launch  the launcher rule, only for the addon's own minimap button
 --
 -- The placers' own geometry is tests/test_tooltip_place.lua's; these cases pin that each site goes
@@ -105,16 +106,27 @@ local function assertBeside(m, tip, groupRight, top, what)
   assertEqual(p.y, top, what .. ": level with the element's top")
 end
 
---- The chrome rule's point under an element spanning `left`..`right` with bottom `bottom`: TOP on
---- UIParent's BOTTOMLEFT at (center, bottom - 2).
-local function assertBelow(m, tip, left, right, bottom, what)
+--- The chrome rule's point over an element spanning `left`..`right` with top `top`: BOTTOM on
+--- UIParent's BOTTOMLEFT at (center, top + 2).
+local function assertAbove(m, tip, left, right, top, what)
   local p = tip.__point
   assertTrue(p ~= nil, what .. ": placed")
-  assertEqual(p.point, "TOP", what .. ": attached below")
+  assertEqual(p.point, "BOTTOM", what .. ": attached above")
   assertTrue(p.rel == m.UIParent, what .. ": an absolute point on UIParent")
   assertEqual(p.relPoint, "BOTTOMLEFT", what)
   assertEqual(p.x, (left + right) / 2, what .. ": centered on the element")
-  assertEqual(p.y, bottom - 2, what .. ": TIP_GAP under it")
+  assertEqual(p.y, top + 2, what .. ": TIP_GAP over it")
+end
+
+--- The hand fallback a site writes when the geometry cannot be read: the same side, by a relative
+--- point, BOTTOM on the element's TOP, TIP_GAP up.
+local function assertAboveRelative(tip, el, what)
+  local p = tip.__point
+  assertTrue(p ~= nil, what .. ": placed")
+  assertEqual(p.point, "BOTTOM", what .. ": above")
+  assertTrue(p.rel == el, what .. ": relative to the element")
+  assertEqual(p.relPoint, "TOP", what)
+  assertEqual(p.x, 0, what); assertEqual(p.y, 2, what .. ": TIP_GAP over it")
 end
 
 -- ── the icon browser ────────────────────────────────────────────────────────────────────────
@@ -138,8 +150,9 @@ test("tooltip sites: an icon browser cell opens beside the browser window", func
   end)
 end)
 
-test("tooltip sites: the icon browser's toolbar tips attach below their control", function()
-  -- red under: AttachTooltip's ANCHOR_RIGHT on a control of the window's top chrome
+test("tooltip sites: the icon browser's toolbar tips attach above their control", function()
+  -- red under: AttachTooltip's ANCHOR_RIGHT on a control of the window's top chrome, or the tip
+  -- attached below it, where the pointer hangs (SR-L1)
   local m, B = IBF.boot()
   IBF.openOn(B, nil)
   B:SetTab("game")
@@ -148,7 +161,7 @@ test("tooltip sites: the icon browser's toolbar tips attach below their control"
     geo(filter.frame, 640, 700, 120, 24)
     filter.callbacks.OnEnter(filter)
     assertTrue(tip.__owner == filter.frame, "owned by the control")
-    assertBelow(m, tip, 640, 760, 700, "toolbar")
+    assertAbove(m, tip, 640, 760, 724, "toolbar")
     -- the body line as AttachTooltip drew it: wrapped, in the host's __tipColor
     local body = tip.__lines and tip.__lines[2]
     assertTrue(body ~= nil, "toolbar: a body line")
@@ -258,14 +271,15 @@ local function stripOf(spec)
   return h
 end
 
-DH.test("tooltip sites: a HUD drag strip's tooltip attaches below the strip, owned by UIParent", function()
-  -- red under: SetOwner(strip, "ANCHOR_TOP"), which opens above the strip
+DH.test("tooltip sites: a HUD drag strip's tooltip attaches above the strip, owned by UIParent", function()
+  -- red under: SetOwner(strip, "ANCHOR_TOP"), the client's anchor, or the tip attached below the
+  -- strip, under the pointer (SR-L1)
   onScreen(mocks, function(_, tip)
     local h = stripOf({ tooltip = { title = "Buffs" } })
     h:__fire("OnEnter")
     assertTrue(tip.__owner == mocks.UIParent, "restricted-tree safe: UIParent owns it")
     assertEqual(tip.__anchor, "ANCHOR_NONE")
-    assertBelow(mocks, tip, 800, 960, 600, "strip")
+    assertAbove(mocks, tip, 800, 960, 618, "strip")
   end)
 end)
 
@@ -275,7 +289,7 @@ DH.test("tooltip sites: tooltipOwner = \"cursor\" and tooltipAnchor are retired 
     local h = stripOf({ tooltip = { title = "Buffs" }, tooltipOwner = "cursor", tooltipAnchor = "ANCHOR_TOPRIGHT" })
     h:__fire("OnEnter")
     assertEqual(tip.__anchor, "ANCHOR_NONE")
-    assertBelow(mocks, tip, 800, 960, 600, "cursor owner")
+    assertAbove(mocks, tip, 800, 960, 618, "cursor owner")
   end)
 end)
 
@@ -284,7 +298,7 @@ DH.test("tooltip sites: a strip's mark places by its strip, not by the mark", fu
     local h = stripOf({ tooltip = { title = "Buffs" }, onRightClick = function() end })
     geo(h.help, 942, 600, 18, 18, h)
     h.help:__fire("OnEnter")
-    assertBelow(mocks, tip, 800, 960, 600, "mark")
+    assertAbove(mocks, tip, 800, 960, 618, "mark")
   end)
 end)
 
@@ -294,10 +308,10 @@ DH.test("tooltip sites: a host placement that fails falls back to the attached p
     local h = stripOf({ tooltip = { title = "Buffs" }, tooltipPlace = function() error("no rect") end })
     h:__fire("OnEnter")
     assertEqual(tip.__anchor, "ANCHOR_NONE")
-    assertBelow(mocks, tip, 800, 960, 600, "a raise")
+    assertAbove(mocks, tip, 800, 960, 618, "a raise")
     local silent = stripOf({ tooltip = { title = "Buffs" }, tooltipPlace = function() return false end })
     silent:__fire("OnEnter")
-    assertBelow(mocks, tip, 800, 960, 600, "a false answer")
+    assertAbove(mocks, tip, 800, 960, 618, "a false answer")
   end)
 end)
 
@@ -404,8 +418,9 @@ end)
 
 local SP = dofile("tests/fixture_skin_picker.lua")
 
-test("tooltip sites: the skin picker's toolbar controls attach their tips below", function()
-  -- red under: SetOwner(self, "ANCHOR_TOP") on the gear, the eye and the dropdown (R9 C1)
+test("tooltip sites: the skin picker's toolbar controls attach their tips above", function()
+  -- red under: SetOwner(self, "ANCHOR_TOP") on the gear, the eye and the dropdown (R9 C1), or the
+  -- tips attached below them (SR-L1)
   local m, Skin, lib = SP.env()
   local store = SP.register(Skin, "PickerTipHost", "azeroth")
   local f = SP.instance(lib, "PickerTipHost").SkinPicker(SP.specFor(store, { page = "general" }))
@@ -416,7 +431,49 @@ test("tooltip sites: the skin picker's toolbar controls attach their tips below"
       btn:__fire("OnEnter")
       assertTrue(tip.__owner == btn, key .. ": owned by the control")
       assertEqual(tip.__anchor, "ANCHOR_NONE", key)
-      assertBelow(m, tip, 700, 724, 640, key)
+      assertAbove(m, tip, 700, 724, 664, key)
     end
+  end)
+end)
+
+-- ── the hand fallbacks (SR-L1) ──────────────────────────────────────────────────────────────
+
+test("tooltip sites: unreadable geometry attaches every chrome tip above its element by hand", function()
+  -- red under: the fallbacks' old point, TOP on the element's BOTTOM, 2 down (under the pointer)
+  local m, Skin, lib = SP.env()
+  local store = SP.register(Skin, "PickerTipFallback", "azeroth")
+  local f = SP.instance(lib, "PickerTipFallback").SkinPicker(SP.specFor(store, { page = "general" }))
+  onScreen(m, function(_, tip)
+    f.settings:__fire("OnEnter")
+    assertAboveRelative(tip, f.settings, "skin picker gear")
+  end)
+  onScreen(mocks, function(_, tip)
+    local bar = mocks.CreateFrame("Frame", nil, mocks.CreateFrame("Frame", nil, mocks.UIParent))
+    local hb = W.HeaderButtons(bar, {})
+    hb.settings:__fire("OnEnter")
+    assertAboveRelative(tip, hb.settings, "header mark")
+  end)
+end)
+
+DH.test("tooltip sites: a drag strip with unreadable geometry attaches its tip above by hand", function()
+  onScreen(mocks, function(_, tip)
+    local h = W.DragHandle(mocks.UIParent, DH.baseSpec({ tooltip = { title = "Buffs" } }))
+    h:__fire("OnEnter")
+    assertAboveRelative(tip, h, "strip")
+  end)
+end)
+
+test("tooltip sites: a body site with unreadable geometry falls back above its element", function()
+  -- red under: the body sites' hand fallback, TOP on the element's BOTTOM
+  onScreen(mocks, function(_, tip)
+    local menu = W.ContextMenu(menuAnchor(), { { label = "A", tooltip = "Why" } })
+    local row = menu.buttons[1]
+    row:GetScript("OnEnter")(row)
+    assertAboveRelative(tip, row, "dropdown entry")
+    W.CloseMenu()
+    local list = W.ReorderList({ stride = 30, handleTooltip = "Drag to move" })
+    local handle = list:AddRow(mocks.CreateFrame("Frame", nil, mocks.UIParent), {})
+    handle:__fire("OnEnter")
+    assertAboveRelative(tip, handle, "reorder handle")
   end)
 end)

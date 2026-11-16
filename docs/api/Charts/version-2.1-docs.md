@@ -21,7 +21,7 @@
 
 **`Charts.lua` moves to minor 2** for WowAddonStandards v2.112.0 (standalone-windows, *Tooltip placement*; anti-pattern #119, a tooltip that follows the cursor). `ChartsRender.lua` does not move.
 
-- **The default tooltip** (a host with no `tip`) is owned at `ANCHOR_NONE`, filled, shown, then placed by **`ctx:PlaceTip(tip, owner)` (Since 2)**: beside the window group through `LibKa0s-Tooltip-1.0`'s `PlaceBeside` (`TOPLEFT` at the group's right edge + 2 when it fits, else `TOPRIGHT` at its left edge - 2, level with the mark's top). With unreadable geometry, or no Tooltip major, it is attached below the mark (`TOP` on its `BOTTOM`, -2). It answers the placer's side, or `"attached"`. The per-mark legacy anchors (the strip bar's `ANCHOR_TOP`) are not read by the default.
+- **The default tooltip** (a host with no `tip`) is owned at `ANCHOR_NONE`, filled, shown, then placed by **`ctx:PlaceTip(tip, owner)` (Since 2)**: beside the window group through `LibKa0s-Tooltip-1.0`'s `PlaceBeside` (`TOPLEFT` at the group's right edge + 2 when it fits, else `TOPRIGHT` at its left edge - 2, level with the mark's top). With unreadable geometry, or no Tooltip major, it is attached above the mark (`BOTTOM` on its `TOP`, 2; `SR-L1`). It answers the placer's side, or `"attached"`. The per-mark legacy anchors (the strip bar's `ANCHOR_TOP`) are not read by the default.
 - **`host.group` (Since 2)**, optional: the group a mark's tooltip opens beside, a frame, a list of frames (the main window first), `{ main = f, panels = {...} }`, or a function answering one. Left out, the group the mark sits in (`Tip.GroupOf`: a registered window, else the outermost frame under UIParent).
 - **`host.tip` is additive**: still called as `tip(owner, lines, anchor)`, with the same legacy anchor (`ANCHOR_CURSOR_RIGHT` by default, `ANCHOR_TOP` for a strip bar), and now **a fourth argument, the context**, so a host draws its lines, shows the tooltip and calls `ctx:PlaceTip(tip, owner)` to place it the library's way. A host that ignores the fourth argument is unchanged.
 
@@ -119,7 +119,7 @@ keeps moves with `Reskin`. `ctx.content` is the frame given to `New`.
 | `ctx:paletteColor(rank)` | The palette color at 1-based `rank`, cycling |
 | `ctx:paletteMap(orderedKeys)` | `{ key -> color }` by position, so a key keeps one color across charts |
 | `ctx:showTip(owner, tip, anchor)` | Show a string, or lines (a title, then strings). Nothing for nil, `""` or an empty table. The anchor, handed to a host's `tip`, defaults to `ANCHOR_CURSOR_RIGHT`; the default tooltip does not read it (Since 2) |
-| `ctx:PlaceTip(tip, owner)` | **Since 2.** Place a filled, shown `tip` for `owner`: beside `host.group` (else the mark's group) through `LibKa0s-Tooltip-1.0`'s `PlaceBeside`, else attached below `owner`. Answers `"right"`, `"left"`, `"below"`, `"above"` or `"attached"` |
+| `ctx:PlaceTip(tip, owner)` | **Since 2.** Place a filled, shown `tip` for `owner`: beside `host.group` (else the mark's group) through `LibKa0s-Tooltip-1.0`'s `PlaceBeside`, else attached above `owner`. Answers `"right"`, `"left"`, `"above"`, `"below"` or `"attached"` |
 | `ctx:acquire(pool, factory, parent)` | A pooled widget from `factory(ctx, parent or content)`, for a host's own widget in a context's pool |
 | `ctx:sectionHeader(parent, title)` | A heading FontString; the renderer or the caller places it |
 | `ctx:sectionDivider(parent, title)` | A centered title flanked by two rules; the caller anchors its TOPLEFT |

@@ -30,6 +30,17 @@ The library's own sites moved onto the placers in the same release (`LK-92B`): I
 Widgets dropdown, reorder handle and drag handle, SimPanel, Charts, the Launcher's minimap tooltip
 and the skin picker (*The library's own sites*, below).
 
+**Amended before the tag, smoke round 1 (`SR-L1`, ruling 2 of Ka0sAddonsCommonTasks
+`docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/SR1_SMOKE_ROUND1.md`).** The owner's first smoke pass found a
+tooltip attached below a title-bar mark illegible: it opened where the pointer was. The chrome rule
+is now **one rule for every attached tooltip, above the element**, flipping below only when there is
+no room above; the pointer hangs down from its hotspot, so above is the side it never covers. The
+`zone` argument (`"top"` below, `"bottom"` above) that chose the side is **retired**: no caller
+outside the library passed it (the collection's addons were grepped for `PlaceAttached` callers at
+the amendment; Ka0s Aura Master's `Anchors.PlaceAttached` is its own, unrelated function), so the
+third argument is now `opts`. A string there is no table, so it reads as no options and moves
+nothing. Still minor 1: the major is new in this unreleased version.
+
 ## What this major is
 
 **Three placers, a window-group registry and the pure solvers behind them.** It owns no frames, no
@@ -40,11 +51,12 @@ Charts, Sim, IconBrowser, the Launcher and every addon, and a leaf major adds no
   `TOPLEFT` at the group's right edge + `TIP_GAP` when it fits on the right, else its `TOPRIGHT` at
   the group's left edge - `TIP_GAP`; its top level with the hovered element's top, clamped on
   screen. A companion panel's own tooltips prefer its side away from the main window. When neither
-  side fits, the chrome rule below the element, flipping above at the screen's bottom (rule 4).
-- **The chrome rule** (`PlaceAttached`): centered on the element. `TOP` on its `BOTTOM` - `TIP_GAP`
-  for the top chrome (title bar, strip, tabs, filter bar, toolbar, a modal's controls; a HUD's drag
-  strip or mover handle), `BOTTOM` on its `TOP` + `TIP_GAP` for the bottom chrome (footer, grip).
-  Flipped only when the screen has no room on the zone's side; slid sideways only as far as it must.
+  side fits, the chrome rule above the element, flipping below at the screen's top (rule 4).
+- **The chrome rule** (`PlaceAttached`): centered on the element and **above it**, whatever the
+  element is (title bar, strip, tabs, filter bar, toolbar, a modal's controls, a HUD's drag strip or
+  mover handle, a header mark, a footer, a grip): `BOTTOM` on its `TOP` + `TIP_GAP`. Flipped
+  **below**, `TOP` on its `BOTTOM` - `TIP_GAP`, only when the screen has no room above; slid sideways
+  only as far as it must. With room on neither side it stays above.
 - **The launcher rule** (`PlaceLauncher`): attached to the minimap button, toward the screen's
   center: the vertical side by the screen half the button's center is in (upper half: below the
   button), the horizontal by its third (right third: right edges level; left: left edges; middle:
@@ -78,7 +90,7 @@ called **before** `ClearAllPoints` and `SetPoint`, in the order the client's own
 tooltip anchors call `SetAnchorType` and then `SetPoint`), so an anchor type that re-anchors the
 tooltip cannot undo the point. That the point survives in game is a smoke check
 (`docs/smoke-tests.md` of each window's host; item tooltip plus Shift-compare near the right edge).
-The fallback below or above the element sets no anchor type. `opts.comparisons = false` skips it.
+The fallback above or below the element sets no anchor type. `opts.comparisons = false` skips it.
 
 **Unreadable geometry.** A geometry read that is not a plain number answers nil: an unplaced frame,
 a method that answers something else, or a **secret value** (`issecretvalue`, read bare at call time,
@@ -88,7 +100,7 @@ then a plain attach on the element, **never the cursor**. `opts.rect(frame)` ans
 `left, bottom, right, top` in screen units in place of the reads, for a host that can read a frame
 the library cannot (Ka0s Aura Master's strip rect, read through its own secret guard); a non-number
 from it counts as unreadable. A body tooltip whose window group cannot be read (but whose element
-can) takes the fallback below the element.
+can) takes the fallback above the element.
 
 ## Window groups
 
@@ -122,14 +134,14 @@ beyond the main window. Either way it sits outside the whole group. `opts.prefer
 |---|---|---|---|
 | `TIP_GAP` | number | 1 | `2`, the gap in screen units between a tooltip and what it is placed against. Read it; the placers read a file-local, so a write moves no tooltip. |
 | `Own(tip, element, opts)` | function | 1 | `tip:SetOwner(opts.owner or element, "ANCHOR_NONE")`; answers `tip`. A non-table tooltip or one without `SetOwner` is answered untouched. |
-| `PlaceBeside(tip, element, group, opts)` | function | 1 | The body rule on a shown tooltip. `group` as the table above. `opts`: `prefer` (`"right"` \| `"left"`), `comparisons` (`false` skips `SetAnchorType`), `rect` (above). Answers `"right"`, `"left"`, the fallback's `"below"` / `"above"`, or nil with nothing placed when the geometry cannot be read. |
-| `PlaceAttached(tip, element, zone, opts)` | function | 1 | The chrome rule on a shown tooltip. `zone` `"top"` (the default, and a modal's controls) or `"bottom"`. `opts.rect` as above. Answers `"below"` (the tooltip's `TOP` at the element's bottom - gap) or `"above"` (its `BOTTOM` at the element's top + gap), or nil with nothing placed. |
+| `PlaceBeside(tip, element, group, opts)` | function | 1 | The body rule on a shown tooltip. `group` as the table above. `opts`: `prefer` (`"right"` \| `"left"`), `comparisons` (`false` skips `SetAnchorType`), `rect` (above). Answers `"right"`, `"left"`, the fallback's `"above"` / `"below"`, or nil with nothing placed when the geometry cannot be read. |
+| `PlaceAttached(tip, element, opts)` | function | 1 | The chrome rule on a shown tooltip. `opts.rect` as above; a non-table third argument (the retired `zone`, `"top"` or `"bottom"`) is read as no options and chooses nothing. Answers `"above"` (the tooltip's `BOTTOM` at the element's top + gap) or `"below"` (its `TOP` at the element's bottom - gap, only when there is no room above), or nil with nothing placed. |
 | `PlaceLauncher(tip, button, opts)` | function | 1 | The launcher rule: `ClearAllPoints`, then `SetPoint(point, button, relativePoint, 0, ±TIP_GAP / tooltipScale)`. Answers the tooltip's point (`"TOPRIGHT"`, `"BOTTOM"`, ...), or nil with nothing placed. |
 | `SetGroup(window, companions)` | function | 1 | Registers `window` as a group's main frame with `companions` (a list, or a function answering one). `nil` registers the window alone; `false` removes the registration. Weak-keyed: a released window is not kept alive. |
 | `GroupOf(element)` | function | 1 | `frames, main, host` (above), or nil for a non-table. |
 | `Replace(tip)` | function | 1 | Runs `tip`'s last placement again with the same arguments; answers what that placer answers, or nil when nothing was placed on it yet. The last call is kept on the tooltip as the private `__ka0sTip`. |
 | `__solveBeside(gl, gr, elemTop, tipW, tipH, screenW, screenH, gap, prefer)` | function | 1 | Pure. `side, point, x, y` (`"right", "TOPLEFT", gr + gap, y` or `"left", "TOPRIGHT", gl - gap, y`, with `y` the element's top clamped so the tooltip stays on screen), or nil when neither side fits. Right fits when `gr + gap + tipW <= screenW`, left when `gl - gap - tipW >= 0`; `prefer = "left"` tries the left first. |
-| `__solveAttached(el, eb, er, et, tipW, tipH, screenW, screenH, gap, zone)` | function | 1 | Pure. `side, point, x, y`: `"below", "TOP", cx, eb - gap` or `"above", "BOTTOM", cx, et + gap`, `cx` the element's center slid so the tooltip stays on screen (its left edge on the screen's when it is wider than the screen). A top-zone tooltip goes below unless there is no room below and room above; a bottom-zone one the mirror; with room on neither side, its own side. |
+| `__solveAttached(el, eb, er, et, tipW, tipH, screenW, screenH, gap)` | function | 1 | Pure. `side, point, x, y`: `"above", "BOTTOM", cx, et + gap` or `"below", "TOP", cx, eb - gap`, `cx` the element's center slid so the tooltip stays on screen (its left edge on the screen's when it is wider than the screen). Above (room when `et + gap + tipH <= screenH`) unless there is no room above and room below (`eb - gap - tipH >= 0`); with room on neither side, above. A tenth argument, the retired zone, is ignored. |
 | `__solveLauncher(bl, bb, br, bt, screenW, screenH, gap)` | function | 1 | Pure. `point, relativePoint, dx, dy`: `<V><H>` on `<opposite V><H>`, `<V>` `TOP` when the button's center is above the screen's middle (`dy = -gap`) and `BOTTOM` otherwise (`dy = gap`), `<H>` `RIGHT` past two thirds, `LEFT` under one third, else empty; `dx` 0. |
 
 Every solver figure is in screen units from the screen's bottom-left. The solvers touch no frame, so
@@ -162,19 +174,21 @@ points. This repo's own cases are `tests/test_tooltip.lua` (the solvers) and
 ## The library's own sites (`LK-92B`)
 
 Every library tooltip goes through these placers in the same release, each reading this major at
-call time, and attaching below its element by a relative point when a placer answers nil:
+call time, and attaching above its element by a relative point (`BOTTOM` on its `TOP`, 0, 2) when a
+placer answers nil:
 
 | Site | Placer | Element and group |
 |---|---|---|
 | IconBrowser cell | `PlaceBeside` | the cell; the browser window |
-| IconBrowser toolbar control | `PlaceAttached(…, "top")` | the control |
+| IconBrowser toolbar control | `PlaceAttached` | the control |
 | Dropdown and context-menu entry (a string, or a host renderer's tooltip it showed, owned by the row) | `PlaceBeside` | the entry; its menu level |
 | ReorderList handle | `PlaceBeside` | the handle; `GroupOf` |
 | SimPanel control and step row | `PlaceBeside` | the control; `GroupOf` (the panel) |
-| DragHandle strip and marks | `PlaceAttached(…, "top")`, owned by UIParent | the strip (a mark places by its strip); a host `tooltipPlace` answering `true` wins |
+| DragHandle strip and marks | `PlaceAttached`, owned by UIParent | the strip (a mark places by its strip); a host `tooltipPlace` answering `true` wins |
 | Charts default tooltip, and `ctx:PlaceTip` for a host's own | `PlaceBeside` | the mark; `host.group`, else `GroupOf` |
 | Launcher, LibDBIcon's tooltip on the addon's own button | `PlaceLauncher` | the button |
-| Skin picker toolbar (gear, eye, dropdown) | `PlaceAttached(…, "top")` | the control |
+| Skin picker toolbar (gear, eye, dropdown) | `PlaceAttached` | the control |
+| Header mark (`W.HeaderButtons`, every library window's title-bar strip) | `PlaceAttached` | the mark |
 
 `tests/test_tooltip_sites.lua` drives each on the fake screen, and `tests/test_tooltip_guard.lua`
 holds the payload, outside the Settings-canvas Options files, to no `ANCHOR_CURSOR`,

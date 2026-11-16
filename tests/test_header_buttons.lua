@@ -30,13 +30,13 @@ end
 
 local function joined(list) return table.concat(list, ",") end
 
---- Run `fn(calls)` with Tooltip's PlaceAttached recorded in `calls` (each { tip, el, side }).
+--- Run `fn(calls)` with Tooltip's PlaceAttached recorded in `calls` (each { tip, el, third, n }).
 local function spyAttached(fn)
   local Tip = T.tooltip
   local real = Tip.PlaceAttached
   local calls = {}
-  Tip.PlaceAttached = function(tip, el, side)
-    calls[#calls + 1] = { tip = tip, el = el, side = side }
+  Tip.PlaceAttached = function(tip, el, ...)
+    calls[#calls + 1] = { tip = tip, el = el, third = (...), n = select("#", ...) }
     return true
   end
   local ok, err = pcall(fn, calls)
@@ -209,14 +209,14 @@ test("header buttons: the art comes from the owner's copy, else the word, else t
   assertEqual(plain.offsets.copy, -54, "the word's own width")
 end)
 
-test("header buttons: a mark's tooltip is attached below it, and tips = false draws none", function()
-  -- red under: a mark showing its tooltip at an anchor, or the console's marks carrying one
+test("header buttons: a mark's tooltip is attached above it, and tips = false draws none", function()
+  -- red under: a mark showing its tooltip at an anchor, or passing the retired "top" zone (SR-L1)
   spyAttached(function(calls)
     local hb = W.HeaderButtons(bar(), { owner = nextName() })
     hb.settings:__fire("OnEnter")
     assertEqual(#calls, 1)
     assertTrue(calls[1].el == hb.settings, "placed against the mark")
-    assertEqual(calls[1].side, "top", "the chrome rule: attached below")
+    assertEqual(calls[1].n, 0, "the one rule, above the mark: no zone, no opts")
     assertEqual(hb.settings.__tip, W.HEADER_STRINGS.SETTINGS_TIP)
     hb.settings:__fire("OnLeave")
     local quiet = W.HeaderButtons(bar(), { owner = nextName(), tips = false })

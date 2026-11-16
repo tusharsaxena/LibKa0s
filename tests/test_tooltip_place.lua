@@ -76,16 +76,19 @@ test("beside: the comparison side is set before the point, ANCHOR_NONE-owned", f
   assertEqual(scr.ops(tip2), "ClearAllPoints SetPoint", "opts.comparisons = false skips it")
 end)
 
-test("beside: neither side fits, centered 2 under the row; at the bottom, above it", function(scr)
+test("beside: neither side fits, centered 2 above the row; at the top, below it", function(scr)
+  -- red under: the fallback's old side, under the row (SR-L1: every attached tooltip opens above)
   local win, row = window(scr, 100, 300, 1700, 400, 300)
   local tip = scr.tooltip{ width = 250, height = 90 }
-  assertEqual(Tip.PlaceBeside(tip, row, win), "below")
-  local l, _, r, t = scr.rectOf(tip)
-  assertEqual(t, 578, "2 under the row's bottom (580)")
+  assertEqual(Tip.PlaceBeside(tip, row, win), "above")
+  local l, b, r = scr.rectOf(tip)
+  assertEqual(b, 602, "2 over the row's top (600)")
   assertEqual((l + r) / 2, 950, "centered on the row")
   assertEqual(scr.ops(tip), "ClearAllPoints SetPoint", "no comparison side on the fallback")
-  local low, lowRow = window(scr, 100, 10, 1700, 400, 60)
-  assertEqual(Tip.PlaceBeside(tip, lowRow, low), "above", "flipped at the screen's bottom")
+  local high, highRow = window(scr, 100, 700, 1700, 380, 370)
+  assertEqual(Tip.PlaceBeside(tip, highRow, high), "below", "flipped at the screen's top")
+  local _, _, _, t = scr.rectOf(tip)
+  assertEqual(t, 1048, "2 under the row's bottom (1050)")
 end)
 
 test("beside: clamped vertically, sliding only as far as needed", function(scr)
@@ -211,17 +214,36 @@ test("a secret geometry read counts as unreadable", function(scr)
   assertEqual(scr.ops(tip), "")
 end)
 
-test("attached: below the top chrome, above the bottom chrome, centered", function(scr)
+test("attached: above the element, centered; below only when there is no room above", function(scr)
+  -- red under: the zone rule, which put a "top" (or absent) zone's tooltip under the element
   local bar = scr.frame{ left = 900, bottom = 500, width = 100, height = 20 }
   local tip = scr.tooltip{ width = 200, height = 80 }
-  assertEqual(Tip.PlaceAttached(tip, bar, "top"), "below")
-  assertEqual(tip.__point.point, "TOP"); assertTrue(tip.__point.rel == mocks.UIParent)
-  local l, _, r, t = scr.rectOf(tip)
-  assertEqual(t, 498); assertEqual((l + r) / 2, 950)
-  assertEqual(Tip.PlaceAttached(tip, bar), "below", "top is the default zone")
+  assertEqual(Tip.PlaceAttached(tip, bar), "above")
+  assertEqual(tip.__point.point, "BOTTOM"); assertTrue(tip.__point.rel == mocks.UIParent)
+  local l, b, r = scr.rectOf(tip)
+  assertEqual(b, 522); assertEqual((l + r) / 2, 950)
+  assertEqual(Tip.PlaceAttached(tip, bar, "top"), "above", "a retired zone chooses nothing")
   assertEqual(Tip.PlaceAttached(tip, bar, "bottom"), "above")
-  local _, b = scr.rectOf(tip)
-  assertEqual(b, 522)
+  local high = scr.frame{ left = 900, bottom = 1020, width = 100, height = 20 }
+  assertEqual(Tip.PlaceAttached(tip, high), "below", "no room above: flipped")
+  local _, _, _, t = scr.rectOf(tip)
+  assertEqual(t, 1018)
+end)
+
+test("attached: opts is the third argument (the zone slot is retired)", function(scr)
+  -- red under: PlaceAttached(tip, element, zone, opts), which read a third-argument opts as a zone
+  local bar = scr.frame{ left = 900, bottom = 500, width = 100, height = 20 }
+  local tip = scr.tooltip{ width = 200, height = 80 }
+  local hooked = 0
+  local rect = function() hooked = hooked + 1; return 100, 300, 200, 320 end
+  assertEqual(Tip.PlaceAttached(tip, bar, { rect = rect }), "above")
+  assertTrue(hooked > 0, "opts.rect read")
+  local l, b, r = scr.rectOf(tip)
+  assertEqual(b, 322, "placed by the hook's rect"); assertEqual((l + r) / 2, 150)
+  tip:__size(200, 80)
+  assertEqual(Tip.Replace(tip), "above", "Replace re-runs it with the same opts")
+  local _, b2 = scr.rectOf(tip)
+  assertEqual(b2, 322)
 end)
 
 test("launcher: relative to the button, 2 off it, toward the screen's center", function(scr)

@@ -48,7 +48,7 @@ Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7, r
   - `extras`: `{ { key, icon, label, width, glyph, tip, onClick }, ... }`, left to right.
   - `tips = false`: no mark carries a tooltip (the debug console, R9 C2).
   - `pad`, `gap`, `place = false` (record the offsets, anchor nothing), `L` (a locale override keyed to `HEADER_STRINGS`).
-- **`HeaderButton(parent, spec)`**, the one mark factory: an 18 px (`HEADER.SIZE`) Button with `spec.icon`'s art at 12 px (`HEADER.ART`), out of the owner's copy through `LibKa0s-Media-1.0`; without the art, `spec.label` as a word `spec.width` wide, else `spec.glyph`. One paint path: a registered skin owner's mark through its facade's `Mark` (`icon.tint` at rest, `icon.hot` under the pointer, recorded, so a switch repaints it; a word's color read from the same tokens and painted again after each switch), every other mark in Ka0s Default's two colors (0.7, 0.7, 0.72 and white). `spec.tip`, kept as `btn.__tip` and read on each hover, is shown in the game tooltip in the owner's `gtip.title`, owned at `ANCHOR_NONE` and placed by the chrome rule, attached and centered below the mark, through `LibKa0s-Tooltip-1.0`'s `PlaceAttached` (without it, the same by a relative point).
+- **`HeaderButton(parent, spec)`**, the one mark factory: an 18 px (`HEADER.SIZE`) Button with `spec.icon`'s art at 12 px (`HEADER.ART`), out of the owner's copy through `LibKa0s-Media-1.0`; without the art, `spec.label` as a word `spec.width` wide, else `spec.glyph`. One paint path: a registered skin owner's mark through its facade's `Mark` (`icon.tint` at rest, `icon.hot` under the pointer, recorded, so a switch repaints it; a word's color read from the same tokens and painted again after each switch), every other mark in Ka0s Default's two colors (0.7, 0.7, 0.72 and white). `spec.tip`, kept as `btn.__tip` and read on each hover, is shown in the game tooltip in the owner's `gtip.title`, owned at `ANCHOR_NONE` and placed by the chrome rule, attached and centered **above the mark** (below only when the screen has no room above; `SR-L1`, smoke round 1), through `LibKa0s-Tooltip-1.0`'s `PlaceAttached` (without it, the same by a relative point).
 - **`HEADER`** `{ SIZE = 18, ART = 12, PAD = 6, GAP = 6 }` and **`HEADER_STRINGS`** `{ SETTINGS_TIP = "Open settings", SETTINGS_GLYPH = "*" }`. Read-only in effect.
 - **The `help` icon is not used** by any library window: twelve addons do not declare it, and a pruned icon draws blank (R9 M10). The settings mark draws `settings`, which every rostered addon declares; it joins `docs/releasing.md`'s *Library-drawn icons*.
 
@@ -81,18 +81,20 @@ The title bar's marks are `HeaderButtons`' (settings beside the close), and the 
 
 ## What changed at version 27.2.7.14.1.7.8.5: the library's tooltips go through the placers (`LK-92B`, LibKa0s#92)
 
-WowAddonStandards v2.112.0 (standalone-windows, *Tooltip placement*; anti-pattern #119): "a window the library draws is the library's to move, in that same release". Each tooltip below is now owned at `ANCHOR_NONE`, filled, shown, and then placed by `LibKa0s-Tooltip-1.0` (read at call time; [its document](../Tooltip/version-1-docs.md)). Where the geometry cannot be read, or the Tooltip major is absent, it is attached below its element by a relative point instead, never at the cursor. No member and no field is added or removed.
+WowAddonStandards v2.112.0 (standalone-windows, *Tooltip placement*; anti-pattern #119): "a window the library draws is the library's to move, in that same release". Each tooltip below is now owned at `ANCHOR_NONE`, filled, shown, and then placed by `LibKa0s-Tooltip-1.0` (read at call time; [its document](../Tooltip/version-1-docs.md)). Where the geometry cannot be read, or the Tooltip major is absent, it is attached above its element by a relative point instead (`BOTTOM` on its `TOP`, 0, 2), never at the cursor. No member and no field is added or removed.
+
+**Amended before the tag, smoke round 1 (`SR-L1`, ruling 2 of Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/SR1_SMOKE_ROUND1.md`):** every attached tooltip, a strip's, a header mark's and every fallback's, opens **above** its element, centered, `TIP_GAP` off it, and flips below only when the screen has no room above. Below, it opened where the pointer hangs. `PlaceAttached`'s `zone` argument is retired ([the Tooltip document](../Tooltip/version-1-docs.md)); still the same minors.
 
 | Site | File (minor) | Was | Now |
 |---|---|---|---|
 | A dropdown or context-menu entry's string `tooltip` | `WidgetsDropdown.lua` **2** | `SetOwner(row, "ANCHOR_RIGHT")`, over the menu | the body rule beside the entry's **menu level** (`row.__menu`, the group), top level with the entry |
 | An entry's host renderer `tooltip = fn(row, opt)` | `WidgetsDropdown.lua` **2** | the renderer's own anchor | the renderer draws as before; a tooltip it **showed, owned by the row** (`IsOwned(row)`), is then placed beside the menu. A renderer that shows nothing is not touched. |
 | `ReorderList`'s `handleTooltip` | `WidgetsReorder.lua` **7** | `SetOwner(handle, "ANCHOR_RIGHT")` | beside the window the list sits in (`GroupOf(handle)`; on a Settings page that is the Settings frame, harmless and out of the standard's scope) |
-| `DragHandle`'s strip, help mark and close mark | `WidgetsDragHandleTip.lua` **1** (`WidgetsDragHandle.lua` **14**) | the hovered frame at `tooltipAnchor` (`ANCHOR_TOP`), or `UIParent` at `ANCHOR_CURSOR` for `tooltipOwner = "cursor"` | a HUD strip is the display's **top chrome**: owned by `UIParent` at `ANCHOR_NONE` (restricted-tree safe) and attached, centered, **below the strip** (`PlaceAttached(tip, strip, "top")`); a mark places by its strip |
+| `DragHandle`'s strip, help mark and close mark | `WidgetsDragHandleTip.lua` **1** (`WidgetsDragHandle.lua` **14**) | the hovered frame at `tooltipAnchor` (`ANCHOR_TOP`), or `UIParent` at `ANCHOR_CURSOR` for `tooltipOwner = "cursor"` | owned by `UIParent` at `ANCHOR_NONE` (restricted-tree safe) and attached, centered, **above the strip** (`PlaceAttached(tip, strip)`; below only without room above, `SR-L1`); a mark places by its strip |
 
 **Retired fields (accepted, no longer read; the frozen -1.0 major removes nothing):** `DragHandle`'s `tooltipOwner` and `tooltipAnchor`, and a tooltip descriptor's `owner` and `anchor`. **`tooltipPlace` and a descriptor's `place` keep working** (minor 4): called after Show under pcall, and a literal `true` keeps the host's point. A raise or any other answer now falls back to the attached placement, where it fell back to the cursor owner with the lines redrawn; the lines are drawn once.
 
-**What a consumer owes at its re-vendor (visible, smoke lines):** library dropdown entries everywhere open beside the menu; a drag strip with no `tooltipPlace` hook (Ka0s Consumable Master's mark, any host's owner-less strip) opens below the strip, not above it or at the cursor; a strip whose hook answers `true` (AbsorbTracker, KickCD, Consumable Master, AuraMaster) is unchanged until its adoption. A suite that pinned `ANCHOR_RIGHT`, `ANCHOR_TOP` or `ANCHOR_CURSOR` on these tooltips re-pins `ANCHOR_NONE` and the placement. A host whose tests load library files by name adds `Tooltip.lua` after `CorePixel.lua` and `WidgetsDragHandleTip.lua` after `WidgetsDragHandle.lua`.
+**What a consumer owes at its re-vendor (visible, smoke lines):** library dropdown entries everywhere open beside the menu; a drag strip with no `tooltipPlace` hook (Ka0s Consumable Master's mark, any host's owner-less strip) opens above the strip (below only at the screen's top), never at the cursor; a strip whose hook answers `true` (AbsorbTracker, KickCD, Consumable Master, AuraMaster) is unchanged until its adoption. A suite that pinned `ANCHOR_RIGHT`, `ANCHOR_TOP` or `ANCHOR_CURSOR` on these tooltips re-pins `ANCHOR_NONE` and the placement. A host whose tests load library files by name adds `Tooltip.lua` after `CorePixel.lua` and `WidgetsDragHandleTip.lua` after `WidgetsDragHandle.lua`.
 
 ## What changed at version 27.1.6.14.1.7.8.5: the drag handle's tooltip half peels out (`LK-92B`)
 
@@ -1063,7 +1065,7 @@ library's.
 | `Footer(parent, opts)` | **27** | Builds a window's footer, a `Frame` across `parent`'s bottom edge: no fill, a hairline, a left and a right line, a mark slot and the grip's corner. Returns the footer. See *What changed at this version*. |
 | `FOOTER` | **27** | `{ HEIGHT = 24, PAD = 8, GRIP = 22, MARK = 16, MARK_ART = 12, MARK_GAP = 4 }`. Read-only in effect. |
 | `HeaderButtons(bar, spec)` | `WidgetsHeader` **1** | A window's header marks, left to right extras, settings, close. See *What changed at this version*. |
-| `HeaderButton(parent, spec)` | `WidgetsHeader` **1** | One header mark: art, word or glyph, the one paint path, an optional tooltip below it. |
+| `HeaderButton(parent, spec)` | `WidgetsHeader` **1** | One header mark: art, word or glyph, the one paint path, an optional tooltip above it. |
 | `HEADER` | `WidgetsHeader` **1** | `{ SIZE = 18, ART = 12, PAD = 6, GAP = 6 }`. Read-only in effect. |
 | `HEADER_STRINGS` | `WidgetsHeader` **1** | `{ SETTINGS_TIP, SETTINGS_GLYPH }`, the strip's words; a host overrides them through `spec.L`. |
 | `CopyWindow(descriptor)` | **6** (in `WidgetsCopyWindow` **1** from 16; the skin owner **Since 16**; the grip's skin **Since CopyWindow 2**; `onSettings` and the settings mark **Since CopyWindow 6**) | Builds a lazy, reusable copy window — a selectable multi-line `EditBox` in a movable frame — and returns a handle, or `nil` with no client and without a `descriptor.addonName`. See *The copy window*. |
@@ -1597,9 +1599,9 @@ also spends it in its clamp reach, `HEIGHT + GAP`.
 | `closeTooltip` | **Since 3.** a descriptor of the tooltip shape, shown by the close mark alone | the close mark shows `tooltip` |
 | `tooltip` | the descriptor below — shown by the strip, and by the mark unless `helpTooltip` says otherwise | no tooltip |
 | `helpTooltip` | a **second** descriptor of the same shape, shown by the help mark alone | the mark shows `tooltip` |
-| `tooltipOwner` | **Retired at DragHandle 14** (accepted, not read). Through 13: `"cursor"` owned by `UIParent` at `ANCHOR_CURSOR`, anything else by the frame hovered. From 14 every tooltip is owned by `UIParent` at `ANCHOR_NONE` and attached centered below the strip (`LibKa0s-Tooltip-1.0`'s `PlaceAttached`). | — |
+| `tooltipOwner` | **Retired at DragHandle 14** (accepted, not read). Through 13: `"cursor"` owned by `UIParent` at `ANCHOR_CURSOR`, anything else by the frame hovered. From 14 every tooltip is owned by `UIParent` at `ANCHOR_NONE` and attached centered above the strip (`LibKa0s-Tooltip-1.0`'s `PlaceAttached`; below only without room above, `SR-L1`). | — |
 | `tooltipAnchor` | **Retired at DragHandle 14**, as `tooltipOwner`. Through 13: the anchor point used when owning by the frame. | — |
-| `tooltipPlace` | **Since 4.** `function(tip, frame) -> true` when it placed the tooltip. Set, every hover owns by `UIParent` at `"ANCHOR_NONE"`, draws the lines, shows, then calls it under `pcall` with the frame hovered; a raise or any answer but `true` falls back to the library's attached placement below the strip (**DragHandle 14**; through 13 the `"cursor"` owner with the same lines redrawn). A descriptor's own `place` wins; a non-function is ignored | the library's attached placement |
+| `tooltipPlace` | **Since 4.** `function(tip, frame) -> true` when it placed the tooltip. Set, every hover owns by `UIParent` at `"ANCHOR_NONE"`, draws the lines, shows, then calls it under `pcall` with the frame hovered; a raise or any answer but `true` falls back to the library's attached placement above the strip (**DragHandle 14**; through 13 the `"cursor"` owner with the same lines redrawn). A descriptor's own `place` wins; a non-function is ignored | the library's attached placement |
 | `edge` | `function(frame, size, r, g, b, a)` — the host's own 1px edge painter, called with `size = 1` | the widget's four strips, one physical pixel each (**Since 13**; one UI unit before it) |
 | `number` | `function(v, fallback) -> number` — a secret-safe numeric guard | `tonumber(v) or fallback` |
 | `labelFont` | the font object the label is **drawn in and measured in**; on an owned strip the skin's body face goes over it (DragHandle 12) | `"GameFontNormalSmall"` |
@@ -1620,9 +1622,9 @@ its mark is titled *"Macro bar"* with three body lines, a gray footer and a diff
 on adoption, silently, in the host this widget exists for. `helpTooltip` is absent in the simple
 case and costs the simple host nothing.
 
-**Where the tooltip opens, from DragHandle 14.** A HUD strip is its display's top chrome
-(WowAddonStandards standalone-windows, *Tooltip placement*), so the strip's tooltip and both marks'
-attach centered **below the strip**, through `LibKa0s-Tooltip-1.0`, owned by `UIParent` at
+**Where the tooltip opens, from DragHandle 14.** The strip's tooltip and both marks' attach
+centered **above the strip** (below only when the screen has no room above: `SR-L1` of the run's
+smoke round 1, one rule for every attached tooltip, where it opened below), through `LibKa0s-Tooltip-1.0`, owned by `UIParent` at
 `ANCHOR_NONE` and placed by an absolute point, which the restricted tree described next accepts. A
 host's `tooltipPlace` still wins when it answers `true`. The history below is why the owner was a
 field through minor 13; minor 14 answers it once, for every host.
@@ -1808,7 +1810,7 @@ could not be built it takes the mark's own place, `RIGHT` at `-HELP_INSET`.
 - **The drag passes through.** The X takes the strip's `OnDragStart` / `OnDragStop`, as the `?` does,
   so a left-drag that starts on it moves the frame and closes nothing.
 - **The tooltip** is `closeTooltip`, read on every hover, falling back to `tooltip`; from DragHandle
-  14 it is owned by `UIParent` and attached below the strip, as the strip's is.
+  14 it is owned by `UIParent` and attached above the strip, as the strip's is.
 - **The label stays centered.** `handle:Reserve()` is `RESERVE + HELP_HIT + CLOSE_GAP` (47) on
   **each** side, so `Measure()` grows by 36px and the label's bounds move in by 18px on both sides.
   The clearance between the label's right bound and the X's ink is then `HELP_CLEAR`, exactly what

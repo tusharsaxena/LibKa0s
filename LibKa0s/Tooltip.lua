@@ -18,11 +18,13 @@
 --       edge: TOPLEFT at the group's right edge + TIP_GAP when the tooltip fits on the right, else
 --       TOPRIGHT at its left edge - TIP_GAP; the top level with the element's top, clamped on
 --       screen. A companion panel's own tooltips prefer its side away from the main window. When
---       neither side fits, the chrome rule below the element (flipping above at the bottom).
---   PlaceAttached(tip, el, zone, opts)  the CHROME rule. Centered on the element: TOP on its
---       BOTTOM - TIP_GAP for the top chrome ("top", the default; a modal's controls too), BOTTOM on
---       its TOP + TIP_GAP for the bottom chrome ("bottom"); flipped only when the screen has no
---       room; clamped sideways.
+--       neither side fits, the chrome rule above the element (flipping below at the top).
+--   PlaceAttached(tip, el, opts)        the CHROME rule, one rule for every attached tooltip (top
+--       chrome, footer, a HUD strip, a modal's controls). Centered on the element, ABOVE it: BOTTOM
+--       on its TOP + TIP_GAP; flipped BELOW (TOP on its BOTTOM - TIP_GAP) only when the screen has
+--       no room above; clamped sideways. The pointer hangs down from its hotspot, so above is the
+--       side it never covers (smoke round 1 of LIBKA0S_ISSUES_75_PLUS, ruling 2, SR-L1, which
+--       retired the third argument, the "top" / "bottom" zone that once chose the side).
 --   PlaceLauncher(tip, button, opts)    the LAUNCHER rule. Toward the screen's center by the button
 --       center's screen half (upper: below the button) and third (right: right edges level; left:
 --       left edges; middle: centered), TIP_GAP off the button.
@@ -149,7 +151,7 @@ end
 --- The body rule's side and point. `gl`, `gr`: the group's outer edges; `elemTop`: the hovered
 --- element's top; the tooltip's size; the screen's; the gap; `prefer` "right" (the default) or
 --- "left". Answers `side, point, x, y` (x, y in screen units from the screen's bottom-left), or nil
---- when neither side fits (the caller falls back to the chrome rule below the element).
+--- when neither side fits (the caller falls back to the chrome rule, above the element).
 function lib.__solveBeside(gl, gr, elemTop, tipW, tipH, screenW, screenH, gap, prefer)
   local fitsRight = gr + gap + tipW <= screenW
   local fitsLeft  = gl - gap - tipW >= 0
@@ -175,22 +177,16 @@ local function centerX(el, er, tipW, screenW)
 end
 
 --- The chrome rule's side and point. The element's left, bottom, right and top; the tooltip's size;
---- the screen's; the gap; `zone` "top" (the default) or "bottom". Answers `side, point, x, y`:
---- "below" with the tooltip's TOP at the element's bottom - gap, or "above" with its BOTTOM at the
---- element's top + gap. A top-chrome element goes below unless the screen's bottom has no room and
---- its top has; a bottom-chrome element the mirror. When neither has room, its own side.
-function lib.__solveAttached(el, eb, er, et, tipW, tipH, screenW, screenH, gap, zone)
+--- the screen's; the gap. Answers `side, point, x, y`: "above" with the tooltip's BOTTOM at the
+--- element's top + gap, or "below" with its TOP at the element's bottom - gap. Above unless the
+--- screen's top has no room and its bottom has; with room on neither, above. A tenth argument (the
+--- retired zone) is ignored.
+function lib.__solveAttached(el, eb, er, et, tipW, tipH, screenW, screenH, gap)
   local x = centerX(el, er, tipW, screenW)
   local belowY, aboveY = eb - gap, et + gap
   local roomBelow = belowY - tipH >= 0
   local roomAbove = aboveY + tipH <= screenH
-  local below
-  if zone == "bottom" then
-    below = (not roomAbove) and roomBelow
-  else
-    below = roomBelow or not roomAbove
-  end
-  if below then return "below", "TOP", x, belowY end
+  if roomBelow and not roomAbove then return "below", "TOP", x, belowY end
   return "above", "BOTTOM", x, aboveY
 end
 
@@ -363,16 +359,19 @@ function lib.Own(tip, element, opts)
   return tip
 end
 
---- The chrome rule on a shown tooltip. `zone` "top" (the default; a modal's controls) or "bottom".
---- Answers "below" or "above", or nil with nothing placed when the geometry cannot be read.
-function lib.PlaceAttached(tip, element, zone, opts)
+--- The chrome rule on a shown tooltip: above `element`, below only when there is no room above.
+--- `opts.rect` as PlaceBeside's. Answers "above" or "below", or nil with nothing placed when the
+--- geometry cannot be read. The zone this slot once took is retired: a string here is no table, so
+--- it is read as no opts and chooses nothing.
+function lib.PlaceAttached(tip, element, opts)
   if type(tip) ~= "table" then return nil end
-  remember(tip, "PlaceAttached", element, zone, opts)
+  if type(opts) ~= "table" then opts = nil end
+  remember(tip, "PlaceAttached", element, opts)
   local sw, sh = screenSize()
   local tw, th = tipSize(tip)
   local el, eb, er, et = rectOf(element, opts)
   if not (sw and tw and el) then return nil end
-  local side, point, x, y = lib.__solveAttached(el, eb, er, et, tw, th, sw, sh, TIP_GAP, zone)
+  local side, point, x, y = lib.__solveAttached(el, eb, er, et, tw, th, sw, sh, TIP_GAP)
   pin(tip, point, x, y)
   return side
 end
@@ -380,7 +379,7 @@ end
 --- The body rule on a shown tooltip. `group`: a frame, a list of frames (main first), `{ main = f,
 --- panels = {...} }`, a function answering one, or nil (`GroupOf(element)`). `opts`: `prefer`
 --- ("right" | "left"), `comparisons` (false skips SetAnchorType), `rect`. Answers "right", "left",
---- or the fallback's "below" / "above"; nil with nothing placed when the geometry cannot be read.
+--- or the fallback's "above" / "below"; nil with nothing placed when the geometry cannot be read.
 function lib.PlaceBeside(tip, element, group, opts)
   if type(tip) ~= "table" then return nil end
   local sw, sh = screenSize()
@@ -396,7 +395,7 @@ function lib.PlaceBeside(tip, element, group, opts)
     side, point, x, y = lib.__solveBeside(gl, gr, et, tw, th, sw, sh, TIP_GAP, prefer)
   end
   if not side then
-    local result = lib.PlaceAttached(tip, element, "top", opts)
+    local result = lib.PlaceAttached(tip, element, opts)
     remember(tip, "PlaceBeside", element, group, opts)
     return result
   end

@@ -7,7 +7,7 @@
 -- the same one, in tests/fixture_draghandle.lua; the tooltip's shape and its two owners are pinned
 -- in tests/test_widgets_draghandle.lua, and what is pinned here is the third route: owned by
 -- UIParent at ANCHOR_NONE, shown, then placed by the host. From minor 14 (LK-92B, LibKa0s#92) every
--- tooltip takes that owner and the fallback is the library's attached placement below the strip, never
+-- tooltip takes that owner and the fallback is the library's attached placement above the strip, never
 -- the cursor; where it lands is pinned in tests/test_tooltip_sites.lua, and this suite pins the calls.
 
 local T = _G.LK_TEST

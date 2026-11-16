@@ -22,7 +22,7 @@
 
 `PerfPanel.lua` moves 13 -> **14** (Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7). No member is added or removed.
 
-- **The marks.** With no `decorate`, the title band's marks are LibKa0s-Widgets-1.0's `HeaderButtons` (resolved at build): left to right settings, close, one size and one pitch, on the band's middle, and an owned panel's `S.Header` places both. The settings mark opens the descriptor's new optional **`onSettings`**, else the addon's registered opener (LibKa0s-Core-1.0 minor 18's `OpenSettings`, by `addonName` else `name`, which the launcher fills). Its tooltip is *Open settings*, attached below it. `frame.settingsButton` and `frame.headerButtons` are recorded beside `frame.closeButton`.
+- **The marks.** With no `decorate`, the title band's marks are LibKa0s-Widgets-1.0's `HeaderButtons` (resolved at build): left to right settings, close, one size and one pitch, on the band's middle, and an owned panel's `S.Header` places both. The settings mark opens the descriptor's new optional **`onSettings`**, else the addon's registered opener (LibKa0s-Core-1.0 minor 18's `OpenSettings`, by `addonName` else `name`, which the launcher fills). Its tooltip is *Open settings*, attached above it (`SR-L1`). `frame.settingsButton` and `frame.headerButtons` are recorded beside `frame.closeButton`.
 - **`decorate`.** A host drawing its own chrome keeps it; the helper table it is handed gains `HeaderButtons` (Widgets' function, or nil) so its own strip can be the same one.
 - **Without Widgets' `HeaderButtons`**, the close alone, as at 13.
 

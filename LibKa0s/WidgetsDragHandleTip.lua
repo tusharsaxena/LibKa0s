@@ -18,7 +18,8 @@
 -- WHERE IT OPENS (still minor 1, LK-92B of the same bundle, LibKa0s#92 part B; design section 3.6).
 -- A HUD strip is the display's TOP CHROME (WowAddonStandards standalone-windows, *Tooltip
 -- placement*, the chrome reading v2.112.0 flagged), so its tooltip, and its marks', attaches
--- centered BELOW THE STRIP through LibKa0s-Tooltip-1.0's PlaceAttached, read at hover time. It is
+-- centered ABOVE THE STRIP (below only without room above: SR-L1, the bundle's smoke round 1, where
+-- it opened below) through LibKa0s-Tooltip-1.0's PlaceAttached, read at hover time. It is
 -- always owned by UIParent at ANCHOR_NONE and placed by absolute points, which a restricted layout
 -- tree (AuraMaster's anchors) accepts. A host's `tooltipPlace` (or a descriptor's `place`) still
 -- wins when it answers `true`; a raise or any other answer falls back to the attached placer, never
@@ -112,16 +113,16 @@ local function dhDrawTooltip(tip, lines)
   tip:Show()
 end
 
---- The library's placement: attached and centered below the STRIP (`handle`), whichever of its
+--- The library's placement: attached and centered above the STRIP (`handle`), whichever of its
 --- frames is hovered (a mark places by its strip, as AuraMaster's StripOf did). Unreadable geometry,
---- or no Tooltip major, attaches it below the strip by a relative point, which a restricted tree
+--- or no Tooltip major, attaches it above the strip by a relative point, which a restricted tree
 --- refuses, so under pcall; a refused point leaves the tooltip with no anchor (the points were
 --- cleared), never at the cursor. Reached only when the strip's geometry cannot be read.
 local function dhPlaceAttached(tip, handle)
   local Tip = LibStub("LibKa0s-Tooltip-1.0", true)
-  if Tip and Tip.PlaceAttached(tip, handle, "top") then return end
+  if Tip and Tip.PlaceAttached(tip, handle) then return end
   tip:ClearAllPoints()
-  pcall(tip.SetPoint, tip, "TOP", handle, "BOTTOM", 0, -2)
+  pcall(tip.SetPoint, tip, "BOTTOM", handle, "TOP", 0, 2)
 end
 
 --- Show the descriptor's tooltip for `frame`, the frame hovered and the frame a placement hook is
