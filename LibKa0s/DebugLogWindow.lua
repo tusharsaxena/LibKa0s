@@ -47,7 +47,7 @@ if not lib then return end
 -- Core is guaranteed present here: DebugLog.lua refuses to register without it.
 local core = LibStub("LibKa0s-Core-1.0", true)
 
-local WINDOW_MINOR = 4
+local WINDOW_MINOR = 5
 -- Minor 3 (cause L9 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): the title bar is 30 high, the
 -- skin's `title.height` and the band S.Shell paints, not 26. The console's title stays centered: the
 -- bar's two ends hold its controls.
@@ -55,6 +55,9 @@ local WINDOW_MINOR = 4
 -- header on the band S.Shell lays (the facade's Header): the drag bar takes the band's rect and the
 -- title, Copy, Clear, Close and the toggle are anchored to it at y 0, so they stay on its middle under
 -- a 2 px edge and EllesmereUI's 25 px bar. The title stays centered. An unowned console is as it was.
+-- Minor 5 (LibKa0s#79, LK-79 of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS): the
+-- shell's buffer is plain text from its minor 23, so a skin switch's rebuild takes each colored
+-- message back from the shell's private `__view`, where it still matches its buffered line.
 -- Paired on the SHELL's minor as well as this file's own, as DebugLogGates.lua is: a window built
 -- by one vendored copy for a shell from another would call back into members that shell may not
 -- have, and nothing would say the two came from different copies.
@@ -356,9 +359,20 @@ local function ownedLine(pal)
   end
 end
 
+--- The colored message the shell kept for buffered line `i` (minor 5), or the plain `msg` the buffer
+--- holds. Only while the two still agree: a host suite that rewrote a buffered line in place gets
+--- the text the buffer now holds, never a stale colored one.
+local function viewMsg(D, i, msg)
+  local view = type(D.__view) == "table" and D.__view[i]
+  if type(view) == "string" and lib.__stripEscapes(view) == msg then return view end
+  return msg
+end
+
 --- Put the newest MAX_BUFFER lines of the buffer back into the log in the palette's colors: a skin
 --- switch recolors what is already on screen, which a message frame cannot do in place. The buffer
---- holds FormatPlain's "<ts> | [<tag>] <msg>"; a line that does not read that way lands whole.
+--- holds FormatPlain's "<ts> | [<tag>] <msg>", the message stripped of its escapes since the
+--- shell's minor 23, so each message's own colors come back from the shell's `__view` (minor 5);
+--- a line that does not read that way lands whole.
 local function rebuildLog(f, D)
   local log, line = f.log, f.__logLine
   if not (log and line) then return end
@@ -368,7 +382,7 @@ local function rebuildLog(f, D)
   for i = first, #buf do
     local ts, tag, msg = buf[i]:match("^(.-) | %[(.-)%] (.*)$")
     if ts then
-      log:AddMessage(line(ts, tag, msg))
+      log:AddMessage(line(ts, tag, viewMsg(D, i, msg)))
     else
       local _, r, g, b = line("", "", "")
       log:AddMessage(buf[i], r, g, b)

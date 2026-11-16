@@ -336,7 +336,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.10.1.4](./DebugLog/version-22.10.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 10** (the identity header names WaypointArrow) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.99.0 | **Current** |
+| [23.11.1.5](./DebugLog/version-23.11.1.5-docs.md) | **`DebugLog.lua` 23** (the buffer's messages plain, the colored view kept in `__view`, `REPORT_WRITTEN`) · **`DebugLogDiagnostics.lua` 11** (`D:Report`, `D:Serialize`, `lib.Serialize`; LibKa0s#79, `LK-79`) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 5** (a skin switch's rebuild keeps each message's colors) | v1.105.0 (unreleased) | **Current** |
+| [22.10.1.4](./DebugLog/version-22.10.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 10** (the identity header names WaypointArrow) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.99.0 – v1.104.0 | Superseded |
 | [22.9.1.4](./DebugLog/version-22.9.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 9** (the identity header names Callout) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.96.0 – v1.97.0 | Superseded |
 | [22.8.1.4](./DebugLog/version-22.8.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 8** (the identity header names Role) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.95.0 | Superseded |
 | [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 – v1.94.0 | Superseded |

@@ -67,6 +67,14 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.105.0, not in the census (unreleased, 2026-11-16).** DebugLog shell minor 23 and DebugLogDiagnostics minor 11
+add the report seam (`LK-79`, LibKa0s#79): the instance's `Report` and `Serialize`, the lib-level `Serialize` and
+the string `REPORT_WRITTEN` ([the document](DebugLog/version-23.11.1.5-docs.md)). None gets a row here yet. **No host
+consumes them at the tag**: Ka0s Consumable Master's addon-local `DL.Report` and `SlashDump.Serialize` are the
+reference they were lifted from, and its one-line lift onto `D:Report` is its adoption item, as is every other
+host's report verb. Every host with a by-name DebugLog parity case (fourteen) adds `Report` and `Serialize` to its
+library-absent stub at its re-vendor.
+
 **v1.99.0, not in the census (2026-11-14).** The release adds a major,
 `LibKa0s-WaypointArrow-1.0` (its lib-level members in `docs/api/WaypointArrow/members-1.1.json`, the descriptor's
 fields and the instance's members in [its document](WaypointArrow/version-1.1-docs.md)): the waypoint arrow with

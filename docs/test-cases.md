@@ -2228,6 +2228,53 @@ Total.
 - dbg descriptor: a safeToString that is not a function falls back to Core's
 - dbg descriptor: a skin that is not a table falls back to Core.SKIN, and a table is handed on
 
+### test_debuglog_plain.lua (10)
+
+- plain: a colored message reaches the view as given and the buffer stripped
+- plain: an escaped pipe survives the strip
+- plain: a hyperlink keeps its text, and textures, atlases and keys go
+- plain: |n becomes a space and a raw newline is kept
+- plain: a line with no pipe is byte for byte what FormatPlain makes
+- plain: the gated sink's lines are plain in the buffer too
+- plain: Clear wipes the view entries with the buffer
+- plain: compaction keeps the view entries beside their lines
+- plain: a skin switch rebuilds an owned console's log with each message's colors
+- plain: a view entry that no longer matches its line is not used
+
+### test_debuglog_report.lua (31)
+
+- report: the pointer string is pinned, and Report and Serialize are on every instance
+- report: lands with logging off, under its tag, after a /<slash> <title> header
+- report: never turns logging off either, and never clears the console
+- report: with no slash the header is the title alone
+- report: a tag that is not a string reports as [Report]
+- report: reveals a hidden console and leaves a shown one shown
+- report: prints exactly one pointer line, naming the title and counting the header
+- report: the pointer is the host's through d.L
+- report: repaints once, not once per line
+- report: a body that writes nothing writes no report, prints nothing and opens nothing
+- report: a body that is not a function writes nothing
+- report: a raising body writes what it collected and one failure line, and still points
+- report: a body that raises before writing still reports the failure
+- report: a secret body line renders the sentinel and raises nothing
+- report: capped at the diagnostics cap, with one truncated line
+- report: a capped raising body keeps its failure line
+- serialize: sorts keys, indents nested tables and marks a cycle (ConsumableMaster's case)
+- serialize: writes nothing to the console or to chat
+- serialize: a table shared by two branches renders under both
+- serialize: numbers first, then strings, then every other key; odd strings bracketed
+- serialize: a scalar, an empty table and an indent of the caller's
+- serialize: a huge table stops at the line cap and says so
+- serialize: nesting past the depth cap reads {...}
+- serialize: sort = false walks the table in its own order
+- serialize: a secret value or table renders the sentinel and is never inspected
+- serialize: a secret key renders the sentinel, sorted after every readable key
+- serialize: a probe that raises counts as a secret
+- serialize: a concat-hostile table is walked rawly and raises nothing
+- serialize: a raise inside the walk keeps the lines so far and says it failed
+- serialize: the instance's stringifier renders the values, the library's renders them bare
+- serialize: composes with a report's out
+
 ### test_resize_windows.lua (23)
 
 - resize console: the default size is still 700 x 344
@@ -5399,6 +5446,8 @@ Total.
 | test_debuglog_diagnostics.lua | 47 |
 | test_debuglog_gates.lua | 20 |
 | test_debuglog_descriptor.lua | 7 |
+| test_debuglog_plain.lua | 10 |
+| test_debuglog_report.lua | 31 |
 | test_resize_windows.lua | 23 |
 | test_tool_windows_layering.lua | 8 |
 | test_tool_windows_skin.lua | 17 |
@@ -5530,4 +5579,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4676** |
+| **Total** | **4717** |

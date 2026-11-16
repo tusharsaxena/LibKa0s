@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **22** · `DebugLogDiagnostics.lua` minor **10** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **4** |
 | Shipped in | v1.99.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 22.9.1.4](./version-22.9.1.4-docs.md) (shipped in v1.96.0) — the identity header did not name `LibKa0s-WaypointArrow-1.0`. |
-| Superseded by | — |
+| Superseded by | [version 23.11.1.5](./version-23.11.1.5-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 22, DebugLogDiagnostics = 10, DebugLogGates = 1, DebugLogWindow = 4 }` |
 
@@ -1030,3 +1030,7 @@ does not permit. Re-vendor the whole folder and the floor is unobservable.
 **Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws the debug console its own way; every host left it at the skinning rollout for the skin owner path.
+
+## Moving to version 23.11.1.5
+
+`DebugLog.lua` moves to 23, `DebugLogDiagnostics.lua` to 11 and `DebugLogWindow.lua` to 5 (`LK-79`, LibKa0s#79): the report seam `D:Report`, the serializer `D:Serialize` and `lib.Serialize`, the string `REPORT_WRITTEN`, and a plain-text Copy buffer whose colors stay on the view. A host's library-absent stub gains `Report` and `Serialize`. See [version 23.11.1.5](./version-23.11.1.5-docs.md); re-vendor the whole folder.
