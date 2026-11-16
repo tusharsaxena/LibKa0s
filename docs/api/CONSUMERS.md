@@ -103,6 +103,17 @@ None gets a row here yet. **No host calls them at the tag:** the library's own w
 each host's own tooltips move onto it at its adoption (LibKa0s#92), and `extraEntries` has one consumer by the owner's
 2026-11-16 ruling, Ka0s Skill Master, which adopts it in phase [3] of the same bundle.
 
+**v1.105.0, not in the census (2026-11-17), smoke round 1's title-bar tooltips and colors.** `LibKa0s-Tooltip-1.0`
+minor 1 also carries `AttachTitleTip`, `CLOSE_STRINGS`, `SetCloseTip` and `CloseTip` (`SR-L2` of
+Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, its `SR1_SMOKE_ROUND1.md`; [the document](Tooltip/version-1-docs.md)),
+WidgetsDragHandleTip minor 1 `W.DRAG_HANDLE_STRINGS` ([the document](Widgets/version-27.2.7.14.1.7.8.6.1.1-docs.md)), and DebugLog
+minor 23 the strings `TOGGLE_TIP`, `DIAGNOSTICS_TIP`, `COPY_TIP`, `CLEAR_TIP` and `SETTINGS_TIP` ([the document](DebugLog/version-23.11.1.5-docs.md)).
+None gets a row here yet. **No host calls them at the tag:** the library's own title-bar controls are their only
+callers, and a host reaches them only through its `L` (the console's strings, a strip's `spec.L`) or a window's
+`closeTip`. A host's own windows' title-bar tooltips and colors are its `SR-<ABBR>` item of the same bundle. The
+smoke round's color and band changes (`SR-L3`: `close.rest` follows `icon.tint`, marks light in `text.link`; `SR-L4`:
+`list.header.bg` in every skin) move token values, not members, so no census row moves for them either.
+
 **v1.99.0, not in the census (2026-11-14).** The release adds a major,
 `LibKa0s-WaypointArrow-1.0` (its lib-level members in `docs/api/WaypointArrow/members-1.1.json`, the descriptor's
 fields and the instance's members in [its document](WaypointArrow/version-1.1-docs.md)): the waypoint arrow with
