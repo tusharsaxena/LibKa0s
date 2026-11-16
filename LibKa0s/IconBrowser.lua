@@ -551,14 +551,17 @@ local function tip(b, widget, titleKey, bodyKey)
   local function tipColor(token, r, g, bl)
     local fn = b.helpers.__tipColor
     if type(fn) == "function" then return fn(token, r, g, bl) end
-    return r or 1, g or 1, bl or 1
+    return r, g, bl
   end
   local function show()
     local gt = GameTooltip
     if not gt then return end
     gt:SetOwner(anchor, "ANCHOR_NONE")
     if title and title ~= "" then gt:SetText(title, tipColor("gtip.value", 1, 1, 1)) end
-    if body and body ~= "" then gt:AddLine(body, tipColor("gtip.line")) end
+    if body and body ~= "" then
+      local lr, lg, lb = tipColor("gtip.line")
+      gt:AddLine(body, lr, lg, lb, true)
+    end
     gt:Show()
     placeTip(gt, anchor)
   end

@@ -48,7 +48,8 @@ local function undoGeo()
 end
 
 local TIP_METHODS = { "SetOwner", "GetOwner", "IsOwned", "ClearAllPoints", "SetPoint", "SetAnchorType",
-                      "GetWidth", "GetHeight", "GetEffectiveScale", "Show", "Hide", "IsShown" }
+                      "GetWidth", "GetHeight", "GetEffectiveScale", "Show", "Hide", "IsShown",
+                      "SetText", "AddLine" }
 
 --- Record `m.GameTooltip`: its owner, every point, a 200 x 80 size. Answers the tooltip and a
 --- restore; `tip.__point` is the last point, `tip.__anchor` the last owner anchor.
@@ -56,7 +57,7 @@ local function recordTip(m)
   local tip = m.GameTooltip
   local saved = {}
   for _, k in ipairs(TIP_METHODS) do saved[k] = rawget(tip, k) end
-  tip.__point, tip.__owner, tip.__anchor, tip.__kinds = nil, nil, nil, nil
+  tip.__point, tip.__owner, tip.__anchor, tip.__kinds, tip.__lines = nil, nil, nil, nil, nil
   rawset(tip, "SetOwner", function(self, owner, anchor) self.__owner, self.__anchor = owner, anchor end)
   rawset(tip, "GetOwner", function(self) return self.__owner end)
   rawset(tip, "IsOwned", function(self, f) return self.__owner == f end)
@@ -71,6 +72,13 @@ local function recordTip(m)
   rawset(tip, "Show", function(self) self.__up = true end)
   rawset(tip, "Hide", function(self) self.__up = false end)
   rawset(tip, "IsShown", function(self) return self.__up == true end)
+  rawset(tip, "SetText", function(self, text, r, g, b)
+    self.__lines = { { text = text, r = r, g = g, b = b } }
+  end)
+  rawset(tip, "AddLine", function(self, text, r, g, b, wrap)
+    self.__lines = self.__lines or {}
+    self.__lines[#self.__lines + 1] = { text = text, r = r, g = g, b = b, wrap = wrap }
+  end)
   return tip, function() for _, k in ipairs(TIP_METHODS) do rawset(tip, k, saved[k]) end end
 end
 
@@ -141,7 +149,23 @@ test("tooltip sites: the icon browser's toolbar tips attach below their control"
     filter.callbacks.OnEnter(filter)
     assertTrue(tip.__owner == filter.frame, "owned by the control")
     assertBelow(m, tip, 640, 760, 700, "toolbar")
+    -- the body line as AttachTooltip drew it: wrapped, in the host's __tipColor
+    local body = tip.__lines and tip.__lines[2]
+    assertTrue(body ~= nil, "toolbar: a body line")
+    assertEqual(body.wrap, true, "toolbar: the body line wraps")
     filter.callbacks.OnLeave(filter)
+    -- helpers without __tipColor: the same, never white
+    local saved = B.helpers.__tipColor
+    B.helpers.__tipColor = nil
+    local ok, err = pcall(function()
+      filter.callbacks.OnEnter(filter)
+      local line = tip.__lines and tip.__lines[2]
+      assertTrue(line ~= nil and line.wrap == true, "toolbar (no __tipColor): the body line wraps")
+      assertNil(line.r, "toolbar (no __tipColor): the body in the client's color")
+      filter.callbacks.OnLeave(filter)
+    end)
+    B.helpers.__tipColor = saved
+    if not ok then error(err, 0) end
     assertTrue(tip.__up == false, "leaving hides it")
   end)
 end)

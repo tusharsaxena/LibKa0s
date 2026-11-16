@@ -115,7 +115,8 @@ end
 --- The library's placement: attached and centered below the STRIP (`handle`), whichever of its
 --- frames is hovered (a mark places by its strip, as AuraMaster's StripOf did). Unreadable geometry,
 --- or no Tooltip major, attaches it below the strip by a relative point, which a restricted tree
---- refuses, so under pcall; the tooltip is then where the client left it, never at the cursor.
+--- refuses, so under pcall; a refused point leaves the tooltip with no anchor (the points were
+--- cleared), never at the cursor. Reached only when the strip's geometry cannot be read.
 local function dhPlaceAttached(tip, handle)
   local Tip = LibStub("LibKa0s-Tooltip-1.0", true)
   if Tip and Tip.PlaceAttached(tip, handle, "top") then return end
