@@ -11,9 +11,9 @@
 | Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **10** · `SimPanelRender.lua` **3** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `2.3.10.3` |
 | Shipped in | v1.85.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 2.3.10.2](./version-2.3.10.2-docs.md) (unreleased, an earlier step of v1.85.0) — an owned panel's title and close were anchored to the window's top at -(1 + TITLE_H / 2), a px high under a 2 px edge. |
-| Superseded by | — |
+| Superseded by | [version 2.3.11.3](./version-2.3.11.3-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 10, SimPanelRender = 3 }` |
 
@@ -1023,3 +1023,7 @@ bodies only define functions; no frame, timer or event registration exists until
 host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
 into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
 parse time only.
+
+## Moving to version 2.3.11.3
+
+The same surface; `SimPanel.lua` moves to 11 and the default panel title becomes the string `PANEL_TITLE`, `%s - SIM`, where it read `name .. " - Simulation"` (`LK-78`, LibKa0s#78). See [version 2.3.11.3](./version-2.3.11.3-docs.md). A host that sets `d.panel.title` sees no change; re-vendor the whole folder.

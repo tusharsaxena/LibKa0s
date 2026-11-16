@@ -4513,9 +4513,10 @@ Total.
 - sim panel: every documented optional field filled in place after New is read at use
 - sim panel: anchorTo, stepDelay and the required callbacks and slash, reassigned after New, are read at use
 
-### test_sim_panel_controls.lua (18)
+### test_sim_panel_controls.lua (19)
 
-- sim panel: the title defaults to name .. ' - Simulation', and d.panel.title overrides it
+- sim panel: the title defaults to PANEL_TITLE ('%s - SIM'), and d.panel.title overrides it
+- sim panel: a host's PANEL_TITLE string (d.L) formats the default title
 - sim panel: headless, ShowPanel answers false and PanelRows still composes
 - sim panel: Show, Hide, Toggle, IsPanelShown
 - sim panel: the empty verb opens it and `panel` toggles it
@@ -4853,7 +4854,7 @@ Total.
 - record: __aceguiLive counts a Create per type and gives it back on Release
 - record: __aceguiLive ignores a Release it never saw created, and a registered type counts
 
-### test_mock_events.lua (14)
+### test_mock_events.lua (21)
 
 - events: an EventRegistry callback appears in __registrations as kind 'callback'
 - events: UnregisterCallback removes the callback from __registrations
@@ -4869,6 +4870,13 @@ Total.
 - events: the frame raise names the caller, not the kit
 - events: C_EventUtils.IsEventValid answers false for a bad name and true otherwise
 - events: a suite may remove C_EventUtils to model an older client
+- events: a frame held only by its RegisterEvent survives a collection and still hears the event
+- events: a frame held only by its RegisterUnitEvent survives a collection and still hears the event
+- events: a frame that never registered is not held
+- events: UnregisterEvent of the last registration releases the hold
+- events: UnregisterAllEvents releases the hold
+- events: an AceEvent-embedded frame's UnregisterAllEvents releases the hold
+- events: a registered frame is collected with its dropped build
 
 ### test_mock_resize.lua (6)
 
@@ -5016,7 +5024,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 56
+- the kit is revision 57
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -5476,7 +5484,7 @@ Total.
 | test_sim_verbs.lua | 42 |
 | test_sim_autoplay.lua | 16 |
 | test_sim_panel.lua | 41 |
-| test_sim_panel_controls.lua | 18 |
+| test_sim_panel_controls.lua | 19 |
 | test_sim_panel_render.lua | 34 |
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
@@ -5492,7 +5500,7 @@ Total.
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 40 |
 | test_mock_record.lua | 42 |
-| test_mock_events.lua | 14 |
+| test_mock_events.lua | 21 |
 | test_mock_resize.lua | 6 |
 | test_mock_client.lua | 4 |
 | test_mock_lines.lua | 5 |
@@ -5519,4 +5527,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4665** |
+| **Total** | **4673** |

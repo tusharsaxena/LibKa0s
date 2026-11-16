@@ -14,16 +14,24 @@ local bench, joined, linesOf, shown, buttons = F.bench, F.joined, F.linesOf, F.s
 
 -- ── the frame, the picker and the controls ───────────────────────────────────────────────
 
-test("sim panel: the title defaults to name .. ' - Simulation', and d.panel.title overrides it", function()
+test("sim panel: the title defaults to PANEL_TITLE ('%s - SIM'), and d.panel.title overrides it", function()
   local b = bench()
   F.recording(b.m, function()
     local f = shown(b)
-    assertEqual(f.title.__text, "Host - Simulation")
+    assertEqual(f.title.__text, "Host - SIM")
   end)
-  local b2 = bench(nil, nil, { title = function() return "Brand - Simulation" end })
+  local b2 = bench(nil, nil, { title = function() return "Brand - SIM" end })
   F.recording(b2.m, function()
     local f = shown(b2)
-    assertEqual(f.title.__text, "Brand - Simulation")
+    assertEqual(f.title.__text, "Brand - SIM")
+  end)
+end)
+
+test("sim panel: a host's PANEL_TITLE string (d.L) formats the default title", function()
+  local b = bench({ L = { PANEL_TITLE = "%s (simulated)" } })
+  F.recording(b.m, function()
+    local f = shown(b)
+    assertEqual(f.title.__text, "Host (simulated)")
   end)
 end)
 

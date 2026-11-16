@@ -63,7 +63,7 @@ local W = LibStub("LibKa0s-Widgets-1.0", true)
 local NEEDS_CORE = 9
 if not core or (core.MINOR or 0) < NEEDS_CORE or not W then return end
 
-local SIM_PANEL_MINOR = 10
+local SIM_PANEL_MINOR = 11
 -- Minor 6: the panel is toplevel and re-raises a shown StaticPopup on show (frame-layering-§4).
 -- Minor 7: the panel and its buttons follow the skin owner (THE SKIN OWNER below; LK-09 of
 -- Ka0sAddonsCommonTasks docs/2026-10-25-SKINNING).
@@ -82,6 +82,9 @@ local SIM_PANEL_MINOR = 10
 -- This file keeps the six locals the two share and hands them over as `lib.__panelKit`.
 -- Minor 10 (cause L2 of Ka0sAddonsCommonTasks docs/2026-11-01-FULL_SKINNING): an owned panel's tooltip title takes `gtip.title`, the
 -- key column's token, whose Ka0s Default is the gold the client drew. An owner-less title names none.
+-- Minor 11 (LibKa0s#78, LK-78 of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS): the default
+-- title is the string PANEL_TITLE, "%s - SIM" (was the literal name .. " - Simulation"), so a host's d.L
+-- overrides it like every other panel string.
 -- Paired on the SHELL's minor as well as this file's own, as SimTimeline.lua is.
 if lib.__panelMinor and lib.__panelMinor >= SIM_PANEL_MINOR
   and lib.__panelShellMinor == lib.MINOR then return end
@@ -140,6 +143,7 @@ lib.__panelKit = {
 
 lib.STRINGS = lib.STRINGS or {}
 for key, line in pairs({
+  PANEL_TITLE = "%s - SIM",
   PANEL_START = "Start: %s",
   START       = "Start",
   PANEL_STOP  = "Stop simulation",
@@ -595,7 +599,7 @@ local function title(P)
   local t = panelField(P, "title")
   if type(t) == "function" then t = ask(P, "title") end
   if t ~= nil then return tostring(t) end
-  return tostring(P.ctx.d.name) .. " - Simulation"
+  return P.ctx.tr("PANEL_TITLE"):format(tostring(P.ctx.d.name))
 end
 
 --- The renderer for one instance, built on the first Show.
