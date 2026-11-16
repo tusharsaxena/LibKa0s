@@ -75,6 +75,13 @@ reference they were lifted from, and its one-line lift onto `D:Report` is its ad
 host's report verb. Every host with a by-name DebugLog parity case (fourteen) adds `Report` and `Serialize` to its
 library-absent stub at its re-vendor.
 
+**v1.105.0, not in the census (unreleased, 2026-11-16), the header marks.** WidgetsHeader minor 1 (new) adds
+`W.HeaderButtons`, `W.HeaderButton`, `W.HEADER` and `W.HEADER_STRINGS`, and Core minor 18 adds
+`Core.RegisterSettingsOpener`, `Core.HasSettings` and `Core.OpenSettings` (`LK-86`, LibKa0s#86;
+[the Widgets document](Widgets/version-27.2.7.14.1.7.8.6.1-docs.md), [the Core document](Core/version-18.1-docs.md)).
+None gets a row here yet. **No host calls them at the tag:** the library's own windows use them, the launcher fills the
+registry in every host from the re-vendor alone, and a host window's strip is its adoption item (LibKa0s#86).
+
 **v1.99.0, not in the census (2026-11-14).** The release adds a major,
 `LibKa0s-WaypointArrow-1.0` (its lib-level members in `docs/api/WaypointArrow/members-1.1.json`, the descriptor's
 fields and the instance's members in [its document](WaypointArrow/version-1.1-docs.md)): the waypoint arrow with

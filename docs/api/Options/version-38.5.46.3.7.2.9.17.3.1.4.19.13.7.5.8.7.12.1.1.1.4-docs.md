@@ -21,6 +21,18 @@
 
 Still `OptionsSkinPicker.lua` minor **12** (one bump for the release). The picker is a standalone window on UIParent at DIALOG strata, not a Settings-canvas page (research note R9, C1), so WowAddonStandards standalone-windows, *Tooltip placement* binds it. Its three `attachTip` sites, the gear (settings) and the eye (preview) on the dropdown's row and the dropdown button itself, are toolbar controls, the window's top chrome: each tooltip is owned at `ANCHOR_NONE`, filled and shown, then attached centered **below the control** by `LibKa0s-Tooltip-1.0`'s `PlaceAttached(tip, control, "top")`, where `ANCHOR_TOP` opened it above. With unreadable geometry, or no Tooltip major, it is attached below by a relative point. The Settings-canvas widgets (`AttachTooltip`, the tab strip, the nav rail, the drawer, the id list, the keybinds) are out of the standard's scope and keep their anchors. No member moves; a consumer owes nothing at its re-vendor (a smoke line).
 
+
+## Also at this version: the skin picker's gear moves into the header (`LK-86`, LibKa0s#86)
+
+Still `OptionsSkinPicker.lua` minor **12** (Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7). No member, `spec` field or string is added or removed.
+
+- **Where it is.** The gear and the close are the window's header marks, LibKa0s-Widgets-1.0's `HeaderButtons`: left to right settings, close, on the title band. The gear was on the dropdown row; the dropdown's right edge now meets the eye while it is shown, else the window's padding.
+- **What it does is unchanged:** refused in combat with the window left up; otherwise the pending pick saved as Apply does, then `spec.onSettings`, or the panel opened at `spec.page` and its Skin tab selected, then the close. Its tooltip is `SETTINGS_TIP`, attached below it through `LibKa0s-Tooltip-1.0`, in the owner's `gtip.title`.
+- **Its paint** is the header marks' one path (`icon.tint` / `icon.hot`), where the dropdown-row gear wore the push-button paint; without the art it draws Widgets' `HEADER_STRINGS.SETTINGS_GLYPH`. `f.settings` is the header mark.
+- Without Widgets' `HeaderButtons`, the header carries the close alone and there is no gear.
+
+**What a consumer owes at its re-vendor:** a suite that pinned the gear on the dropdown row re-pins it on the header.
+
 ## What changed at this version: the skin picker's queue peels out (`LK-P1`)
 
 A pure move, on the seam `CLAUDE.md`'s band census named for `OptionsSkinPicker.lua` (row `FX-LK-SIZE`, its 1400-line trigger fired at 1493); no public member, no descriptor or row field and no behavior moves (LK-P1 of Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`).

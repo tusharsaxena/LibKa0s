@@ -758,9 +758,10 @@ test("dbg: a close-button factory returning nil is survivable, as Core's own is"
 end)
 
 test("dbg: the title-bar offsets are derived from the close button's width", function()
-  -- Copy | Clear | Close read right to left, each with a six-pixel gap. Minor 3 hard-coded -30 and
+  -- Copy | Clear | settings | Close read right to left, each with a six-pixel gap (DebugLogWindow
+  -- minor 5, LibKa0s#86: the settings mark joins beside the close). Minor 3 hard-coded -30 and
   -- -78, which are correct ONLY for an 18-wide button: a host supplying a 24-wide one would have
-  -- Clear's right edge land exactly on that button's left edge and the gap would vanish.
+  -- the next mark's right edge land exactly on that button's left edge and the gap would vanish.
   --
   -- Recorded on the frame for the same reason `titleText` is: an anchor cannot be read back through
   -- the frame API, so this is the only way a host's test can see what it got.
@@ -769,8 +770,9 @@ test("dbg: the title-bar offsets are derived from the close button's width", fun
   local off = D._frameForTest.titleBarOffsets
   T.assertTrue(off ~= nil, "the computed offsets are recorded on the frame")
   assertEqual(off.close, -6)
-  assertEqual(off.clear, -30, "unchanged from minor 3 for the default 18-wide button")
-  assertEqual(off.copy, -78, "unchanged from minor 3 for the default 18-wide button")
+  assertEqual(off.settings, -30, "the settings glyph, 18 wide, beside the default 18-wide close")
+  assertEqual(off.clear, -54, "-30 - 18 - 6")
+  assertEqual(off.copy, -102, "-54 - 42 - 6, the CLEAR word's width")
 end)
 
 test("dbg: with addonName the title bar draws icons, and they are narrower than the words", function()
@@ -782,8 +784,9 @@ test("dbg: with addonName the title bar draws icons, and they are narrower than 
   local f = D._frameForTest
   T.assertTrue(f.copyButton.icon ~= nil, "Copy did not draw an icon")
   T.assertTrue(f.clearButton.icon ~= nil, "Clear did not draw an icon")
-  assertEqual(f.titleBarOffsets.clear, -30, "the close button is still 18 wide")
-  assertEqual(f.titleBarOffsets.copy, -54, "-30 - 18 - 6, where a 42-wide word gave -78")
+  assertEqual(f.titleBarOffsets.settings, -30, "the close button is still 18 wide")
+  assertEqual(f.titleBarOffsets.clear, -54, "-30 - 18 - 6")
+  assertEqual(f.titleBarOffsets.copy, -78, "-54 - 18 - 6, where a 42-wide word gave -102")
 end)
 
 test("dbg: an icon control carries NO tooltip", function()
@@ -833,7 +836,7 @@ test("dbg: no addonName is the minor-8 title bar, word for word", function()
   D:Show()
   local f = D._frameForTest
   assertEqual(f.copyButton.icon, nil, "an icon was drawn for a host that never asked")
-  assertEqual(f.titleBarOffsets.copy, -78, "the word-width offsets")
+  assertEqual(f.titleBarOffsets.copy, -102, "the word-width offsets, past the settings glyph")
 end)
 
 test("dbg: an addonName the art does not answer for falls back to words", function()
@@ -842,10 +845,10 @@ test("dbg: an addonName the art does not answer for falls back to words", functi
   local D = newLog{ addonName = "" }
   D:Show()
   assertEqual(D._frameForTest.copyButton.icon, nil)
-  assertEqual(D._frameForTest.titleBarOffsets.copy, -78)
+  assertEqual(D._frameForTest.titleBarOffsets.copy, -102)
 end)
 
-test("dbg: a wider host close button pushes Copy and Clear out of its way", function()
+test("dbg: a wider host close button pushes settings, Clear and Copy out of its way", function()
   local D = newLog{ makeCloseButton = function()
     local b = T.mocks.__stubFrame()
     function b:GetWidth() return 24 end
@@ -854,8 +857,9 @@ test("dbg: a wider host close button pushes Copy and Clear out of its way", func
   D:Show()
   local off = D._frameForTest.titleBarOffsets
   assertEqual(off.close, -6)
-  assertEqual(off.clear, -36, "-6 - 24 - 6")
-  assertEqual(off.copy, -84, "-36 - 42 - 6")
+  assertEqual(off.settings, -36, "-6 - 24 - 6")
+  assertEqual(off.clear, -60, "-36 - 18 - 6")
+  assertEqual(off.copy, -108, "-60 - 42 - 6")
 end)
 
 test("dbg: a close button with no measurable width falls back to the library's own", function()
@@ -863,12 +867,15 @@ test("dbg: a close button with no measurable width falls back to the library's o
   -- pass. Neither may collapse the title bar onto itself.
   local D = newLog{ makeCloseButton = function() return T.mocks.__stubFrame() end }
   D:Show()
-  assertEqual(D._frameForTest.titleBarOffsets.clear, -30)
+  assertEqual(D._frameForTest.titleBarOffsets.settings, -30)
 end)
 
-test("dbg: with no close button at all the offsets are still the minor-3 defaults", function()
+test("dbg: with no close button at all the settings mark takes the corner", function()
+  -- Minor 5 (LibKa0s#86): settings is the outermost mark the factory left, so Clear and Copy land
+  -- where they stood at minor 3.
   local D = newLog{ makeCloseButton = function() return nil end }
   D:Show()
+  assertEqual(D._frameForTest.titleBarOffsets.settings, -6)
   assertEqual(D._frameForTest.titleBarOffsets.clear, -30)
   assertEqual(D._frameForTest.titleBarOffsets.copy, -78)
 end)

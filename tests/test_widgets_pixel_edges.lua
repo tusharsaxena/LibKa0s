@@ -18,7 +18,7 @@ local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER = "LootHistory"
 local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart", "WidgetsAutocomplete",
-                 "WidgetsCopyWindow" }
+                 "WidgetsCopyWindow", "WidgetsHeader" }
 local PIECES = { "TopLeftCorner", "TopRightCorner", "BottomLeftCorner", "BottomRightCorner",
                  "TopEdge", "BottomEdge", "LeftEdge", "RightEdge", "Center" }
 

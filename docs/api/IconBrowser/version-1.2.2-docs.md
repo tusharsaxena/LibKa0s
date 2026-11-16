@@ -1,4 +1,4 @@
-# `LibKa0s-IconBrowser-1.0` — version 1.1.2
+# `LibKa0s-IconBrowser-1.0` — version 1.2.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the IconBrowser surface points here rather than restating it. It describes the
@@ -8,16 +8,22 @@
 | | |
 |---|---|
 | Major | `LibKa0s-IconBrowser-1.0` |
-| Files and minors | `IconBrowserSources.lua` minor **1** · `IconBrowserWindow.lua` minor **1** · `IconBrowser.lua` minor **2** |
+| Files and minors | `IconBrowserSources.lua` minor **1** · `IconBrowserWindow.lua` minor **2** · `IconBrowser.lua` minor **2** |
 | Shipped in | v1.105.0 (unreleased) |
 | Status | **Current** |
 | Supersedes | [version 1.1.1](./version-1.1.1-docs.md) (v1.86.0 – v1.104.0) — a cell's tooltip and the toolbar's (through the host's `AttachTooltip`) owned at `ANCHOR_RIGHT`. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 and `LibKa0s-Media-1.0` ≥ 5 (the shell's floors); the browser needs the host's LibKa0s Options instance (`spec.helpers`) and AceGUI-3.0 through it |
 | Optional at call time | `LibKa0s-Compat-1.0` (the macro lists' secret guard), `LibKa0s-Skin-1.0` (the owner's facade and the four owner tokens), `LibKa0s-Widgets-1.0` (`CopyWindow`, the Wowhead link window), `LibKa0s-Tooltip-1.0` (where a tooltip opens) |
-| Confirm in-game | `LibStub("LibKa0s-IconBrowser-1.0").MODULES` → `{ IconBrowserSources = 1, IconBrowserWindow = 1, IconBrowser = 2 }` |
+| Confirm in-game | `LibStub("LibKa0s-IconBrowser-1.0").MODULES` → `{ IconBrowserSources = 1, IconBrowserWindow = 2, IconBrowser = 2 }` |
 
-## What changed at this version: the browser's tooltips go through the placers (`LK-92B`, LibKa0s#92)
+## What changed at this version: the window opts out of the settings mark (`LK-86`, LibKa0s#86)
+
+`IconBrowserWindow.lua` moves 1 -> **2** (Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7). No member, `spec` field or string is added or removed, and nothing a player sees moves.
+
+- Every window the library draws carries a settings mark from this release (LibKa0s-Widgets-1.0's `HeaderButtons`), and **the icon browser opts out, with its reason**: it is opened from a settings row, so the settings panel is already beneath it. Both chrome paths hand their close to `HeaderButtons` with `settings = false` and the reason (`"opened from a settings row; the panel is already beneath it"`) and `place = false`, so the template and `S.Header` place the close as before. The window's `headerButtons` records it (`order` is `{ "close" }`, `optOut` the reason).
+
+## What changed at version 1.1.2: the browser's tooltips go through the placers (`LK-92B`, LibKa0s#92)
 
 `IconBrowser.lua` moves 1 -> **2** for WowAddonStandards v2.112.0 (standalone-windows, *Tooltip placement*: the icon browser is a library-drawn window, the library's to move in the same release). No member, `spec` field or string is added or removed.
 

@@ -1,4 +1,4 @@
-# `LibKa0s-Sim-1.0` — version 2.3.11.3
+# `LibKa0s-Sim-1.0` — version 2.3.11.4
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Sim surface points here rather than restating it. It describes the
@@ -8,16 +8,25 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Sim-1.0` |
-| Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **11** · `SimPanelRender.lua` **3** |
-| Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `2.3.11.3` |
+| Files and minors | `Sim.lua` **2** · `SimTimeline.lua` **3** · `SimPanel.lua` **11** · `SimPanelRender.lua` **4** |
+| Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `2.3.11.4` |
 | Shipped in | v1.105.0 (unreleased) |
 | Status | **Current** |
-| Supersedes | [version 2.3.10.3](./version-2.3.10.3-docs.md) — the same surface; the default panel title read `name .. " - Simulation"` and was no string a host could override. |
+| Supersedes | [version 2.3.10.3](./version-2.3.10.3-docs.md) — the same surface; the panel's title band carried the close mark alone, and the default panel title read `name .. " - Simulation"` and was no string a host could override. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
-| Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 11, SimPanelRender = 3 }` |
+| Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 2, SimTimeline = 3, SimPanel = 11, SimPanelRender = 4 }` |
 
-## What changed at this version: the panel's tooltips go through the placers (`LK-92B`, LibKa0s#92)
+## What changed at this version: the panel's header marks (`LK-86`, LibKa0s#86)
+
+`SimPanelRender.lua` moves 3 -> **4**, and `SimPanel.lua` stays at **11** (this release's one bump; Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7). No member is added or removed.
+
+- **The marks.** The step panel's title band is LibKa0s-Widgets-1.0's `HeaderButtons`: left to right settings, close, on the band's middle; an owned panel's `S.Header` places both. Under `d.close == false` the settings mark takes the corner alone. `frame.settingsButton` and `frame.headerButtons` are recorded beside `frame.closeButton`.
+- **What settings opens.** The addon's registered opener, LibKa0s-Core-1.0 minor 18's `OpenSettings` by the panel's `addonName`, which is the Sim descriptor's `name`: the host's folder, the name its launcher registered. There is no override: `d.panel` takes presentation fields only, and a new one would move the Sim shell. The tooltip is *Open settings*, attached below the mark.
+
+**What a consumer owes at its re-vendor:** nothing. A suite that counted the panel's title-band frames counts one more.
+
+## What changed at version 2.3.11.3: the panel's tooltips go through the placers (`LK-92B`, LibKa0s#92)
 
 Still `SimPanel.lua` minor **11** (one bump for the release). WowAddonStandards v2.112.0 (standalone-windows, *Tooltip placement*): the step panel is a library-drawn window, the library's to move in the same release. The panel's `showTip`, which every control and every step row's tooltip goes through (`d.tooltip` of the step panel), is owned at `ANCHOR_NONE`, filled, shown, and then placed **beside the panel's window group** by `LibKa0s-Tooltip-1.0`'s `PlaceBeside` (the group `GroupOf` finds: the panel, the outermost frame under UIParent): `TOPLEFT` at its right edge + 2 when it fits, else `TOPRIGHT` at its left edge - 2, level with the control's top. It was `SetOwner(control, "ANCHOR_RIGHT")`, over the panel. With unreadable geometry, or no Tooltip major, it attaches below the control. No member and no string moves. **A consumer owes nothing** at its re-vendor; it is a smoke line in every host with a sim panel. A host whose tests load library files by name adds `Tooltip.lua` after `CorePixel.lua`.
 

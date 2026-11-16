@@ -67,6 +67,20 @@
 - **A host suite that pinned the console's counter color or its status-line geometry** (0.6 gray, `log.count`, the 16 px line, the 104 px minimum height) re-pins it on the footer's (`text.muted`, 24 px, 112). No sibling's suite or code reads `statusDivider` or `lineCount` outside `libs/` (R1).
 - **Nothing else.** Moving a report verb onto `D:Report`, Consumable Master's one-line lift of its `DL.Report` among them, is adoption, owed by the standard's rule, not by the re-vendor.
 
+
+## Also at this version: the title bar's marks are Widgets' `HeaderButtons` (`LK-86`, LibKa0s#86)
+
+Still `DebugLogWindow.lua` minor **5** and `DebugLog.lua` minor **23** (Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7, R9 C2).
+
+- **The marks.** The console's title bar is LibKa0s-Widgets-1.0's `HeaderButtons` (`WidgetsHeader.lua` 1): left to right **Copy, Clear, settings, close**, one size and one pitch (6 px), the art out of the host's copy where `addonName` answers it, else the COPY and CLEAR words and the settings glyph `*`. Settings sits beside the close, so `f.titleBarOffsets` reads `{ close = -6, settings = -30, clear = -54, copy = -78 }` with the art and `copy = -102` with the words (Core's 18 px close). `f.settingsButton` and `f.headerButtons` are recorded beside `f.closeButton`, `f.clearButton` and `f.copyButton`; an owned console's `S.Header` places the marks HeaderButtons laid.
+- **No tooltip on any of them** (`tips = false`), the documented choice the window has kept since the shell's minor 9: a tooltip under the title bar sits on the log's first line, which is where the chrome rule would put it (R9 C2).
+- **One paint path.** Every mark, the words included, paints `icon.tint` at rest and `icon.hot` under the pointer (Ka0s Default's 0.7 gray and white with no owner), where the console's own Copy and Clear drew `text.muted` and `text.accent`.
+- **What settings opens.** The descriptor's new optional **`onSettings`**, else the addon's registered opener, LibKa0s-Core-1.0 minor 18's `OpenSettings(addonName)`, which the launcher fills. The console stays open. The copy window's settings mark (Widgets' `CopyWindow` minor 6) is handed the same `onSettings`.
+- **The minimum width** reads the marks' reach, so it grows by the settings mark's 24 px where the marks are the wider side.
+- Without Widgets' `HeaderButtons`, the bar carries the close alone.
+
+**What a consumer owes at its re-vendor:** a suite that pinned `titleBarOffsets`, the console's minimum width or Copy and Clear's colors re-pins it; none is known outside this repo.
+
 ## What changed at version 22.10.1.4: the identity header names WaypointArrow
 
 **No member change.** `DebugLogDiagnostics.lua` moves to minor **10** (the other three files unchanged, so the key moves 22.9.1.4 → 22.10.1.4). The new `LibKa0s-WaypointArrow-1.0` (`WaypointArrow`, `WaypointArrowSettings`) is added, and the report's `LibKa0s running:` line now lists it, in `tests/majors.lua` order: `Core`, `Env`, `Compat`, `Role`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `Glow`, `Toast`, `Callout`, `WaypointArrow`, `Charts`, `Media`, `Skin`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `IconBrowser`, `Perf`, `Sim`. A major absent from the client is still skipped, so a host whose winning copy has no arrow module prints the same header as before. `tests/test_debuglog_diagnostics.lua` is the gate that asked for this, as it did for Callout at version 22.9.1.4.

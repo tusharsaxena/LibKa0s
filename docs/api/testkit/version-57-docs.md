@@ -19,7 +19,16 @@
 Everything revision 56 describes is unchanged here except what follows. One file is added,
 `mock_screen.lua` (LibKa0s#92, plan row LK-92A). Three change: `framework.lua`, whose `Kit.VERSION`
 is 57, `mock_events.lua` and `mock_ace.lua` (LibKa0s#75, plan row LK-75). Both rode the one
-revision on purpose (design section 3.2): a consumer re-vendors the kit once for v1.105.0.
+revision on purpose (design section 3.2): a consumer re-vendors the kit once for v1.105.0. A fourth,
+`vendor_sync.lua`, adds `settings` to `VendorSync.LIBRARY_MARKS` (LibKa0s#86, plan row LK-86).
+
+### `settings` is a library-drawn icon (LibKa0s#86)
+
+From LibKa0s v1.105.0 every window the library draws carries a settings mark in its header
+(LibKa0s-Widgets-1.0's `HeaderButtons`), drawn from the host's copy as `settings`. So
+`VendorSync.LIBRARY_MARKS` is `chevron-down, chevron-up, close, confirm, info, move, reset, settings,
+volume-high`, and a `LibKa0s icons:` list that leaves `settings` out fails the vendor gate, naming it.
+Every rostered addon already declares it (research note R9).
 
 ## What changed
 

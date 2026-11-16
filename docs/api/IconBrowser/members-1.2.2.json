@@ -1,10 +1,10 @@
 {
   "major": "LibKa0s-IconBrowser-1.0",
-  "versionKey": "1.1.2",
+  "versionKey": "1.2.2",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "IconBrowserSources", "minor": 1 },
-    { "file": "IconBrowserWindow", "minor": 1 },
+    { "file": "IconBrowserWindow", "minor": 2 },
     { "file": "IconBrowser", "minor": 2 }
   ],
   "members": [

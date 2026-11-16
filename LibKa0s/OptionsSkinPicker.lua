@@ -27,7 +27,7 @@
 --   * the eye (Media icon "eye"), shown with `spec.preview` (THE PREVIEW, below) or `spec.onPreview`:
 --     the host's preview mode, so the player sees the skin on the addon's own frames; it keeps
 --     working while a preview is pending, and the window is Raise()d once the host returns;
---   * the gear (Media icon "settings"): saves the pending pick as Apply does, then `spec.onSettings`,
+--   * the gear (in the header from minor 12, LibKa0s#86): saves the pick as Apply does, then `spec.onSettings`,
 --     by default the settings panel opened at `spec.page` (O.OpenOptionsPanel(page), OptionsRegistry
 --     minor 4) and O.SelectTab(page, spec.tab or "Appearance"); then the window closes;
 --   * the Skin tab's rows (LK-A3; see THE ROWS, OptionsSkinPickerRows.lua): under "Font and texture", "Font" and "Texture",
@@ -1082,19 +1082,17 @@ function lib.__AttachSkinPicker(O, d)
     P.Sk.Dropdown(dd)
   end
 
-  --- The dropdown's right edge meets the first icon shown beside it (the eye, else the gear).
+  --- The dropdown's right edge meets the eye while it is shown, else the window's PAD (minor 12: the
+  --- gear is in the header now).
   local function anchorDropdown(f)
-    local beside = f.preview:IsShown() and f.preview or f.settings
     f.dd:ClearAllPoints()
     f.dd:SetPoint("TOPLEFT", f, "TOPLEFT", PAD, -DD_TOP)
-    f.dd:SetPoint("RIGHT", beside, "LEFT", -6, 0)
+    if f.preview:IsShown() then f.dd:SetPoint("RIGHT", f.preview, "LEFT", -6, 0) else f.dd:SetPoint("RIGHT", f, "RIGHT", -PAD, 0) end
   end
 
   local function buildButtons(f)
-    f.settings = iconButton(f, "settings", P.S.SETTINGS_GLYPH, P.S.SETTINGS_TIP, openSettings)
-    f.settings:SetPoint("TOPRIGHT", f, "TOPRIGHT", -PAD, -(DD_TOP + (DD_H - ICON) / 2))
     f.preview = iconButton(f, "eye", P.S.PREVIEW_GLYPH, P.S.PREVIEW_TIP, preview)
-    f.preview:SetPoint("RIGHT", f.settings, "LEFT", -6, 0)
+    f.preview:SetPoint("TOPRIGHT", f, "TOPRIGHT", -PAD, -(DD_TOP + (DD_H - ICON) / 2))
     f.apply = textButton(f, P.S.APPLY, P.S.APPLY_TIP, apply, true)
     f.apply:SetWidth(APPLY_W)
     f.apply:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -PAD, 10)
@@ -1139,14 +1137,14 @@ function lib.__AttachSkinPicker(O, d)
     f.scopeLabel = sectionLine(f)
     local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
     if core and type(core.ApplySkin) == "function" then core.ApplySkin(f, nil, P.owner) else P.Sk.Shell(f) end
-    if core and type(core.MakeCloseButton) == "function" then
-      local close = core.MakeCloseButton(f, hide, P.owner)
-      if close then
-        close:SetPoint("TOPRIGHT", f, "TOPRIGHT", -6, -6)
-        f.close = close
-      end
-    end
-    if P.Sk.Header then P.Sk.Header(f, { title = title, right = { f.close } }) end   -- minor 10
+    -- Minor 12 (LibKa0s#86): the gear and the close are the header's marks (HeaderButtons), the gear's
+    -- click the one it had on the dropdown row; without HeaderButtons, the close alone.
+    local Wd = LibStub("LibKa0s-Widgets-1.0", true)
+    local hb = Wd and type(Wd.HeaderButtons) == "function" and Wd.HeaderButtons(f, { owner = P.owner, point = "TOPRIGHT",
+      y = -6, close = hide, settingsTip = P.S.SETTINGS_TIP, settings = function() dropFocus(P); openSettings() end })
+    f.close, f.settings = hb and hb.close or (core and core.MakeCloseButton and core.MakeCloseButton(f, hide, P.owner)), hb and hb.settings
+    if f.close and not hb then f.close:SetPoint("TOPRIGHT", f, "TOPRIGHT", -6, -6) end
+    if P.Sk.Header then P.Sk.Header(f, { title = title, right = hb and hb.right or { f.close } }) end   -- minor 10
   end
 
   -- The Skin tab's rows live in OptionsSkinPickerRows.lua, which answers the three functions the
@@ -1219,7 +1217,8 @@ function lib.__AttachSkinPicker(O, d)
     f.title:SetText(tostring(S.TITLE))
     f.ownerLabel:SetText(tostring(P.Skin:OwnerLabel(P.owner) or P.owner))
     fit(P)
-    f.dd.__tip, f.settings.__tip, f.preview.__tip = S.CHOOSE_TIP, S.SETTINGS_TIP, S.PREVIEW_TIP
+    f.dd.__tip, f.preview.__tip = S.CHOOSE_TIP, S.PREVIEW_TIP
+    if f.settings then f.settings.__tip = S.SETTINGS_TIP end
     f.apply.__tip, f.applyAll.__tip = S.APPLY_TIP, S.APPLY_ALL_TIP
     f.apply.text:SetText(S.APPLY)
     f.applyAll.text:SetText(S.APPLY_ALL)

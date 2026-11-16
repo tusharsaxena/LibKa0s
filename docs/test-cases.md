@@ -1096,7 +1096,7 @@ Total.
 - sources: ColorFrom gives false for white and lowercase hex otherwise
 - sources: ValidColor takes none or six lowercase hex digits; Tint reads one as r, g, b
 
-### test_icon_browser.lua (28)
+### test_icon_browser.lua (29)
 
 - browser: the major gains New, its two files and the four owner tokens
 - browser: New needs the host's folder and its Options instance
@@ -1126,6 +1126,7 @@ Total.
 - browser: the swatch tints every glyph; Choose hands a glyph its color, white as none
 - browser: the color picker its swatch opened closes with the browser, and only that one
 - browser: a host's picker tracking is used in place of the browser's
+- icon browser: the window opts out of the settings mark, with its reason
 
 ### test_icon_browser_search.lua (14)
 
@@ -2048,6 +2049,29 @@ Total.
 - Footer skin: an owned mark rests in icon.tint and lights in icon.hot
 - Footer skin: an unregistered owner draws the owner-less footer
 
+### test_header_buttons.lua (20)
+
+- header buttons: Core's registry records an opener, answers HasSettings, and OpenSettings calls it
+- header buttons: a raising opener is caught and answers false
+- header buttons: Launcher:New registers openSettings by the addon's folder name (addonName)
+- header buttons: a launcher with a different skin owner registers under both
+- header buttons: the launcher instance gains no member
+- header buttons: left to right extras in their order, settings, close; offsets from the corner
+- header buttons: close defaults to hiding the window, and close = false builds none
+- header buttons: the close is the host's factory, called with the owner, or one the window has
+- header buttons: settings opens the owner's registered opener
+- header buttons: a window's own settings function overrides the registry
+- header buttons: hideOnSettings hides the window before settings opens
+- header buttons: a raising settings override is caught
+- header buttons: settings = false needs a reason, and records it
+- header buttons: the art comes from the owner's copy, else the word, else the glyph
+- header buttons: a mark's tooltip is attached below it, and tips = false draws none
+- header buttons: a drag strip carries no settings mark unless it opts in
+- header buttons: the debug console reads Copy, Clear, settings, close, with no tooltips
+- header buttons: the console's onSettings overrides the registry, on both its windows
+- header buttons: the copy window reads settings, close, and hides itself before settings opens
+- header buttons: the perf panel reads settings, close
+
 ### test_widgets_reorder.lua (7)
 
 - reorder: a host OnUpdate on a row frame survives a drag start and end
@@ -2196,9 +2220,9 @@ Total.
 - dbg: the library's own close forwarder passes the name through to Core
 - dbg: no addonName is the minor-8 title bar, word for word
 - dbg: an addonName the art does not answer for falls back to words
-- dbg: a wider host close button pushes Copy and Clear out of its way
+- dbg: a wider host close button pushes settings, Clear and Copy out of its way
 - dbg: a close button with no measurable width falls back to the library's own
-- dbg: with no close button at all the offsets are still the minor-3 defaults
+- dbg: with no close button at all the settings mark takes the corner
 - dbg: the copy window is built by Widgets.CopyWindow, not by this file
 - dbg: the converged copy window keeps its named scroll frame
 - dbg: the converged copy window keeps its global frame name
@@ -3427,7 +3451,7 @@ Total.
 - appearance: the copy has its own heading, Other Ka0s addons, after the Scope, the tab ending on it
 - appearance: the note leads the Look section, ahead of the first skin
 
-### test_options_skin_picker.lua (41)
+### test_options_skin_picker.lua (42)
 
 - skin picker: OptionsSkinPicker is minor 12, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
@@ -3470,6 +3494,7 @@ Total.
 - skin picker: a tooltip title takes gtip.title, read at hover, Ignore settings panel or not
 - skin picker: a long tooltip wraps
 - skin picker: under Ka0s Default a tooltip title is the client's gold, written out
+- skin picker: the header reads settings, close, the gear moved into it from the dropdown row
 
 ### test_options_skin_picker_shared.lua (10)
 
@@ -4673,7 +4698,7 @@ Total.
 - sim panel: running, the controls replace the picker, and Pause swaps with Resume
 - sim panel: Restart through the controls prints what the typed verb prints
 
-### test_sim_panel_render.lua (34)
+### test_sim_panel_render.lua (35)
 
 - sim panel render: the renderer is the internal seam lib.__StepPanel, not a Widgets member
 - sim panel render: the descriptor's required fields raise when missing
@@ -4709,6 +4734,7 @@ Total.
 - sim panel render: with a check, a done row shows the tinted check over a hidden dot
 - sim panel render: with no check, a done row keeps its dot and no check is built
 - sim panel render: with no MakeResizable in Core the panel builds fixed
+- sim panel render: the title band reads settings, close, opening the host's registered settings
 
 ### test_sim_isolation.lua (11)
 
@@ -5500,7 +5526,7 @@ Total.
 | test_charts_host.lua | 15 |
 | test_media.lua | 46 |
 | test_icon_browser_sources.lua | 26 |
-| test_icon_browser.lua | 28 |
+| test_icon_browser.lua | 29 |
 | test_icon_browser_search.lua | 14 |
 | test_skin.lua | 36 |
 | test_skin_override.lua | 28 |
@@ -5535,6 +5561,7 @@ Total.
 | test_widgets_teststrip.lua | 21 |
 | test_widgets_teststrip_dock.lua | 20 |
 | test_widgets_footer.lua | 18 |
+| test_header_buttons.lua | 20 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
 | test_widgets_skin_scope.lua | 20 |
@@ -5586,7 +5613,7 @@ Total.
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 36 |
 | test_options_appearance_overrides.lua | 26 |
-| test_options_skin_picker.lua | 41 |
+| test_options_skin_picker.lua | 42 |
 | test_options_skin_picker_shared.lua | 10 |
 | test_options_skin_picker_close.lua | 13 |
 | test_options_skin_picker_preview.lua | 23 |
@@ -5637,7 +5664,7 @@ Total.
 | test_sim_autoplay.lua | 16 |
 | test_sim_panel.lua | 41 |
 | test_sim_panel_controls.lua | 19 |
-| test_sim_panel_render.lua | 34 |
+| test_sim_panel_render.lua | 35 |
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
 | test_sim_host.lua | 7 |
@@ -5680,4 +5707,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4794** |
+| **Total** | **4817** |

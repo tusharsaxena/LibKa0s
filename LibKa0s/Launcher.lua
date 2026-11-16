@@ -66,6 +66,9 @@
 -- its tooltip at ANCHOR_NONE, points it, then calls our OnTooltipShow, and the tooltip is re-placed at
 -- the end of that call, only when it is LibDBIcon's own tooltip owned by THIS addon's button. A broker
 -- display's tooltip and the addon compartment's keep their anchors.
+-- Also minor 11 (LK-86, LibKa0s#86): New registers `d.openSettings` as the addon's settings opener in
+-- Core's registry (Core minor 18), so every library window's settings mark opens it. No instance
+-- member is added.
 
 local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
@@ -232,6 +235,19 @@ local function checkDescriptor(d)
   end
 end
 
+--- Minor 11 (LibKa0s#86): `d.openSettings` becomes the addon's settings opener in Core's registry
+--- (Core minor 18), keyed by `d.name`, the addon's folder, which is every library window's
+--- `addonName`; also by `d.owner` where the host names a different skin owner. Every library window's
+--- settings mark asks there, so it opens what the left click opens. Guarded: an older Core has no
+--- registry and nothing is recorded. The launcher instance gains no member.
+local function registerOpener(d)
+  local core1 = LibStub and LibStub("LibKa0s-Core-1.0", true)
+  if not (core1 and type(core1.RegisterSettingsOpener) == "function") then return end
+  local function open() return d.openSettings("LeftButton") end
+  core1.RegisterSettingsOpener(d.name, open)
+  if type(d.owner) == "string" and d.owner ~= d.name then core1.RegisterSettingsOpener(d.owner, open) end
+end
+
 --- The descriptor documented, then checked.
 ---
 ---   name           string    REQUIRED. The addon's FOLDER name, used for BOTH registrations.
@@ -318,6 +334,7 @@ function lib:New(d)
   local strings = type(d.L) == "table" and d.L or nil
   local emit    = makeEmit(d)
   local name    = d.name
+  registerOpener(d)
 
   local Lb = {}
   local object          -- the ONE LibDataBroker object, or nil until Register succeeds

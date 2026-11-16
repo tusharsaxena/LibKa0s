@@ -11,7 +11,7 @@ local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER = "LootHistory"
 local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart", "WidgetsAutocomplete",
-                 "WidgetsCopyWindow", "Glow" }
+                 "WidgetsCopyWindow", "WidgetsHeader", "Glow" }
 
 local LSM = setmetatable({}, { __index = function(_, k)
   local key = type(k) == "string" and k:match("^font:(.+)$")

@@ -14,7 +14,7 @@ local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow",
                   "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsScroll", "OptionsNav",
                   "OptionsDrawer", "OptionsCompose" }
 local WIDGETS = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart", "WidgetsAutocomplete",
-                  "WidgetsCopyWindow" }
+                  "WidgetsCopyWindow", "WidgetsHeader" }
 
 local function env(extra)
   local files = {}

@@ -31,6 +31,7 @@ function F.env(opts)
   if not opts.noWidgets then
     Loader.load("LibKa0s/Widgets.lua", nil, m)
     Loader.load("LibKa0s/WidgetsDropdown.lua", nil, m)
+    Loader.load("LibKa0s/WidgetsHeader.lua", nil, m)   -- the header marks (SimPanelRender minor 4)
   end
   Loader.load("LibKa0s/Sim.lua", nil, m)
   Loader.load("LibKa0s/SimTimeline.lua", nil, m)

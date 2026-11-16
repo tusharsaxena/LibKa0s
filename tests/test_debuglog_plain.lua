@@ -125,7 +125,7 @@ end)
 -- ── an owned console's skin switch keeps the colors ────────────────────────────────────────
 
 local OWNER = "LootHistory"
-local TOOL_FILES = { "Widgets", "WidgetsDropdown", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics",
+local TOOL_FILES = { "Widgets", "WidgetsDropdown", "WidgetsCopyWindow", "WidgetsHeader", "DebugLog", "DebugLogDiagnostics",
   "DebugLogGates", "DebugLogWindow" }
 
 local function ownedConsole()

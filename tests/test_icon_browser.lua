@@ -547,3 +547,16 @@ test("browser: a host's picker tracking is used in place of the browser's", func
   assertEqual(released[1], B:Widgets().swatch, "the host releases its picker")
   assertTrue(f:IsShown(), "the browser leaves the picker to the host")
 end)
+
+-- ── the header marks (IconBrowserWindow minor 2, LibKa0s#86) ───────────────────────────────
+
+test("icon browser: the window opts out of the settings mark, with its reason", function()
+  -- red under: IconBrowserWindow minor 1, which recorded no header (tests/test_header_buttons.lua has the strip)
+  local _, B = boot()
+  openOn(B, nil)
+  local hb = B.frame.headerButtons
+  assertTrue(type(hb) == "table", "the browser records its header")
+  assertNil(hb.settings, "no settings mark: opened from a settings row")
+  assertTrue(type(hb.optOut) == "string" and hb.optOut:find("settings row", 1, true) ~= nil, tostring(hb.optOut))
+  assertEqual(table.concat(hb.order, ","), "close")
+end)

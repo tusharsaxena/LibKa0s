@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **17** · `CorePixel.lua` minor **1** |
 | Shipped in | v1.91.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 16](./version-16-docs.md) (shipped in v1.90.0) — the same members, with the pixel edges section in `Core.lua` |
-| Superseded by | — |
+| Superseded by | [version 18.1](./version-18.1-docs.md) |
 | Requires | nothing new: `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 17, CorePixel = 1 }` |
 
@@ -614,3 +614,7 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
+
+## Moving to version 18.1
+
+`Core.lua` moves to 18: the settings-opener registry (`RegisterSettingsOpener`, `HasSettings`, `OpenSettings`) that the launcher fills and every library window's settings mark reads (`LK-86`, LibKa0s#86). See [version 18.1](./version-18.1-docs.md). No host change is owed.

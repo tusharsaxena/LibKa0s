@@ -73,7 +73,7 @@ local function env(opts)
   files[#files + 1] = "Pool"
   files[#files + 1] = "Widgets"
   files[#files + 1] = "WidgetsDropdown"
-  files[#files + 1] = "WidgetsCopyWindow"
+  files[#files + 1] = "WidgetsCopyWindow"; files[#files + 1] = "WidgetsHeader"
   for _, f in ipairs(OPTIONS) do files[#files + 1] = f end
   for _, f in ipairs(opts.files or { "IconBrowserSources", "IconBrowserWindow", "IconBrowser" }) do
     files[#files + 1] = f

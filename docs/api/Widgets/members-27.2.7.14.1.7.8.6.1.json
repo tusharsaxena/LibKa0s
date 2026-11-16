@@ -1,6 +1,6 @@
 {
   "major": "LibKa0s-Widgets-1.0",
-  "versionKey": "27.2.7.14.1.7.8.5",
+  "versionKey": "27.2.7.14.1.7.8.6.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Widgets", "minor": 27 },
@@ -10,7 +10,8 @@
     { "file": "WidgetsDragHandleTip", "minor": 1 },
     { "file": "WidgetsLineChart", "minor": 7 },
     { "file": "WidgetsAutocomplete", "minor": 8 },
-    { "file": "WidgetsCopyWindow", "minor": 5 }
+    { "file": "WidgetsCopyWindow", "minor": 6 },
+    { "file": "WidgetsHeader", "minor": 1 }
   ],
   "members": [
     { "name": "AUTOCOMPLETE", "kind": "table" },
@@ -25,6 +26,10 @@
     { "name": "Dropdown", "kind": "function" },
     { "name": "FOOTER", "kind": "table" },
     { "name": "Footer", "kind": "function" },
+    { "name": "HEADER", "kind": "table" },
+    { "name": "HEADER_STRINGS", "kind": "table" },
+    { "name": "HeaderButton", "kind": "function" },
+    { "name": "HeaderButtons", "kind": "function" },
     { "name": "IconText", "kind": "function" },
     { "name": "LINE_CHART", "kind": "table" },
     { "name": "LineChart", "kind": "function" },

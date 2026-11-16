@@ -25,7 +25,7 @@ local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER, OTHER = "LootHistory", "BankLedger"
 local FONT = "Interface\\Fonts\\ARIALN.TTF"
-local TOOL_FILES = { "Widgets", "WidgetsDropdown", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics",
+local TOOL_FILES = { "Widgets", "WidgetsDropdown", "WidgetsCopyWindow", "WidgetsHeader", "DebugLog", "DebugLogDiagnostics",
   "DebugLogGates", "DebugLogWindow" }
 
 --- A fresh client on the paint recorder with the console's majors. Every frame records its anchors

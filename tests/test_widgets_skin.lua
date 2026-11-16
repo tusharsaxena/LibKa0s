@@ -20,7 +20,7 @@ local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER, OTHER = "LootHistory", "BankLedger"
 local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart", "WidgetsAutocomplete",
-                 "WidgetsCopyWindow" }
+                 "WidgetsCopyWindow", "WidgetsHeader" }
 
 local function survey(m, obj) return m.__paint(obj) end
 

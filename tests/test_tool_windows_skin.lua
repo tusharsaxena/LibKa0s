@@ -19,7 +19,7 @@ local test, assertEqual, assertTrue, assertNil = T.test, T.assertEqual, T.assert
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER, OTHER = "LootHistory", "BankLedger"
-local TOOL_FILES = { "Widgets", "WidgetsDropdown", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
+local TOOL_FILES = { "Widgets", "WidgetsDropdown", "WidgetsCopyWindow", "WidgetsHeader", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
   "DebugLogWindow", "Lifecycle", "Perf", "PerfSampler", "PerfCommands", "PerfPanel", "Sim", "SimTimeline",
   "SimPanel", "SimPanelRender" }
 
@@ -155,10 +155,13 @@ test("tool windows skin: a registered owner's console paints from its skin", fun
   f.debugToggleBtn:__fire("OnEnter")
   assertEqual(rgba(survey(m, f.debugToggle).textColor), tok3(Skin, "obsidian", "text.accent"), "its hover")
   f.debugToggleBtn:__fire("OnLeave")
+  -- The CLEAR word is a header mark from DebugLogWindow minor 5 (LibKa0s#86, Widgets' HeaderButtons):
+  -- one paint path for every mark, `icon.tint` at rest and `icon.hot` under the pointer, where the
+  -- console's own text button drew `text.muted` and `text.accent`.
   local clearLabel = f.clearButton:GetRegions()
-  assertEqual(rgba(survey(m, clearLabel).textColor), tok3(Skin, "obsidian", "text.muted"), "Clear at rest")
+  assertEqual(rgba(survey(m, clearLabel).textColor), tok3(Skin, "obsidian", "icon.tint"), "Clear at rest")
   f.clearButton:__fire("OnEnter")
-  assertEqual(rgba(survey(m, clearLabel).textColor), tok3(Skin, "obsidian", "text.accent"), "Clear hot")
+  assertEqual(rgba(survey(m, clearLabel).textColor), tok3(Skin, "obsidian", "icon.hot"), "Clear hot")
   local diag = f.diagnosticsButton:GetRegions()
   assertEqual(rgba(survey(m, diag).textColor), tok3(Skin, "obsidian", "text.link"), "the Diagnostics link")
   -- The counter is the footer's right line in text.muted from DebugLogWindow minor 5 (LibKa0s#90).

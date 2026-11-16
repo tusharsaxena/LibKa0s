@@ -39,6 +39,7 @@
 	<Script file="WidgetsLineChart.lua"/>
 	<Script file="WidgetsAutocomplete.lua"/>
 	<Script file="WidgetsCopyWindow.lua"/>
+	<Script file="WidgetsHeader.lua"/>
 	<Script file="DebugLog.lua"/>
 	<Script file="DebugLogDiagnostics.lua"/>
 	<Script file="DebugLogGates.lua"/>

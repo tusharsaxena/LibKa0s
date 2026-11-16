@@ -687,12 +687,13 @@ test("skin picker: the icons come from LibKa0s-Media-1.0, and are glyphs without
   assertTrue(Media.Icon(OWNER, "eye") ~= nil and Media.Icon(OWNER, "settings") ~= nil, "both names are Media's")
   assertEqual(m.__paint(f.preview.icon).texture, Media.Icon(OWNER, "eye"))
   assertEqual(m.__paint(f.settings.icon).texture, Media.Icon(OWNER, "settings"))
-  local _, Skin2, lib2 = env()
+  local m2, Skin2, lib2 = env()
   local store2 = register(Skin2, OWNER)
   local f2 = instance(lib2, OWNER).SkinPicker(specFor(store2, { onPreview = function() end }))
   assertNil(f2.preview.icon, "no Media, no icon")
   assertEqual(f2.preview.text:GetText(), lib2.SKIN_PICKER_STRINGS.PREVIEW_GLYPH)
-  assertEqual(f2.settings.text:GetText(), lib2.SKIN_PICKER_STRINGS.SETTINGS_GLYPH)
+  -- The gear is a header mark from OptionsSkinPicker minor 12 (LibKa0s#86): its glyph is the strip's.
+  assertEqual(f2.settings.label:GetText(), m2.LibStub("LibKa0s-Widgets-1.0").HEADER_STRINGS.SETTINGS_GLYPH)
 end)
 
 test("skin picker: the eye shows only with onPreview, and calls it", function()
@@ -944,4 +945,17 @@ test("skin picker: under Ka0s Default a tooltip title is the client's gold, writ
   local store = register(Skin, OWNER)
   local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
   assertEqual(select(2, tipOf(m, f.settings)), "1,0.820,0,1")
+end)
+
+-- ── the header marks (OptionsSkinPicker minor 12, LibKa0s#86) ──────────────────────────────
+
+test("skin picker: the header reads settings, close, the gear moved into it from the dropdown row", function()
+  -- red under: minor 12's first cut, the gear on the dropdown row (tests/test_header_buttons.lua has the strip)
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
+  local hb = f.headerButtons
+  assertTrue(type(hb) == "table", "the picker records its header marks")
+  assertEqual(table.concat(hb.order, ","), "settings,close")
+  assertTrue(f.settings == hb.settings and f.close == hb.close, "the gear and the close are the header's")
 end)

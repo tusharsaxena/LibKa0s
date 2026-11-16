@@ -116,6 +116,10 @@ if not lib then return end
 -- its marks', attaches centered below the strip through LibKa0s-Tooltip-1.0 (a HUD strip is top
 -- chrome), owned by UIParent, and `tooltipOwner`, `tooltipAnchor` and a descriptor's `owner` and
 -- `anchor` are retired (accepted, not read). WidgetsDragHandleTip.lua's WHERE IT OPENS.
+-- Also minor 14 (LK-86 of the same run, LibKa0s#86): `spec.settings` (true, or a function) opts the
+-- strip into a settings mark, the close mark's twin, left of the X (else of the "?"), opening
+-- `spec.onSettings` or the function, else the owner's registered opener (Core minor 18's
+-- OpenSettings). Opt-in for this run: a third mark on every HUD strip would widen it at re-vendor.
 local DRAG_MINOR = 14
 -- Paired on the SHELL's minor as well as this file's own: a handle that attached to an older shell
 -- would publish `lib.DragHandle` beside a `lib.MODULES` the shell owns, and nothing would say the
@@ -570,13 +574,70 @@ local function dhBuildClose(handle, spec)
   return btn
 end
 
+-- The settings mark's last rung (minor 14), as CLOSE_FALLBACK is the X's.
+local SETTINGS_FALLBACK = "Interface\\Buttons\\UI-OptionsButton"
+
+--- The settings mark's click: `spec.settings` when it is a function, else `spec.onSettings`, else the
+--- owner's registered opener (Core minor 18), each under pcall.
+local function dhOpenSettings(spec)
+  local fn = type(spec.settings) == "function" and spec.settings or spec.onSettings
+  if type(fn) == "function" then
+    local ok, err = pcall(fn)
+    if not ok and type(geterrorhandler) == "function" then geterrorhandler()(err) end
+    return
+  end
+  local core = LibStub("LibKa0s-Core-1.0", true)
+  if core and type(core.OpenSettings) == "function" then core.OpenSettings(spec.settingsOwner or spec.owner) end
+end
+
+--- The settings mark (minor 14), built only for a host that passes `spec.settings`: the X's twin in
+--- frame, art size, tint, drag scripts and right-click pass-through, anchored left of the X (else of
+--- the "?", else the corner). Its tooltip is `spec.settingsTooltip`, falling back to `spec.tooltip`.
+local function dhBuildSettings(handle, spec)
+  if not spec.settings then return nil end
+  local D = lib.DRAG_HANDLE
+  local btn = CreateFrame("Button", nil, handle)
+  if not (btn and btn.SetSize) then return nil end
+  btn:SetSize(D.HELP_HIT, D.HELP_HIT)
+  local beside = handle.close or handle.help
+  if beside then btn:SetPoint("RIGHT", beside, "LEFT", -D.CLOSE_GAP, 0) else btn:SetPoint("RIGHT", handle, "RIGHT", -D.HELP_INSET, 0) end
+  btn:RegisterForDrag("LeftButton")
+  btn:SetScript("OnDragStart", handle:GetScript("OnDragStart"))
+  btn:SetScript("OnDragStop", handle:GetScript("OnDragStop"))
+  local icon = btn.CreateTexture and btn:CreateTexture(nil, "OVERLAY")
+  if icon and icon.SetTexture then
+    icon:SetSize(D.HELP, D.HELP)
+    icon:SetPoint("CENTER", btn, "CENTER", 0, 0)
+    icon:SetTexture(dhMarkArt(handle, spec, "settingsIcon", "settings", SETTINGS_FALLBACK))
+    dhTint(icon, handle.__pal.tint)
+    btn.icon = icon
+  end
+  btn:SetScript("OnEnter", function()
+    dhTint(btn.icon, handle.__pal.over)
+    dhShowTooltip(handle, btn, spec, spec.settingsTooltip or spec.tooltip)
+  end)
+  btn:SetScript("OnLeave", function()
+    dhTint(btn.icon, handle.__pal.tint)
+    dhHideTooltip()
+  end)
+  if spec.onRightClick then btn:RegisterForClicks("LeftButtonUp", "RightButtonUp") else btn:RegisterForClicks("LeftButtonUp") end
+  btn:SetScript("OnClick", function(_, button)
+    if button == "LeftButton" then return dhOpenSettings(spec) end
+    if button == "RightButton" and spec.onRightClick then spec.onRightClick() end
+  end)
+  return btn
+end
+
 --- What each side of the label keeps clear on THIS strip: RESERVE, plus the close mark's frame and
---- its gap when the host asked for one. Read by dhBuildLabel and by Measure, so the bound the label
---- truncates at and the width the strip is given cannot disagree.
+--- its gap when the host asked for one, and the settings mark's the same (minor 14). Read by
+--- dhBuildLabel and by Measure, so the bound the label truncates at and the width the strip is given
+--- cannot disagree.
 local function dhReserve(spec)
   local D = lib.DRAG_HANDLE
-  if spec.onClose then return D.RESERVE + D.HELP_HIT + D.CLOSE_GAP end
-  return D.RESERVE
+  local r = D.RESERVE
+  if spec.onClose then r = r + D.HELP_HIT + D.CLOSE_GAP end
+  if spec.settings then r = r + D.HELP_HIT + D.CLOSE_GAP end
+  return r
 end
 
 --- The strip's own chrome: a dark fill and a 1px gold edge, both guarded on the ANSWER rather than
@@ -622,6 +683,8 @@ local function dhMarksArt(handle)
   local h, c = handle.help and handle.help.icon, handle.close and handle.close.icon
   if h then h:SetTexture(dhMarkArt(handle, spec, "helpIcon", "info", HELP_FALLBACK)) end
   if c then c:SetTexture(dhMarkArt(handle, spec, "closeIcon", "close", CLOSE_FALLBACK)) end
+  local g = handle.settings and handle.settings.icon
+  if g then g:SetTexture(dhMarkArt(handle, spec, "settingsIcon", "settings", SETTINGS_FALLBACK)) end
 end
 
 --- Repaint a skinned strip from its owner's skin (minor 6): re-run after each skin switch, then
@@ -638,6 +701,7 @@ local function dhRepaint(handle, owner)
   if handle.label then handle.label:SetTextColor(pal.label[1], pal.label[2], pal.label[3]) end
   if handle.help then dhTint(handle.help.icon, pal.tint) end
   if handle.close then dhTint(handle.close.icon, pal.tint) end
+  if handle.settings then dhTint(handle.settings.icon, pal.tint) end
   dhMarksArt(handle)
   dhRefit(handle)
 end
@@ -823,6 +887,15 @@ end
 ---                                 calls this on its left click. Without it no X is built and the
 ---                                 strip is exactly minor 2's.
 ---   closeIcon   string|nil        resolved texture path for the X; nil falls back.
+---   settings    true|function|nil minor 14 (LibKa0s#86). Builds the settings mark left of the X (else
+---                                 of the "?"); a left click calls the function, else `onSettings`,
+---                                 else LibKa0s-Core-1.0's OpenSettings(`settingsOwner` or `owner`),
+---                                 the opener the addon's launcher registered. Opt-in: without it the
+---                                 strip is exactly minor 13's.
+---   onSettings  function|nil      minor 14. What the settings mark opens, with `settings = true`.
+---   settingsOwner string|nil      minor 14. The registry key, where it is not `owner`.
+---   settingsIcon string|nil       minor 14. Resolved texture path for the mark; nil falls back.
+---   settingsTooltip table|nil     minor 14. The mark's own descriptor; `tooltip` without it.
 ---   closeTooltip table|nil        a descriptor of the tooltip shape, shown by the X alone; the X
 ---                                 shows `tooltip` without it.
 ---   tooltip     table|nil         the descriptor the STRIP shows, and the mark's too unless
@@ -904,6 +977,7 @@ function lib.DragHandle(parent, spec)
 
   handle.help = dhBuildHelp(handle, spec)
   handle.close = dhBuildClose(handle, spec)
+  handle.settings = dhBuildSettings(handle, spec)
   dhAttachMethods(handle, spec)
   dhFitOnShow(handle)
   handle:SetLabel(spec.label)

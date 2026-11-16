@@ -137,9 +137,10 @@ test("resize console: it has a grip and bounds that keep the title bar's control
   assertTrue(f:IsResizable(), "resizable")
   assertTrue(type(f.resizeGrip) == "table", "from a grip")
   local minW, minH, maxW, maxH = f:GetResizeBounds()
-  -- No addonName, so the text controls: Copy's left edge is 78 + 40 = 118 from the right, wider than
-  -- the 8 + 80 toggle on the left; the title "Test Host - Debug" is 19 bytes at 7px each.
-  assertEqual(minW, 2 * (118 + 6) + 19 * 7, "every control plus the centered title fits")
+  -- No addonName, so the text controls: Copy's left edge is 102 + 40 = 142 from the right (the
+  -- settings glyph joined beside the close at DebugLogWindow minor 5, LibKa0s#86), wider than the
+  -- 8 + 80 toggle on the left; the title "Test Host - Debug" is 19 bytes at 7px each.
+  assertEqual(minW, 2 * (142 + 6) + 19 * 7, "every control plus the centered title fits")
   -- The footer is Widgets' FOOTER.HEIGHT, 24, from DebugLogWindow minor 5 (LibKa0s#90); it was a 16 px
   -- hand-drawn status line.
   assertEqual(minH, 30 + 6 + 4 * (10 + 2) + 24 + 4, "the title bar, the footer and four lines fit")
@@ -162,8 +163,9 @@ test("resize console: the icon controls are narrower, and so is the minimum", fu
   D:Show()
   local f = D._frameForTest
   local minW = f:GetResizeBounds()
-  -- Icons: Copy's left edge is 54 + 18 = 72, narrower than the toggle's 88, so the toggle sets it.
-  assertEqual(minW, 2 * (88 + 6) + 19 * 7)
+  -- Icons: Copy's left edge is 78 + 18 = 96 with the settings mark (minor 5, LibKa0s#86), past the
+  -- toggle's 88, so the marks set it; at 54 + 18 = 72 the toggle did.
+  assertEqual(minW, 2 * (96 + 6) + 19 * 7)
 end)
 
 test("resize console: the Diagnostics link widens the left group, and the minimum grows", function()
@@ -172,7 +174,7 @@ test("resize console: the Diagnostics link widens the left group, and the minimu
   D:Show()
   local minW = D._frameForTest:GetResizeBounds()
   -- Headless, every width is 7px per byte: the wider toggle word "Debug: OFF" is 70, the 10px gap,
-  -- "Diagnostics" 77, from x = 8. 165 is wider than the text controls' 118 on the right.
+  -- "Diagnostics" 77, from x = 8. 165 is wider than the text controls' 142 on the right.
   assertEqual(minW, 2 * (8 + 70 + 10 + 77 + 6) + 19 * 7)
   local without
   withoutDiagnostics(function() without = newConsole("ResizeDiagNone") end)

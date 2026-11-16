@@ -26,6 +26,16 @@
 
 **What a consumer owes at its re-vendor:** nothing. The tooltip gains its 2 px gap and moves to the screen-center side of the button, a smoke line near each screen corner.
 
+## Also at this version: `New` registers the settings opener (`LK-86`, LibKa0s#86)
+
+Still `Launcher.lua` minor **11** (one bump for the release; Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, design §3.7). No member of the instance or the library, no descriptor field and no string is added: the launcher instance is parity-checked by name in nine addons.
+
+- `Launcher:New(d)` hands `d.openSettings` to LibKa0s-Core-1.0 minor 18's `RegisterSettingsOpener`, keyed by **`d.name`**, the addon's folder, which is every library window's `addonName`, and also by `d.owner` where the host names a different skin owner. The registered opener calls `d.openSettings("LeftButton")`, what the left click calls, so a window's settings mark opens exactly what the minimap button's left click opens.
+- Guarded: an older Core has no registry, and nothing is recorded.
+- **Why the key matters** (R9 C8): a host whose launcher `name` is not its windows' `addonName` gets settings marks that open nothing. `tests/test_header_buttons.lua` pins the lookup, and each host is checked at its re-vendor.
+
+**What a consumer owes at its re-vendor:** nothing.
+
 ## What changed at version 10: `New`'s descriptor checks move to a helper (`QFE-LK2`)
 
 `Launcher.lua` moves 9 -> **10** (Ka0sAddonsCommonTasks `docs/2026-11-10-QUICKCOMMS_FOREVER_EMOTES/`). No member is added or removed, and no behavior changes.

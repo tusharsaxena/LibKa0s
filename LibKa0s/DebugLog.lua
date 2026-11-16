@@ -264,6 +264,10 @@ end
 ---                         more than a backdrop (an inner-border child frame, a title tint, a
 ---                         divider tint); `skin` is a table and can only reach backdrop fields.
 ---                         Called on the fully-built frame, after the Hide and the Esc wiring.
+---   onSettings  function  optional, minor 23 (LibKa0s#86). What BOTH windows' settings mark opens,
+---                         in place of the addon's registered opener (LibKa0s-Core-1.0's
+---                         OpenSettings by `addonName`, which the launcher fills). Rarely needed:
+---                         every addon's launcher registers its settings panel.
 ---   makeCloseButton function optional, minor 4. function(parent, onClick) -> button or nil.
 ---                         Overrides Core's x on BOTH windows. May answer nil, as Core's own
 ---                         does. The Copy/Clear offsets are derived from the returned button's
@@ -437,6 +441,7 @@ function lib:New(d)
       -- Forwarded so this library's own `makeCloseButton` field keeps covering BOTH windows, as it
       -- has since minor 4. Nothing in the collection passes it today, but the contract is published.
       makeCloseButton = makeCloseButton,
+      onSettings = type(d.onSettings) == "function" and d.onSettings or nil,   -- minor 23 (LibKa0s#86)
       -- BEHAVIOR GAINED, not preserved. The hand-rolled window anchored once at build, so it
       -- opened wherever it was last dragged however far the console had since moved. CopyWindow
       -- re-anchors on every show, which is what its three other callers already do — the popup

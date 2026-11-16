@@ -26,7 +26,7 @@ local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow",
                   "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose",
                   "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds" }
 local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart", "WidgetsAutocomplete",
-                 "WidgetsCopyWindow" }
+                 "WidgetsCopyWindow", "WidgetsHeader" }
 local SPELL, SPELL_ICON = 21562, 135987
 
 local function survey(m, obj) return m.__paint(obj) end

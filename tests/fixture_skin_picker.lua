@@ -54,6 +54,9 @@ local function env(spec)
   if not spec.noSkin then
     for _, f in ipairs(SKIN_FILES) do files[#files + 1] = f end
   end
+  -- The header marks (Options minor 38's picker 12, LibKa0s#86): the gear and the close are
+  -- LibKa0s-Widgets-1.0's HeaderButtons.
+  files[#files + 1] = "Widgets"; files[#files + 1] = "WidgetsHeader"
   files[#files + 1] = "Pool"
   for _, f in ipairs(OPTIONS) do files[#files + 1] = f end
   for _, f in ipairs(files) do Loader.load("LibKa0s/" .. f .. ".lua", nil, m) end
