@@ -810,6 +810,65 @@ test("skin defs: Ka0s Default's selected row stands off its hovered one", functi
   sameColor(t["list.sel"], { 1, 0.82, 0, 0.26 }, "Ka0s Default's selection, gold .26")
 end)
 
+-- The section-header band's floors (SR-L4 of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS,
+-- smoke round 1's ruling 5), in CIE L*, the band composited over each window stop as the rows are.
+-- A band DARKER than the plain row (Skill Master's block header, the reference the owner passed) is
+-- held to 1.5 off it: over black a dark band can stand at most L*(window) off its row, Obsidian's
+-- window is L* 2.8, and Skill Master's black .35 on Ka0s Default's window stands 1.6 off, a look the
+-- owner passed. A band LIGHTER than the row is a wash like the stripe and is held to the stripe's own 6.
+-- Against the stripe and the hover it is held to 6, the stripe's floor off its row: a band nearer a
+-- stripe than a stripe is to a row reads as one more stripe. Its text is held 45 off it, which is
+-- about WCAG's 4.5:1 on bands this dark.
+local HEADER_DARK_ROW_DL, HEADER_STRIPE_DL, HEADER_HOVER_DL, HEADER_TEXT_DL = 1.5, 6, 6, 45
+
+test("skin defs: a section header's band stands off a row, a stripe and a hover in every skin", function()
+  -- SR-L4: Ka0s Default's band, white .04, sat between its plain row and its .08 stripe (4.2 and 4.8
+  -- L* off them), so DropWatcher's group headers read as rows. red under: that band, or seven of the
+  -- eight's mockup bands, each a lighter wash under 6 off its row or its stripe (Obsidian #101012 2.0
+  -- over its row, WoW Default white .07 2.1 off its stripe). WoW Forever's black .35, the one dark
+  -- mockup band, passes as it was: 2.5 under its row on its gradient's dark stop, 13.9 off a stripe.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    for _, stop in ipairs(windowStops(t)) do
+      local win = stop[2]
+      local band = over(t["list.header.bg"], win)
+      local rise = lstar(band) - lstar(win)
+      if rise < 0 then
+        assertTrue(-rise >= HEADER_DARK_ROW_DL, ("%s: the header band sits %.1f L* under a row on %s, want >= %.1f")
+          :format(key, -rise, stop[1], HEADER_DARK_ROW_DL))
+      else
+        assertTrue(rise >= HEADER_STRIPE_DL, ("%s: the header band sits %.1f L* over a row on %s, want >= %d")
+          :format(key, rise, stop[1], HEADER_STRIPE_DL))
+      end
+      local d = dL(band, over(t["list.stripe"], win))
+      assertTrue(d >= HEADER_STRIPE_DL, ("%s: the header band %.1f L* off a stripe on %s, want >= %d")
+        :format(key, d, stop[1], HEADER_STRIPE_DL))
+      d = dL(band, over(t["list.hover"], win))
+      assertTrue(d >= HEADER_HOVER_DL, ("%s: the header band %.1f L* off a hovered row on %s, want >= %d")
+        :format(key, d, stop[1], HEADER_HOVER_DL))
+    end
+  end
+  sameColor(Skin:ResolveSkin("ka0s")["list.header.bg"], { 0, 0, 0, 0.35 },
+    "Ka0s Default's band is Skill Master's block header, black .35")
+end)
+
+test("skin defs: a section header's text reads on its band in every skin", function()
+  -- SR-L4: a guard for the bands above, green from the start (the closest as built, WoW Forever's
+  -- tan on its band over the gradient's light stop, stands 60 off).
+  -- red under: a band raised toward its heading color.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    for _, stop in ipairs(windowStops(t)) do
+      local band = over(t["list.header.bg"], stop[2])
+      local d = dL(t["list.header.text"], band)
+      assertTrue(d >= HEADER_TEXT_DL, ("%s: the header text %.1f L* off its band on %s, want >= %d")
+        :format(key, d, stop[1], HEADER_TEXT_DL))
+    end
+  end
+end)
+
 test("skin defs: a mark goes visibly hot from its rest and from a heading in every skin", function()
   -- LibKa0s#82: WoW Forever's hot #C9A07A stood 3.4 L* off its rest #A39E97, and six skins' hot was
   -- their heading color, so a mark resting at `text.heading` (Skill Master's block header) showed no

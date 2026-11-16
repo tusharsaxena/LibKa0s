@@ -62,6 +62,13 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- skin's `icon.tint` through FOLLOW, so the close X rests as every other title-bar control does; the
 -- mockups' `closeColor` (and its MOCK_MAP row) is retired. A skin may still set its own `close.rest`
 -- (none does), and a host's owner token over it still paints. `close.hot` does not move.
+-- Then (SR-L4, smoke round 1's ruling 5, still minor 10): a section header's band (`hdrBg`,
+-- `list.header.bg`) is told apart from a row, a stripe and a hover in every skin (the floors in
+-- tests/test_skin_defs.lua). Seven mockup bands were lighter washes that sat among the rows; each is
+-- now a darker shade of its own window, as Skill Master's block header is: Obsidian #000000, Azeroth
+-- #170F09, Glass #02040C .60, Ember #0A0503, WoW Default #0C0B0A and WoW Midnight #050612. High
+-- Contrast's black window leaves nothing darker, so its band is #3D3D3D, above its hover. WoW
+-- Forever's black .35 passed and stays.
 local OTHERS_MINOR = 10
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
@@ -421,7 +428,7 @@ register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool 
     priBg = hex("#2A86D1"), priBorder = edge(1, "flat", hex("#4DB8FF")), priText = hex("#FFFFFF"),
     inBg = hex("#040405"), inBorder = edge(1, "flat", hex("#26262b")), inRadius = 0,
     inText = hex("#E8E8EC"), inPh = hex("#8A8A93"),
-    hdrBg = hex("#101012"), hdrText = hex("#4DB8FF"), hdrArrow = hex("#F2F2F4"), rowAlt = rgba(255, 255, 255, 0.09),
+    hdrBg = hex("#000000"), hdrText = hex("#4DB8FF"), hdrArrow = hex("#F2F2F4"), rowAlt = rgba(255, 255, 255, 0.09),
     rowSel = rgba(77, 184, 255, 0.14),
     tabBg = CLEAR, tabText = hex("#9B9BA4"), tabBorder = edge(1, "flat", CLEAR), tabRadius = 0,
     tabOnBg = CLEAR, tabOnText = hex("#F2F2F4"), tabOnLine = hex("#4DB8FF"),
@@ -470,7 +477,7 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
     priBg = AZ_WAX, priBorder = edge(1, "flat", AZ_GOLD), priText = hex("#FFD866"),
     inBg = hex("#1c130b"), inBorder = edge(1, "flat", AZ_EDGE), inRadius = 0, inText = AZ_TEXT,
     inPh = hex("#8E7A58"),
-    hdrBg = hex("#3a2614"), hdrText = AZ_GOLD, hdrArrow = AZ_TEXT, rowAlt = rgba(233, 221, 188, 0.11),
+    hdrBg = hex("#170F09"), hdrText = AZ_GOLD, hdrArrow = AZ_TEXT, rowAlt = rgba(233, 221, 188, 0.11),
     rowSel = rgba(163, 36, 26, 0.35),
     tabBg = hex("#3a2614"), tabText = hex("#CDB78A"), tabBorder = edge(1, "flat", hex("#24160a")),
     tabRadius = 0, tabOnBg = hex("#7a1a10"), tabOnText = hex("#FFD866"), tabOnLine = CLEAR,
@@ -520,7 +527,7 @@ register("glass", "Glass", "Translucent frosted panels with rounded corners and 
     priText = hex("#1A1033"),
     inBg = rgba(0, 0, 0, 0.30), inBorder = edge(1, "flat", rgba(255, 255, 255, 0.18)),
     inRadius = 0, inText = hex("#F2F4F8"), inPh = hex("#B8BFCC"),
-    hdrBg = rgba(255, 255, 255, 0.06), hdrText = hex("#B69CFF"), hdrArrow = hex("#FFFFFF"), rowAlt = rgba(255, 255, 255, 0.09),
+    hdrBg = hex("#02040C", 0.6), hdrText = hex("#B69CFF"), hdrArrow = hex("#FFFFFF"), rowAlt = rgba(255, 255, 255, 0.09),
     rowSel = rgba(182, 156, 255, 0.24),
     tabBg = CLEAR, tabText = hex("#C9CFDB"), tabBorder = edge(1, "flat", CLEAR), tabRadius = 0,
     tabOnBg = rgba(182, 156, 255, 0.10), tabOnText = hex("#FFFFFF"), tabOnLine = hex("#B69CFF"),
@@ -570,7 +577,7 @@ register("contrast", "High Contrast", "Black and white with yellow focus, crisp 
     priBg = hex("#000000"), priBorder = edge(1, "flat", HC_YELLOW), priText = HC_YELLOW,
     inBg = hex("#000000"), inBorder = edge(1, "flat", HC_WHITE), inRadius = 0, inText = HC_WHITE,
     inPh = hex("#D0D0D0"),
-    hdrBg = hex("#1a1a1a"), hdrText = HC_YELLOW, hdrArrow = HC_WHITE, rowAlt = hex("#222222"), rowSel = hex("#000000"),
+    hdrBg = hex("#3D3D3D"), hdrText = HC_YELLOW, hdrArrow = HC_WHITE, rowAlt = hex("#222222"), rowSel = hex("#000000"),
     rowSelOutline = HC_YELLOW,
     tabBg = hex("#000000"), tabText = HC_WHITE, tabBorder = edge(1, "flat", HC_WHITE),
     tabRadius = 0, tabOnBg = hex("#000000"), tabOnText = HC_YELLOW, tabOnLine = HC_YELLOW,
@@ -627,7 +634,7 @@ register("ember", "Ember", "Charred browns lit by an orange accent, Emblem type.
     priText = hex("#FFFFFF"),
     inBg = hex("#140a07"), inBorder = edge(1, "flat", hex("#5a2a16")), inRadius = 0,
     inText = hex("#F4E7DC"), inPh = hex("#A88A76"),
-    hdrBg = rgba(255, 122, 51, 0.08), hdrText = hex("#FFB45A"), rowAlt = rgba(255, 255, 255, 0.09),
+    hdrBg = hex("#0A0503"), hdrText = hex("#FFB45A"), rowAlt = rgba(255, 255, 255, 0.09),
     rowSel = rgba(255, 122, 51, 0.18),
     tabBg = hex("#2a140c"), tabText = hex("#C7A993"), tabBorder = edge(1, "flat", hex("#5a2a16")),
     tabRadius = 0, tabOnBg = hex("#4a2012"), tabOnText = hex("#FFB45A"), tabOnLine = hex("#FF7A33"),
@@ -681,7 +688,7 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
     priText = hex("#FFFFFF"),
     inBg = hex("#000000"), inBorder = edge(1, "bevelIn", hex("#7a7a7a")), inRadius = 0,
     inText = hex("#FFFFFF"), inPh = hex("#9A9A9A"),
-    hdrBg = rgba(255, 255, 255, 0.07), hdrText = hex("#FFD100"), hdrArrow = hex("#FFFFFF"), rowAlt = rgba(255, 255, 255, 0.09),
+    hdrBg = hex("#0C0B0A"), hdrText = hex("#FFD100"), hdrArrow = hex("#FFFFFF"), rowAlt = rgba(255, 255, 255, 0.09),
     rowSel = rgba(255, 209, 0, 0.18),
     tabBg = hex("#262626"), tabText = hex("#C9B048"), tabBorder = edge(2, "bevelOut", hex("#7a7a7a")),
     tabRadius = 0, tabOnBg = hex("#4a4a4a"), tabOnText = hex("#FFFFFF"), tabOnLine = CLEAR,
@@ -740,7 +747,7 @@ register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, c
     priText = hex("#FFFFFF"),
     inBg = hex("#08091a"), inBorder = edge(1, "flat", hex("#5a4a26")), inRadius = 0,
     inText = hex("#F2EEF8"), inPh = hex("#9A95B0"),
-    hdrBg = rgba(180, 140, 255, 0.08), hdrText = hex("#F6D27A"), rowAlt = rgba(255, 255, 255, 0.09),
+    hdrBg = hex("#050612"), hdrText = hex("#F6D27A"), rowAlt = rgba(255, 255, 255, 0.09),
     rowSel = rgba(180, 140, 255, 0.2),
     tabBg = hex("#1a1730"), tabText = hex("#B4AFC8"), tabBorder = edge(1, "flat", hex("#5a4a26")),
     tabRadius = 0, tabOnBg = hex("#2c2550"), tabOnText = hex("#F6D27A"), tabOnLine = hex("#B48CFF"),
