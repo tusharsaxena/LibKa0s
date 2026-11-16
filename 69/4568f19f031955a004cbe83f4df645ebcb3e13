@@ -1,0 +1,6 @@
+LK-90 review (independent): APPROVE.
+- Spec §3.5/R1 met: W.Footer(f) with no owner and empty left text; counter = foot.right in descriptor mono face, palette count -> text.muted (log.count kept as skin data); 700x344 default and MIN_LINES=4 kept; f.lineCount/f.statusDivider aliases + f.footer; owned console hairline via S.Divider; grip built on footer (gripParent) with SetGrip inset 22; Widgets-without-Footer guarded.
+- Min height 30+6+4*(10+2)+24+4 = 112 at default fontSize 10 (commit/doc correct; R1's 120 assumed fontSize 12).
+- One DebugLog key 23.11.1.5 (Window minor 5 shared with LK-79); API doc + CHANGELOG draft updated; no new public members.
+- Tests: 7 new cases in tests/test_debuglog_footer.lua; red-first verified by reverting DebugLogWindow.lua to the parent: 8 FAIL (5 footer + 2 resize + 1 tool-windows); mono-face case is characterization (passes both ways, intended). Re-pins in test_tool_windows_skin/test_resize_windows track the spec change, not weakened.
+- Gate re-run: lua tests/run.lua 4724 passed / 0 failed / 3 skipped; luacheck 0/0 in 354 files. Sizes: DebugLogWindow.lua 661, suites < 460.
