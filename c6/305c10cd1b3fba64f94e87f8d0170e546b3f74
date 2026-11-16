@@ -1,0 +1,7 @@
+SR-L3 review (independent): APPROVE.
+- Ruling 4 met: WidgetsHeader marks rest icon.tint, hover text.link (unowned fallback HOT now Ka0s Default orange 1,0.5,0); console Diagnostics link icon.tint rest / text.link hot; close.rest FOLLOWs icon.tint in all 8 mockup skins (Ka0s Default already GRAY=GRAY), close.hot unchanged; Debug ON/OFF keeps sem.on/sem.off. Every library window (copy window, perf/sim panels, icon browser, skin picker, console, toast close) shares HeaderButtons + Core.MakeCloseButton, so one paint path covers them.
+- close.rest kept as a FOLLOW alias (S.CloseButton contract and host close.rest owner tokens keep working); a host overriding only icon.tint must set close.rest too - documented in Core 18.1 and Skin docs consumer-owes.
+- Tests real and red-first: per-skin (9) console bar pin of settings/Copy/Clear/close/Diagnostics rest-hover-rest, close.rest==icon.tint + red close.hot per skin, unowned case, Ka0s Default constant pins in test_skin. Re-pinned tests follow the new contract, none weakened.
+- Minors: Core 18, DebugLogWindow 5, SkinDefsOthers 10 already bumped on branch vs master; WidgetsHeader new (1). Docs/api (Core, DebugLog, Skin table, Widgets) and CHANGELOG v1.105.0 amended. EOL crlf as declared; files under 1500 lines.
+- Gate re-run: 4889 passed, 0 failed, 3 skipped; luacheck 0/0 in 369 files.
+- Note (low, out of ruling scope): Widgets footer marks (tintMark) still hover icon.hot / white - not title-bar controls.
