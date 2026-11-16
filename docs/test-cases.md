@@ -2275,6 +2275,16 @@ Total.
 - serialize: the instance's stringifier renders the values, the library's renders them bare
 - serialize: composes with a report's out
 
+### test_debuglog_footer.lua (7)
+
+- debuglog footer: the status line is one W.Footer on the console, with no owner and no left text
+- debuglog footer: the shell's UpdateStatus writes the footer's counter
+- debuglog footer: the log and its scrollbar end 4 px above the footer
+- debuglog footer: the counter keeps the descriptor's mono face, owned or not, across a switch
+- debuglog footer: the counter is drawn in text.muted, where it drew log.count
+- debuglog footer: an owned console's hairline follows its skin through S.Divider
+- debuglog footer: a Widgets without Footer builds a console with no status line, and it still logs
+
 ### test_resize_windows.lua (23)
 
 - resize console: the default size is still 700 x 344
@@ -5448,6 +5458,7 @@ Total.
 | test_debuglog_descriptor.lua | 7 |
 | test_debuglog_plain.lua | 10 |
 | test_debuglog_report.lua | 31 |
+| test_debuglog_footer.lua | 7 |
 | test_resize_windows.lua | 23 |
 | test_tool_windows_layering.lua | 8 |
 | test_tool_windows_skin.lua | 17 |
@@ -5579,4 +5590,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4717** |
+| **Total** | **4724** |

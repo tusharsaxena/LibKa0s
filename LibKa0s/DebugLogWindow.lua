@@ -1,6 +1,6 @@
 -- LibKa0s-DebugLog-1.0 — the console window: its frame, its title bar (the toggle, the Diagnostics
--- link, Copy, Clear and the close control), the log, its scrollbar and the status line, and the
--- skin it wears.
+-- link, Copy, Clear and the close control), the log, its scrollbar and the footer that holds its
+-- line counter, and the skin it wears.
 --
 -- ── WHY IT IS A FILE OF ITS OWN AND NOT MORE OF DebugLog.lua ─────────────────────────────────
 --
@@ -22,7 +22,7 @@
 -- job and is never skinned over. Every other console is the previous minor's paint, call for call:
 -- the palette below is the constants it drew, and Ka0s Default's tokens are those same constants.
 -- An owned console paints its window through the facade (`Core.ApplySkin(f, nil, owner)`, so
--- `S.Shell`), its scrollbar (`S.ScrollBar`) and its status rule (`S.Divider`), and every color the
+-- `S.Shell`), its scrollbar (`S.ScrollBar`) and its footer's hairline (`S.Divider`), and every color the
 -- title bar, the line counter and the log draw from the palette, refilled from the owner's tokens on
 -- each of its skin switches; the visible log is rebuilt from the buffer in the new colors.
 --
@@ -37,6 +37,21 @@
 -- not the settings panel, so "Ignore settings panel" leaves it skinned (D-01). Its resize grip takes
 -- the owner too (Core minor 14's `opts.owner`). LK-06b of Ka0sAddonsCommonTasks
 -- docs/2026-10-30-SKIN_LIBRARY_FOLLOWUPS, ruling R-5.
+--
+-- ── THE FOOTER (minor 5) ─────────────────────────────────────────────────────────────────────
+--
+-- The line counter sits on `W.Footer` (Widgets minor 27), built with NO owner and an empty left line,
+-- so the console keeps its own skin job there as everywhere else: the counter keeps the descriptor's
+-- mono face (debug-logging-§11; an owned footer's `S.Text` would put the skin's body face on it at
+-- every switch) and is colored from the palette in `text.muted`, the footer's color (it read
+-- `log.count`, which stays defined as skin data and is no longer read here). An owned console's
+-- hairline goes to `S.Divider`. The resize grip is built on the footer (Core's `gripParent`), and the
+-- footer's grip inset (`FOOTER.GRIP`, 22) keeps the counter clear of it. The window keeps its 700 x
+-- 344 default and its four-line minimum, now over 24 px of footer. `f.lineCount` (the footer's
+-- right line, which the shell's UpdateStatus writes) and `f.statusDivider` (its hairline) stay as
+-- aliases; `f.footer` is the footer. Resolved at call time and guarded: a Widgets without `Footer`
+-- (a load failure, since every payload that carries this file carries Widgets 27) builds a console
+-- with no counter, which the shell already tolerates.
 --
 -- Depends on LibStub, on the DebugLog shell and on LibKa0s-Core-1.0, and on no addon framework. A
 -- payload without this file loads whole and its consoles simply never build a window: `D:Show`
@@ -58,6 +73,9 @@ local WINDOW_MINOR = 5
 -- Minor 5 (LibKa0s#79, LK-79 of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS): the
 -- shell's buffer is plain text from its minor 23, so a skin switch's rebuild takes each colored
 -- message back from the shell's private `__view`, where it still matches its buffered line.
+-- Also minor 5 (LibKa0s#90, LK-90, WowAddonStandards v2.110.0's *The footer*): the status line is
+-- LibKa0s-Widgets-1.0's `Footer` (minor 27), 24 px, where minor 4 drew a 16 px line by hand. See
+-- THE FOOTER below.
 -- Paired on the SHELL's minor as well as this file's own, as DebugLogGates.lua is: a window built
 -- by one vendored copy for a shell from another would call back into members that shell may not
 -- have, and nothing would say the two came from different copies.
@@ -81,12 +99,10 @@ end
 -- Drag bar height: `title.height`, which every skin carries at one value (SkinDefs.lua's geometry
 -- note). tests/test_title_shape.lua pins the two equal; a window draws one with no Skin major too.
 local TITLE_H  = 30
-local STATUS_H = 16      -- bottom status bar height
+-- The footer's height (minor 5): Widgets' FOOTER.HEIGHT, skin-invariant. Read from Widgets at build
+-- when it says, so the log's bottom edge can never drift from the footer it sits on.
+local FOOTER_H = 24
 local BAR_W    = 8       -- scrollbar gutter width
--- The line counter's right inset. Core.MakeResizable's grip is 16 px square at 1 px in from the
--- bottom-right corner and ten levels above the console, so a counter at the old 10 px drew its last
--- digits under the grip's art; 22 clears the grip's 17 px with a 5 px gap.
-local COUNT_INSET = 22
 
 -- Title-bar arithmetic. PAD is the one gap between every control and its neighbor; CLOSE_W is what
 -- Core's own close button measures, and is the fallback when a host's button has no width yet.
@@ -132,7 +148,10 @@ local TITLE_CHAR_W = 7
 -- constant }`. The constant is what the console has drawn since the minor that added it, and what
 -- every console without a registered owner draws; Ka0s Default's token is the same value: REST and
 -- HOT for the text and icon controls, the Diagnostics link's two oranges, the toggle's green ON and
--- red OFF, the status rule, the line counter, and the log line's stamp, tag and message.
+-- red OFF, the line counter, and the log line's stamp, tag and message. The counter is `text.muted`
+-- from minor 5, the footer's text color, where it was `log.count` (Ka0s Default's 0.6 gray). The
+-- footer's hairline is not here: Widgets draws it in Ka0s Default's `divider`, and an owned console
+-- hands it to S.Divider.
 local PALETTE = {
   rest    = { "text.muted",   REST },
   icon    = { "icon.tint",    REST },
@@ -141,8 +160,7 @@ local PALETTE = {
   diagHot = { "text.linkHot", DIAG_HOT },
   on      = { "sem.on",       { 0.30, 0.85, 0.30 } },
   off     = { "sem.off",      { 0.90, 0.30, 0.30 } },
-  rule    = { "divider",      { 0.24, 0.24, 0.27, 0.85 } },
-  count   = { "log.count",    { 0.6, 0.6, 0.62 } },
+  count   = { "text.muted",   REST },
   ts      = { "log.ts",       { 0x6f / 255, 0x8f / 255, 0xaf / 255 } },
   tag     = { "log.tag",      { 0xc9 / 255, 0xa6 / 255, 0x6b / 255 } },
   text    = { "log.text",     { 1, 1, 1 } },
@@ -319,9 +337,9 @@ local function consoleMinWidth(offsets, copyBtn, title, titleText, linkReach)
   return math.min(math.ceil(w), CONSOLE_W)
 end
 
---- How short: the title bar, the status bar and MIN_LINES lines of the log between them.
-local function consoleMinHeight(fontSize)
-  return TITLE_H + 6 + MIN_LINES * (fontSize + 2) + STATUS_H + 4
+--- How short: the title bar, the footer and MIN_LINES lines of the log between them.
+local function consoleMinHeight(fontSize, footerH)
+  return TITLE_H + 6 + MIN_LINES * (fontSize + 2) + footerH + 4
 end
 
 local function escClose(name)
@@ -392,11 +410,33 @@ end
 
 -- ── the window ─────────────────────────────────────────────────────────────────────────────
 
---- The log, its scrollbar and the status line under them.
+--- The footer under the log (minor 5): Widgets' Footer with no owner and no left text, its right
+--- line the counter in the descriptor's mono face and the palette's `count`. Nil, and nothing built,
+--- where Widgets has no Footer.
+local function buildFooter(f, ctx, pal)
+  local W = LibStub("LibKa0s-Widgets-1.0", true)
+  if not (W and type(W.Footer) == "function") then return nil end
+  local foot = W.Footer(f)
+  local count = foot.right
+  count:SetFont(ctx.d.font, ctx.fontSize, "")
+  setText(count, pal.count)
+  f.footer, f.lineCount, f.statusDivider = foot, count, foot.line
+  return foot
+end
+
+--- The footer's height: Widgets' FOOTER.HEIGHT where it says, else the 24 it is.
+local function footerHeight()
+  local W = LibStub("LibKa0s-Widgets-1.0", true)
+  local h = W and type(W.FOOTER) == "table" and W.FOOTER.HEIGHT
+  return type(h) == "number" and h or FOOTER_H
+end
+
+--- The log, its scrollbar and the footer under them.
 local function buildBody(f, D, ctx, pal)
+  local bottom = footerHeight() + 4
   local log = CreateFrame("ScrollingMessageFrame", nil, f)
   log:SetPoint("TOPLEFT", f, "TOPLEFT", 8, -(TITLE_H + 6))
-  log:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -(BAR_W + 8), STATUS_H + 4)
+  log:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -(BAR_W + 8), bottom)
   log:SetFont(ctx.d.font, ctx.fontSize, "")
   log:SetJustifyH("LEFT")
   log:SetFading(false)
@@ -416,7 +456,7 @@ local function buildBody(f, D, ctx, pal)
   bar:SetOrientation("VERTICAL")
   bar:SetWidth(BAR_W)
   bar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -6, -(TITLE_H + 6))
-  bar:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -6, STATUS_H + 4)
+  bar:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -6, bottom)
   bar:SetMinMaxValues(0, 0)
   bar:SetValueStep(1)
   bar:SetObeyStepOnDrag(true)
@@ -439,20 +479,7 @@ local function buildBody(f, D, ctx, pal)
   f.scrollBar = bar
   f.__track, f.__thumb = track, thumb
 
-  local rule = pal.rule
-  local statusDivider = f:CreateTexture(nil, "ARTWORK")
-  statusDivider:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 8, STATUS_H)
-  statusDivider:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -8, STATUS_H)
-  statusDivider:SetHeight(1)
-  statusDivider:SetColorTexture(rule[1], rule[2], rule[3], rule[4])
-  f.statusDivider = statusDivider
-
-  local lineCount = f:CreateFontString(nil, "OVERLAY")
-  lineCount:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -COUNT_INSET, 3)
-  lineCount:SetFont(ctx.d.font, ctx.fontSize, "")
-  lineCount:SetJustifyH("RIGHT")
-  setText(lineCount, pal.count)
-  f.lineCount = lineCount
+  buildFooter(f, ctx, pal)
 end
 
 --- The title bar: the drag bar, the centered title, Copy | Clear | Close on the right, the toggle and
@@ -534,13 +561,13 @@ local function recolor(f, D, pal)
     -- "Ignore fonts"), so the link's button stays the width of its word.
     link:SetWidth(textWidth(link.label, D:Text("DIAGNOSTICS")))
   end
-  setText(f.lineCount, pal.count)
+  if f.lineCount then setText(f.lineCount, pal.count) end
   D:RefreshHeader()
   rebuildLog(f, D)
   D:UpdateScrollBar()
 end
 
---- A registered owner's console: its scrollbar and status rule through the facade, its log line in
+--- A registered owner's console: its scrollbar and footer hairline through the facade, its log line in
 --- the palette's colors, and a refill and recolor on each of the owner's skin switches. The window
 --- itself is painted by `ctx.applySkin` (Core.ApplySkin with the owner).
 local function adopt(f, D, S, pal)
@@ -554,7 +581,7 @@ local function adopt(f, D, S, pal)
     left = { { frame = f.debugToggleBtn, x = TOGGLE_X } },
   }) end
   S.ScrollBar(f.scrollBar, { track = f.__track, thumb = f.__thumb })
-  S.Divider(f.statusDivider)
+  if f.statusDivider then S.Divider(f.statusDivider) end
   S.OnLooksChanged(function()
     fillPalette(pal, S)
     recolor(f, D, pal)
@@ -611,18 +638,22 @@ function lib.__buildConsole(D, ctx)
   if S then adopt(f, D, S, pal) end
   -- Resizable from minor 15, when the Core under it has the grip (Core minor 9). Resolved through
   -- the table at call time and GUARDED rather than floored: an older Core leaves this exactly the
-  -- fixed 700 x 344 window it was. The message frame, the scrollbar and the status line are
-  -- anchored to the window, so they follow it on their own; what does not is the scrollbar's range
-  -- and the line counter, which the relayout resyncs. The buffer and the scroll position are not
-  -- touched.
+  -- fixed 700 x 344 window it was. The message frame, the scrollbar and the footer are anchored to
+  -- the window, so they follow it on their own; what does not is the scrollbar's range and the line
+  -- counter, which the relayout resyncs. The buffer and the scroll position are not touched.
+  -- Minor 5: the grip is built on the footer (Core minor 10's `gripParent`, which is what the footer's
+  -- own `opts.resize` does), and the footer then insets its counter by FOOTER.GRIP to clear it.
   if type(core.MakeResizable) == "function" then
-    core.MakeResizable(f, {
-      minWidth  = consoleMinWidth(offsets, copyBtn, title, f.titleText, linkReach),
-      minHeight = consoleMinHeight(ctx.fontSize),
-      onResize  = function() D:UpdateScrollBar(); D:UpdateStatus() end,
+    local foot = f.footer
+    local grip = core.MakeResizable(f, {
+      minWidth   = consoleMinWidth(offsets, copyBtn, title, f.titleText, linkReach),
+      minHeight  = consoleMinHeight(ctx.fontSize, footerHeight()),
+      onResize   = function() D:UpdateScrollBar(); D:UpdateStatus() end,
       -- Minor 2: the grip wears the console's skin (Core minor 14; an older Core ignores the key).
-      owner     = S and d.addonName or nil,
+      owner      = S and d.addonName or nil,
+      gripParent = foot,
     })
+    if grip and foot then foot:SetGrip(true) end
   end
   D:UpdateScrollBar()
   D:UpdateStatus()

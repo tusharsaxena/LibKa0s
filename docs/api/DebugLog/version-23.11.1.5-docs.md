@@ -16,7 +16,7 @@
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 23, DebugLogDiagnostics = 11, DebugLogGates = 1, DebugLogWindow = 5 }` |
 
-## What changed at this version: the report seam and plain-text Copy (LibKa0s#79)
+## What changed at this version: the report seam, plain-text Copy and the console footer (LibKa0s#79, #90)
 
 `LK-79` of Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/` (design §3.5, research note R3, decisions D1 to D9). `DebugLog.lua` moves to minor **23**, `DebugLogDiagnostics.lua` to **11** and `DebugLogWindow.lua` to **5** (`DebugLogGates.lua` unchanged, and re-paired on the new shell), so the key moves 22.10.1.4 → 23.11.1.5. It carries the owner's ruling of 2026-11-08: a **report**, any multi-line read-out a player asks for (a dump, a list), goes to the debug console whether or not trace logging is on, the console opens if it is hidden, chat gets exactly one pointer line, a refusal writes no report, and without the library the stub prints the report in chat with no pointer. Ka0s Consumable Master's addon-local `DL.Report` and `SlashDump.Serialize` (its commit `9d2b26e`) are the reference this lifts.
 
@@ -35,6 +35,16 @@
 
 **The view keeps its colors across a skin switch** (Window minor 5, D3). An owned console rebuilds its log from the buffer on each of its owner's skin switches, and the buffer is plain now, so the shell keeps a private `__view` beside it: the colored message of each line that had one, at the same index, compacted and cleared with the buffer. The rebuild takes a line's message from `__view` while it still matches the buffered text, and the buffered text otherwise. `__view` is private (`__`), so it is no member of the surface and no stub carries it. A host test pins a color through the view itself, a recorder on the message frame's `AddMessage`, with no new public reader (D4).
 
+**The status line is a Widgets footer** (Window minor 5; LibKa0s#90, `LK-90` of the same bundle, design §3.5, research note R1). WowAddonStandards v2.110.0 (standalone-windows, *The footer*) says a window the library draws builds its footer with `LibKa0s-Widgets-1.0`'s `Footer`, in the same release. Through minor 4 the console drew its own 16 px status line: a rule 8 px in from each side and the counter 3 px off the bottom. Now:
+
+- The footer is `W.Footer(f)` (Widgets minor 27), 24 px (`FOOTER.HEIGHT`) across the console's bottom edge, with a one-pixel hairline that runs to the window's edge. It is built with **no owner** and an **empty left line**: no new string.
+- The counter is the footer's right line, centered in its 24 px. It keeps the descriptor's **mono face** (`font`, `fontSize`; debug-logging-§11), owned or not, across every skin switch. That is why the footer takes no owner: an owned footer's `S.Text` would put the skin's body face on it at each switch.
+- The counter is drawn in **`text.muted`**, the footer's color (anti-pattern #118), where it drew `log.count`. Every skin but Ka0s Default already aliases `log.count` to `text.muted`, so the visible move is Ka0s Default and an unowned console, 0.60 to 0.70 gray. `log.count` stays defined as skin data and is no longer read by the console.
+- An owned console hands the hairline to `S.Divider`, as it did the old rule. An unowned one draws Widgets' Ka0s Default `divider`.
+- The resize grip is built **on the footer** (Core minor 10's `gripParent`, which is what the footer's own `opts.resize` does), in its corner, and the footer's grip inset (`FOOTER.GRIP`, 22, the inset the counter already had) keeps the counter clear of it. Without the grip (a Core with no `MakeResizable`) the counter sits `FOOTER.PAD` (8) from the corner.
+- The window keeps its **700 × 344** default (debug-logging-§1) and its **four-line minimum**, now over 24 px of footer: `30 + 6 + 4 × (fontSize + 2) + 24 + 4`, 112 at the default font size (104 through minor 4). The log and the scrollbar end `FOOTER.HEIGHT + 4` above the bottom, so the visible log loses 8 px at any size.
+- **The handles stay**: `f.lineCount` is the footer's right line (the shell's `UpdateStatus` writes it, unchanged), `f.statusDivider` is its hairline, and `f.footer` is the footer. Resolved at call time and guarded: a Widgets without `Footer` (a load failure, since every payload that carries this file carries Widgets 27) builds a console with no counter, which `UpdateStatus` already tolerates. Cases in `tests/test_debuglog_footer.lua`.
+
 **What a host owes at its re-vendor** (D9):
 
 - **Its library-absent DebugLog stub gains `Report` and `Serialize`**, because `Kit.assertSurfaceParity` compares the stub against the instance by name: 14 hosts have that case (R9 C4). The stub streams the report to chat with no pointer, the ruling's library-absent arm, and answers a serialize with one line. Both are methods:
@@ -52,6 +62,7 @@
 
   (`NS.Print` and `NS.SafeToString` stand for the host's own tagged printer and stringifier.) This is the opposite of `RunDiagnostics`' library-absent arm, which writes nothing and prints one line, because a report is the read-out the player asked for by name, tens of lines, and chat is the only place left to show it.
 - **A host suite that pinned a color code in a console line read from `buffer`** (`D.buffer`, `LastLine`, `FindLine`, `CopyText`) re-pins it on the plain text, and pins the color through the view. Ka0s Consumable Master's three cases in `tests/test_slash.lua` are the only ones measured (R3).
+- **A host suite that pinned the console's counter color or its status-line geometry** (0.6 gray, `log.count`, the 16 px line, the 104 px minimum height) re-pins it on the footer's (`text.muted`, 24 px, 112). No sibling's suite or code reads `statusDivider` or `lineCount` outside `libs/` (R1).
 - **Nothing else.** Moving a report verb onto `D:Report`, Consumable Master's one-line lift of its `DL.Report` among them, is adoption, owed by the standard's rule, not by the re-vendor.
 
 ## What changed at version 22.10.1.4: the identity header names WaypointArrow
