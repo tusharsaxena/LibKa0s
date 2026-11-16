@@ -1,0 +1,7 @@
+LK-82 review (independent): APPROVE.
+- Values match design 3.4 / R5 s3 exactly: Ka0s stripe .08 hover .16 sel .26; icon.hot Obsidian #A6DAFF, Azeroth #FFE7A6, Glass #D8CCFF (+tint #9AA2B3), HC white (+tint #A0A0A0), Ember #FFE0B8, WoW/Midnight/Forever white.
+- Floors in tests/test_skin_defs.lua use the design's numbers (hot-rest 10, hot-heading 10 with named HC exemption held at 9, stripe 6, hover 12, hover-vs-stripe 3, Ka0s sel-vs-hover 6, rest CR 3), composited over every window stop; Ka0s stripe exemption dropped; the 8% channel floor for the eight was kept, not weakened. lstar() is correct CIE L*.
+- Red-first verified: the new test file run against ff36bc08~1 fails 4 cases (ka0s stripe 3.0, ka0s hover 9.0, ka0s pins, obsidian hot-rest 7.4).
+- Minors: SkinDefs 27->28, SkinDefsOthers 9->10 with header history; Skin.lua shell stays 18 (no schema change). New API doc + member manifest, old doc superseded with Moving-to section, index row, CHANGELOG draft, test-cases.md (44 / 4676) all consistent.
+- Gate re-run: ka0s-bounded lua tests/run.lua 4676 passed 0 failed 3 skipped; ka0s-bounded luacheck . 0/0 in 351 files; testkit == tests/_kit; files well under 1500 lines.
+- Nit (no fix needed): the hot test's 'red under' comment names WoW Default and WoW Midnight as hot-vs-rest failures, but at the floor of 10 they pass that check (10.7, 13.0) and fail only hot-vs-heading.
