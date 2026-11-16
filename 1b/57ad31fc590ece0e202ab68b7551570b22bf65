@@ -1,0 +1,7 @@
+LK-P2 review (independent): APPROVE.
+- Pure move verified: multiset diff of lines removed from tests/test_launcher.lua vs lines in fixture_launcher.lua + test_launcher_skin.lua + added lines is empty (CRLF-normalized). No assertion changed or dropped.
+- Sizes: test_launcher.lua 1235 -> 963, test_launcher_skin.lua 194, fixture_launcher.lua 126; all under caps.
+- Shared bench memoized on the LDB fake (__launcherBench), so registries, name counter and menu mock are shared; run.lua orders test_launcher_skin right after test_launcher.
+- Suite only: no payload file touched, no LibStub minor needed. test-cases.md, CHANGELOG draft, CLAUDE.md census updated; comment pointers in test_atenable/test_gate_clients updated.
+- Gate re-run: ka0s-bounded lua tests/run.lua 4665 passed / 0 failed / 3 skipped (total unchanged); ka0s-bounded luacheck . 0 warnings / 0 errors in 350 files.
+- Note (non-blocking, pre-existing): if test_atenable or test_gate_clients ran alone before the fixture and registered the LDB fake first, the fixture's NewLibrary would return nil; same hazard as before the peel, not introduced here.
