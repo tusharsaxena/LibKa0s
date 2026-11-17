@@ -1316,7 +1316,7 @@ Total.
 - skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
 - skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (43)
+### test_skin_defs.lua (44)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -1336,6 +1336,7 @@ Total.
 - skin defs: Glass rounds its window and popups only, on the Ka0s Glass nine-slice
 - skin defs: WoW Default wears the Blizzard art docs/api/Skin names
 - skin defs: WoW Midnight is flat with a 1px gold edge and gradients, no Blizzard art
+- skin defs: every flat window, popup, menu and tooltip edge is 1px, in every skin
 - skin defs: only WoW Default names Blizzard art
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
 - skin defs: every font, bar texture and border a skin names is shipped or an LSM default
@@ -1533,7 +1534,7 @@ Total.
 - footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (forever)
 - footer button hover: an owner-less sim panel's Start hovers Ka0s Default's link orange
 
-### test_skin_paint.lua (45)
+### test_skin_paint.lua (46)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
@@ -1570,6 +1571,7 @@ Total.
 - skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for call
 - skin paint: the nav rail takes a skin's edge and keeps its art under Ka0s Default
 - skin paint: the suggestion popup takes a skin's edge and keeps its art under Ka0s Default
+- skin paint: a popup's and a menu's edge are one 1px line in Azeroth and WoW Midnight
 - skin paint: Tooltip colors a library tooltip in every skin, its art kept
 - skin paint: Text colors a role, and a skin's font reaches it through the owner's font object
 - skin paint: a panel-scoped Text is given back while its owner ignores the panel, live
@@ -5662,7 +5664,7 @@ Total.
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 21 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 43 |
+| test_skin_defs.lua | 44 |
 | test_skin_row_contrast.lua | 7 |
 | test_skin_hud_tokens.lua | 6 |
 | test_skin_hud_members.lua | 30 |
@@ -5670,7 +5672,7 @@ Total.
 | test_skin_width_parity.lua | 18 |
 | test_skin_button_contrast.lua | 10 |
 | test_footer_button_hover.lua | 33 |
-| test_skin_paint.lua | 45 |
+| test_skin_paint.lua | 46 |
 | test_skin_paint_controls.lua | 35 |
 | test_skin_eui.lua | 30 |
 | test_skin_ace.lua | 28 |
@@ -5839,4 +5841,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4929** |
+| **Total** | **4931** |

@@ -117,6 +117,8 @@ round 2 (`SR2-L1`: `text.link` in Azeroth, Glass, WoW Midnight and WoW Forever; 
 `win.inner` in WoW Midnight, Azeroth and Ember, of `SR2_SMOKE_ROUND2.md`): token values again, in `SkinDefsOthers.lua` minor 10.
 `SR2-L3` (footer button hover: Azeroth's `btn.hover`, WoW Midnight's `btnPrimary.hover`, the sim panel's buttons on
 `text.link`) moves values too, in SkinDefsOthers minor 10, SimPanel minor 11 and SimPanelRender minor 4, and no member.
+`SR2-L4` (1px popup, menu and tooltip edges in Azeroth and WoW Midnight, WoW Default's declared tooltip edge) moves
+values alone, in SkinDefsOthers minor 10.
 
 **v1.99.0, not in the census (2026-11-14).** The release adds a major,
 `LibKa0s-WaypointArrow-1.0` (its lib-level members in `docs/api/WaypointArrow/members-1.1.json`, the descriptor's
