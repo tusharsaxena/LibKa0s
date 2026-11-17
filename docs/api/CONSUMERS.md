@@ -112,7 +112,9 @@ None gets a row here yet. **No host calls them at the tag:** the library's own t
 callers, and a host reaches them only through its `L` (the console's strings, a strip's `spec.L`) or a window's
 `closeTip`. A host's own windows' title-bar tooltips and colors are its `SR-<ABBR>` item of the same bundle. The
 smoke round's color and band changes (`SR-L3`: `close.rest` follows `icon.tint`, marks light in `text.link`; `SR-L4`:
-`list.header.bg` in every skin) move token values, not members, so no census row moves for them either.
+`list.header.bg` in every skin) move token values, not members, so no census row moves for them either. Nor does smoke
+round 2 (`SR2-L1`: `text.link` in Azeroth, Glass, WoW Midnight and WoW Forever; `SR2-L2`: 1px window edges and no
+`win.inner` in WoW Midnight, Azeroth and Ember, of `SR2_SMOKE_ROUND2.md`): token values again, in `SkinDefsOthers.lua` minor 10.
 
 **v1.99.0, not in the census (2026-11-14).** The release adds a major,
 `LibKa0s-WaypointArrow-1.0` (its lib-level members in `docs/api/WaypointArrow/members-1.1.json`, the descriptor's

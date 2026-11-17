@@ -1316,7 +1316,7 @@ Total.
 - skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
 - skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (46)
+### test_skin_defs.lua (43)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -1335,7 +1335,7 @@ Total.
 - skin defs: High Contrast's edges are one pixel, window and popup included
 - skin defs: Glass rounds its window and popups only, on the Ka0s Glass nine-slice
 - skin defs: WoW Default wears the Blizzard art docs/api/Skin names
-- skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art
+- skin defs: WoW Midnight is flat with a 1px gold edge and gradients, no Blizzard art
 - skin defs: only WoW Default names Blizzard art
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
 - skin defs: every font, bar texture and border a skin names is shipped or an LSM default
@@ -1350,6 +1350,20 @@ Total.
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 - skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read in every other skin
+- skin defs: a window's header stands off its content, and the divider rule shows against both
+- skin defs: a gradient title band's flat title.bg is its blend
+- skin defs: Ka0s Default's header is the owner's dark gold gradient, lighter than its body
+- skin defs: a table header wears the skin's color, and its sort arrow another
+- skin defs: Ka0s Default states its settings art, and every other skin an edge and a rule
+- skin defs: the settings typed-color tokens keep Ka0s Default's yellow and read in every other skin
+- skin defs: the CIEDE2000 helper matches Sharma et al.'s published pairs
+- skin defs: a title-bar control's hover is clearly another color than its rest in every skin
+- skin defs: the hover stays legible on the title band and apart from a link's own hover
+- skin defs: the four raised skins hover in their own palette
+- skin defs: a shell bump re-registers the eight other skins from the new copy
+
+### test_skin_row_contrast.lua (7)
+
 - skin defs: alternate rows show in every skin
 - skin defs: a hovered row still stands off an alternate row
 - skin defs: a hovered row shows on its window in every skin
@@ -1357,13 +1371,6 @@ Total.
 - skin defs: a section header's band stands off a row, a stripe and a hover in every skin
 - skin defs: a section header's text reads on its band in every skin
 - skin defs: a mark goes visibly hot from its rest and from a heading in every skin
-- skin defs: a window's header stands off its content, and the divider rule shows against both
-- skin defs: a gradient title band's flat title.bg is its blend
-- skin defs: Ka0s Default's header is the owner's dark gold gradient, lighter than its body
-- skin defs: a table header wears the skin's color, and its sort arrow another
-- skin defs: Ka0s Default states its settings art, and every other skin an edge and a rule
-- skin defs: the settings typed-color tokens keep Ka0s Default's yellow and read in every other skin
-- skin defs: a shell bump re-registers the eight other skins from the new copy
 
 ### test_skin_hud_tokens.lua (6)
 
@@ -1490,7 +1497,7 @@ Total.
 - skin button contrast: a close button's glyph painted faded is drawn opaque on a hover and after it
 - skin button contrast: every skin's enabled button label holds 3:1 on its fill, well clear of disabled
 
-### test_skin_paint.lua (44)
+### test_skin_paint.lua (45)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
@@ -1500,6 +1507,7 @@ Total.
 - skin paint: no Shell-painted window draws a line under its title, through every skin switch
 - skin paint: a second Shell call makes no new region and paints the same
 - skin paint: a skin switch repaints a Shell live, and back to Ka0s Default exactly
+- skin paint: a window's edge is one 1px line with no inner rule, as WoW Forever's is
 - skin paint: WoW Default's window is the dialog edge on the holder over the tiled art
 - skin paint: a window's edge lives on a child frame above the window's children
 - skin paint: every skin fades a stock frame's art and draws its own window, Ka0s Default too
@@ -5618,13 +5626,14 @@ Total.
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 21 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 46 |
+| test_skin_defs.lua | 43 |
+| test_skin_row_contrast.lua | 7 |
 | test_skin_hud_tokens.lua | 6 |
 | test_skin_hud_members.lua | 30 |
 | test_skin_host_gaps.lua | 46 |
 | test_skin_width_parity.lua | 18 |
 | test_skin_button_contrast.lua | 10 |
-| test_skin_paint.lua | 44 |
+| test_skin_paint.lua | 45 |
 | test_skin_paint_controls.lua | 35 |
 | test_skin_eui.lua | 30 |
 | test_skin_ace.lua | 28 |
@@ -5793,4 +5802,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4891** |
+| **Total** | **4896** |
