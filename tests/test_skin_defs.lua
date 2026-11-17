@@ -695,211 +695,8 @@ end
 
 local BLACK = { 0, 0, 0 }
 
--- How far a skin's alternate row stands off its window, in a channel (SF-L3 set 5%; R3-L5 of
--- Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3 raises it to 8%, image 95).
-local STRIPE_STEP = 0.08
-
---- CIE L* (0-100) of an opaque color: lightness alone, the axis LibKa0s#82 and #84 ask about. CIE76
---- ΔE is no use here: it scores Forever's gold heading against its tan hot mark at 41, a pair the
---- owner saw "nearly disappear".
-local function lstar(c)
-  local y = luminance(c)
-  if y > 216 / 24389 then return 116 * y ^ (1 / 3) - 16 end
-  return y * 24389 / 27
-end
-local function dL(a, b) return math.abs(lstar(a) - lstar(b)) end
-
---- Every color a window's body draws: its flat `win.bg`, and both stops of its gradient when it has
---- one, each over black (the world behind a translucent window at its darkest).
-local function windowStops(t)
-  local stops = { { "win.bg", over(t["win.bg"], BLACK) } }
-  if type(t["win.bgTop"]) == "table" and type(t["win.bgBottom"]) == "table" then
-    stops[2] = { "win.bgTop", over(t["win.bgTop"], BLACK) }
-    stops[3] = { "win.bgBottom", over(t["win.bgBottom"], BLACK) }
-  end
-  return stops
-end
-
--- The row and mark floors of LibKa0s#82 and #84 (Ka0sAddonsCommonTasks
--- docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS, design 3.4, research R5 section 4), in CIE L*, every wash
--- composited over each window stop.
-local STRIPE_DL, HOVER_DL, HOVER_STRIPE_DL, HOT_REST_DL, HOT_HEAD_DL, SEL_HOVER_DL = 6, 12, 3, 10, 10, 6
-
--- High Contrast's heading is yellow at L* 90.7, so no hot mark can be 10 lighter; its white hot
--- stands 9.3 off it, and ΔE 91 apart in hue. Signed off by the owner (ruling Q2 of the bundle above).
-local HOT_HEAD_EXEMPT = { contrast = "High Contrast's white hot on its yellow heading, the owner's Q2" }
-
-test("skin defs: alternate rows show in every skin", function()
-  -- SF-L3, images 53 and 54. red under: Obsidian's 2% white or High Contrast's #0D0D0D, which no
-  -- eye separates from the window.
-  -- R3-L5, image 95: Obsidian's 6% white, 5.8% off its window, was still hardly visible, and every
-  -- dark skin on the same 6% (Glass, Ember, WoW Default, WoW Midnight, WoW Forever) or Azeroth's 7%
-  -- parchment sat as faint. red under any of them below a visible 8% in a channel.
-  -- LibKa0s#84: Ka0s Default's own 3% white, exempt until then, stood 3 L* off its window against
-  -- ~10 for every other skin, and its rows ran together. Every skin, Ka0s Default included, is held
-  -- to 6 L*; the eight keep the 8% channel floor too (Ka0s Default's .08 white over a .92 window is
-  -- 7.6% in a channel and 9 L*). red under: Ka0s Default's 3% stripe.
-  local Skin = skinLib()
-  for _, key in ipairs(KEYS) do
-    local t = Skin:ResolveSkin(key)
-    for _, stop in ipairs(windowStops(t)) do
-      local win = stop[2]
-      local d = dL(over(t["list.stripe"], win), win)
-      assertTrue(d >= STRIPE_DL, ("%s: the stripe stands %.1f L* off %s, want >= %d"):format(
-        key, d, stop[1], STRIPE_DL))
-    end
-    if key ~= "ka0s" then
-      local win = over(t["win.bg"], BLACK)
-      local step = apart(over(t["list.stripe"], win), win)
-      assertTrue(step >= STRIPE_STEP, ("%s: the stripe stands %.1f%% off the window, want %d%%"):format(
-        key, step * 100, STRIPE_STEP * 100))
-    end
-  end
-  local o = Skin:ResolveSkin("obsidian")
-  assertEqual(colorKey(o["list.stripe"]), "1.000,1.000,1.000,0.090", "Obsidian's stripe, 9% white")
-end)
-
-test("skin defs: a hovered row still stands off an alternate row", function()
-  -- R3-L5. A hovered plain row is the body text at its alpha over the window; at 10% it stood 3% off
-  -- a 6% stripe. red under: a stripe raised to 9% under a 10% hover, which reads as a stripe.
-  -- LibKa0s#84: Ka0s Default is held too, in L*, now its stripe rises to 8%.
-  local Skin = skinLib()
-  for _, key in ipairs(KEYS) do
-    local t = Skin:ResolveSkin(key)
-    if key ~= "ka0s" then
-      local win = over(t["win.bg"], BLACK)
-      local step = apart(over(t["list.hover"], win), over(t["list.stripe"], win))
-      assertTrue(step >= 0.03, ("%s: a hovered row %.1f%% off a striped one"):format(key, step * 100))
-    end
-    for _, stop in ipairs(windowStops(t)) do
-      local win = stop[2]
-      local d = dL(over(t["list.hover"], win), over(t["list.stripe"], win))
-      assertTrue(d >= HOVER_STRIPE_DL, ("%s: a hovered row %.1f L* off a striped one on %s, want >= %d")
-        :format(key, d, stop[1], HOVER_STRIPE_DL))
-    end
-  end
-end)
-
-test("skin defs: a hovered row shows on its window in every skin", function()
-  -- LibKa0s#82 and #84: Ka0s Default's gold hover at .10 stood 9 L* off its window, against 13 to 19
-  -- for every other skin. red under: Ka0s Default's gold .10.
-  local Skin = skinLib()
-  for _, key in ipairs(KEYS) do
-    local t = Skin:ResolveSkin(key)
-    for _, stop in ipairs(windowStops(t)) do
-      local win = stop[2]
-      local d = dL(over(t["list.hover"], win), win)
-      assertTrue(d >= HOVER_DL, ("%s: the hover wash stands %.1f L* off %s, want >= %d"):format(
-        key, d, stop[1], HOVER_DL))
-    end
-  end
-end)
-
-test("skin defs: Ka0s Default's selected row stands off its hovered one", function()
-  -- LibKa0s#84: hover and selection are one gold in Ka0s Default, told apart by alpha alone, so a
-  -- hover raised to .16 needs a selection raised with it. red under: the hover at .16 over a
-  -- selection left at .18.
-  local t = skinLib():ResolveSkin("ka0s")
-  for _, stop in ipairs(windowStops(t)) do
-    local win = stop[2]
-    local d = dL(over(t["list.sel"], win), over(t["list.hover"], win))
-    assertTrue(d >= SEL_HOVER_DL, ("ka0s: selected %.1f L* off hovered, want >= %d"):format(d, SEL_HOVER_DL))
-  end
-  sameColor(t["list.stripe"], { 1, 1, 1, 0.08 }, "Ka0s Default's stripe, 8% white")
-  sameColor(t["list.hover"], { 1, 0.82, 0, 0.16 }, "Ka0s Default's hover, gold .16")
-  sameColor(t["list.sel"], { 1, 0.82, 0, 0.26 }, "Ka0s Default's selection, gold .26")
-end)
-
--- The section-header band's floors (SR-L4 of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS,
--- smoke round 1's ruling 5), in CIE L*, the band composited over each window stop as the rows are.
--- A band DARKER than the plain row (Skill Master's block header, the reference the owner passed) is
--- held to 1.5 off it: over black a dark band can stand at most L*(window) off its row, Obsidian's
--- window is L* 2.8, and Skill Master's black .35 on Ka0s Default's window stands 1.6 off, a look the
--- owner passed. A band LIGHTER than the row is a wash like the stripe and is held to the stripe's own 6.
--- Against the stripe and the hover it is held to 6, the stripe's floor off its row: a band nearer a
--- stripe than a stripe is to a row reads as one more stripe. Its text is held 45 off it, which is
--- about WCAG's 4.5:1 on bands this dark.
-local HEADER_DARK_ROW_DL, HEADER_STRIPE_DL, HEADER_HOVER_DL, HEADER_TEXT_DL = 1.5, 6, 6, 45
-
-test("skin defs: a section header's band stands off a row, a stripe and a hover in every skin", function()
-  -- SR-L4: Ka0s Default's band, white .04, sat between its plain row and its .08 stripe (4.2 and 4.8
-  -- L* off them), so DropWatcher's group headers read as rows. red under: that band, or seven of the
-  -- eight's mockup bands, each a lighter wash under 6 off its row or its stripe (Obsidian #101012 2.0
-  -- over its row, WoW Default white .07 2.1 off its stripe). WoW Forever's black .35, the one dark
-  -- mockup band, passes as it was: 2.5 under its row on its gradient's dark stop, 13.9 off a stripe.
-  local Skin = skinLib()
-  for _, key in ipairs(KEYS) do
-    local t = Skin:ResolveSkin(key)
-    for _, stop in ipairs(windowStops(t)) do
-      local win = stop[2]
-      local band = over(t["list.header.bg"], win)
-      local rise = lstar(band) - lstar(win)
-      if rise < 0 then
-        assertTrue(-rise >= HEADER_DARK_ROW_DL, ("%s: the header band sits %.1f L* under a row on %s, want >= %.1f")
-          :format(key, -rise, stop[1], HEADER_DARK_ROW_DL))
-      else
-        assertTrue(rise >= HEADER_STRIPE_DL, ("%s: the header band sits %.1f L* over a row on %s, want >= %d")
-          :format(key, rise, stop[1], HEADER_STRIPE_DL))
-      end
-      local d = dL(band, over(t["list.stripe"], win))
-      assertTrue(d >= HEADER_STRIPE_DL, ("%s: the header band %.1f L* off a stripe on %s, want >= %d")
-        :format(key, d, stop[1], HEADER_STRIPE_DL))
-      d = dL(band, over(t["list.hover"], win))
-      assertTrue(d >= HEADER_HOVER_DL, ("%s: the header band %.1f L* off a hovered row on %s, want >= %d")
-        :format(key, d, stop[1], HEADER_HOVER_DL))
-    end
-  end
-  sameColor(Skin:ResolveSkin("ka0s")["list.header.bg"], { 0, 0, 0, 0.35 },
-    "Ka0s Default's band is Skill Master's block header, black .35")
-end)
-
-test("skin defs: a section header's text reads on its band in every skin", function()
-  -- SR-L4: a guard for the bands above, green from the start (the closest as built, WoW Forever's
-  -- tan on its band over the gradient's light stop, stands 60 off).
-  -- red under: a band raised toward its heading color.
-  local Skin = skinLib()
-  for _, key in ipairs(KEYS) do
-    local t = Skin:ResolveSkin(key)
-    for _, stop in ipairs(windowStops(t)) do
-      local band = over(t["list.header.bg"], stop[2])
-      local d = dL(t["list.header.text"], band)
-      assertTrue(d >= HEADER_TEXT_DL, ("%s: the header text %.1f L* off its band on %s, want >= %d")
-        :format(key, d, stop[1], HEADER_TEXT_DL))
-    end
-  end
-end)
-
-test("skin defs: a mark goes visibly hot from its rest and from a heading in every skin", function()
-  -- LibKa0s#82: WoW Forever's hot #C9A07A stood 3.4 L* off its rest #A39E97, and six skins' hot was
-  -- their heading color, so a mark resting at `text.heading` (Skill Master's block header) showed no
-  -- hover at all. red under: Obsidian, Azeroth, High Contrast, Ember, WoW Default, WoW Midnight or
-  -- WoW Forever's hot within 10 L* of its rest, or any hot but High Contrast's within 10 of its
-  -- heading.
-  local Skin = skinLib()
-  for _, key in ipairs(KEYS) do
-    local t = Skin:ResolveSkin(key)
-    local hot, rest, head = t["icon.hot"], t["icon.tint"], t["text.heading"]
-    local d = dL(hot, rest)
-    assertTrue(d >= HOT_REST_DL, ("%s: icon.hot %.1f L* off icon.tint, want >= %d"):format(key, d, HOT_REST_DL))
-    d = dL(hot, head)
-    if HOT_HEAD_EXEMPT[key] then
-      assertTrue(d >= 9, ("%s: icon.hot %.1f L* off text.heading, exempt at 9 (%s)"):format(
-        key, d, HOT_HEAD_EXEMPT[key]))
-    else
-      assertTrue(d >= HOT_HEAD_DL, ("%s: icon.hot %.1f L* off text.heading, want >= %d"):format(
-        key, d, HOT_HEAD_DL))
-    end
-    for _, stop in ipairs(windowStops(t)) do
-      local ratio = contrast(rest, stop[2])
-      assertTrue(ratio >= 3, ("%s: icon.tint contrast %.2f on %s, want >= 3"):format(key, ratio, stop[1]))
-    end
-  end
-  assertEqual(colorKey(Skin:ResolveSkin("forever")["icon.hot"]), "1.000,1.000,1.000,1.000",
-    "WoW Forever's hot is white, as its titles and body are")
-  local hc = Skin:ResolveSkin("contrast")
-  assertEqual(colorKey(hc["icon.tint"]), colorKey({ 0xA0 / 255, 0xA0 / 255, 0xA0 / 255, 1 }), "High Contrast rests at #A0A0A0")
-  assertEqual(colorKey(hc["icon.hot"]), "1.000,1.000,1.000,1.000", "High Contrast's hot is white")
-end)
+-- The row, band and mark contrast floors (LibKa0s#82, #84, SR-L4) live in tests/test_skin_row_contrast.lua,
+-- peeled from here at SR2-L1 on the seam CLAUDE.md's band census named for this suite.
 
 --- The colors a title band draws: its flat `title.bg`, and both stops of its gradient when it has
 --- one (P.fill draws the gradient then, and the flat token only reaches a flat reader).
@@ -1044,6 +841,131 @@ test("skin defs: the settings typed-color tokens keep Ka0s Default's yellow and 
     end
     local ratio = contrast(t["gtip.emphasis"], TOOLTIP_DARK)
     assertTrue(ratio >= 4.5, ("%s: gtip.emphasis contrast %.2f, want >= 4.5"):format(key, ratio))
+  end
+end)
+
+-- ── the title-bar hover (SR2-L1) ─────────────────────────────────────────────────────────────
+
+--- CIEDE2000 (CIE 142-2001) between two sRGB colors, D65. The formula as Sharma, Wu and Dalal, "The
+--- CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical
+--- Observations", Color Research & Application 30(1), 2005, state it, the hue rotation term R_T
+--- included, kL = kC = kH = 1. L* alone (the floors above) cannot tell a hue change from a shade
+--- change; CIE76 cannot either here (it scores WoW Midnight's bad pair 51 and Obsidian's good one 41).
+local atan2 = math.atan2 or math.atan
+local function srgbToLab(c)
+  local r, g, b = channel(c[1]), channel(c[2]), channel(c[3])
+  local x = (0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047
+  local y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b
+  local z = (0.0193339 * r + 0.1191920 * g + 0.9503041 * b) / 1.08883
+  local function f(v) return v > (6 / 29) ^ 3 and v ^ (1 / 3) or v / (3 * (6 / 29) ^ 2) + 4 / 29 end
+  return { 116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z)) }
+end
+local function deltaE00(p, q)
+  local rad, deg = math.rad, math.deg
+  local L1, a1, b1, L2, a2, b2 = p[1], p[2], p[3], q[1], q[2], q[3]
+  local Cbar = (math.sqrt(a1 * a1 + b1 * b1) + math.sqrt(a2 * a2 + b2 * b2)) / 2
+  local G = 0.5 * (1 - math.sqrt(Cbar ^ 7 / (Cbar ^ 7 + 25 ^ 7)))
+  local a1p, a2p = (1 + G) * a1, (1 + G) * a2
+  local C1, C2 = math.sqrt(a1p * a1p + b1 * b1), math.sqrt(a2p * a2p + b2 * b2)
+  local h1 = C1 == 0 and 0 or deg(atan2(b1, a1p)) % 360
+  local h2 = C2 == 0 and 0 or deg(atan2(b2, a2p)) % 360
+  local dh = 0
+  if C1 * C2 ~= 0 then
+    dh = h2 - h1
+    if dh > 180 then dh = dh - 360 elseif dh < -180 then dh = dh + 360 end
+  end
+  local dL, dC, dH = L2 - L1, C2 - C1, 2 * math.sqrt(C1 * C2) * math.sin(rad(dh / 2))
+  local Lb, Cb, hb = (L1 + L2) / 2, (C1 + C2) / 2, h1 + h2
+  if C1 * C2 ~= 0 then
+    if math.abs(h1 - h2) <= 180 then hb = (h1 + h2) / 2
+    elseif h1 + h2 < 360 then hb = (h1 + h2 + 360) / 2
+    else hb = (h1 + h2 - 360) / 2 end
+  end
+  local Tt = 1 - 0.17 * math.cos(rad(hb - 30)) + 0.24 * math.cos(rad(2 * hb))
+    + 0.32 * math.cos(rad(3 * hb + 6)) - 0.20 * math.cos(rad(4 * hb - 63))
+  local dTheta = 30 * math.exp(-((hb - 275) / 25) ^ 2)
+  local RC = 2 * math.sqrt(Cb ^ 7 / (Cb ^ 7 + 25 ^ 7))
+  local SL = 1 + 0.015 * (Lb - 50) ^ 2 / math.sqrt(20 + (Lb - 50) ^ 2)
+  local SC, SH = 1 + 0.045 * Cb, 1 + 0.015 * Cb * Tt
+  local RT = -math.sin(rad(2 * dTheta)) * RC
+  local l, c, h = dL / SL, dC / SC, dH / SH
+  return math.sqrt(l * l + c * c + h * h + RT * c * h)
+end
+local function de00(x, y) return deltaE00(srgbToLab(x), srgbToLab(y)) end
+
+-- The hover floors of SR2-L1 (ruling 1 of Ka0sAddonsCommonTasks
+-- docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/SR2_SMOKE_ROUND2.md), ΔE00 from a title-bar control's rest
+-- (`icon.tint`) to its hover (`text.link`). 20 is the lowest pair the owner accepted (Ember, 20.1);
+-- the four skins the owner marked bad are raised to 25, about Obsidian's 25.0. A link's own hover
+-- (`text.linkHot`) stays off the link by 8, under the closest pair already shipped (Obsidian, 8.7).
+local HOVER_DE00_MIN, HOVER_DE00_RAISED, LINKHOT_DE00_MIN = 20, 25, 8
+local HOVER_RAISED = { azeroth = true, glass = true, midnight = true, forever = true }
+
+test("skin defs: the CIEDE2000 helper matches Sharma et al.'s published pairs", function()
+  -- Pairs 1, 4 and 34 of the paper's Table 1 (pair 1 exercises the rotation term near hue 275°, 34
+  -- the lightness weighting near black). red under: R_T or the G correction dropped.
+  for _, pair in ipairs({
+    { { 50, 2.6772, -79.7751 }, { 50, 0, -82.7485 }, 2.0425 },
+    { { 50, -1.3802, -84.2814 }, { 50, 0, -82.7485 }, 1.0000 },
+    { { 2.0776, 0.0795, -1.1350 }, { 0.9033, -0.0636, -0.5514 }, 0.9082 },
+  }) do
+    local d = deltaE00(pair[1], pair[2])
+    assertTrue(math.abs(d - pair[3]) < 1e-4, ("ΔE00 %.4f, published %.4f"):format(d, pair[3]))
+  end
+end)
+
+test("skin defs: a title-bar control's hover is clearly another color than its rest in every skin", function()
+  -- SR2-L1, the owner's smoke round 2: Azeroth (12.9), Glass (14.6), WoW Midnight (18.5) and WoW
+  -- Forever (14.8) lit their marks in a shade of their own rest. red under: any of the four left on
+  -- its palette accent, or any skin under 20.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    local d = de00(t["icon.tint"], t["text.link"])
+    local floor = HOVER_RAISED[key] and HOVER_DE00_RAISED or HOVER_DE00_MIN
+    assertTrue(d >= floor, ("%s: text.link ΔE00 %.1f off icon.tint, want >= %d"):format(key, d, floor))
+  end
+end)
+
+test("skin defs: the hover stays legible on the title band and apart from a link's own hover", function()
+  -- SR2-L1. red under: a hover under 4.5 on its band, a retuned skin's hover reading darker on its
+  -- band than the rest it replaces, a `text.linkHot` within 8 ΔE00 of the link it lights, or a hover
+  -- in the close X's red. The five accepted skins keep their accent, Ka0s Default's orange (7.0 on
+  -- its band against its gray's 8.4) and Ember's (16.9 off its red close) among them, so only the
+  -- four retuned ones answer to the rest and to the close.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    local win = over(t["win.bg"], BLACK)
+    for _, stop in ipairs(bandStops(t)) do
+      local band = over(stop[2], win)
+      local hover, rest = contrast(t["text.link"], band), contrast(t["icon.tint"], band)
+      assertTrue(hover >= 4.5, ("%s: text.link contrast %.2f on %s, want >= 4.5"):format(key, hover, stop[1]))
+      assertTrue(not HOVER_RAISED[key] or hover >= rest,
+        ("%s: text.link contrast %.2f on %s, under the rest's %.2f"):format(key, hover, stop[1], rest))
+    end
+    local d = de00(t["text.link"], t["text.linkHot"])
+    assertTrue(d >= LINKHOT_DE00_MIN, ("%s: text.linkHot ΔE00 %.1f off text.link, want >= %d"):format(
+      key, d, LINKHOT_DE00_MIN))
+    d = de00(t["text.link"], t["close.hot"])
+    assertTrue(not HOVER_RAISED[key] or d >= HOVER_DE00_MIN,
+      ("%s: text.link ΔE00 %.1f off close.hot, want >= %d"):format(key, d, HOVER_DE00_MIN))
+  end
+end)
+
+test("skin defs: the four raised skins hover in their own palette", function()
+  -- SR2-L1's picks, pinned so a retune is a decision. `icon.tint` does not move.
+  local Skin = skinLib()
+  local function hex(c) return ("#%02X%02X%02X"):format(
+    math.floor(c[1] * 255 + 0.5), math.floor(c[2] * 255 + 0.5), math.floor(c[3] * 255 + 0.5)) end
+  for key, want in pairs({
+    azeroth = { "#FFEB33", "#B8A07A", "#FFF6C8" }, glass = { "#66F0FF", "#9AA2B3", "#D4C4FF" },
+    midnight = { "#FFC94A", "#B4AFC8", "#D4BFFF" }, forever = { "#FFAA33", "#A39E97", "#E0C3A6" },
+  }) do
+    local t = Skin:ResolveSkin(key)
+    assertEqual(hex(t["text.link"]), want[1], key .. ": text.link")
+    assertEqual(hex(t["icon.tint"]), want[2], key .. ": icon.tint, unchanged")
+    assertEqual(hex(t["text.linkHot"]), want[3], key .. ": text.linkHot")
   end
 end)
 

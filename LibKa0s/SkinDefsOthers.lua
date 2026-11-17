@@ -69,6 +69,11 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- #170F09, Glass #02040C .60, Ember #0A0503, WoW Default #0C0B0A and WoW Midnight #050612. High
 -- Contrast's black window leaves nothing darker, so its band is #3D3D3D, above its hover. WoW
 -- Forever's black .35 passed and stays.
+-- Then (SR2-L1, smoke round 2's ruling 1, still minor 10): a title-bar control's hover (`text.link`)
+-- stands at least 20 ΔE00 off its rest (`icon.tint`) in every skin, and 25 in the four the owner marked
+-- bad, whose `muted` leaned toward their own accent (tests/test_skin_defs.lua). `text.link` leaves the
+-- accent there: Azeroth #FFEB33 (bright gold, its `text.linkHot` cream #FFF6C8), Glass #66F0FF (ice
+-- cyan), WoW Midnight #FFC94A (gold) and WoW Forever #FFAA33 (amber). No `icon.tint` moves.
 local OTHERS_MINOR = 10
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
@@ -495,7 +500,7 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
     footBg = hex("#1a110a"),
   }, {
     ["text.heading"] = AZ_GOLD, ["text.headingAlt"] = hex("#D4A84A"),
-    ["text.disabled"] = hex("#8A7A60"), ["text.linkHot"] = hex("#FFD866"),
+    ["text.disabled"] = hex("#8A7A60"), ["text.linkHot"] = hex("#FFF6C8"),
     ["btn.hover"] = hex("#FFFFFF"), ["btnPrimary.hover"] = hex("#FFFFFF"), ["close.hot"] = hex("#FF6B4A"),
     ["drawer.bgOpen"] = hex("#4a3018"), ["drawer.boxBg"] = hex("#1c130b"),
     ["drawer.summarySet"] = AZ_GOLD, ["drawer.textSet"] = AZ_GOLD,
@@ -504,6 +509,9 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
     ["scroll.thumbOn"] = hex("#8a6a36"), ["tab.glow"] = rgba(255, 255, 255, 0.10),
     -- Pale gold, off its gold heading (minor 10, LibKa0s#82).
     ["icon.hot"] = hex("#FFE7A6"),
+    -- Its gold accent sat 12.9 ΔE00 off its tan rest: the hover is a brighter gold, the link's own
+    -- hover its cream (SR2-L1).
+    ["text.link"] = hex("#FFEB33"),
   })
 
 -- ── Glass ── mockup `glass`. Manrope in the mockup; Avant Garde, the owner's pick, stands for it
@@ -558,6 +566,9 @@ register("glass", "Glass", "Translucent frosted panels with rounded corners and 
     -- Its heading is white, so hot cannot go above it: the rest drops and the hot is a pale lilac
     -- (minor 10, LibKa0s#82). `icon.grip` and `list.ghostIcon` FOLLOW the rest.
     ["icon.tint"] = hex("#9AA2B3"), ["icon.hot"] = hex("#D8CCFF"),
+    -- Its lilac sat 14.6 ΔE00 off its blue-gray rest and no lilac clears 25: the hover is ice cyan,
+    -- the frost of its blue swatch, far from `close.hot`'s red (SR2-L1).
+    ["text.link"] = hex("#66F0FF"),
   })
 
 -- ── High Contrast ── mockup `contrast`: black, white 2px edges, yellow focus, Doris PP (minor 18,
@@ -774,6 +785,8 @@ register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, c
     ["panel.bg"] = rgba(0, 0, 0, 0.3), ["panel.border"] = hex("#4a3d1e"),
     ["icon.hot"] = hex("#FFFFFF"), ["scroll.thumbOn"] = hex("#F6D27A"),
     ["scroll.thumbOff"] = MN_GOLD,
+    -- Its violet sat 18.5 ΔE00 off its lavender rest: the hover is its gold (SR2-L1).
+    ["text.link"] = hex("#FFC94A"),
   })
 
 -- ── WoW Forever ── mockup `forever`, the EllesmereUI-on-WoW-Forever look (OWNER_SCOPE R4): warm
@@ -823,4 +836,7 @@ register("forever", "WoW Forever", "Warm charcoal, black title bars with centere
     ["scroll.thumbOn"] = FV_TAN, ["scroll.thumbOff"] = hex("#6e5a46"),
     -- White, as its titles and body are (minor 10, LibKa0s#82): its tan stood 3.4 L* off its rest.
     ["icon.hot"] = hex("#FFFFFF"),
+    -- Its tan sat 14.8 ΔE00 off its warm gray rest: the hover is amber, between the tan and its gold
+    -- heading (SR2-L1).
+    ["text.link"] = hex("#FFAA33"),
   })
