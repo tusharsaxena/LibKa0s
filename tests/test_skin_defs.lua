@@ -367,10 +367,13 @@ end)
 local ART_TOKENS = { "win.bgTexture", "tab.texture", "tab.onTexture", "check.texture",
   "check.markTexture" }
 
-test("skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art", function()
+test("skin defs: WoW Midnight is flat with a 1px gold edge and gradients, no Blizzard art", function()
+  -- SR2-L2 (smoke round 2, ruling 2): its 2px edge over a #3D2F12 rule read thick beside WoW
+  -- Forever's 1px; the window edge is 1px gold with no inner rule.
   local t = skinLib():ResolveSkin("midnight")
   assertEqual(t["win.borderStyle"], "flat", "flat WHITE8x8 edge")
-  assertEqual(t["win.borderSize"], 2, "2px")
+  assertEqual(t["win.borderSize"], 1, "1px")
+  assertNil(t["win.inner"], "no inner rule")
   assertEqual(("%.4f %.4f %.4f"):format(t["win.border"][1], t["win.border"][2], t["win.border"][3]),
     ("%.4f %.4f %.4f"):format(0xb0 / 255, 0x8a / 255, 0x3e / 255), "the #b08a3e edge")
   assertTrue(t["win.bgTop"] ~= nil and t["title.bgTop"] ~= nil, "window and title gradients")

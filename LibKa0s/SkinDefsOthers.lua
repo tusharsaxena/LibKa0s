@@ -74,6 +74,10 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- bad, whose `muted` leaned toward their own accent (tests/test_skin_defs.lua). `text.link` leaves the
 -- accent there: Azeroth #FFEB33 (bright gold, its `text.linkHot` cream #FFF6C8), Glass #66F0FF (ice
 -- cyan), WoW Midnight #FFC94A (gold) and WoW Forever #FFAA33 (amber). No `icon.tint` moves.
+-- Then (SR2-L2, smoke round 2's ruling 2, still minor 10): a window's edge is one 1px line with no
+-- inner rule, as WoW Forever's is. WoW Midnight's 2px gold over a #3d2f12 rule is 1px gold; Azeroth's
+-- 1px edge takes its rule's gold #8a6a36 (`AZ_EDGE` stays every other edge's), and Ember's the amber
+-- #955727 its #c98a3a .45 rule read as over #6a2e17. No popup, menu or tooltip edge moves.
 local OTHERS_MINOR = 10
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
@@ -463,8 +467,8 @@ register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool 
   })
 
 -- ── Azeroth ── mockup `azeroth`, reworked dark (SkinDefs minor 8, the owner's ruling of 2026-10-26:
--- "the light background is not going to work"). Dark tooled leather under a leather edge and a gold
--- inner rule, parchment text, gold headings and accent, Open Sans Semibold under Open Sans Bold titles
+-- "the light background is not going to work"). Dark tooled leather under a 1px gold #8a6a36 edge
+-- (SR2-L2: the gold its inner rule drew, under a #6b4a22 leather edge until then), parchment text, gold headings and accent, Open Sans Semibold under Open Sans Bold titles
 -- (minor 18, D-06; Vollkorn from minor 11, Cinzel titles over an Atkinson body until then); leather buttons, and
 -- the red wax seal kept for the primary button and the selected tab. As a dark skin it inherits Ka0s
 -- Default's semantic, quality, tooltip and chart colors.
@@ -474,7 +478,7 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
   { "#2b1d12", "#6b4a22", "#e2b659", "#8e1b10" }, {
     font = "Ka0s Open Sans Semibold", fs = 11, tfont = "Ka0s Open Sans Bold", titleSize = 12,
     barTex = "Ka0s Parchment",
-    win = AZ_LEATHER, winBorder = edge(1, "flat", AZ_EDGE), winInner = hex("#8a6a36"), radius = 0,
+    win = AZ_LEATHER, winBorder = edge(1, "flat", hex("#8a6a36")), winInner = false, radius = 0,
     titleBg = hex("#1a110a"), titleColor = hex("#F5C542"), divider = AZ_EDGE,
     text = AZ_TEXT, muted = hex("#B8A07A"), accent = AZ_GOLD,
     btnBg = grad(hex("#5a3d1d"), hex("#3a2614")), btnBorder = edge(1, "flat", hex("#24160a")),
@@ -629,13 +633,14 @@ register("contrast", "High Contrast", "Black and white with yellow focus, crisp 
   })
 
 -- ── Ember ── mockup `ember`: charred brown, orange accent, Emblem for body and titles alike (minor
--- 18, D-06; Bitter from minor 11, Cinzel titles over the client body until then).
+-- 18, D-06; Bitter from minor 11, Cinzel titles over the client body until then). A 1px amber #955727
+-- window edge (SR2-L2: its #c98a3a .45 inner rule composited over the #6a2e17 edge it replaced).
 register("ember", "Ember", "Charred browns lit by an orange accent, Emblem type.",
   { "#1a0e0a", "#6a2e17", "#c98a3a", "#ff7a33" }, {
     font = "Ka0s Emblem", fs = 11, tfont = "Ka0s Emblem", titleSize = 12.5,
     barTex = "Ka0s Forge",
-    win = rgba(26, 14, 10, 0.95), winBorder = edge(1, "flat", hex("#6a2e17")),
-    winInner = rgba(201, 138, 58, 0.45), radius = 0,
+    win = rgba(26, 14, 10, 0.95), winBorder = edge(1, "flat", hex("#955727")),
+    winInner = false, radius = 0,
     titleBg = grad(hex("#3a1a0f"), hex("#24100a")), titleColor = hex("#FFB45A"),
     divider = hex("#6a2e17"),
     text = hex("#F4E7DC"), muted = hex("#C7A993"), accent = hex("#FF7A33"),
@@ -737,8 +742,8 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
     ["icon.hot"] = hex("#FFFFFF"),
   })
 
--- ── WoW Midnight ── mockup `midnight`: night blue and violet under gold. Flat WHITE8x8 with a 2px
--- #b08a3e window edge and the gradient tokens; no Blizzard art. Segoe UI Semibold under Segoe UI Bold
+-- ── WoW Midnight ── mockup `midnight`: night blue and violet under gold. Flat WHITE8x8 with a 1px
+-- #b08a3e window edge and no inner rule (SR2-L2; 2px over a #3d2f12 rule until then), the gradient tokens; no Blizzard art. Segoe UI Semibold under Segoe UI Bold
 -- titles, the titles centered (minor 18, D-06; Philosopher from minor 11, Cinzel titles over the
 -- client body until then). Minor 7 (the
 -- owner's 2026-10-26 notes): the buttons leave WoW Default's red for night violet under a gold edge,
@@ -748,7 +753,7 @@ register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, c
   { "#171a2e", "#b08a3e", "#2a2347", "#b48cff" }, {
     font = "Ka0s Segoe UI Semibold", fs = 11.5, tfont = "Ka0s Segoe UI Bold", titleSize = 13,
     barTex = "Ka0s Satin",
-    win = MN_BG, winBorder = edge(2, "flat", MN_GOLD), winInner = hex("#3d2f12"), radius = 0,
+    win = MN_BG, winBorder = edge(1, "flat", MN_GOLD), winInner = false, radius = 0,
     titleBg = grad(hex("#2a2347"), hex("#17142b")), titleColor = hex("#F6D27A"),
     titleAlign = "CENTER", divider = hex("#4a3d1e"),
     text = hex("#F2EEF8"), muted = hex("#B4AFC8"), accent = hex("#B48CFF"),
