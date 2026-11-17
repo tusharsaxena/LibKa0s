@@ -17,14 +17,18 @@
 -- Default's gold is LootHistory's flat button, pinned in tests/test_skin.lua); where it does not, the
 -- skin's `text.link` when that clears it, else the nearest color of the link's own family that does.
 -- So Azeroth's `btn.hover` is #FFF800, its link #FFEB33's saturated twin (the link itself stands
--- 19.1 off the cream); WoW Midnight's `btnPrimary.hover` is its link #FFC94A; and the sim panel's
--- controls hover `text.link` (SimPanelRender's TOKENS `hot`), which clears every skin.
+-- 19.1 off the cream); and the sim panel's controls hover `text.link` (SimPanelRender's TOKENS
+-- `hot`), which clears every skin.
 --
--- THE EXEMPTION. A primary button whose fill is its skin's accent (Obsidian's blue, Glass's
--- lavender, Ember's orange, WoW Forever's tan) cannot meet both tests: the link color vanishes on
--- the fill (under 3:1 in all four), and no color of the skin's palette both stands 20 off the rest
--- and reads as well on that fill (only an inverted near-black label does, in Obsidian and Forever).
--- Those four keep their hover, pinned below so a retune is a decision, and are an owner call.
+-- A PRIMARY BUTTON HOVERS BY ITS FILL (SR2-L5, the owner's option C of the SR2-L3 review call). On a
+-- bright primary fill (Obsidian's blue, Glass's lavender, Ember's orange, WoW Forever's tan) the only
+-- label both legible and 20 off the rest was near-black, so SR2-L3 had exempted four skins. Now the
+-- label keeps `btnPrimary.text` under the pointer, the glow stays, and the button's fill repaints in
+-- `btnPrimary.hoverBg` (a gradient pair `btnPrimary.hoverBgTop` / `btnPrimary.hoverBgBottom` exactly
+-- where `btnPrimary.bg` is one), back to `btnPrimary.bg` on leave. Every skin: the hover fill stands
+-- at least HOVER_DE00_MIN off the rest fill, both composited over the window and a gradient read as
+-- the mean of its two stops, and the label reads on it at least as well as at rest, or 4.5:1. No
+-- exemption. `btnPrimary.hover` stays in the schema for a host that reads it; no painter does.
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
@@ -37,14 +41,6 @@ local KEYS = { "ka0s", "obsidian", "azeroth", "glass", "contrast", "ember", "wow
   "forever" }
 local FLOOR, LEGIBLE = DE.HOVER_DE00_MIN, 4.5
 local de00 = DE.de00
-
---- The primary buttons exempt from the floor, each with its reason (THE EXEMPTION above).
-local PRIMARY_EXEMPT = {
-  obsidian = "the accent-blue fill: the link vanishes on it, only a near-black label clears both",
-  glass = "the accent-lavender fill: no palette label clears both",
-  ember = "the accent-orange fill: no palette label clears both",
-  forever = "the accent-tan fill: the link vanishes on it, only a near-black label clears both",
-}
 
 local function skinLib() return T.mocks.LibStub("LibKa0s-Skin-1.0") end
 
@@ -67,14 +63,17 @@ local function hex(c) return ("#%02X%02X%02X"):format(
 
 --- The fill a `base` button draws on, opaque: its gradient's midpoint when it has one, over the
 --- window (tests/test_skin_button_contrast.lua's reading).
-local function fillOf(t, base)
+--- `name` the fill token, `btnPrimary.hoverBg` for a primary's hover (its pair `<name>Top` /
+--- `<name>Bottom`, read as the mean of the two stops).
+local function fillOf(t, base, name)
+  name = name or base .. ".bg"
   local win = over(t["win.bg"], { 0, 0, 0, 1 })
-  local top, bottom = t[base .. ".bgTop"], t[base .. ".bgBottom"]
+  local top, bottom = t[name .. "Top"], t[name .. "Bottom"]
   if type(top) == "table" and type(bottom) == "table" then
     local a, b = over(top, win), over(bottom, win)
     return { (a[1] + b[1]) / 2, (a[2] + b[2]) / 2, (a[3] + b[3]) / 2, 1 }
   end
-  return over(t[base .. ".bg"], win)
+  return over(t[name], win)
 end
 
 --- Hover against rest on `fill`: the floor, and the hover at least as legible as the rest or 4.5:1.
@@ -97,27 +96,36 @@ test("footer button hover: a push button's hovered label is clearly another colo
   end
 end)
 
-test("footer button hover: a primary button's hovered label is too, but where its fill is the accent", function()
-  -- red under: WoW Midnight's `btnPrimary.hover`, its `btnPrimary.text` (0.0).
+test("footer button hover: a primary button's hovered fill is clearly another color than its rest in every skin", function()
+  -- SR2-L5: no exemption. red under: no `btnPrimary.hoverBg` in any skin.
   for _, key in ipairs(KEYS) do
-    if not PRIMARY_EXEMPT[key] then
-      local t = skinLib():ResolveSkin(key)
-      holds(key .. "'s btnPrimary", t["btnPrimary.text"], t["btnPrimary.hover"], fillOf(t, "btnPrimary"))
-    end
+    local t = skinLib():ResolveSkin(key)
+    assertTrue(type(t["btnPrimary.hoverBg"]) == "table", key .. ": btnPrimary.hoverBg is set")
+    local rest, hot = fillOf(t, "btnPrimary"), fillOf(t, "btnPrimary", "btnPrimary.hoverBg")
+    local d = de00(rest, hot)
+    assertTrue(d >= FLOOR, ("%s: hover fill %s ΔE00 %.1f off rest fill %s, want >= %d"):format(
+      key, hex(hot), d, hex(rest), FLOOR))
   end
 end)
 
-test("footer button hover: an exempt primary is one the link color cannot light", function()
-  -- The exemption's premise, held: a skin whose primary fill comes to read the link at 3:1 loses it.
-  -- Their hovers are pinned, so a retune is a decision (an owner call of SR2-L3).
-  local pins = { obsidian = "#D6EEFF", glass = "#3A2A66", ember = "#FFFFFF", forever = "#FFE9D2" }
-  for key, why in pairs(PRIMARY_EXEMPT) do
+test("footer button hover: a primary's label reads on its hover fill at least as well as at rest, or 4.5:1", function()
+  for _, key in ipairs(KEYS) do
     local t = skinLib():ResolveSkin(key)
-    local fill = fillOf(t, "btnPrimary")
-    local r = ratio(t["text.link"], fill)
-    assertTrue(r < 3, ("%s: text.link reads %.2f:1 on its primary fill, so it is not exempt (%s)"):format(
-      key, r, why))
-    assertEqual(hex(t["btnPrimary.hover"]), pins[key], key .. ": btnPrimary.hover, unchanged")
+    local label = t["btnPrimary.text"]
+    local rest, hot = fillOf(t, "btnPrimary"), fillOf(t, "btnPrimary", "btnPrimary.hoverBg")
+    local on, was = ratio(over(label, hot), hot), ratio(over(label, rest), rest)
+    assertTrue(on >= math.min(was, LEGIBLE), ("%s: btnPrimary.text %.2f:1 on the hover fill, under the rest's %.2f:1 and %.1f:1")
+      :format(key, on, was, LEGIBLE))
+  end
+end)
+
+test("footer button hover: a primary's hover fill is a gradient exactly where its rest fill is one", function()
+  -- Typed as `btnPrimary.bg` is: Azeroth, Ember, WoW Default and WoW Midnight draw a pair.
+  for _, key in ipairs(KEYS) do
+    local t = skinLib():ResolveSkin(key)
+    local restGrad = type(t["btnPrimary.bgTop"]) == "table" and type(t["btnPrimary.bgBottom"]) == "table"
+    local hotGrad = type(t["btnPrimary.hoverBgTop"]) == "table" and type(t["btnPrimary.hoverBgBottom"]) == "table"
+    assertEqual(hotGrad, restGrad, key .. ": hoverBg's gradient pair follows bg's")
   end
 end)
 
@@ -127,7 +135,8 @@ test("footer button hover: the retuned hovers are the link or its own family", f
   assertEqual(hex(az["btn.hover"]), "#FFF800", "Azeroth's btn.hover, its link's saturated twin")
   assertTrue(de00(az["btn.hover"], az["text.link"]) < 5, "within 5 ΔE00 of Azeroth's link")
   assertEqual(hex(az["btn.text"]), "#F2E3BD", "Azeroth's btn.text, unchanged")
-  assertEqual(hex(mid["btnPrimary.hover"]), hex(mid["text.link"]), "WoW Midnight's primary hovers its link")
+  -- SR2-L3's value, kept: `btnPrimary.hover` is read by no painter since SR2-L5, only by a host.
+  assertEqual(hex(mid["btnPrimary.hover"]), hex(mid["text.link"]), "WoW Midnight's btnPrimary.hover, its link")
   assertEqual(hex(mid["btnPrimary.text"]), "#FFFFFF", "WoW Midnight's btnPrimary.text, unchanged")
 end)
 
@@ -149,18 +158,47 @@ local function tok3(Skin, skin, name)
 end
 
 for _, key in ipairs(KEYS) do
-  test("footer button hover: the skin picker's Apply and Apply to all light on enter, rest on leave (" .. key .. ")", function()
+  test("footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (" .. key .. ")", function()
     local m, Skin, lib = PK.env()
     local store = PK.register(Skin, PK.OWNER, key)
-    local f = PK.instance(lib, PK.OWNER).SkinPicker(PK.specFor(store))
-    for _, c in ipairs({ { f.applyAll, "btn" }, { f.apply, "btnPrimary" } }) do
-      local b, base = c[1], c[2]
-      assertEqual(textColor(m, b.text), F.tok(Skin, key, base .. ".text"), base .. " at rest")
-      b:__fire("OnEnter")
-      assertEqual(textColor(m, b.text), F.tok(Skin, key, base .. ".hover"), base .. " under the pointer")
-      b:__fire("OnLeave")
-      assertEqual(textColor(m, b.text), F.tok(Skin, key, base .. ".text"), base .. " at rest again")
+    local b = PK.instance(lib, PK.OWNER).SkinPicker(PK.specFor(store)).applyAll
+    assertEqual(textColor(m, b.text), F.tok(Skin, key, "btn.text"), "at rest")
+    b:__fire("OnEnter")
+    assertEqual(textColor(m, b.text), F.tok(Skin, key, "btn.hover"), "under the pointer")
+    b:__fire("OnLeave")
+    assertEqual(textColor(m, b.text), F.tok(Skin, key, "btn.text"), "at rest again")
+  end)
+
+  test("footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (" .. key .. ")", function()
+    -- SR2-L5. red under: the fill never moved and the label repainted to `btnPrimary.hover`.
+    local m, Skin, lib = PK.env()
+    local store = PK.register(Skin, PK.OWNER, key)
+    local b = PK.instance(lib, PK.OWNER).SkinPicker(PK.specFor(store)).apply
+    local t = Skin:ResolveSkin(key)
+    local function fill() return F.rgba(m.__paint(b).backdropColor) end
+    local function grad()
+      local g = Skin.painted[b] and Skin.painted[b].regions.grad
+      local gr = g and g:IsShown() and m.__paint(g).gradient
+      return gr and F.rgba({ gr.max.r, gr.max.g, gr.max.b, gr.max.a }) or "none"
     end
+    local function want(name)
+      local top = t[name .. "Top"]
+      return F.tok(Skin, key, name), type(top) == "table" and F.rgba(top) or "none"
+    end
+    local label = F.tok(Skin, key, "btnPrimary.text")
+    local restFill, restGrad = want("btnPrimary.bg")
+    local hotFill, hotGrad = want("btnPrimary.hoverBg")
+    assertEqual(fill(), restFill, "at rest: btnPrimary.bg")
+    assertEqual(grad(), restGrad, "at rest: its gradient's top")
+    assertEqual(textColor(m, b.text), label, "at rest: btnPrimary.text")
+    b:__fire("OnEnter")
+    assertEqual(fill(), hotFill, "under the pointer: btnPrimary.hoverBg")
+    assertEqual(grad(), hotGrad, "under the pointer: its gradient's top")
+    assertEqual(textColor(m, b.text), label, "under the pointer: the label unchanged")
+    b:__fire("OnLeave")
+    assertEqual(fill(), restFill, "at rest again: btnPrimary.bg")
+    assertEqual(grad(), restGrad, "at rest again: its gradient's top")
+    assertEqual(textColor(m, b.text), label, "at rest again: btnPrimary.text")
   end)
 
   test("footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (" .. key .. ")", function()
@@ -226,4 +264,64 @@ test("footer button hover: an owner-less sim panel's Start hovers Ka0s Default's
   assertEqual(textColor(m, start.label), F.rgba({ 1, 0.5, 0, 1 }), "Ka0s Default's text.link")
   start:__fire("OnLeave")
   assertEqual(textColor(m, start.label), F.rgba({ 0.9, 0.9, 0.92, 1 }), "its rest")
+end)
+
+-- ── a primary's hover fill: disabled, remapped, a region-boxed button ────────────────────────
+
+local function primaryButton(m)
+  local b = m.CreateFrame("Button", nil, m.UIParent, "BackdropTemplate")
+  b.text = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  return b
+end
+
+test("footer button hover: a disabled primary keeps its rest fill under the pointer", function()
+  local m, Skin = F.env()
+  local S = F.owner(Skin, "LootHistory", "obsidian")
+  local b, on = primaryButton(m), true
+  rawset(b, "IsEnabled", function() return on end)
+  S.Button(b, { primary = true })
+  on = false; b:__fire("OnDisable")
+  b:__fire("OnEnter")
+  assertEqual(F.rgba(m.__paint(b).backdropColor), F.tok(Skin, "obsidian", "btnPrimary.bg"), "no hover fill while disabled")
+  on = true; b:__fire("OnEnable")
+  b:__fire("OnEnter")
+  assertEqual(F.rgba(m.__paint(b).backdropColor), F.tok(Skin, "obsidian", "btnPrimary.hoverBg"), "enabled, it hovers")
+  on = false; b:__fire("OnDisable")
+  assertEqual(F.rgba(m.__paint(b).backdropColor), F.tok(Skin, "obsidian", "btnPrimary.bg"), "disabled while hovered: rest")
+end)
+
+test("footer button hover: a primary whose fill is remapped hovers only by a remapped hoverBg", function()
+  -- `opts.tokens.bg` alone (a danger button): the library's hover fill would flash another color,
+  -- so the fill stays; `hoverBg` remapped too, the hover paints that token.
+  local m, Skin = F.env()
+  local S = F.owner(Skin, "LootHistory", "obsidian")
+  local b = primaryButton(m)
+  S.Button(b, { primary = true, tokens = { bg = "sem.bad" } })
+  b:__fire("OnEnter")
+  assertEqual(F.rgba(m.__paint(b).backdropColor), F.tok(Skin, "obsidian", "sem.bad"), "bg alone: no hover fill")
+  b:__fire("OnLeave")
+  local c = primaryButton(m)
+  S.Button(c, { primary = true, tokens = { bg = "sem.bad", hoverBg = "sem.off" } })
+  c:__fire("OnEnter")
+  assertEqual(F.rgba(m.__paint(c).backdropColor), F.tok(Skin, "obsidian", "sem.off"), "hoverBg remapped: that token")
+  c:__fire("OnLeave")
+  assertEqual(F.rgba(m.__paint(c).backdropColor), F.tok(Skin, "obsidian", "sem.bad"), "and back")
+end)
+
+test("footer button hover: a primary with no backdrop repaints its fill region, the gradient included", function()
+  local m, Skin = F.env()
+  local S = F.owner(Skin, "LootHistory", "ember")
+  local b = m.CreateFrame("Button", nil, m.UIParent)
+  rawset(b, "SetBackdrop", nil)
+  b.text = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  S.Button(b, { primary = true })
+  local function top()
+    local g = m.__paint(F.region(Skin, b, "fill")).gradient
+    return F.rgba({ g.max.r, g.max.g, g.max.b, g.max.a })
+  end
+  assertEqual(top(), F.tok(Skin, "ember", "btnPrimary.bgTop"), "at rest")
+  b:__fire("OnEnter")
+  assertEqual(top(), F.tok(Skin, "ember", "btnPrimary.hoverBgTop"), "under the pointer")
+  b:__fire("OnLeave")
+  assertEqual(top(), F.tok(Skin, "ember", "btnPrimary.bgTop"), "at rest again")
 end)

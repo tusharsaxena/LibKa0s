@@ -82,13 +82,20 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- least 20 ΔE00 off its rest label, legible on its fill (tests/test_footer_button_hover.lua). Azeroth's
 -- `btn.hover` is #FFF800, its link's saturated twin (white stood 15.1 off its cream, the link 19.1);
 -- WoW Midnight's `btnPrimary.hover` is its link #FFC94A (it was the white label, 0.0). Obsidian,
--- Glass, Ember and WoW Forever keep their primary hover: an accent fill no palette label clears.
+-- Glass, Ember and WoW Forever kept their primary hover: an accent fill no palette label clears (an
+-- exemption SR2-L5 ended).
 -- Then (SR2-L4, smoke round 2's owner answer of 2026-11-17, still minor 10): every flat popup, menu
 -- and tooltip edge is 1px too. Azeroth's popup, menu and tooltip edges and WoW Midnight's popup and
 -- menu edges were 2px; WoW Default's tooltip edge was declared 2px, though a tooltip's edge size is
 -- read in no skin (`tipBorder` feeds `tooltip.border`, a color, and S.Tooltip recolors the frame's
 -- own backdrop), so its declaration now says what draws. No color moves; the nine-slice edges of
 -- Glass and WoW Default are untouched.
+-- Then (SR2-L5, the owner's option C of the SR2-L3 review call, still minor 10): a primary button
+-- hovers by its fill, not its label (SkinPaintControls minor 18). Each skin's `btnPrimary.hoverBg`
+-- (PRIMARY_HOVER below) is a step of its own primary fill, a gradient pair where that fill is one,
+-- at least 20 ΔE00 off it with `btnPrimary.text` reading on it at least as well as at rest, or
+-- 4.5:1 (tests/test_footer_button_hover.lua). `btnPrimary.hover` keeps its value for a host that
+-- reads it; no library painter does.
 local OTHERS_MINOR = 10
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
@@ -220,19 +227,20 @@ local function blend(a, b)
   return { (a[1] + b[1]) / 2, (a[2] + b[2]) / 2, (a[3] + b[3]) / 2, ((a[4] or 1) + (b[4] or 1)) / 2 }
 end
 
---- Write one value. A gradient writes its two stops to `<stem>.bgTop` / `<stem>.bgBottom` where
---- the schema has them, and their blend to the flat token; a flat fill clears the stops Ka0s
---- Default sets (`false`), so its tab gradient never shows through another skin's flat tabs.
+--- Write one value. A gradient writes its two stops to `<name>Top` / `<name>Bottom` (a fill token,
+--- `<stem>.bg` or, SR2-L5, `<stem>.hoverBg`) where the schema has them, and their blend to the flat
+--- token; a flat fill clears the stops Ka0s Default sets (`false`), so its tab gradient never shows
+--- through another skin's flat tabs.
 local function put(out, name, v)
-  local stem = name:match("^(.+)%.bg$")
-  local top = stem and stem .. ".bgTop"
+  local fill = name:match("%.bg$") or name:match("%.hoverBg$")
+  local top, bottom = fill and name .. "Top", fill and name .. "Bottom"
   if type(v) == "table" and v.top then
     out[name] = blend(v.top, v.bottom)
-    if top and lib.__schemaIndex[top] then out[top], out[stem .. ".bgBottom"] = v.top, v.bottom end
+    if top and lib.__schemaIndex[top] then out[top], out[bottom] = v.top, v.bottom end
     return
   end
   out[name] = v
-  if top and KA0S[top] ~= nil then out[top], out[stem .. ".bgBottom"] = false, false end
+  if top and KA0S[top] ~= nil then out[top], out[bottom] = false, false end
 end
 
 local function putRow(out, row, v)
@@ -316,6 +324,23 @@ local HUD_SIZE = {
 local HUD_SHADOW = {
   obsidian = hex("#000000"), azeroth = hex("#1a110a"), glass = rgba(0, 0, 0, 0.6), contrast = hex("#000000"),
   ember = hex("#140a07"), wow = hex("#000000"), midnight = hex("#08091a"), forever = hex("#0a0908"),
+}
+
+-- Each skin's primary hover fill (SR2-L5): a step of its own `btnPrimary.bg`, typed as that is (a
+-- gradient pair where the fill is one, each stop stepped alike), at least 20 ΔE00 off the rest fill
+-- (a gradient read as the mean of its stops) with `btnPrimary.text` reading on it at least as well as
+-- at rest, or 4.5:1. A bright fill under a white label steps darker, since a lighter one loses the
+-- label (Obsidian's blue, Ember's orange, WoW Forever's tan); Glass's lavender under its dark label
+-- steps lighter, High Contrast's black to a gray; the deep reds and violet step darker still.
+local PRIMARY_HOVER = {
+  obsidian = hex("#184E79"),
+  azeroth = grad(hex("#330B08"), hex("#1D0503")),
+  glass = hex("#EAE2FF"),
+  contrast = hex("#4D4D4D"),
+  ember = grad(hex("#773616"), hex("#58200A")),
+  wow = grad(hex("#551109"), hex("#320603")),
+  midnight = grad(hex("#2E2251"), hex("#181133")),
+  forever = hex("#594632"),
 }
 
 -- Palette colors several tables below share (hoisted at minor 7 for HUD_LOOK).
@@ -416,6 +441,9 @@ lib.RETIRED_FONTS = { ["Ka0s Friz Quadrata TT"] = "Ka0s Ubuntu" }
 
 local function register(key, label, desc, swatches, mock, extra)
   local tokens = translate(mock, extra)
+  if tokens["btnPrimary.hoverBg"] == nil and PRIMARY_HOVER[key] then
+    put(tokens, "btnPrimary.hoverBg", PRIMARY_HOVER[key])
+  end
   if tokens["hud.font"] == nil then tokens["hud.font"] = HUD_FACE[key] end
   if tokens["hud.fontSize"] == nil then tokens["hud.fontSize"] = HUD_SIZE[key] end
   if tokens["hud.shadow"] == nil then tokens["hud.shadow"] = HUD_SHADOW[key] end

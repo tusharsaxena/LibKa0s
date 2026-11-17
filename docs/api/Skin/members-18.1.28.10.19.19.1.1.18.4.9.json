@@ -1,6 +1,6 @@
 {
   "major": "LibKa0s-Skin-1.0",
-  "versionKey": "18.1.28.10.19.19.1.1.17.4.9",
+  "versionKey": "18.1.28.10.19.19.1.1.18.4.9",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Skin", "minor": 18 },
@@ -11,7 +11,7 @@
     { "file": "SkinPaintExtras", "minor": 19 },
     { "file": "SkinPaintHud", "minor": 1 },
     { "file": "SkinAceConfirm", "minor": 1 },
-    { "file": "SkinPaintControls", "minor": 17 },
+    { "file": "SkinPaintControls", "minor": 18 },
     { "file": "SkinEUI", "minor": 4 },
     { "file": "SkinAce", "minor": 9 }
   ],
