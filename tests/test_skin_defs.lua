@@ -384,6 +384,56 @@ test("skin defs: WoW Midnight is flat with a 1px gold edge and gradients, no Bli
   end
 end)
 
+-- The edges a skin draws from art rather than as a flat line, by name: Glass's and WoW Default's
+-- nine-slices on the window, popups and menus, and Ka0s Default's popup, whose `false` style keeps the
+-- frame's own art (it resolves to nil). Every other window, popup, menu and tooltip edge is flat.
+local ART_EDGES = {
+  ["glass.win"] = "nine:Ka0s Glass", ["glass.popup"] = "nine:Ka0s Glass", ["glass.menu"] = "nine:Ka0s Glass",
+  ["wow.win"] = "nine:Blizzard Dialog", ["wow.popup"] = "nine:Blizzard Dialog",
+  ["wow.menu"] = "nine:Blizzard Dialog", ["ka0s.popup"] = false,
+}
+
+--- Each mockup skin's declared tooltip edge, `tipBorder = edge(size, "style", ...)` in
+--- SkinDefsOthers.lua. No token carries it (`tooltip.border` is the color alone), so it is read where
+--- it is declared, and a declaration that says 2px where the paint draws the frame's own is caught.
+local function tipEdges()
+  local fh = assert(io.open("LibKa0s/SkinDefsOthers.lua", "rb"))
+  local src = fh:read("*a")
+  fh:close()
+  local out = {}
+  for key, body in src:gmatch('\nregister%("(%w+)"(.-)\n  }%)') do
+    local size, style = body:match('tipBorder%s*=%s*edge%((%d+),%s*"([^"]+)"')
+    out[key] = { size = tonumber(size), style = style }
+  end
+  return out
+end
+
+test("skin defs: every flat window, popup, menu and tooltip edge is 1px, in every skin", function()
+  -- SR2-L4 of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS (smoke round 2, the owner's
+  -- answer of 2026-11-17): every skin that does not draw its border from art draws a 1px line, as
+  -- SR2-L2 did for windows. red under: Azeroth's 2px popup, menu and tooltip edges, WoW Midnight's
+  -- 2px popup and menu edges, and WoW Default's declared 2px tooltip edge.
+  local Skin, tips = skinLib(), tipEdges()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    for _, stem in ipairs({ "win", "popup", "menu" }) do
+      local art = ART_EDGES[key .. "." .. stem]
+      if art ~= nil then
+        assertEqual(t[stem .. ".borderStyle"] or false, art, key .. ": " .. stem .. " draws its edge from art")
+      else
+        assertEqual(t[stem .. ".borderStyle"], "flat", key .. ": " .. stem .. " is flat")
+        assertEqual(t[stem .. ".borderSize"], 1, key .. ": " .. stem .. " edge is 1px")
+      end
+    end
+    if key ~= "ka0s" then   -- Ka0s Default declares a tooltip color and no edge (SkinDefs.lua)
+      local tip = tips[key]
+      assertTrue(tip ~= nil and tip.size ~= nil, key .. ": a tipBorder declared")
+      assertEqual(tip.style, "flat", key .. ": tooltip edge is flat")
+      assertEqual(tip.size, 1, key .. ": tooltip edge is 1px")
+    end
+  end
+end)
+
 test("skin defs: only WoW Default names Blizzard art", function()
   local Skin = skinLib()
   for _, key in ipairs(KEYS) do

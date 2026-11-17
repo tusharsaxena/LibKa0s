@@ -83,6 +83,12 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- `btn.hover` is #FFF800, its link's saturated twin (white stood 15.1 off its cream, the link 19.1);
 -- WoW Midnight's `btnPrimary.hover` is its link #FFC94A (it was the white label, 0.0). Obsidian,
 -- Glass, Ember and WoW Forever keep their primary hover: an accent fill no palette label clears.
+-- Then (SR2-L4, smoke round 2's owner answer of 2026-11-17, still minor 10): every flat popup, menu
+-- and tooltip edge is 1px too. Azeroth's popup, menu and tooltip edges and WoW Midnight's popup and
+-- menu edges were 2px; WoW Default's tooltip edge was declared 2px, though a tooltip's edge size is
+-- read in no skin (`tipBorder` feeds `tooltip.border`, a color, and S.Tooltip recolors the frame's
+-- own backdrop), so its declaration now says what draws. No color moves; the nine-slice edges of
+-- Glass and WoW Default are untouched.
 local OTHERS_MINOR = 10
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
@@ -476,7 +482,8 @@ register("obsidian", "Obsidian", "True black and flat, hairline edges, one cool 
 -- (SR2-L2: the gold its inner rule drew, under a #6b4a22 leather edge until then), parchment text, gold headings and accent, Open Sans Semibold under Open Sans Bold titles
 -- (minor 18, D-06; Vollkorn from minor 11, Cinzel titles over an Atkinson body until then); leather buttons, and
 -- the red wax seal kept for the primary button and the selected tab. As a dark skin it inherits Ka0s
--- Default's semantic, quality, tooltip and chart colors.
+-- Default's semantic, quality, tooltip and chart colors. Its popups, menus and tooltips wear a 1px
+-- leather #6b4a22 edge (SR2-L4; 2px until then).
 local AZ_LEATHER = hex("#2B1D12")
 local AZ_TEXT, AZ_WAX = hex("#E9DDBC"), grad(hex("#a3241a"), hex("#5e1009"))
 register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a red wax seal, Open Sans type.",
@@ -503,8 +510,8 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
     navBg = rgba(0, 0, 0, 0.25), navBorder = edge(1, "flat", AZ_EDGE), navText = AZ_GOLD,
     navSelBg = hex("#7a1a10"), navSelText = hex("#FFE7A8"), navSelBar = CLEAR,
     drawerBg = hex("#3a2614"), drawerBorder = edge(1, "flat", AZ_EDGE), drawerText = AZ_TEXT,
-    popBg = AZ_LEATHER, popBorder = edge(2, "flat", AZ_EDGE), popRadius = 0,
-    tipBg = hex("#1c130b"), tipBorder = edge(2, "flat", AZ_EDGE), tipText = AZ_TEXT,
+    popBg = AZ_LEATHER, popBorder = edge(1, "flat", AZ_EDGE), popRadius = 0,
+    tipBg = hex("#1c130b"), tipBorder = edge(1, "flat", AZ_EDGE), tipText = AZ_TEXT,
     tipLevel = hex("#F5C542"), tipMuted = hex("#B8A07A"),
     footBg = hex("#1a110a"),
   }, {
@@ -728,7 +735,7 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
     drawerText = hex("#FFD100"),
     popBg = hex("#1e1c19"), popBorder = edge(16, "nine:Blizzard Dialog", hex("#FFFFFF")),
     popRadius = 0,
-    tipBg = rgba(0, 0, 16, 0.92), tipBorder = edge(2, "flat", hex("#9a9a9a")),
+    tipBg = rgba(0, 0, 16, 0.92), tipBorder = edge(1, "flat", hex("#9a9a9a")),
     tipMuted = hex("#B8B8B8"),
     footBg = rgba(0, 0, 0, 0.3),
   }, {
@@ -755,7 +762,8 @@ register("wow", "WoW Default", "The vanilla client: dialog-box border, red butto
 -- titles, the titles centered (minor 18, D-06; Philosopher from minor 11, Cinzel titles over the
 -- client body until then). Minor 7 (the
 -- owner's 2026-10-26 notes): the buttons leave WoW Default's red for night violet under a gold edge,
--- and the primary button is the brighter violet of the accent.
+-- and the primary button is the brighter violet of the accent. Popups and menus wear the window's
+-- 1px gold edge (SR2-L4; 2px until then).
 local MN_BG = grad(hex("#171a2e"), hex("#0f1020"))
 register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, centered Segoe UI titles.",
   { "#171a2e", "#b08a3e", "#2a2347", "#b48cff" }, {
@@ -785,7 +793,7 @@ register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, c
     navSelBar = hex("#B48CFF"),
     drawerBg = hex("#1a1730"), drawerBorder = edge(1, "flat", hex("#5a4a26")),
     drawerText = hex("#F6D27A"),
-    popBg = MN_BG, popBorder = edge(2, "flat", MN_GOLD), popRadius = 0,
+    popBg = MN_BG, popBorder = edge(1, "flat", MN_GOLD), popRadius = 0,
     tipBg = rgba(10, 10, 26, 0.95), tipBorder = edge(1, "flat", MN_GOLD), tipLevel = hex("#F6D27A"),
     tipMuted = hex("#B4AFC8"),
     footBg = rgba(0, 0, 0, 0.3),
