@@ -82,6 +82,12 @@ Still WidgetsHeader **1** (Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES
 
 **What a consumer owes at its re-vendor:** a suite that pinned a header mark's hover at `icon.hot` (or Ka0s Default's white) re-pins it at `text.link`. Visible at re-vendor, a smoke line: every library window's header marks light in the skin's link color under the pointer.
 
+### Footer buttons (`SR2-L3`, smoke round 2, the owner's answer 3)
+
+No Widgets minor moves (Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/SR2_SMOKE_ROUND2.md`, answer 3: footer buttons follow ruling 4). The boxed text buttons along the bottom of a library window are not `Footer` marks: the skin picker's Apply and Apply to all are `S.Button`, the icon browser's Choose and Cancel are AceGUI Buttons painted by SkinAce, and the sim panel's footer is its own (the Sim document). Each keeps its hover glow, and its label lights in a color at least 20 ΔE00 off its rest in every skin, legible on its fill (the Skin document, `tests/test_footer_button_hover.lua`), out of the skin's tokens, so nothing here changes. `Footer`'s own marks are icon marks, as a HUD strip's are, and keep `icon.tint` / `icon.hot`.
+
+**What a consumer owes at its re-vendor:** nothing in code. A suite that pinned Azeroth's `btn.hover` white, WoW Midnight's `btnPrimary.hover` white, or the sim panel's button hover at `text.accent` re-pins it. Visible, a smoke line: a footer button's label turns clearly another color on hover, in every skin but the four exempt primaries.
+
 ### What a consumer owes at 27.2.7.14.1.7.8.6.1
 
 - A host whose tests load library files by name adds `WidgetsHeader.lua` after `WidgetsCopyWindow.lua` (PGFE, WhatGroup and the Skin Tester's hand-written loaders).

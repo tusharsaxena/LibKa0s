@@ -276,6 +276,8 @@ local PINS = {
   { "DebugLogWindow.lua", "BAR_W", "scroll.width" },
   { "PerfPanel.lua", "CMD_COLOR", "text.faint" }, { "SimPanel.lua", "CMD_COLOR", "text.faint" },
   { "SimPanel.lua", "HOVER_CANCEL", "sem.stepCancelHot" }, { "SimPanel.lua", "HOVER_GOLD", "text.accent" },
+  -- SR2-L3 (smoke round 2, answer 3): a footer button hovers the link color.
+  { "SimPanel.lua", "HOT_LINK", "text.link" },
 }
 
 test("skin: Ka0s Default equals the file-local constants it replaces", function()

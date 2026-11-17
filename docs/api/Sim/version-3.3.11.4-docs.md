@@ -32,6 +32,8 @@
 
 **What a consumer owes at its re-vendor:** nothing. A suite that counted the panel's title-band frames counts one more.
 
+**Amended before the tag, smoke round 2 (`SR2-L3`, the owner's answer 3 of Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/SR2_SMOKE_ROUND2.md`), still `SimPanelRender.lua` **4** and `SimPanel.lua` **11**:** the panel's footer buttons (the picker's Start, the controls) light their label in `text.link` under the pointer, where they lit `text.accent` (TOKENS `hot`; an owner-less panel's `DEFAULT.hot` is `HOT_LINK`, Ka0s Default's orange, where it was gold). Under Azeroth `text.accent` stood 16.3 ΔE00 off the label's `sem.stepReady`; `text.link` stands at least 20 off it in every skin (`tests/test_footer_button_hover.lua`). The step rows still hover `text.accent`. **What a consumer owes:** a suite that pinned a sim button's hover gold or at `text.accent` re-pins it at `text.link`.
+
 ## What changed at version 2.3.11.3: the panel's tooltips go through the placers (`LK-92B`, LibKa0s#92)
 
 Still `SimPanel.lua` minor **11** (one bump for the release). WowAddonStandards v2.112.0 (standalone-windows, *Tooltip placement*): the step panel is a library-drawn window, the library's to move in the same release. The panel's `showTip`, which every control and every step row's tooltip goes through (`d.tooltip` of the step panel), is owned at `ANCHOR_NONE`, filled, shown, and then placed **beside the panel's window group** by `LibKa0s-Tooltip-1.0`'s `PlaceBeside` (the group `GroupOf` finds: the panel, the outermost frame under UIParent): `TOPLEFT` at its right edge + 2 when it fits, else `TOPRIGHT` at its left edge - 2, level with the control's top. It was `SetOwner(control, "ANCHOR_RIGHT")`, over the panel. With unreadable geometry, or no Tooltip major, it attaches above the control (`SR-L1`). No member and no string moves. **A consumer owes nothing** at its re-vendor; it is a smoke line in every host with a sim panel. A host whose tests load library files by name adds `Tooltip.lua` after `CorePixel.lua`.
@@ -642,8 +644,8 @@ action is a verb or the click-ahead, so a click prints exactly what typing print
   started through the member); its tooltip names the verb it sends. There is **no Run all**: a
   start from the picker or the Start row, and a Restart, play on their own. `RESTART` and `STOP`
   are always enabled. Every control is a verb.
-- **The button** is the library's own: a Core-skinned box with a centered label, gold under the
-  pointer, gray while disabled, and a GameTooltip naming its typed command, shown while disabled
+- **The button** is the library's own: a Core-skinned box with a centered label, the link color
+  under the pointer (`text.link`, Ka0s Default's orange, from `SR2-L3`; gold before), gray while disabled, and a GameTooltip naming its typed command, shown while disabled
   too (minor 3). There is no
   `d.panel.button` and no `d.panel.tooltip` (OWNER_SCOPE C.7).
 

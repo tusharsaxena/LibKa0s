@@ -78,6 +78,11 @@ if lib.__defsShellMinor ~= lib.MINOR or not lib.skins.ka0s then return end   -- 
 -- inner rule, as WoW Forever's is. WoW Midnight's 2px gold over a #3d2f12 rule is 1px gold; Azeroth's
 -- 1px edge takes its rule's gold #8a6a36 (`AZ_EDGE` stays every other edge's), and Ember's the amber
 -- #955727 its #c98a3a .45 rule read as over #6a2e17. No popup, menu or tooltip edge moves.
+-- Then (SR2-L3, smoke round 2's answer 3, still minor 10): a footer button's hovered label stands at
+-- least 20 ΔE00 off its rest label, legible on its fill (tests/test_footer_button_hover.lua). Azeroth's
+-- `btn.hover` is #FFF800, its link's saturated twin (white stood 15.1 off its cream, the link 19.1);
+-- WoW Midnight's `btnPrimary.hover` is its link #FFC94A (it was the white label, 0.0). Obsidian,
+-- Glass, Ember and WoW Forever keep their primary hover: an accent fill no palette label clears.
 local OTHERS_MINOR = 10
 -- Paired on the SHELL's minor as well as this file's own: see SkinDefs.lua.
 if lib.__othersMinor and lib.__othersMinor >= OTHERS_MINOR
@@ -505,7 +510,7 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
   }, {
     ["text.heading"] = AZ_GOLD, ["text.headingAlt"] = hex("#D4A84A"),
     ["text.disabled"] = hex("#8A7A60"), ["text.linkHot"] = hex("#FFF6C8"),
-    ["btn.hover"] = hex("#FFFFFF"), ["btnPrimary.hover"] = hex("#FFFFFF"), ["close.hot"] = hex("#FF6B4A"),
+    ["btnPrimary.hover"] = hex("#FFFFFF"), ["close.hot"] = hex("#FF6B4A"),
     ["drawer.bgOpen"] = hex("#4a3018"), ["drawer.boxBg"] = hex("#1c130b"),
     ["drawer.summarySet"] = AZ_GOLD, ["drawer.textSet"] = AZ_GOLD,
     ["card.bg"] = hex("#3a2614"), ["card.border"] = AZ_EDGE,
@@ -516,6 +521,9 @@ register("azeroth", "Azeroth", "Dark tooled leather, parchment text, gold and a 
     -- Its gold accent sat 12.9 ΔE00 off its tan rest: the hover is a brighter gold, the link's own
     -- hover its cream (SR2-L1).
     ["text.link"] = hex("#FFEB33"),
+    -- A push button's white hover sat 15.1 ΔE00 off its cream label, and the link 19.1: the hover is
+    -- the link's saturated twin (SR2-L3).
+    ["btn.hover"] = hex("#FFF800"),
   })
 
 -- ── Glass ── mockup `glass`. Manrope in the mockup; Avant Garde, the owner's pick, stands for it
@@ -792,6 +800,8 @@ register("midnight", "WoW Midnight", "Night blue and violet under a gold edge, c
     ["scroll.thumbOff"] = MN_GOLD,
     -- Its violet sat 18.5 ΔE00 off its lavender rest: the hover is its gold (SR2-L1).
     ["text.link"] = hex("#FFC94A"),
+    -- A primary button's hover was its white label (0.0 ΔE00): it lights in the link's gold (SR2-L3).
+    ["btnPrimary.hover"] = hex("#FFC94A"),
   })
 
 -- ── WoW Forever ── mockup `forever`, the EllesmereUI-on-WoW-Forever look (OWNER_SCOPE R4): warm

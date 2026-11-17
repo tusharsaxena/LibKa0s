@@ -305,7 +305,7 @@ test("tool windows skin: a registered owner's sim panel paints its window, rows 
   assertEqual(rgba(survey(m, start).backdropColor), tok(Skin, "obsidian", "win.bg"), "the Start button")
   assertEqual(rgba(survey(m, start.label).textColor), tok3(Skin, "obsidian", "sem.stepReady"), "its label")
   start:__fire("OnEnter")
-  assertEqual(rgba(survey(m, start.label).textColor), tok3(Skin, "obsidian", "text.accent"), "its hover")
+  assertEqual(rgba(survey(m, start.label).textColor), tok3(Skin, "obsidian", "text.link"), "its hover (SR2-L3)")
   start:__fire("OnLeave")
   Skin:SetChoice(OWNER, "ka0s", "azeroth")
   assertEqual(rgba(survey(m, f).backdropColor), tok(Skin, "azeroth", "win.bg"), "a switch repaints the window")
