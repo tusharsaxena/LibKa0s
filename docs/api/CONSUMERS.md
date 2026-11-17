@@ -115,6 +115,8 @@ smoke round's color and band changes (`SR-L3`: `close.rest` follows `icon.tint`,
 `list.header.bg` in every skin) move token values, not members, so no census row moves for them either. Nor does smoke
 round 2 (`SR2-L1`: `text.link` in Azeroth, Glass, WoW Midnight and WoW Forever; `SR2-L2`: 1px window edges and no
 `win.inner` in WoW Midnight, Azeroth and Ember, of `SR2_SMOKE_ROUND2.md`): token values again, in `SkinDefsOthers.lua` minor 10.
+`SR2-L3` (footer button hover: Azeroth's `btn.hover`, WoW Midnight's `btnPrimary.hover`, the sim panel's buttons on
+`text.link`) moves values too, in SkinDefsOthers minor 10, SimPanel minor 11 and SimPanelRender minor 4, and no member.
 
 **v1.99.0, not in the census (2026-11-14).** The release adds a major,
 `LibKa0s-WaypointArrow-1.0` (its lib-level members in `docs/api/WaypointArrow/members-1.1.json`, the descriptor's
