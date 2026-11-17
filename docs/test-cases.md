@@ -1498,30 +1498,40 @@ Total.
 - skin button contrast: a close button's glyph painted faded is drawn opaque on a hover and after it
 - skin button contrast: every skin's enabled button label holds 3:1 on its fill, well clear of disabled
 
-### test_footer_button_hover.lua (33)
+### test_footer_button_hover.lua (46)
 
 - footer button hover: a push button's hovered label is clearly another color than its rest in every skin
-- footer button hover: a primary button's hovered label is too, but where its fill is the accent
-- footer button hover: an exempt primary is one the link color cannot light
+- footer button hover: a primary button's hovered fill is clearly another color than its rest in every skin
+- footer button hover: a primary's label reads on its hover fill at least as well as at rest, or 4.5:1
+- footer button hover: a primary's hover fill is a gradient exactly where its rest fill is one
 - footer button hover: the retuned hovers are the link or its own family
 - footer button hover: the sim panel's controls hover in the link color, clear of their rest
-- footer button hover: the skin picker's Apply and Apply to all light on enter, rest on leave (ka0s)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (ka0s)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (ka0s)
 - footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (ka0s)
-- footer button hover: the skin picker's Apply and Apply to all light on enter, rest on leave (obsidian)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (obsidian)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (obsidian)
 - footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (obsidian)
-- footer button hover: the skin picker's Apply and Apply to all light on enter, rest on leave (azeroth)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (azeroth)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (azeroth)
 - footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (azeroth)
-- footer button hover: the skin picker's Apply and Apply to all light on enter, rest on leave (glass)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (glass)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (glass)
 - footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (glass)
-- footer button hover: the skin picker's Apply and Apply to all light on enter, rest on leave (contrast)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (contrast)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (contrast)
 - footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (contrast)
-- footer button hover: the skin picker's Apply and Apply to all light on enter, rest on leave (ember)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (ember)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (ember)
 - footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (ember)
-- footer button hover: the skin picker's Apply and Apply to all light on enter, rest on leave (wow)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (wow)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (wow)
 - footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (wow)
-- footer button hover: the skin picker's Apply and Apply to all light on enter, rest on leave (midnight)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (midnight)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (midnight)
 - footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (midnight)
-- footer button hover: the skin picker's Apply and Apply to all light on enter, rest on leave (forever)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (forever)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (forever)
 - footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (forever)
 - footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (ka0s)
 - footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (obsidian)
@@ -1533,6 +1543,9 @@ Total.
 - footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (midnight)
 - footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (forever)
 - footer button hover: an owner-less sim panel's Start hovers Ka0s Default's link orange
+- footer button hover: a disabled primary keeps its rest fill under the pointer
+- footer button hover: a primary whose fill is remapped hovers only by a remapped hoverBg
+- footer button hover: a primary with no backdrop repaints its fill region, the gradient included
 
 ### test_skin_paint.lua (46)
 
@@ -5671,7 +5684,7 @@ Total.
 | test_skin_host_gaps.lua | 46 |
 | test_skin_width_parity.lua | 18 |
 | test_skin_button_contrast.lua | 10 |
-| test_footer_button_hover.lua | 33 |
+| test_footer_button_hover.lua | 46 |
 | test_skin_paint.lua | 46 |
 | test_skin_paint_controls.lua | 35 |
 | test_skin_eui.lua | 30 |
@@ -5841,4 +5854,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4931** |
+| **Total** | **4944** |

@@ -119,6 +119,13 @@ round 2 (`SR2-L1`: `text.link` in Azeroth, Glass, WoW Midnight and WoW Forever; 
 `text.link`) moves values too, in SkinDefsOthers minor 10, SimPanel minor 11 and SimPanelRender minor 4, and no member.
 `SR2-L4` (1px popup, menu and tooltip edges in Azeroth and WoW Midnight, WoW Default's declared tooltip edge) moves
 values alone, in SkinDefsOthers minor 10.
+`SR2-L5` (a primary button hovers by its fill) adds the tokens `btnPrimary.hoverBg`, `btnPrimary.hoverBgTop` and
+`btnPrimary.hoverBgBottom` (SkinDefs minor 28, SkinDefsOthers minor 10) and moves `S.Button`'s primary hover in
+SkinPaintControls minor 18 ([the document](Skin/version-18.1.28.10.19.19.1.1.18.4.9-docs.md)): tokens and a behavior,
+no member, so no census row moves. **A host owes:** a suite that pins a primary's hovered label at `btnPrimary.hover`,
+its fill unchanged under the pointer, or a list of the schema's names re-pins it (the CHANGELOG's re-pin list), and a
+host skin that sets its own `btnPrimary.bg` declares a `btnPrimary.hoverBg` beside it, since an absent token resolves to
+Ka0s Default's (its burnt orange).
 
 **v1.99.0, not in the census (2026-11-14).** The release adds a major,
 `LibKa0s-WaypointArrow-1.0` (its lib-level members in `docs/api/WaypointArrow/members-1.1.json`, the descriptor's
