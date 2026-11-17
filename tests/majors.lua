@@ -23,6 +23,11 @@ local MAJORS = {
     },
   },
   {
+    major = "LibKa0s-Tooltip-1.0",
+    files = { "Tooltip" },
+    primary = "Tooltip",
+  },
+  {
     major = "LibKa0s-Env-1.0",
     files = { "Env" },
     primary = "Env",
@@ -123,15 +128,18 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Widgets-1.0",
-    files = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete", "WidgetsCopyWindow" },
+    files = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart", "WidgetsAutocomplete", "WidgetsCopyWindow", "WidgetsHeader", "WidgetsBar" },
     primary = "Widgets",
     paired = {
       { file = "WidgetsDropdown",   minorField = "__dropdownMinor", probeField = "__dropdownShellMinor" },
       { file = "WidgetsReorder",    minorField = "__reorderMinor", probeField = "__reorderShellMinor" },
       { file = "WidgetsDragHandle", minorField = "__dragMinor",    probeField = "__dragShellMinor" },
+      { file = "WidgetsDragHandleTip", minorField = "__dragTipMinor", probeField = "__dragTipShellMinor" },
       { file = "WidgetsLineChart",  minorField = "__chartMinor",   probeField = "__chartShellMinor" },
       { file = "WidgetsAutocomplete", minorField = "__autocompleteMinor", probeField = "__autocompleteShellMinor" },
       { file = "WidgetsCopyWindow", minorField = "__copyMinor", probeField = "__copyShellMinor" },
+      { file = "WidgetsHeader", minorField = "__headerMinor", probeField = "__headerShellMinor" },
+      { file = "WidgetsBar", minorField = "__barMinor", probeField = "__barShellMinor" },
     },
   },
   {
@@ -157,7 +165,7 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Options-1.0",
-    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" },
+    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerQueue", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" },
     primary = "Options",
     paired = {
       { file = "OptionsRegistry", minorField = "__registryMinor", probeField = "__registryShellMinor" },
@@ -177,6 +185,7 @@ local MAJORS = {
       { file = "OptionsKeybinds", minorField = "__keybindsMinor", probeField = "__keybindsShellMinor" },
       { file = "OptionsAppearance", minorField = "__appearanceMinor", probeField = "__appearanceShellMinor" },
       { file = "OptionsSkinPicker", minorField = "__pickerMinor", probeField = "__pickerShellMinor" },
+      { file = "OptionsSkinPickerQueue", minorField = "__pickerQueueMinor", probeField = "__pickerQueueShellMinor" },
       { file = "OptionsSkinPickerRows", minorField = "__pickerRowsMinor", probeField = "__pickerRowsShellMinor" },
       { file = "OptionsSwitch", minorField = "__switchMinor", probeField = "__switchShellMinor" },
       { file = "OptionsMedia", minorField = "__mediaMinor", probeField = "__mediaShellMinor" },

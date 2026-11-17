@@ -570,7 +570,7 @@ end)
 
 test("dbg: DebugLog re-exports Core's close button so a host has one factory, not two", function()
   -- Deliberately NOT an identity check: the re-export is a forwarder, so that a Core upgraded
-  -- under an unchanged DebugLog is the one that answers (see the load-order cases below).
+  -- under an unchanged DebugLog is the one that answers (see tests/test_debuglog_coreskew.lua).
   -- What must hold is that there is still exactly ONE implementation, reached through Core.
   local real = T.core.MakeCloseButton
   local seen
@@ -582,69 +582,6 @@ test("dbg: DebugLog re-exports Core's close button so a host has one factory, no
   assertEqual(seen[2], "F", "onClick forwarded")
 end)
 
-
--- ── the close-button factory across a Core upgrade ─────────────────────────────────────────
---
--- LibStub upgrades a major IN PLACE: the `core` TABLE a module stashed at load stays the same
--- object while the functions on it are replaced. A host carrying two vendored copies can therefore
--- end up with a newer Core.lua and an unchanged DebugLog.lua — and if DebugLog copied the function
--- VALUE at file-load time, its console keeps drawing the OLD Core's button while lib.MODULES.Core
--- truthfully reports the newer minor. These load real, minor-patched copies of Core in the order
--- the client would, and assert the button came from the Core that won.
-
-local Loader     = dofile("tests/_kit/loader.lua")
-local buildMocks = dofile("tests/wow_mock.lua")
-
-local CORE_SRC = Loader.readFile("LibKa0s/Core.lua")
-
--- Patch a copy's minor, stamp the library so the assertion can name which copy answered, and
--- replace the factory with one whose product carries the same stamp. Every substitution is
--- counted: a pattern that silently stopped matching would turn this into a test of nothing.
-local function coreCopy(tag, minor)
-  local function sub(src, pattern, replacement, what)
-    local out, n = src:gsub(pattern, replacement, 1)
-    assertEqual(n, 1, "patching " .. what .. " in the real Core source")
-    return out
-  end
-  -- Matched on `%d+` rather than on today's literal minor, so a routine release bump does not
-  -- break a test that has nothing to do with the change.
-  local src = sub(CORE_SRC, 'local MAJOR, MINOR = "LibKa0s%-Core%-1%.0", %d+',
-    'local MAJOR, MINOR = "LibKa0s-Core-1.0", ' .. minor, "the Core minor")
-  src = sub(src, "lib%.MAJOR, lib%.MINOR = MAJOR, MINOR",
-    'lib.MAJOR, lib.MINOR = MAJOR, MINOR lib.__coreTag = "' .. tag .. '"', "the Core tag")
-  return src .. '\nlib.MakeCloseButton = function() return { __coreTag = "' .. tag .. '" } end\n'
-end
-
-local function loadSkewed()
-  local env = buildMocks()
-  Loader.loadSource(coreCopy("OLD", 1), "OLD/Core.lua", nil, env)
-  -- Loaded against the OLD Core, before the skew is introduced, because DebugLog's NEEDS_WIDGETS
-  -- floor is read at ITS load and Widgets needs a Core of its own to attach to. The skew under
-  -- test is Core's, not Widgets'.
-  Loader.load("LibKa0s/Widgets.lua", nil, env)
-  Loader.load("LibKa0s/WidgetsDropdown.lua", nil, env)
-  Loader.load("LibKa0s/DebugLog.lua", nil, env)
-  Loader.loadSource(coreCopy("NEW", 2), "NEW/Core.lua", nil, env)
-  return env.LibStub("LibKa0s-Core-1.0"), env.LibStub("LibKa0s-DebugLog-1.0")
-end
-
-test("dbg: a newer Core loading after DebugLog supplies the console's close button", function()
-  local core, dl = loadSkewed()
-  assertEqual(core.__coreTag, "NEW", "the higher Core minor won the LibStub race")
-  assertEqual(core.MODULES.Core, 2, "and Core's own MODULES registry reports the newer file")
-  assertEqual(dl.MakeCloseButton().__coreTag, "NEW",
-    "a snapshotted function value would still be drawing the OLD Core's button")
-end)
-
-test("dbg: an instance built after the upgrade draws the newer Core's button", function()
-  local _, dl = loadSkewed()
-  local D = dl:New({
-    name = "SkewHost", title = "Skew Host", font = "Interface\\Fonts\\FRIZQT__.TTF",
-    isEnabled = function() return false end, setEnabled = function() end,
-  })
-  assertEqual(D.MakeCloseButton().__coreTag, "NEW",
-    "the per-instance re-export must inherit the forwarder, not a stale value")
-end)
 
 -- ── Add is public, ungated, and must not reach past the secret-safe seam ────────────────────
 
@@ -821,9 +758,10 @@ test("dbg: a close-button factory returning nil is survivable, as Core's own is"
 end)
 
 test("dbg: the title-bar offsets are derived from the close button's width", function()
-  -- Copy | Clear | Close read right to left, each with a six-pixel gap. Minor 3 hard-coded -30 and
+  -- Copy | Clear | settings | Close read right to left, each with a six-pixel gap (DebugLogWindow
+  -- minor 5, LibKa0s#86: the settings mark joins beside the close). Minor 3 hard-coded -30 and
   -- -78, which are correct ONLY for an 18-wide button: a host supplying a 24-wide one would have
-  -- Clear's right edge land exactly on that button's left edge and the gap would vanish.
+  -- the next mark's right edge land exactly on that button's left edge and the gap would vanish.
   --
   -- Recorded on the frame for the same reason `titleText` is: an anchor cannot be read back through
   -- the frame API, so this is the only way a host's test can see what it got.
@@ -832,8 +770,9 @@ test("dbg: the title-bar offsets are derived from the close button's width", fun
   local off = D._frameForTest.titleBarOffsets
   T.assertTrue(off ~= nil, "the computed offsets are recorded on the frame")
   assertEqual(off.close, -6)
-  assertEqual(off.clear, -30, "unchanged from minor 3 for the default 18-wide button")
-  assertEqual(off.copy, -78, "unchanged from minor 3 for the default 18-wide button")
+  assertEqual(off.settings, -30, "the settings glyph, 18 wide, beside the default 18-wide close")
+  assertEqual(off.clear, -54, "-30 - 18 - 6")
+  assertEqual(off.copy, -102, "-54 - 42 - 6, the CLEAR word's width")
 end)
 
 test("dbg: with addonName the title bar draws icons, and they are narrower than the words", function()
@@ -845,18 +784,32 @@ test("dbg: with addonName the title bar draws icons, and they are narrower than 
   local f = D._frameForTest
   T.assertTrue(f.copyButton.icon ~= nil, "Copy did not draw an icon")
   T.assertTrue(f.clearButton.icon ~= nil, "Clear did not draw an icon")
-  assertEqual(f.titleBarOffsets.clear, -30, "the close button is still 18 wide")
-  assertEqual(f.titleBarOffsets.copy, -54, "-30 - 18 - 6, where a 42-wide word gave -78")
+  assertEqual(f.titleBarOffsets.settings, -30, "the close button is still 18 wide")
+  assertEqual(f.titleBarOffsets.clear, -54, "-30 - 18 - 6")
+  assertEqual(f.titleBarOffsets.copy, -78, "-54 - 18 - 6, where a 42-wide word gave -102")
 end)
 
-test("dbg: an icon control carries NO tooltip", function()
+test("dbg: an icon control's tooltip opens above it, never under it on the log", function()
   -- Minor 9 gave them one, anchored under the control -- which put it on top of the first line of
-  -- the log, the thing the window exists to show, every time the pointer crossed the title bar.
-  -- red under: the ANCHOR_BOTTOM GameTooltip minor 9 shipped.
+  -- the log, the thing the window exists to show, every time the pointer crossed the title bar --
+  -- and the window's minor 5 then drew none. Smoke round 1's ruling 3 (SR-L2 of Ka0sAddonsCommonTasks
+  -- docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS) gives every title-bar control one, and its ruling 2 puts
+  -- each above its control (LibKa0s-Tooltip-1.0's PlaceAttached), so the log stays clear.
+  -- red under: the ANCHOR_BOTTOM GameTooltip minor 9 shipped, or the legacy `tooltipText` field.
   local D = newLog{ addonName = "TestHost" }
   D:Show()
-  assertEqual(D._frameForTest.copyButton.tooltipText, nil)
-  assertEqual(D._frameForTest.clearButton.tooltipText, nil)
+  local f = D._frameForTest
+  assertEqual(f.copyButton.tooltipText, nil)
+  assertEqual(f.clearButton.tooltipText, nil)
+  dofile("tests/fixture_title_tips.lua").record(function(rec)
+    for _, b in ipairs({ f.copyButton, f.clearButton }) do
+      rec.placed = 0
+      b:__fire("OnEnter")
+      assertEqual(rec.anchor, "ANCHOR_NONE", "owned at no anchor, never ANCHOR_BOTTOM")
+      assertEqual(rec.placed, 1, "placed above the control by the chrome rule")
+      b:__fire("OnLeave")
+    end
+  end)
 end)
 
 test("dbg: the close button is told the addon name too, not just copy and clear", function()
@@ -896,7 +849,7 @@ test("dbg: no addonName is the minor-8 title bar, word for word", function()
   D:Show()
   local f = D._frameForTest
   assertEqual(f.copyButton.icon, nil, "an icon was drawn for a host that never asked")
-  assertEqual(f.titleBarOffsets.copy, -78, "the word-width offsets")
+  assertEqual(f.titleBarOffsets.copy, -102, "the word-width offsets, past the settings glyph")
 end)
 
 test("dbg: an addonName the art does not answer for falls back to words", function()
@@ -905,10 +858,10 @@ test("dbg: an addonName the art does not answer for falls back to words", functi
   local D = newLog{ addonName = "" }
   D:Show()
   assertEqual(D._frameForTest.copyButton.icon, nil)
-  assertEqual(D._frameForTest.titleBarOffsets.copy, -78)
+  assertEqual(D._frameForTest.titleBarOffsets.copy, -102)
 end)
 
-test("dbg: a wider host close button pushes Copy and Clear out of its way", function()
+test("dbg: a wider host close button pushes settings, Clear and Copy out of its way", function()
   local D = newLog{ makeCloseButton = function()
     local b = T.mocks.__stubFrame()
     function b:GetWidth() return 24 end
@@ -917,8 +870,9 @@ test("dbg: a wider host close button pushes Copy and Clear out of its way", func
   D:Show()
   local off = D._frameForTest.titleBarOffsets
   assertEqual(off.close, -6)
-  assertEqual(off.clear, -36, "-6 - 24 - 6")
-  assertEqual(off.copy, -84, "-36 - 42 - 6")
+  assertEqual(off.settings, -36, "-6 - 24 - 6")
+  assertEqual(off.clear, -60, "-36 - 18 - 6")
+  assertEqual(off.copy, -108, "-60 - 42 - 6")
 end)
 
 test("dbg: a close button with no measurable width falls back to the library's own", function()
@@ -926,12 +880,15 @@ test("dbg: a close button with no measurable width falls back to the library's o
   -- pass. Neither may collapse the title bar onto itself.
   local D = newLog{ makeCloseButton = function() return T.mocks.__stubFrame() end }
   D:Show()
-  assertEqual(D._frameForTest.titleBarOffsets.clear, -30)
+  assertEqual(D._frameForTest.titleBarOffsets.settings, -30)
 end)
 
-test("dbg: with no close button at all the offsets are still the minor-3 defaults", function()
+test("dbg: with no close button at all the settings mark takes the corner", function()
+  -- Minor 5 (LibKa0s#86): settings is the outermost mark the factory left, so Clear and Copy land
+  -- where they stood at minor 3.
   local D = newLog{ makeCloseButton = function() return nil end }
   D:Show()
+  assertEqual(D._frameForTest.titleBarOffsets.settings, -6)
   assertEqual(D._frameForTest.titleBarOffsets.clear, -30)
   assertEqual(D._frameForTest.titleBarOffsets.copy, -78)
 end)

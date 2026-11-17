@@ -20,7 +20,7 @@ local E = dofile("tests/fixture_skin_eui.lua")
 local Bench = dofile("tests/fixture_skin_picker.lua")
 
 local OWNER = "LootHistory"
-local TOOL_FILES = { "Widgets", "WidgetsDropdown", "WidgetsCopyWindow", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
+local TOOL_FILES = { "Widgets", "WidgetsDropdown", "WidgetsCopyWindow", "WidgetsHeader", "DebugLog", "DebugLogDiagnostics", "DebugLogGates",
   "DebugLogWindow", "Lifecycle", "Perf", "PerfSampler", "PerfCommands", "PerfPanel", "Sim", "SimTimeline",
   "SimPanel", "SimPanelRender" }
 
@@ -59,6 +59,14 @@ local function env()
   for _, f in ipairs(TOOL_FILES) do files[#files + 1] = f end
   local m, Skin = F.env({ files = files })
   return arm(m), Skin
+end
+
+--- A test skin on Ka0s Default with a 2px flat window edge: since SR2-L2 (Ka0sAddonsCommonTasks
+--- docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS, smoke round 2's ruling 2) no shipped skin draws one, and the
+--- band's inset still has to follow a thicker edge.
+local function thick(Skin)
+  Skin:RegisterSkin({ key = "thick", label = "Thick", tokens = { ["win.borderSize"] = 2 } })
+  return "thick"
 end
 
 local function keys(Skin)
@@ -108,6 +116,7 @@ end
 test("header band: Shell lays the band at its own inset and title.height, in every skin", function()
   -- red under: no band frame (each host re-derived the band, PGFE's titleBand, or hard-coded 1 and 30).
   local m, Skin = env()
+  thick(Skin)
   local S = F.owner(Skin, OWNER)
   local f = F.window(m)
   S.Shell(f)
@@ -120,30 +129,30 @@ test("header band: Shell lays the band at its own inset and title.height, in eve
     seen[inset] = true
     assertTrue(F.region(Skin, f, "band") == b, key .. ": one holder, the record's")
   end
-  assertTrue(seen[1] and seen[2], "the nine skins cover a 1 px and a 2 px inset")
+  assertTrue(seen[1] and seen[2], "the nine skins and the 2px test skin cover a 1 px and a 2 px inset")
 end)
 
 test("header band: the band is kept under noTopBar, and S.Band before Shell is the same frame", function()
   local m, Skin = env()
-  local S = F.owner(Skin, OWNER, "midnight")
+  local S = F.owner(Skin, OWNER, thick(Skin))
   local f = F.window(m)
   local early = S.Band(f)
   S.Shell(f, { noTopBar = true })
   assertTrue(S.Band(f) == early, "one holder")
-  assertBandAt(early, f, 2, 30, "WoW Midnight under noTopBar")
+  assertBandAt(early, f, 2, 30, "a 2px edge under noTopBar")
   assertEqual(early:IsShown(), true)
 end)
 
 test("header band: under the EllesmereUI source the band is its 25 px bar, flush with the top", function()
   local m, Skin, eui = E.env()
   arm(m)
-  local S = E.owner(Skin, OWNER, "eui", "midnight")
+  local S = E.owner(Skin, OWNER, "eui", thick(Skin))
   local f = E.window(m)
   S.Shell(f)
   local title = f.title
   local close = m.CreateFrame("Button", nil, f)
   S.Header(f, { title = title, right = { close } })
-  assertBandAt(S.Band(f), f, 2, 30, "WoW Midnight before EllesmereUI paints")
+  assertBandAt(S.Band(f), f, 2, 30, "a 2px edge before EllesmereUI paints")
   eui.login()
   assertTrue(Skin.euiPainted[OWNER], "EllesmereUI paints the owner")
   local band = S.Band(f)

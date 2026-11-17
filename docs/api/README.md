@@ -58,6 +58,7 @@ the file you need:
 | Major | Key shape | In-game check |
 |---|---|---|
 | `LibKa0s-Core-1.0` | `<Core>.<CorePixel>` (one number through 16) | `LibStub("LibKa0s-Core-1.0").MODULES` |
+| `LibKa0s-Tooltip-1.0` | `<Tooltip>` | `LibStub("LibKa0s-Tooltip-1.0").MODULES` |
 | `LibKa0s-Env-1.0` | `<Env>` | `LibStub("LibKa0s-Env-1.0").MODULES` |
 | `LibKa0s-Compat-1.0` | `<Compat>` | `LibStub("LibKa0s-Compat-1.0").MODULES` |
 | `LibKa0s-Role-1.0` | `<Role>` | `LibStub("LibKa0s-Role-1.0").MODULES` |
@@ -73,7 +74,7 @@ the file you need:
 | `LibKa0s-Charts-1.0` | `<Charts>.<ChartsRender>` | `LibStub("LibKa0s-Charts-1.0").MODULES` |
 | `LibKa0s-Media-1.0` | `<Media>.<MediaIcons>` (one number through version 4) | `LibStub("LibKa0s-Media-1.0").MODULES` |
 | `LibKa0s-Skin-1.0` | `<Skin>.<SkinOwnerTokens>.<SkinDefs>.<SkinDefsOthers>.<SkinPaint>.<SkinPaintExtras>.<SkinPaintHud>.<SkinAceConfirm>.<SkinPaintControls>.<SkinEUI>.<SkinAce>` (six numbers through 3.3.2.1.1.1, never shipped; nine through 17.1.27.8.19.18.17.4.9) | `LibStub("LibKa0s-Skin-1.0").MODULES` |
-| `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsDropdown>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsLineChart>.<WidgetsAutocomplete>.<WidgetsCopyWindow>` (five numbers through 15.1.5.3.3, six through 25.6.13.6.8.5) | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
+| `LibKa0s-Widgets-1.0` | `<Widgets>.<WidgetsDropdown>.<WidgetsReorder>.<WidgetsDragHandle>.<WidgetsDragHandleTip>.<WidgetsLineChart>.<WidgetsAutocomplete>.<WidgetsCopyWindow>.<WidgetsHeader>.<WidgetsBar>` (five numbers through 15.1.5.3.3, six through 25.6.13.6.8.5, seven through 27.1.6.13.7.8.5, ten from v1.105.0's 27.2.7.14.1.7.8.6.1.1) | `LibStub("LibKa0s-Widgets-1.0").MODULES` |
 | `LibKa0s-DebugLog-1.0` | `<DebugLog>.<DebugLogDiagnostics>.<DebugLogGates>.<DebugLogWindow>` (three numbers through 21.4.1) | `LibStub("LibKa0s-DebugLog-1.0").MODULES` |
 | `LibKa0s-Slash-1.0` | `<Slash>.<SlashParse>` | `LibStub("LibKa0s-Slash-1.0").MODULES` |
 | `LibKa0s-Launcher-1.0` | `<Launcher>` | `LibStub("LibKa0s-Launcher-1.0").MODULES` |
@@ -113,7 +114,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [17.1](./Core/version-17.1-docs.md) | **`Core.lua` 17** (the pixel edges section moved out) · **`CorePixel.lua` 1** (new: that section, unchanged, `FU-L2`; no new member) | v1.91.0 | **Current** |
+| [18.1](./Core/version-18.1-docs.md) | **`Core.lua` 18** (the settings-opener registry: `RegisterSettingsOpener`, `HasSettings`, `OpenSettings`; LibKa0s#86, `LK-86`) · `CorePixel.lua` 1 | v1.105.0 | **Current** |
+| [17.1](./Core/version-17.1-docs.md) | **`Core.lua` 17** (the pixel edges section moved out) · **`CorePixel.lua` 1** (new: that section, unchanged, `FU-L2`; no new member) | v1.91.0 – v1.104.0 | Superseded |
 | [16](./Core/version-16-docs.md) | **`Core.lua` 16** (pixel edges, internal: `__PixelSize`, `__WatchPixels`, `__OnPixelScale`, `__PixelBackdrop`, shared by Widgets and the Skin major, `SF1-L1`; no new member) | v1.90.0 | Superseded |
 | [15](./Core/version-15-docs.md) | **`Core.lua` 15** (`MakeResizable` puts a frame anchored to another frame back on its anchor after a drag; `ApplySkin` hides `frame.divider`, no line under a title; no new member) | v1.85.0 – v1.89.0 | Superseded |
 | [14](./Core/version-14-docs.md) | `Core.lua` 14 (`MakeResizable`'s `opts.owner`: a registered skin owner's `icon.grip` tints the grip's art, live; no new member) | v1.81.0 – v1.84.0 | Superseded |
@@ -129,6 +131,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [4](./Core/version-4-docs.md) | `Core.lua` 4 | v1.7.0 | Superseded |
 | [3](./Core/version-3-docs.md) | `Core.lua` 3 | v1.3.0 – v1.6.3 | Superseded |
 | [2](./Core/version-2-docs.md) | `Core.lua` 2 | v1.0.0 – v1.2.0 | Superseded |
+
+### `LibKa0s-Tooltip-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./Tooltip/version-1-docs.md) | **`Tooltip.lua` 1** (the new major: `TIP_GAP`, `Own`, `PlaceBeside`, `PlaceAttached`, `PlaceLauncher`, `SetGroup`, `GroupOf`, `Replace` and the pure `__solve*`; LibKa0s#92, plan row LK-92A; `AttachTitleTip`, `CLOSE_STRINGS`, `SetCloseTip` and `CloseTip`, smoke round 1's SR-L2) | v1.105.0 | **Current** |
 
 ### `LibKa0s-Env-1.0`
 
@@ -228,7 +236,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1.1](./Charts/version-1.1-docs.md) | **`Charts.lua` 1** · **`ChartsRender.lua` 1** (new: the Insights chart renderers, LibKa0s#66) | v1.84.0 | **Current** |
+| [2.1](./Charts/version-2.1-docs.md) | **`Charts.lua` 2** (the default tooltip beside the window group, `ctx:PlaceTip`, `host.group`, the host `tip`'s fourth argument; LibKa0s#92, `LK-92B`) · `ChartsRender.lua` 1 | v1.105.0 | **Current** |
+| [1.1](./Charts/version-1.1-docs.md) | **`Charts.lua` 1** · **`ChartsRender.lua` 1** (new: the Insights chart renderers, LibKa0s#66) | v1.84.0 – v1.104.0 | Superseded |
 
 ### `LibKa0s-Media-1.0`
 
@@ -250,7 +259,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [18.1.27.9.19.19.1.1.17.4.9](./Skin/version-18.1.27.9.19.19.1.1.17.4.9-docs.md) | `Skin.lua` 18 · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 27 · **`SkinDefsOthers.lua` 9** (`__FACE_SIZES` rows for the Callout's two faces, `Ka0s Bebas Neue` and `Ka0s Russo One`) · `SkinPaint.lua` 19 · `SkinPaintExtras.lua` 19 · `SkinPaintHud.lua` 1 · `SkinAceConfirm.lua` 1 · `SkinPaintControls.lua` 17 · `SkinEUI.lua` 4 · `SkinAce.lua` 9 | unreleased (v1.97.0) | **Current** |
+| [18.1.28.10.19.19.1.1.18.4.9](./Skin/version-18.1.28.10.19.19.1.1.18.4.9-docs.md) | `Skin.lua` 18 · `SkinOwnerTokens.lua` 1 · **`SkinDefs.lua` 28** (Ka0s Default's stripe .08, hover .16, selection .26; LibKa0s#84) · **`SkinDefsOthers.lua` 10** (seven skins' `icon.hot` and two `icon.tint` values, so a mark goes hot visibly; LibKa0s#82) · `SkinPaint.lua` 19 · `SkinPaintExtras.lua` 19 · `SkinPaintHud.lua` 1 · `SkinAceConfirm.lua` 1 · **`SkinPaintControls.lua` 18** (a primary button hovers by its fill, `btnPrimary.hoverBg`; `SR2-L5`) · `SkinEUI.lua` 4 · `SkinAce.lua` 9 | v1.105.0 | **Current** |
+| [18.1.27.9.19.19.1.1.17.4.9](./Skin/version-18.1.27.9.19.19.1.1.17.4.9-docs.md) | `Skin.lua` 18 · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 27 · **`SkinDefsOthers.lua` 9** (`__FACE_SIZES` rows for the Callout's two faces, `Ka0s Bebas Neue` and `Ka0s Russo One`) · `SkinPaint.lua` 19 · `SkinPaintExtras.lua` 19 · `SkinPaintHud.lua` 1 · `SkinAceConfirm.lua` 1 · `SkinPaintControls.lua` 17 · `SkinEUI.lua` 4 · `SkinAce.lua` 9 | v1.97.0 – v1.104.0 | Superseded |
 | [18.1.27.8.19.19.1.1.17.4.9](./Skin/version-18.1.27.8.19.19.1.1.17.4.9-docs.md) | **`Skin.lua` 18** (the default skin per client: `DefaultSkin()`, `CLIENT_DEFAULTS`) · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 27 · `SkinDefsOthers.lua` 8 · `SkinPaint.lua` 19 · `SkinPaintExtras.lua` 19 · `SkinPaintHud.lua` 1 · `SkinAceConfirm.lua` 1 · `SkinPaintControls.lua` 17 · `SkinEUI.lua` 4 · `SkinAce.lua` 9 | v1.94.0 – v1.96.0 | Superseded |
 | [17.1.27.8.19.19.1.1.17.4.9](./Skin/version-17.1.27.8.19.19.1.1.17.4.9-docs.md) | `Skin.lua` 17 · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 27 · `SkinDefsOthers.lua` 8 · `SkinPaint.lua` 19 · **`SkinPaintExtras.lua` 19** (the HUD's shared looks and the confirmation box moved out) · **`SkinPaintHud.lua` 1** (new: `BarGloss`, `HudFont`, unchanged, `FU-L2`) · **`SkinAceConfirm.lua` 1** (new: AceConfigDialog's confirmation box, unchanged, `FU-L2`) · `SkinPaintControls.lua` 17 · `SkinEUI.lua` 4 · `SkinAce.lua` 9 | v1.91.0 | Superseded |
 | [17.1.27.8.19.18.17.4.9](./Skin/version-17.1.27.8.19.18.17.4.9-docs.md) | **`Skin.lua` 17** (`RegisterOwner`'s `keepScope`: another addon's skin copy never writes the owner's Scope, `SF1-L2`) · `SkinOwnerTokens.lua` 1 · `SkinDefs.lua` 27 · `SkinDefsOthers.lua` 8 · `SkinPaint.lua` 19 · `SkinPaintExtras.lua` 18 · `SkinPaintControls.lua` 17 · `SkinEUI.lua` 4 · `SkinAce.lua` 9 | v1.90.0 | Superseded |
@@ -292,7 +302,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [27.1.6.13.7.8.5](./Widgets/version-27.1.6.13.7.8.5-docs.md) | **`Widgets.lua` 27** (`W.Footer` and `W.FOOTER`, a window's 24 px footer with no fill; the mode strip's docking, `opts.dock` and `W.DockTestStrip`, under a title bar or on a HUD's top edge with the flip; the owner's 2026-11-15 window-chrome rulings) · `WidgetsDropdown.lua` 1 · `WidgetsReorder.lua` 6 · `WidgetsDragHandle.lua` 13 · `WidgetsLineChart.lua` 7 · `WidgetsAutocomplete.lua` 8 · `WidgetsCopyWindow.lua` 5 | v1.103.0 | **Current** |
+| [27.2.7.14.1.7.8.6.1.1](./Widgets/version-27.2.7.14.1.7.8.6.1.1-docs.md) | `Widgets.lua` 27 · **`WidgetsDropdown.lua` 2** (an entry's tooltip, and a host renderer's, beside its menu) · **`WidgetsReorder.lua` 7** (the handle's tooltip beside its window) · **`WidgetsDragHandle.lua` 14 and `WidgetsDragHandleTip.lua` 1, new** (the tooltip half peeled out; a strip's tooltip attached above the strip, owned by UIParent; `tooltipOwner` and `tooltipAnchor` retired) · `WidgetsLineChart.lua` 7 · `WidgetsAutocomplete.lua` 8 · **`WidgetsCopyWindow.lua` 6** (the settings mark beside the close) · **`WidgetsHeader.lua` 1, new** (`HeaderButtons`, `HeaderButton`, `HEADER`, `HEADER_STRINGS`: one strip of header marks, extras · settings · close; LibKa0s#86, `LK-86`) · **`WidgetsBar.lua` 1, new** (`Bar`, `BarStyle`, `BarCompute`, `BarText`, `BarFormatTimer`, `BarShade`, `AcquireBar`, `ReleaseBars`, `BAR`: Ka0s Skill Master's data bar, one consumer by the owner's ruling; LibKa0s#80, `LK-80`); LibKa0s#92, `LK-92B` | v1.105.0 | **Current** |
+| [27.1.6.13.7.8.5](./Widgets/version-27.1.6.13.7.8.5-docs.md) | **`Widgets.lua` 27** (`W.Footer` and `W.FOOTER`, a window's 24 px footer with no fill; the mode strip's docking, `opts.dock` and `W.DockTestStrip`, under a title bar or on a HUD's top edge with the flip; the owner's 2026-11-15 window-chrome rulings) · `WidgetsDropdown.lua` 1 · `WidgetsReorder.lua` 6 · `WidgetsDragHandle.lua` 13 · `WidgetsLineChart.lua` 7 · `WidgetsAutocomplete.lua` 8 · `WidgetsCopyWindow.lua` 5 | v1.103.0 – v1.104.0 | Superseded |
 | [26.1.6.13.7.8.5](./Widgets/version-26.1.6.13.7.8.5-docs.md) | **`Widgets.lua` 26** (the dropdown and its shared menu moved out) · **`WidgetsDropdown.lua` 1** (new: those, unchanged, `FU-L2`) · `WidgetsReorder.lua` 6 · `WidgetsDragHandle.lua` 13 · **`WidgetsLineChart.lua` 7** (the axis, the grid, the markers, the crosshair and every series in physical pixels, re-sized on a pixel-scale change; a host's `thickness` is pixels too, `FU-L1`) · `WidgetsAutocomplete.lua` 8 · `WidgetsCopyWindow.lua` 5 | v1.91.0 | Superseded |
 | [25.6.13.6.8.5](./Widgets/version-25.6.13.6.8.5-docs.md) | **`Widgets.lua` 25** (the dropdown, the search box and every menu level draw a one-physical-pixel edge, `SF1-L1`; so does the menu's divider rule, at every depth, `SF2-L1`) · **`WidgetsReorder.lua` 6** (the row box's edges, `SF2-L1`) · **`WidgetsDragHandle.lua` 13** (the strip's own edges, `SF2-L1`) · `WidgetsLineChart.lua` 6 · **`WidgetsAutocomplete.lua` 8** (the list's edge too) · `WidgetsCopyWindow.lua` 5 | v1.90.0 | Superseded |
 | [23.5.12.6.7.5](./Widgets/version-23.5.12.6.7.5-docs.md) | **`Widgets.lua` 23** (cascading `W.ContextMenu` rows: `submenu`, `radio`, `selected`, `opts.check`; one pooled frame per depth) · `WidgetsReorder.lua` 5 · `WidgetsDragHandle.lua` 12 · `WidgetsLineChart.lua` 6 · `WidgetsAutocomplete.lua` 7 · `WidgetsCopyWindow.lua` 5 | v1.87.0 – v1.89.0 | Superseded |
@@ -335,7 +346,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [22.10.1.4](./DebugLog/version-22.10.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 10** (the identity header names WaypointArrow) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.99.0 | **Current** |
+| [23.11.1.5](./DebugLog/version-23.11.1.5-docs.md) | **`DebugLog.lua` 23** (the buffer's messages plain, the colored view kept in `__view`, `REPORT_WRITTEN`; the `onSettings` field, LibKa0s#86) · **`DebugLogDiagnostics.lua` 11** (`D:Report`, `D:Serialize`, `lib.Serialize`; LibKa0s#79, `LK-79`) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 5** (a skin switch's rebuild keeps each message's colors) | v1.105.0 | **Current** |
+| [22.10.1.4](./DebugLog/version-22.10.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 10** (the identity header names WaypointArrow) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.99.0 – v1.104.0 | Superseded |
 | [22.9.1.4](./DebugLog/version-22.9.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 9** (the identity header names Callout) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.96.0 – v1.97.0 | Superseded |
 | [22.8.1.4](./DebugLog/version-22.8.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 8** (the identity header names Role) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.95.0 | Superseded |
 | [22.7.1.4](./DebugLog/version-22.7.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 7** (the identity header names IconBrowser) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.86.0 – v1.94.0 | Superseded |
@@ -394,7 +406,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [10](./Launcher/version-10-docs.md) | **`Launcher.lua` 10** (`New`'s descriptor checks move to a helper so no function is over CCN 15, no behavior change, `QFE-LK2`) | v1.95.0 | **Current** |
+| [11](./Launcher/version-11-docs.md) | **`Launcher.lua` 11** (the minimap button's own tooltip toward the screen's center, `TIP_GAP` off it, through `LibKa0s-Tooltip-1.0`; LibDBIcon not patched; LibKa0s#92, `LK-92B`; `New` registers `openSettings` in Core's settings-opener registry, LibKa0s#86, `LK-86`) | v1.105.0 | **Current** |
+| [10](./Launcher/version-10-docs.md) | **`Launcher.lua` 10** (`New`'s descriptor checks move to a helper so no function is over CCN 15, no behavior change, `QFE-LK2`) | v1.95.0 – v1.104.0 | Superseded |
 | [9](./Launcher/version-9-docs.md) | **`Launcher.lua` 9** (`entryClients` validated at registration, `WFP-RV2-LK`) | v1.93.0 – v1.94.0 | Superseded |
 | [8](./Launcher/version-8-docs.md) | **`Launcher.lua` 8** (`entryClients`: a menu entry gated per client, `WFP-LK-04`) | v1.92.0 | Superseded |
 | [7](./Launcher/version-7-docs.md) | **`Launcher.lua` 7** (menu: Sim mode, Open settings, one row rule) | v1.85.0 – v1.91.0 | Superseded |
@@ -409,7 +422,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4](./Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md) | **`OptionsWidgets.lua` 46** (a number row's slider box puts text that is not a number back to the value, on Enter and on focus loss; L0 of Skill Master's round 9) · the rest as the row below | v1.101.0 | **Current** |
+| [38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.12.1.1.1.4](./Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.12.1.1.1.4-docs.md) | **`OptionsSkinPicker.lua` 12 and `OptionsSkinPickerQueue.lua` 1, new** (the skin picker's queue peels out to a file of its own, unchanged; `LK-P1`; its toolbar tips attach above their control, LibKa0s#92, `LK-92B`, `SR-L1`; the gear moves into the header beside the close, Widgets' `HeaderButtons`, LibKa0s#86, `LK-86`) · the rest as the row below | v1.105.0 | **Current** |
+| [38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4](./Options/version-38.5.46.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md) | **`OptionsWidgets.lua` 46** (a number row's slider box puts text that is not a number back to the value, on Enter and on focus loss; L0 of Skill Master's round 9) · the rest as the row below | v1.101.0 | Superseded |
 | [38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4](./Options/version-38.5.45.3.7.2.9.17.3.1.4.19.13.7.5.8.7.11.1.1.4-docs.md) | **`OptionsNav.lua` 7** (`O.SideTabs`: the nav rail's look inside the page's content, a list of tabs beside the selected one's body, under whatever the page drew; plan row L13) · the rest as the row below | v1.100.0 | Superseded |
 | [38.5.45.3.7.2.9.17.3.1.4.19.13.6.5.8.7.11.1.1.4](./Options/version-38.5.45.3.7.2.9.17.3.1.4.19.13.6.5.8.7.11.1.1.4-docs.md) | **`Options.lua` 38 and `OptionsNav.lua` 6** (the bulk resets walk only gated-in rows and `O.NavRail` honors `clients`, `WFP-RV2-LK`) · the rest as the row below | v1.93.0 – v1.99.0 | Superseded |
 | [37.5.45.3.7.2.9.17.3.1.4.19.13.5.5.8.7.11.1.1.4](./Options/version-37.5.45.3.7.2.9.17.3.1.4.19.13.5.5.8.7.11.1.1.4-docs.md) | `Options.lua` 37 · `OptionsRegistry.lua` 5 · `OptionsWidgets.lua` 45 · `OptionsFlow.lua` 3 · **`OptionsTabs.lua` 17 and the new `OptionsHeader.lua` 1** (`O.PageHeader` and `O.SubTabStrip` peeled out unchanged, no behavior change, `WFP-LK-08`) · the rest as the row below | v1.93.0 | Superseded |
@@ -496,14 +510,16 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1.1.1](./IconBrowser/version-1.1.1-docs.md) | `IconBrowserSources.lua` 1 · **`IconBrowserWindow.lua` 1** · **`IconBrowser.lua` 1** (new: the browser window, `IB:New(spec)`, promoted from Quick Comms) | v1.86.0 | **Current** |
+| [1.2.2](./IconBrowser/version-1.2.2-docs.md) | `IconBrowserSources.lua` 1 · **`IconBrowserWindow.lua` 2** (opts out of the settings mark, with its reason; LibKa0s#86, `LK-86`) · **`IconBrowser.lua` 2** (a cell's tooltip beside the window, a toolbar control's above it, through `LibKa0s-Tooltip-1.0`; LibKa0s#92, `LK-92B`) | v1.105.0 | **Current** |
+| [1.1.1](./IconBrowser/version-1.1.1-docs.md) | `IconBrowserSources.lua` 1 · **`IconBrowserWindow.lua` 1** · **`IconBrowser.lua` 1** (new: the browser window, `IB:New(spec)`, promoted from Quick Comms) | v1.86.0 – v1.104.0 | Superseded |
 | [1](./IconBrowser/version-1-docs.md) | **`IconBrowserSources.lua` 1** (new: the icon browser's sources as tab descriptors, promoted from Quick Comms) | never shipped | Superseded |
 
 ### `LibKa0s-Perf-1.0`
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [16.1.1.13](./Perf/version-16.1.1.13-docs.md) | **`Perf.lua` 16** (the spec name's namespaced rung, `WFP-LK-04`) · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 13 | v1.92.0 | **Current** |
+| [16.1.1.14](./Perf/version-16.1.1.14-docs.md) | `Perf.lua` 16 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 14** (the title band's marks are Widgets' `HeaderButtons`: settings beside the close; LibKa0s#86, `LK-86`) | v1.105.0 | **Current** |
+| [16.1.1.13](./Perf/version-16.1.1.13-docs.md) | **`Perf.lua` 16** (the spec name's namespaced rung, `WFP-LK-04`) · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · `PerfPanel.lua` 13 | v1.92.0 – v1.104.0 | Superseded |
 | [15.1.1.13](./Perf/version-15.1.1.13-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 13** (an owned panel's header on the band, `R5-L3`) | v1.85.0 – v1.91.0 | Superseded |
 | [15.1.1.12](./Perf/version-15.1.1.12-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 12** (a 30 high title band) | v1.85.0 | Superseded |
 | [15.1.1.11](./Perf/version-15.1.1.11-docs.md) | `Perf.lua` 15 · `PerfSampler.lua` 1 · `PerfCommands.lua` 1 · **`PerfPanel.lua` 11** (an owned panel's step and command columns in its skin's body face, so *Ignore fonts* reaches them; its resize grip wears its skin; no new member) | v1.81.0 – v1.84.0 | Superseded |
@@ -529,7 +545,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2.3.10.3](./Sim/version-2.3.10.3-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · `SimPanel.lua` 10 · **`SimPanelRender.lua` 3** (an owned panel's header on the band, `R5-L3`) | v1.85.0 | **Current** |
+| [3.3.11.4](./Sim/version-3.3.11.4-docs.md) | **`Sim.lua` 3** (the sample characters, `SAMPLE` and `Sample(client)`; LibKa0s#87, `LK-87`) · `SimTimeline.lua` 3 · **`SimPanel.lua` 11** (the default title is the string `PANEL_TITLE`, `%s - SIM`; LibKa0s#78, `LK-78`; the controls' and rows' tooltips beside the panel, LibKa0s#92, `LK-92B`) · **`SimPanelRender.lua` 4** (the title band's marks are Widgets' `HeaderButtons`: settings beside the close; LibKa0s#86, `LK-86`) | v1.105.0 | **Current** |
+| [2.3.10.3](./Sim/version-2.3.10.3-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · `SimPanel.lua` 10 · **`SimPanelRender.lua` 3** (an owned panel's header on the band, `R5-L3`) | v1.85.0 – v1.104.0 | Superseded |
 | [2.3.10.2](./Sim/version-2.3.10.2-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · `SimPanel.lua` 10 · **`SimPanelRender.lua` 2** (a 30 high title band) | v1.85.0 | Superseded |
 | [2.3.10.1](./Sim/version-2.3.10.1-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 10** (an owned panel's tooltip title `gtip.title`) · `SimPanelRender.lua` 1 | v1.85.0 | Superseded |
 | [2.3.9.1](./Sim/version-2.3.9.1-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 9** (the renderer section moved out) · **`SimPanelRender.lua` 1** (new: the renderer section, unchanged) | v1.84.0 | Superseded |
@@ -552,7 +569,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [56](./testkit/version-56-docs.md) | same files; **`glyphs.lua`**: the generated face list gains `BebasNeue-Regular.ttf` and `RussoOne-Regular.ttf` (`LibKa0s-Media-1.0` 13.1), the safe set unchanged at 117 non-ASCII code points (plan row L2) | unreleased (v1.97.0) | **Current** |
+| [57](./testkit/version-57-docs.md) | **adds `mock_screen.lua`**, the opt-in fake screen and tooltip recorder (LibKa0s#92, plan row LK-92A); **`mock_events.lua`**, **`mock_ace.lua`**: a frame is held, per build, while it has a raw event registration, and released by `UnregisterEvent`, `UnregisterAllEvents` or the embedded-frame override (`M.__heldFrame`, `M.__releaseFrame`; LibKa0s#75, plan row LK-75) | v1.105.0 | **Current** |
+| [56](./testkit/version-56-docs.md) | same files; **`glyphs.lua`**: the generated face list gains `BebasNeue-Regular.ttf` and `RussoOne-Regular.ttf` (`LibKa0s-Media-1.0` 13.1), the safe set unchanged at 117 non-ASCII code points (plan row L2) | v1.97.0 – v1.104.0 | Superseded |
 | [55](./testkit/version-55-docs.md) | same files; **`vendor_sync.lua`** reads the consumer's `LibKa0s sounds:` line (directly under the icons line: `none.`, `all.` or a comma-separated list of `callout/<voice>` packs; **no line means none**) and holds `libs/LibKa0s/media/sounds/` to exactly the declared packs, credits and license included; publishes `parseSoundLine`, `soundDeclaration`, `soundCatalog` and `requiredSounds` for `tools/prune-icons.lua`; a pair takes a `sounds` field and `register` a `soundsPattern` opt (plan row L5) | v1.96.0 | Superseded |
 | [54](./testkit/version-54-docs.md) | same files; **`client_globals.lua`**: `strip`, `scan` and `judge` split into helpers so no function is over CCN 15, no behavior change (`QFE-LK2`) | v1.95.0 | Superseded |
 | [53](./testkit/version-53-docs.md) | same files **plus `client_globals.lua`, `test_client_globals.lua` and the two name sets `client_globals_live.lua`, `client_globals_forever.lua`**: the missing-globals gate (`WFP-LK-06`, LibKa0s#77), a kit suite every consumer wires with one `suites` entry | v1.93.0 – v1.94.0 | Superseded |

@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **27** · `WidgetsDropdown.lua` **1** · `WidgetsReorder.lua` **6** · `WidgetsDragHandle.lua` **13** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **5** |
 | Shipped in | v1.103.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 26.1.6.13.7.8.5](./version-26.1.6.13.7.8.5-docs.md) (v1.91.0 – v1.101.0) — no footer primitive, and the mode strip was born unanchored with its placement the host's. |
-| Superseded by | — |
+| Superseded by | [version 27.2.7.14.1.7.8.6.1.1](./version-27.2.7.14.1.7.8.6.1.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 27, WidgetsDropdown = 1, WidgetsReorder = 6, WidgetsDragHandle = 13, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 5 }` |
 
@@ -2149,3 +2149,7 @@ visual fidelity as unverified.
 **Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
+
+## Moving to version 27.2.7.14.1.7.8.6.1.1
+
+`WidgetsDragHandle.lua` moves to 14 and its tooltip half peels to the new `WidgetsDragHandleTip.lua` (minor 1), so the key gains a number; `WidgetsDropdown.lua` 2, `WidgetsReorder.lua` 7 and that half place their tooltips through `LibKa0s-Tooltip-1.0` (`LK-92B`, LibKa0s#92). See [version 27.2.7.14.1.7.8.6.1.1](./version-27.2.7.14.1.7.8.6.1.1-docs.md). A host that loads library files by name adds the new file after `WidgetsDragHandle.lua` and `Tooltip.lua` after `CorePixel.lua`; the visible changes and the retired fields are listed there. The same version adds `WidgetsHeader.lua` (minor 1, `LK-86`) and `WidgetsBar.lua` (minor 1, `LK-80`, the data bar), each a number of the key; a host that loads library files by name adds them after `WidgetsCopyWindow.lua`, in that order.

@@ -461,8 +461,9 @@ test("vendor sync: a name the tag does not carry fails, even if a stray file vou
 end)
 
 test("vendor sync: a declared icon that differs from the tag fails", function()
-  withFixture("LibKa0s icons: close.", function(addon)
-    prune(addon, { "close.tga", "LICENSE-open-iconic.txt" })
+  -- `settings` is declared too: a library-drawn icon from kit revision 57 (LibKa0s#86).
+  withFixture("LibKa0s icons: close, settings.", function(addon)
+    prune(addon, { "close.tga", "settings.tga", "LICENSE-open-iconic.txt" })
     write(addon .. "/libs/LibKa0s/media/icons/close.tga", ART .. "edited")
     local ok, err = gate(addon)
     assertTrue(not ok and err:find("close.tga matches", 1, true) ~= nil, err)

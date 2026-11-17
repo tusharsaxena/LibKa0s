@@ -10,9 +10,9 @@
 | Major | `LibKa0s-IconBrowser-1.0` |
 | Files and minors | `IconBrowserSources.lua` minor **1** · `IconBrowserWindow.lua` minor **1** · `IconBrowser.lua` minor **1** |
 | Shipped in | v1.86.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 1](./version-1-docs.md) (never shipped) — the sources alone, before the browser window joined the major. |
-| Superseded by | — |
+| Superseded by | [version 1.2.2](./version-1.2.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 and `LibKa0s-Media-1.0` ≥ 5 (the shell's floors); the browser needs the host's LibKa0s Options instance (`spec.helpers`) and AceGUI-3.0 through it |
 | Optional at call time | `LibKa0s-Compat-1.0` (the macro lists' secret guard), `LibKa0s-Skin-1.0` (the owner's facade and the four owner tokens), `LibKa0s-Widgets-1.0` (`CopyWindow`, the Wowhead link window) |
 | Confirm in-game | `LibStub("LibKa0s-IconBrowser-1.0").MODULES` → `{ IconBrowserSources = 1, IconBrowserWindow = 1, IconBrowser = 1 }` |
@@ -188,3 +188,7 @@ these Ka0s Default values and the window unskinned.
   name a host may store instead.
 - **Bus messages.** The browser listens to nothing; the host closes it from its own lifecycle and
   handlers.
+
+## Moving to version 1.2.2
+
+`IconBrowser.lua` moves to 2: a cell's tooltip opens beside the window and a toolbar control's below it, through `LibKa0s-Tooltip-1.0` (`LK-92B`, LibKa0s#92). See [version 1.2.2](./version-1.2.2-docs.md). No host change is owed.

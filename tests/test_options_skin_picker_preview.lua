@@ -69,10 +69,10 @@ local function joined(log) return table.concat(log, ",") end
 
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
-test("skin picker preview: OptionsSkinPicker is minor 11, with the eye's per-mode words", function()
+test("skin picker preview: OptionsSkinPicker is minor 12, with the eye's per-mode words", function()
   local _, _, lib = env()
-  assertEqual(lib.MODULES.OptionsSkinPicker, 11)
-  assertEqual(lib.__pickerMinor, 11)
+  assertEqual(lib.MODULES.OptionsSkinPicker, 12)
+  assertEqual(lib.__pickerMinor, 12)
   local S = lib.SKIN_PICKER_STRINGS
   for _, mode in ipairs({ "TEST", "UNLOCK", "WINDOW", "CONSOLE" }) do
     assertEqual(type(S["PREVIEW_" .. mode .. "_ON"]), "string", mode .. " on")

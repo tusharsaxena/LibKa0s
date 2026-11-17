@@ -11,9 +11,9 @@
 | Files and minors | `Perf.lua` **16** · `PerfSampler.lua` **1** · `PerfCommands.lua` **1** · `PerfPanel.lua` **13** |
 | Version key | `<Perf>.<PerfSampler>.<PerfCommands>.<PerfPanel>`, in load order — the same four numbers `lib.MODULES` reports |
 | Shipped in | v1.92.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 15.1.1.13](./version-15.1.1.13-docs.md) (v1.85.0 – v1.91.0) — the spec name read the bare `GetSpecializationInfo` global only. |
-| Superseded by | — |
+| Superseded by | [version 16.1.1.14](./version-16.1.1.14-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Lifecycle-1.0` minor ≥ 1 (`NEEDS_LIFECYCLE = 1`) |
 | Record schema | 2 — see [`docs/record-schema.md`](../../record-schema.md) |
 | Confirm in-game | `LibStub("LibKa0s-Perf-1.0").MODULES` → `{ Perf = 15, PerfSampler = 1, PerfCommands = 1, PerfPanel = 13 }` |
@@ -877,3 +877,7 @@ The four files move as one. A consumer holding `Perf.lua` from one vendored copy
 `PerfSampler.lua`, `PerfCommands.lua` or `PerfPanel.lua` from another is not a supported state; each secondary file is
 paired on the probe's minor so a mismatch re-attaches rather than persisting silently, which is why
 `docs/releasing.md` mandates whole-folder re-vendoring.
+
+## Moving to version 16.1.1.14
+
+`PerfPanel.lua` moves to 14: the title band's marks are Widgets' `HeaderButtons`, a settings mark beside the close (`LK-86`, LibKa0s#86). See [version 16.1.1.14](./version-16.1.1.14-docs.md). No host change is owed.

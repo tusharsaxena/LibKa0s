@@ -180,7 +180,7 @@ end)
 
 -- ── the launcher ─────────────────────────────────────────────────────────────────────────
 --
--- The broker fakes are tests/test_launcher.lua's, found in the mock's LibStub registry; registered
+-- The broker fakes are tests/fixture_launcher.lua's, found in the mock's LibStub registry; registered
 -- here only if this suite runs alone.
 
 local LDB = mocks.LibStub:GetLibrary("LibDataBroker-1.1", true)
@@ -249,7 +249,7 @@ test("launcher: a missing minimap table is a state line, held for enable", funct
   assertEqual(#rec.logs, 0)
 end)
 
---- Run `fn` with the named LibStub majors invisible (tests/test_launcher.lua's helper, cut down to
+--- Run `fn` with the named LibStub majors invisible (tests/fixture_launcher.lua's helper, cut down to
 --- the silent lookup the module makes), then put the registry back.
 local function withoutLibs(blockedNames, fn)
   local blocked = {}

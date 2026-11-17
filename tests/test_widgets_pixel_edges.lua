@@ -17,8 +17,8 @@ local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER = "LootHistory"
-local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
-                 "WidgetsCopyWindow" }
+local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart", "WidgetsAutocomplete",
+                 "WidgetsCopyWindow", "WidgetsHeader" }
 local PIECES = { "TopLeftCorner", "TopRightCorner", "BottomLeftCorner", "BottomRightCorner",
                  "TopEdge", "BottomEdge", "LeftEdge", "RightEdge", "Center" }
 

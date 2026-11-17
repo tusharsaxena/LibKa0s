@@ -9,10 +9,10 @@
 | Payload | `testkit/`, the files version 55 lists |
 | Version | **56** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | unreleased (v1.97.0) |
-| Status | **Current** |
+| First released in | v1.97.0 – v1.104.0 |
+| Status | Superseded |
 | Supersedes | [version 55](version-55-docs.md) — the same surface, with a face list of thirty-three files |
-| Superseded by | — |
+| Superseded by | [version 57](version-57-docs.md) — a frame is held while it has a raw event registration (LibKa0s#75) |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `56` |
 

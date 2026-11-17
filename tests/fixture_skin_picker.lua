@@ -15,7 +15,7 @@ local OWNER, OTHER, THIRD = "LootHistory", "BankLedger", "KickCD"
 local SKIN_FILES = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls", "SkinEUI" }
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader",
                   "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
-                  "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" }
+                  "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerQueue", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" }
 local LSM = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf", ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf" }
 
 --- Arm every frame's geometry (the kit answers 0 until a test asks): its size setters record
@@ -49,11 +49,14 @@ local function env(spec)
   armGeometry(m)
   m.uiHeight = 768
   rawset(m.UIParent, "GetHeight", function() return m.uiHeight end)
-  local files = {}
+  local files = { "Tooltip" }
   if spec.media then files[#files + 1] = "Media"; files[#files + 1] = "MediaIcons" end
   if not spec.noSkin then
     for _, f in ipairs(SKIN_FILES) do files[#files + 1] = f end
   end
+  -- The header marks (Options minor 38's picker 12, LibKa0s#86): the gear and the close are
+  -- LibKa0s-Widgets-1.0's HeaderButtons.
+  files[#files + 1] = "Widgets"; files[#files + 1] = "WidgetsHeader"
   files[#files + 1] = "Pool"
   for _, f in ipairs(OPTIONS) do files[#files + 1] = f end
   for _, f in ipairs(files) do Loader.load("LibKa0s/" .. f .. ".lua", nil, m) end

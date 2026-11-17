@@ -100,7 +100,8 @@ local function newConsole(name)
 end
 
 -- Count the line counter's repaints. The mock answers CreateFontString with the frame itself, so the
--- counter IS the console frame and its SetText is the frame's.
+-- counter IS the frame it was made on (the footer's, from DebugLogWindow minor 5) and its SetText is
+-- that frame's.
 local function countStatus(f)
   local rec = { n = 0 }
   rawset(f, "SetText", function(_, text) rec.n = rec.n + 1; rec.last = text end)
@@ -136,10 +137,13 @@ test("resize console: it has a grip and bounds that keep the title bar's control
   assertTrue(f:IsResizable(), "resizable")
   assertTrue(type(f.resizeGrip) == "table", "from a grip")
   local minW, minH, maxW, maxH = f:GetResizeBounds()
-  -- No addonName, so the text controls: Copy's left edge is 78 + 40 = 118 from the right, wider than
-  -- the 8 + 80 toggle on the left; the title "Test Host - Debug" is 19 bytes at 7px each.
-  assertEqual(minW, 2 * (118 + 6) + 19 * 7, "every control plus the centered title fits")
-  assertEqual(minH, 30 + 6 + 4 * (10 + 2) + 16 + 4, "the bars and four lines fit")
+  -- No addonName, so the text controls: Copy's left edge is 102 + 40 = 142 from the right (the
+  -- settings glyph joined beside the close at DebugLogWindow minor 5, LibKa0s#86), wider than the
+  -- 8 + 80 toggle on the left; the title "Test Host - Debug" is 19 bytes at 7px each.
+  assertEqual(minW, 2 * (142 + 6) + 19 * 7, "every control plus the centered title fits")
+  -- The footer is Widgets' FOOTER.HEIGHT, 24, from DebugLogWindow minor 5 (LibKa0s#90); it was a 16 px
+  -- hand-drawn status line.
+  assertEqual(minH, 30 + 6 + 4 * (10 + 2) + 24 + 4, "the title bar, the footer and four lines fit")
   assertTrue(maxW >= 700 and maxH >= 344, "the default is inside the bounds")
 end)
 
@@ -159,8 +163,9 @@ test("resize console: the icon controls are narrower, and so is the minimum", fu
   D:Show()
   local f = D._frameForTest
   local minW = f:GetResizeBounds()
-  -- Icons: Copy's left edge is 54 + 18 = 72, narrower than the toggle's 88, so the toggle sets it.
-  assertEqual(minW, 2 * (88 + 6) + 19 * 7)
+  -- Icons: Copy's left edge is 78 + 18 = 96 with the settings mark (minor 5, LibKa0s#86), past the
+  -- toggle's 88, so the marks set it; at 54 + 18 = 72 the toggle did.
+  assertEqual(minW, 2 * (96 + 6) + 19 * 7)
 end)
 
 test("resize console: the Diagnostics link widens the left group, and the minimum grows", function()
@@ -169,7 +174,7 @@ test("resize console: the Diagnostics link widens the left group, and the minimu
   D:Show()
   local minW = D._frameForTest:GetResizeBounds()
   -- Headless, every width is 7px per byte: the wider toggle word "Debug: OFF" is 70, the 10px gap,
-  -- "Diagnostics" 77, from x = 8. 165 is wider than the text controls' 118 on the right.
+  -- "Diagnostics" 77, from x = 8. 165 is wider than the text controls' 142 on the right.
   assertEqual(minW, 2 * (8 + 70 + 10 + 77 + 6) + 19 * 7)
   local without
   withoutDiagnostics(function() without = newConsole("ResizeDiagNone") end)
@@ -191,7 +196,7 @@ test("resize console: a resize resyncs the scrollbar and the line counter, and k
   rawset(log, "GetScrollOffset", function() return 2 end)
   local range
   rawset(bar, "SetMinMaxValues", function(_, lo, hi) range = { lo, hi } end)
-  local status = countStatus(f)
+  local status = countStatus(f.lineCount)
   f:__setGeom(900, 500)
   f:__fire("OnSizeChanged", 900, 500)
   assertEqual(range[2], 7, "the scrollbar took the message frame's new range")
@@ -200,26 +205,29 @@ test("resize console: a resize resyncs the scrollbar and the line counter, and k
 end)
 
 test("resize console: the line counter sits clear of the grip", function()
-  -- red under: put the counter's BOTTOMRIGHT x offset in LibKa0s/DebugLog.lua back to -10
+  -- red under: the grip left on the console rather than the footer, or the footer's grip inset not
+  -- turned on (its counter then sits FOOTER.PAD, 8, from the corner, under the grip's art)
   local f
   recordPoints(function()
     local D = newConsole("ResizeCounter")
     D:Show()
     f = D._frameForTest
   end)
+  local foot = f.footer
+  assertTrue(foot ~= nil, "the console's footer (DebugLogWindow minor 5)")
+  assertTrue(rawget(f.resizeGrip, "__parent") == foot, "the grip is built on the footer, in its corner")
   local reachX, reachY = gripReach(f.resizeGrip)
   assertEqual(reachX, 17, "the grip is 16 px square at 1 px in")
   assertEqual(reachY, 17)
-  -- The mock answers CreateFontString with the frame, so the counter's point lands on the console:
-  -- it is the one bottom-right point below the status divider (which sits at STATUS_H, 16).
+  -- The mock answers CreateFontString with the frame, so the counter's points land on the footer:
+  -- the counter is the RIGHT-to-RIGHT point on it, and it is centered in the footer's 24 px.
   local counter
-  for _, pt in ipairs(f.__points) do
-    local name, _, y = offsets(pt)
-    if name == "BOTTOMRIGHT" and type(y) == "number" and y < 16 then counter = pt end
+  for _, pt in ipairs(foot.__points) do
+    if pt[1] == "RIGHT" and pt[2] == foot and pt[3] == "RIGHT" then counter = pt end
   end
-  assertTrue(counter ~= nil, "the line counter is anchored bottom-right")
+  assertTrue(counter ~= nil, "the line counter is anchored to the footer's right edge")
   local _, x, y = offsets(counter)
-  assertTrue(y < reachY, "the counter shares the grip's rows, so only x can keep it clear")
+  assertTrue(widgets.FOOTER.HEIGHT / 2 + y < reachY, "the counter shares the grip's rows, so only x can keep it clear")
   assertTrue(-x > reachX, "the counter's right edge is left of the grip: " .. tostring(x))
 end)
 
@@ -242,7 +250,7 @@ test("resize console: two hosts' consoles resize independently", function()
   A:Show(); B:Show()
   local fa, fb = A._frameForTest, B._frameForTest
   assertTrue(fa.resizeGrip ~= fb.resizeGrip, "each has its own grip")
-  local statusB = countStatus(fb)
+  local statusB = countStatus(fb.lineCount)
   fa:__setGeom(1000, 600)
   fa:__fire("OnSizeChanged", 1000, 600)
   assertEqual(statusB.n, 0, "B did not relayout for A's resize")

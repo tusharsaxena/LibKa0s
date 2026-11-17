@@ -24,8 +24,8 @@ local test, assertEqual, assertTrue, assertNil = T.test, T.assertEqual, T.assert
 local F = dofile("tests/fixture_skin_paint.lua")
 
 local OWNER = "LootHistory"
-local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsLineChart", "WidgetsAutocomplete",
-                 "WidgetsCopyWindow" }
+local WFILES = { "Widgets", "WidgetsDropdown", "WidgetsReorder", "WidgetsDragHandle", "WidgetsDragHandleTip", "WidgetsLineChart", "WidgetsAutocomplete",
+                 "WidgetsCopyWindow", "WidgetsHeader" }
 
 -- Every font key resolves, so each skin's body face has a path: "Fonts\<key>".
 local LSM = setmetatable({}, { __index = function(_, k)

@@ -67,6 +67,66 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.105.0, not in the census (2026-11-16).** DebugLog shell minor 23 and DebugLogDiagnostics minor 11
+add the report seam (`LK-79`, LibKa0s#79): the instance's `Report` and `Serialize`, the lib-level `Serialize` and
+the string `REPORT_WRITTEN` ([the document](DebugLog/version-23.11.1.5-docs.md)). None gets a row here yet. **No host
+consumes them at the tag**: Ka0s Consumable Master's addon-local `DL.Report` and `SlashDump.Serialize` are the
+reference they were lifted from, and its one-line lift onto `D:Report` is its adoption item, as is every other
+host's report verb. Every host with a by-name DebugLog parity case (fourteen) adds `Report` and `Serialize` to its
+library-absent stub at its re-vendor.
+
+**v1.105.0, not in the census (2026-11-16), the header marks.** WidgetsHeader minor 1 (new) adds
+`W.HeaderButtons`, `W.HeaderButton`, `W.HEADER` and `W.HEADER_STRINGS`, and Core minor 18 adds
+`Core.RegisterSettingsOpener`, `Core.HasSettings` and `Core.OpenSettings` (`LK-86`, LibKa0s#86;
+[the Widgets document](Widgets/version-27.2.7.14.1.7.8.6.1.1-docs.md), [the Core document](Core/version-18.1-docs.md)).
+None gets a row here yet. **No host calls them at the tag:** the library's own windows use them, the launcher fills the
+registry in every host from the re-vendor alone, and a host window's strip is its adoption item (LibKa0s#86).
+
+**v1.105.0, not in the census (2026-11-16), the sample characters.** Sim minor 3 adds the lib-level
+`Sim.SAMPLE` and `Sim.Sample` (`LK-87`, LibKa0s#87; [the Sim document](Sim/version-3.3.11.4-docs.md)). Neither gets a
+row here yet. **No host reads them at the tag:** each host's own sample characters (Combat Trail's, DpsRace's, Bank
+Ledger's, What Group's and the others research note R6 of Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`
+lists) move onto them at its adoption, in that run's phase [3].
+
+**v1.105.0, not in the census (2026-11-16), the data bar.** WidgetsBar minor 1 (new) adds `W.Bar`,
+`W.BarStyle`, `W.BarCompute`, `W.BarText`, `W.BarFormatTimer`, `W.BarShade`, `W.AcquireBar`, `W.ReleaseBars` and
+`W.BAR` (`LK-80`, LibKa0s#80; [the Widgets document](Widgets/version-27.2.7.14.1.7.8.6.1.1-docs.md)). None gets a row here yet. **No
+host calls them at the tag:** Ka0s Skill Master, the one consumer by the owner's 2026-11-16 ruling, adopts them in
+phase [3] of Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/` and drops its `modules/Bar.lua`.
+
+**v1.105.0, not in the census (2026-11-16), the tooltip placers and the launcher's own rows.** The new major
+`LibKa0s-Tooltip-1.0` (`Tooltip.lua` minor 1: `TIP_GAP`, `Own`, `PlaceBeside`, `PlaceAttached`, `PlaceLauncher`,
+`SetGroup`, `GroupOf`, `Replace`; `LK-92A`, LibKa0s#92; [the document](Tooltip/version-1-docs.md)), Charts minor 2's
+`host.group` and `ctx:PlaceTip` ([the document](Charts/version-2.1-docs.md)), a drag handle's opt-in `spec.settings`
+(WidgetsDragHandle minor 14) and Launcher minor 11's `extraEntries` descriptor field ([the document](Launcher/version-11-docs.md)).
+None gets a row here yet. **No host calls them at the tag:** the library's own widgets are the Tooltip major's only callers,
+each host's own tooltips move onto it at its adoption (LibKa0s#92), and `extraEntries` has one consumer by the owner's
+2026-11-16 ruling, Ka0s Skill Master, which adopts it in phase [3] of the same bundle.
+
+**v1.105.0, not in the census (2026-11-17), smoke round 1's title-bar tooltips and colors.** `LibKa0s-Tooltip-1.0`
+minor 1 also carries `AttachTitleTip`, `CLOSE_STRINGS`, `SetCloseTip` and `CloseTip` (`SR-L2` of
+Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, its `SR1_SMOKE_ROUND1.md`; [the document](Tooltip/version-1-docs.md)),
+WidgetsDragHandleTip minor 1 `W.DRAG_HANDLE_STRINGS` ([the document](Widgets/version-27.2.7.14.1.7.8.6.1.1-docs.md)), and DebugLog
+minor 23 the strings `TOGGLE_TIP`, `DIAGNOSTICS_TIP`, `COPY_TIP`, `CLEAR_TIP` and `SETTINGS_TIP` ([the document](DebugLog/version-23.11.1.5-docs.md)).
+None gets a row here yet. **No host calls them at the tag:** the library's own title-bar controls are their only
+callers, and a host reaches them only through its `L` (the console's strings, a strip's `spec.L`) or a window's
+`closeTip`. A host's own windows' title-bar tooltips and colors are its `SR-<ABBR>` item of the same bundle. The
+smoke round's color and band changes (`SR-L3`: `close.rest` follows `icon.tint`, marks light in `text.link`; `SR-L4`:
+`list.header.bg` in every skin) move token values, not members, so no census row moves for them either. Nor does smoke
+round 2 (`SR2-L1`: `text.link` in Azeroth, Glass, WoW Midnight and WoW Forever; `SR2-L2`: 1px window edges and no
+`win.inner` in WoW Midnight, Azeroth and Ember, of `SR2_SMOKE_ROUND2.md`): token values again, in `SkinDefsOthers.lua` minor 10.
+`SR2-L3` (footer button hover: Azeroth's `btn.hover`, WoW Midnight's `btnPrimary.hover`, the sim panel's buttons on
+`text.link`) moves values too, in SkinDefsOthers minor 10, SimPanel minor 11 and SimPanelRender minor 4, and no member.
+`SR2-L4` (1px popup, menu and tooltip edges in Azeroth and WoW Midnight, WoW Default's declared tooltip edge) moves
+values alone, in SkinDefsOthers minor 10.
+`SR2-L5` (a primary button hovers by its fill) adds the tokens `btnPrimary.hoverBg`, `btnPrimary.hoverBgTop` and
+`btnPrimary.hoverBgBottom` (SkinDefs minor 28, SkinDefsOthers minor 10) and moves `S.Button`'s primary hover in
+SkinPaintControls minor 18 ([the document](Skin/version-18.1.28.10.19.19.1.1.18.4.9-docs.md)): tokens and a behavior,
+no member, so no census row moves. **A host owes:** a suite that pins a primary's hovered label at `btnPrimary.hover`,
+its fill unchanged under the pointer, or a list of the schema's names re-pins it (the CHANGELOG's re-pin list), and a
+host skin that sets its own `btnPrimary.bg` declares a `btnPrimary.hoverBg` beside it, since an absent token resolves to
+Ka0s Default's (its burnt orange).
+
 **v1.99.0, not in the census (2026-11-14).** The release adds a major,
 `LibKa0s-WaypointArrow-1.0` (its lib-level members in `docs/api/WaypointArrow/members-1.1.json`, the descriptor's
 fields and the instance's members in [its document](WaypointArrow/version-1.1-docs.md)): the waypoint arrow with

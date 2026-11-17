@@ -60,10 +60,10 @@ local pickRow = Bench.pickRow
 
 -- ── the attach ───────────────────────────────────────────────────────────────────────────────
 
-test("skin picker: OptionsSkinPicker is minor 11, paired on the shell, and attaches three members", function()
+test("skin picker: OptionsSkinPicker is minor 12, paired on the shell, and attaches three members", function()
   local _, _, lib = env()
-  assertEqual(lib.MODULES.OptionsSkinPicker, 11)
-  assertEqual(lib.__pickerMinor, 11)
+  assertEqual(lib.MODULES.OptionsSkinPicker, 12)
+  assertEqual(lib.__pickerMinor, 12)
   assertTrue(lib.SKIN_PICKER_STRINGS.APPLY_ALL_TIP:find("skin source, skin, scope, font, texture and font outline", 1, true) ~= nil,
     "the tooltip words it as the Skin tab's copy does")
   assertEqual(lib.__pickerShellMinor, lib.MINOR, "paired on the shell's minor")
@@ -75,6 +75,9 @@ test("skin picker: OptionsSkinPicker is minor 11, paired on the shell, and attac
   assertEqual(lib.SKIN_PICKER_STRINGS.APPLY_ALL, "Apply to all Ka0s addons")
   assertEqual(type(lib.__pickerQueue), "table", "the library-level queue")
   assertEqual(type(lib.__pickerQueue.waiting), "table")
+  assertEqual(lib.MODULES.OptionsSkinPickerQueue, 1, "the queue, peeled at picker minor 12 (LK-P1)")
+  assertEqual(lib.__pickerQueueMinor, 1)
+  assertEqual(lib.__pickerQueueShellMinor, lib.MINOR, "the queue paired on the shell's minor")
   local O = instance(lib, OWNER)
   assertEqual(type(O.SkinPicker), "function")
   assertEqual(type(O.HideSkinPicker), "function")
@@ -83,16 +86,22 @@ end)
 
 test("skin picker: a newer attach of the file adopts the queue already on the library table", function()
   -- red under: a queue created per file load (a second copy's picker would not see the first's).
+  -- The queue lives in OptionsSkinPickerQueue.lua since picker minor 12 (LK-P1), so both files run
+  -- again, as a newer copy of each would.
   local m, _, lib = env()
   local q = lib.__pickerQueue
   q.waiting[1] = { owner = "Kept" }
   lib.__pickerMinor = nil   -- as a newer minor would find it: the guard lets the file run again
+  lib.__pickerQueueMinor = nil
   Loader.load("LibKa0s/OptionsSkinPicker.lua", nil, m)
+  Loader.load("LibKa0s/OptionsSkinPickerQueue.lua", nil, m)
   assertTrue(lib.__pickerQueue == q, "the same table")
   assertEqual(q.waiting[1].owner, "Kept", "with what it held")
   lib.__pickerQueue = { current = false }
   lib.__pickerMinor = nil
+  lib.__pickerQueueMinor = nil
   Loader.load("LibKa0s/OptionsSkinPicker.lua", nil, m)
+  Loader.load("LibKa0s/OptionsSkinPickerQueue.lua", nil, m)
   assertEqual(type(lib.__pickerQueue.waiting), "table", "a queue missing its list gains one")
 end)
 
@@ -678,12 +687,13 @@ test("skin picker: the icons come from LibKa0s-Media-1.0, and are glyphs without
   assertTrue(Media.Icon(OWNER, "eye") ~= nil and Media.Icon(OWNER, "settings") ~= nil, "both names are Media's")
   assertEqual(m.__paint(f.preview.icon).texture, Media.Icon(OWNER, "eye"))
   assertEqual(m.__paint(f.settings.icon).texture, Media.Icon(OWNER, "settings"))
-  local _, Skin2, lib2 = env()
+  local m2, Skin2, lib2 = env()
   local store2 = register(Skin2, OWNER)
   local f2 = instance(lib2, OWNER).SkinPicker(specFor(store2, { onPreview = function() end }))
   assertNil(f2.preview.icon, "no Media, no icon")
   assertEqual(f2.preview.text:GetText(), lib2.SKIN_PICKER_STRINGS.PREVIEW_GLYPH)
-  assertEqual(f2.settings.text:GetText(), lib2.SKIN_PICKER_STRINGS.SETTINGS_GLYPH)
+  -- The gear is a header mark from OptionsSkinPicker minor 12 (LibKa0s#86): its glyph is the strip's.
+  assertEqual(f2.settings.label:GetText(), m2.LibStub("LibKa0s-Widgets-1.0").HEADER_STRINGS.SETTINGS_GLYPH)
 end)
 
 test("skin picker: the eye shows only with onPreview, and calls it", function()
@@ -935,4 +945,26 @@ test("skin picker: under Ka0s Default a tooltip title is the client's gold, writ
   local store = register(Skin, OWNER)
   local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
   assertEqual(select(2, tipOf(m, f.settings)), "1,0.820,0,1")
+end)
+
+-- ── the header marks (OptionsSkinPicker minor 12, LibKa0s#86) ──────────────────────────────
+
+test("skin picker: the header reads settings, close, the gear moved into it from the dropdown row", function()
+  -- red under: minor 12's first cut, the gear on the dropdown row (tests/test_header_buttons.lua has the strip)
+  local _, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
+  local hb = f.headerButtons
+  assertTrue(type(hb) == "table", "the picker records its header marks")
+  assertEqual(table.concat(hb.order, ","), "settings,close")
+  assertTrue(f.settings == hb.settings and f.close == hb.close, "the gear and the close are the header's")
+end)
+
+test("skin picker: every header control shows a tooltip on enter and hides it on leave", function()
+  -- red under: the picker's close with no tooltip (smoke round 1, ruling 3; SR-L2)
+  local m, Skin, lib = env()
+  local store = register(Skin, OWNER)
+  local f = instance(lib, OWNER).SkinPicker(specFor(store, { page = "general" }))
+  dofile("tests/fixture_title_tips.lua").check({ { "settings", f.settings }, { "close", f.close } }, "skin picker",
+    m.GameTooltip)
 end)

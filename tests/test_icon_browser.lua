@@ -547,3 +547,25 @@ test("browser: a host's picker tracking is used in place of the browser's", func
   assertEqual(released[1], B:Widgets().swatch, "the host releases its picker")
   assertTrue(f:IsShown(), "the browser leaves the picker to the host")
 end)
+
+-- ── the header marks (IconBrowserWindow minor 2, LibKa0s#86) ───────────────────────────────
+
+test("icon browser: the window opts out of the settings mark, with its reason", function()
+  -- red under: IconBrowserWindow minor 1, which recorded no header (tests/test_header_buttons.lua has the strip)
+  local _, B = boot()
+  openOn(B, nil)
+  local hb = B.frame.headerButtons
+  assertTrue(type(hb) == "table", "the browser records its header")
+  assertNil(hb.settings, "no settings mark: opened from a settings row")
+  assertTrue(type(hb.optOut) == "string" and hb.optOut:find("settings row", 1, true) ~= nil, tostring(hb.optOut))
+  assertEqual(table.concat(hb.order, ","), "close")
+end)
+
+test("icon browser: its close shows a tooltip on enter and hides it on leave", function()
+  -- red under: the template's X, or the fallback's, with no tooltip (smoke round 1, ruling 3; SR-L2)
+  local m, B = boot()
+  openOn(B, nil)
+  local said = dofile("tests/fixture_title_tips.lua").check({ { "close", B.frame.headerButtons.close } }, "icon browser",
+    m.GameTooltip)
+  assertEqual(said.close, "Close")
+end)

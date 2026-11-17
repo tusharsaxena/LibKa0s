@@ -10,6 +10,7 @@ local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertNil = T.test, T.assertEqual, T.assertTrue, T.assertNil
 
 local F = dofile("tests/fixture_skin_paint.lua")
+local DE = dofile("tests/fixture_de00.lua")
 
 local MAJOR = "LibKa0s-Skin-1.0"
 
@@ -367,16 +368,69 @@ end)
 local ART_TOKENS = { "win.bgTexture", "tab.texture", "tab.onTexture", "check.texture",
   "check.markTexture" }
 
-test("skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art", function()
+test("skin defs: WoW Midnight is flat with a 1px gold edge and gradients, no Blizzard art", function()
+  -- SR2-L2 (smoke round 2, ruling 2): its 2px edge over a #3D2F12 rule read thick beside WoW
+  -- Forever's 1px; the window edge is 1px gold with no inner rule.
   local t = skinLib():ResolveSkin("midnight")
   assertEqual(t["win.borderStyle"], "flat", "flat WHITE8x8 edge")
-  assertEqual(t["win.borderSize"], 2, "2px")
+  assertEqual(t["win.borderSize"], 1, "1px")
+  assertNil(t["win.inner"], "no inner rule")
   assertEqual(("%.4f %.4f %.4f"):format(t["win.border"][1], t["win.border"][2], t["win.border"][3]),
     ("%.4f %.4f %.4f"):format(0xb0 / 255, 0x8a / 255, 0x3e / 255), "the #b08a3e edge")
   assertTrue(t["win.bgTop"] ~= nil and t["title.bgTop"] ~= nil, "window and title gradients")
   for _, name in ipairs(ART_TOKENS) do assertTrue(t[name] == nil, "midnight: no " .. name) end
   for _, ctl in ipairs(CONTROLS) do
     assertEqual(t[ctl .. ".borderStyle"], "flat", "midnight: " .. ctl .. " is flat")
+  end
+end)
+
+-- The edges a skin draws from art rather than as a flat line, by name: Glass's and WoW Default's
+-- nine-slices on the window, popups and menus, and Ka0s Default's popup, whose `false` style keeps the
+-- frame's own art (it resolves to nil). Every other window, popup, menu and tooltip edge is flat.
+local ART_EDGES = {
+  ["glass.win"] = "nine:Ka0s Glass", ["glass.popup"] = "nine:Ka0s Glass", ["glass.menu"] = "nine:Ka0s Glass",
+  ["wow.win"] = "nine:Blizzard Dialog", ["wow.popup"] = "nine:Blizzard Dialog",
+  ["wow.menu"] = "nine:Blizzard Dialog", ["ka0s.popup"] = false,
+}
+
+--- Each mockup skin's declared tooltip edge, `tipBorder = edge(size, "style", ...)` in
+--- SkinDefsOthers.lua. No token carries it (`tooltip.border` is the color alone), so it is read where
+--- it is declared, and a declaration that says 2px where the paint draws the frame's own is caught.
+local function tipEdges()
+  local fh = assert(io.open("LibKa0s/SkinDefsOthers.lua", "rb"))
+  local src = fh:read("*a")
+  fh:close()
+  local out = {}
+  for key, body in src:gmatch('\nregister%("(%w+)"(.-)\n  }%)') do
+    local size, style = body:match('tipBorder%s*=%s*edge%((%d+),%s*"([^"]+)"')
+    out[key] = { size = tonumber(size), style = style }
+  end
+  return out
+end
+
+test("skin defs: every flat window, popup, menu and tooltip edge is 1px, in every skin", function()
+  -- SR2-L4 of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS (smoke round 2, the owner's
+  -- answer of 2026-11-17): every skin that does not draw its border from art draws a 1px line, as
+  -- SR2-L2 did for windows. red under: Azeroth's 2px popup, menu and tooltip edges, WoW Midnight's
+  -- 2px popup and menu edges, and WoW Default's declared 2px tooltip edge.
+  local Skin, tips = skinLib(), tipEdges()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    for _, stem in ipairs({ "win", "popup", "menu" }) do
+      local art = ART_EDGES[key .. "." .. stem]
+      if art ~= nil then
+        assertEqual(t[stem .. ".borderStyle"] or false, art, key .. ": " .. stem .. " draws its edge from art")
+      else
+        assertEqual(t[stem .. ".borderStyle"], "flat", key .. ": " .. stem .. " is flat")
+        assertEqual(t[stem .. ".borderSize"], 1, key .. ": " .. stem .. " edge is 1px")
+      end
+    end
+    if key ~= "ka0s" then   -- Ka0s Default declares a tooltip color and no edge (SkinDefs.lua)
+      local tip = tips[key]
+      assertTrue(tip ~= nil and tip.size ~= nil, key .. ": a tipBorder declared")
+      assertEqual(tip.style, "flat", key .. ": tooltip edge is flat")
+      assertEqual(tip.size, 1, key .. ": tooltip edge is 1px")
+    end
   end
 end)
 
@@ -695,43 +749,8 @@ end
 
 local BLACK = { 0, 0, 0 }
 
--- How far a skin's alternate row stands off its window, in a channel (SF-L3 set 5%; R3-L5 of
--- Ka0sAddonsCommonTasks docs/2026-11-02-SMOKE_ROUND3 raises it to 8%, image 95).
-local STRIPE_STEP = 0.08
-
-test("skin defs: alternate rows show in every skin", function()
-  -- SF-L3, images 53 and 54. red under: Obsidian's 2% white or High Contrast's #0D0D0D, which no
-  -- eye separates from the window. Ka0s Default's own 3% stays: the item names the other two.
-  -- R3-L5, image 95: Obsidian's 6% white, 5.8% off its window, was still hardly visible, and every
-  -- dark skin on the same 6% (Glass, Ember, WoW Default, WoW Midnight, WoW Forever) or Azeroth's 7%
-  -- parchment sat as faint. red under any of them below a visible 8%.
-  local Skin = skinLib()
-  for _, key in ipairs(KEYS) do
-    if key ~= "ka0s" then
-      local t = Skin:ResolveSkin(key)
-      local win = over(t["win.bg"], BLACK)
-      local step = apart(over(t["list.stripe"], win), win)
-      assertTrue(step >= STRIPE_STEP, ("%s: the stripe stands %.1f%% off the window, want %d%%"):format(
-        key, step * 100, STRIPE_STEP * 100))
-    end
-  end
-  local o = Skin:ResolveSkin("obsidian")
-  assertEqual(colorKey(o["list.stripe"]), "1.000,1.000,1.000,0.090", "Obsidian's stripe, 9% white")
-end)
-
-test("skin defs: a hovered row still stands off an alternate row", function()
-  -- R3-L5. A hovered plain row is the body text at its alpha over the window; at 10% it stood 3% off
-  -- a 6% stripe. red under: a stripe raised to 9% under a 10% hover, which reads as a stripe.
-  local Skin = skinLib()
-  for _, key in ipairs(KEYS) do
-    if key ~= "ka0s" then
-      local t = Skin:ResolveSkin(key)
-      local win = over(t["win.bg"], BLACK)
-      local step = apart(over(t["list.hover"], win), over(t["list.stripe"], win))
-      assertTrue(step >= 0.03, ("%s: a hovered row %.1f%% off a striped one"):format(key, step * 100))
-    end
-  end
-end)
+-- The row, band and mark contrast floors (LibKa0s#82, #84, SR-L4) live in tests/test_skin_row_contrast.lua,
+-- peeled from here at SR2-L1 on the seam CLAUDE.md's band census named for this suite.
 
 --- The colors a title band draws: its flat `title.bg`, and both stops of its gradient when it has
 --- one (P.fill draws the gradient then, and the flat token only reaches a flat reader).
@@ -876,6 +895,88 @@ test("skin defs: the settings typed-color tokens keep Ka0s Default's yellow and 
     end
     local ratio = contrast(t["gtip.emphasis"], TOOLTIP_DARK)
     assertTrue(ratio >= 4.5, ("%s: gtip.emphasis contrast %.2f, want >= 4.5"):format(key, ratio))
+  end
+end)
+
+-- ── the title-bar hover (SR2-L1) ─────────────────────────────────────────────────────────────
+
+-- The CIEDE2000 helper is tests/fixture_de00.lua's (moved there, unchanged, for SR2-L3's footer
+-- buttons).
+local deltaE00, de00 = DE.deltaE00, DE.de00
+
+-- The hover floors of SR2-L1 (ruling 1 of Ka0sAddonsCommonTasks
+-- docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/SR2_SMOKE_ROUND2.md), ΔE00 from a title-bar control's rest
+-- (`icon.tint`) to its hover (`text.link`). 20 is the lowest pair the owner accepted (Ember, 20.1);
+-- the four skins the owner marked bad are raised to 25, about Obsidian's 25.0. A link's own hover
+-- (`text.linkHot`) stays off the link by 8, under the closest pair already shipped (Obsidian, 8.7).
+local HOVER_DE00_MIN, HOVER_DE00_RAISED, LINKHOT_DE00_MIN = DE.HOVER_DE00_MIN, 25, 8
+local HOVER_RAISED = { azeroth = true, glass = true, midnight = true, forever = true }
+
+test("skin defs: the CIEDE2000 helper matches Sharma et al.'s published pairs", function()
+  -- Pairs 1, 4 and 34 of the paper's Table 1 (pair 1 exercises the rotation term near hue 275°, 34
+  -- the lightness weighting near black). red under: R_T or the G correction dropped.
+  for _, pair in ipairs({
+    { { 50, 2.6772, -79.7751 }, { 50, 0, -82.7485 }, 2.0425 },
+    { { 50, -1.3802, -84.2814 }, { 50, 0, -82.7485 }, 1.0000 },
+    { { 2.0776, 0.0795, -1.1350 }, { 0.9033, -0.0636, -0.5514 }, 0.9082 },
+  }) do
+    local d = deltaE00(pair[1], pair[2])
+    assertTrue(math.abs(d - pair[3]) < 1e-4, ("ΔE00 %.4f, published %.4f"):format(d, pair[3]))
+  end
+end)
+
+test("skin defs: a title-bar control's hover is clearly another color than its rest in every skin", function()
+  -- SR2-L1, the owner's smoke round 2: Azeroth (12.9), Glass (14.6), WoW Midnight (18.5) and WoW
+  -- Forever (14.8) lit their marks in a shade of their own rest. red under: any of the four left on
+  -- its palette accent, or any skin under 20.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    local d = de00(t["icon.tint"], t["text.link"])
+    local floor = HOVER_RAISED[key] and HOVER_DE00_RAISED or HOVER_DE00_MIN
+    assertTrue(d >= floor, ("%s: text.link ΔE00 %.1f off icon.tint, want >= %d"):format(key, d, floor))
+  end
+end)
+
+test("skin defs: the hover stays legible on the title band and apart from a link's own hover", function()
+  -- SR2-L1. red under: a hover under 4.5 on its band, a retuned skin's hover reading darker on its
+  -- band than the rest it replaces, a `text.linkHot` within 8 ΔE00 of the link it lights, or a hover
+  -- in the close X's red. The five accepted skins keep their accent, Ka0s Default's orange (7.0 on
+  -- its band against its gray's 8.4) and Ember's (16.9 off its red close) among them, so only the
+  -- four retuned ones answer to the rest and to the close.
+  local Skin = skinLib()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    local win = over(t["win.bg"], BLACK)
+    for _, stop in ipairs(bandStops(t)) do
+      local band = over(stop[2], win)
+      local hover, rest = contrast(t["text.link"], band), contrast(t["icon.tint"], band)
+      assertTrue(hover >= 4.5, ("%s: text.link contrast %.2f on %s, want >= 4.5"):format(key, hover, stop[1]))
+      assertTrue(not HOVER_RAISED[key] or hover >= rest,
+        ("%s: text.link contrast %.2f on %s, under the rest's %.2f"):format(key, hover, stop[1], rest))
+    end
+    local d = de00(t["text.link"], t["text.linkHot"])
+    assertTrue(d >= LINKHOT_DE00_MIN, ("%s: text.linkHot ΔE00 %.1f off text.link, want >= %d"):format(
+      key, d, LINKHOT_DE00_MIN))
+    d = de00(t["text.link"], t["close.hot"])
+    assertTrue(not HOVER_RAISED[key] or d >= HOVER_DE00_MIN,
+      ("%s: text.link ΔE00 %.1f off close.hot, want >= %d"):format(key, d, HOVER_DE00_MIN))
+  end
+end)
+
+test("skin defs: the four raised skins hover in their own palette", function()
+  -- SR2-L1's picks, pinned so a retune is a decision. `icon.tint` does not move.
+  local Skin = skinLib()
+  local function hex(c) return ("#%02X%02X%02X"):format(
+    math.floor(c[1] * 255 + 0.5), math.floor(c[2] * 255 + 0.5), math.floor(c[3] * 255 + 0.5)) end
+  for key, want in pairs({
+    azeroth = { "#FFEB33", "#B8A07A", "#FFF6C8" }, glass = { "#66F0FF", "#9AA2B3", "#D4C4FF" },
+    midnight = { "#FFC94A", "#B4AFC8", "#D4BFFF" }, forever = { "#FFAA33", "#A39E97", "#E0C3A6" },
+  }) do
+    local t = Skin:ResolveSkin(key)
+    assertEqual(hex(t["text.link"]), want[1], key .. ": text.link")
+    assertEqual(hex(t["icon.tint"]), want[2], key .. ": icon.tint, unchanged")
+    assertEqual(hex(t["text.linkHot"]), want[3], key .. ": text.linkHot")
   end
 end)
 

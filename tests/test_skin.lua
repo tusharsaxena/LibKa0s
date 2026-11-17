@@ -267,11 +267,17 @@ local PINS = {
   { "OptionsScroll.lua", "THUMB_ON", "scroll.thumbOn" },
   { "OptionsScroll.lua", "THUMB_OFF", "scroll.thumbOff" },
   { "OptionsScroll.lua", "GUTTER", "scroll.gutter" },
-  { "DebugLogWindow.lua", "DIAG_REST", "text.link" }, { "DebugLogWindow.lua", "DIAG_HOT", "text.linkHot" },
+  -- SR-L3 (smoke round 1, ruling 4): the Diagnostics link rests in icon.tint (REST) and hovers
+  -- text.link (DIAG_HOT); a header mark the same, and the close rests in icon.tint as well.
+  { "DebugLogWindow.lua", "REST", "icon.tint" }, { "DebugLogWindow.lua", "DIAG_HOT", "text.link" },
+  { "WidgetsHeader.lua", "REST", "icon.tint" }, { "WidgetsHeader.lua", "HOT", "text.link" },
+  { "Core.lua", "CLOSE_REST", "icon.tint" },
   { "DebugLogWindow.lua", "REST", "text.muted" }, { "DebugLogWindow.lua", "HOT", "text.accent" },
   { "DebugLogWindow.lua", "BAR_W", "scroll.width" },
   { "PerfPanel.lua", "CMD_COLOR", "text.faint" }, { "SimPanel.lua", "CMD_COLOR", "text.faint" },
   { "SimPanel.lua", "HOVER_CANCEL", "sem.stepCancelHot" }, { "SimPanel.lua", "HOVER_GOLD", "text.accent" },
+  -- SR2-L3 (smoke round 2, answer 3): a footer button hovers the link color.
+  { "SimPanel.lua", "HOT_LINK", "text.link" },
 }
 
 test("skin: Ka0s Default equals the file-local constants it replaces", function()
@@ -292,8 +298,11 @@ end)
 -- restated here with their sites in that repo as the inventory named them.
 local LOOTHISTORY = {
   { "text.headingAlt", { 0.91, 0.77, 0.42 } },          -- Panel.lua GOLD_RGB (AH header)
-  { "list.stripe", { 1, 1, 1, 0.03 } },                 -- BrowserTable / HoldingsTab stripe
-  { "list.hover", { 1, 0.82, 0, 0.10 } },               -- BrowserTable / HoldingsTab hover
+  -- BrowserTable / HoldingsTab stripe and hover, .03 and gold .10 until SkinDefs minor 28 raised them
+  -- (LibKa0s#84); LootHistory's SKIN_FALLBACK re-copies them at its re-vendor.
+  { "list.stripe", { 1, 1, 1, 0.08 } },
+  { "list.hover", { 1, 0.82, 0, 0.16 } },
+  { "list.sel", { 1, 0.82, 0, 0.26 } },                 -- SkinDefs minor 28, with the hover
   { "menu.borderAlt", { 0.62, 0.5, 0.18, 1 } },         -- BrowserTable row menu edge
   { "btn.bg", { 0.1, 0.1, 0.12, 0.9 } },                -- the three flat button copies
   { "btn.border", { 0.24, 0.24, 0.27, 0.9 } },

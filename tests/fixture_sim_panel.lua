@@ -27,9 +27,11 @@ function F.env(opts)
   opts = opts or {}
   local m = buildMocks()
   Loader.load("LibKa0s/Core.lua", nil, m)
+  Loader.load("LibKa0s/Tooltip.lua", nil, m)
   if not opts.noWidgets then
     Loader.load("LibKa0s/Widgets.lua", nil, m)
     Loader.load("LibKa0s/WidgetsDropdown.lua", nil, m)
+    Loader.load("LibKa0s/WidgetsHeader.lua", nil, m)   -- the header marks (SimPanelRender minor 4)
   end
   Loader.load("LibKa0s/Sim.lua", nil, m)
   Loader.load("LibKa0s/SimTimeline.lua", nil, m)

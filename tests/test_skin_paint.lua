@@ -154,8 +154,9 @@ test("skin paint: a skin switch repaints a Shell live, and back to Ka0s Default 
   assertEqual(g.orientation, "VERTICAL")
   assertEqual(F.rgba({ g.max.r, g.max.g, g.max.b, g.max.a }), F.tok(Skin, "midnight", "win.bgTop"), "top")
   assertEqual(F.rgba(survey(m, f.title).textColor), F.tok(Skin, "midnight", "title.text"))
+  -- Ka0s Default drew its inner rule; WoW Midnight draws none since SR2-L2, so the switch hides it.
   local inner = F.region(Skin, f, "innerTop")
-  assertEqual(F.rgba(survey(m, inner).color), F.tok(Skin, "midnight", "win.inner"))
+  assertFalse(inner:IsShown(), "WoW Midnight has no inner rule since SR2-L2")
   Skin:SetChoice(OWNER, "ka0s", "obsidian")
   assertFalse(inner:IsShown(), "a skin with no inner rule draws none")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
@@ -164,6 +165,30 @@ test("skin paint: a skin switch repaints a Shell live, and back to Ka0s Default 
   assertKa0sBand(m, Skin, F.region(Skin, f, "top"), "the title band wears Ka0s Default's gradient (R4-L2)")
   assertEqual(F.rgba(survey(m, inner).color), F.rgba(core.SKIN.innerBorder))
   assertTrue(inner:IsShown(), "Ka0s Default's inner rule again")
+end)
+
+test("skin paint: a window's edge is one 1px line with no inner rule, as WoW Forever's is", function()
+  -- SR2-L2 of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS (smoke round 2, ruling 2):
+  -- WoW Forever is the reference. red under: WoW Midnight's 2px gold edge over its #3D2F12 rule,
+  -- Azeroth's dark #6B4A22 edge under its gold rule and Ember's #6A2E17 under its amber one.
+  local want = { forever = "3a3530", midnight = "b08a3e", azeroth = "8a6a36", ember = "955727" }
+  local m, Skin = F.env()
+  for _, key in ipairs({ "forever", "midnight", "azeroth", "ember" }) do
+    local f = F.window(m)
+    F.owner(Skin, OWNER, key).Shell(f)
+    local h = want[key]
+    local rgb = { tonumber(h:sub(1, 2), 16) / 255, tonumber(h:sub(3, 4), 16) / 255,
+      tonumber(h:sub(5, 6), 16) / 255, 1 }
+    for _, side in ipairs({ "Top", "Bottom", "Left", "Right" }) do
+      local e = F.region(Skin, f, "edge" .. side)
+      assertTrue(e ~= nil and e:IsShown(), key .. ": edge" .. side .. " drawn")
+      local thick = (side == "Top" or side == "Bottom") and e:GetHeight() or e:GetWidth()
+      assertEqual(thick, 1, key .. ": edge" .. side .. " is 1px")
+      assertEqual(F.rgba(survey(m, e).color), F.rgba(rgb), key .. ": edge" .. side .. " is #" .. h)
+    end
+    local inner = F.region(Skin, f, "innerTop")
+    assertTrue(inner == nil or not inner:IsShown(), key .. ": no inner rule")
+  end
 end)
 
 test("skin paint: WoW Default's window is the dialog edge on the holder over the tiled art", function()
@@ -642,6 +667,27 @@ for _, case in ipairs({
     assertFalse((F.region(Skin, f, "edgeTop") or { IsShown = function() return false end }):IsShown(), "no edge left")
   end)
 end
+
+test("skin paint: a popup's and a menu's edge are one 1px line in Azeroth and WoW Midnight", function()
+  -- SR2-L4 of Ka0sAddonsCommonTasks docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS (smoke round 2, the owner's
+  -- answer of 2026-11-17): every flat popup and menu edge is 1px, as SR2-L2 made every window's, in
+  -- the skin's own color. red under: both skins' 2px popup and menu edges.
+  for _, key in ipairs({ "azeroth", "midnight" }) do
+    local m, Skin = F.env()
+    local S = F.owner(Skin, OWNER, key)
+    local pop, menu = artFrame(m), backdropFrame(m)
+    S.MenuFrame(pop, { popup = true })
+    S.MenuFrame(menu)
+    for _, c in ipairs({ { "popup", pop }, { "menu", menu } }) do
+      local name, f = c[1], c[2]
+      local bd = survey(m, f).backdrop
+      assertEqual(bd.edgeFile, "Interface\\Buttons\\WHITE8X8", key .. ": the " .. name .. "'s flat edge")
+      assertEqual(bd.edgeSize, 1, key .. ": the " .. name .. "'s edge is 1px")
+      assertEqual(F.rgba(survey(m, f).backdropBorderColor), F.tok(Skin, key, name .. ".border"),
+        key .. ": the " .. name .. "'s edge in its color")
+    end
+  end
+end)
 
 test("skin paint: Tooltip colors a library tooltip in every skin, its art kept", function()
   local m, Skin = F.env()

@@ -625,3 +625,30 @@ test("sim panel render: with no MakeResizable in Core the panel builds fixed", f
   core.MakeResizable = real
   if not ok then error(err, 0) end
 end)
+
+-- ── the header marks (SimPanelRender minor 4, LibKa0s#86) ──────────────────────────────────
+
+test("sim panel render: the title band reads settings, close, opening the host's registered settings", function()
+  -- red under: SimPanelRender minor 3's close alone (tests/test_header_buttons.lua has the strip)
+  local n = 0
+  core.RegisterSettingsOpener("TestHost", function() n = n + 1 end)
+  local p = newPanel({ row("a", "ready", true) })
+  p.Show()
+  local hb = p.Frame().headerButtons
+  assertTrue(type(hb) == "table", "the panel records its header marks")
+  assertEqual(table.concat(hb.order, ","), "settings,close")
+  p.Frame().settingsButton:__fire("OnClick")
+  assertEqual(n, 1, "by the panel's addonName")
+  local alone = newPanel({ row("a", "ready", true) }, { close = false })
+  alone.Show()
+  assertEqual(table.concat(alone.Frame().headerButtons.order, ","), "settings", "d.close == false: settings alone")
+end)
+
+test("sim panel render: every title-band control shows a tooltip on enter and hides it on leave", function()
+  -- red under: SimPanelRender's close with no tooltip (smoke round 1, ruling 3; SR-L2)
+  local p = newPanel({ row("a", "ready", true) })
+  p.Show()
+  local f = p.Frame()
+  dofile("tests/fixture_title_tips.lua").check({ { "settings", f.settingsButton }, { "close", f.closeButton } }, "sim panel",
+    mocks.GameTooltip)
+end)

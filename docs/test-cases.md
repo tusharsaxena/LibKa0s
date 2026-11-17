@@ -96,6 +96,91 @@ Total.
 - resize: a frame anchored to a cell comes back onto its anchor, with the new size
 - resize: a window anchored to the screen is left where the drag put it
 
+### test_tooltip.lua (32)
+
+- tooltip: the major registers minor 1 and publishes TIP_GAP = 2
+- tooltip beside: right fits
+- tooltip beside: right fits exactly
+- tooltip beside: right misses by one, left fits
+- tooltip beside: left preferred and fits
+- tooltip beside: left preferred, misses: right
+- tooltip beside: left fits exactly
+- tooltip beside: bottom clamp: slides up to fit
+- tooltip beside: top clamp: slides down to the top
+- tooltip beside: taller than the screen: top kept
+- tooltip beside: neither side fits answers nil, the fallback's cue
+- tooltip beside: the tooltip never covers the group on either side
+- tooltip attached: fits above: above, centered
+- tooltip attached: a retired "top" chooses nothing
+- tooltip attached: a retired "bottom" chooses nothing
+- tooltip attached: at the screen's bottom: still above
+- tooltip attached: fits above exactly
+- tooltip attached: no room above: flips below
+- tooltip attached: misses above by one: flips below
+- tooltip attached: x clamp at the left edge
+- tooltip attached: x clamp at the right edge
+- tooltip attached: x clamp after the flip
+- tooltip attached: no room either side: above
+- tooltip attached: no room either side, retired zone
+- tooltip attached: a tooltip wider than the screen keeps its left edge on screen
+- tooltip launcher: upper right opens toward the center
+- tooltip launcher: upper middle opens toward the center
+- tooltip launcher: upper left opens toward the center
+- tooltip launcher: lower right opens toward the center
+- tooltip launcher: lower middle opens toward the center
+- tooltip launcher: lower left opens toward the center
+- tooltip launcher: the thirds and the half are read from the button's center
+
+### test_tooltip_place.lua (20)
+
+- tooltip place: Own: ANCHOR_NONE on the element, or on opts.owner
+- tooltip place: beside: right fits, TOPLEFT on UIParent at the group's right + 2, top level with the row
+- tooltip place: beside: right does not fit, TOPRIGHT at the group's left - 2
+- tooltip place: beside: the comparison side is set before the point, ANCHOR_NONE-owned
+- tooltip place: beside: neither side fits, centered 2 above the row; at the top, below it
+- tooltip place: beside: clamped vertically, sliding only as far as needed
+- tooltip place: beside: scale, a 0.8 window and a 1.0 tooltip measure in one space
+- tooltip place: beside: a 0.5 tooltip's point is written in its own units
+- tooltip place: beside: a companion docked right of the main window opens its tips on its right
+- tooltip place: beside: a companion docked left prefers the left; the far side when that misses
+- tooltip place: beside: a hidden companion drops out of the group
+- tooltip place: beside: the group may be a frame, a list, a { main, panels } table or a function
+- tooltip place: GroupOf: a registered ancestor decides; else the outermost frame under UIParent
+- tooltip place: unreadable geometry places nothing and answers nil
+- tooltip place: a secret geometry read counts as unreadable
+- tooltip place: attached: above the element, centered; below only when there is no room above
+- tooltip place: attached: opts is the third argument (the zone slot is retired)
+- tooltip place: launcher: relative to the button, 2 off it, toward the screen's center
+- tooltip place: launcher: the button's own scale (the minimap's) is applied before the third is read
+- tooltip place: Replace re-runs the last placement after the tooltip grew
+
+### test_tooltip_sites.lua (18)
+
+- tooltip sites: an icon browser cell opens beside the browser window
+- tooltip sites: the icon browser's toolbar tips attach above their control
+- tooltip sites: a dropdown entry's string tip opens beside the menu
+- tooltip sites: a host's tooltip renderer draws, then the library places it beside the menu
+- tooltip sites: the reorder handle's tip opens beside its window
+- tooltip sites: the sim panel's controls open their tips beside the panel
+- tooltip sites: a HUD drag strip's tooltip attaches above the strip, owned by UIParent
+- tooltip sites: tooltipOwner = "cursor" and tooltipAnchor are retired to the attached placer
+- tooltip sites: a strip's mark places by its strip, not by the mark
+- tooltip sites: a host placement that fails falls back to the attached placer, never the cursor
+- tooltip sites: a host placement that answers true keeps its own point
+- tooltip sites: a chart mark's default tooltip opens beside the chart's window group
+- tooltip sites: a host's tip seam gets the legacy anchor and a fourth argument, the context
+- tooltip sites: the launcher re-places its own minimap button's tooltip, and no one else's
+- tooltip sites: the skin picker's toolbar controls attach their tips above
+- tooltip sites: unreadable geometry attaches every chrome tip above its element by hand
+- tooltip sites: a drag strip with unreadable geometry attaches its tip above by hand
+- tooltip sites: a body site with unreadable geometry falls back above its element
+
+### test_tooltip_guard.lua (3)
+
+- tooltip guard: no library file outside the Settings-canvas Options files anchors a tooltip itself
+- tooltip guard: the skin picker is read and the Settings-canvas files are not
+- tooltip guard: the check is falsifiable, a planted anchor is flagged and a comment is not
+
 ### test_env.lua (9)
 
 - env: GetAddOnMetadata reads the TOC through C_AddOns
@@ -1018,7 +1103,7 @@ Total.
 - sources: ColorFrom gives false for white and lowercase hex otherwise
 - sources: ValidColor takes none or six lowercase hex digits; Tint reads one as r, g, b
 
-### test_icon_browser.lua (28)
+### test_icon_browser.lua (30)
 
 - browser: the major gains New, its two files and the four owner tokens
 - browser: New needs the host's folder and its Options instance
@@ -1048,6 +1133,8 @@ Total.
 - browser: the swatch tints every glyph; Choose hands a glyph its color, white as none
 - browser: the color picker its swatch opened closes with the browser, and only that one
 - browser: a host's picker tracking is used in place of the browser's
+- icon browser: the window opts out of the settings mark, with its reason
+- icon browser: its close shows a tooltip on enter and hides it on leave
 
 ### test_icon_browser_search.lua (14)
 
@@ -1229,7 +1316,7 @@ Total.
 - skin stock retired: under eui the window goes to EllesmereUI; its fallback is painted
 - skin stock retired: a refused EllesmereUI (fail closed) is the library's paint
 
-### test_skin_defs.lua (41)
+### test_skin_defs.lua (44)
 
 - skin defs: the nine skins register in order with their labels
 - skin defs: every skin names only schema tokens, each of its kind
@@ -1248,7 +1335,8 @@ Total.
 - skin defs: High Contrast's edges are one pixel, window and popup included
 - skin defs: Glass rounds its window and popups only, on the Ka0s Glass nine-slice
 - skin defs: WoW Default wears the Blizzard art docs/api/Skin names
-- skin defs: WoW Midnight is flat with a 2px gold edge and gradients, no Blizzard art
+- skin defs: WoW Midnight is flat with a 1px gold edge and gradients, no Blizzard art
+- skin defs: every flat window, popup, menu and tooltip edge is 1px, in every skin
 - skin defs: only WoW Default names Blizzard art
 - skin defs: WoW Forever is warm charcoal, black centered titles, tan accent, gold headings
 - skin defs: every font, bar texture and border a skin names is shipped or an LSM default
@@ -1263,15 +1351,27 @@ Total.
 - skin defs: no skin draws a box round a slider's bar
 - skin defs: gtip.footer is Ka0s Default's 0.6 gray and every other skin's gtip.muted
 - skin defs: the launcher's tooltip tokens keep Ka0s Default's look and read in every other skin
-- skin defs: alternate rows show in every skin
-- skin defs: a hovered row still stands off an alternate row
 - skin defs: a window's header stands off its content, and the divider rule shows against both
 - skin defs: a gradient title band's flat title.bg is its blend
 - skin defs: Ka0s Default's header is the owner's dark gold gradient, lighter than its body
 - skin defs: a table header wears the skin's color, and its sort arrow another
 - skin defs: Ka0s Default states its settings art, and every other skin an edge and a rule
 - skin defs: the settings typed-color tokens keep Ka0s Default's yellow and read in every other skin
+- skin defs: the CIEDE2000 helper matches Sharma et al.'s published pairs
+- skin defs: a title-bar control's hover is clearly another color than its rest in every skin
+- skin defs: the hover stays legible on the title band and apart from a link's own hover
+- skin defs: the four raised skins hover in their own palette
 - skin defs: a shell bump re-registers the eight other skins from the new copy
+
+### test_skin_row_contrast.lua (7)
+
+- skin defs: alternate rows show in every skin
+- skin defs: a hovered row still stands off an alternate row
+- skin defs: a hovered row shows on its window in every skin
+- skin defs: Ka0s Default's selected row stands off its hovered one
+- skin defs: a section header's band stands off a row, a stripe and a hover in every skin
+- skin defs: a section header's text reads on its band in every skin
+- skin defs: a mark goes visibly hot from its rest and from a heading in every skin
 
 ### test_skin_hud_tokens.lua (6)
 
@@ -1398,7 +1498,56 @@ Total.
 - skin button contrast: a close button's glyph painted faded is drawn opaque on a hover and after it
 - skin button contrast: every skin's enabled button label holds 3:1 on its fill, well clear of disabled
 
-### test_skin_paint.lua (44)
+### test_footer_button_hover.lua (46)
+
+- footer button hover: a push button's hovered label is clearly another color than its rest in every skin
+- footer button hover: a primary button's hovered fill is clearly another color than its rest in every skin
+- footer button hover: a primary's label reads on its hover fill at least as well as at rest, or 4.5:1
+- footer button hover: a primary's hover fill is a gradient exactly where its rest fill is one
+- footer button hover: the retuned hovers are the link or its own family
+- footer button hover: the sim panel's controls hover in the link color, clear of their rest
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (ka0s)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (ka0s)
+- footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (ka0s)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (obsidian)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (obsidian)
+- footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (obsidian)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (azeroth)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (azeroth)
+- footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (azeroth)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (glass)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (glass)
+- footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (glass)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (contrast)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (contrast)
+- footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (contrast)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (ember)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (ember)
+- footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (ember)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (wow)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (wow)
+- footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (wow)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (midnight)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (midnight)
+- footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (midnight)
+- footer button hover: the skin picker's Apply to all lights its label on enter, rest on leave (forever)
+- footer button hover: the skin picker's Apply repaints its fill on enter and back on leave, its label kept (forever)
+- footer button hover: an AceGUI Button (the icon browser's Choose) lights on enter, rest on leave (forever)
+- footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (ka0s)
+- footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (obsidian)
+- footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (azeroth)
+- footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (glass)
+- footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (contrast)
+- footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (ember)
+- footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (wow)
+- footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (midnight)
+- footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (forever)
+- footer button hover: an owner-less sim panel's Start hovers Ka0s Default's link orange
+- footer button hover: a disabled primary keeps its rest fill under the pointer
+- footer button hover: a primary whose fill is remapped hovers only by a remapped hoverBg
+- footer button hover: a primary with no backdrop repaints its fill region, the gradient included
+
+### test_skin_paint.lua (46)
 
 - skin paint: the three files attach to the shell and fill every vocabulary entry
 - skin paint: the extras and controls attach to nothing without SkinPaint's helpers
@@ -1408,6 +1557,7 @@ Total.
 - skin paint: no Shell-painted window draws a line under its title, through every skin switch
 - skin paint: a second Shell call makes no new region and paints the same
 - skin paint: a skin switch repaints a Shell live, and back to Ka0s Default exactly
+- skin paint: a window's edge is one 1px line with no inner rule, as WoW Forever's is
 - skin paint: WoW Default's window is the dialog edge on the holder over the tiled art
 - skin paint: a window's edge lives on a child frame above the window's children
 - skin paint: every skin fades a stock frame's art and draws its own window, Ka0s Default too
@@ -1434,6 +1584,7 @@ Total.
 - skin paint: MenuFrame on Ka0s Default is the shared popup menu, call for call
 - skin paint: the nav rail takes a skin's edge and keeps its art under Ka0s Default
 - skin paint: the suggestion popup takes a skin's edge and keeps its art under Ka0s Default
+- skin paint: a popup's and a menu's edge are one 1px line in Azeroth and WoW Midnight
 - skin paint: Tooltip colors a library tooltip in every skin, its art kept
 - skin paint: Text colors a role, and a skin's font reaches it through the owner's font object
 - skin paint: a panel-scoped Text is given back while its owner ignores the panel, live
@@ -1733,9 +1884,9 @@ Total.
 - draghandle: the mark shows the same tooltip the strip does
 - draghandle: a body line that answers nil is dropped, not drawn empty
 - draghandle: a footer line is re-evaluated on EVERY hover, not captured at build time
-- draghandle: the owner is the host's call, because for one host it is not a style choice
-- draghandle: a second descriptor gives the mark its own tooltip, owner and anchor
-- draghandle: a descriptor may own by the cursor while its neighbor owns by the frame
+- draghandle: every tooltip is owned by UIParent at ANCHOR_NONE, whatever owner the host names
+- draghandle: a second descriptor gives the mark its own tooltip lines
+- draghandle: a descriptor's own owner is retired on the mark as on the strip
 - draghandle: a line may carry its own color, so a gold line in a white band stays gold
 - draghandle: the strip is a plain Button with a fill, never a BackdropTemplate
 - draghandle: a host with its own edge painter gets its own pixels
@@ -1747,19 +1898,19 @@ Total.
 - draghandle: a left click on the X calls onClose once, and a right click does not
 - draghandle: an X on a host with no right-click registers the left click alone
 - draghandle: the X takes the strip's drag scripts, so a drag that starts on it moves the frame
-- draghandle: the X brightens under the cursor and shows closeTooltip, owned by the X
-- draghandle: an X with no closeTooltip shows the strip's, and follows a cursor owner
+- draghandle: the X brightens under the cursor and shows closeTooltip
+- draghandle: an X with no closeTooltip shows the strip's
 - draghandle: an X on a strip whose '?' could not be built sits where the '?' would
 
 ### test_widgets_draghandle_place.lua (10)
 
-- draghandle: without tooltipPlace the call sequence is exactly minor 3's, for both owners
+- draghandle: without tooltipPlace the calls are own by UIParent, draw, one Show, whatever the owner field
 - draghandle: tooltipPlace owns by UIParent at ANCHOR_NONE, draws, shows, then places
 - draghandle: tooltipPlace runs after Show, so the tooltip is measured when it is placed
 - draghandle: the mark and the X hand tooltipPlace the frame hovered, not the strip
-- draghandle: a tooltipPlace that raises falls back to the cursor and redraws the same lines
-- draghandle: a tooltipPlace that answers anything but true falls back to the cursor
-- draghandle: a descriptor's own place wins over the spec's, as owner and anchor do
+- draghandle: a tooltipPlace that raises falls back to the library's placement, drawn once
+- draghandle: a tooltipPlace that answers anything but true falls back to the library's placement
+- draghandle: a descriptor's own place wins over the spec's
 - draghandle: a descriptor may place while the spec does not, and its neighbor is untouched
 - draghandle: a tooltipPlace that is not a function is ignored, not called
 - draghandle: DragHandle is at minor 4 or later, the placement hook's floor
@@ -1967,6 +2118,61 @@ Total.
 - Footer skin: an owned mark rests in icon.tint and lights in icon.hot
 - Footer skin: an unregistered owner draws the owner-less footer
 
+### test_widgets_bar.lua (24)
+
+- bar: a bonus past the cap clamps the base, draws to the end and keeps the full text
+- bar: the bonus segment wears the temp or the permanent color
+- bar: an empty cap draws nothing and raises nothing
+- bar: a segmented bar draws to its last cap, its fill one segment per cap entered
+- bar: markers keep the end and drop what is past it; labels are carried in geom, not drawn
+- bar: the timer formats m:ss and h:mm:ss
+- bar: SetTimer shows the time left, ticks it, and SetTimer(nil) disarms the OnUpdate
+- bar: a timer that runs out clears itself, and a style with showTimer false draws none
+- bar: the presets carry Skill Master's sizes and switches; overrides win; an unknown key is row
+- bar: the pool hands bars back in order and clears their timers on release
+- bar: a secret width lays out on the last plain width
+- bar: the template's tokens, and {rank} as an alias of {value}
+- bar: a reverse fill mirrors the geometry from the right edge
+- bar: Park disarms the timer and clears the points
+- bar: an invalid parent raises at the caller
+- bar: an owner-less bar paints Ka0s Default, with the Skin major and without it
+- bar: the owner-less fallback is Ka0s Default's values, token for token
+- bar: a registered owner's token names repaint on a skin switch; a literal does not move
+- bar: a style slot remapped onto an owner token reads it
+- bar: a values color is a literal or a token name, and the segments shade it
+- bar: a Solid border draws four edges; None and size 0 draw none; another style a backdrop
+- bar: a non-Solid border style draws through LibSharedMedia's border on a backdrop child
+- bar: an acquire with no Pool major degrades to the same order
+- bar: the suite releases its two benches
+
+### test_header_buttons.lua (25)
+
+- header buttons: Core's registry records an opener, answers HasSettings, and OpenSettings calls it
+- header buttons: a raising opener is caught and answers false
+- header buttons: Launcher:New registers openSettings by the addon's folder name (addonName)
+- header buttons: a launcher with a different skin owner registers under both
+- header buttons: the launcher instance gains no member
+- header buttons: left to right extras in their order, settings, close; offsets from the corner
+- header buttons: close defaults to hiding the window, and close = false builds none
+- header buttons: the close is the host's factory, called with the owner, or one the window has
+- header buttons: settings opens the owner's registered opener
+- header buttons: a window's own settings function overrides the registry
+- header buttons: hideOnSettings hides the window before settings opens
+- header buttons: a raising settings override is caught
+- header buttons: settings = false needs a reason, and records it
+- header buttons: the art comes from the owner's copy, else the word, else the glyph
+- header buttons: a mark's tooltip is attached above it, and tips = false is retired
+- header buttons: Core's close mark says Close above itself, and an owner's words replace it
+- header buttons: a title-bar tooltip is drawn in the owner's gtip.title
+- header buttons: an adopted or host-made close carries the Close tooltip too
+- header buttons: a drag strip carries no settings mark unless it opts in
+- header buttons: a drag strip's marks each carry a tooltip, the library's words without the host's
+- header buttons: the debug console reads Copy, Clear, settings, close, every control with a tooltip
+- header buttons: the console's tooltips are module strings a host's L overrides, rawget-keyed
+- header buttons: the console's onSettings overrides the registry, on both its windows
+- header buttons: the copy window reads settings, close, and hides itself before settings opens
+- header buttons: the perf panel reads settings, close
+
 ### test_widgets_reorder.lua (7)
 
 - reorder: a host OnUpdate on a row frame survives a drag start and end
@@ -2048,7 +2254,7 @@ Total.
 - pixel lines: the line chart's axis, grid, markers, crosshair and series are physical pixels, re-sized
 - pixel lines: an owned line chart keeps physical pixels through a skin switch
 
-### test_debuglog.lua (75)
+### test_debuglog.lua (73)
 
 - dbg: FormatPlain wraps the tag in brackets with single-space separators
 - dbg: FormatPlain tolerates a nil tag
@@ -2096,8 +2302,6 @@ Total.
 - dbg: New requires a name, a title, a font and an isEnabled/setEnabled pair
 - dbg: a host that overrides a string gets its own wording
 - dbg: DebugLog re-exports Core's close button so a host has one factory, not two
-- dbg: a newer Core loading after DebugLog supplies the console's close button
-- dbg: an instance built after the upgrade draws the newer Core's button
 - dbg: Add renders a secret message as the sentinel
 - an L whose metatable synthesizes every key does NOT mask the module's own strings
 - a REAL entry in an L that also has a fallback still overrides
@@ -2112,19 +2316,24 @@ Total.
 - dbg: a close-button factory returning nil is survivable, as Core's own is
 - dbg: the title-bar offsets are derived from the close button's width
 - dbg: with addonName the title bar draws icons, and they are narrower than the words
-- dbg: an icon control carries NO tooltip
+- dbg: an icon control's tooltip opens above it, never under it on the log
 - dbg: the close button is told the addon name too, not just copy and clear
 - dbg: the library's own close forwarder passes the name through to Core
 - dbg: no addonName is the minor-8 title bar, word for word
 - dbg: an addonName the art does not answer for falls back to words
-- dbg: a wider host close button pushes Copy and Clear out of its way
+- dbg: a wider host close button pushes settings, Clear and Copy out of its way
 - dbg: a close button with no measurable width falls back to the library's own
-- dbg: with no close button at all the offsets are still the minor-3 defaults
+- dbg: with no close button at all the settings mark takes the corner
 - dbg: the copy window is built by Widgets.CopyWindow, not by this file
 - dbg: the converged copy window keeps its named scroll frame
 - dbg: the converged copy window keeps its global frame name
 - dbg: the copy window still shows the whole buffer, in order
 - dbg: the copy window re-anchors to the console instead of a fixed center
+
+### test_debuglog_coreskew.lua (2)
+
+- dbg: a newer Core loading after DebugLog supplies the console's close button
+- dbg: an instance built after the upgrade draws the newer Core's button
 
 ### test_debuglog_copytiming.lua (10)
 
@@ -2185,7 +2394,7 @@ Total.
 - diag link: its label is a module string the host's L overrides
 - diag link: not drawn when the diagnostics file did not install the report
 - diag link: anchored to the right edge of the Debug On/Off label, with a gap
-- diag link: orange at rest, brighter under the pointer, orange again after
+- diag link: gray at rest, orange under the pointer, gray again after
 - diag link: a click runs the report with logging off, and turns it on first
 - diag link: opted out, a click writes the report and leaves logging off
 
@@ -2221,6 +2430,63 @@ Total.
 - dbg descriptor: with no print the acknowledgment reaches DEFAULT_CHAT_FRAME
 - dbg descriptor: a safeToString that is not a function falls back to Core's
 - dbg descriptor: a skin that is not a table falls back to Core.SKIN, and a table is handed on
+
+### test_debuglog_plain.lua (10)
+
+- plain: a colored message reaches the view as given and the buffer stripped
+- plain: an escaped pipe survives the strip
+- plain: a hyperlink keeps its text, and textures, atlases and keys go
+- plain: |n becomes a space and a raw newline is kept
+- plain: a line with no pipe is byte for byte what FormatPlain makes
+- plain: the gated sink's lines are plain in the buffer too
+- plain: Clear wipes the view entries with the buffer
+- plain: compaction keeps the view entries beside their lines
+- plain: a skin switch rebuilds an owned console's log with each message's colors
+- plain: a view entry that no longer matches its line is not used
+
+### test_debuglog_report.lua (31)
+
+- report: the pointer string is pinned, and Report and Serialize are on every instance
+- report: lands with logging off, under its tag, after a /<slash> <title> header
+- report: never turns logging off either, and never clears the console
+- report: with no slash the header is the title alone
+- report: a tag that is not a string reports as [Report]
+- report: reveals a hidden console and leaves a shown one shown
+- report: prints exactly one pointer line, naming the title and counting the header
+- report: the pointer is the host's through d.L
+- report: repaints once, not once per line
+- report: a body that writes nothing writes no report, prints nothing and opens nothing
+- report: a body that is not a function writes nothing
+- report: a raising body writes what it collected and one failure line, and still points
+- report: a body that raises before writing still reports the failure
+- report: a secret body line renders the sentinel and raises nothing
+- report: capped at the diagnostics cap, with one truncated line
+- report: a capped raising body keeps its failure line
+- serialize: sorts keys, indents nested tables and marks a cycle (ConsumableMaster's case)
+- serialize: writes nothing to the console or to chat
+- serialize: a table shared by two branches renders under both
+- serialize: numbers first, then strings, then every other key; odd strings bracketed
+- serialize: a scalar, an empty table and an indent of the caller's
+- serialize: a huge table stops at the line cap and says so
+- serialize: nesting past the depth cap reads {...}
+- serialize: sort = false walks the table in its own order
+- serialize: a secret value or table renders the sentinel and is never inspected
+- serialize: a secret key renders the sentinel, sorted after every readable key
+- serialize: a probe that raises counts as a secret
+- serialize: a concat-hostile table is walked rawly and raises nothing
+- serialize: a raise inside the walk keeps the lines so far and says it failed
+- serialize: the instance's stringifier renders the values, the library's renders them bare
+- serialize: composes with a report's out
+
+### test_debuglog_footer.lua (7)
+
+- debuglog footer: the status line is one W.Footer on the console, with no owner and no left text
+- debuglog footer: the shell's UpdateStatus writes the footer's counter
+- debuglog footer: the log and its scrollbar end 4 px above the footer
+- debuglog footer: the counter keeps the descriptor's mono face, owned or not, across a switch
+- debuglog footer: the counter is drawn in text.muted, where it drew log.count
+- debuglog footer: an owned console's hairline follows its skin through S.Divider
+- debuglog footer: a Widgets without Footer builds a console with no status line, and it still logs
 
 ### test_resize_windows.lua (23)
 
@@ -2259,7 +2525,7 @@ Total.
 - core: RaiseStaticPopups never shows, hides or re-stratas a popup
 - tool windows: with no RaiseStaticPopups in Core the three windows build and show
 
-### test_tool_windows_skin.lua (17)
+### test_tool_windows_skin.lua (20)
 
 - tool windows skin: without a registered owner each window is the previous minors' paint
 - tool windows skin: an unregistered console logs Ka0s Default's colored line, as before
@@ -2278,6 +2544,9 @@ Total.
 - tool windows skin: under Ka0s Default the sim key column is gtip.title's gold, the rest white
 - tool windows skin: Ka0s Default's tool-window tokens are the constants the windows drew
 - tool windows skin: every skin's tool-window text reads on its own window
+- tool windows skin: the close X rests in icon.tint in every skin, its hover a red of its own
+- tool windows skin: every skin's title-bar controls rest in icon.tint and hover text.link, the close close.hot
+- tool windows skin: an unowned console's title bar is Ka0s Default's icon.tint, text.link and close.hot
 
 ### test_tool_windows_scope.lua (10)
 
@@ -2487,7 +2756,7 @@ Total.
 - sl debug: a non-function debug field is ignored
 - sl debug: the chat is byte for byte the same with and without a debug sink
 
-### test_launcher.lua (58)
+### test_launcher.lua (50)
 
 - launcher: New refuses a descriptor missing name, icon or openSettings
 - launcher: a descriptor error names the host's line, not the library's
@@ -2535,6 +2804,13 @@ Total.
 - launcher: a name LibDataBroker already holds takes that object rather than none
 - launcher: a host locale overrides a report, and a key-echoing fallback does not
 - launcher: with no descriptor print, a report reaches the chat frame
+- launcher: Sim mode is a live checkbox that toggles through toggleSim, once
+- launcher: Sim mode reads the host's 'window shown or running' and one click closes an idle window (R7-L1)
+- launcher: Open settings opens the panel from the menu, enabled or not
+- launcher: one Register is one broker object and one minimap button, with no compartment entry (SG-L2)
+
+### test_launcher_skin.lua (8)
+
 - launcher: an owner's tooltip lines take its skin's tokens, and a switch reaches the next show
 - launcher: Ka0s Default keeps the tooltip's look to the byte
 - launcher: the descriptor's owner names the skin where it is not the folder
@@ -2543,10 +2819,25 @@ Total.
 - launcher: the menu ends with Open skin selector for a skin owner that passes openSkinPicker
 - launcher: Open skin selector is grayed with the note while the addon is disabled
 - launcher: it alone makes a menu, and a host that is no skin owner or passes nothing gets none
-- launcher: Sim mode is a live checkbox that toggles through toggleSim, once
-- launcher: Sim mode reads the host's 'window shown or running' and one click closes an idle window (R7-L1)
-- launcher: Open settings opens the panel from the menu, enabled or not
-- launcher: one Register is one broker object and one minimap button, with no compartment entry (SG-L2)
+
+### test_launcher_extras.lua (16)
+
+- launcher extras: they sit after Show window and before Open settings, in declared order
+- launcher extras: they follow Open skin selector's rule, staying above Open settings
+- launcher extras: a host with extras and no toggle still gets them, above Open settings
+- launcher extras: no field, or an empty one, leaves the menu exactly as it was
+- launcher extras: `checked` makes a checkbox whose tick is asked live; none makes a button
+- launcher extras: a click calls the host's onClick once and closes the menu
+- launcher extras: gated by default, grayed with the note while disabled, and calling nothing
+- launcher extras: `gated = false` stays live while the addon is disabled
+- launcher extras: the label is the host's plain string, through no lib.STRINGS key
+- launcher extras: a raising onClick is reported as MENU_FAILED, named by its label
+- launcher extras: a raising `checked` costs its tick, not the menu
+- launcher extras: an entry's `clients` builds it only on those clients
+- launcher extras: each malformed field raises at New with a named message
+- launcher extras: two well-formed entries register
+- launcher extras: the menu reads the list New checked, not a later edit of the host's table
+- launcher extras: the instance gains no member
 
 ### test_atenable.lua (21)
 
@@ -3283,9 +3574,9 @@ Total.
 - appearance: the copy has its own heading, Other Ka0s addons, after the Scope, the tab ending on it
 - appearance: the note leads the Look section, ahead of the first skin
 
-### test_options_skin_picker.lua (41)
+### test_options_skin_picker.lua (43)
 
-- skin picker: OptionsSkinPicker is minor 11, paired on the shell, and attaches three members
+- skin picker: OptionsSkinPicker is minor 12, paired on the shell, and attaches three members
 - skin picker: a newer attach of the file adopts the queue already on the library table
 - skin picker: shows one small DIALOG, toplevel, clamped window naming the addon and the skin worn now
 - skin picker: the window's center sits 75% of the way up UIParent, re-anchored on every show
@@ -3326,6 +3617,8 @@ Total.
 - skin picker: a tooltip title takes gtip.title, read at hover, Ignore settings panel or not
 - skin picker: a long tooltip wraps
 - skin picker: under Ka0s Default a tooltip title is the client's gold, written out
+- skin picker: the header reads settings, close, the gear moved into it from the dropdown row
+- skin picker: every header control shows a tooltip on enter and hides it on leave
 
 ### test_options_skin_picker_shared.lua (10)
 
@@ -3358,7 +3651,7 @@ Total.
 
 ### test_options_skin_picker_preview.lua (23)
 
-- skin picker preview: OptionsSkinPicker is minor 11, with the eye's per-mode words
+- skin picker preview: OptionsSkinPicker is minor 12, with the eye's per-mode words
 - skin picker preview: a fresh show with the surface hidden and the mode off enters it, then raises
 - skin picker preview: a host with no isShown counts as hidden
 - skin picker preview: a shown surface, or a mode already on, is not entered and not undone
@@ -4507,9 +4800,10 @@ Total.
 - sim panel: every documented optional field filled in place after New is read at use
 - sim panel: anchorTo, stepDelay and the required callbacks and slash, reassigned after New, are read at use
 
-### test_sim_panel_controls.lua (18)
+### test_sim_panel_controls.lua (19)
 
-- sim panel: the title defaults to name .. ' - Simulation', and d.panel.title overrides it
+- sim panel: the title defaults to PANEL_TITLE ('%s - SIM'), and d.panel.title overrides it
+- sim panel: a host's PANEL_TITLE string (d.L) formats the default title
 - sim panel: headless, ShowPanel answers false and PanelRows still composes
 - sim panel: Show, Hide, Toggle, IsPanelShown
 - sim panel: the empty verb opens it and `panel` toggles it
@@ -4528,7 +4822,7 @@ Total.
 - sim panel: running, the controls replace the picker, and Pause swaps with Resume
 - sim panel: Restart through the controls prints what the typed verb prints
 
-### test_sim_panel_render.lua (34)
+### test_sim_panel_render.lua (36)
 
 - sim panel render: the renderer is the internal seam lib.__StepPanel, not a Widgets member
 - sim panel render: the descriptor's required fields raise when missing
@@ -4564,6 +4858,8 @@ Total.
 - sim panel render: with a check, a done row shows the tinted check over a hidden dot
 - sim panel render: with no check, a done row keeps its dot and no check is built
 - sim panel render: with no MakeResizable in Core the panel builds fixed
+- sim panel render: the title band reads settings, close, opening the host's registered settings
+- sim panel render: every title-band control shows a tooltip on enter and hides it on leave
 
 ### test_sim_isolation.lua (11)
 
@@ -4597,6 +4893,22 @@ Total.
 - sim host: the host's fields are on its own table, and the instance gained none (C.4)
 - sim host: a stand-down mid-run stops first, suppresses cleanup delivery and hides the panel
 - sim host: a latch set without a stop is caught by Fire's self-stop backstop
+
+### test_sim_sample.lua (13)
+
+- sim sample: SAMPLE holds a retail and a forever set of five characters, and nothing else
+- sim sample: every name, surname and pet is fictional by the convention
+- sim sample: names and full names are unique within a set
+- sim sample: a retail character is Name-Realm, with a specID and role of its own class
+- sim sample: a forever character is First Surname on a forever class and a classic talent tree
+- sim sample: a pet only on a class that has one, and each set shows one
+- sim sample: each set covers a tank, a healer and damage
+- sim sample: Sample names its client, and answers a copy the caller owns
+- sim sample: Sample() answers the active client's set through LibKa0s-Compat-1.0
+- sim sample: Sample() reads the client at call time, not at load
+- sim sample: with no Compat, or a client that is neither, Sample() answers retail
+- sim sample: an unknown client raises at the caller's line
+- sim sample: the shell's minor is 3
 
 ### test_loader.lua (6)
 
@@ -4847,7 +5159,7 @@ Total.
 - record: __aceguiLive counts a Create per type and gives it back on Release
 - record: __aceguiLive ignores a Release it never saw created, and a registered type counts
 
-### test_mock_events.lua (14)
+### test_mock_events.lua (22)
 
 - events: an EventRegistry callback appears in __registrations as kind 'callback'
 - events: UnregisterCallback removes the callback from __registrations
@@ -4863,6 +5175,14 @@ Total.
 - events: the frame raise names the caller, not the kit
 - events: C_EventUtils.IsEventValid answers false for a bad name and true otherwise
 - events: a suite may remove C_EventUtils to model an older client
+- events: a frame held only by its RegisterEvent survives a collection and still hears the event
+- events: a frame held only by its RegisterUnitEvent survives a collection and still hears the event
+- events: a frame that never registered is not held
+- events: UnregisterEvent of the last registration releases the hold
+- events: UnregisterAllEvents releases the hold
+- events: an AceEvent-embedded frame's UnregisterAllEvents releases the hold
+- events: a registered frame is collected with its dropped build
+- events: the hold adds no closure per frame -- the unregister methods are the stub's own
 
 ### test_mock_resize.lua (6)
 
@@ -4937,6 +5257,13 @@ Total.
 - paint mock: a StatusBar records its fill texture and color, and answers them back
 - paint mock: only a StatusBar answers the StatusBar family
 
+### test_mock_screen.lua (4)
+
+- screen mock: UIParent answers the screen's size and scale, and restore puts them back
+- screen mock: a frame answers its edges, center, scale, parent and shown state
+- screen mock: a tooltip records owner, points and anchor type in one ordered log
+- screen mock: rectOf reads a point relative to a frame the screen built, at the tooltip's scale
+
 ### test_surface_parity.lua (7)
 
 - parity: a stub carrying every public member of a live major passes
@@ -5010,7 +5337,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 56
+- the kit is revision 57
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -5306,6 +5633,10 @@ Total.
 |-------|------:|
 | test_core.lua | 52 |
 | test_core_resize.lua | 26 |
+| test_tooltip.lua | 32 |
+| test_tooltip_place.lua | 20 |
+| test_tooltip_sites.lua | 18 |
+| test_tooltip_guard.lua | 3 |
 | test_env.lua | 9 |
 | test_compat.lua | 64 |
 | test_role.lua | 29 |
@@ -5337,7 +5668,7 @@ Total.
 | test_charts_host.lua | 15 |
 | test_media.lua | 46 |
 | test_icon_browser_sources.lua | 26 |
-| test_icon_browser.lua | 28 |
+| test_icon_browser.lua | 30 |
 | test_icon_browser_search.lua | 14 |
 | test_skin.lua | 36 |
 | test_skin_override.lua | 28 |
@@ -5346,13 +5677,15 @@ Total.
 | test_skin_remap.lua | 12 |
 | test_skin_icon_border.lua | 21 |
 | test_skin_stock_default.lua | 9 |
-| test_skin_defs.lua | 41 |
+| test_skin_defs.lua | 44 |
+| test_skin_row_contrast.lua | 7 |
 | test_skin_hud_tokens.lua | 6 |
 | test_skin_hud_members.lua | 30 |
 | test_skin_host_gaps.lua | 46 |
 | test_skin_width_parity.lua | 18 |
 | test_skin_button_contrast.lua | 10 |
-| test_skin_paint.lua | 44 |
+| test_footer_button_hover.lua | 46 |
+| test_skin_paint.lua | 46 |
 | test_skin_paint_controls.lua | 35 |
 | test_skin_eui.lua | 30 |
 | test_skin_ace.lua | 28 |
@@ -5372,18 +5705,24 @@ Total.
 | test_widgets_teststrip.lua | 21 |
 | test_widgets_teststrip_dock.lua | 20 |
 | test_widgets_footer.lua | 18 |
+| test_widgets_bar.lua | 24 |
+| test_header_buttons.lua | 25 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
 | test_widgets_skin_scope.lua | 20 |
 | test_widgets_pixel_edges.lua | 13 |
-| test_debuglog.lua | 75 |
+| test_debuglog.lua | 73 |
+| test_debuglog_coreskew.lua | 2 |
 | test_debuglog_copytiming.lua | 10 |
 | test_debuglog_diagnostics.lua | 47 |
 | test_debuglog_gates.lua | 20 |
 | test_debuglog_descriptor.lua | 7 |
+| test_debuglog_plain.lua | 10 |
+| test_debuglog_report.lua | 31 |
+| test_debuglog_footer.lua | 7 |
 | test_resize_windows.lua | 23 |
 | test_tool_windows_layering.lua | 8 |
-| test_tool_windows_skin.lua | 17 |
+| test_tool_windows_skin.lua | 20 |
 | test_tool_windows_scope.lua | 10 |
 | test_slash.lua | 77 |
 | test_slash_parse.lua | 33 |
@@ -5391,7 +5730,9 @@ Total.
 | test_slash_refusal.lua | 7 |
 | test_slash_profile.lua | 30 |
 | test_slash_debug.lua | 14 |
-| test_launcher.lua | 58 |
+| test_launcher.lua | 50 |
+| test_launcher_skin.lua | 8 |
+| test_launcher_extras.lua | 16 |
 | test_atenable.lua | 21 |
 | test_options.lua | 57 |
 | test_options_render.lua | 27 |
@@ -5418,7 +5759,7 @@ Total.
 | test_options_keybinds_sync.lua | 14 |
 | test_options_appearance.lua | 36 |
 | test_options_appearance_overrides.lua | 26 |
-| test_options_skin_picker.lua | 41 |
+| test_options_skin_picker.lua | 43 |
 | test_options_skin_picker_shared.lua | 10 |
 | test_options_skin_picker_close.lua | 13 |
 | test_options_skin_picker_preview.lua | 23 |
@@ -5468,11 +5809,12 @@ Total.
 | test_sim_verbs.lua | 42 |
 | test_sim_autoplay.lua | 16 |
 | test_sim_panel.lua | 41 |
-| test_sim_panel_controls.lua | 18 |
-| test_sim_panel_render.lua | 34 |
+| test_sim_panel_controls.lua | 19 |
+| test_sim_panel_render.lua | 36 |
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
 | test_sim_host.lua | 7 |
+| test_sim_sample.lua | 13 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -5484,13 +5826,14 @@ Total.
 | test_mock_base.lua | 33 |
 | test_mock_ace.lua | 40 |
 | test_mock_record.lua | 42 |
-| test_mock_events.lua | 14 |
+| test_mock_events.lua | 22 |
 | test_mock_resize.lua | 6 |
 | test_mock_client.lua | 4 |
 | test_mock_lines.lua | 5 |
 | test_mock_bindings.lua | 17 |
 | test_mock_layers.lua | 7 |
 | test_mock_paint.lua | 16 |
+| test_mock_screen.lua | 4 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
@@ -5511,4 +5854,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4665** |
+| **Total** | **4944** |

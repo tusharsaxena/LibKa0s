@@ -108,7 +108,9 @@ local function env(opts)
   local files = {}
   for i, f in ipairs(A.FILES) do files[i] = f end
   files[#files + 1] = "OptionsAppearance"
+  files[#files + 1] = "Widgets"; files[#files + 1] = "WidgetsHeader"   -- the picker's header marks (LibKa0s#86)
   files[#files + 1] = "OptionsSkinPicker"
+  files[#files + 1] = "OptionsSkinPickerQueue"
   files[#files + 1] = "OptionsSkinPickerRows"
   local m, Skin, lib, ace = A.env({ files = files, lsm = not opts.noLsm and LSM or nil })
   Loader.load("LibKa0s/OptionsMedia.lua", nil, m)

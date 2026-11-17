@@ -28,7 +28,7 @@ local OPENER = "TestHostOpener"
 local SKIN = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls" }
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest",
   "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav",
-  "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerRows",
+  "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerQueue", "OptionsSkinPickerRows",
   "OptionsSwitch", "OptionsMedia" }
 
 -- The client's SettingsFrameTemplate as the window reads it (wow-ui-source@297d7aa:Interface/AddOns/
@@ -67,13 +67,13 @@ local function env(opts)
   installLayers(m)
   armFrames(m)
   m.prints, m.timers = {}, {}
-  local files = { "Core", "Compat", "Media" }
+  local files = { "Core", "Tooltip", "Compat", "Media" }
   if opts.catalog then files[#files + 1] = "MediaIcons" end
   for _, f in ipairs(SKIN) do files[#files + 1] = f end
   files[#files + 1] = "Pool"
   files[#files + 1] = "Widgets"
   files[#files + 1] = "WidgetsDropdown"
-  files[#files + 1] = "WidgetsCopyWindow"
+  files[#files + 1] = "WidgetsCopyWindow"; files[#files + 1] = "WidgetsHeader"
   for _, f in ipairs(OPTIONS) do files[#files + 1] = f end
   for _, f in ipairs(opts.files or { "IconBrowserSources", "IconBrowserWindow", "IconBrowser" }) do
     files[#files + 1] = f
