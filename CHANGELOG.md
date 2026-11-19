@@ -10,6 +10,23 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.106.0 — 2026-11-19
+
+Opened 2026-11-19, on `feat/2026-11-19-hud-dock-guard` (off `master` at v1.105.0): one fix, filed as RangeMaster#17.
+
+Versions in this release: `LibKa0s-Widgets-1.0` key **28.2.7.14.1.7.8.6.1.1** (Widgets minor 28); every other file at its v1.105.0 minor, and the test kit at revision **57**. No `NEEDS_*` floor rises, no member changes, and no file is added.
+
+### Fixed
+
+- **The HUD dock guards its measurements (Widgets minor 28, RangeMaster#17).** The client refuses `GetTop`, `GetBottom`, `GetHeight` and their kin on a region anchored to a nameplate, and refuses by raising ("Can't measure restricted regions"). The `dock = "hud"` placement measured its target, its `clear` frame and the strip from unguarded `OnShow` / `OnSizeChanged` hooks, so a strip docked on a display riding a plate (Ka0s Range Master's nameplate containers in Test mode) raised from the host's frame on every show and resize, blamed on whichever addon's copy had won. Every read now goes through a guarded `measure`: a refused read answers nil, and the strip docks on the display's top edge, unflipped, clearing nothing it cannot measure. A display that can be measured is placed exactly as at 27. `tests/test_widgets_teststrip_dock.lua` gains the case (red under minor 27). The API document is [`docs/api/Widgets/version-28.2.7.14.1.7.8.6.1.1-docs.md`](docs/api/Widgets/version-28.2.7.14.1.7.8.6.1.1-docs.md).
+- **What a consumer owes at its re-vendor:** nothing beyond the copy. A host suite that pins `Widgets 27` re-pins it at 28. Range Master drops the hand-anchored strip it wore on a plate to dodge the error.
+
+Release gate (`docs/automated-tests/20261119-095355/`): lint pass, 0/0 in 372 files;
+tests pass, 4948 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Current — `LibKa0s/Widgets.lua`'s docking, `tests/test_widgets_teststrip.lua`, `tests/test_widgets_teststrip_dock.lua` and the new Widgets document reviewed; only where a refused measurement leaves the strip moved (Range Master's nameplate strips, for step 8).
+
 ## v1.105.0 — 2026-11-16
 
 Opened 2026-11-16, on `feat/2026-11-16-libka0s-75-plus` (off `master` at v1.104.0): the LibKa0s issues #75 and up (Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`, its design and the owner's rulings of 2026-11-16): the library work of #75, #78, #79, #80, #81, #82, #84, #86, #87, #90 and #92, with the four peels the size triggers asked for first. Not built here: #76 (Ace3, blocked upstream), #83 (FTUX, a later run by the owner's ruling), #85, #88 and #89 (adoption only) and #91 (closed, its follow-ups dev-copilot#1 and LibKa0s#93). One new major (`LibKa0s-Tooltip-1.0`), five new payload files, eleven majors' keys moved and kit revision 57. Recorded by `LK-REL` of that bundle.

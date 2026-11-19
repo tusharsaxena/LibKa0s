@@ -209,6 +209,25 @@ test("TestStrip dock: the flip reads screen pixels, the display's scale and the 
   end)
 end)
 
+test("TestStrip dock: a display the client refuses to measure (on a nameplate) docks unflipped, no error", function()
+  -- red under: minor 27's unguarded reads (RangeMaster#17: "Can't measure restricted regions")
+  recording(function()
+    at(mocks.UIParent, 768, 0)
+    local function refuse() error("Frame:GetTop(): Can't measure restricted regions", 2) end
+    local hud, handle = frame(), at(frame(), 790, 770)
+    for _, m in ipairs({ "GetTop", "GetBottom", "GetEffectiveScale", "GetHeight", "GetWidth" }) do
+      rawset(hud, m, refuse)
+    end
+    local s = W.TestStrip(mocks.UIParent, { dock = "hud", target = hud, clear = handle })
+    rawset(s, "GetHeight", refuse)   -- anchored to the display, the strip is refused too
+    handle:Show()
+    s:Show(); s:Place(); hud:__fire("OnSizeChanged"); hud:__fire("OnShow")
+    assertFalse(s:IsFlipped(), "a refused read is no flip")
+    assertPoint(s, 1, "BOTTOMLEFT", hud, "TOPLEFT", 0, 0, "on the top edge, clearing nothing it cannot measure")
+    assertPoint(s, 2, "BOTTOMRIGHT", hud, "TOPRIGHT", 0, 0)
+  end)
+end)
+
 test("TestStrip dock: a HUD strip with unreadable edges stays on top", function()
   recording(function()
     local s = W.TestStrip(mocks.UIParent, { dock = "hud", target = frame() })
