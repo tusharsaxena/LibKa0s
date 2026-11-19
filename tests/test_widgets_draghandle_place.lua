@@ -113,8 +113,12 @@ end)
 
 test("draghandle: a retired hook of any shape or answer changes nothing and raises nothing", function()
   -- Kept accepted for compatibility: a host not yet updated passes one of these and must not error.
-  for _, hook in ipairs({ function() error("secret number") end, function() return false end,
-                          function() end, function() return 1 end, "right", {} }) do
+  local function raises() error("secret number") end
+  local function answersFalse() return false end
+  local function answersNil() return nil end
+  local function answersOne() return 1 end
+  local hooks = { raises, answersFalse, answersNil, answersOne, "right", {} }
+  for _, hook in ipairs(hooks) do
     local h = W.DragHandle(mocks.UIParent, baseSpec({ tooltip = { title = "Buffs" }, tooltipPlace = hook }))
     local log = hoverLog(h)
     assertEqual(#log, 3, "own, title, Show for " .. type(hook))
