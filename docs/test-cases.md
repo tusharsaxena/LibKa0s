@@ -165,8 +165,8 @@ Total.
 - tooltip sites: a HUD drag strip's tooltip attaches above the strip, owned by UIParent
 - tooltip sites: tooltipOwner = "cursor" and tooltipAnchor are retired to the attached placer
 - tooltip sites: a strip's mark places by its strip, not by the mark
-- tooltip sites: a host placement that fails falls back to the attached placer, never the cursor
-- tooltip sites: a host placement that answers true keeps its own point
+- tooltip sites: a host placement that fails changes nothing: above the strip, never the cursor
+- tooltip sites: a host placement that answers true no longer moves the strip's tooltip
 - tooltip sites: a chart mark's default tooltip opens beside the chart's window group
 - tooltip sites: a host's tip seam gets the legacy anchor and a fourth argument, the context
 - tooltip sites: the launcher re-places its own minimap button's tooltip, and no one else's
@@ -1902,18 +1902,13 @@ Total.
 - draghandle: an X with no closeTooltip shows the strip's
 - draghandle: a '?' on a strip whose X could not be built sits where the X would
 
-### test_widgets_draghandle_place.lua (10)
+### test_widgets_draghandle_place.lua (5)
 
 - draghandle: without tooltipPlace the calls are own by UIParent, draw, one Show, whatever the owner field
-- draghandle: tooltipPlace owns by UIParent at ANCHOR_NONE, draws, shows, then places
-- draghandle: tooltipPlace runs after Show, so the tooltip is measured when it is placed
-- draghandle: the mark and the X hand tooltipPlace the frame hovered, not the strip
-- draghandle: a tooltipPlace that raises falls back to the library's placement, drawn once
-- draghandle: a tooltipPlace that answers anything but true falls back to the library's placement
-- draghandle: a descriptor's own place wins over the spec's
-- draghandle: a descriptor may place while the spec does not, and its neighbor is untouched
-- draghandle: a tooltipPlace that is not a function is ignored, not called
-- draghandle: DragHandle is at minor 4 or later, the placement hook's floor
+- draghandle: tooltipPlace is accepted and never called, so the hover is the hook-less one
+- draghandle: a retired hook of any shape or answer changes nothing and raises nothing
+- draghandle: a descriptor's own place is retired with the spec's
+- draghandle: WidgetsDragHandleTip is at minor 2 or later, the placement hook's retirement
 
 ### test_widgets_draghandle_layers.lua (12)
 
@@ -5707,7 +5702,7 @@ Total.
 | test_widgets_submenu.lua | 18 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 49 |
-| test_widgets_draghandle_place.lua | 10 |
+| test_widgets_draghandle_place.lua | 5 |
 | test_widgets_draghandle_layers.lua | 12 |
 | test_widgets_draghandle_fit.lua | 10 |
 | test_widgets_draghandle_marks.lua | 7 |
@@ -5867,4 +5862,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4953** |
+| **Total** | **4948** |

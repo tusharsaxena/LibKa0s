@@ -302,7 +302,7 @@ DH.test("tooltip sites: a strip's mark places by its strip, not by the mark", fu
   end)
 end)
 
-DH.test("tooltip sites: a host placement that fails falls back to the attached placer, never the cursor", function()
+DH.test("tooltip sites: a host placement that fails changes nothing: above the strip, never the cursor", function()
   -- red under: the minor 4 fallback, SetOwner(UIParent, "ANCHOR_CURSOR")
   onScreen(mocks, function(_, tip)
     local h = stripOf({ tooltip = { title = "Buffs" }, tooltipPlace = function() error("no rect") end })
@@ -315,15 +315,22 @@ DH.test("tooltip sites: a host placement that fails falls back to the attached p
   end)
 end)
 
-DH.test("tooltip sites: a host placement that answers true keeps its own point", function()
+DH.test("tooltip sites: a host placement that answers true no longer moves the strip's tooltip", function()
+  -- WidgetsDragHandleTip minor 2 (AF-LK-02): the strip's tooltip, and its marks', attach above the
+  -- strip everywhere; a host's `tooltipPlace` is accepted and ignored. red under: minor 1, where the
+  -- hook's point stood (Aura Master's tooltip beside its strip, the owner's image 11).
   onScreen(mocks, function(_, tip)
-    local mine = { point = "BOTTOM" }
-    local h = stripOf({ tooltip = { title = "Buffs" }, tooltipPlace = function(t)
-      t:ClearAllPoints(); t:SetPoint(mine.point, mocks.UIParent, "BOTTOMLEFT", 1, 2); return true
+    local called = false
+    local h = stripOf({ tooltip = { title = "Buffs" }, onRightClick = function() end, tooltipPlace = function(t)
+      called = true
+      t:ClearAllPoints(); t:SetPoint("LEFT", mocks.UIParent, "BOTTOMLEFT", 1, 2); return true
     end })
     h:__fire("OnEnter")
-    assertEqual(tip.__point.point, "BOTTOM", "the host's point stands")
-    assertEqual(tip.__point.x, 1)
+    assertTrue(not called, "the hook is not called")
+    assertAbove(mocks, tip, 800, 960, 618, "beside-the-strip hook")
+    geo(h.help, 942, 600, 14, 18, h)
+    h.help:__fire("OnEnter")
+    assertAbove(mocks, tip, 800, 960, 618, "a mark, with the same hook")
   end)
 end)
 

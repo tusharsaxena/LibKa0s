@@ -1,6 +1,11 @@
 -- tests/test_widgets_draghandle_place.lua — LibKa0s-Widgets-1.0: `lib.DragHandle`'s tooltip
 -- placement hook, `spec.tooltipPlace` and a descriptor's `place` (WidgetsDragHandle minor 4,
--- AuraMaster#22).
+-- AuraMaster#22), RETIRED at WidgetsDragHandleTip minor 2 (AF-LK-02 of Ka0sAddonsCommonTasks
+-- docs/2026-11-19-ADOPTION_FEEDBACK: the owner's image 11 showed Aura Master's strip tooltip beside
+-- the strip, and the ruling is "above the strip everywhere"). Both keys are still accepted, so an
+-- un-updated host does not error, and neither is called: what is pinned here is that a hook, of
+-- any shape and any answer, changes no call the hover makes. Where the tooltip lands is pinned in
+-- tests/test_tooltip_sites.lua.
 --
 -- A suite of its own for `layout-§1`, the exit tests/test_widgets_draghandle.lua itself took at
 -- v1.48.0: these cases took that suite from 901 to 1123 lines, into the 1000–1500 band. The bench is
@@ -88,147 +93,49 @@ test("draghandle: without tooltipPlace the calls are own by UIParent, draw, one 
   assertEqual(table.concat(logLines(hoverLog(own), names), "\n"), want, "the frame owner is retired too")
 end)
 
-test("draghandle: tooltipPlace owns by UIParent at ANCHOR_NONE, draws, shows, then places", function()
-  -- AuraMaster's anchor refuses SetOwner on any frame under it, so the frame-owner path is closed
-  -- to it and ANCHOR_CURSOR was its only option. The hook lets it own by UIParent and put the
-  -- tooltip BESIDE the strip itself. Show comes BEFORE the call, so the host can read the
-  -- tooltip's measured width when it decides which side the tooltip fits on.
-  local calls = {}
-  local h = W.DragHandle(mocks.UIParent, baseSpec({
-    tooltip = placeDescriptor(),
-    tooltipOwner = "cursor",
-    tooltipPlace = function(tip, frame)
-      calls[#calls + 1] = { tip = tip, frame = frame }
-      return true
-    end,
-  }))
-  local names = { [mocks.UIParent] = "UIParent", [h] = "strip" }
-  local log = hoverLog(h)
-  assertEqual(table.concat(logLines(log, names), "\n"), table.concat({
-    "SetOwner|UIParent|ANCHOR_NONE|nil|nil|nil",
-    "SetText|Buffs|1|0.82|0|nil",
-    "AddLine|Drag to move. Right-click for settings.|1|1|1|true",
-    "AddLine| |nil|nil|nil|nil",
-    "AddLine|Unlocked.|0.6|0.6|0.6|true",
-    "Show|nil|nil|nil|nil|nil",
-  }, "\n"), "a placement that answers true is final: no second owner, no second Show")
-  assertEqual(#calls, 1, "called once per hover")
-  assertEqual(calls[1].tip, mocks.GameTooltip, "handed the tooltip it owns")
-  assertEqual(calls[1].frame, h, "and the frame hovered")
-end)
-
-test("draghandle: tooltipPlace runs after Show, so the tooltip is measured when it is placed", function()
-  local order = {}
-  local tip = mocks.GameTooltip
-  local savedShow = rawget(tip, "Show")
-  rawset(tip, "Show", function() order[#order + 1] = "Show" end)
-  local h = W.DragHandle(mocks.UIParent, baseSpec({
-    tooltip = { title = "Buffs" },
-    tooltipPlace = function() order[#order + 1] = "place"; return true end,
-  }))
-  local ok, err = pcall(function() h:__fire("OnEnter") end)
-  rawset(tip, "Show", savedShow)
-  assertTrue(ok, tostring(err))
-  assertEqual(table.concat(order, ","), "Show,place")
-end)
-
-test("draghandle: the mark and the X hand tooltipPlace the frame hovered, not the strip", function()
-  local seen = {}
+test("draghandle: tooltipPlace is accepted and never called, so the hover is the hook-less one", function()
+  -- red under: WidgetsDragHandleTip minor 1, which called the hook after Show and kept its point on
+  -- a literal true (Aura Master's tooltip beside the strip, the owner's image 11).
+  local calls = 0
+  local names = { [mocks.UIParent] = "UIParent" }
+  local plain = W.DragHandle(mocks.UIParent, baseSpec({ tooltip = placeDescriptor() }))
+  local want = table.concat(logLines(hoverLog(plain), names), "\n")
   local h = W.DragHandle(mocks.UIParent, baseSpec({
     onClose = function() end,
-    tooltip = { title = "Buffs" },
-    tooltipPlace = function(_, frame) seen[#seen + 1] = frame; return true end,
+    tooltip = placeDescriptor(),
+    tooltipPlace = function() calls = calls + 1; return true end,
   }))
+  assertEqual(table.concat(logLines(hoverLog(h), names), "\n"), want, "the strip's hover, call for call")
   hoverLog(h.help)
   hoverLog(h.close)
-  assertEqual(seen[1], h.help)
-  assertEqual(seen[2], h.close)
+  assertEqual(calls, 0, "never called, on the strip or on either mark")
 end)
 
-test("draghandle: a tooltipPlace that raises falls back to the library's placement, drawn once", function()
-  -- AuraMaster's strip can read SECRET geometry under an attached anchor, so the host's arithmetic
-  -- can raise. red under: an unguarded call (the hover raises and no tooltip shows), or the minor 4
-  -- fallback, which re-owned by the cursor and drew the lines a second time.
-  local evaluated = 0
-  local h = W.DragHandle(mocks.UIParent, baseSpec({
-    tooltip = {
-      title  = "Buffs",
-      body   = { function() evaluated = evaluated + 1; return "Live line." end },
-      footer = { "Unlocked." },
-    },
-    tooltipPlace = function() error("secret number") end,
-  }))
-  local names = { [mocks.UIParent] = "UIParent" }
-  assertEqual(table.concat(logLines(hoverLog(h), names), "\n"), table.concat({
-    "SetOwner|UIParent|ANCHOR_NONE|nil|nil|nil",
-    "SetText|Buffs|1|0.82|0|nil",
-    "AddLine|Live line.|1|1|1|true",
-    "AddLine| |nil|nil|nil|nil",
-    "AddLine|Unlocked.|0.6|0.6|0.6|true",
-    "Show|nil|nil|nil|nil|nil",
-  }, "\n"), "no second owner and no second draw")
-  assertEqual(evaluated, 1, "a function entry is evaluated once per hover")
-end)
-
-test("draghandle: a tooltipPlace that answers anything but true falls back to the library's placement", function()
-  -- Only a literal true means "placed". nil is the commonest way a host's function says nothing at
-  -- all, and a truthy non-true answer is not a promise the tooltip was anchored. The fallback adds
-  -- no owner call: the tooltip is already owned, drawn and shown.
-  for _, answer in ipairs({ false, 1, "yes", {} }) do
-    local h = W.DragHandle(mocks.UIParent, baseSpec({
-      tooltip = { title = "Buffs" },
-      tooltipPlace = function() return answer end,
-    }))
+test("draghandle: a retired hook of any shape or answer changes nothing and raises nothing", function()
+  -- Kept accepted for compatibility: a host not yet updated passes one of these and must not error.
+  for _, hook in ipairs({ function() error("secret number") end, function() return false end,
+                          function() end, function() return 1 end, "right", {} }) do
+    local h = W.DragHandle(mocks.UIParent, baseSpec({ tooltip = { title = "Buffs" }, tooltipPlace = hook }))
     local log = hoverLog(h)
-    assertEqual(#log, 3, "own, title, Show for " .. tostring(answer))
+    assertEqual(#log, 3, "own, title, Show for " .. type(hook))
     assertEqual(log[1][2], mocks.UIParent)
     assertEqual(log[1][3], "ANCHOR_NONE")
     assertEqual(log[3][1], "Show")
   end
-  local silent = W.DragHandle(mocks.UIParent, baseSpec({
-    tooltip = { title = "Buffs" }, tooltipPlace = function() end,
-  }))
-  assertEqual(#hoverLog(silent), 3, "and a nil answer falls back too, with no cursor owner")
 end)
 
-test("draghandle: a descriptor's own place wins over the spec's", function()
-  local used = {}
+test("draghandle: a descriptor's own place is retired with the spec's", function()
+  local used = 0
   local h = W.DragHandle(mocks.UIParent, baseSpec({
-    tooltip      = { title = "Strip" },
-    helpTooltip  = { title = "Mark", place = function() used[#used + 1] = "mark's"; return true end },
-    tooltipPlace = function() used[#used + 1] = "spec's"; return true end,
+    tooltip     = { title = "Strip", place = function() used = used + 1; return true end },
+    helpTooltip = { title = "Mark", place = function() used = used + 1; return true end },
   }))
-  hoverLog(h)
-  hoverLog(h.help)
-  assertEqual(table.concat(used, ","), "spec's,mark's")
+  assertEqual(#hoverLog(h), 3)
+  assertEqual(#hoverLog(h.help), 3)
+  assertEqual(used, 0, "neither descriptor's place is called")
 end)
 
-test("draghandle: a descriptor may place while the spec does not, and its neighbor is untouched", function()
-  local h = W.DragHandle(mocks.UIParent, baseSpec({
-    tooltip     = { title = "Strip" },
-    helpTooltip = { title = "Mark", place = function() return true end },
-  }))
-  local strip = hoverLog(h)
-  assertEqual(strip[1][2], mocks.UIParent, "the strip, with no hook, is owned the library's way")
-  assertEqual(strip[1][3], "ANCHOR_NONE")
-  assertEqual(#strip, 3)
-  local mark = hoverLog(h.help)
-  assertEqual(mark[1][2], mocks.UIParent)
-  assertEqual(mark[1][3], "ANCHOR_NONE")
-  assertEqual(#mark, 3, "own, title, Show; the placement answered true")
-end)
-
-test("draghandle: a tooltipPlace that is not a function is ignored, not called", function()
-  -- red under: a truthiness check, which would call a string and fall back on every hover -- a
-  -- host that wrote `tooltipPlace = "right"` would raise inside the pcall on every hover.
-  local h = W.DragHandle(mocks.UIParent, baseSpec({ tooltip = { title = "Buffs" }, tooltipPlace = "right" }))
-  local log = hoverLog(h)
-  assertEqual(#log, 3)
-  assertEqual(log[1][2], mocks.UIParent)
-  assertEqual(log[1][3], "ANCHOR_NONE")
-end)
-
-test("draghandle: DragHandle is at minor 4 or later, the placement hook's floor", function()
-  assertTrue(W.MODULES.WidgetsDragHandle >= 4)
-  assertTrue(W.__dragMinor >= 4)
+test("draghandle: WidgetsDragHandleTip is at minor 2 or later, the placement hook's retirement", function()
+  assertTrue(W.MODULES.WidgetsDragHandleTip >= 2)
+  assertTrue(W.__dragTipMinor >= 2)
 end)

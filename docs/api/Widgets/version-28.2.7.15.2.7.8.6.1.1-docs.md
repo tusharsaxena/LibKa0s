@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 28.2.7.15.1.7.8.6.1.1
+# `LibKa0s-Widgets-1.0` — version 28.2.7.15.2.7.8.6.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -11,14 +11,17 @@
 | Files and minors | `Widgets.lua` **28** · `WidgetsDropdown.lua` **2** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **15** · `WidgetsDragHandleTip.lua` **1** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **1** |
 | Shipped in | v1.107.0 |
 | Status | **Current** |
-| Supersedes | [version 28.2.7.14.1.7.8.6.1.1](./version-28.2.7.14.1.7.8.6.1.1-docs.md) (v1.106.0) — a drag strip's marks read [settings][close][?], 10px of air apart, white under the pointer; its settings mark was opt-in; `ApplyLevel` left the settings mark at its birth level (LibKa0s#96). |
+| Supersedes | [version 28.2.7.14.1.7.8.6.1.1](./version-28.2.7.14.1.7.8.6.1.1-docs.md) (v1.106.0) — a drag strip's marks read [settings][close][?], 10px of air apart, white under the pointer; its settings mark was opt-in; `ApplyLevel` left the settings mark at its birth level (LibKa0s#96); a host's `tooltipPlace` could move the strip's tooltip beside the strip. |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 28, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 15, WidgetsDragHandleTip = 1, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 1 }` |
 
-## What changed at this version: the drag strip's marks read like a window header (`AF-LK-01`, LibKa0s#96)
+## What changed at this version: the drag strip's marks read like a window header, and its tooltip opens above it (`AF-LK-01`, `AF-LK-02`, LibKa0s#96)
 
-Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/` (`AF-LK-01`): the owner's feedback on the LibKa0s v1.105 adoption smoke, images 6-9, and the ruling "All three marks on every strip, as [?][settings][close]". `WidgetsDragHandle.lua` moves 14 -> **15**; every other file stays at its minor.
+Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/` (`AF-LK-01`, `AF-LK-02`): the owner's feedback on the LibKa0s v1.105 adoption smoke, images 6-11, and the rulings "All three marks on every strip, as [?][settings][close]" and "Above the strip everywhere". `WidgetsDragHandle.lua` moves 14 -> **15** and `WidgetsDragHandleTip.lua` 1 -> **2**; every other file stays at its minor.
+
+### The marks (`AF-LK-01`, WidgetsDragHandle 15)
+
 
 - **The order is `?`, settings, close, left to right** (image 6 showed settings, close, `?`). The close mark takes the corner, `RIGHT` at `-HELP_INSET`, where the `?` sat; the settings mark is anchored `RIGHT` to the X's `LEFT` at `-CLOSE_GAP`, else to the corner; the `?` to the settings mark's `LEFT`, else the X's, else the corner. That is `HeaderButtons`' order (extras, settings, close), with the `?` as the strip's one extra.
 - **The marks sit closer** ("reduce the gap"). Each mark's frame is `HELP_HIT` = **14** px wide (18 through 14) and the strip's full `HEIGHT` (18) tall, around the same 8 px art, so two arts sit `2 * HELP_GUTTER` = **6** px of air apart where they sat 10, and the frames still abut. `HELP_INSET` moves 4 -> **6**, so the corner art keeps its 9 px from the strip's edge, a window header's `PAD + (SIZE - ART) / 2`. `HELP_GUTTER` is 3 (5), `RESERVE` is still **29**, and each mark past the `?` widens the reserve by 14 (18) on each side: a strip with all three keeps 57 each side, where minor 14 kept 65.
@@ -26,9 +29,13 @@ Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/` (`AF-LK-01`): the own
 - **The settings mark is standard.** It is built unless the host passes `settings = false` (opt-in at 14), and opens `settings` when it is a function, else `onSettings`, else the owner's registered settings (`OpenSettings(settingsOwner or owner)`), as at 14. **The close mark still needs `onClose`**: only the host knows what closing its display means (hide or disable it, keeping its settings), so every host MUST pass one (WowAddonStandards' HUD header rule), and a strip without it shows no X rather than a mark that does nothing.
 - **`ApplyLevel` re-levels the settings mark** with the other two (LibKa0s#96): minor 14 named the `?` and the X only, so a re-leveled parent could draw over the gear.
 
-No member, `DRAG_HANDLE` field name or handle method is added or removed; three `DRAG_HANDLE` values move (`HELP_HIT`, `HELP_INSET`, `HELP_GUTTER`).
+### The tooltip opens above the strip, always (`AF-LK-02`, WidgetsDragHandleTip 2)
 
-**What a consumer owes at its re-vendor:** a strip that passed no `settings` field gains the settings mark and widens by `2 * (HELP_HIT + CLOSE_GAP)` = 28 px; a host passes `settings = false` only with a reason the standard accepts. Every strip passes `onClose` (`AF-STRIP-*`). A suite that pinned a strip's `Reserve()` through `RESERVE + n * (HELP_HIT + CLOSE_GAP)` stays right with the new `n`; one that pinned literals (47, 65, an 18 x 18 mark, a `-4` inset, the `?` at the corner, a white or `icon.hot` hover) re-pins them. Visible, smoke lines: every HUD strip reads `?`, gear, X with the X in the corner, the three marks visibly closer, gray at rest, the `?` and the gear lighting in the skin's link color and the X in its close red, exactly as a window header's marks.
+The strip's own tooltip and its marks' attach centered **above the strip** through LibKa0s-Tooltip-1.0's `PlaceAttached`, below only when the screen has no room above, which is how every window header's mark tooltip opens (the owner's image 10, Drop Watcher). Through WidgetsDragHandleTip 1 a host's `tooltipPlace` (or a descriptor's `place`) was called after Show and kept its own point on a literal `true`, so Aura Master's, AbsorbTracker's, Consumable Master's and KickCD's strip tooltips opened beside the strip (image 11). **`tooltipPlace` and a descriptor's `place` are retired**: still accepted, so a host not yet updated does not error, never read and never called. Deprecated: a host drops them at its next touch (`AF-STRIP-*`). Aura Master's aura tooltips, which are not strip tooltips, are untouched.
+
+No member, `DRAG_HANDLE` field name or handle method is added or removed; three `DRAG_HANDLE` values move (`HELP_HIT`, `HELP_INSET`, `HELP_GUTTER`), and two spec keys are retired (`tooltipPlace`, a descriptor's `place`).
+
+**What a consumer owes at its re-vendor:** a host's strip `tooltipPlace` hook stops placing (its tooltip opens above the strip), and the host deletes it; a suite that pinned the hook being called, or the tooltip beside the strip, re-pins the attached placement. A strip that passed no `settings` field gains the settings mark and widens by `2 * (HELP_HIT + CLOSE_GAP)` = 28 px; a host passes `settings = false` only with a reason the standard accepts. Every strip passes `onClose` (`AF-STRIP-*`). A suite that pinned a strip's `Reserve()` through `RESERVE + n * (HELP_HIT + CLOSE_GAP)` stays right with the new `n`; one that pinned literals (47, 65, an 18 x 18 mark, a `-4` inset, the `?` at the corner, a white or `icon.hot` hover) re-pins them. Visible, smoke lines: every HUD strip reads `?`, gear, X with the X in the corner, the three marks visibly closer, gray at rest, the `?` and the gear lighting in the skin's link color and the X in its close red, exactly as a window header's marks; every strip's tooltip, and its marks', opens above the strip.
 
 
 ## What changed at version 28.2.7.14.1.7.8.6.1.1: the HUD dock's measurements are guarded (RangeMaster#17)
@@ -1644,7 +1651,7 @@ also spends it in its clamp reach, `HEIGHT + GAP`.
 | `helpTooltip` | a **second** descriptor of the same shape, shown by the help mark alone | the mark shows `tooltip` |
 | `tooltipOwner` | **Retired at DragHandle 14** (accepted, not read). Through 13: `"cursor"` owned by `UIParent` at `ANCHOR_CURSOR`, anything else by the frame hovered. From 14 every tooltip is owned by `UIParent` at `ANCHOR_NONE` and attached centered above the strip (`LibKa0s-Tooltip-1.0`'s `PlaceAttached`; below only without room above, `SR-L1`). | — |
 | `tooltipAnchor` | **Retired at DragHandle 14**, as `tooltipOwner`. Through 13: the anchor point used when owning by the frame. | — |
-| `tooltipPlace` | **Since 4.** `function(tip, frame) -> true` when it placed the tooltip. Set, every hover owns by `UIParent` at `"ANCHOR_NONE"`, draws the lines, shows, then calls it under `pcall` with the frame hovered; a raise or any answer but `true` falls back to the library's attached placement above the strip (**DragHandle 14**; through 13 the `"cursor"` owner with the same lines redrawn). A descriptor's own `place` wins; a non-function is ignored | the library's attached placement |
+| `tooltipPlace` | **Since 4; retired at WidgetsDragHandleTip 2** (accepted, never called; deprecated). Through Tip 1: `function(tip, frame) -> true` when it placed the tooltip, called after Show under `pcall`, its point kept on a literal `true`, else the attached placement. From Tip 2 every strip and mark tooltip attaches above the strip | — |
 | `edge` | `function(frame, size, r, g, b, a)` — the host's own 1px edge painter, called with `size = 1` | the widget's four strips, one physical pixel each (**Since 13**; one UI unit before it) |
 | `number` | `function(v, fallback) -> number` — a secret-safe numeric guard | `tonumber(v) or fallback` |
 | `labelFont` | the font object the label is **drawn in and measured in**; on an owned strip the skin's body face goes over it (DragHandle 12) | `"GameFontNormalSmall"` |
@@ -1668,8 +1675,8 @@ case and costs the simple host nothing.
 **Where the tooltip opens, from DragHandle 14.** The strip's tooltip and both marks' attach
 centered **above the strip** (below only when the screen has no room above: `SR-L1` of the run's
 smoke round 1, one rule for every attached tooltip, where it opened below), through `LibKa0s-Tooltip-1.0`, owned by `UIParent` at
-`ANCHOR_NONE` and placed by an absolute point, which the restricted tree described next accepts. A
-host's `tooltipPlace` still wins when it answers `true`. The history below is why the owner was a
+`ANCHOR_NONE` and placed by an absolute point, which the restricted tree described next accepts. From
+WidgetsDragHandleTip 2 a host's `tooltipPlace` no longer moves it (retired, accepted unread). The history below is why the owner was a
 field through minor 13; minor 14 answers it once, for every host.
 
 **`tooltipOwner` was a correctness knob, not a style one, and it is why the field existed.**
@@ -1687,7 +1694,7 @@ all cases; the code is what changed. `owner` and `anchor` may also be set on a d
 which is what lets ConsumableMaster's two anchors differ, and a descriptor's own value wins over the
 spec-level default.
 
-**`tooltipPlace` (Since 4) puts the tooltip where the host says, without owning by a restricted
+**`tooltipPlace` (Since 4, retired at WidgetsDragHandleTip 2; the history follows) put the tooltip where the host said, without owning by a restricted
 frame.** It is the third option beside the frame owner and the cursor owner, for a host that can
 use neither as it wants: the tooltip is owned by `UIParent` at `"ANCHOR_NONE"`, drawn, shown, and
 handed to `tooltipPlace(tip, frame)`, which anchors it (typically `tip:ClearAllPoints()` and one
@@ -1718,7 +1725,7 @@ tooltip = {
   footer = { <entry>, … },       -- gray, 0.6, after one blank line (Since 7: gtip.footer)
   owner  = <"cursor" | nil>,     -- retired at DragHandle 14 (accepted, not read)
   anchor = <string | nil>,       -- retired at DragHandle 14 (accepted, not read)
-  place  = <function | nil>,     -- Since 4. overrides spec.tooltipPlace for this descriptor
+  place  = <function | nil>,     -- Since 4; retired at WidgetsDragHandleTip 2 (accepted, not read)
 }
 
 -- <entry> is any of:

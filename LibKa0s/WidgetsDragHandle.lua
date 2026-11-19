@@ -908,7 +908,8 @@ end
 ---   tooltip     table|nil         the descriptor the STRIP shows, and the mark's too unless
 ---                                 `helpTooltip` says otherwise:
 ---                                   { title, body = {…}, footer = {…}, owner, anchor, place }
----                                 (`owner` and `anchor` retired at minor 14: accepted, not read)
+---                                 (`owner` and `anchor` retired at minor 14, `place` at Tip minor 2:
+---                                 accepted, not read)
 ---                                 every band entry may be a string, a function called on each
 ---                                 hover whose nil return drops the line, or a
 ---                                 { <either>, r, g, b } table carrying its own color. No tooltip
@@ -922,13 +923,11 @@ end
 ---                                 by UIParent at ANCHOR_NONE and attached centered above the strip
 ---                                 (LibKa0s-Tooltip-1.0's PlaceAttached; WidgetsDragHandleTip.lua).
 ---   tooltipAnchor string|nil      RETIRED at minor 14, as `tooltipOwner`.
----   tooltipPlace function|nil     minor 4. tooltipPlace(tip, frame) -> true when it placed the
----                                 tooltip. The tooltip is owned by UIParent at ANCHOR_NONE,
----                                 drawn, shown, and then handed to this under pcall with the
----                                 frame hovered. A raise or any answer but `true` falls back to the
----                                 library's attached placement above the strip (minor 14; the
----                                 cursor before). A descriptor's own `place` wins; a value that is
----                                 not a function is ignored.
+---   tooltipPlace function|nil     minor 4. RETIRED at WidgetsDragHandleTip minor 2 (accepted, never
+---                                 called; deprecated, a host drops it): the strip's tooltip and its
+---                                 marks' always attach centered above the strip, below only without
+---                                 room. Through Tip minor 1 it was called after Show and kept its
+---                                 point on a literal `true`. A descriptor's `place` is retired with it.
 ---   edge        function|nil      the host's own 1px edge painter, called as
 ---                                 edge(frame, size, r, g, b, a). Defaults to four strips of ours.
 ---   number      function|nil      number(v, fallback) -- a secret-safe numeric guard.
