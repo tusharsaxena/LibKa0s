@@ -12,7 +12,7 @@
 | Shipped in | v1.106.0 |
 | Status | Superseded |
 | Supersedes | [version 27.2.7.14.1.7.8.6.1.1](./version-27.2.7.14.1.7.8.6.1.1-docs.md) (v1.105.0) — the HUD dock measured its target unguarded, so a strip docked on a display anchored to a nameplate raised "Can't measure restricted regions" from the host's frame. |
-| Superseded by | [version 28.2.7.15.2.7.8.6.1.1](./version-28.2.7.15.2.7.8.6.1.1-docs.md) |
+| Superseded by | [version 29.2.7.15.2.7.8.6.1.1](./version-29.2.7.15.2.7.8.6.1.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 28, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 14, WidgetsDragHandleTip = 1, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 1 }` |
 
@@ -2343,6 +2343,6 @@ visual fidelity as unverified.
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
 
-## Moving to version 28.2.7.15.2.7.8.6.1.1
+## Moving to version 29.2.7.15.2.7.8.6.1.1
 
 `WidgetsDragHandle.lua` 14 -> 15 (`AF-LK-01`, LibKa0s#96): the strip's marks read `?`, settings, close left to right, 6 px of air apart (`HELP_HIT` 14, `HELP_INSET` 6), in the window header's tints; the settings mark is built unless `settings = false`; `ApplyLevel` re-levels it. `WidgetsDragHandleTip.lua` 1 -> 2 (`AF-LK-02`): the strip's tooltip and its marks' attach above the strip everywhere; `tooltipPlace` and a descriptor's `place` are retired, accepted and never called. A strip with no `settings` field gains the mark at re-vendor and widens by 28 px. See that document's *What changed at this version*.

@@ -2080,7 +2080,7 @@ Total.
 - TestStrip: a sim without steps offers only End sim; onEnd wins over the instance's Stop
 - TestStrip: with neither onEnd nor sim the mouse stays off, as before
 
-### test_widgets_teststrip_dock.lua (21)
+### test_widgets_teststrip_dock.lua (22)
 
 - TestStrip dock: 'title' anchors the strip full width directly under the title bar
 - TestStrip dock: 'title' with an inset pulls both sides in
@@ -2094,6 +2094,7 @@ Total.
 - TestStrip dock: the flip reads screen pixels, the display's scale and the strip's
 - TestStrip dock: a display the client refuses to measure (on a nameplate) docks unflipped, no error
 - TestStrip dock: a HUD strip with unreadable edges stays on top
+- TestStrip dock: geometry that reads secret is no geometry: no flip, no level, no error
 - TestStrip dock: a HUD strip takes no mouse and opens no menu, even given onEnd
 - TestStrip dock: docking a menu strip to a HUD later turns the mouse and menu off
 - TestStrip dock: a HUD strip takes the display's strata, one chrome band over its level
@@ -5711,7 +5712,7 @@ Total.
 | test_widgets_autocomplete.lua | 37 |
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 21 |
-| test_widgets_teststrip_dock.lua | 21 |
+| test_widgets_teststrip_dock.lua | 22 |
 | test_widgets_footer.lua | 18 |
 | test_widgets_bar.lua | 24 |
 | test_header_buttons.lua | 25 |
@@ -5862,4 +5863,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4948** |
+| **Total** | **4949** |

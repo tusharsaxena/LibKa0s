@@ -400,8 +400,8 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    visible changes for a host that changes nothing.
    v1.107.0 (Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`, `AF-LK-01`, `AF-LK-02`,
    LibKa0s#96) adds no payload file, no member and no kit revision (still 57).
-   `WidgetsDragHandle.lua` moves to minor 15 and `WidgetsDragHandleTip.lua` to 2 (key
-   28.2.7.15.2.7.8.6.1.1). Visible from the re-vendor alone: every HUD drag strip's marks read `?`,
+   `WidgetsDragHandle.lua` moves to minor 15, `WidgetsDragHandleTip.lua` to 2 and `Widgets.lua` to 29,
+   which reads secret dock geometry as none (LibKa0s#95; key 29.2.7.15.2.7.8.6.1.1). Visible from the re-vendor alone: every HUD drag strip's marks read `?`,
    settings, close, closer together, in the window header's tints, and every strip's tooltip opens
    above the strip. A strip with no `settings` field gains the settings mark (28 px wider), so a host
    with a strip declares `settings` on its `LibKa0s icons:` line; a host's strip `tooltipPlace` stops

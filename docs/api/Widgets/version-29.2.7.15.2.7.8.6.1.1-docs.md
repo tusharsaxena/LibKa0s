@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 28.2.7.15.2.7.8.6.1.1
+# `LibKa0s-Widgets-1.0` — version 29.2.7.15.2.7.8.6.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,17 +8,21 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` **28** · `WidgetsDropdown.lua` **2** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **15** · `WidgetsDragHandleTip.lua` **1** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **1** |
+| Files and minors | `Widgets.lua` **29** · `WidgetsDropdown.lua` **2** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **15** · `WidgetsDragHandleTip.lua` **2** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **1** |
 | Shipped in | v1.107.0 |
 | Status | **Current** |
-| Supersedes | [version 28.2.7.14.1.7.8.6.1.1](./version-28.2.7.14.1.7.8.6.1.1-docs.md) (v1.106.0) — a drag strip's marks read [settings][close][?], 10px of air apart, white under the pointer; its settings mark was opt-in; `ApplyLevel` left the settings mark at its birth level (LibKa0s#96); a host's `tooltipPlace` could move the strip's tooltip beside the strip. |
+| Supersedes | [version 28.2.7.14.1.7.8.6.1.1](./version-28.2.7.14.1.7.8.6.1.1-docs.md) (v1.106.0) — a drag strip's marks read [settings][close][?], 10px of air apart, white under the pointer; its settings mark was opt-in; `ApplyLevel` left the settings mark at its birth level (LibKa0s#96); a host's `tooltipPlace` could move the strip's tooltip beside the strip; a HUD-docked mode strip did arithmetic on geometry that read secret (LibKa0s#95). |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 28, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 15, WidgetsDragHandleTip = 1, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 29, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 15, WidgetsDragHandleTip = 2, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 1 }` |
 
-## What changed at this version: the drag strip's marks read like a window header, and its tooltip opens above it (`AF-LK-01`, `AF-LK-02`, LibKa0s#96)
+## What changed at this version: the drag strip's marks read like a window header, its tooltip opens above it, and the HUD dock reads no secret (`AF-LK-01`, `AF-LK-02`, LibKa0s#96, LibKa0s#95)
 
-Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/` (`AF-LK-01`, `AF-LK-02`): the owner's feedback on the LibKa0s v1.105 adoption smoke, images 6-11, and the rulings "All three marks on every strip, as [?][settings][close]" and "Above the strip everywhere". `WidgetsDragHandle.lua` moves 14 -> **15** and `WidgetsDragHandleTip.lua` 1 -> **2**; every other file stays at its minor.
+Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/` (`AF-LK-01`, `AF-LK-02`): the owner's feedback on the LibKa0s v1.105 adoption smoke, images 6-11, and the rulings "All three marks on every strip, as [?][settings][close]" and "Above the strip everywhere". `WidgetsDragHandle.lua` moves 14 -> **15**, `WidgetsDragHandleTip.lua` 1 -> **2** and `Widgets.lua` 28 -> **29**; every other file stays at its minor.
+
+### The HUD dock reads no secret (`Widgets.lua` 29, LibKa0s#95)
+
+`TestStrip`'s `opts.dock = "hud"` and `DockTestStrip` read the display's edges and level, the clear frame's edges, the strip's height and every effective scale through one guard, `num()`. Through 28 it asked only `type(v) == "number"`, which a secret number passes, so the flip test and the level did arithmetic on it and raised ("attempt to perform arithmetic on a secret number value"). An attached display's geometry can read secret out of combat, and the dock's hooks re-place the strip on every show, hide and resize of the display, so the error surfaced long after the strip was docked: the owner's 2026-11-19 report, Aura Master's test-mode exit as its preset picker closed. From 29 a value the client calls secret (`issecretvalue`) reads as no value: an unreadable edge is no flip, an unreadable height is the strip's own 18, an unreadable level sets no level, as a refused read already did at 28. `tests/test_widgets_teststrip_dock.lua` gains the case. No member changes.
 
 ### The marks (`AF-LK-01`, WidgetsDragHandle 15)
 

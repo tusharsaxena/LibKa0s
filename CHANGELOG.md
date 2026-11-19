@@ -12,9 +12,9 @@ cannot drift. Release order is in
 
 ## v1.107.0 — 2026-11-19
 
-Opened 2026-11-19, on `feat/2026-11-19-adoption-feedback` (off `master` at v1.106.0): the library half of the owner's feedback on the LibKa0s v1.105 adoption smoke (Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`, its `inputs/OWNER_FEEDBACK.md` and rulings), items `AF-LK-01` and `AF-LK-02`, with LibKa0s#96, then `AF-DR-LK` and this release, `AF-LK-03`. Built to WowAddonStandards v2.115.0, whose HUD header rule (which marks a window owes, and the drag strip's marks and their order) this release implements on the library side.
+Opened 2026-11-19, on `feat/2026-11-19-adoption-feedback` (off `master` at v1.106.0): the library half of the owner's feedback on the LibKa0s v1.105 adoption smoke (Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`, its `inputs/OWNER_FEEDBACK.md` and rulings), items `AF-LK-01` and `AF-LK-02`, with LibKa0s#96 and LibKa0s#95, then `AF-DR-LK` and this release, `AF-LK-03`. Built to WowAddonStandards v2.115.0, whose HUD header rule (which marks a window owes, and the drag strip's marks and their order) this release implements on the library side.
 
-Versions in this release: `LibKa0s-Widgets-1.0` key **28.2.7.15.2.7.8.6.1.1** (WidgetsDragHandle minor 15, WidgetsDragHandleTip minor 2); every other file at its v1.106.0 minor, and the test kit at revision **57**. No `NEEDS_*` floor rises, no member changes, and no file is added.
+Versions in this release: `LibKa0s-Widgets-1.0` key **29.2.7.15.2.7.8.6.1.1** (Widgets minor 29, WidgetsDragHandle minor 15, WidgetsDragHandleTip minor 2); every other file at its v1.106.0 minor, and the test kit at revision **57**. No `NEEDS_*` floor rises, no member changes, and no file is added.
 
 ### Changed
 
@@ -25,6 +25,7 @@ Versions in this release: `LibKa0s-Widgets-1.0` key **28.2.7.15.2.7.8.6.1.1** (W
 ### Fixed
 
 - **`ApplyLevel` re-levels the settings mark (LibKa0s#96, still WidgetsDragHandle minor 15).** Minor 14 re-leveled the `?` and the X and left the gear at its birth level, so a re-leveled parent could draw over it. `tests/test_widgets_draghandle_layers.lua` gains the case.
+- **The HUD-docked mode strip no longer does arithmetic on secret geometry (LibKa0s#95, Widgets minor 29).** The dock's `num()` let a secret number through, so a display whose edges, height or level read secret raised on its next show, hide or resize (the owner's report: Aura Master's test-mode exit as its preset picker closed). A secret value now reads as none, as a refused read did. `tests/test_widgets_teststrip_dock.lua` gains the case.
 
 ### Documentation
 

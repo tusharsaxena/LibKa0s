@@ -235,6 +235,36 @@ test("TestStrip dock: a HUD strip with unreadable edges stays on top", function(
   end)
 end)
 
+--- Run `fn()` with the client's `issecretvalue` calling every value in `secret` secret.
+local function withSecrets(secret, fn)
+  local saved = rawget(_G, "issecretvalue")
+  rawset(_G, "issecretvalue", function(v) return secret[v] == true end)
+  local ok, err = pcall(fn)
+  rawset(_G, "issecretvalue", saved)
+  if not ok then error(err, 0) end
+end
+
+test("TestStrip dock: geometry that reads secret is no geometry: no flip, no level, no error", function()
+  -- red under: minor 28's num(), which let a secret number through to the arithmetic (LibKa0s#95;
+  -- the owner's 2026-11-19 report: AuraMaster's preset picker closing re-placed a strip whose height
+  -- read secret). Each secret here would flip the strip or set its level if it were used.
+  recording(function()
+    withSecrets({ [760] = true, [500] = true, [700] = true }, function()
+      at(mocks.UIParent, 768, 0)
+      local hud = at(frame(), 760, 600)   -- a secret top 8 under the screen's would flip it
+      hud:SetFrameLevel(700)              -- a secret level would put the strip at 705
+      local s = W.TestStrip(mocks.UIParent, { dock = "hud", target = hud, gap = 2 })
+      assertFalse(s:IsFlipped(), "a secret top is unreadable, so the strip stays on top")
+      assertTrue(s.__level ~= 705, "a secret level sets no level")
+      at(hud, 300, 200)
+      rawset(s, "GetHeight", function() return 500 end)   -- secret: 300 + 2 + 500 would leave 768
+      s:Place()
+      assertFalse(s:IsFlipped(), "a secret height falls back to the strip's own 18")
+      assertPoint(s, 1, "BOTTOMLEFT", hud, "TOPLEFT", 0, 2)
+    end)
+  end)
+end)
+
 test("TestStrip dock: a HUD strip takes no mouse and opens no menu, even given onEnd", function()
   -- red under: wire stripMenu for a 'hud' dock
   recording(function()
