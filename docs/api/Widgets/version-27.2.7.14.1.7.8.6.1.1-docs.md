@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **27** · `WidgetsDropdown.lua` **2** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **14** · `WidgetsDragHandleTip.lua` **1** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **1** |
 | Shipped in | v1.105.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 27.1.6.13.7.8.5](./version-27.1.6.13.7.8.5-docs.md) (v1.103.0 – v1.104.0) — the drag handle's tooltip half was in `WidgetsDragHandle.lua`, and every library tooltip owned itself at an anchor: a dropdown entry's and the reorder handle's at `ANCHOR_RIGHT`, a drag strip's at `ANCHOR_TOP` or the cursor; and every window built its own header marks, with no settings mark; and the library drew no data bar. |
-| Superseded by | — |
+| Superseded by | [version 28.2.7.14.1.7.8.6.1.1](./version-28.2.7.14.1.7.8.6.1.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 27, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 14, WidgetsDragHandleTip = 1, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 1 }` |
 
@@ -2334,3 +2334,7 @@ visual fidelity as unverified.
 **Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
+
+## Moving to version 28.2.7.14.1.7.8.6.1.1
+
+`Widgets.lua` moves to 28: the HUD dock guards its measurements, so a strip docked on a display the client refuses to measure (one anchored to a nameplate) is placed on its top edge, unflipped, instead of raising "Can't measure restricted regions" (RangeMaster#17). No member moves and a host changes nothing. See [version 28.2.7.14.1.7.8.6.1.1](./version-28.2.7.14.1.7.8.6.1.1-docs.md).

@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.105.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.106.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -393,6 +393,11 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    major. Each is a smoke line, and each affected host's re-vendor report names them for step 5's
    re-look. Adopting the new surfaces is owed under WowAddonStandards v2.113.0 when a host adopts the
    feature, not at the re-vendor.
+   v1.106.0 (RangeMaster#17) adds no payload file, no member and no kit revision (still 57).
+   `Widgets.lua` moves to minor 28 (key 28.2.7.14.1.7.8.6.1.1): the HUD dock's measurements are
+   guarded, so a strip docked on a display anchored to a nameplate is placed unflipped instead of
+   raising. A host suite that pins `Widgets 27` re-pins it at 28; a stub needs no change. Nothing
+   visible changes for a host that changes nothing.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not:
 
@@ -460,7 +465,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.105.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.106.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
