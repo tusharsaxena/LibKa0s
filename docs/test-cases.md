@@ -2105,7 +2105,7 @@ Total.
 - TestStrip dock: docking again replaces the dock, and hooks each frame once
 - TestStrip dock: the dock never shows or hides the strip
 
-### test_widgets_footer.lua (18)
+### test_widgets_footer.lua (25)
 
 - Footer: FOOTER publishes HEIGHT 24 and the slot's figures
 - Footer: a write to FOOTER.HEIGHT does not move the next footer
@@ -2122,6 +2122,13 @@ Total.
 - Footer: opts.resize builds Core.MakeResizable's grip on the footer, in its corner
 - Footer: a host's own gripParent in opts.resize wins
 - Footer: two footers share no regions
+- Footer: a hidden middle mark leaves no gap when the footer re-lays (SetGrip)
+- Footer: Relayout skips a hidden outermost mark
+- Footer: every mark hidden lays the right line at the corner's inset, grip or not
+- Footer: a mark's OnHide and OnShow re-lay the footer, with no call from the host
+- Footer: the footer's own OnShow re-lays it (a mark hidden while the window was hidden)
+- Footer: each mark is hooked once, so one show or hide re-lays once
+- Footer: a host's own hook on a mark still runs beside the re-lay
 - Footer skin: a registered owner's hairline is its divider and its lines its text.muted
 - Footer skin: an owned mark rests in icon.tint and lights in icon.hot
 - Footer skin: an unregistered owner draws the owner-less footer
@@ -5713,7 +5720,7 @@ Total.
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 21 |
 | test_widgets_teststrip_dock.lua | 22 |
-| test_widgets_footer.lua | 18 |
+| test_widgets_footer.lua | 25 |
 | test_widgets_bar.lua | 24 |
 | test_header_buttons.lua | 25 |
 | test_widgets_reorder.lua | 7 |
@@ -5863,4 +5870,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4949** |
+| **Total** | **4956** |

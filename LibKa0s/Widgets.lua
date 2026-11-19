@@ -137,7 +137,10 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- measured its target from unguarded OnShow / OnSizeChanged hooks, so a strip docked on a display
 -- riding a plate raised from the host's frame. A measurement the client refuses now answers nil, and
 -- the strip is placed on the display's top edge, unflipped and clearing nothing it cannot measure.
-local MAJOR, MINOR = "LibKa0s-Widgets-1.0", 29
+-- Minor 30 (LibKa0s#94): the footer lays only its SHOWN marks, so a hidden one leaves no gap and the
+-- left line is not cut short of it; a mark's show or hide, and the footer's show, re-lay it, and
+-- `foot:Relayout()` does on demand. FOOTER's figures do not move.
+local MAJOR, MINOR = "LibKa0s-Widgets-1.0", 30
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -834,15 +837,17 @@ local function footMark(foot, spec)
   return b
 end
 
---- Lay the footer's right side from its corner in: the grip's inset (or the padding), the marks
---- outermost first, then the right line; the left line runs up to the right line.
+--- Lay the footer's right side from its corner in: the grip's inset (or the padding), the SHOWN
+--- marks outermost first, then the right line; the left line runs up to the right line. A hidden
+--- mark takes no slot (minor 30, LibKa0s#94): it is anchored where the next shown one goes, so it
+--- keeps a point, and the chain does not advance past it.
 local function footLayout(foot)
   local edge = foot.__grip and FOOT_GRIP or FOOT_PAD
   local anchor, point, x = foot, "RIGHT", -edge
   for _, b in ipairs(foot.marks) do
     b:ClearAllPoints()
     b:SetPoint("RIGHT", anchor, point, x, 0)
-    anchor, point, x = b, "LEFT", -FOOT_MARK_GAP
+    if b:IsShown() then anchor, point, x = b, "LEFT", -FOOT_MARK_GAP end
   end
   if anchor ~= foot then x = -FOOT_PAD end
   foot.right:ClearAllPoints()
@@ -880,8 +885,10 @@ end
 --- bottom edge, BORN SHOWN and anchored, with no fill. It draws a one-physical-pixel hairline along
 --- its top, `opts.inset` (1) in from each side so it meets the window's edge; `foot.left` (the
 --- status line, LEFT at PAD) and `foot.right` (RIGHT, clear of the marks), both one line, in
---- `text.muted`; the control slot, `opts.marks` laid right to left from the corner, outermost first;
---- and, with `opts.grip` or `opts.resize`, the right inset that clears the resize grip's corner.
+--- `text.muted`; the control slot, `opts.marks` laid right to left from the corner, outermost first,
+--- the hidden ones skipped (minor 30); and, with `opts.grip` or `opts.resize`, the right inset that
+--- clears the resize grip's corner. A mark's OnShow or OnHide, and the footer's own OnShow, re-lay
+--- it (hooked once each); `foot:Relayout()` re-lays it on demand.
 ---
 --- The host owns every string (`foot:SetLeft`, `foot:SetRight`), every mark's art, action and
 --- tooltip, and when the footer shows; a host that hides it gives `FOOTER.HEIGHT` back to its body.
@@ -894,7 +901,8 @@ end
 ---                         inset = number, owner = string }; `owner` a registered skin owner
 --- @return table  the Frame, with `foot.line` (Texture), `foot.left`, `foot.right` (FontStrings),
 ---                `foot.marks` (Buttons, each with `.icon`), `foot.grip` (the grip `opts.resize`
----                made, or nil), and `foot:SetLeft(text)`, `foot:SetRight(text)`, `foot:SetGrip(on)`
+---                made, or nil), and `foot:SetLeft(text)`, `foot:SetRight(text)`, `foot:SetGrip(on)`,
+---                `foot:Relayout()`
 function lib.Footer(parent, opts)
   opts = type(opts) == "table" and opts or {}
   local foot = CreateFrame("Frame", nil, parent)
@@ -923,7 +931,16 @@ function lib.Footer(parent, opts)
   foot.SetLeft = function(self, text) footSet(self.left, text) end
   foot.SetRight = function(self, text) footSet(self.right, text) end
   foot.SetGrip = function(self, on) self.__grip = on and true or nil; footLayout(self) end
+  foot.Relayout = function(self) footLayout(self) end
   foot.__grip = (opts.grip == true or type(opts.resize) == "table") or nil
+  -- A host shows or hides a mark per tab: each mark's show and hide re-lay the footer. The client
+  -- fires neither on a mark whose window is hidden, so the footer's own show re-lays it too.
+  local function relay() footLayout(foot) end
+  for _, b in ipairs(foot.marks) do
+    b:HookScript("OnShow", relay)
+    b:HookScript("OnHide", relay)
+  end
+  foot:HookScript("OnShow", relay)
   footLayout(foot)
   if type(opts.resize) == "table" then foot.grip = footResize(foot, parent, opts.resize, opts.owner) end
   return foot

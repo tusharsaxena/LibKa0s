@@ -24,6 +24,14 @@ local F = dofile("tests/fixture_skin_paint.lua")
 local MARK = "Interface\\AddOns\\Host\\libs\\LibKa0s\\media\\icons\\settings"
 
 local function record(f)
+  rawset(f, "HookScript", function(self, name, fn)
+    local prev = self.__scripts[name]
+    self.__scripts[name] = function(...)
+      if prev then prev(...) end
+      return fn(...)
+    end
+    return self
+  end)
   rawset(f, "SetJustifyH", function(self, v) self.__justifyH = v end)
   rawset(f, "SetWordWrap", function(self, v) self.__wordWrap = v end)
   local makeTexture, makeFontString = f.CreateTexture, f.CreateFontString
@@ -249,6 +257,107 @@ test("Footer: two footers share no regions", function()
     local b = W.Footer(mocks.UIParent, { left = "b" })
     assertTrue(a.line ~= b.line and a.left ~= b.left and a.right ~= b.right)
     assertEqual(a.left:GetText(), "a"); assertEqual(b.left:GetText(), "b")
+  end)
+end)
+
+-- ── only the shown marks are laid (minor 30, LibKa0s#94) ─────────────────────────────────────
+--
+-- Through minor 29 footLayout chained every mark in `foot.marks`, shown or hidden, so a host that
+-- built the most marks any tab needs and hid the rest kept an empty slot, and the left line was cut
+-- short of it (Ka0s Drop Watcher's main window, about 40 px). A hidden mark is now skipped by the
+-- chain, the right line and the left line, and a mark's show or hide re-lays the footer.
+
+local function threeMarks(extra)
+  local opts = { left = "status", right = "r", marks = { { icon = MARK }, { icon = MARK }, { icon = MARK } } }
+  for k, v in pairs(extra or {}) do opts[k] = v end
+  return W.Footer(mocks.UIParent, opts)
+end
+
+test("Footer: a hidden middle mark leaves no gap when the footer re-lays (SetGrip)", function()
+  recording(function()
+    local foot = threeMarks()
+    local a, b, c = foot.marks[1], foot.marks[2], foot.marks[3]
+    b:Hide()
+    foot:SetGrip(false)
+    assertPoint(a, 1, "RIGHT", foot, "RIGHT", -8, 0, "the outermost at the padding")
+    assertPoint(c, 1, "RIGHT", a, "LEFT", -4, 0, "the third takes the hidden one's slot")
+    assertPoint(foot.right, 1, "RIGHT", c, "LEFT", -8, 0, "the right line clear of the shown marks")
+    assertPoint(foot.left, 2, "RIGHT", foot.right, "LEFT", -8, 0, "the left line runs up to it")
+  end)
+end)
+
+test("Footer: Relayout skips a hidden outermost mark", function()
+  recording(function()
+    local foot = threeMarks()
+    local a, b, c = foot.marks[1], foot.marks[2], foot.marks[3]
+    a:Hide()
+    foot:Relayout()
+    assertPoint(b, 1, "RIGHT", foot, "RIGHT", -8, 0, "the next shown one takes the corner")
+    assertPoint(c, 1, "RIGHT", b, "LEFT", -4, 0)
+    assertPoint(foot.right, 1, "RIGHT", c, "LEFT", -8, 0)
+  end)
+end)
+
+test("Footer: every mark hidden lays the right line at the corner's inset, grip or not", function()
+  recording(function()
+    local foot = threeMarks()
+    for _, m in ipairs(foot.marks) do m:Hide() end
+    foot:Relayout()
+    assertPoint(foot.right, 1, "RIGHT", foot, "RIGHT", -8, 0, "no shown marks: the padding")
+    assertPoint(foot.left, 1, "LEFT", foot, "LEFT", 8, 0)
+    assertPoint(foot.left, 2, "RIGHT", foot.right, "LEFT", -8, 0)
+    local gripped = threeMarks({ grip = true })
+    for _, m in ipairs(gripped.marks) do m:Hide() end
+    gripped:Relayout()
+    assertPoint(gripped.right, 1, "RIGHT", gripped, "RIGHT", -22, 0, "no shown marks: clear of the grip")
+  end)
+end)
+
+test("Footer: a mark's OnHide and OnShow re-lay the footer, with no call from the host", function()
+  recording(function()
+    local foot = threeMarks()
+    local a, b, c = foot.marks[1], foot.marks[2], foot.marks[3]
+    b:Hide(); b:__fire("OnHide")
+    assertPoint(c, 1, "RIGHT", a, "LEFT", -4, 0, "hidden: the gap closes")
+    assertPoint(foot.right, 1, "RIGHT", c, "LEFT", -8, 0)
+    b:Show(); b:__fire("OnShow")
+    assertPoint(b, 1, "RIGHT", a, "LEFT", -4, 0, "shown again: back in its slot")
+    assertPoint(c, 1, "RIGHT", b, "LEFT", -4, 0)
+    assertPoint(foot.right, 1, "RIGHT", c, "LEFT", -8, 0)
+  end)
+end)
+
+test("Footer: the footer's own OnShow re-lays it (a mark hidden while the window was hidden)", function()
+  recording(function()
+    local foot = threeMarks()
+    local a, c = foot.marks[1], foot.marks[3]
+    foot.marks[2]:Hide()   -- no OnHide: the client fires none on a region that is not visible
+    foot:__fire("OnShow")
+    assertPoint(c, 1, "RIGHT", a, "LEFT", -4, 0)
+  end)
+end)
+
+test("Footer: each mark is hooked once, so one show or hide re-lays once", function()
+  recording(function()
+    local foot = threeMarks()
+    foot:Relayout(); foot:SetGrip(true); foot:SetGrip(false); foot:Relayout()
+    local lays = 0
+    local clear = foot.right.ClearAllPoints
+    rawset(foot.right, "ClearAllPoints", function(self) lays = lays + 1; return clear(self) end)
+    foot.marks[2]:Hide(); foot.marks[2]:__fire("OnHide")
+    assertEqual(lays, 1, "one re-lay per hide")
+  end)
+end)
+
+test("Footer: a host's own hook on a mark still runs beside the re-lay", function()
+  recording(function()
+    local foot = threeMarks()
+    local b = foot.marks[2]
+    local seen = {}
+    b:HookScript("OnHide", function() seen[#seen + 1] = "hide" end)
+    b:Hide(); b:__fire("OnHide")
+    assertEqual(seen[1], "hide")
+    assertPoint(foot.marks[3], 1, "RIGHT", foot.marks[1], "LEFT", -4, 0)
   end)
 end)
 

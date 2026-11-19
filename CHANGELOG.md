@@ -10,6 +10,20 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## Unreleased
+
+Opened 2026-11-20, on `feat/2026-11-20-libka0s-94-97-99-100` (off `master` at v1.107.0): LibKa0s#94, #97, #99 and #100 (Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/`). Written as the next release; the version is named at release.
+
+Versions in this release: `LibKa0s-Widgets-1.0` key **30.2.7.15.2.7.8.6.1.1** (Widgets minor 30); every other file at its v1.107.0 minor, and the test kit at revision **57**. No `NEEDS_*` floor rises, no member changes, and no file is added.
+
+### Fixed
+
+- **A window's footer lays only its shown marks (LibKa0s#94, Widgets minor 30, `SD-LK-94`).** Through minor 29 `Footer` chained every mark from the corner, shown or hidden, so a host that hid the marks a tab does not bind kept an empty slot and its left status line was cut short of it (Ka0s Drop Watcher's main window, about 40 px). A hidden mark now takes no slot: the chain, the right line and the left line skip it. Each mark's show and hide, and the footer's own show, re-lay the footer (hooked once each), and `foot:Relayout()` re-lays it on demand. `FOOTER`'s figures do not move. `tests/test_widgets_footer.lua` gains seven cases, red under minor 29. The API document is [`docs/api/Widgets/version-30.2.7.15.2.7.8.6.1.1-docs.md`](docs/api/Widgets/version-30.2.7.15.2.7.8.6.1.1-docs.md).
+
+### What a consumer owes at its re-vendor
+
+- Nothing in code. A host that re-anchored the footer's lines to close the gap drops the workaround; a footer stub owes `Relayout` only where its host calls it.
+
 ## v1.107.0 — 2026-11-19
 
 Opened 2026-11-19, on `feat/2026-11-19-adoption-feedback` (off `master` at v1.106.0): the library half of the owner's feedback on the LibKa0s v1.105 adoption smoke (Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`, its `inputs/OWNER_FEEDBACK.md` and rulings), items `AF-LK-01` and `AF-LK-02`, with LibKa0s#96 and LibKa0s#95, then `AF-DR-LK` and this release, `AF-LK-03`. Built to WowAddonStandards v2.115.0, whose HUD header rule (which marks a window owes, and the drag strip's marks and their order) this release implements on the library side.
