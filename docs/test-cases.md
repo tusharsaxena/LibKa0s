@@ -165,8 +165,8 @@ Total.
 - tooltip sites: a HUD drag strip's tooltip attaches above the strip, owned by UIParent
 - tooltip sites: tooltipOwner = "cursor" and tooltipAnchor are retired to the attached placer
 - tooltip sites: a strip's mark places by its strip, not by the mark
-- tooltip sites: a host placement that fails falls back to the attached placer, never the cursor
-- tooltip sites: a host placement that answers true keeps its own point
+- tooltip sites: a host placement that fails changes nothing: above the strip, never the cursor
+- tooltip sites: a host placement that answers true no longer moves the strip's tooltip
 - tooltip sites: a chart mark's default tooltip opens beside the chart's window group
 - tooltip sites: a host's tip seam gets the legacy anchor and a fourth argument, the context
 - tooltip sites: the launcher re-places its own minimap button's tooltip, and no one else's
@@ -1856,9 +1856,9 @@ Total.
 - draghandle: with no parent, and in a process with no CreateFrame, it answers nil
 - draghandle: a frame that cannot make textures is drawn without them rather than raising
 - draghandle: the mark's ART is 8px -- the chevron's INK rather than the chevron's BOX
-- draghandle: the mark is dimmed to the chevron's own tint, and brightens where a click is wired
-- draghandle: a mark with no click behind it does not light up under the cursor
-- draghandle: the mark's FRAME is the full strip height, so the art shrank and the target did not
+- draghandle: the mark is dimmed to the chevron's own tint, and lights in the header's gold
+- draghandle: the '?' lights under the cursor on every strip, a click behind it or not
+- draghandle: the mark's FRAME is the full strip height and wider than its art
 - draghandle: the mark is anchored inside the strip's right end at the published inset
 - draghandle: the label is drawn in the same face it is measured in, and one field sets both
 - draghandle: the label is bounded by the reserve on both sides, and never wraps
@@ -1891,36 +1891,32 @@ Total.
 - draghandle: the strip is a plain Button with a fill, never a BackdropTemplate
 - draghandle: a host with its own edge painter gets its own pixels
 - draghandle: DragHandle is at minor 3 or later, the close mark's minor
-- draghandle: a spec with no onClose draws exactly the minor-2 strip, number for number
-- draghandle: onClose builds an X the same frame and art size as the '?', immediately left of it
+- draghandle: a spec with no onClose and no gear is minor 2's width, number for number
+- draghandle: onClose builds an X the same frame and art size as the '?', in the corner
 - draghandle: with no closeIcon the X falls to Blizzard's stop button
 - draghandle: the X widens the reserve on BOTH sides, so the label stays centered
 - draghandle: a left click on the X calls onClose once, and a right click does not
 - draghandle: an X on a host with no right-click registers the left click alone
 - draghandle: the X takes the strip's drag scripts, so a drag that starts on it moves the frame
-- draghandle: the X brightens under the cursor and shows closeTooltip
+- draghandle: the X lights the close red under the cursor and shows closeTooltip
 - draghandle: an X with no closeTooltip shows the strip's
-- draghandle: an X on a strip whose '?' could not be built sits where the '?' would
+- draghandle: a '?' on a strip whose X could not be built sits where the X would
 
-### test_widgets_draghandle_place.lua (10)
+### test_widgets_draghandle_place.lua (5)
 
 - draghandle: without tooltipPlace the calls are own by UIParent, draw, one Show, whatever the owner field
-- draghandle: tooltipPlace owns by UIParent at ANCHOR_NONE, draws, shows, then places
-- draghandle: tooltipPlace runs after Show, so the tooltip is measured when it is placed
-- draghandle: the mark and the X hand tooltipPlace the frame hovered, not the strip
-- draghandle: a tooltipPlace that raises falls back to the library's placement, drawn once
-- draghandle: a tooltipPlace that answers anything but true falls back to the library's placement
-- draghandle: a descriptor's own place wins over the spec's
-- draghandle: a descriptor may place while the spec does not, and its neighbor is untouched
-- draghandle: a tooltipPlace that is not a function is ignored, not called
-- draghandle: DragHandle is at minor 4 or later, the placement hook's floor
+- draghandle: tooltipPlace is accepted and never called, so the hover is the hook-less one
+- draghandle: a retired hook of any shape or answer changes nothing and raises nothing
+- draghandle: a descriptor's own place is retired with the spec's
+- draghandle: WidgetsDragHandleTip is at minor 2 or later, the placement hook's retirement
 
-### test_widgets_draghandle_layers.lua (11)
+### test_widgets_draghandle_layers.lua (12)
 
 - DragHandle minor 5: MODULES and the file minor say 5
 - DragHandle level: no spec.level keeps minor 4 -- handle at parent + 1, marks at handle + 1
 - DragHandle level: level = 50 on a parent at 7 -- handle 57, marks 58, written before the marks exist
 - DragHandle ApplyLevel: a parent re-leveled to 20 puts the handle at 70 and the marks at 71
+- DragHandle ApplyLevel: the settings mark is re-leveled with the other two (LibKa0s#96)
 - DragHandle ApplyLevel: a mark the client did not build leaves the other one reached
 - DragHandle ApplyLevel: without spec.level it answers false and writes nothing
 - DragHandle level: a secret or non-number parent level reads as 0
@@ -1941,6 +1937,16 @@ Total.
 - DragHandle show: a strip the host never fitted, or sized itself, is not sized
 - DragHandle show: an onRefit host sizes its own strip
 - DragHandle show: nothing is sized in combat
+
+### test_widgets_draghandle_marks.lua (7)
+
+- draghandle marks: the order is [?][settings][close], the X in the corner
+- draghandle marks: a strip without an X puts the gear in the corner and the '?' against it
+- draghandle marks: the arts sit 6px of air apart, and the corner art 9px from the edge
+- draghandle marks: each mark beyond the '?' widens the reserve by its frame, on both sides
+- draghandle marks: an owner-less strip's marks rest and light in a window header's colors
+- draghandle marks: the settings mark is built unless the host passes settings = false
+- draghandle marks: a strip with no onClose shows no X, never a mark that does nothing
 
 ### test_widgets_linechart_math.lua (21)
 
@@ -2074,7 +2080,7 @@ Total.
 - TestStrip: a sim without steps offers only End sim; onEnd wins over the instance's Stop
 - TestStrip: with neither onEnd nor sim the mouse stays off, as before
 
-### test_widgets_teststrip_dock.lua (21)
+### test_widgets_teststrip_dock.lua (22)
 
 - TestStrip dock: 'title' anchors the strip full width directly under the title bar
 - TestStrip dock: 'title' with an inset pulls both sides in
@@ -2088,6 +2094,7 @@ Total.
 - TestStrip dock: the flip reads screen pixels, the display's scale and the strip's
 - TestStrip dock: a display the client refuses to measure (on a nameplate) docks unflipped, no error
 - TestStrip dock: a HUD strip with unreadable edges stays on top
+- TestStrip dock: geometry that reads secret is no geometry: no flip, no level, no error
 - TestStrip dock: a HUD strip takes no mouse and opens no menu, even given onEnd
 - TestStrip dock: docking a menu strip to a HUD later turns the mouse and menu off
 - TestStrip dock: a HUD strip takes the display's strata, one chrome band over its level
@@ -2166,7 +2173,7 @@ Total.
 - header buttons: Core's close mark says Close above itself, and an owner's words replace it
 - header buttons: a title-bar tooltip is drawn in the owner's gtip.title
 - header buttons: an adopted or host-made close carries the Close tooltip too
-- header buttons: a drag strip carries no settings mark unless it opts in
+- header buttons: a drag strip carries the settings mark unless it opts out
 - header buttons: a drag strip's marks each carry a tooltip, the library's words without the host's
 - header buttons: the debug console reads Copy, Clear, settings, close, every control with a tooltip
 - header buttons: the console's tooltips are module strings a host's L overrides, rawget-keyed
@@ -5696,15 +5703,16 @@ Total.
 | test_widgets_submenu.lua | 18 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 49 |
-| test_widgets_draghandle_place.lua | 10 |
-| test_widgets_draghandle_layers.lua | 11 |
+| test_widgets_draghandle_place.lua | 5 |
+| test_widgets_draghandle_layers.lua | 12 |
 | test_widgets_draghandle_fit.lua | 10 |
+| test_widgets_draghandle_marks.lua | 7 |
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 22 |
 | test_widgets_autocomplete.lua | 37 |
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 21 |
-| test_widgets_teststrip_dock.lua | 21 |
+| test_widgets_teststrip_dock.lua | 22 |
 | test_widgets_footer.lua | 18 |
 | test_widgets_bar.lua | 24 |
 | test_header_buttons.lua | 25 |
@@ -5855,4 +5863,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4945** |
+| **Total** | **4949** |

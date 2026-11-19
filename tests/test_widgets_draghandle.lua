@@ -125,7 +125,7 @@ test("draghandle: the mark's ART is 8px -- the chevron's INK rather than the che
   assertEqual(h.help.icon.__h, 8)
 end)
 
-test("draghandle: the mark is dimmed to the chevron's own tint, and brightens where a click is wired",
+test("draghandle: the mark is dimmed to the chevron's own tint, and lights in the header's gold",
 function()
   -- The other half of the same complaint. Both copies drew the mark at full white, the brightest
   -- element on a strip whose label is gold on a dark fill. The dropdown's chevron carries
@@ -140,38 +140,39 @@ function()
   assertEqual(rest[3], 0.72)
   T.assertNil(rest[4], "the tint is a color, not an alpha -- the mark composites at full opacity")
   h.help:__fire("OnEnter")
-  assertEqual(h.help.icon.__vertex[1], 1, "full white under the cursor, so it reads as clickable")
-  assertEqual(h.help.icon.__vertex[3], 1)
+  local hot = h.help.icon.__vertex
+  assertEqual(table.concat({ hot[1], hot[2], hot[3] }, ","), "1,0.5,0",
+    "the window header's hover (Ka0s Default's text.link) under the cursor, minor 15; white through 14")
   h.help:__fire("OnLeave")
   assertEqual(h.help.icon.__vertex[3], 0.72, "and back to the resting tint when it leaves")
 end)
 
-test("draghandle: a mark with no click behind it does not light up under the cursor", function()
-  -- The brighten is the sentence "this is a control". ConsumableMaster's strip registers no
-  -- right-click at all -- dhSetClick declines to register one -- so a mark that went full white
-  -- under the cursor there advertised an action nothing was behind. Hover feedback and the click
-  -- register or decline together.
-  -- red under: a constant HELP_TINT_OVER on OnEnter, which is what the first draft shipped.
+test("draghandle: the '?' lights under the cursor on every strip, a click behind it or not", function()
+  -- Minor 15 (AF-LK-01, the owner's images 7-9): a strip's marks look like a window header's, and a
+  -- header mark lights whatever is behind it. Through minor 14 the '?' lit only where the host wired
+  -- a right-click; it always answers the pointer with its tooltip and the strip's drag.
+  -- red under: minor 14, which held the resting tint on ConsumableMaster's click-less mark.
   local h = W.DragHandle(mocks.UIParent, baseSpec())
   h.help:__fire("OnEnter")
-  assertEqual(h.help.icon.__vertex[1], 0.7, "still the resting tint, because nothing is clickable")
-  assertEqual(h.help.icon.__vertex[3], 0.72)
+  assertEqual(h.help.icon.__vertex[1], 1)
+  assertEqual(h.help.icon.__vertex[2], 0.5)
   h.help:__fire("OnLeave")
-  assertEqual(h.help.icon.__vertex[3], 0.72, "and leaving changes nothing either")
+  assertEqual(h.help.icon.__vertex[3], 0.72, "and leaving restores the rest")
 end)
 
-test("draghandle: the mark's FRAME is the full strip height, so the art shrank and the target did not", function()
+test("draghandle: the mark's FRAME is the full strip height and wider than its art", function()
   -- The ruling this widget was sent back for: a destructive-adjacent control that is also the only
   -- right-click affordance on AuraMaster's strip has to stay easy to hit. Same shape as O.IdList's
   -- remove icon one layer down -- ID_REMOVE_SIZE 16 of art inside an ID_REMOVE_HIT 26 frame -- so
   -- the art is centered in a gutter rather than filling its button.
-  -- red under: a 12x12 Button, which is what shrinking the art alone produced.
+  -- red under: a 12x12 Button, which is what shrinking the art alone produced. From minor 15 the
+  -- frame is HELP_HIT = 14 wide (18 square through 14), so three marks sit 6px of air apart.
   local h = W.DragHandle(mocks.UIParent, baseSpec())
   local D = W.DRAG_HANDLE
-  assertEqual(D.HELP_HIT, D.HEIGHT, "the frame is the strip's own height")
+  assertEqual(D.HELP_HIT, 14, "the frame's width, the click target")
   assertEqual(h.help.__w, D.HELP_HIT)
-  assertEqual(h.help.__h, D.HELP_HIT)
-  assertEqual(D.HELP_GUTTER, 5, "(18 - 8) / 2 on every side")
+  assertEqual(h.help.__h, D.HEIGHT, "the frame is the strip's own height")
+  assertEqual(D.HELP_GUTTER, 3, "(14 - 8) / 2 left and right")
   local point, rel, relPoint = h.help.icon:GetPoint(1)
   assertEqual(point, "CENTER", "and the art is centered in it, not anchored to a corner")
   assertEqual(rel, h.help)
@@ -642,11 +643,11 @@ test("draghandle: DragHandle is at minor 3 or later, the close mark's minor", fu
   assertTrue(W.__dragMinor >= 3)
 end)
 
-test("draghandle: a spec with no onClose draws exactly the minor-2 strip, number for number", function()
-  -- THE OPT-IN MUST BE EXACT. ConsumableMaster, KickCD and AbsorbTracker pass no onClose and are
-  -- not re-vendored with this release, but they will be one day, and on that day their strips must
-  -- not move a pixel. Every figure below is the literal minor 2 drew, not a value read back off
-  -- DRAG_HANDLE, so a change to the table itself is caught here too.
+test("draghandle: a spec with no onClose and no gear is minor 2's width, number for number", function()
+  -- A strip with the '?' alone keeps minor 2's width to the pixel. Every figure below is a literal,
+  -- not a value read back off DRAG_HANDLE, so a change to the table itself is caught here too. From
+  -- minor 15 (AF-LK-01) the '?''s frame is 14 wide at a 6px inset where it was 18 at 4: its art keeps
+  -- its 9px from the strip's edge and RESERVE stays 29, so the width and the label's bounds do not move.
   -- red under: a reserve that grows for every host, or a close frame built and hidden.
   stubMeasurer()
   local h
@@ -657,10 +658,10 @@ test("draghandle: a spec with no onClose draws exactly the minor-2 strip, number
   assertEqual(D.HEIGHT, 18)
   assertEqual(D.GAP, 2)
   assertEqual(D.HELP, 8)
-  assertEqual(D.HELP_HIT, 18)
-  assertEqual(D.HELP_INSET, 4)
+  assertEqual(D.HELP_HIT, 14)
+  assertEqual(D.HELP_INSET, 6)
   assertEqual(D.HELP_CLEAR, 12)
-  assertEqual(D.HELP_GUTTER, 5)
+  assertEqual(D.HELP_GUTTER, 3)
   assertEqual(D.RESERVE, 29)
   assertEqual(D.FIT_SLACK, 2)
   assertEqual(h:Reserve(), 29)
@@ -674,30 +675,34 @@ test("draghandle: a spec with no onClose draws exactly the minor-2 strip, number
   assertEqual(r2, h)
   T.assertNil(h.label:GetPoint(3), "two label points and no more")
   local hp, hr, hrp, hx, hy = h.help:GetPoint(1)
-  assertEqual(table.concat({ hp, hrp, hx, hy }, ","), "RIGHT,RIGHT,-4,0")
+  assertEqual(table.concat({ hp, hrp, hx, hy }, ","), "RIGHT,RIGHT,-6,0")
   assertEqual(hr, h)
   T.assertNil(h.help:GetPoint(2))
-  assertEqual(h.help.__w .. "x" .. h.help.__h, "18x18")
+  assertEqual(h.help.__w .. "x" .. h.help.__h, "14x18")
+  assertEqual(6 + (14 - 8) / 2, 4 + (18 - 8) / 2, "the art's 9px from the edge, as at minor 2")
   assertEqual(h.help.icon.__w .. "x" .. h.help.icon.__h, "8x8")
   assertEqual(h.__h, 18)
 end)
 
-test("draghandle: onClose builds an X the same frame and art size as the '?', immediately left of it",
+test("draghandle: onClose builds an X the same frame and art size as the '?', in the corner",
 function()
-  -- The owner's ask: the X is the '?''s twin in size and hit box, and it sits in front of it.
+  -- The X is the '?''s twin in size and hit box. From minor 15 (AF-LK-01, the window header's order)
+  -- it takes the corner and the '?' sits against it; through 14 the X sat left of the '?'.
   -- CLOSE_GAP is the px between the two FRAMES; at 0 the two arts sit 2 * HELP_GUTTER apart.
   local h = W.DragHandle(mocks.UIParent, baseSpec({ onClose = function() end, closeIcon = HOST_CLOSE }))
   local D = W.DRAG_HANDLE
   assertTrue(h.close ~= nil, "the X is built")
   assertEqual(D.CLOSE_GAP, 0)
   assertEqual(h.close.__w, D.HELP_HIT)
-  assertEqual(h.close.__h, D.HELP_HIT)
+  assertEqual(h.close.__h, D.HEIGHT)
   local point, rel, relPoint, x, y = h.close:GetPoint(1)
-  assertEqual(point, "RIGHT")
-  assertEqual(rel, h.help, "anchored to the '?', so it follows the mark rather than restating its inset")
-  assertEqual(relPoint, "LEFT")
-  assertEqual(x, -D.CLOSE_GAP)
-  assertEqual(y, 0)
+  assertEqual(table.concat({ point, relPoint, x, y }, ","), "RIGHT,RIGHT," .. -D.HELP_INSET .. ",0")
+  assertEqual(rel, h, "the corner")
+  local hp, hr, hrp, hx = h.help:GetPoint(1)
+  assertEqual(hp, "RIGHT")
+  assertEqual(hr, h.close, "the '?' anchored to the X, so it follows the mark rather than restating its inset")
+  assertEqual(hrp, "LEFT")
+  assertEqual(hx, -D.CLOSE_GAP)
   assertEqual(h.close.icon.__w, D.HELP)
   assertEqual(h.close.icon.__h, D.HELP)
   local ip, ir, irp = h.close.icon:GetPoint(1)
@@ -725,19 +730,19 @@ test("draghandle: the X widens the reserve on BOTH sides, so the label stays cen
   local h = W.DragHandle(mocks.UIParent, baseSpec({ onClose = function() end }))
   local D = W.DRAG_HANDLE
   local reserve = D.RESERVE + D.HELP_HIT + D.CLOSE_GAP
-  assertEqual(reserve, 47)
+  assertEqual(reserve, 43, "47 through minor 14, with 18px frames")
   assertEqual(h:Reserve(), reserve)
   assertEqual(h:Measure(), 5 * 6 + D.FIT_SLACK + reserve * 2)
   local width = h:ApplyWidth()
-  assertEqual(width, 126)
+  assertEqual(width, 118)
   local _, _, _, left = h.label:GetPoint(1)
   local _, _, _, right = h.label:GetPoint(2)
   assertEqual(left, reserve)
   assertEqual(right, -reserve)
   assertEqual((left + (width + right)) / 2, width / 2, "the label's bounds are centered on the strip")
   local labelRight = width - reserve
-  local closeArtLeft = width - D.HELP_INSET - D.HELP_HIT - D.CLOSE_GAP - D.HELP_HIT + D.HELP_GUTTER
-  assertEqual(closeArtLeft - labelRight, D.HELP_CLEAR, "the X keeps the clearance the '?' keeps")
+  local leftArt = width - D.HELP_INSET - D.HELP_HIT - D.CLOSE_GAP - D.HELP_HIT + D.HELP_GUTTER
+  assertEqual(leftArt - labelRight, D.HELP_CLEAR, "the leftmost mark keeps the clearance a lone '?' keeps")
 end)
 
 test("draghandle: a left click on the X calls onClose once, and a right click does not", function()
@@ -788,7 +793,7 @@ function()
   assertEqual(closes, 0, "and a drag is not a close")
 end)
 
-test("draghandle: the X brightens under the cursor and shows closeTooltip", function()
+test("draghandle: the X lights the close red under the cursor and shows closeTooltip", function()
   local h = W.DragHandle(mocks.UIParent, baseSpec({
     onClose = function() end,
     tooltip = { title = "Buffs" },
@@ -797,9 +802,10 @@ test("draghandle: the X brightens under the cursor and shows closeTooltip", func
   local seen = hover(h.close)
   assertEqual(seen.lines[1].text, "Disable Buffs")
   assertEqual(seen.lines[2].text, "Turn it back on in settings.")
-  assertEqual(seen.owner, mocks.UIParent, "owned by UIParent (minor 14), placed below the strip")
-  assertEqual(h.close.icon.__vertex[1], 1, "full white under the cursor: there is always a click here")
-  assertEqual(h.close.icon.__vertex[3], 1)
+  assertEqual(seen.owner, mocks.UIParent, "owned by UIParent (minor 14), placed above the strip")
+  local hot = h.close.icon.__vertex
+  assertEqual(table.concat({ hot[1], hot[2], hot[3] }, ","), "1,0.3,0.3",
+    "Core.MakeCloseButton's red under the cursor (minor 15; white through 14)")
   assertEqual(hover(h).lines[1].text, "Buffs", "the strip keeps its own descriptor")
   local left = false
   local tip = mocks.GameTooltip
@@ -821,9 +827,9 @@ test("draghandle: an X with no closeTooltip shows the strip's", function()
   assertEqual(seen.anchor, "ANCHOR_NONE", "a cursor owner is retired (minor 14)")
 end)
 
-test("draghandle: an X on a strip whose '?' could not be built sits where the '?' would", function()
-  -- The degraded path: a client that answers the strip but not its second frame. The X must not
-  -- index a nil '?' to anchor itself.
+test("draghandle: a '?' on a strip whose X could not be built sits where the X would", function()
+  -- The degraded path: a client that answers the strip but not its second frame (the X, built first
+  -- from minor 15). The '?' must not index a nil X to anchor itself.
   local saved, n = mocks.CreateFrame, 0
   mocks.CreateFrame = function(...)
     n = n + 1
@@ -832,8 +838,8 @@ test("draghandle: an X on a strip whose '?' could not be built sits where the '?
   end
   local ok, err = pcall(function()
     local h = W.DragHandle(geomUIParent, baseSpec({ onClose = function() end }))
-    T.assertNil(h.help)
-    local point, rel, relPoint, x = h.close:GetPoint(1)
+    T.assertNil(h.close)
+    local point, rel, relPoint, x = h.help:GetPoint(1)
     assertEqual(table.concat({ point, relPoint, x }, ","), "RIGHT,RIGHT," .. -W.DRAG_HANDLE.HELP_INSET)
     assertEqual(rel, h)
   end)

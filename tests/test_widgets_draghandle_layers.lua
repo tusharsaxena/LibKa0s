@@ -122,6 +122,17 @@ test("DragHandle ApplyLevel: a parent re-leveled to 20 puts the handle at 70 and
   assertEqual(rawget(h.close, "__level"), 71, "the close mark's level is written explicitly")
 end)
 
+test("DragHandle ApplyLevel: the settings mark is re-leveled with the other two (LibKa0s#96)", function()
+  -- red under: minor 14, whose ApplyLevel named the "?" and the X and left the gear at its birth level,
+  -- so a re-leveled parent could draw over it (AF-LK-01 + LibKa0s#96).
+  local p = parentAt(7)
+  local h = W.DragHandle(p, baseSpec({ level = 50, onClose = function() end, settings = true }))
+  p:SetFrameLevel(20)
+  assertEqual(h:ApplyLevel(), true)
+  assertEqual(levelOf(h.settings), 71)
+  assertEqual(rawget(h.settings, "__level"), 71, "the settings mark's level is written explicitly")
+end)
+
 test("DragHandle ApplyLevel: a mark the client did not build leaves the other one reached", function()
   local p = parentAt(7)
   local h = W.DragHandle(p, baseSpec({ level = 50, onClose = function() end }))

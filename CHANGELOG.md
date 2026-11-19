@@ -10,6 +10,39 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.107.0 — 2026-11-19
+
+Opened 2026-11-19, on `feat/2026-11-19-adoption-feedback` (off `master` at v1.106.0): the library half of the owner's feedback on the LibKa0s v1.105 adoption smoke (Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`, its `inputs/OWNER_FEEDBACK.md` and rulings), items `AF-LK-01` and `AF-LK-02`, with LibKa0s#96 and LibKa0s#95, then `AF-DR-LK` and this release, `AF-LK-03`. Built to WowAddonStandards v2.115.0, whose HUD header rule (which marks a window owes, and the drag strip's marks and their order) this release implements on the library side.
+
+Versions in this release: `LibKa0s-Widgets-1.0` key **29.2.7.15.2.7.8.6.1.1** (Widgets minor 29, WidgetsDragHandle minor 15, WidgetsDragHandleTip minor 2); every other file at its v1.106.0 minor, and the test kit at revision **57**. No `NEEDS_*` floor rises, no member changes, and no file is added.
+
+### Changed
+
+- **The drag strip's marks read like a window header (WidgetsDragHandle minor 15, `AF-LK-01`).** Left to right `?`, settings, close, the X in the corner where the `?` sat (the owner's image 6 showed settings, close, `?`): `HeaderButtons`' order. The marks sit closer: each frame is `HELP_HIT` 14 px wide (18) and the strip's full height, `HELP_INSET` 6 (4), so two arts have 6 px of air between them (10) while the corner art keeps its 9 px from the edge and `RESERVE` stays 29; each mark past the `?` widens the reserve by 14 (18). Their tints are the window header's: `icon.tint` at rest, the `?` and the gear `text.link` under the pointer, the X `close.rest` and `close.hot` (Core.MakeCloseButton's), from the strip owner's tokens, Ka0s Default's for an owner-less strip; through minor 14 every mark went `icon.hot` white and the `?` lit only with an `onRightClick`. **The settings mark is standard**, built unless `settings = false` (opt-in at 14); the X still needs `onClose`, which every host MUST pass (the standard's HUD header rule), and a strip without one shows no X. `tests/test_widgets_draghandle_marks.lua` is new (order, gap, tint against a real header mark and a real Core close, the default), red under minor 14. The API document is [`docs/api/Widgets/version-28.2.7.15.2.7.8.6.1.1-docs.md`](docs/api/Widgets/version-28.2.7.15.2.7.8.6.1.1-docs.md).
+
+- **The strip's tooltip always opens above the strip (WidgetsDragHandleTip minor 2, `AF-LK-02`).** The strip's own tooltip and its marks' attach centered above the strip through LibKa0s-Tooltip-1.0, below only without room above, as every window header's mark tooltip does (the owner's image 10). A host's `tooltipPlace`, and a descriptor's `place`, no longer move it (image 11 showed Aura Master's beside its strip): both keys are retired, still accepted so an un-updated host does not error, never read and never called. `tests/test_widgets_draghandle_place.lua` and `tests/test_tooltip_sites.lua` pin it, red under minor 1.
+
+### Fixed
+
+- **`ApplyLevel` re-levels the settings mark (LibKa0s#96, still WidgetsDragHandle minor 15).** Minor 14 re-leveled the `?` and the X and left the gear at its birth level, so a re-leveled parent could draw over it. `tests/test_widgets_draghandle_layers.lua` gains the case.
+- **The HUD-docked mode strip no longer does arithmetic on secret geometry (LibKa0s#95, Widgets minor 29).** The dock's `num()` let a secret number through, so a display whose edges, height or level read secret raised on its next show, hide or resize (the owner's report: Aura Master's test-mode exit as its preset picker closed). A secret value now reads as none, as a refused read did. `tests/test_widgets_teststrip_dock.lua` gains the case.
+
+### Documentation
+
+- **DpsRace is retired (`AF-DR-LK`).** Ka0s DPS Race was merged into Ka0s Combat Trail: it leaves `docs/releasing.md`'s step-9 loop and Consumers column, and `docs/api/CONSUMERS.md` says it is no longer a consumer (the page stays the stamped v1.83.0 scan until its next re-run). Released entries above stay as written.
+
+### What a consumer owes at its re-vendor
+
+- A host's strip `tooltipPlace` hook stops placing and is deleted (`AF-STRIP-*`); a suite that pinned the hook being called, or the strip tooltip beside the strip, re-pins the attached placement.
+- A strip with no `settings` field gains the settings mark and widens by 28 px; every strip passes `onClose` (`AF-STRIP-*` of the run). A suite that pinned strip literals (a 47 or 65 reserve, an 18 x 18 mark, a `-4` inset, the `?` in the corner, a white or `icon.hot` hover) re-pins them; one that reads `RESERVE + n * (HELP_HIT + CLOSE_GAP)` stays right with the new `n`.
+- An owned strip with no `settingsIcon` draws the Ka0s `settings` icon out of the host's copy, so a host with a strip declares `settings` on its `LibKa0s icons:` line (most already do, for its window headers); a pruned icon draws blank.
+
+Release gate (`docs/automated-tests/20261119-205557/`): lint pass, 0/0 in 373 files;
+tests pass, 4951 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — the release moved neither `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` nor `Widgets.lua` (the file that defines `W.TestStrip`); a tagged drag handle's marks move with every strip, a re-vendor smoke line.
+
 ## v1.106.0 — 2026-11-19
 
 Opened 2026-11-19, on `feat/2026-11-19-hud-dock-guard` (off `master` at v1.105.0): one fix, filed as RangeMaster#17.

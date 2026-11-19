@@ -6,6 +6,16 @@ branch, the others on or about to take `feat/2026-10-31-findings-remediation`. T
 `Ka0sAddonsCommonTasks/docs/2026-10-31-FINDINGS_REMEDIATION`. Ka0s DPS Race and Ka0s Skin Tester are new to the census
 since v1.75.0, and v1.76.0 to v1.82.0 were never measured, so this run is also their first.
 
+**DpsRace is retired and is not a consumer (2026-11-19).** Ka0s DPS Race was merged into Ka0s Combat Trail and left
+the roster (`AF-DR-LK` of `Ka0sAddonsCommonTasks/docs/2026-11-19-ADOPTION_FEEDBACK`); its repository is kept as a checkout
+and is out of every sweep. Every DpsRace name, hit and file:line on this page is the v1.83.0 measurement above, kept as
+measured rather than rewritten by hand, because the host counts and hit totals beside each name are the scan's and a
+count edited without a re-scan is measured nowhere. Read each row as if DpsRace were struck from it. The next re-run (see
+[Re-running it](#re-running-it)) drops it from the roster and restamps the page; the verdicts it will move are known now:
+three exports whose only measured caller was DpsRace go to zero and owe a hand verdict (Core `lib.RaiseStaticPopups`, Skin
+`Untrack`, Toast `PREVIEW`), two consumed rows fall to thin (Widgets `width` and `height`, three hosts with it), and five
+thin rows lose one of their two hosts (every row whose two names include DpsRace, `ResolveId` and `SessionCheckbox` among them).
+
 The v1.75.0 run was taken on 2026-10-23 across fourteen addons (item `LK-23` of
 `Ka0sAddonsCommonTasks/docs/2026-10-22-LIBKA0S_ISSUES_45_58`), the v1.71.0 run on 2026-10-07 across eleven, the v1.70.0
 run earlier the same day and the v1.69.0 run on 2026-10-06. The v1.67.0 run was taken by item
