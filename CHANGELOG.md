@@ -36,6 +36,12 @@ Versions in this release: `LibKa0s-Widgets-1.0` key **28.2.7.15.2.7.8.6.1.1** (W
 - A strip with no `settings` field gains the settings mark and widens by 28 px; every strip passes `onClose` (`AF-STRIP-*` of the run). A suite that pinned strip literals (a 47 or 65 reserve, an 18 x 18 mark, a `-4` inset, the `?` in the corner, a white or `icon.hot` hover) re-pins them; one that reads `RESERVE + n * (HELP_HIT + CLOSE_GAP)` stays right with the new `n`.
 - An owned strip with no `settingsIcon` draws the Ka0s `settings` icon out of the host's copy, so a host with a strip declares `settings` on its `LibKa0s icons:` line (most already do, for its window headers); a pruned icon draws blank.
 
+Release gate (`docs/automated-tests/20261119-205557/`): lint pass, 0/0 in 373 files;
+tests pass, 4951 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — the release moved neither `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua` nor `Widgets.lua` (the file that defines `W.TestStrip`); a tagged drag handle's marks move with every strip, a re-vendor smoke line.
+
 ## v1.106.0 — 2026-11-19
 
 Opened 2026-11-19, on `feat/2026-11-19-hud-dock-guard` (off `master` at v1.105.0): one fix, filed as RangeMaster#17.
