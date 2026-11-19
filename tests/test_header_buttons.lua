@@ -287,14 +287,19 @@ test("header buttons: an adopted or host-made close carries the Close tooltip to
   assertEqual(said["made close"], "Close")
 end)
 
--- ── the drag handle (WidgetsDragHandle minor 14), opt-in ─────────────────────────────────────
+-- ── the drag handle (WidgetsDragHandle minor 14; standard from minor 15) ─────────────────────
 
 local DH = dofile("tests/fixture_draghandle.lua")
 
-DH.test("header buttons: a drag strip carries no settings mark unless it opts in", function()
-  -- red under: a settings mark on every HUD strip at re-vendor (R4 Q4)
+DH.test("header buttons: a drag strip carries the settings mark unless it opts out", function()
+  -- Minor 15 (AF-LK-01): standard on every strip, `settings = false` the opt-out (DH.baseSpec's
+  -- default). red under: minor 14, where the mark was opt-in (R4 Q4).
   local plain = W.DragHandle(mocks.UIParent, DH.baseSpec({ onClose = function() end }))
-  assertNil(plain.settings)
+  assertNil(plain.settings, "settings = false opts out")
+  local bare = DH.baseSpec({ onClose = function() end })
+  bare.settings = nil
+  local default = W.DragHandle(mocks.UIParent, bare)
+  assertTrue(default.settings ~= nil, "no settings field at all builds it")
   local D = W.DRAG_HANDLE
   local owner, n = nextName(), 0
   core.RegisterSettingsOpener(owner, function() n = n + 1 end)
@@ -303,6 +308,8 @@ DH.test("header buttons: a drag strip carries no settings mark unless it opts in
   assertEqual(h:Reserve(), plain:Reserve() + D.HELP_HIT + D.CLOSE_GAP, "each side keeps its frame clear")
   local p = h.settings.__points and h.settings.__points[1]
   assertTrue(p ~= nil and p.relativeTo == h.close and p.relativePoint == "LEFT", "left of the X")
+  local hp = h.help.__points and h.help.__points[1]
+  assertTrue(hp ~= nil and hp.relativeTo == h.settings and hp.relativePoint == "LEFT", "the '?' left of it")
   h.settings:__fire("OnClick", "LeftButton")
   assertEqual(n, 1, "the owner's registered opener")
   local own = 0

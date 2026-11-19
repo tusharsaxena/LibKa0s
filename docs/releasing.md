@@ -516,7 +516,7 @@ the host's behalf, so the art comes out of the host's copy and its name must be 
 |---|---|
 | `close` | `Core.MakeCloseButton` when given the addon name: the DebugLog console's close, `PerfPanel.lua`'s close (no `decorate`), the Widgets copy window's close, the Sim step panel's close (`SimPanel.lua`) |
 | `clear`, `copy` | the DebugLog console's title-bar buttons (`DebugLog.lua`) |
-| `settings` | from v1.105.0, every library window's header settings mark (`WidgetsHeader.lua`'s `HeaderButtons`: the debug console, the copy window, the perf panel, the sim panel, the skin picker's gear), and a drag handle's opt-in settings mark with no `settingsIcon` (`WidgetsDragHandle.lua`) |
+| `settings` | from v1.105.0, every library window's header settings mark (`WidgetsHeader.lua`'s `HeaderButtons`: the debug console, the copy window, the perf panel, the sim panel, the skin picker's gear), and a drag handle's settings mark with no `settingsIcon` (`WidgetsDragHandle.lua`; opt-in at v1.105.0, on every strip that does not pass `settings = false` from v1.107.0) |
 | `info` | the Options id list's help mark, unless the spec passes its own `helpIcon` (`OptionsIdList.lua`); an owned drag handle's help mark with no `helpIcon` (`WidgetsDragHandle.lua`) |
 | `close` also | the id list's X, the EllesmereUI gate's cross, an owned drag handle's close mark with no `closeIcon` |
 | `confirm` | the EllesmereUI gate's check (`OptionsAppearance.lua`), an owned multi-select dropdown's tick with no `check`, and from Widgets minor 23 an owned `W.ContextMenu`'s `radio` / `selected` tick with no `opts.check` (`Widgets.lua`) |

@@ -114,9 +114,16 @@ local function stubMeasurer()
   return fs
 end
 
---- A minimal well-formed spec: the two required fields and nothing else.
+--- A minimal well-formed spec: the two required fields, and `settings = false`.
+---
+--- THE GEAR IS OFF HERE ON PURPOSE (WidgetsDragHandle minor 15, AF-LK-01 of Ka0sAddonsCommonTasks
+--- docs/2026-11-19-ADOPTION_FEEDBACK). From minor 15 every strip carries the settings mark unless the
+--- host opts out, and these suites pin the "?" and the X: their widths, their anchors and the reserve
+--- arithmetic, each of which a third mark would move. The gear, the order of all three and the
+--- default itself are pinned in tests/test_widgets_draghandle_marks.lua, which builds its specs
+--- without this default. A case here that wants the gear passes `settings = true` over it.
 local function baseSpec(over)
-  local spec = { label = "Buffs", moveFrame = geomFrame() }
+  local spec = { label = "Buffs", moveFrame = geomFrame(), settings = false }
   for k, v in pairs(over or {}) do spec[k] = v end
   return spec
 end

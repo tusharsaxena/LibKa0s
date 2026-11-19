@@ -10,6 +10,25 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.107.0 — unreleased
+
+Opened 2026-11-19, on `feat/2026-11-19-adoption-feedback` (off `master` at v1.106.0): the library half of the owner's feedback on the LibKa0s v1.105 adoption smoke (Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`, its `inputs/OWNER_FEEDBACK.md` and rulings), items `AF-LK-01` and `AF-LK-02`, with LibKa0s#96.
+
+Versions in this release: `LibKa0s-Widgets-1.0` key **28.2.7.15.1.7.8.6.1.1** (WidgetsDragHandle minor 15); every other file at its v1.106.0 minor, and the test kit at revision **57**. No `NEEDS_*` floor rises, no member changes, and no file is added.
+
+### Changed
+
+- **The drag strip's marks read like a window header (WidgetsDragHandle minor 15, `AF-LK-01`).** Left to right `?`, settings, close, the X in the corner where the `?` sat (the owner's image 6 showed settings, close, `?`): `HeaderButtons`' order. The marks sit closer: each frame is `HELP_HIT` 14 px wide (18) and the strip's full height, `HELP_INSET` 6 (4), so two arts have 6 px of air between them (10) while the corner art keeps its 9 px from the edge and `RESERVE` stays 29; each mark past the `?` widens the reserve by 14 (18). Their tints are the window header's: `icon.tint` at rest, the `?` and the gear `text.link` under the pointer, the X `close.rest` and `close.hot` (Core.MakeCloseButton's), from the strip owner's tokens, Ka0s Default's for an owner-less strip; through minor 14 every mark went `icon.hot` white and the `?` lit only with an `onRightClick`. **The settings mark is standard**, built unless `settings = false` (opt-in at 14); the X still needs `onClose`, which every host MUST pass (the standard's HUD header rule), and a strip without one shows no X. `tests/test_widgets_draghandle_marks.lua` is new (order, gap, tint against a real header mark and a real Core close, the default), red under minor 14. The API document is [`docs/api/Widgets/version-28.2.7.15.1.7.8.6.1.1-docs.md`](docs/api/Widgets/version-28.2.7.15.1.7.8.6.1.1-docs.md).
+
+### Fixed
+
+- **`ApplyLevel` re-levels the settings mark (LibKa0s#96, still WidgetsDragHandle minor 15).** Minor 14 re-leveled the `?` and the X and left the gear at its birth level, so a re-leveled parent could draw over it. `tests/test_widgets_draghandle_layers.lua` gains the case.
+
+### What a consumer owes at its re-vendor
+
+- A strip with no `settings` field gains the settings mark and widens by 28 px; every strip passes `onClose` (`AF-STRIP-*` of the run). A suite that pinned strip literals (a 47 or 65 reserve, an 18 x 18 mark, a `-4` inset, the `?` in the corner, a white or `icon.hot` hover) re-pins them; one that reads `RESERVE + n * (HELP_HIT + CLOSE_GAP)` stays right with the new `n`.
+- An owned strip with no `settingsIcon` draws the Ka0s `settings` icon out of the host's copy, so a host with a strip declares `settings` on its `LibKa0s icons:` line (most already do, for its window headers); a pruned icon draws blank.
+
 ## v1.106.0 — 2026-11-19
 
 Opened 2026-11-19, on `feat/2026-11-19-hud-dock-guard` (off `master` at v1.105.0): one fix, filed as RangeMaster#17.

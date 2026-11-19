@@ -1856,9 +1856,9 @@ Total.
 - draghandle: with no parent, and in a process with no CreateFrame, it answers nil
 - draghandle: a frame that cannot make textures is drawn without them rather than raising
 - draghandle: the mark's ART is 8px -- the chevron's INK rather than the chevron's BOX
-- draghandle: the mark is dimmed to the chevron's own tint, and brightens where a click is wired
-- draghandle: a mark with no click behind it does not light up under the cursor
-- draghandle: the mark's FRAME is the full strip height, so the art shrank and the target did not
+- draghandle: the mark is dimmed to the chevron's own tint, and lights in the header's gold
+- draghandle: the '?' lights under the cursor on every strip, a click behind it or not
+- draghandle: the mark's FRAME is the full strip height and wider than its art
 - draghandle: the mark is anchored inside the strip's right end at the published inset
 - draghandle: the label is drawn in the same face it is measured in, and one field sets both
 - draghandle: the label is bounded by the reserve on both sides, and never wraps
@@ -1891,16 +1891,16 @@ Total.
 - draghandle: the strip is a plain Button with a fill, never a BackdropTemplate
 - draghandle: a host with its own edge painter gets its own pixels
 - draghandle: DragHandle is at minor 3 or later, the close mark's minor
-- draghandle: a spec with no onClose draws exactly the minor-2 strip, number for number
-- draghandle: onClose builds an X the same frame and art size as the '?', immediately left of it
+- draghandle: a spec with no onClose and no gear is minor 2's width, number for number
+- draghandle: onClose builds an X the same frame and art size as the '?', in the corner
 - draghandle: with no closeIcon the X falls to Blizzard's stop button
 - draghandle: the X widens the reserve on BOTH sides, so the label stays centered
 - draghandle: a left click on the X calls onClose once, and a right click does not
 - draghandle: an X on a host with no right-click registers the left click alone
 - draghandle: the X takes the strip's drag scripts, so a drag that starts on it moves the frame
-- draghandle: the X brightens under the cursor and shows closeTooltip
+- draghandle: the X lights the close red under the cursor and shows closeTooltip
 - draghandle: an X with no closeTooltip shows the strip's
-- draghandle: an X on a strip whose '?' could not be built sits where the '?' would
+- draghandle: a '?' on a strip whose X could not be built sits where the X would
 
 ### test_widgets_draghandle_place.lua (10)
 
@@ -1915,12 +1915,13 @@ Total.
 - draghandle: a tooltipPlace that is not a function is ignored, not called
 - draghandle: DragHandle is at minor 4 or later, the placement hook's floor
 
-### test_widgets_draghandle_layers.lua (11)
+### test_widgets_draghandle_layers.lua (12)
 
 - DragHandle minor 5: MODULES and the file minor say 5
 - DragHandle level: no spec.level keeps minor 4 -- handle at parent + 1, marks at handle + 1
 - DragHandle level: level = 50 on a parent at 7 -- handle 57, marks 58, written before the marks exist
 - DragHandle ApplyLevel: a parent re-leveled to 20 puts the handle at 70 and the marks at 71
+- DragHandle ApplyLevel: the settings mark is re-leveled with the other two (LibKa0s#96)
 - DragHandle ApplyLevel: a mark the client did not build leaves the other one reached
 - DragHandle ApplyLevel: without spec.level it answers false and writes nothing
 - DragHandle level: a secret or non-number parent level reads as 0
@@ -1941,6 +1942,16 @@ Total.
 - DragHandle show: a strip the host never fitted, or sized itself, is not sized
 - DragHandle show: an onRefit host sizes its own strip
 - DragHandle show: nothing is sized in combat
+
+### test_widgets_draghandle_marks.lua (7)
+
+- draghandle marks: the order is [?][settings][close], the X in the corner
+- draghandle marks: a strip without an X puts the gear in the corner and the '?' against it
+- draghandle marks: the arts sit 6px of air apart, and the corner art 9px from the edge
+- draghandle marks: each mark beyond the '?' widens the reserve by its frame, on both sides
+- draghandle marks: an owner-less strip's marks rest and light in a window header's colors
+- draghandle marks: the settings mark is built unless the host passes settings = false
+- draghandle marks: a strip with no onClose shows no X, never a mark that does nothing
 
 ### test_widgets_linechart_math.lua (21)
 
@@ -2166,7 +2177,7 @@ Total.
 - header buttons: Core's close mark says Close above itself, and an owner's words replace it
 - header buttons: a title-bar tooltip is drawn in the owner's gtip.title
 - header buttons: an adopted or host-made close carries the Close tooltip too
-- header buttons: a drag strip carries no settings mark unless it opts in
+- header buttons: a drag strip carries the settings mark unless it opts out
 - header buttons: a drag strip's marks each carry a tooltip, the library's words without the host's
 - header buttons: the debug console reads Copy, Clear, settings, close, every control with a tooltip
 - header buttons: the console's tooltips are module strings a host's L overrides, rawget-keyed
@@ -5697,8 +5708,9 @@ Total.
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 49 |
 | test_widgets_draghandle_place.lua | 10 |
-| test_widgets_draghandle_layers.lua | 11 |
+| test_widgets_draghandle_layers.lua | 12 |
 | test_widgets_draghandle_fit.lua | 10 |
+| test_widgets_draghandle_marks.lua | 7 |
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 22 |
 | test_widgets_autocomplete.lua | 37 |
@@ -5855,4 +5867,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4945** |
+| **Total** | **4953** |

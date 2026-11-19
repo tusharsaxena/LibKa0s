@@ -323,9 +323,18 @@ test("skin owner: an owned DragHandle paints from its owner's skin and follows a
   local accent = Skin:ResolveSkin("obsidian")["text.accent"]
   assertEqual(rgba(survey(m, h.label).textColor), F.rgba({ accent[1], accent[2], accent[3] }))
   h.help:__fire("OnEnter")
-  local hot = Skin:ResolveSkin("obsidian")["icon.hot"]
-  assertEqual(rgba(survey(m, h.help.icon).vertex), F.rgba({ hot[1], hot[2], hot[3] }), "the hover tint")
+  local hot = Skin:ResolveSkin("obsidian")["text.link"]
+  assertEqual(rgba(survey(m, h.help.icon).vertex), F.rgba({ hot[1], hot[2], hot[3] }),
+    "the hover tint: the window header's text.link (minor 15; icon.hot through 14)")
   h.help:__fire("OnLeave")
+  local rest = Skin:ResolveSkin("obsidian")["icon.tint"]
+  assertEqual(rgba(survey(m, h.help.icon).vertex), F.rgba({ rest[1], rest[2], rest[3] }), "the rest")
+  h.close:__fire("OnEnter")
+  local red = Skin:ResolveSkin("obsidian")["close.hot"]
+  assertEqual(rgba(survey(m, h.close.icon).vertex), F.rgba({ red[1], red[2], red[3] }), "the X's close.hot")
+  h.close:__fire("OnLeave")
+  local crest = Skin:ResolveSkin("obsidian")["close.rest"]
+  assertEqual(rgba(survey(m, h.close.icon).vertex), F.rgba({ crest[1], crest[2], crest[3] }), "and its close.rest")
   Skin:SetChoice(OWNER, "ka0s", "glass")
   assertEqual(rgba(survey(m, h.__edges[1]).color), tok(Skin, "glass", "handle.edge"), "repainted")
   assertEqual(rgba(survey(m, o.__edges[1]).color), tok(Skin, "azeroth", "handle.edge"), "the other owner's stays")
