@@ -550,8 +550,9 @@ assigned components at once (`local R, G, B = 1, 0.82, 0`; whole numbers only to
 `return` of components (a fraction or a 1 among them, so a count's zeros are not one), and the
 defaults of an `RGBA(c, r, g, b, a)` fallback. Two categories take only those shapes: tex coords,
 an inset or a padding (`coord`, `crop`, `inset`, `pad`, `margin` or `offset` on the line), and a
-fully clear color (an alpha of 0). A row may name a kit row category, `"unreachable default"` or
-`"white base for tinting"`, in `category` instead of a `cause`, for a value that draws no look.
+fully clear color (an alpha of 0). A row may name a kit row category, `"unreachable default"`,
+`"white base for tinting"` or `"not a color"` (three or four fractions that are a position, a scale
+or a weight), in `category` instead of a `cause`, for a value that draws no look.
 
 ## `test_skin_switch.lua`
 

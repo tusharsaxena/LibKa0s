@@ -383,6 +383,19 @@ test("skin values: a row may name a kit row category in place of a cause (U-6)",
   assertTrue(V.ROW_CATEGORIES["unreachable default"] ~= nil)
 end)
 
+test("skin values: three or four numbers that are no color take the \"not a color\" category (review of SD-LK-GUARD)", function()
+  -- red before the review fix: a position-and-scale triple read as a color, and its row could only
+  -- borrow a cause id, since neither of the other two categories fits it.
+  local code = "local x, y, s = 0.5, 0.5, 0.8"
+  assertEqual(one(code).category, nil, "the scanner still reads it as a color")
+  local r = { file = "core/Layout.lua", substring = "local x, y, s =", why = "an anchor and a scale",
+              category = "not a color" }
+  assertEqual(#V.rowProblems({ r }), 0)
+  local bad, stale = V.judge({ { "core/Layout.lua", code } }, { rows = { r } })
+  assertEqual(#bad, 0)
+  assertEqual(#stale, 0)
+end)
+
 test("skin values: a row category is one the kit names, and never beside a cause (U-6)", function()
   local r = { file = "a.lua", substring = "x", why = "a reason", category = "bookkeeping" }
   local problem = V.rowProblems({ r })[1]

@@ -120,11 +120,20 @@ function DRESS.Slider(m, w, f)
   w.OnAcquire = function(self) self:SetDisabled(false) end
 end
 
---- The Dropdown-Pullout, pooled on its own as AceGUI pools it.
-local pulloutPool = setmetatable({}, { __mode = "k" })
+--- The Dropdown-Pullout, pooled on its own as AceGUI pools it. The pool lives on the client `m`
+--- itself, not in a table weak-keyed by it: Lua 5.1's weak keys are not ephemerons, so a pooled
+--- pull-out's frame, whose methods close over `m`, kept every client a case ever built alive for the
+--- whole run (about 44 MB of the leak gate's budget after tests/test_options_skin_picker_rows.lua).
+local function pulloutPool(m)
+  local list = rawget(m, "__fixturePulloutPool")
+  if not list then
+    list = {}
+    rawset(m, "__fixturePulloutPool", list)
+  end
+  return list
+end
 local function acquirePullout(m, dd)
-  local list = pulloutPool[m] or {}
-  pulloutPool[m] = list
+  local list = pulloutPool(m)
   local po = table.remove(list)
   if not po then
     po = { items = {}, userdata = {} }
@@ -143,8 +152,7 @@ end
 local function releasePullout(m, po)
   po:Clear()
   po.userdata.obj = nil
-  local list = pulloutPool[m] or {}
-  pulloutPool[m] = list
+  local list = pulloutPool(m)
   list[#list + 1] = po
 end
 

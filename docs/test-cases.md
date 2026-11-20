@@ -5583,7 +5583,7 @@ Total.
 - prune-icons: a sounds list keeps its packs whole; all keeps everything
 - prune-icons: an unknown pack is refused and nothing is removed from either folder
 
-### test_kit_skin_values.lua (38)
+### test_kit_skin_values.lua (39)
 
 - skin values: a planted color of each shape is reported, and only those lines
 - skin values: a planted texture of each shape is reported, and only those lines
@@ -5611,6 +5611,7 @@ Total.
 - skin values: a kept color of alpha 0 draws nothing, so no hit (97.19)
 - skin values: the categories that took a call take the new shapes where they should (97.19)
 - skin values: a row may name a kit row category in place of a cause (U-6)
+- skin values: three or four numbers that are no color take the "not a color" category (review of SD-LK-GUARD)
 - skin values: a row category is one the kit names, and never beside a cause (U-6)
 - skin values: it reads the tracked scope, without the seam or a file git does not track
 - skin values: a host's paths replace the scope
@@ -5624,7 +5625,7 @@ Total.
 - skin values suite: a causeless row fails
 - skin values suite: no git fails
 
-### test_kit_skin_switch.lua (53)
+### test_kit_skin_switch.lua (54)
 
 - skin switch: the probe gives every token a value of its kind
 - skin switch: every probe color is its own, and none is Ka0s Default's
@@ -5658,6 +5659,7 @@ Total.
 - skin switch: a surface that expects a texture and draws none fails (97.18 d)
 - skin switch: a color that never moves fails while the face still moves (97.18 b)
 - skin switch: a string whose face moves and whose color is never set is reported (97.18 b)
+- skin switch: a string colored by its font object or a |c escape is not colorless (review of SD-LK-GUARD)
 - skin switch: a face that stays put fails in the first pass and is not asked in the second (97.18 b)
 - skin switch: a shadow that never moves fails while the color moves (97.18 b)
 - skin switch: hold = "texture" leaves a StatusBar's fill out (97.18 b)
@@ -5998,8 +6000,8 @@ Total.
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 20 |
 | test_kit_vendor_sync.lua | 41 |
-| test_kit_skin_values.lua | 38 |
-| test_kit_skin_switch.lua | 53 |
+| test_kit_skin_values.lua | 39 |
+| test_kit_skin_switch.lua | 54 |
 | test_kit_client_globals.lua | 16 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
@@ -6008,4 +6010,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5074** |
+| **Total** | **5076** |

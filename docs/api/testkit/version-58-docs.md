@@ -53,13 +53,15 @@ texture did, which is the Combat Trail class of regression the audit found in fo
 - **A string with a moving face and no color.** An object that is a FontString or an EditBox (or a
   stand-in with `SetTextColor` and no `GetObjectType`) whose `font` keys moved while no
   `SetTextColor` reached it on any of the compared flips is reported: the skin's face over the
-  client's color.
+  client's color. A `SetFontObject` (a font object carries its own color) or a `SetText` /
+  `SetFormattedText` whose text carries a `|c` escape counts as a color set, so a host coloring a
+  string either way is not flagged.
 - **The messages.** `"<surface> did not change its <family> on a skin switch (<setters> drew the
   same under the probe), while its <families> moved: each family follows the skin on its own"`;
   `"<surface> holds a StatusBar whose texture did not change on a skin switch (...)"` and `"... that
   drew no texture on a skin switch"`; `"<surface> drew no texture on a skin switch, and it expects
   one"`; `"<surface> holds a string whose face follows the skin while its color is never set on a
-  switch (no SetTextColor) ..."`. The revision-50 messages for a surface that changed nothing are
+  switch (no SetTextColor, SetFontObject or |c escape) ..."`. The revision-50 messages for a surface that changed nothing are
   unchanged.
 
 ### Three optional surface fields (97.18 c, d)
@@ -108,6 +110,7 @@ that draws no look and so has no ruling of its own to cite:
 |---|---|
 | `"unreachable default"` | a channel default no player sees (`stored.r or 1` where a load backfill fills every channel first) |
 | `"white base for tinting"` | white a host's own helper tints, which the kit category of the same name cannot see (it reads a tint on the same object in the same file) |
+| `"not a color"` | three or four fractions the scanner reads as a color that are something else, a position, a scale or a weight (`local x, y, s = 0.5, 0.5, 0.8`), on a line that names none of the geometry words the `tex coords, inset or padding` category reads |
 
 A row carries a `cause` id or a `category`, never both; a `category` the kit does not name fails and
 the message lists the ones it has. A row with neither fails as before (`has no cause`).
@@ -128,7 +131,9 @@ fail, and what to change:
    host draws itself: declare `clear = true`, and declare the drawn fill as its own surface with
    `expect = "texture"`.
 3. **`test_skin_switch`: a string with no color.** A FontString whose face follows the skin while no
-   `SetTextColor` reaches it on a switch: give it a token color on the same repaint.
+   `SetTextColor`, `SetFontObject` or `|c` escape in its text reaches it on a switch: give it a token
+   color on the same repaint. `hold = "color"` turns this check off with the color family's, so it is
+   for a string whose color a ruling holds, not a way past a missing color.
 4. **New declarations.** A surface that paints a data fill on a Texture should say `expect =
    "texture"`, or a fill that stops following passes on its tint (the audit's BankLedger, LootHistory,
    MultiMeters and OutfitterReborn rows).
@@ -139,4 +144,5 @@ fail, and what to change:
    stored value equal to the old default must move.
 6. **The new category.** A row that borrowed a cause id for bookkeeping (Aura Master's A7 on
    `normal.r or 1`, the Skin Tester's A5 on the NavItem's white base) moves to `category =
-   "unreachable default"` / `"white base for tinting"` and drops its `cause`.
+   "unreachable default"` / `"white base for tinting"` and drops its `cause`. A new hit on three or
+   four fractions that are no color (a position and a scale) takes `category = "not a color"`.

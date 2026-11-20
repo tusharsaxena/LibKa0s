@@ -464,6 +464,27 @@ test("skin switch: a string whose face moves and whose color is never set is rep
   assertEqual(W.runSurface(facts(Skin), ok, "clear"), nil)
 end)
 
+test("skin switch: a string colored by its font object or a |c escape is not colorless (review of SD-LK-GUARD)", function()
+  -- red before the review fix: only SetTextColor counted as coloring, so a font object (which
+  -- carries its color) or a |c escape in the text read as the client's color.
+  local _, Skin = env()
+  local function face() return tostring(Skin:Token(OWNER, "font.body")) end
+  local byObject = { SetTextColor = function() end, SetFontObject = function() end }
+  local problem = W.runSurface(facts(Skin), {
+    name = "font object", build = function() return byObject end,
+    paint = function(o) o:SetFontObject({ face = face() }) end,
+  }, "clear")
+  assertEqual(problem, nil)
+  local function textSurface(name, text)
+    local fs = { SetTextColor = function() end, SetFont = function() end, SetText = function() end }
+    return { name = name, build = function() return fs end,
+      paint = function(o) o:SetFont(face(), 12, ""); o:SetText(text) end }
+  end
+  assertEqual(W.runSurface(facts(Skin), textSurface("escaped", "|cffffd100word|r"), "clear"), nil)
+  problem = W.runSurface(facts(Skin), textSurface("plain text", "word"), "clear")
+  assertTrue(problem ~= nil and problem:find("color is never set", 1, true) ~= nil, tostring(problem))
+end)
+
 test("skin switch: a face that stays put fails in the first pass and is not asked in the second (97.18 b)", function()
   local _, Skin = env()
   local fs = { SetTextColor = function() end, SetFont = function() end }

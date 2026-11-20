@@ -55,7 +55,7 @@ end
 
 local V = dofile(ownDir() .. "skin_values.lua")
 
-test("skin values: every host row carries its file, substring, why and cause id", function()
+test("skin values: every host row carries its file, substring, why and a cause id or kit row category", function()
   local problems = V.rowProblems(facts.rows)
   if #problems > 0 then fail("skin values: " .. table.concat(problems, "\n  ")) end
 end)

@@ -713,6 +713,10 @@ V.ROW_CATEGORIES = {
   -- white a host's own helper tints (the kit category of the same name reads a tint on the same
   -- object in the same file, and no further)
   ["white base for tinting"] = true,
+  -- three or four fractions the scanner reads as a color that are something else, a position, a
+  -- scale or a weight (`local x, y, s = 0.5, 0.5, 0.8`) on a line that names no geometry word (the
+  -- review of SD-LK-GUARD)
+  ["not a color"] = true,
 }
 
 local function categoryNames()
@@ -746,7 +750,7 @@ end
 
 --- What is wrong with one host row, or nil.
 local function rowProblem(row, i)
-  if type(row) ~= "table" then return ("row %d is a %s, not { file, substring, why, cause }"):format(i, type(row)) end
+  if type(row) ~= "table" then return ("row %d is a %s, not { file, substring, why, cause or category }"):format(i, type(row)) end
   for _, field in ipairs(ROW_FIELDS) do
     if type(row[field]) ~= "string" or row[field] == "" then
       return ("row %d (%s) has no %s"):format(i, tostring(row.file), field)

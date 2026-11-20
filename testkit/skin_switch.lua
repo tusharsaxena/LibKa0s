@@ -41,7 +41,7 @@
 -- to draw one. A StatusBar drawn clear (alpha 0, or a bar color of alpha 0) is left out when the
 -- surface says `clear = true`, and a family a ruling holds fixed is left out by `hold`. A string
 -- whose face moves while no color is set on it on a switch keeps the client's color under a skin's
--- face, and is reported too.
+-- face, and is reported too; a SetFontObject or a |c escape in its text counts as a color set.
 --
 -- The probe is unregistered and the owner's choice and Scope put back whatever a surface does.
 
@@ -395,8 +395,20 @@ local function familyProblem(run, base, seen)
   return nil
 end
 
+--- True when one switch's `log` colored string `id`: a SetTextColor, a SetFontObject (a font object
+--- carries its own color) or text carrying a |c escape.
+local function coloredIn(log, id)
+  if log[id .. ":SetTextColor"] or log[id .. ":SetFontObject"] then return true end
+  for _, setter in ipairs({ "SetText", "SetFormattedText" }) do
+    local text = log[id .. ":" .. setter]
+    if text and text:find("|c", 1, true) then return true end
+  end
+  return false
+end
+
 --- A string (anything with SetTextColor and a font setter) whose face moved while no color was set
---- on it on any switch: the skin's face over the client's color.
+--- on it on any switch: the skin's face over the client's color. A SetFontObject, or a |c escape
+--- in its text, counts as coloring it (the review of SD-LK-GUARD).
 local function colorlessFace(run, base, seen, logs)
   local rec = run.rec
   for id = 1, rec.n do
@@ -405,11 +417,12 @@ local function colorlessFace(run, base, seen, logs)
       local face = function(k) return idOf(k) == id and W.FAMILY[setterOf(k)] == "font" end
       local colored = false
       for _, log in ipairs(logs) do
-        if log[id .. ":SetTextColor"] then colored = true end
+        if coloredIn(log, id) then colored = true end
       end
       if not colored and moved(only(base, face), only(seen, face)) then
         return ("%s holds a string whose face follows the skin while its color is never set on a "
-          .. "switch (no SetTextColor): it keeps the client's color under the skin's face"):format(run.surface.name)
+          .. "switch (no SetTextColor, SetFontObject or |c escape): it keeps the client's color under "
+          .. "the skin's face"):format(run.surface.name)
       end
     end
   end
