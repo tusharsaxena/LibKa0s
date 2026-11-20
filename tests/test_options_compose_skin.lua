@@ -7,8 +7,10 @@
 --
 -- What is pinned:
 --
---   * WITHOUT `fromSkin`, FontGroup / BorderGroup / BarGroup emit the rows minor 11 emitted, the
---     picker defaults aside (Ka0s Default's since minor 17).
+--   * WITH `fromSkin = false`, FontGroup / BorderGroup / BarGroup emit the rows minor 11 emitted, the
+--     picker defaults aside (Ka0s Default's since minor 17). Through minor 19 that was the block with
+--     no `fromSkin`; since minor 20 (LibKa0s#97) no `fromSkin` is `fromSkin = true`, and the color and
+--     shadow companions that come with it are tests/test_options_compose_follow.lua's.
 --   * WITH IT, one companion bool `<key>FromSkin` follows the canonical rows (default true since minor 17, on a
 --     line of its own); the picker is disabled while it is set and shows the skin's value, and the
 --     companion writes and clears through the host's seam like any row.
@@ -59,25 +61,27 @@ test("compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets a
   assertTrue(T.options.MODULES.OptionsWidgets >= 35)
 end)
 
-test("compose skin: without fromSkin the three groups emit exactly the rows they did", function()
+test("compose skin: fromSkin = false emits exactly the rows the three groups did", function()
   local O = host(OWNER)
-  assertEqual(paths(O.FontGroup({ prefix = "t." })),
+  local function spec(prefix) return { prefix = prefix, fromSkin = false } end
+  assertEqual(paths(O.FontGroup(spec("t."))),
     "t.font,t.fontSize,t.fontColor,t.useClassColorFont,t.fontFlags,t.fontShadow")
-  assertEqual(paths(O.BorderGroup({ prefix = "b." })), "b.borderStyle,b.borderSize,b.borderColor,b.useClassColorBorder")
-  assertEqual(paths(O.BarGroup({ prefix = "r." })), "r.barTexture,r.barAlpha,r.barColor,r.useClassColorBar")
-  for _, r in ipairs(O.FontGroup({ prefix = "t." })) do
+  assertEqual(paths(O.BorderGroup(spec("b."))), "b.borderStyle,b.borderSize,b.borderColor,b.useClassColorBorder")
+  assertEqual(paths(O.BarGroup(spec("r."))), "r.barTexture,r.barAlpha,r.barColor,r.useClassColorBar")
+  for _, r in ipairs(O.FontGroup(spec("t."))) do
     assertNil(r.disabledIf, (r.path or "?") .. " carries no disabledIf")
     assertNil(r.skinValue, (r.path or "?") .. " carries no skinValue")
   end
-  assertEqual(shape(O.FontGroup({ prefix = "t.", fromSkin = false })), shape(O.FontGroup({ prefix = "t." })),
-    "fromSkin = false is no fromSkin")
+  assertEqual(shape(O.FontGroup({ prefix = "t.", fromSkin = true })), shape(O.FontGroup({ prefix = "t." })),
+    "since compose minor 20 no fromSkin is fromSkin = true")
 end)
 
 test("compose skin: fromSkin appends one companion per picker, after the canonical rows", function()
   local O = host(OWNER)
   local font = O.FontGroup({ prefix = "t.", fromSkin = true })
   assertEqual(paths(font),
-    "t.font,t.fontSize,t.fontColor,t.useClassColorFont,t.fontFlags,t.fontShadow,t.fontFromSkin")
+    "t.font,t.fontSize,t.fontColor,t.useClassColorFont,t.fontFlags,t.fontShadow,t.fontFromSkin,"
+      .. "t.fontColorFromSkin,t.fontShadowFromSkin", "the picker's first, then the color's and the shadow's (minor 20)")
   local c = rowAt(font, "t.fontFromSkin")
   assertEqual(c.type, "bool")
   assertEqual(c.label, "Use the skin's font")
@@ -85,11 +89,11 @@ test("compose skin: fromSkin appends one companion per picker, after the canonic
   assertTrue(c.startsLine, "on a line of its own")
   assertEqual(rowAt(font, "t.font").disabledIf, "t.fontFromSkin", "the picker follows its companion")
   assertEqual(paths(O.BorderGroup({ prefix = "b.", fromSkin = true })),
-    "b.borderStyle,b.borderSize,b.borderColor,b.useClassColorBorder,b.borderStyleFromSkin")
+    "b.borderStyle,b.borderSize,b.borderColor,b.useClassColorBorder,b.borderStyleFromSkin,b.borderColorFromSkin")
   assertEqual(rowAt(O.BorderGroup({ prefix = "b.", fromSkin = true }), "b.borderStyleFromSkin").label,
     "Use the skin's border")
   assertEqual(paths(O.BarGroup({ prefix = "r.", fromSkin = true })),
-    "r.barTexture,r.barAlpha,r.barColor,r.useClassColorBar,r.barTextureFromSkin")
+    "r.barTexture,r.barAlpha,r.barColor,r.useClassColorBar,r.barTextureFromSkin,r.barColorFromSkin")
   assertEqual(rowAt(O.BarGroup({ prefix = "r.", fromSkin = true }), "r.barTextureFromSkin").label,
     "Use the skin's texture")
 end)
@@ -334,7 +338,9 @@ test("compose skin: the pickers start on Ka0s Default's own values, with or with
     assertEqual(rowAt(O.BarGroup(spec("r.")), "r.barTexture").default, ka0s["bar.texture"])
     assertEqual(rowAt(O.FontGroup(spec("t.")), "t.fontSize").default, ka0s["hud.fontSize"])
     assertEqual(rowAt(O.BorderGroup(spec("b.")), "b.borderSize").default, ka0s["bar.borderSize"])
-    assertEqual(rowAt(O.FontGroup(spec("t.")), "t.fontFlags").default, ka0s["hud.outline"])
+    -- Font flags: typed under the opt-out, From skin with the block (compose minor 20); From skin
+    -- resolves to the skin's own outline through S.FontFlags.
+    assertEqual(rowAt(O.FontGroup(spec("t.")), "t.fontFlags").default, fromSkin and Skin.FROM_SKIN or ka0s["hud.outline"])
   end
 end)
 
@@ -402,10 +408,13 @@ test("compose skin: the bar family governs the thickness, and fromSkin = true st
     "a family that names no font leaf is the plain one")
 end)
 
-test("compose skin: fromSkin alone leaves Font flags typed, because only a host on S.FontFlags reads @skin",
+test("compose skin: flagsFromSkin = false leaves Font flags typed, for a host not drawing through S.FontFlags",
   function()
+  -- Through minor 19 `fromSkin` alone left the flags typed; minor 20 (SD-LK-97.7, skinning-§6: From
+  -- skin is the default for every element) puts them on the skin unless the host opts out.
   local O = host(OWNER)
-  local row = rowAt(O.FontGroup({ prefix = "t.", fromSkin = true }), "t.fontFlags")
+  local row = rowAt(O.FontGroup({ prefix = "t.", fromSkin = true, flagsFromSkin = false }), "t.fontFlags")
   assertEqual(row.default, "OUTLINE")
   assertNil(row.values["@skin"])
+  assertEqual(rowAt(O.FontGroup({ prefix = "t.", fromSkin = true }), "t.fontFlags").default, "@skin")
 end)

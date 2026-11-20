@@ -9,6 +9,12 @@
 -- exact order, with the color companion adjacent to its swatch and no `disabledIf` anywhere. Nine
 -- addons are about to be laid out from these lists, and a composer that quietly reordered one block
 -- would reorder it in all nine at once.
+--
+-- THE CANONICAL BLOCK IS THE OPTED-OUT ONE (compose minor 20, LibKa0s#97). Since minor 20 a group
+-- composer appends its skin companions unless the host passes `fromSkin = false`, so BLOCK passes it
+-- and every case here reads the canonical rows alone, exactly as they were. The companions are pinned
+-- by tests/test_options_compose_skin.lua, _flags.lua and _follow.lua; the swatch rule (no disabledIf
+-- on a swatch, ever) is pinned here in both modes.
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue, assertFalse, assertNil =
@@ -39,7 +45,7 @@ local function size(t)
   return n
 end
 
-local BLOCK = { page = "general", group = "Appearance", subgroup = "Bar" }
+local BLOCK = { page = "general", group = "Appearance", subgroup = "Bar", fromSkin = false }
 
 --- The common spec every case starts from, plus whatever it is adding.
 local function spec(extra)
@@ -231,6 +237,23 @@ test("compose: no composed row anywhere carries disabledIf", function()
   for _, rows in ipairs(blocks) do
     for _, row in ipairs(rows) do
       assertNil(row.disabledIf, row.path .. " disables a row a composer emitted")
+    end
+  end
+
+  -- And with the skin companions a group emits by default (compose minor 20): a picker and Font
+  -- shadow follow theirs, but no swatch is ever disabled.
+  -- red under: governing a swatch with its `<color key>FromSkin` companion.
+  local function follow(extra)
+    local s = spec(extra)
+    s.fromSkin = nil
+    return s
+  end
+  local following = {
+    O.FontGroup(follow()), O.BorderGroup(follow{ show = true }), O.BarGroup(follow()), O.ColorPair(follow()),
+  }
+  for _, rows in ipairs(following) do
+    for _, row in ipairs(rows) do
+      if row.type == "color" then assertNil(row.disabledIf, row.path .. " disables a swatch") end
     end
   end
 

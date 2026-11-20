@@ -103,7 +103,8 @@ test("compose: bind.record is enough to read, and an extra's own path is left al
   local opts = Fixture.new()
   local rec = { color = { r = 1, g = 0, b = 0, a = 1 }, inset = 4 }
   local wrote = {}
-  local rows = opts.ColorPair{ page = "p", group = "g",
+  -- `fromSkin = false` (compose minor 20): rows[3] is the first extra, after the canonical pair.
+  local rows = opts.ColorPair{ page = "p", group = "g", fromSkin = false,
     bind = { record = function() return rec end, set = function(f, v) wrote[f] = v end },
     extra = { { field = "inset", type = "number", label = "Inset" },
               { path = "global.thing", type = "bool", label = "Global" } } }
@@ -215,7 +216,9 @@ end)
 -- canonical four in canonical order plus the addon's own rows after them. These cases are the
 -- claim in PanelMaster#48 made executable: all three compose, field for field, in the order the
 -- page draws them today. docs/api/Options/version-15.15.4.3-docs.md carries the same three as the
--- worked example.
+-- worked example. Since compose minor 20 a group follows the skin unless it opts out, and the
+-- owner's ruling U-23 (Ka0sAddonsCommonTasks docs/2026-11-20-LIBKA0S_94_97_99_100/SD_RULE.md) keeps a
+-- panel's look the player's content, so the editor passes `fromSkin = false`, as these do.
 
 local function fieldsOf(rows)
   local out = {}
@@ -224,16 +227,16 @@ local function fieldsOf(rows)
 end
 
 local function panelBlocks(opts, bind)
-  local border = opts.BorderGroup{ bind = bind,
+  local border = opts.BorderGroup{ bind = bind, fromSkin = false,
     keys = { borderStyle = "borderTexture", borderSize = "borderSize",
              borderColor = "borderColor", useClassColorBorder = "borderClassColor" },
     extra = { { field = "borderOffset", type = "number", label = "Border offset", min = -32, max = 32, step = 1 } } }
-  local bar = opts.BarGroup{ bind = bind,
+  local bar = opts.BarGroup{ bind = bind, fromSkin = false,
     keys = { barTexture = "accentTexture", barAlpha = "accentAlpha",
              barColor = "accentColor", useClassColorBar = "accentClassColor" },
     extra = { { field = "accentThickness", type = "number", label = "Bar thickness", min = 1, max = 32, step = 1 },
               { field = "accentOffset", type = "number", label = "Bar offset", min = -32, max = 32, step = 1 } } }
-  local barBorder = opts.BorderGroup{ bind = bind,
+  local barBorder = opts.BorderGroup{ bind = bind, fromSkin = false,
     keys = { borderStyle = "accentBorderTexture", borderSize = "accentBorderSize",
              borderColor = "accentBorderColor", useClassColorBorder = "accentBorderClassColor" },
     extra = { { field = "accentBorderOffset", type = "number", label = "Border offset", min = -32, max = 32, step = 1 } } }
@@ -276,7 +279,7 @@ test("compose: a bound row takes its pairWith partner, keyed by its field", func
   -- pairWith is keyed by path, and a bound row has none, so its partner never attached.
   local opts = Fixture.new()
   local reg = registry({ a = true })
-  local rows = opts.ColorPair{ page = "p", group = "G", bind = recordBind(reg, "p1"),
+  local rows = opts.ColorPair{ page = "p", group = "G", bind = recordBind(reg, "p1"), fromSkin = false,
     extra = { { field = "a", type = "bool", label = "Alone", solo = true } } }
   local ctx = opts.CreatePanel("ComposePairWith", "Compose pairWith", {})
   local fired = 0
@@ -287,7 +290,7 @@ end)
 test("compose: disabledIf on a bound row reads the record through the bind, not the settings store", function()
   local opts = Fixture.new()
   local reg = registry({ tint = { r = 1, g = 1, b = 1, a = 1 }, locked = true })
-  local rows = opts.ColorPair{ page = "p", group = "G", bind = recordBind(reg, "p1"),
+  local rows = opts.ColorPair{ page = "p", group = "G", bind = recordBind(reg, "p1"), fromSkin = false,
     extra = { { field = "tint", type = "color", label = "Tint", disabledIf = "locked" } } }
   local cp = renderBound(opts, rows[3])
   assertEqual(cp.disabled, true, "the record's own flag grayed the swatch")

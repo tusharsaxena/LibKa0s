@@ -20,6 +20,13 @@
 -- TT", and the Bar texture picker's in `BarGroup/plain` reads "Ka0s Default" where it read "Blizzard".
 -- That value is each record's only difference.
 --
+-- Compose minor 20 (LibKa0s#97, SD-LK-97.6 to 97.9, the owner's ruling R-2) moved no record: the
+-- group composers now emit their skin companions by default, so the calls below pass `fromSkin = false`
+-- (on `block`, which reaches every group composer and no MasterControls call), the opt-out minor 20
+-- defines as minor 19's block byte for byte. These strings are therefore still the minor-3 record (with
+-- the minor 9 and 17 moves above), and the case proves the opt-out. The default block is pinned by
+-- tests/test_options_compose_follow.lua.
+--
 -- `serialize` is deterministic: keys sorted, functions written as `fn`, nested tables inline. It
 -- records every field of every row -- not just the leaf list the shape cases already pin -- because
 -- a composer that kept its paths and changed a label, a default or an order would pass those.
@@ -44,7 +51,7 @@ end
 --- The calls, by name. Chosen to reach every spec field the common spec documents and every
 --- composer-specific one, so an arm that leaked into the path-keyed branch shows up somewhere.
 function G.calls(O)
-  local block = { page = "general", group = "Appearance", subgroup = "Bar" }
+  local block = { page = "general", group = "Appearance", subgroup = "Bar", fromSkin = false }
   local function spec(extra)
     local s = {}
     for k, v in pairs(block) do s[k] = v end

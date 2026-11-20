@@ -4206,7 +4206,7 @@ Total.
 - compose sim: an open, idle sim window reads ticked and one untick closes it (R7-L1)
 - compose sim: ticking opens the sim window, the box stays ticked and follows show and hide (R7-L1)
 - compose sim: Reset all settings closes an open, idle sim window (R7-L1)
-- compose sim: OptionsCompose is at minor 19
+- compose sim: OptionsCompose is at minor 19 or later
 
 ### test_options_compose_tooltips.lua (12)
 
@@ -4306,7 +4306,7 @@ Total.
 ### test_options_compose_skin.lua (25)
 
 - compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
-- compose skin: without fromSkin the three groups emit exactly the rows they did
+- compose skin: fromSkin = false emits exactly the rows the three groups did
 - compose skin: fromSkin appends one companion per picker, after the canonical rows
 - compose skin: the canonical rows are unchanged beside the companion, and so is every list
 - compose skin: omit and keys reach the companion like any canonical leaf
@@ -4329,15 +4329,31 @@ Total.
 - compose skin: a real style disables the bar's rows and Show border reads true
 - compose skin: the icon family keeps its plain companion path
 - compose skin: the bar family governs the thickness, and fromSkin = true still does not
-- compose skin: fromSkin alone leaves Font flags typed, because only a host on S.FontFlags reads @skin
+- compose skin: flagsFromSkin = false leaves Font flags typed, for a host not drawing through S.FontFlags
 
 ### test_options_compose_flags.lua (5)
 
 - compose flags: OptionsCompose is at minor 14 or later
-- compose flags: without flagsFromSkin the Font flags row is minor 13's
+- compose flags: flagsFromSkin = false is minor 13's Font flags row
 - compose flags: flagsFromSkin leads with From skin and defaults to it
 - compose flags: fromSkin and flagsFromSkin together are the minimum font setting
 - compose flags: omit, keys, defaults and labels reach the From skin row
+
+### test_options_compose_follow.lua (13)
+
+- compose follow: OptionsCompose is at minor 20
+- compose follow: FontGroup with no fromSkin emits Use the skin's font, on and governing the picker
+- compose follow: FontGroup with no flagsFromSkin leads Font flags with From skin and defaults to it
+- compose follow: flagsFromSkin = false is minor 19's typed Font flags row
+- compose follow: FontGroup emits Use the skin's color and Use the skin's shadow, both on
+- compose follow: the swatch stays live and Font shadow is disabled while its companion is on
+- compose follow: BarGroup, BorderGroup and ColorPair carry a color companion after their picker's
+- compose follow: fromSkin = false is minor 19's block for all four composers
+- compose follow: colorFromSkin = false and shadowFromSkin = false each take one part back
+- compose follow: omit, defaults, labels and keys reach every companion
+- compose follow: a companion the host writes in extra is kept and not emitted twice
+- compose follow: a record-backed group binds its companions to the record
+- compose follow: a rendered block draws the companions and Font shadow follows its own
 
 ### test_options_throttle.lua (4)
 
@@ -5822,6 +5838,7 @@ Total.
 | test_icon_rule.lua | 12 |
 | test_options_compose_skin.lua | 25 |
 | test_options_compose_flags.lua | 5 |
+| test_options_compose_follow.lua | 13 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 79 |
 | test_perf_run.lua | 42 |
@@ -5881,4 +5898,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4967** |
+| **Total** | **4980** |
