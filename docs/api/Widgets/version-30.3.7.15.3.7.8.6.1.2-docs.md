@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 30.2.7.15.3.7.8.6.1.1
+# `LibKa0s-Widgets-1.0` — version 30.3.7.15.3.7.8.6.1.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,17 +8,30 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` **30** · `WidgetsDropdown.lua` **2** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **15** · `WidgetsDragHandleTip.lua` **3** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **1** |
+| Files and minors | `Widgets.lua` **30** · `WidgetsDropdown.lua` **3** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **15** · `WidgetsDragHandleTip.lua` **3** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **2** |
 | Shipped in | unreleased |
 | Status | **Current** |
-| Supersedes | [version 29.2.7.15.2.7.8.6.1.1](./version-29.2.7.15.2.7.8.6.1.1-docs.md) (v1.107.0) — a window's footer chained every mark, shown or hidden, so a hidden mark kept an empty slot and the left line was cut short of it (LibKa0s#94); a drag strip whose rect read secret fell back to a point into the strip, which a restricted tree refuses, so its tooltip did not render (LibKa0s#99). |
+| Supersedes | [version 29.2.7.15.2.7.8.6.1.1](./version-29.2.7.15.2.7.8.6.1.1-docs.md) (v1.107.0) — a window's footer chained every mark, shown or hidden, so a hidden mark kept an empty slot and the left line was cut short of it (LibKa0s#94); a drag strip whose rect read secret fell back to a point into the strip, which a restricted tree refuses, so its tooltip did not render (LibKa0s#99); a data bar's border and its gloss kept Ka0s Default's under a skin that states its own, a submenu row's arrow stayed gray under every skin, and a menu measured a secret label, raising (LibKa0s#97). |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 30, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 15, WidgetsDragHandleTip = 3, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 30, WidgetsDropdown = 3, WidgetsReorder = 7, WidgetsDragHandle = 15, WidgetsDragHandleTip = 3, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 2 }` |
 
-## What changed at this version: the footer lays only its shown marks, and a secret strip's tooltip opens above its nearest readable ancestor (`SD-LK-94`, `SD-LK-99`, LibKa0s#94, LibKa0s#99)
+## What changed at this version: the footer lays only its shown marks, a secret strip's tooltip opens above its nearest readable ancestor, and the bars and menus follow the skin (`SD-LK-94`, `SD-LK-99`, `SD-LK-97` Batch B, LibKa0s#94, LibKa0s#99, LibKa0s#97)
 
-Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/` (`SD-LK-94`, `SD-LK-99`). `Widgets.lua` moves 29 -> **30** and `WidgetsDragHandleTip.lua` 2 -> **3**; every other file stays at its minor. No member, no `FOOTER` or `DRAG_HANDLE` figure, no spec key and no `opts` field changes; the footer gains one method.
+Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/` (`SD-LK-94`, `SD-LK-99`, `SD-LK-97B`). `Widgets.lua` moves 29 -> **30**, `WidgetsDragHandleTip.lua` 2 -> **3**, `WidgetsDropdown.lua` 2 -> **3** and `WidgetsBar.lua` 1 -> **2**; every other file stays at its minor. No member, no `FOOTER`, `DRAG_HANDLE` or `BAR` figure, no spec key and no `opts` field changes; the footer gains one method, and a `W.BarStyle` gains one field (`glossFromSkin`) and changes one default (`borderFromSkin`).
+
+### The data bar and the menu follow the skin (`SD-LK-97` Batch B, WidgetsBar 2, WidgetsDropdown 3, LibKa0s#97)
+
+The owner's ruling R-2 (2026-11-20; skinning-§6): under any skin every skinnable element takes the skin's value by default, and only an owner-sanctioned override keeps its own look. The audit is Ka0sAddonsCommonTasks `docs/2026-11-20-SKIN_DEFAULTS_AUDIT/` (rows SD-LK-97.2, 97.3, 97.4 and U-21).
+
+- **The bar's border follows the skin (97.2, WidgetsBar 2).** `borderFromSkin` defaults **true**, where it defaulted false, so a host that passes nothing draws a skin's real `bar.borderStyle` and `bar.borderSize` (Azeroth, High Contrast, WoW Default, WoW Midnight) through the owner's `S.BarBorder`. Under a skin of None the style's own three still decide, and `borderShow = false` stays the no-border default. A host that resolves the border itself (Skill Master's `BarStyle`) passes `borderFromSkin = false`, as it already does. An owner-less bar is unchanged.
+- **The bar's fill wears the skin's gloss (97.3, WidgetsBar 2).** Every data fill drawn on the skin's texture (the fill, the bonus and each segment) is handed to the owner's `S.BarGloss` (Skin `SkinPaintHud` 2, which takes a Texture), so under Glass (`bar.gloss = true`) it wears the one gloss look a StatusBar does: a region of the bar at the bottom of `OVERLAY`, anchored to the fill, under the bar's text and edges. It shows and hides with its fill on every layout (an empty fill, or a fill the segments replace, shines nowhere) and follows a skin switch with no host call. `style.glossFromSkin` (new, default **true**) is the host's opt-out; a style naming its own `texture` (a player's pick) draws no gloss, as `S.BarGloss(bar, false)` does for a StatusBar. An owner-less bar draws none (Ka0s Default has none).
+- **A submenu row's arrow takes the opener's arrow color (97.4, WidgetsDropdown 3).** Through 2 the arrow was tinted gray once, when its row was built, so a skinned menu's arrow stayed gray under every skin and the pooled row carried whatever it was first given. Now every paint tints it from the menu palette: an owned open the opener's `icon.arrow`, desaturated first as a dropdown's arrow is (so the token's hue shows, not the art's), an owner-less open the gray `{ 0.7, 0.7, 0.72 }` on the art's own hue.
+- **The menu measures no secret (U-21, WidgetsDropdown 3).** A label `issecretvalue` reports is not measured, and a measured width that answers a secret is not read; that row takes the floor (`W.ContextMenu`'s `opts.width`, or the dropdown's width), so no arithmetic in the width meets a secret and the menu opens. A plain label still grows the menu past the floor, as before (Ka0s Drop Watcher's Filters menu passes its button's width as the floor). Multi Meters' segment picker, whose stored session labels read secret under the Combat restriction, can open the skinned menu then, where it fell back to the client's.
+
+`tests/test_skin_follow_bars.lua` (the bar cases) and `tests/test_widgets_menu_follow.lua` (the menu cases), red under WidgetsBar 1 and WidgetsDropdown 2.
+
+**What a consumer owes at its re-vendor:** a `W.Bar` host that passes no `borderFromSkin` now draws a skin's real border (Range Master's indicator bar: its intended look under R-2); a host that resolves its own passes `false`. A host whose bar must not shine passes `glossFromSkin = false`. A suite that pinned a skinned bar's border hidden, or a submenu arrow's gray under an owner, re-pins. Multi Meters drops its in-combat fallback to the client's segment menu (`SD-SK-MM`).
 
 ### A strip whose rect reads secret (`SD-LK-99`, WidgetsDragHandleTip 3, LibKa0s#99)
 
@@ -309,7 +322,7 @@ Cases: `tests/test_icon_rule.lua`.
 
 **`Widgets.lua` moves to minor 21.** Additive. The hosts of Ka0sAddonsCommonTasks `docs/2026-11-01-FULL_SKINNING/` were keeping the client's context menu, or a list of their own, because this menu had no public open and no row but a plain one.
 
-- **`W.ContextMenu(anchor, rows, opts)`** opens the shared menu on rows a host passes and answers it, or nil with no anchor or no rows. A row is a dropdown option with `onClick(value, row)`. `opts`: `owner`, `panel` and `glyphFont` are a dropdown's, `width` is the floor of the menu's width, and `cursor = true` opens at the pointer. A press on `anchor` is no outside press, and a second call on it closes the menu, as a dropdown's second click does, unless `cursor` moves it. `W.CloseMenu()` closes it.
+- **`W.ContextMenu(anchor, rows, opts)`** opens the shared menu on rows a host passes and answers it, or nil with no anchor or no rows. A row is a dropdown option with `onClick(value, row)`. `opts`: `owner`, `panel` and `glyphFont` are a dropdown's, `width` is the floor of the menu's width (a secret label is not measured and takes the floor, WidgetsDropdown 3), and `cursor = true` opens at the pointer. A press on `anchor` is no outside press, and a second call on it closes the menu, as a dropdown's second click does, unless `cursor` moves it. `W.CloseMenu()` closes it.
 - **Row options, on a dropdown's options too:**
 
 | Field | Meaning |
@@ -2292,7 +2305,8 @@ A fresh table: the defaults below, then `BAR.PRESETS[presetKey]` (`row` for an u
 | `fill`, `bg`, `border`, `marker`, `text`, `timer` | `"bar.fill"`, `"bar.bg"`, `"bar.border"`, `"hud.label"`, `"hud.text"`, `"sem.info"` | colors: a token name or `{ r, g, b, a }` |
 | `bonusTemp`, `bonusPerm` | `"sem.info"`, `"sem.good"` | the bonus segment's color for `bonusKind` `temp` and `perm` (no new skin token exists for them, R4 Q10) |
 | `spark` | `false` | `true` draws a 1 px line at the fill's end in `hud.text`; a color or name draws it in that |
-| `borderShow`, `borderStyle`, `borderSize`, `borderFromSkin` | `false`, `"Solid"`, `1`, `false` | the border: through the owner's `S.BarBorder(style, show, size, fromSkin)` (skinning-§6: a skin that states a real style wins over Show border while the companion is on); `None` or size 0 draws none; Solid is four pixel-exact edges `borderSize` physical pixels thick; any other style is a LibSharedMedia border key, drawn on a `BackdropTemplate` child |
+| `borderShow`, `borderStyle`, `borderSize`, `borderFromSkin` | `false`, `"Solid"`, `1`, `true` (WidgetsBar 2; `false` through 1) | the border: through the owner's `S.BarBorder(style, show, size, fromSkin)` (skinning-§6: a skin that states a real style wins over Show border while the companion is on, which it is unless the host passes `false`); `None` or size 0 draws none; Solid is four pixel-exact edges `borderSize` physical pixels thick; any other style is a LibSharedMedia border key, drawn on a `BackdropTemplate` child |
+| `glossFromSkin` | `true` (Since WidgetsBar 2) | the skin's gloss (`bar.gloss`, `S.BarGloss` on each data fill Texture) on a fill drawn in the skin's texture; `false` draws none, and a style with its own `texture` draws none |
 | `texture` | nil | the fill's texture: a LibSharedMedia statusbar key or a path. Without it an owned bar wears its skin's bar texture (`S.BarTexture`, recorded) and an owner-less bar a flat color |
 | `alpha` | `1` | multiplies the fill's and the bonus's alpha |
 | `font` | nil | `{ face, flags, shadow, shadowFromSkin, fromSkin }`: an owned bar's text goes through `S.HudFont` at `S.HudFontSize(fontSize, fromSkin)`; an owner-less one keeps `GameFontHighlightSmall` unless `face` is given |

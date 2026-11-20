@@ -1024,7 +1024,7 @@ Total.
 - host: a host's colors and fonts win, field by field, and a function is read
 - host: the text, paint, fill, barFill and panel seams each carry their draws
 - host: two contexts keep their own seams, so one addon never paints another's chart
-- host: a host fill stands in for the bar fill when it names no barFill
+- host: a host fill paints the track and never a bar of data, which only barFill draws (minor 3)
 - host: the default tooltip shows a title and its lines, and an empty one shows nothing
 - host: a host's tip and hideTip replace it
 - host: an owner nobody registered draws the plain way, with no skin
@@ -1834,6 +1834,14 @@ Total.
 - submenu: a dropdown's rows ignore submenu, radio and selected
 - submenu: a child wears the opener's skin
 
+### test_widgets_menu_follow.lua (5)
+
+- menu follow: a skinned menu's submenu arrow wears the opener's icon.arrow, desaturated (97.4)
+- menu follow: an owner-less open gives the pooled arrow its gray back (97.4)
+- menu follow: a secret label is not measured, and the host's width is the floor (U-21)
+- menu follow: a plain label still grows the menu past the host's width floor (U-21)
+- menu follow: a measured width that answers a secret is not read (U-21)
+
 ### test_widgets_reorderlist.lua (24)
 
 - widgets: ReorderList reports where a drag landed
@@ -2170,6 +2178,23 @@ Total.
 - bar: a non-Solid border style draws through LibSharedMedia's border on a backdrop child
 - bar: an acquire with no Pool major degrades to the same order
 - bar: the suite releases its two benches
+
+### test_skin_follow_bars.lua (14)
+
+- bar follow: a style with no borderFromSkin follows the skin's border (97.2)
+- bar follow: borderFromSkin false keeps the host's own border under every skin (97.2)
+- bar follow: an owner-less bar still draws no border by default (97.2)
+- gloss: S.BarGloss on a Texture lays the look on its parent, anchored to it (97.3)
+- gloss: a hidden Texture's gloss is hidden, fromSkin false and Ka0s Default build none (97.3)
+- bar follow: under Glass the Bar's fill wears the gloss, which follows a switch (97.3)
+- bar follow: the gloss shows only with its fill, a segment's included (97.3)
+- bar follow: glossFromSkin false and the style's own texture draw no gloss (97.3)
+- bar fill: ApplyBarFill gives a StatusBar with no texture the skin's bar texture (97.17)
+- bar fill: ApplyBarFill keeps a host's own texture, and a Texture takes the color only (97.17)
+- charts follow: a host fill no longer stands in for a bar of data (97.15)
+- charts follow: an owner-less bar of data paints Ka0s Default's bar texture (97.15)
+- charts follow: an owner's chart bar wears the skin's gloss under Glass (U-4)
+- bar follow: the suite releases its benches
 
 ### test_header_buttons.lua (25)
 
@@ -5735,6 +5760,7 @@ Total.
 | test_widgets.lua | 58 |
 | test_widgets_menu.lua | 23 |
 | test_widgets_submenu.lua | 18 |
+| test_widgets_menu_follow.lua | 5 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 49 |
 | test_widgets_draghandle_place.lua | 5 |
@@ -5749,6 +5775,7 @@ Total.
 | test_widgets_teststrip_dock.lua | 22 |
 | test_widgets_footer.lua | 25 |
 | test_widgets_bar.lua | 24 |
+| test_skin_follow_bars.lua | 14 |
 | test_header_buttons.lua | 25 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
@@ -5898,4 +5925,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4980** |
+| **Total** | **4999** |

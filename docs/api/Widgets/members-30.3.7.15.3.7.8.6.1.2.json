@@ -1,10 +1,10 @@
 {
   "major": "LibKa0s-Widgets-1.0",
-  "versionKey": "30.2.7.15.3.7.8.6.1.1",
+  "versionKey": "30.3.7.15.3.7.8.6.1.2",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Widgets", "minor": 30 },
-    { "file": "WidgetsDropdown", "minor": 2 },
+    { "file": "WidgetsDropdown", "minor": 3 },
     { "file": "WidgetsReorder", "minor": 7 },
     { "file": "WidgetsDragHandle", "minor": 15 },
     { "file": "WidgetsDragHandleTip", "minor": 3 },
@@ -12,7 +12,7 @@
     { "file": "WidgetsAutocomplete", "minor": 8 },
     { "file": "WidgetsCopyWindow", "minor": 6 },
     { "file": "WidgetsHeader", "minor": 1 },
-    { "file": "WidgetsBar", "minor": 1 }
+    { "file": "WidgetsBar", "minor": 2 }
   ],
   "members": [
     { "name": "AUTOCOMPLETE", "kind": "table" },
