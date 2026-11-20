@@ -90,6 +90,7 @@ Kit.diagnostics = dofile("tests/fixture_diagnostics.lua")(_G.LK_TEST)
 -- The consumer facts for the kit's skin-switch test (skinning-§1): a fixture host on this repo's
 -- real Skin major, for the same reason; see tests/fixture_skin_switch.lua.
 Kit.skinSwitch = dofile("tests/fixture_skin_switch.lua")
+_G.LK_TEST.skinSwitchFacts = Kit.skinSwitch   -- tests/test_kit_skin_switch.lua reads the live facts
 
 -- The library's tooling (the kit, tools/) runs on a developer's machine and never ships, so the
 -- missing-globals gate leaves it out and reads the payload under LibKa0s/.

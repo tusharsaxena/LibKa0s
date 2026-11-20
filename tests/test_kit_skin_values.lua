@@ -291,6 +291,111 @@ test("skin values: a row needs its file, substring, why and cause id", function(
   assertTrue(V.rowProblems({ "a.lua" })[1]:find("not {", 1, true) ~= nil)
 end)
 
+-- ── kit revision 58: the shapes a color is kept in (SD-LK-97.19), the row categories (U-6) ──
+
+test("skin values: a color kept in a table, a keyed table, an assignment or a return is reported (97.19)", function()
+  -- red under kit revision 57: only calls, escapes and { text, r, g, b } rows were read, so Outfitter
+  -- Reborn's OutfitTooltip, Tooltips and Constants colors and Multi Meters' classless fill passed.
+  local planted = table.concat({
+    "local NORMAL = { 1, 0.82, 0 }",                       -- OutfitterReborn modules/OutfitTooltip.lua:28
+    "local HIGHLIGHT = { 1, 1, 1, 1 }",
+    "C.OUTFIT_MESSAGE_COLOR = { r = 0.2, g = 0.75, b = 0.3 }",   -- core/Constants.lua:76
+    "local LINE_R, LINE_G, LINE_B = 1, 0.82, 0",            -- modules/Tooltips.lua:38
+    "    return 0.45, 0.45, 0.5",                           -- MultiMeters modules/Row.lua:321
+    "  if c then return c.r, c.g, c.b end return 1, 1, 1",  -- modules/Tooltip.lua:253
+    "local r, g, b = RGBA(bars.customColor, 0.35, 0.55, 0.85, 1)",   -- modules/Row.lua:314
+    "local r, g, b, a = NS.RGBA(header.color, 1, 0.82, 0, 1)",
+    "local spec = { r = 1, g = 1, b = 1, a = 0.5 }",
+    "local size = { 40, 20 }",
+    "local list = { 1, 2, 3 }",
+    "local a, b = 0.5, 0.5",
+    "local k = { x = 0.5, y = 0.5, z = 0.5 }",
+    "return c.r, c.g, c.b",
+    "local r, g, b = RGBA(stored, dr, dg, db, 1)",
+    "local half = 0.5 == x",
+    "if x == 0.1, 0.2, 0.3 then",
+  }, "\n")
+  assertEqual(linesOf(V.scan(planted, { path = "modules/Planted.lua" })), "1,2,3,4,5,6,7,8,9")
+end)
+
+test("skin values: each new shape says which it is (97.19)", function()
+  assertEqual(one("local N = { 1, 0.82, 0 }").shape, "table")
+  assertEqual(one("local N = { r = 1, g = 0.82, b = 0 }").shape, "keyed")
+  assertEqual(one("local R, G, B = 1, 0.82, 0").shape, "assign")
+  assertEqual(one("return 1, 0.82, 0").shape, "return")
+  local hit = one("local r = RGBA(c, 1, 0.82, 0, 1)")
+  assertEqual(hit.shape, "call")
+  assertEqual(hit.call, "RGBA")
+end)
+
+test("skin values: a table over several lines is read whole (97.19)", function()
+  local hits = V.scan("local C = {\n  0.2,\n  0.4,\n  0.6,\n}")
+  assertEqual(#hits, 1)
+  assertEqual(hits[1].line, 1)
+end)
+
+test("skin values: tex coords, an inset or a padding of components is no color (97.19)", function()
+  for _, line in ipairs({
+    "local COORDS = { 0.07, 0.93, 0.07, 0.93 }",
+    "tex:SetTexCoord(unpack({ 0, 1, 0, 1 }))",
+    "local INSETS = { 0, 0, 1, 1 }",
+    "local padL, padR, padT, padB = 0.1, 0.9, 0.1, 0.9",
+    "local ICON_CROP = { 0.08, 0.92, 0.08, 0.92 }",
+    "local MARGIN = { 0.1, 0.1, 0.1 }",
+  }) do
+    local hit = one(line)
+    assertEqual(hit.category, "tex coords, inset or padding", line)
+  end
+  assertEqual(one("fs:SetTextColor(0, 1, 0, offsetAlpha)").category, nil, "a call's color is never geometry")
+end)
+
+test("skin values: counters and zero returns are no color (97.19)", function()
+  -- Loot History's core/Database.lua and Combat Trail's modules/Probe.lua, read on the first cut.
+  assertEqual(#V.scan("local rows, sealedName, named, sealedAmount = 0, 0, 0, 0"), 0)
+  assertEqual(#V.scan("local fixed, pending, done = 0, 1, 0"), 0, "whole numbers to names that are no channels")
+  assertEqual(#V.scan("if not g then return 0, 0, 0 end"), 0)
+  assertEqual(one("local r, g, b = 1, 1, 1").shape, "assign", "whole numbers to channel names")
+  assertEqual(one("return 1, 1, 1").shape, "return", "a white, which zeros never are")
+end)
+
+test("skin values: a kept color of alpha 0 draws nothing, so no hit (97.19)", function()
+  assertEqual(one("local NONE = { 0, 0, 0, 0 }").category, "fully clear color")
+  assertEqual(one("local NONE = { r = 1, g = 1, b = 1, a = 0 }").category, "fully clear color")
+  assertEqual(one("local HALF = { 0, 0, 0, 0.5 }").category, nil)
+  assertEqual(one("tex:SetColorTexture(0, 0, 0, 0)").category, nil, "a call keeps its old reading, so no host row goes stale")
+end)
+
+test("skin values: the categories that took a call take the new shapes where they should (97.19)", function()
+  assertEqual(one("local CLASS_COLORS = { WARRIOR = { 0.78, 0.61, 0.43 } }").category, "meaning color table (MC)")
+  assertEqual(one('print("x", { 1, 1, 1 })').category, "chat line (L13)")
+end)
+
+test("skin values: a row may name a kit row category in place of a cause (U-6)", function()
+  -- red under kit revision 57: a row had to borrow a cause id (AuraMaster's A7, the Skin Tester's A5).
+  local r = { file = "core/Compat.lua", substring = "normal.r or 1", why = "the load backfill fills it",
+              category = "unreachable default" }
+  assertEqual(#V.rowProblems({ r }), 0)
+  local bad, stale = V.judge({ { "core/Compat.lua", "fs:SetTextColor(normal.r or 1, g, b)" } }, { rows = { r } })
+  assertEqual(#bad, 0)
+  assertEqual(#stale, 0)
+  local tint = { file = "a.lua", substring = "x", why = "S.NavItem tints it", category = "white base for tinting" }
+  assertEqual(#V.rowProblems({ tint }), 0)
+  assertTrue(V.ROW_CATEGORIES["unreachable default"] ~= nil)
+end)
+
+test("skin values: a row category is one the kit names, and never beside a cause (U-6)", function()
+  local r = { file = "a.lua", substring = "x", why = "a reason", category = "bookkeeping" }
+  local problem = V.rowProblems({ r })[1]
+  assertTrue(problem ~= nil and problem:find("no kit row category", 1, true) ~= nil, tostring(problem))
+  assertTrue(problem:find("unreachable default", 1, true) ~= nil, "names the ones it has: " .. problem)
+  r.category, r.cause = "unreachable default", "A7"
+  problem = V.rowProblems({ r })[1]
+  assertTrue(problem ~= nil and problem:find("both a cause and a category", 1, true) ~= nil, tostring(problem))
+  r.category, r.cause = nil, nil
+  problem = V.rowProblems({ r })[1]
+  assertTrue(problem ~= nil and problem:find("has no cause", 1, true) ~= nil, tostring(problem))
+end)
+
 -- ── looking ──────────────────────────────────────────────────────────────────────────────────
 
 local function temp()

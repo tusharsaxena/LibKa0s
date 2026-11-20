@@ -309,6 +309,249 @@ test("skin switch: a host that skips an unchanged repaint still reads as changin
   assertEqual(problem, nil)
 end)
 
+-- ── each family on its own (kit revision 58, SD-LK-97.18, the owner's U-5) ──────────────────
+
+--- A StatusBar stand-in: its fill texture, its color, and the alpha `clear` sets.
+local function statusBar(alpha)
+  local fill = { SetTexture = function() end, SetVertexColor = function() end }
+  return {
+    SetStatusBarTexture = function(self, path) fill:SetTexture(path) end,
+    SetStatusBarColor = function(self, r, g, b, a) fill:SetVertexColor(r, g, b, a) end,
+    GetStatusBarTexture = function() return fill end,
+    GetAlpha = function() return alpha or 1 end,
+  }, fill
+end
+
+--- A bar surface: color from `text.body`, texture from `texture(o)`.
+local function bar(Skin, name, texture, extra)
+  local b = statusBar(extra and extra.alpha)
+  local s = {
+    name = name, build = function() return b end,
+    paint = function(o)
+      o:SetStatusBarTexture(texture(o))
+      o:SetStatusBarColor(Skin:Color(OWNER, "text.body"))
+    end,
+  }
+  for k, v in pairs(extra or {}) do if k ~= "alpha" then s[k] = v end end
+  return s
+end
+
+local function followsBar(Skin) return function() return "Bar\\" .. tostring(Skin:Token(OWNER, "bar.texture")) end end
+local function fixedBar() return "Interface\\TargetingFrame\\UI-StatusBar" end
+
+test("skin switch: a bar whose texture never moves fails while its color still moves (97.18 b)", function()
+  -- red under kit revision 57: any one setter that moved passed the surface, SetStatusBarColor here.
+  local _, Skin = env()
+  local problem = W.runSurface(facts(Skin), bar(Skin, "fixed bar", fixedBar), "clear")
+  assertTrue(problem ~= nil and problem:find("StatusBar whose texture did not change", 1, true) ~= nil,
+    tostring(problem))
+  assertTrue(problem:find("fixed bar", 1, true) ~= nil, problem)
+end)
+
+test("skin switch: a bar whose texture and color follow passes (97.18 b)", function()
+  local _, Skin = env()
+  assertEqual(W.runSurface(facts(Skin), bar(Skin, "following bar", followsBar(Skin)), "clear"), nil)
+end)
+
+test("skin switch: a StatusBar drawn on no switch is reported (97.18 c)", function()
+  -- red under kit revision 57: a bar textured once at build passed on the color its repaint drew.
+  local _, Skin = env()
+  local b = statusBar()
+  local problem = W.runSurface(facts(Skin), {
+    name = "built once", build = function() b:SetStatusBarTexture("x"); return b end,
+    paint = function(o) o:SetStatusBarColor(Skin:Color(OWNER, "text.body")) end,
+  }, "clear")
+  assertTrue(problem ~= nil and problem:find("drew no texture", 1, true) ~= nil, tostring(problem))
+end)
+
+test("skin switch: a bar's fill Texture drawn by SetTexture is read (97.18 c)", function()
+  -- the host draws GetStatusBarTexture():SetTexture(path), never SetStatusBarTexture
+  local _, Skin = env()
+  local b = statusBar()
+  local function surface(path)
+    return { name = "fill drawn", build = function() return b end,
+      paint = function(o)
+        o:GetStatusBarTexture():SetTexture(path())
+        o:SetStatusBarColor(Skin:Color(OWNER, "text.body"))
+      end }
+  end
+  assertEqual(W.runSurface(facts(Skin), surface(followsBar(Skin)), "clear"), nil)
+  local problem = W.runSurface(facts(Skin), surface(fixedBar), "clear")
+  assertTrue(problem ~= nil and problem:find("SetTexture", 1, true) ~= nil, tostring(problem))
+end)
+
+test("skin switch: a clear StatusBar is left out when the surface says clear (97.18 c)", function()
+  local _, Skin = env()
+  local problem = W.runSurface(facts(Skin), bar(Skin, "clear bar", fixedBar, { alpha = 0 }), "clear")
+  assertTrue(problem ~= nil, "unmarked, a clear bar is still asked")
+  assertEqual(W.runSurface(facts(Skin), bar(Skin, "clear bar", fixedBar, { alpha = 0, clear = true }), "clear"), nil)
+  problem = W.runSurface(facts(Skin), bar(Skin, "shown bar", fixedBar, { clear = true }), "clear")
+  assertTrue(problem ~= nil, "clear = true leaves out only a bar drawn clear")
+end)
+
+test("skin switch: a bar color of alpha 0 counts as clear (97.18 c)", function()
+  local _, Skin = env()
+  local b = statusBar()
+  local color = { 0, 0, 0, 0 }
+  b.GetStatusBarColor = function() return unpack(color) end
+  local problem = W.runSurface(facts(Skin), {
+    name = "value holder", clear = true, build = function() return b end,
+    paint = function(o)
+      o:SetStatusBarTexture(fixedBar())
+      o:SetStatusBarColor(0, 0, 0, 0)
+      o:GetStatusBarTexture():SetVertexColor(Skin:Color(OWNER, "text.body"))
+    end,
+  }, "clear")
+  assertEqual(problem, nil)
+end)
+
+--- A Texture stand-in drawn with a path and a token tint.
+local function fillSurface(Skin, name, path, extra)
+  local t = { SetTexture = function() end, SetVertexColor = function() end }
+  local s = { name = name, build = function() return t end,
+    paint = function(o) o:SetTexture(path()); o:SetVertexColor(Skin:Color(OWNER, "text.body")) end }
+  for k, v in pairs(extra or {}) do s[k] = v end
+  return s
+end
+
+test("skin switch: a white base under a token tint passes by default (97.18 d)", function()
+  local _, Skin = env()
+  local white = function() return "Interface\\Buttons\\WHITE8X8" end
+  assertEqual(W.runSurface(facts(Skin), fillSurface(Skin, "white base", white), "clear"), nil)
+end)
+
+test("skin switch: expect = \"texture\" asks a Texture fill's path to move (97.18 d)", function()
+  -- red under kit revision 57: there was no expect, and the tint passed the fill.
+  local _, Skin = env()
+  local problem = W.runSurface(facts(Skin), fillSurface(Skin, "data fill", fixedBar, { expect = "texture" }), "clear")
+  assertTrue(problem ~= nil and problem:find("did not change its texture", 1, true) ~= nil, tostring(problem))
+  assertTrue(problem:find("color", 1, true) ~= nil, "names what did move: " .. problem)
+  assertEqual(W.runSurface(facts(Skin), fillSurface(Skin, "data fill", followsBar(Skin), { expect = { "texture" } }), "clear"), nil)
+end)
+
+test("skin switch: a surface that expects a texture and draws none fails (97.18 d)", function()
+  local _, Skin = env()
+  local problem = W.runSurface(facts(Skin), tinted(Skin, "text.body", { expect = "texture" }), "clear")
+  assertTrue(problem ~= nil and problem:find("drew no texture", 1, true) ~= nil, tostring(problem))
+end)
+
+--- A string stand-in: a face from `font.body`, and a color from `color()` when it is given.
+local function str(Skin, name, color, extra)
+  local fs = { SetTextColor = function() end, SetFont = function() end }
+  local s = { name = name, build = function() return fs end,
+    paint = function(o)
+      o:SetFont(tostring(Skin:Token(OWNER, "font.body")), 12, "")
+      if color then o:SetTextColor(color()) end
+    end }
+  for k, v in pairs(extra or {}) do s[k] = v end
+  return s
+end
+
+test("skin switch: a color that never moves fails while the face still moves (97.18 b)", function()
+  -- red under kit revision 57: the face moving passed the string.
+  local _, Skin = env()
+  local problem = W.runSurface(facts(Skin), str(Skin, "gold string", function() return 1, 0.82, 0 end), "clear")
+  assertTrue(problem ~= nil and problem:find("did not change its color", 1, true) ~= nil, tostring(problem))
+  assertTrue(problem:find("font", 1, true) ~= nil, "names the face that moved: " .. problem)
+end)
+
+test("skin switch: a string whose face moves and whose color is never set is reported (97.18 b)", function()
+  -- red under kit revision 57: the face alone passed it, in the client's color.
+  local _, Skin = env()
+  local problem = W.runSurface(facts(Skin), str(Skin, "uncolored", nil), "clear")
+  assertTrue(problem ~= nil and problem:find("color is never set", 1, true) ~= nil, tostring(problem))
+  local ok = str(Skin, "colored", function() return Skin:Color(OWNER, "text.body") end)
+  assertEqual(W.runSurface(facts(Skin), ok, "clear"), nil)
+end)
+
+test("skin switch: a face that stays put fails in the first pass and is not asked in the second (97.18 b)", function()
+  local _, Skin = env()
+  local fs = { SetTextColor = function() end, SetFont = function() end }
+  local s = { name = "mono", build = function() return fs end,
+    paint = function(o)
+      o:SetFont("Fonts\\ARIALN.TTF", 12, "")
+      o:SetTextColor(Skin:Color(OWNER, "text.body"))
+    end }
+  local problem = W.runSurface(facts(Skin), s, "clear")
+  assertTrue(problem ~= nil and problem:find("did not change its font", 1, true) ~= nil, tostring(problem))
+  assertEqual(W.runSurface(facts(Skin), s, "ignored"), nil, "fonts are held ignored there")
+end)
+
+test("skin switch: a shadow that never moves fails while the color moves (97.18 b)", function()
+  local _, Skin = env()
+  local fs = { SetTextColor = function() end, SetShadowColor = function() end }
+  local s = { name = "shadowed", build = function() return fs end,
+    paint = function(o)
+      o:SetShadowColor(0, 0, 0, 1)
+      o:SetTextColor(Skin:Color(OWNER, "text.body"))
+    end }
+  local problem = W.runSurface(facts(Skin), s, "clear")
+  assertTrue(problem ~= nil and problem:find("did not change its shadow", 1, true) ~= nil, tostring(problem))
+  s.hold = "shadow"
+  assertEqual(W.runSurface(facts(Skin), s, "clear"), nil, "a family a ruling holds is left out")
+end)
+
+test("skin switch: hold = \"texture\" leaves a StatusBar's fill out (97.18 b)", function()
+  local _, Skin = env()
+  assertEqual(W.runSurface(facts(Skin), bar(Skin, "held bar", fixedBar, { hold = { "texture" } }), "clear"), nil)
+end)
+
+test("skin switch: a family moves when any one of its setters does", function()
+  local _, Skin = env()
+  local r = region()
+  local problem = W.runSurface(facts(Skin), {
+    name = "two colors", build = function() return r end,
+    paint = function(o)
+      o:SetTextColor(0.5, 0.5, 0.5)
+      o:SetVertexColor(Skin:Color(OWNER, "text.body"))
+    end,
+  }, "clear")
+  assertEqual(problem, nil)
+end)
+
+test("skin switch: expect, hold and clear take only what they can mean", function()
+  local _, Skin = env()
+  local function problem(extra)
+    return W.factsProblems(facts(Skin, { tinted(Skin, "text.body", extra) }))[1]
+  end
+  assertEqual(problem({ expect = "texture", hold = { "shadow", "font" }, clear = true }), nil)
+  assertTrue(problem({ expect = "gloss" }):find("texture, color, font or shadow", 1, true) ~= nil)
+  assertTrue(problem({ hold = {} }):find("hold", 1, true) ~= nil)
+  assertTrue(problem({ hold = 3 }):find("hold", 1, true) ~= nil)
+  assertTrue(problem({ clear = "yes" }):find("clear", 1, true) ~= nil)
+end)
+
+-- ── the library's own surfaces (SD-LK-97.18 a, e) ────────────────────────────────────────────
+
+local LIBRARY_SURFACES = { "a Bar", "a Charts bar row", "a TestStrip", "a Footer", "a DragHandle", "a Dropdown row" }
+
+test("skin switch: the live run declares the library's own surfaces (97.18 e)", function()
+  local declared = {}
+  for _, s in ipairs(T.skinSwitchFacts.surfaces) do declared[s.name] = s end
+  for _, name in ipairs(LIBRARY_SURFACES) do
+    assertTrue(declared[name] ~= nil, name .. " is not declared in tests/fixture_skin_switch.lua")
+  end
+  assertEqual(declared["a Bar"].expect, "texture", "a bar of data asks its texture")
+end)
+
+test("skin switch: the fixture's LSM fake paints a distinct bar texture per skin (97.18 a)", function()
+  -- red before the fake: P.media found no LibSharedMedia and BarTexture painted WHITE8X8 under all.
+  local f = T.skinSwitchFacts
+  local Skin, m = f.skin, f.mocks
+  local S = Skin:For(f.owner)
+  local tex = m.CreateFrame("Frame"):CreateTexture()
+  S.BarTexture(tex)
+  local seen, n = {}, 0
+  for _, def in ipairs(Skin:Skins()) do
+    Skin:SetChoice(f.owner, "ka0s", def.key)
+    local path = tostring(tex:GetTexture())
+    assertTrue(path:find("SwitchFixture", 1, true) ~= nil, def.key .. " painted " .. path .. ", not its own bar")
+    if not seen[path] then seen[path], n = true, n + 1 end
+  end
+  Skin:SetChoice(f.owner, "ka0s", Skin.DEFAULT)
+  assertEqual(n, #Skin:Skins(), "one texture per skin")
+end)
+
 -- ── the exclusions ───────────────────────────────────────────────────────────────────────────
 
 test("skin switch: the first pass clears the Scope", function()

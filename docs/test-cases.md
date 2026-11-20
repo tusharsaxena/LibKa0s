@@ -5445,7 +5445,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 57
+- the kit is revision 58
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -5583,7 +5583,7 @@ Total.
 - prune-icons: a sounds list keeps its packs whole; all keeps everything
 - prune-icons: an unknown pack is refused and nothing is removed from either folder
 
-### test_kit_skin_values.lua (29)
+### test_kit_skin_values.lua (38)
 
 - skin values: a planted color of each shape is reported, and only those lines
 - skin values: a planted texture of each shape is reported, and only those lines
@@ -5603,6 +5603,15 @@ Total.
 - skin values: a stale row fails
 - skin values: a row that repeats a category is stale
 - skin values: a row needs its file, substring, why and cause id
+- skin values: a color kept in a table, a keyed table, an assignment or a return is reported (97.19)
+- skin values: each new shape says which it is (97.19)
+- skin values: a table over several lines is read whole (97.19)
+- skin values: tex coords, an inset or a padding of components is no color (97.19)
+- skin values: counters and zero returns are no color (97.19)
+- skin values: a kept color of alpha 0 draws nothing, so no hit (97.19)
+- skin values: the categories that took a call take the new shapes where they should (97.19)
+- skin values: a row may name a kit row category in place of a cause (U-6)
+- skin values: a row category is one the kit names, and never beside a cause (U-6)
 - skin values: it reads the tracked scope, without the seam or a file git does not track
 - skin values: a host's paths replace the scope
 - skin values: no git fails
@@ -5615,7 +5624,7 @@ Total.
 - skin values suite: a causeless row fails
 - skin values suite: no git fails
 
-### test_kit_skin_switch.lua (35)
+### test_kit_skin_switch.lua (53)
 
 - skin switch: the probe gives every token a value of its kind
 - skin switch: every probe color is its own, and none is Ka0s Default's
@@ -5638,6 +5647,24 @@ Total.
 - skin switch: a surface that only draws noise is told so
 - skin switch: a setter only one skin draws is a change
 - skin switch: a host that skips an unchanged repaint still reads as changing
+- skin switch: a bar whose texture never moves fails while its color still moves (97.18 b)
+- skin switch: a bar whose texture and color follow passes (97.18 b)
+- skin switch: a StatusBar drawn on no switch is reported (97.18 c)
+- skin switch: a bar's fill Texture drawn by SetTexture is read (97.18 c)
+- skin switch: a clear StatusBar is left out when the surface says clear (97.18 c)
+- skin switch: a bar color of alpha 0 counts as clear (97.18 c)
+- skin switch: a white base under a token tint passes by default (97.18 d)
+- skin switch: expect = "texture" asks a Texture fill's path to move (97.18 d)
+- skin switch: a surface that expects a texture and draws none fails (97.18 d)
+- skin switch: a color that never moves fails while the face still moves (97.18 b)
+- skin switch: a string whose face moves and whose color is never set is reported (97.18 b)
+- skin switch: a face that stays put fails in the first pass and is not asked in the second (97.18 b)
+- skin switch: a shadow that never moves fails while the color moves (97.18 b)
+- skin switch: hold = "texture" leaves a StatusBar's fill out (97.18 b)
+- skin switch: a family moves when any one of its setters does
+- skin switch: expect, hold and clear take only what they can mean
+- skin switch: the live run declares the library's own surfaces (97.18 e)
+- skin switch: the fixture's LSM fake paints a distinct bar texture per skin (97.18 a)
 - skin switch: the first pass clears the Scope
 - skin switch: the first pass turns a companion on
 - skin switch: a Scope-ignored surface is excluded from the second pass
@@ -5720,14 +5747,27 @@ Total.
 
 - skin values: skinning-§1 (skipped: Kit.skinValues is not set in the runner, so this repo's typed colors and textures are not gated yet. Every addon that adopted skins owes skinning-§1; wire Kit.skinValues to adopt it)
 
-### test_skin_switch.lua (6)
+### test_skin_switch.lua (19)
 
 - skin switch: the check is falsifiable, a surface that redraws a literal is reported
+- skin switch: the check is falsifiable, a bar whose texture never moves is reported
 - skin switch: a window's panel changes
 - skin switch: a window's panel changes with the Scope ignored
 - skin switch: a string changes
 - skin switch: a string changes with the Scope ignored
 - skin switch: a settings row changes
+- skin switch: a Bar changes
+- skin switch: a Bar changes with the Scope ignored
+- skin switch: a Charts bar row changes
+- skin switch: a Charts bar row changes with the Scope ignored
+- skin switch: a TestStrip changes
+- skin switch: a TestStrip changes with the Scope ignored
+- skin switch: a Footer changes
+- skin switch: a Footer changes with the Scope ignored
+- skin switch: a DragHandle changes
+- skin switch: a DragHandle changes with the Scope ignored
+- skin switch: a Dropdown row changes
+- skin switch: a Dropdown row changes with the Scope ignored
 
 ### test_client_globals.lua (3)
 
@@ -5958,14 +5998,14 @@ Total.
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 20 |
 | test_kit_vendor_sync.lua | 41 |
-| test_kit_skin_values.lua | 29 |
-| test_kit_skin_switch.lua | 35 |
+| test_kit_skin_values.lua | 38 |
+| test_kit_skin_switch.lua | 53 |
 | test_kit_client_globals.lua | 16 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
-| test_skin_switch.lua | 6 |
+| test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5034** |
+| **Total** | **5074** |
