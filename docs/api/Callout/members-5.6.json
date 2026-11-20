@@ -24,6 +24,7 @@
     { "name": "MAX_FROM", "kind": "number" },
     { "name": "MEANING", "kind": "table" },
     { "name": "MigrateGlow", "kind": "function" },
+    { "name": "MoveToSkin", "kind": "function" },
     { "name": "New", "kind": "function" },
     { "name": "OFF", "kind": "string" },
     { "name": "OUTLINES", "kind": "table" },

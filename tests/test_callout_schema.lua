@@ -97,7 +97,8 @@ local function assertStoredRow(r)
   if r.type == "color" then
     assertEqual(type(r.get), "function", r.path .. " reads the stored color in either shape")
   elseif r.key == "font" then
-    assertEqual(type(r.get), "function", r.path .. " reads a stored @skin as the Skin font")
+    assertNil(r.get, r.path .. " has no get: the Options engine never calls one on a path row")
+    assertEqual(type(r.skinValue), "function", r.path .. " shows a stored @skin as the Skin font")
   else
     assertNil(r.get, r.path .. " has no get of its own: the host stores it")
   end

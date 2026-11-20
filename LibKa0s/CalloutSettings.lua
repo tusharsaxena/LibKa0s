@@ -97,8 +97,9 @@ if not lib or type(lib.__methods) ~= "table" or type(lib.__validFor) ~= "functio
 -- Minor 6 (LibKa0s#97, `SD-LK-97` Batch C, the owner's R-2): the rows follow the shell's skin defaults:
 -- Outline leads with From skin ("@skin"), "Use the skin's shadow" (`fontShadowFromSkin`, Shadow and
 -- its offsets not read while it is on) and, beside the Numbers swatch, "Use the skin's color"
--- (`numberColorFromSkin`; the swatch stays live, options-ui-§17); the font row reads a stored
--- "@skin" as the Skin font; a color row's path-less reader is the swatch, not the drawn color.
+-- (`numberColorFromSkin`; the swatch stays live, options-ui-§17); the font row shows a stored
+-- "@skin" as the Skin font (its `skinValue`); a color row's path-less reader is the swatch, not the
+-- drawn color.
 local SETTINGS_MINOR = 6
 if lib.__settingsMinor and lib.__settingsMinor >= SETTINGS_MINOR
   and lib.__settingsShellMinor == lib.MINOR then return end
@@ -389,9 +390,11 @@ end
 
 local function lookRows(B, L, out)
   local inst, g = B.inst, word(L, "TAB_LOOK")
-  local fontGet = function() return inst:Get("font") end   -- a stored "@skin" reads as the Skin font (minor 6)
+  -- A stored "@skin" shows as the Skin font (minor 6). A path row is read through the host's
+  -- descriptor, so the seam is `skinValue` (OptionsWidgets honors it for any row), not a `get`.
+  local skinFace = function() return inst:Get("font") == lib.FONT_SKIN and lib.FONT_SKIN or nil end
   row(out, "look", g, nil, bind(B, "font", { type = "string", label = word(L, "FONT"), tooltip = word(L, "FONT_TIP"),
-    dialogControl = "Ka0sMedia_Font", values = fontChoices, startsLine = true }, nil, { get = fontGet }))
+    dialogControl = "Ka0sMedia_Font", values = fontChoices, startsLine = true }, nil, { skinValue = skinFace }))
   row(out, "look", g, nil, slider(B, word(L, "SIZE"), word(L, "SIZE_TIP"), "size", lib.SIZE_MIN, lib.SIZE_MAX, 1))
   row(out, "look", g, nil, choice(B, word(L, "OUTLINE"), word(L, "OUTLINE_TIP"), "outline", outlineValues(L)))
   local skinShadow = function() return inst:Get("fontShadowFromSkin") == true end

@@ -4,7 +4,9 @@
 --
 --   97.10  the call-out's look follows the skin (the owner's U-1): Skin font, an "@skin" outline,
 --          the glow in the skin's glow color, a shadow companion; `FollowKeys` names what a host's
---          one-time step moves (only values still at the minor-4 defaults)
+--          one-time step moves (only values still at the minor-4 defaults) and `MoveToSkin` moves
+--          it, storing the Skin font as itself; the font row shows a stored @skin as the Skin font
+--          through the Options engine (its skinValue)
 --   97.11  the "number" kind reads `hud.text` through `numberColorFromSkin` (default true)
 --   U-2    info, go, stop, warn and error are meaning colors: `sem.*` by default, a picked swatch wins
 --   97.12  with an owner the text and its halo go through the facade's HudFont and HudFontSize
@@ -23,6 +25,7 @@ local test, assertEqual, assertTrue, assertNil =
 local FS = dofile("tests/fixture_skin_paint.lua")
 local FC = dofile("tests/fixture_callout.lua")
 local FA = dofile("tests/fixture_waypoint_arrow.lua")
+local FO = dofile("tests/fixture_options.lua")
 local Loader = T.loader
 
 local LSM = {
@@ -228,14 +231,31 @@ test("callout follow: FollowKeys names only the look settings still at their min
   assertEqual(CALLOUT.FOLLOW_FROM.font, "Ka0s Oxanium SemiBold")
 end)
 
-test("callout follow: the keys handed to Skin.ResetToSkin land the call-out on the skin (97.10)", function()
+test("callout follow: MoveToSkin writes the Skin font, @skin and true for the keys FollowKeys names (97.10)", function()
+  -- red before the review fix: no MoveToSkin, and the documented route (ResetToSkin over FollowKeys)
+  -- stored "@skin" for the face, which a path row's picker reads as no value of its own.
+  local t = { font = "Ka0s Oxanium SemiBold", outline = "THICKOUTLINE", glowColorFromSkin = false }
+  assertEqual(CALLOUT:MoveToSkin(t), 3, "three keys moved")
+  assertEqual(t.font, CALLOUT.FONT_SKIN, "the face is stored as the Skin font, never @skin")
+  assertEqual(t.outline, "@skin")
+  assertEqual(t.glowColorFromSkin, true)
+  assertEqual(CALLOUT:MoveToSkin(t), 0, "nothing left at an old default")
+  local picked = { font = "Ka0s Bebas Neue", outline = "OUTLINE", glowColorFromSkin = false }
+  assertEqual(CALLOUT:MoveToSkin(picked), 1)
+  assertEqual(picked.font, "Ka0s Bebas Neue", "a picked face stays")
+  assertEqual(picked.outline, "OUTLINE", "a picked outline stays")
+  assertEqual(CALLOUT:MoveToSkin(nil), 0)
+  local c = callout("CO_Move", "contrast", t)
+  assertEqual(c:Get("font"), CALLOUT.FONT_SKIN)
+  c:Show("GO")
+  assertEqual((textOf(c):GetFontObject():GetFont()), "path\\doris.ttf", "the skin's face")
+end)
+
+test("callout follow: a stored @skin face (ResetToSkin over FollowKeys) still draws the skin's face (97.10)", function()
   local profile = { callout = { font = "Ka0s Oxanium SemiBold", outline = "THICKOUTLINE", glowColorFromSkin = false } }
   SKIN.ResetToSkin(profile, CALLOUT:FollowKeys(profile.callout, "callout."))
-  local c = callout("CO_Move", "contrast", profile.callout)
-  assertEqual(profile.callout.font, "@skin")
+  local c = callout("CO_Reset", "contrast", profile.callout)
   assertEqual(c:Get("font"), CALLOUT.FONT_SKIN, "the sentinel reads as the Skin font")
-  assertEqual(c:Get("outline"), "@skin")
-  assertTrue(c:Get("glowColorFromSkin"))
   c:Show("GO")
   assertEqual((textOf(c):GetFontObject():GetFont()), "path\\doris.ttf", "the skin's face")
 end)
@@ -267,12 +287,31 @@ test("callout follow: the rows carry the outline's From skin, the shadow and num
     "the companion sits beside the Numbers swatch")
 end)
 
-test("callout follow: the font row reads a stored @skin as the Skin font (97.10)", function()
-  local c, db = callout("CO_FontRow", "ka0s")
-  db.font = "@skin"
-  local by = {}
-  for _, r in ipairs((c:SchemaRows("callout."))) do by[r.path] = r end
-  assertEqual(by["callout.font"].get(), CALLOUT.FONT_SKIN)
+test("callout follow: through the Options engine a stored @skin font row shows the Skin font (97.10)", function()
+  -- red before the review fix: a path row is read through the descriptor's get, so the font row's
+  -- own `get` never ran and the picker showed "@skin"; the row's skinValue is the seam it honors.
+  local profile = { callout = { font = "@skin" } }   -- the host's settings: one table, two readers
+  local c = callout("CO_FontRow", "ka0s", profile.callout)
+  local leaf = function(path) return (path:match("^callout%.(.+)$")) end
+  local O = FO.new({ addonName = "CO_FontRowHost", get = function(path) return profile.callout[leaf(path)] end,
+    set = function(path, v) profile.callout[leaf(path)] = v end })
+  local rows = {}
+  for _, r in ipairs((c:SchemaRows("callout.", { texts = false }))) do
+    if r.path == "callout.font" then r.page, r.group = "general", "Look"; rows[1] = r end
+  end
+  local ctx = O.CreatePanel("CalloutFollowFontRow", "Call-out font row", {})
+  O.RenderRows(ctx, rows)
+  local picker
+  for _, w in ipairs(FO.flatten(ctx.scroll)) do
+    if w.labelText == "Font" then picker = w end
+  end
+  assertTrue(picker ~= nil, "the font row is drawn")
+  assertEqual(picker.value, CALLOUT.FONT_SKIN, "the picker shows Skin font, not @skin")
+  profile.callout.font = "Ka0s Bebas Neue"
+  assertNil(rows[1].skinValue(rows[1]), "a picked face is shown as stored")
+  -- The page outlives the case (the fixture's Options keeps its panels), and its widgets hold the
+  -- row, whose closures hold this bench: empty the row so the bench release below can free it.
+  for k in pairs(rows[1]) do rows[1][k] = nil end
 end)
 
 -- ── 97.13 and 97.14: the waypoint arrow's text ───────────────────────────────────────────────

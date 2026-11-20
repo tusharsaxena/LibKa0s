@@ -18,7 +18,7 @@
 -- `onClick(frame, button)`, `onEnter(frame)`, `onLeave(frame)`, `onArrive(target)`, `arrive`,
 -- `near`, `far`, `format(yards, units)`, `strings` and `debug(tag, msg)`. The instance owns no SavedVariables: the
 -- host keeps its settings at its own paths (WaypointArrowSettings.lua's rows) and hands them over
--- with `Configure`. docs/api/WaypointArrow/version-1.1-docs.md is the full contract.
+-- with `Configure`. docs/api/WaypointArrow/version-3.3-docs.md is the full contract.
 --
 -- ── GEOMETRY ─────────────────────────────────────────────────────────────────────────────────
 --

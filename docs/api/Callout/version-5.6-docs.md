@@ -21,15 +21,15 @@
 
 Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/` (`SD-LK-97`, items 97.10 to 97.12, the
 owner's R-2, U-1, U-2 and U-3; the audit is `docs/2026-11-20-SKIN_DEFAULTS_AUDIT/`). `Callout.lua`
-stays at **5** (unreleased, extended); `CalloutSettings.lua` moves 5 -> **6**. Four members are
-added (`FROM_SKIN`, `MEANING`, `FOLLOW_FROM`, `FollowKeys`) and two settings
+stays at **5** (unreleased, extended); `CalloutSettings.lua` moves 5 -> **6**. Five members are
+added (`FROM_SKIN`, `MEANING`, `FOLLOW_FROM`, `FollowKeys`, `MoveToSkin`) and two settings
 (`fontShadowFromSkin`, `numberColorFromSkin`). **A consumer-visible change of defaults**: under any
 skin every part of the look takes the skin's value until the player picks one (skinning-§6), and the
 owner's U-1 rules that R-2 supersedes the L17 settings of version 4.5.
 
 | Key | 4.5 default | 5.6 default |
 |---|---|---|
-| `font` | `"Ka0s Oxanium SemiBold"` | `"Skin font"` (`FONT_SKIN`): the skin's HUD face (`hud.font`, the facade's `BarStyle().font`); owner-less, or while the owner ignores fonts, the bundled `FONT_DEFAULT`, then the game's. A stored `"@skin"` (what `Skin.ResetToSkin` writes) reads the same, and `Get("font")` answers `"Skin font"` for it |
+| `font` | `"Ka0s Oxanium SemiBold"` | `"Skin font"` (`FONT_SKIN`): the skin's HUD face (`hud.font`, the facade's `BarStyle().font`); owner-less, or while the owner ignores fonts, the bundled `FONT_DEFAULT`, then the game's. A stored `"@skin"` (what `Skin.ResetToSkin` would write; `MoveToSkin` writes `"Skin font"` itself) draws the same, `Get("font")` answers `"Skin font"` for it and the font row shows it as `"Skin font"` |
 | `outline` | `"THICKOUTLINE"` | `"@skin"` (`FROM_SKIN`, new in `OUTLINES`, first): the facade's `FontFlags("@skin")`, the skin's HUD outline through the owner's Font outline; owner-less `"OUTLINE"`. `Look().flags` answers the resolved flags |
 | `glowColorFromSkin` | `false` | `true`: the halo in the skin's `glow.color`; owner-less it answers nothing and the black swatch draws, as before |
 | `fontShadowFromSkin` | (none) | `true`, new: the skin's HUD text shadow (`S.HudShadow`, through `S.HudFont`); off, the stored `shadow`, `shadowX`, `shadowY` in black. Owner-less the stored shadow draws directly, as before |
@@ -53,16 +53,18 @@ skin switch repaints the look with no `Apply`. Owner-less (or a facade without `
 strings are set directly, as at 4.5.
 
 **The one-time move (U-1).** A host that stored the 4.5 values itself moves the ones still at them,
-once, from a step under its own per-profile record: `Callout:FollowKeys(t, prefix)` answers the
-paths (below), which the host hands to `Skin.ResetToSkin(profile, keys)`. See
-[Adopting it](#moving-onto-the-skin-once). A picked value is never listed.
+once, from a step under its own per-profile record: `Callout:MoveToSkin(t)` writes the skin's value
+for each key `Callout:FollowKeys(t, prefix)` names (below). See
+[Adopting it](#moving-onto-the-skin-once). A picked value is never listed or moved.
 
 **The settings rows (`CalloutSettings.lua` 6).** Outline leads with **From skin** (`"@skin"`,
 `OUTLINE_SKIN`). Look gains **Use the skin's shadow** (`fontShadowFromSkin`, `SHADOW_SKIN`) after
 Shadow; Shadow, Shadow X offset and Shadow Y offset are disabled while it is on (the offsets also
 with no shadow). Colors gains **Use the skin's color** (`numberColorFromSkin`, `NUMBER_SKIN`) beside
 the Numbers swatch, which stays live (options-ui-§17), so Information opens the next line. The
-font row's schema `get` answers a stored `"@skin"` as `"Skin font"`, so the picker shows it.
+font row's `skinValue` answers a stored `"@skin"` as `"Skin font"`, so the picker shows it (a path
+row is read through the host's descriptor, and `skinValue` is the seam the Options engine honors
+there).
 `KIND_TIP` says a kind left at its default is the skin's matching color.
 
 **The plain build is exempt (U-3).** `BuildSettings` with no `opts.options` draws stock client
@@ -381,6 +383,7 @@ Read straight off the LibStub table.
 | `MAJOR`, `MINOR` | 1 | `"LibKa0s-Callout-1.0"`, `5` (from 5.6; `4` at 4.5) |
 | `MODULES` | 1 | `{ Callout = 5, CalloutSettings = 6 }` (the second from 1.1, at 2 from 1.2, both moving at 2.3, at 3 and 4 from 3.4, at 4 and 5 from 4.5, at 5 and 6 from 5.6) |
 | `FollowKeys(t, prefix)` | 5.6 | The paths a host's one-time step moves onto the skin: each `FOLLOW_FROM` key `t` still holds at its 4.5 default, as `prefix .. key` (one dot added; none for none), in the order `font`, `outline`, `glowColorFromSkin`. A fresh list, empty for a `t` that is not a table. See [Moving onto the skin, once](#moving-onto-the-skin-once) |
+| `MoveToSkin(t)` | 5.6 | The one-time move: each key `FollowKeys(t)` names takes the skin's value in `t`, `font` `FONT_SKIN` (`"Skin font"`, never `"@skin"`, so the font picker and the host's own `get` read a value the picker offers), `outline` `FROM_SKIN`, `glowColorFromSkin` `true`. Answers how many it moved; 0 for a `t` that is not a table. Not once-guarded: the host runs it under its own per-profile record. See [Moving onto the skin, once](#moving-onto-the-skin-once) |
 | `FOLLOW_FROM` | 5.6 | `{ font = "Ka0s Oxanium SemiBold", outline = "THICKOUTLINE", glowColorFromSkin = false }`: what `FollowKeys` compares against. Never mutate it |
 | `MEANING` | 5.6 | Kind → its semantic token: `info` `sem.info`, `go` `sem.good`, `stop` `sem.bad`, `warn` `sem.warn`, `error` `sem.bad`. Never mutate it |
 | `FROM_SKIN` | 5.6 | `"@skin"`, the Skin major's sentinel: the `outline` value that follows the skin, and a `font` value read as `"Skin font"` |
@@ -604,7 +607,7 @@ drawn.
 | `normalize(v)` | A stock key's text only: trimmed |
 | `onChange()` | The instance's `Apply()`, so a write by path, from the panel, the slash command or a reset, reaches the frame |
 | `min`, `max`, `step` / `values` | A number row's bounds, or a list's `{ value, text }` choices. The voice's and the text to speech voice's are functions, read when drawn: the packs the host ships, then `tts` and `off`; the client's voices, led (when it lists any) by `{ value = false, text = "Default (<first voice>)" }` (`SETTINGS_STRINGS.TTS_VOICE_DEFAULT`), so the stored default names the voice it speaks. The font row's is the `Ka0sMedia_Font` picker's list, a function as before |
-| `get` | A color row's, and from 5.6 the font row's (a stored `"@skin"` answered as `"Skin font"`); no row has a `set`. A color row's is the kind's stored color (from 5.6 never the skin's it may draw in), either stored shape, answered in the host's shape (`d.colorEncode`'s, else `{ r, g, b, a = 1 }`). `Schema.Get` answers through it, so a color a 1.2 instance stored as an array still reaches the host's swatch as its own color and a default color reads as the default; a write still stores through the host's seam |
+| `get` | A color row's; no row has a `set`. (The font row shows a stored `"@skin"` as `"Skin font"` through `skinValue`, from 5.6, not a `get`: the Options engine reads a path row through the descriptor and honors only `skinValue` over it.) A color row's is the kind's stored color (from 5.6 never the skin's it may draw in), either stored shape, answered in the host's shape (`d.colorEncode`'s, else `{ r, g, b, a = 1 }`). `Schema.Get` answers through it, so a color a 1.2 instance stored as an array still reaches the host's swatch as its own color and a default color reads as the default; a write still stores through the host's seam |
 | `label`, `tooltip`, `group`, `subgroup`, `tab`, `startsLine`, `disabledIf`, `dialogControl`, `hasAlpha` | The panel's: `group` is the tab's word (Look, Sound, Texts), `subgroup` the Texts tab's two (Colors, Stock texts), `disabledIf` a predicate |
 | `page` | `opts.page`, when given |
 
@@ -793,13 +796,20 @@ table) stays behind, and moves **once**, from a step under the host's own per-pr
 moves nothing):
 
 ```lua
--- Combat Trail's step (core/Database.lua), once per profile, from Database:Init and OnProfileChanged:
-local keys = Callout:FollowKeys(profile.callout, "callout.")   -- e.g. { "callout.font", "callout.outline" }
-LibStub("LibKa0s-Skin-1.0").ResetToSkin(profile, keys)
+-- Combat Trail's step (core/Database.lua), once per profile, from Database:Init and OnProfileChanged.
+-- The library table, not the host's degraded stub: guard on it (nil without LibKa0s).
+local Callout = LibStub and LibStub("LibKa0s-Callout-1.0", true)
+if Callout and type(profile.callout) == "table" then Callout:MoveToSkin(profile.callout) end
 ```
 
+`Callout:FollowKeys(profile.callout, "callout.")` names the same keys as paths (e.g.
+`{ "callout.font", "callout.outline" }`), for a host that logs or checks the move first. Do not hand
+that list to `Skin.ResetToSkin`: it would store `"@skin"` for the face, which draws as the Skin font
+and shows as it in the font row, but which the picker does not offer and a host's own `get` answers
+verbatim.
+
 The list, in order, each named only while `t` holds its `FOLLOW_FROM` value: **`font`** at
-`"Ka0s Oxanium SemiBold"` (written `"@skin"`, read as `"Skin font"`), **`outline`** at
+`"Ka0s Oxanium SemiBold"` (written `"Skin font"`, `FONT_SKIN`), **`outline`** at
 `"THICKOUTLINE"` (written `"@skin"`), **`glowColorFromSkin`** at `false` (written `true`). Nothing
 else moves: the shadow and number companions are new keys no profile stored, a meaning kind's stored
 4.5 default already reads as following, and a value the player picked stays.

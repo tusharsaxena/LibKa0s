@@ -2197,7 +2197,7 @@ Total.
 - charts follow: a strip column's gloss fades with its column, a zero stub's included (U-4)
 - bar follow: the suite releases its benches
 
-### test_skin_follow_callout.lua (21)
+### test_skin_follow_callout.lua (22)
 
 - callout follow: the look's defaults are the skin's (97.10, U-1)
 - callout follow: with an owner the text wears the skin's HUD face, outline and shadow (97.10, 97.12)
@@ -2212,9 +2212,10 @@ Total.
 - callout follow: the swatch's reader is the stored color, never the drawn one (U-2)
 - callout follow: owner-less, the text is set directly, @skin an outline, the defaults' colors (97.12)
 - callout follow: FollowKeys names only the look settings still at their minor-4 defaults (97.10)
-- callout follow: the keys handed to Skin.ResetToSkin land the call-out on the skin (97.10)
+- callout follow: MoveToSkin writes the Skin font, @skin and true for the keys FollowKeys names (97.10)
+- callout follow: a stored @skin face (ResetToSkin over FollowKeys) still draws the skin's face (97.10)
 - callout follow: the rows carry the outline's From skin, the shadow and number companions (CalloutSettings 6)
-- callout follow: the font row reads a stored @skin as the Skin font (97.10)
+- callout follow: through the Options engine a stored @skin font row shows the Skin font (97.10)
 - arrow follow: the text color is the skin's HUD text color by default; class color first (97.13)
 - arrow follow: a skin that answers no HUD text color leaves the swatch (97.13)
 - arrow follow: the text shadow follows the skin unless Use the skin's shadow is off (97.14)
@@ -5801,7 +5802,7 @@ Total.
 | test_widgets_footer.lua | 25 |
 | test_widgets_bar.lua | 24 |
 | test_skin_follow_bars.lua | 15 |
-| test_skin_follow_callout.lua | 21 |
+| test_skin_follow_callout.lua | 22 |
 | test_header_buttons.lua | 25 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
@@ -5951,4 +5952,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5021** |
+| **Total** | **5022** |

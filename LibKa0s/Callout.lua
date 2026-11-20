@@ -84,7 +84,8 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- the owner's R-2, U-1 and U-2): the look follows the skin (Skin font, an "@skin" outline, the skin's
 -- glow color, `fontShadowFromSkin`), numbers read `hud.text` (`numberColorFromSkin`), the other kinds
 -- their `sem.*` token until the player picks a color (`MEANING`), and with an owner the text and its
--- halo go through the facade's HudFont and HudFontSize. `FollowKeys` names a host's one-time move.
+-- halo go through the facade's HudFont and HudFontSize. `FollowKeys` names a host's one-time move
+-- and `MoveToSkin` makes it (the Skin font stored as itself, never "@skin").
 local MAJOR, MINOR = "LibKa0s-Callout-1.0", 5
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -227,6 +228,7 @@ local COLORS_BEFORE = {   -- the kinds' defaults to v1.107.0, a stored copy of w
 --- defaults the skin now replaces. Never mutate it.
 lib.FOLLOW_FROM = { font = "Ka0s Oxanium SemiBold", outline = "THICKOUTLINE", glowColorFromSkin = false }
 local FOLLOW_ORDER = { "font", "outline", "glowColorFromSkin" }
+local FOLLOW_TO = { font = lib.FONT_SKIN, outline = lib.FROM_SKIN, glowColorFromSkin = true }   -- MoveToSkin's writes
 
 local TAG = "CALLOUT"
 local HEIGHT_FACTOR = 1.5                 -- the frame's height over the font size
@@ -1348,9 +1350,9 @@ end
 --- The keys of `t` (the host's call-out table) a one-time step moves onto the skin (SD-LK-97.10, the
 --- owner's U-1): each of `FOLLOW_FROM`'s settings `t` still holds at its v1.107.0 default, as
 --- `prefix .. key` (`prefix` gets its one dot; none for none), in the order `font`, `outline`,
---- `glowColorFromSkin`. A host hands the list to `Skin.ResetToSkin(profile, keys)` from a step under
---- its own per-profile record, which stores "@skin" for the face and the outline (read as the Skin
---- font and the skin's outline) and true for the companion. A picked value is never listed.
+--- `glowColorFromSkin`. A picked value is never listed. The list names what `MoveToSkin` moves; it is
+--- not for `Skin.ResetToSkin`, which would store "@skin" for the face, a value the font picker does
+--- not offer (the draw and the font row read it as the Skin font, but a host's own `get` answers it).
 function lib:FollowKeys(t, prefix)   -- luacheck: ignore 212/self
   local out = {}
   if type(t) ~= "table" then return out end
@@ -1359,6 +1361,17 @@ function lib:FollowKeys(t, prefix)   -- luacheck: ignore 212/self
     if t[key] == lib.FOLLOW_FROM[key] then out[#out + 1] = prefix .. key end
   end
   return out
+end
+
+--- The one-time move itself (SD-LK-97.10, the owner's U-1): every `FollowKeys(t)` key takes the skin's
+--- value in `t`, the face `FONT_SKIN`, the outline `FROM_SKIN` ("@skin") and `glowColorFromSkin` true.
+--- Answers how many it moved (0 for a `t` that is not a table). A host calls it once per profile from
+--- a step under its own per-profile record: a player who later picks an old default again is not
+--- moved twice. With the library absent (a host's degraded mode) there is nothing to call.
+function lib:MoveToSkin(t)
+  local keys = self:FollowKeys(t)
+  for _, key in ipairs(keys) do t[key] = FOLLOW_TO[key] end
+  return #keys
 end
 
 --- A new call-out. `d.db` is required; every other field is optional (see the API document).
