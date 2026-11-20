@@ -1,10 +1,10 @@
 {
   "major": "LibKa0s-Charts-1.0",
-  "versionKey": "3.1",
+  "versionKey": "3.2",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Charts", "minor": 3 },
-    { "file": "ChartsRender", "minor": 1 }
+    { "file": "ChartsRender", "minor": 2 }
   ],
   "members": [
     { "name": "K", "kind": "table" },

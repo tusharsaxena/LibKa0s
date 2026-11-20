@@ -237,7 +237,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [3.1](./Charts/version-3.1-docs.md) | **`Charts.lua` 3** (a bar of data is drawn only through `barFill`: an owner's S.BarTexture and S.BarGloss, an owner-less context Ka0s Default's bar texture, never the host's `fill`; LibKa0s#97, `SD-LK-97` Batch B) · `ChartsRender.lua` 1 | unreleased | **Current** |
+| [3.2](./Charts/version-3.2-docs.md) | **`Charts.lua` 3** (a bar of data is drawn only through `barFill`: an owner's S.BarTexture and S.BarGloss, an owner-less context Ka0s Default's bar texture, never the host's `fill`; LibKa0s#97, `SD-LK-97` Batch B) · **`ChartsRender.lua` 2** (a strip column's alpha is set before its fill is painted, so its gloss fades with it) | unreleased | **Current** |
 | [2.1](./Charts/version-2.1-docs.md) | **`Charts.lua` 2** (the default tooltip beside the window group, `ctx:PlaceTip`, `host.group`, the host `tip`'s fourth argument; LibKa0s#92, `LK-92B`) · `ChartsRender.lua` 1 | v1.105.0 – v1.107.0 | Superseded |
 | [1.1](./Charts/version-1.1-docs.md) | **`Charts.lua` 1** · **`ChartsRender.lua` 1** (new: the Insights chart renderers, LibKa0s#66) | v1.84.0 – v1.104.0 | Superseded |
 

@@ -249,6 +249,28 @@ test("charts follow: an owner's chart bar wears the skin's gloss under Glass (U-
   assertFalse(gloss:IsShown(), "a switch takes it off")
 end)
 
+test("charts follow: a strip column's gloss fades with its column, a zero stub's included (U-4)", function()
+  -- red under ChartsRender minor 1: the column's alpha was set after the fill and its gloss, a
+  -- region of the column's frame, kept full alpha over a zero column's faint stub.
+  local m, C, Skin = charts()
+  if not Skin:IsOwner("BF_StripGloss") then Skin:RegisterOwner("BF_StripGloss") end
+  Skin:SetChoice("BF_StripGloss", "ka0s", "glass")
+  local ctx = C:New(content(m), { owner = "BF_StripGloss" })
+  local pool, strip = ctx:Pool("strip"), ctx:strip()
+  ctx:renderStrip(pool, ctx:sectionHeader(nil, "H"), strip, { { count = 4 }, { count = 0 } }, 0, 400, 8)
+  local full, empty = pool.active[1], pool.active[2]
+  local g1, g0 = Skin.painted[full.fill].regions.gloss, Skin.painted[empty.fill].regions.gloss
+  assertTrue(g1 ~= nil and g0 ~= nil, "both columns wear the gloss")
+  assertEqual(empty.fill:GetAlpha(), 0.12, "the stub is faint")
+  assertEqual(g0:GetAlpha(), 0.12, "and so is its gloss")
+  assertEqual(g1:GetAlpha(), 0.9, "a counted column's gloss matches its column")
+  ctx:ReleaseAll()
+  ctx:renderStrip(pool, ctx:sectionHeader(nil, "H"), strip, { { count = 4 } }, 0, 400, 8)
+  local g = Skin.painted[pool.active[1].fill].regions.gloss
+  assertEqual(g:GetAlpha(), 0.9, "a reused column's gloss follows its new count")
+  Skin:SetChoice("BF_StripGloss", "ka0s", "ka0s")
+end)
+
 -- Last: let the benches go (the run's leak gate counts them until the end otherwise).
 test("bar follow: the suite releases its benches", function()
   M, SKIN, W = nil, nil, nil

@@ -2179,7 +2179,7 @@ Total.
 - bar: an acquire with no Pool major degrades to the same order
 - bar: the suite releases its two benches
 
-### test_skin_follow_bars.lua (14)
+### test_skin_follow_bars.lua (15)
 
 - bar follow: a style with no borderFromSkin follows the skin's border (97.2)
 - bar follow: borderFromSkin false keeps the host's own border under every skin (97.2)
@@ -2194,6 +2194,7 @@ Total.
 - charts follow: a host fill no longer stands in for a bar of data (97.15)
 - charts follow: an owner-less bar of data paints Ka0s Default's bar texture (97.15)
 - charts follow: an owner's chart bar wears the skin's gloss under Glass (U-4)
+- charts follow: a strip column's gloss fades with its column, a zero stub's included (U-4)
 - bar follow: the suite releases its benches
 
 ### test_header_buttons.lua (25)
@@ -5775,7 +5776,7 @@ Total.
 | test_widgets_teststrip_dock.lua | 22 |
 | test_widgets_footer.lua | 25 |
 | test_widgets_bar.lua | 24 |
-| test_skin_follow_bars.lua | 14 |
+| test_skin_follow_bars.lua | 15 |
 | test_header_buttons.lua | 25 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
@@ -5925,4 +5926,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4999** |
+| **Total** | **5000** |

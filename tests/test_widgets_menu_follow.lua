@@ -80,15 +80,24 @@ test("menu follow: a secret label is not measured, and the host's width is the f
   W.CloseMenu()
   local SECRET_LABEL = "a secret session label"
   local saved = rawget(mocks, "issecretvalue")
-  local measuredSecret, real = false, rawget(menu.measure, "GetStringWidth")
-  rawset(menu.measure, "GetStringWidth", function(self)
-    if self.__text == SECRET_LABEL then measuredSecret = true end
-    return #(self.__text or "") * 6
+  -- The measure is the process's menu's, and which stub it wears depends on suite order (the
+  -- dropdown suite stores its text in `_t`, the mock in `__text`), so this case records what the
+  -- measure is GIVEN through its own SetText wrapper rather than reading either stub's field.
+  local measuredSecret, given = false, nil
+  local realSet, realGet = rawget(menu.measure, "SetText"), rawget(menu.measure, "GetStringWidth")
+  local baseSet = menu.measure.SetText
+  rawset(menu.measure, "SetText", function(self, t)
+    given = t
+    if type(t) == "string" and t:find(SECRET_LABEL, 1, true) then measuredSecret = true end
+    if baseSet then return baseSet(self, t) end
   end)
+  rawset(menu.measure, "GetStringWidth", function() return #(given or "") * 6 end)
   mocks.issecretvalue = function(v) return v == SECRET_LABEL end
   local ok, err = pcall(W.ContextMenu, a, { { label = SECRET_LABEL }, { label = "Current" } }, { width = 220 })
   mocks.issecretvalue = saved
-  rawset(menu.measure, "GetStringWidth", real)   -- the menu is the process's: give its stub back
+  -- the menu is the process's: give its stubs back (nil restores the metatable's method)
+  rawset(menu.measure, "SetText", realSet)
+  rawset(menu.measure, "GetStringWidth", realGet)
   assertTrue(ok, tostring(err))
   assertFalse(measuredSecret, "the secret label never reached the measure")
   assertEqual(menu.buttons[1]:GetWidth(), 220, "the host's width")

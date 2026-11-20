@@ -1,4 +1,4 @@
-# `LibKa0s-Charts-1.0` — version 3.1
+# `LibKa0s-Charts-1.0` — version 3.2
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Charts surface points here rather than restating it. It describes the
@@ -8,21 +8,21 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Charts-1.0` |
-| Files and minors | `Charts.lua` minor **3** · `ChartsRender.lua` minor **1** |
+| Files and minors | `Charts.lua` minor **3** · `ChartsRender.lua` minor **2** |
 | Shipped in | unreleased |
 | Status | **Current** |
 | Supersedes | [version 2.1](./version-2.1-docs.md) (v1.105.0 – v1.107.0) — a host's `fill` stood in for a bar of data when it named no `barFill`, so the bars were drawn flat under every skin, and no chart bar wore the skin's gloss (LibKa0s#97). |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`) |
 | Optional at call time | `LibKa0s-Pool-1.0` (the default `host.pool`), `LibKa0s-Skin-1.0` (`host.owner`), `LibKa0s-Tooltip-1.0` (where a tooltip opens, `ctx:PlaceTip`), `GameTooltip` (the default tooltip) |
-| Confirm in-game | `LibStub("LibKa0s-Charts-1.0").MODULES` → `{ Charts = 3, ChartsRender = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Charts-1.0").MODULES` → `{ Charts = 3, ChartsRender = 2 }` |
 
 ## What changed at this version: a bar of data is drawn only through `barFill`, and wears the skin's gloss (`SD-LK-97` Batch B, LibKa0s#97)
 
-**`Charts.lua` moves to minor 3**, for the owner's ruling R-2 (2026-11-20; skinning-§6: under any skin every skinnable element takes the skin's value by default) and the audit Ka0sAddonsCommonTasks `docs/2026-11-20-SKIN_DEFAULTS_AUDIT/` (rows SD-LK-97.15 and SD-LK-97.3's Charts part, the owner's U-4). `ChartsRender.lua` does not move. No member, no `K` figure and no host field is added or removed.
+**`Charts.lua` moves to minor 3**, for the owner's ruling R-2 (2026-11-20; skinning-§6: under any skin every skinnable element takes the skin's value by default) and the audit Ka0sAddonsCommonTasks `docs/2026-11-20-SKIN_DEFAULTS_AUDIT/` (rows SD-LK-97.15 and SD-LK-97.3's Charts part, the owner's U-4). **`ChartsRender.lua` moves to minor 2** for the gloss's alpha (below). No member, no `K` figure and no host field is added or removed.
 
 - **`barFill` is the bar seam (97.15).** A bar, a stacked segment, a range bar and a strip column are drawn through `ctx.barFill` and nothing else. Left out by the host: an owner's context paints the owner's `S.BarTexture` (as at 2), and an owner-less one paints **Ka0s Default's bar texture** through the Skin major where it is loaded (its facade for the name `LibKa0s-Charts-1.0`, which no addon registers), a flat color without it. Through 2 an owner-less host's **`fill` stood in** for a missing `barFill`, so a host that passed `fill` and no owner (Ka0s Combat Trail's Insights) drew every bar of data flat under every skin. `fill` now paints only what it names: the track, the rules, a swatch, the axis and the mark.
-- **A window chart bar wears the skin's gloss (U-4).** With no host `barFill`, an owner's bar is handed to `S.BarGloss` after `S.BarTexture` (Skin `SkinPaintHud` 2, which takes a Texture): under Glass (`bar.gloss = true`) a chart bar wears the one gloss look a HUD bar does, a region of the bar's frame over its fill, recorded, so a skin switch shows or hides it. A host `barFill` draws what it draws; a host that wants the gloss calls `S.BarGloss(texture)` after its own texture.
+- **A window chart bar wears the skin's gloss (U-4).** With no host `barFill`, an owner's bar is handed to `S.BarGloss` after `S.BarTexture` (Skin `SkinPaintHud` 2, which takes a Texture): under Glass (`bar.gloss = true`) a chart bar wears the one gloss look a HUD bar does, a region of the bar's frame over its fill, recorded, so a skin switch shows or hides it. The gloss takes the Texture's own alpha when it is laid, and a strip column's alpha is now set before its fill is painted (`ChartsRender.lua` 2), so a zero column's faint stub (alpha 0.12) wears an equally faint gloss rather than a full-strength one. A host `barFill` draws what it draws; a host that wants the gloss calls `S.BarGloss(texture)` after its own texture.
 
 `tests/test_skin_follow_bars.lua` (the Charts cases) and `tests/test_charts_host.lua`'s host-fill case, re-pinned, red under 2.
 

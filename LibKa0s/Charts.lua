@@ -360,7 +360,10 @@ local function skinSeams(ctx, S, host)
   end
   ctx.barFill = host.barFill or function(tex, c, a)
     S.BarTexture(tex, c[1], c[2], c[3], a or c[4] or 1)
-    S.BarGloss(tex)   -- minor 3 (U-4): the skin's gloss, a region of the bar's frame
+    -- minor 3 (U-4): the skin's gloss, a region of the bar's frame, at the Texture's own alpha
+    -- (a faint strip column's gloss is as faint as it is)
+    local gloss = S.BarGloss(tex)
+    if gloss and type(tex.GetAlpha) == "function" then gloss:SetAlpha(tex:GetAlpha()) end
   end
   ctx.panel = host.panel or function(parent)
     local f = plainPanel(parent)
