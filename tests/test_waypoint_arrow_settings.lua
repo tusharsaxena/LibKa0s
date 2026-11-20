@@ -139,8 +139,9 @@ local TEXT_PATHS = {
   showLabel = "w.showLabel", distanceUnits = "w.units",
 }
 
+-- From WaypointArrowSettings minor 3 the color and shadow companions follow the font's (SD-LK-97.13, 97.14).
 local TEXT_ORDER = "font,fontSize,fontColor,useClassColorFont,fontFlags,fontShadow,fontFromSkin,"
-  .. "textPosition,showLabel,distanceUnits"
+  .. "fontColorFromSkin,fontShadowFromSkin,textPosition,showLabel,distanceUnits"
 
 local function keysOf(rows)
   local out = {}
@@ -148,7 +149,7 @@ local function keysOf(rows)
   return table.concat(out, ",")
 end
 
-test("arrow settings: the Text block is the Font block's six rows, the companion, then three extras", function()
+test("arrow settings: the Text block is the Font block's six rows, the companions, then three extras", function()
   local _, Arrow = F.env()
   local rows = Arrow.SettingsRows({ paths = TEXT_PATHS, page = "p", group = "g", subgroup = "Arrow" })
   assertEqual(keysOf(rows), TEXT_ORDER)

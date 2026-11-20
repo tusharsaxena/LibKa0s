@@ -258,7 +258,7 @@ test("arrow text: with a skin the font goes through its HudFont, the skin's face
   assertEqual(opts.size, 24, "the size scaled by the skin's HudFontSize")
   assertEqual(opts.flags, "@skin", "From skin flags go to the skin as they are")
   assertEqual(opts.shadow, true)
-  assertEqual(opts.shadowFromSkin, false, "the Font shadow row is the player's")
+  assertEqual(opts.shadowFromSkin, true, "the skin's shadow by default (WaypointArrow minor 3, SD-LK-97.14)")
   a:Configure({ fontFromSkin = false, font = "Mono", fontSize = 14 })
   opts = record[#record]
   assertEqual(opts.face, "Fonts\\MONO.TTF")

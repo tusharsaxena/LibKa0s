@@ -29,12 +29,12 @@ end
 
 -- ── load and construction ────────────────────────────────────────────────────────────────────
 
-test("arrow: the major loads at minor 2 and reports its two files", function()
+test("arrow: the major loads at minor 3 and reports its two files", function()
   local _, Arrow = F.env()
   assertEqual(Arrow.MAJOR, MAJOR)
-  assertEqual(Arrow.MINOR, 2)
-  assertEqual(Arrow.MODULES.WaypointArrow, 2)
-  assertEqual(Arrow.MODULES.WaypointArrowSettings, 2)
+  assertEqual(Arrow.MINOR, 3)
+  assertEqual(Arrow.MODULES.WaypointArrow, 3)
+  assertEqual(Arrow.MODULES.WaypointArrowSettings, 3)
   assertEqual(T.arrow, T.mocks.LibStub(MAJOR), "the runner's whole-payload load carries it too")
 end)
 

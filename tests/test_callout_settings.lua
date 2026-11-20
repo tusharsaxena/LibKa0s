@@ -53,10 +53,10 @@ end
 
 -- ── the version ──────────────────────────────────────────────────────────────────────────────
 
-test("callout settings: CalloutSettings is at minor 5, paired on the Callout shell's minor", function()
+test("callout settings: CalloutSettings is at minor 6, paired on the Callout shell's minor", function()
   local c, _, _, _, Callout = newCallout()
-  assertEqual(Callout.MODULES.CalloutSettings, 5)
-  assertEqual(Callout.__settingsMinor, 5)
+  assertEqual(Callout.MODULES.CalloutSettings, 6)
+  assertEqual(Callout.__settingsMinor, 6)
   assertEqual(Callout.__settingsShellMinor, Callout.MINOR)
   for _, name in ipairs({ "BuildSettings", "SettingsRows", "SchemaRows", "SettingsTabs", "SettingsTab", "Preview", "TestCountdown", "Look" }) do
     assertEqual(type(c[name]), "function", "an instance has " .. name)
@@ -92,13 +92,14 @@ test("callout settings: the Texts tab has a color per kind, and a text box and a
     assertEqual(r.tab, "texts")
     if r.type == "color" then colors = colors + 1; assertFalse(r.hasAlpha) end
     if r.dialogControl == "EditBox" then texts = texts + 1 end
-    if r.type == "bool" then mutes = mutes + 1 end
+    if r.type == "bool" and r.key ~= "numberColorFromSkin" then mutes = mutes + 1 end
   end
   assertEqual(colors, #Callout.KINDS)
   assertEqual(texts, #Callout.STOCK_ORDER)
   assertEqual(mutes, #Callout.STOCK_ORDER)
   local plain = c:SettingsRows({ tab = "texts", plain = true })
-  assertEqual(#plain, #Callout.KINDS + #Callout.STOCK_ORDER, "the plain build has no text boxes")
+  assertEqual(#plain, #Callout.KINDS + 1 + #Callout.STOCK_ORDER,
+    "the plain build has no text boxes (the Numbers swatch's companion, CalloutSettings minor 6)")
 end)
 
 test("callout settings: text to speech rows are there only while the client lists a voice", function()
@@ -317,8 +318,8 @@ test("callout settings: without Options, plain frames: a control per row and the
   for _, ctl in ipairs(view.controls) do by[ctl.row.key] = ctl end
   rawset(by.outline.control, "SetText", function(self, t) rawset(self, "__label", t) end)
   by.outline.control:__fire("OnClick")
-  assertEqual(db.outline, "MONOCHROME", "a list steps to its next choice")
-  assertEqual(rawget(by.outline.control, "__label"), "Monochrome", "and shows it")
+  assertEqual(db.outline, "NONE", "a list steps to its next choice, From skin to None")
+  assertEqual(rawget(by.outline.control, "__label"), "None", "and shows it")
   by.size.control.plus:__fire("OnClick")
   assertEqual(db.size, 97, "+ steps a number up")
   by.size.control.minus:__fire("OnClick")
@@ -377,6 +378,10 @@ end)
 test("callout settings: the shadow offsets are drawn disabled with no shadow", function()
   local c, _, db = newCallout()
   local by = rowsByKey(c:SettingsRows({ tab = "look" }))
+  assertTrue(by.shadowX.disabledIf(), "not read while Use the skin's shadow is on (CalloutSettings minor 6)")
+  assertTrue(by.shadow.disabledIf())
+  db.fontShadowFromSkin = false
+  assertFalse(by.shadow.disabledIf())
   assertFalse(by.shadowX.disabledIf())
   assertFalse(by.shadowY.disabledIf())
   db.shadow = false
@@ -472,7 +477,7 @@ test("callout settings: FONT_FACES names the default first, Oxanium Bold, then t
     "Ka0s Oxanium SemiBold,Ka0s Oxanium Bold,Ka0s Bebas Neue,Ka0s Russo One")
   assertEqual(Callout.FONT_FACES[1], Callout.FONT_DEFAULT)
   assertEqual(Callout.FONT_DEFAULT, "Ka0s Oxanium SemiBold", "the owner's face (Callout minor 4)")
-  assertEqual(Callout.DEFAULTS.font, Callout.FONT_DEFAULT)
+  assertEqual(Callout.DEFAULTS.font, Callout.FONT_SKIN, "the default is the skin's (SD-LK-97.10)")
 end)
 
 -- ── the preview, in depth ────────────────────────────────────────────────────────────────────
@@ -505,7 +510,7 @@ test("callout settings: the plain preview is drawn in the chosen look, capped at
   local view = c:BuildSettings(parent, {})
   local _, size, flags = view.preview:GetFont()
   assertEqual(size, 64, "the default 96 is capped")
-  assertEqual(flags, "THICKOUTLINE")
+  assertEqual(flags, "OUTLINE", "From skin, owner-less")
   local x, y = view.preview:GetShadowOffset()
   assertEqual(x .. "," .. y, "1,1")
   c:Set("size", 40)
@@ -571,12 +576,12 @@ test("callout settings: a plain swatch opens the client's color picker; cancel p
   end)
   assertTrue(m.ColorPickerFrame ~= nil)
   by["colors.warn"].control:__fire("OnClick")
-  assertEqual(("%.2f %.2f %.2f"):format(picked.r, picked.g, picked.b), "1.00 0.78 0.20", "opened on the current color")
+  assertEqual(("%.2f %.2f %.2f"):format(picked.r, picked.g, picked.b), "1.00 0.50 0.00", "opened on the current color")
   assertFalse(picked.hasOpacity)
   picked.swatchFunc()
   assertEqual(table.concat(db.colors.warn, ","), "0.2,0.4,0.6")
   picked.cancelFunc()
-  assertEqual(table.concat(db.colors.warn, ","), "1,0.78,0.2", "cancel writes the color it opened on")
+  assertEqual(table.concat(db.colors.warn, ","), "1,0.5,0", "cancel writes the color it opened on")
 end)
 
 test("callout settings: a plain swatch with no color picker does nothing", function()

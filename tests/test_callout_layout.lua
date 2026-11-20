@@ -63,10 +63,10 @@ end
 
 -- ── the version ──────────────────────────────────────────────────────────────────────────────
 
-test("callout layout: CalloutSettings is at minor 5, and an instance carries SettingsTab", function()
+test("callout layout: CalloutSettings is at minor 6, and an instance carries SettingsTab", function()
   local c, _, _, _, Callout = newCallout()
-  assertEqual(Callout.MODULES.CalloutSettings, 5)
-  assertEqual(Callout.__settingsMinor, 5)
+  assertEqual(Callout.MODULES.CalloutSettings, 6)
+  assertEqual(Callout.__settingsMinor, 6)
   assertEqual(type(c.SettingsTab), "function")
   assertEqual(table.concat(Callout.SETTINGS_SIDE_TABS, ","), "look,sound")
   assertEqual(Callout.PLAY_COUNTDOWN, "countdown10")

@@ -146,9 +146,11 @@ test("look: every outline reaches the text as its flags; the halo is always thic
   local _, text, halo = parts(c)
   for _, o in ipairs(Callout.OUTLINES) do
     assertTrue(c:Set("outline", o))
-    assertEqual(select(3, text:GetFont()), o == "NONE" and "" or o, o .. " on the text")
+    -- From skin, owner-less, is an outline (SD-LK-97.10)
+    local want = o == "NONE" and "" or o == "@skin" and "OUTLINE" or o
+    assertEqual(select(3, text:GetFont()), want, o .. " on the text")
     assertEqual(select(3, halo:GetFont()), "THICKOUTLINE", o .. ": the halo")
-    assertEqual(c:Look().flags, o == "NONE" and "" or o, o .. " in Look")
+    assertEqual(c:Look().flags, want, o .. " in Look")
   end
 end)
 
@@ -232,7 +234,7 @@ test("look: a face the client cannot load is replaced by the game's at the same 
   local path, size, flags = text:GetFont()
   assertEqual(path, "Fonts\\FRIZQT__.TTF")
   assertEqual(size, 80)
-  assertEqual(flags, "THICKOUTLINE")
+  assertEqual(flags, "OUTLINE", "From skin, owner-less (SD-LK-97.10)")
 end)
 
 -- ── the colors ───────────────────────────────────────────────────────────────────────────────

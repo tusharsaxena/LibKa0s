@@ -1,24 +1,28 @@
 {
   "major": "LibKa0s-Callout-1.0",
-  "versionKey": "5.5",
+  "versionKey": "5.6",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Callout", "minor": 5 },
-    { "file": "CalloutSettings", "minor": 5 }
+    { "file": "CalloutSettings", "minor": 6 }
   ],
   "members": [
     { "name": "ANIMS", "kind": "table" },
     { "name": "CHANNELS", "kind": "table" },
     { "name": "DEFAULTS", "kind": "table" },
+    { "name": "FOLLOW_FROM", "kind": "table" },
     { "name": "FONT_DEFAULT", "kind": "string" },
     { "name": "FONT_FACES", "kind": "table" },
     { "name": "FONT_GAME", "kind": "string" },
     { "name": "FONT_SKIN", "kind": "string" },
+    { "name": "FROM_SKIN", "kind": "string" },
+    { "name": "FollowKeys", "kind": "function" },
     { "name": "GLOWS", "kind": "table" },
     { "name": "GLOW_LEGACY", "kind": "table" },
     { "name": "KINDS", "kind": "table" },
     { "name": "LINES", "kind": "table" },
     { "name": "MAX_FROM", "kind": "number" },
+    { "name": "MEANING", "kind": "table" },
     { "name": "MigrateGlow", "kind": "function" },
     { "name": "New", "kind": "function" },
     { "name": "OFF", "kind": "string" },

@@ -771,7 +771,7 @@ Total.
 
 ### test_callout_settings.lua (34)
 
-- callout settings: CalloutSettings is at minor 5, paired on the Callout shell's minor
+- callout settings: CalloutSettings is at minor 6, paired on the Callout shell's minor
 - callout settings: the rows are Look, Sound then Texts, each path-less and bound to the instance
 - callout settings: the Texts tab has a color per kind, and a text box and a mute per stock key
 - callout settings: text to speech rows are there only while the client lists a voice
@@ -836,7 +836,7 @@ Total.
 
 ### test_callout_layout.lua (17)
 
-- callout layout: CalloutSettings is at minor 5, and an instance carries SettingsTab
+- callout layout: CalloutSettings is at minor 6, and an instance carries SettingsTab
 - callout layout: SettingsTab answers one host tab, Callout, that draws the side layout
 - callout layout: a Preview heading over the preview block, then side tabs Look and Sound
 - callout layout: Look holds the face rows and the Colors section; no Sound rows, no stock texts
@@ -875,7 +875,7 @@ Total.
 
 ### test_waypoint_arrow.lua (37)
 
-- arrow: the major loads at minor 2 and reports its two files
+- arrow: the major loads at minor 3 and reports its two files
 - arrow: without Core the major is absent (no NewLibrary)
 - arrow: New refuses a descriptor that does not say where the art sits
 - arrow: a method called on something that is not an instance raises
@@ -925,7 +925,7 @@ Total.
 - arrow settings: a change configures the arrow, then tells the host
 - arrow settings: the rows pass a Schema instance's shape check, and a write reaches the arrow
 - arrow settings: ConfigureFrom reads the host's paths
-- arrow settings: the Text block is the Font block's six rows, the companion, then three extras
+- arrow settings: the Text block is the Font block's six rows, the companions, then three extras
 - arrow settings: given an Options instance the Font rows are O.FontGroup's own
 - arrow settings: a Text row's change configures the arrow
 - arrow settings: every row, the Text block's too, passes a Schema instance's shape check
@@ -2196,6 +2196,30 @@ Total.
 - charts follow: an owner's chart bar wears the skin's gloss under Glass (U-4)
 - charts follow: a strip column's gloss fades with its column, a zero stub's included (U-4)
 - bar follow: the suite releases its benches
+
+### test_skin_follow_callout.lua (21)
+
+- callout follow: the look's defaults are the skin's (97.10, U-1)
+- callout follow: with an owner the text wears the skin's HUD face, outline and shadow (97.10, 97.12)
+- callout follow: Use the skin's shadow off draws the stored shadow; Shadow off draws none (97.10)
+- callout follow: the halo goes through HudFont too, thick and shadowless (97.12)
+- callout follow: a picked face keeps its stored size; a picked outline wins (97.10, 97.12)
+- callout follow: the glow takes the skin's glow color by default (97.10)
+- callout follow: a skin switch repaints the face and the shadow (97.12)
+- callout follow: numbers draw the skin's HUD text color; off, the swatch (97.11)
+- callout follow: info, go, stop, warn and error draw the skin's meaning colors (U-2)
+- callout follow: a meaning color the player picks wins; one at a default still follows (U-2)
+- callout follow: the swatch's reader is the stored color, never the drawn one (U-2)
+- callout follow: owner-less, the text is set directly, @skin an outline, the defaults' colors (97.12)
+- callout follow: FollowKeys names only the look settings still at their minor-4 defaults (97.10)
+- callout follow: the keys handed to Skin.ResetToSkin land the call-out on the skin (97.10)
+- callout follow: the rows carry the outline's From skin, the shadow and number companions (CalloutSettings 6)
+- callout follow: the font row reads a stored @skin as the Skin font (97.10)
+- arrow follow: the text color is the skin's HUD text color by default; class color first (97.13)
+- arrow follow: a skin that answers no HUD text color leaves the swatch (97.13)
+- arrow follow: the text shadow follows the skin unless Use the skin's shadow is off (97.14)
+- arrow follow: the Text block carries the color and shadow companions at their rows' paths plus FromSkin
+- callout follow: the suite releases its bench
 
 ### test_header_buttons.lua (25)
 
@@ -5777,6 +5801,7 @@ Total.
 | test_widgets_footer.lua | 25 |
 | test_widgets_bar.lua | 24 |
 | test_skin_follow_bars.lua | 15 |
+| test_skin_follow_callout.lua | 21 |
 | test_header_buttons.lua | 25 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
@@ -5926,4 +5951,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5000** |
+| **Total** | **5021** |

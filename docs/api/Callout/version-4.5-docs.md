@@ -12,7 +12,7 @@
 | Shipped in | v1.102.0 |
 | Status | Superseded |
 | Supersedes | [version 3.4](./version-3.4-docs.md) (v1.100.0) — the same surface, with the Look defaults before the owner's (Oxanium Bold, a 2 px shadow down and right, the glow at the old "soft" look in each word's kind color) and a sample line in the one tab's preview block |
-| Superseded by | [version 5.5](./version-5.5-docs.md) |
+| Superseded by | [version 5.6](./version-5.6-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
 | Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row; from 4, for the side layout, `Section` and `SideTabs` (Options' OptionsNav minor 7), each presence-checked), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), from `Callout.lua` 3 the skin facade's `GlowColor` (Use the skin's color) and `LibKa0s-Core-1.0`'s `ClassColor` (Use class color, `RAID_CLASS_COLORS`), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 4, CalloutSettings = 5 }` |
@@ -751,8 +751,10 @@ order, so the whole-folder copy brings them in with no load-list change in the h
 [`CONSUMERS.md`](../CONSUMERS.md). Ka0s Combat Trail is its one planned consumer (LibKa0s#85); every
 export's verdict is *zero — planned at v1.96.0* until the next re-run.
 
-## Moving to version 5.5
+## Moving to version 5.6
 
-The same surface: no member is added or removed. See [version 5.5](./version-5.5-docs.md). Re-vendor the whole folder; a stub needs no change.
+Four members are added (`FROM_SKIN`, `MEANING`, `FOLLOW_FROM`, `FollowKeys`), none removed. See [version 5.6](./version-5.6-docs.md). Re-vendor the whole folder; a stub needs no change (the instance's methods are the same).
 
 **The descriptor takes `onClose` and `onSettings`** (`Callout.lua` 5, `SD-LK-100`, LibKa0s#100): functions the drag strip's close mark and settings mark call, under pcall. A host passes `onClose` to give its strip the X the standard's strip mark rule requires (close hides or disables the call-out), and `onSettings` to open its own page. A host that passes neither keeps minor 4's strip.
+
+**The look follows the skin** (`SD-LK-97` Batch C, LibKa0s#97, the owner's R-2, U-1 and U-2; `CalloutSettings.lua` 6): the defaults become the Skin font, an `"@skin"` outline, the skin's glow color and shadow (`fontShadowFromSkin`, new), numbers in `hud.text` (`numberColorFromSkin`, new) and the meaning kinds in their `sem.*` token until the player picks a color; with an owner the text goes through `S.HudFont`. A host that never stored a look value follows with no step. One that wrote these defaults into profiles calls `Skin.ResetToSkin(profile, Callout:FollowKeys(profile.callout, "callout."))` once, under its own per-profile record (5.6, *Moving onto the skin, once*). A suite pinning the old defaults, a `THICKOUTLINE` or a kind's old color re-pins.

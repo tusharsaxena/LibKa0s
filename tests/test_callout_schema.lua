@@ -90,11 +90,14 @@ end
 
 -- ── the rows ─────────────────────────────────────────────────────────────────────────────────
 
---- A stored row's own fields: no `set` (the host stores it), a `get` on a color row alone (the
---- stored color in either shape, answered in the host's), a validate and an onChange.
+--- A stored row's own fields: no `set` (the host stores it), a `get` on a color row (the stored
+--- color in either shape, answered in the host's) and on the font row (a stored "@skin" read as the
+--- Skin font, CalloutSettings minor 6) alone, a validate and an onChange.
 local function assertStoredRow(r)
   if r.type == "color" then
     assertEqual(type(r.get), "function", r.path .. " reads the stored color in either shape")
+  elseif r.key == "font" then
+    assertEqual(type(r.get), "function", r.path .. " reads a stored @skin as the Skin font")
   else
     assertNil(r.get, r.path .. " has no get of its own: the host stores it")
   end
@@ -280,7 +283,7 @@ test("callout schema: on the host's route every write the instance makes goes th
   assertTrue(c:Set("size", nil))
   assertEqual(host.profile.callout.size, 96, "nil writes the default through the seam")
   assertTrue(c:SetColor("go"))
-  assertEqual(host.profile.callout.colors.go.g, 1, "a cleared color is its default, through the seam")
+  assertEqual(host.profile.callout.colors.go.g, 0.8, "a cleared color is its default, through the seam")
   assertTrue(c:Set("texts.GO", nil))
   assertEqual(host.profile.callout.texts.GO, "")
   assertEqual(table.concat(host.writes, ","),
@@ -495,8 +498,8 @@ test("callout schema: the leaf keys read and write one entry of d.db, as minor 1
   local c, _, db = newCallout()
   assertEqual(c:Get("texts.GO"), "", "no own text")
   assertFalse(c:Get("muted.GO"))
-  assertEqual(c:Get("colors.go")[2], 1, "a kind's color, array half")
-  assertEqual(c:Get("colors.go").g, 1, "and named half")
+  assertEqual(c:Get("colors.go")[2], 0.8, "a kind's color, array half")
+  assertEqual(c:Get("colors.go").g, 0.8, "and named half")
   assertTrue(c:Set("texts.GO", "Charge"))
   assertEqual(db.texts.GO, "Charge")
   assertTrue(c:Set("texts.GO", nil))
@@ -517,7 +520,7 @@ test("callout schema: a stored color is read in either shape", function()
   assertEqual(table.concat({ c:GetColor("go") }, ","), "0.1,0.2,0.3")
   assertEqual(table.concat({ c:GetColor("stop") }, ","), "0.4,0.5,0.6")
   db.colors.warn = { r = "x" }
-  assertEqual(table.concat({ c:GetColor("warn") }, ","), "1,0.78,0.2", "neither shape: the default")
+  assertEqual(table.concat({ c:GetColor("warn") }, ","), "1,0.5,0", "neither shape: the default")
 end)
 
 test("callout schema: a host's colorEncode decides the shape the instance writes", function()

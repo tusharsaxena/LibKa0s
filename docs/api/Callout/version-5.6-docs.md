@@ -1,4 +1,4 @@
-# `LibKa0s-Callout-1.0` — version 5.5
+# `LibKa0s-Callout-1.0` — version 5.6
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Callout surface points here rather than restating it. It describes the
@@ -8,16 +8,69 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Callout-1.0` |
-| Files and minors | `Callout.lua` minor **5** · `CalloutSettings.lua` minor **5** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2, minors 4 and 5 at 3) |
+| Files and minors | `Callout.lua` minor **5** · `CalloutSettings.lua` minor **6** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2, minors 4 to 6 at 3) |
 | Shipped in | unreleased |
 | Status | **Current** |
-| Supersedes | [version 4.5](./version-4.5-docs.md) (v1.102.0) — the same surface, with a drag strip that carried no close mark and whose settings mark opened only the `skin` owner's registered opener: the descriptor had no `onClose` or `onSettings` (LibKa0s#100) |
+| Supersedes | [version 4.5](./version-4.5-docs.md) (v1.102.0) — a drag strip that carried no close mark and whose settings mark opened only the `skin` owner's registered opener (the descriptor had no `onClose` or `onSettings`, LibKa0s#100), and a look that kept the owner's L17 settings under every skin (LibKa0s#97). This key was 5.5 on the branch until `SD-LK-97` Batch C moved `CalloutSettings.lua`; 5.5 never shipped |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
 | Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row; from 4, for the side layout, `Section` and `SideTabs` (Options' OptionsNav minor 7), each presence-checked), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame; from 5 its `onClose` and `onSettings`, which minor 15 of its `WidgetsDragHandle.lua` reads), from `Callout.lua` 3 the skin facade's `GlowColor` (Use the skin's color) and `LibKa0s-Core-1.0`'s `ClassColor` (Use class color, `RAID_CLASS_COLORS`), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
-| Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 5, CalloutSettings = 5 }` |
+| Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 5, CalloutSettings = 6 }` |
 
-## What changed at this version: the drag strip's close and settings marks (`SD-LK-100`, LibKa0s#100)
+## What changed at this version: the look follows the skin (`SD-LK-97` Batch C, LibKa0s#97)
+
+Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/` (`SD-LK-97`, items 97.10 to 97.12, the
+owner's R-2, U-1, U-2 and U-3; the audit is `docs/2026-11-20-SKIN_DEFAULTS_AUDIT/`). `Callout.lua`
+stays at **5** (unreleased, extended); `CalloutSettings.lua` moves 5 -> **6**. Four members are
+added (`FROM_SKIN`, `MEANING`, `FOLLOW_FROM`, `FollowKeys`) and two settings
+(`fontShadowFromSkin`, `numberColorFromSkin`). **A consumer-visible change of defaults**: under any
+skin every part of the look takes the skin's value until the player picks one (skinning-§6), and the
+owner's U-1 rules that R-2 supersedes the L17 settings of version 4.5.
+
+| Key | 4.5 default | 5.6 default |
+|---|---|---|
+| `font` | `"Ka0s Oxanium SemiBold"` | `"Skin font"` (`FONT_SKIN`): the skin's HUD face (`hud.font`, the facade's `BarStyle().font`); owner-less, or while the owner ignores fonts, the bundled `FONT_DEFAULT`, then the game's. A stored `"@skin"` (what `Skin.ResetToSkin` writes) reads the same, and `Get("font")` answers `"Skin font"` for it |
+| `outline` | `"THICKOUTLINE"` | `"@skin"` (`FROM_SKIN`, new in `OUTLINES`, first): the facade's `FontFlags("@skin")`, the skin's HUD outline through the owner's Font outline; owner-less `"OUTLINE"`. `Look().flags` answers the resolved flags |
+| `glowColorFromSkin` | `false` | `true`: the halo in the skin's `glow.color`; owner-less it answers nothing and the black swatch draws, as before |
+| `fontShadowFromSkin` | (none) | `true`, new: the skin's HUD text shadow (`S.HudShadow`, through `S.HudFont`); off, the stored `shadow`, `shadowX`, `shadowY` in black. Owner-less the stored shadow draws directly, as before |
+| `numberColorFromSkin` | (none) | `true`, new (97.11): numbers in the skin's `hud.text` (`S.HudTextColor()`); off, the Numbers swatch. Owner-less, the swatch |
+| `colors` | `info` (0.35, 0.75, 1), `go` (0.3, 1, 0.45), `stop` (1, 0.35, 0.3), `warn` (1, 0.78, 0.2), `error` (1, 0.2, 0.25) | Ka0s Default's `sem.*` values: `info` (0.3, 0.8, 1), `go` (0.35, 0.8, 0.45), `stop` and `error` (1, 0.33, 0.33), `warn` (1, 0.5, 0); `number` white, unchanged |
+
+**Meaning colors (U-2).** `info`, `go`, `stop`, `warn` and `error` are meaning colors with no
+companion (skinning-§6, options-ui-§16): while a kind's stored color is its default (nothing stored,
+or a stored copy of this version's default or of 4.5's) it draws its owner's token, `MEANING[kind]`
+(`sem.info`, `sem.good`, `sem.bad`, `sem.warn`, `sem.bad`), read through the facade's `Color`; a
+color the player picks wins under every skin. Owner-less, the default draws. `GetColor` answers the
+color drawn; a color row's reader (`get`, and the plain build's swatch) answers the **stored** color
+(or default), so a reset count reads a default as one and the swatch opens on what the player set.
+
+**The text through HudFont (97.12).** With a registered owner whose facade carries `HudFont`, the
+text and its halo are given their face, size, flags and shadow through `S.HudFont` (the only shadow a
+12.0.7 client draws: a font object's), the Skin font's size through `S.HudFontSize(size, true)` (a
+picked face keeps its stored size), the halo `THICKOUTLINE` and shadowless at the text's drawn size
+plus the glow's thickness on each side. The instance listens to the owner's `OnLooksChanged`, so a
+skin switch repaints the look with no `Apply`. Owner-less (or a facade without `HudFont`), the
+strings are set directly, as at 4.5.
+
+**The one-time move (U-1).** A host that stored the 4.5 values itself moves the ones still at them,
+once, from a step under its own per-profile record: `Callout:FollowKeys(t, prefix)` answers the
+paths (below), which the host hands to `Skin.ResetToSkin(profile, keys)`. See
+[Adopting it](#moving-onto-the-skin-once). A picked value is never listed.
+
+**The settings rows (`CalloutSettings.lua` 6).** Outline leads with **From skin** (`"@skin"`,
+`OUTLINE_SKIN`). Look gains **Use the skin's shadow** (`fontShadowFromSkin`, `SHADOW_SKIN`) after
+Shadow; Shadow, Shadow X offset and Shadow Y offset are disabled while it is on (the offsets also
+with no shadow). Colors gains **Use the skin's color** (`numberColorFromSkin`, `NUMBER_SKIN`) beside
+the Numbers swatch, which stays live (options-ui-§17), so Information opens the next line. The
+font row's schema `get` answers a stored `"@skin"` as `"Skin font"`, so the picker shows it.
+`KIND_TIP` says a kind left at its default is the skin's matching color.
+
+**The plain build is exempt (U-3).** `BuildSettings` with no `opts.options` draws stock client
+templates (`UIPanelButtonTemplate`, `UICheckButtonTemplate`) that nothing paints. It is the fallback
+for a host with no LibKa0s-Options-1.0 instance, exempt from skinning, and **no Ka0s host may use
+it**: a Ka0s host passes its Options instance, whose rows are its skinned panel's own.
+
+## What changed at this version, too: the drag strip's close and settings marks (`SD-LK-100`, LibKa0s#100)
 
 Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/` (`SD-LK-100`). `Callout.lua` moves
 4 -> **5**; `CalloutSettings.lua` stays at 5. No member is added or removed.
@@ -325,8 +378,12 @@ Read straight off the LibStub table.
 
 | Name | Since | Meaning |
 |---|---|---|
-| `MAJOR`, `MINOR` | 1 | `"LibKa0s-Callout-1.0"`, `4` (from 4.5; `3` at 3.4) |
-| `MODULES` | 1 | `{ Callout = 4, CalloutSettings = 5 }` (the second from 1.1, at 2 from 1.2, both moving at 2.3, at 3 and 4 from 3.4, at 4 and 5 from 4.5) |
+| `MAJOR`, `MINOR` | 1 | `"LibKa0s-Callout-1.0"`, `5` (from 5.6; `4` at 4.5) |
+| `MODULES` | 1 | `{ Callout = 5, CalloutSettings = 6 }` (the second from 1.1, at 2 from 1.2, both moving at 2.3, at 3 and 4 from 3.4, at 4 and 5 from 4.5, at 5 and 6 from 5.6) |
+| `FollowKeys(t, prefix)` | 5.6 | The paths a host's one-time step moves onto the skin: each `FOLLOW_FROM` key `t` still holds at its 4.5 default, as `prefix .. key` (one dot added; none for none), in the order `font`, `outline`, `glowColorFromSkin`. A fresh list, empty for a `t` that is not a table. See [Moving onto the skin, once](#moving-onto-the-skin-once) |
+| `FOLLOW_FROM` | 5.6 | `{ font = "Ka0s Oxanium SemiBold", outline = "THICKOUTLINE", glowColorFromSkin = false }`: what `FollowKeys` compares against. Never mutate it |
+| `MEANING` | 5.6 | Kind → its semantic token: `info` `sem.info`, `go` `sem.good`, `stop` `sem.bad`, `warn` `sem.warn`, `error` `sem.bad`. Never mutate it |
+| `FROM_SKIN` | 5.6 | `"@skin"`, the Skin major's sentinel: the `outline` value that follows the skin, and a `font` value read as `"Skin font"` |
 | `MigrateGlow(t)` | 3.4 | Rewrites a stored minor-2 `glow` choice in `t` as the minor-3 keys; answers whether it changed `t` (see [What changed at version 3.4](#what-changed-at-version-34-the-glow-behind-the-text-plan-row-l15)) |
 | `GLOW_LEGACY` | 3.4 | The retired choice → the keys it reads as. Never mutate it |
 | `New(d)` | 1 | A new instance (below). Raises without `d.db` |
@@ -340,9 +397,9 @@ Read straight off the LibStub table.
 | `LINES` | 1 | Every file a pack carries, without the extension: each stock key lower-cased, then `1` .. `20` (43) |
 | `SOUND_EXT` | 1 | `".ogg"` |
 | `MAX_FROM` | 1 | `20`: the longest countdown |
-| `FONT_SKIN`, `FONT_GAME`, `FONT_DEFAULT` | 1 | `"Skin font"`, `"Game default"`, `"Ka0s Oxanium SemiBold"` (**`Callout.lua` 4**; `"Ka0s Oxanium Bold"` to 3) |
+| `FONT_SKIN`, `FONT_GAME`, `FONT_DEFAULT` | 1 | `"Skin font"` (the `font` default from 5.6), `"Game default"`, `"Ka0s Oxanium SemiBold"` (**`Callout.lua` 4**; `"Ka0s Oxanium Bold"` to 3): from 5.6 not the default but the bundled face a Skin font draws with no owner, or while the owner ignores fonts |
 | `FONT_FACES` | 1.2 | `{ "Ka0s Oxanium SemiBold", "Ka0s Oxanium Bold", "Ka0s Bebas Neue", "Ka0s Russo One" }` (**`CalloutSettings.lua` 5**; to 4 without SemiBold, Bold first): the faces the font row leads with, after the skin's and the game's |
-| `OUTLINES` | 1 | `NONE`, `OUTLINE`, `THICKOUTLINE`, `MONOCHROME` |
+| `OUTLINES` | 1 | `@skin` (from 5.6, first), `NONE`, `OUTLINE`, `THICKOUTLINE`, `MONOCHROME` |
 | `GLOWS` | 1 | `off`, `soft`, `strong`: from 3.4 the retired choice's values, `GLOW_LEGACY`'s keys; no setting takes them |
 | `ANIMS` | 1 | `slam`, `pulse`, `glow`, `blink`, `shake`, `none` |
 | `CHANNELS` | 1 | `Master`, `SFX`, `Dialog` |
@@ -409,7 +466,7 @@ in `GetTtsVoices()`, text to speech is silence, reported once; nothing stands in
 | `addon` | no | The consumer's addon folder name: where the voice packs and the bundled fonts are found |
 | `vendorPath` | no | Where the payload sits inside the addon; `libs\LibKa0s` by default |
 | `soundsBase` | no | The folder holding the packs, overriding the one `addon` implies |
-| `skin` | no | A registered skin owner: the "Skin font" face and the drag strip's colors |
+| `skin` | no | A registered skin owner: the "Skin font" face and the drag strip's colors; from 5.6 every skin-following part of the look (the outline, shadow, glow and kind colors) and the text drawn through its `HudFont` |
 | `label` | no | The drag strip's text; `"Call-out"` by default |
 | `onClose` | no | From 5: a function. The drag strip's close mark (an X) is built and calls it, under pcall; the host hides or disables its call-out there and keeps its settings. Without it the strip has no X |
 | `onSettings` | no | From 5: a function. What the drag strip's settings mark opens, under pcall. Without it the mark opens `OpenSettings(skin)`, the opener the host's launcher registered |
@@ -435,16 +492,18 @@ the route. Every leaf is sent, and `Set` answers false when the seam refused any
 
 | Key | Default | Valid |
 |---|---|---|
-| `font` | `"Ka0s Oxanium SemiBold"` (from 4.5; `"Ka0s Oxanium Bold"` to 3.4) | any non-empty name: a LibSharedMedia face, a LibKa0s-Media-1.0 face, `"Skin font"` or `"Game default"`; a name nothing resolves falls back to the default face, then the game's |
+| `font` | `"Skin font"` (from 5.6; `"Ka0s Oxanium SemiBold"` at 4.5, `"Ka0s Oxanium Bold"` to 3.4) | any non-empty name: a LibSharedMedia face, a LibKa0s-Media-1.0 face, `"Skin font"` (or `"@skin"`, read as it) or `"Game default"`; a name nothing resolves falls back to `FONT_DEFAULT`, then the game's |
 | `size` | `96` | 32 – 200 |
-| `outline` | `"THICKOUTLINE"` | `OUTLINES` |
-| `shadow`, `shadowX`, `shadowY` | `true`, `1`, `1` (from 4.5; `2`, `-2` to 3.4) | a boolean; −20 – 20 |
+| `outline` | `"@skin"` (from 5.6; `"THICKOUTLINE"` before) | `OUTLINES` |
+| `shadow`, `shadowX`, `shadowY` | `true`, `1`, `1` (from 4.5; `2`, `-2` to 3.4) | a boolean; −20 – 20: the stored shadow, drawn while `fontShadowFromSkin` is off (or with no owner) |
+| `fontShadowFromSkin` | `true` (from 5.6) | a boolean: the skin's HUD text shadow |
+| `numberColorFromSkin` | `true` (from 5.6) | a boolean: numbers in the skin's HUD text color, the Numbers swatch while off |
 | `colors` | per kind (below) | through `GetColor` / `SetColor`, or the leaf `colors.<kind>` (from 2); a stored color is read with named keys or as an array |
 | `glow` | `true` | a boolean (from 3.4; a stored `GLOWS` value reads through `GLOW_LEGACY`, and `Set` still takes one, written as its keys; `Get` answers the boolean): the halo behind the text |
 | `glowIntensity`, `glowThickness` | `1`, `1` (from 4.5; `0.35`, `2` at 3.4) | 0.05 – 1, the halo's alpha; 1 – 6 px past the text on every side (from 3.4) |
 | `glowX`, `glowY` | `1`, `-1` (from 4.5; `0`, `0` at 3.4) | −20 – 20 px, the halo's offset (from 3.4) |
 | `glowCustom`, `glowColor` | `true`, `{ 0, 0, 0 }` (from 4.5; `false`, `{ 1, 1, 1 }` at 3.4) | a boolean; a color in either shape: the halo takes the swatch while on, else the kind's color (from 3.4) |
-| `useClassColorGlow`, `glowColorFromSkin` | `false`, `false` | booleans: the player's class color, then the skin's glow color, win over the swatch (from 3.4) |
+| `useClassColorGlow`, `glowColorFromSkin` | `false`, `true` (from 5.6; `false` before) | booleans: the player's class color, then the skin's glow color, win over the swatch (from 3.4) |
 | `anim` | `"slam"` | `ANIMS` |
 | `hold` | `1.5` | 0.2 – 10 seconds before a call-out fades |
 | `point` | `{ "CENTER", "CENTER", 0, 180 }` | `{ point, relativePoint, x, y }` in UIParent's units, both anchors one of the nine region points; written by a drag (through `d.set` on the host's route, from 2) |
@@ -456,8 +515,9 @@ the route. Every leaf is sent, and `Set` answers false when the seam refused any
 | `texts` | `{}` | stock key → the player's own text for it |
 | `muted` | `{}` | stock key → `true`: that key shows without its voice (from 1.1) |
 
-Default colors: `number` white, `info` (0.35, 0.75, 1), `go` (0.3, 1, 0.45), `stop` (1, 0.35, 0.3),
-`warn` (1, 0.78, 0.2), `error` (1, 0.2, 0.25).
+Default colors (from 5.6, Ka0s Default's `sem.*`): `number` white, `info` (0.3, 0.8, 1), `go`
+(0.35, 0.8, 0.45), `stop` and `error` (1, 0.33, 0.33), `warn` (1, 0.5, 0). A meaning kind at its
+default draws its owner's `MEANING` token; see [What changed at this version](#what-changed-at-this-version-the-look-follows-the-skin-sd-lk-97-batch-c-libka0s97).
 
 ## The instance
 
@@ -470,7 +530,7 @@ Default colors: `number` white, `info` (0.35, 0.75, 1), `go` (0.3, 1, 0.45), `st
 | `Hide()` | Takes the call-out down now; a running countdown shows its next number |
 | `Suspend()` / `Resume()` / `Suspended()` | The stand-down: cancels, hides, locks, and refuses Show and Countdown until Resume |
 | `Get(key)` / `Set(key, value)` | The settings, above; the leaf keys from 2 |
-| `GetColor(kind)` / `SetColor(kind, r, g, b)` | A kind's color; `SetColor(kind)` with no color clears it. From 2 the write is `colors.<kind>`'s, in the host's shape |
+| `GetColor(kind)` / `SetColor(kind, r, g, b)` | A kind's color as drawn (from 5.6 the skin's for numbers and for a meaning kind at its default); `SetColor(kind)` with no color clears it. From 2 the write is `colors.<kind>`'s, in the host's shape |
 | `GetGlowColor(kind)` | From `Callout.lua` 3: `r, g, b`, the glow's color for a call-out of `kind`: class, skin, swatch or the kind's, as above |
 | `Apply()` | Re-reads every setting onto the frame |
 | `SetLocked(locked)` / `Locked()` | Unlocked, the frame takes the mouse, shows a sample (`READY`, silent) and the drag strip, and a drag writes `point`. Locked (the default, and not saved) it is mouse-transparent; a lock (or a `Suspend`) during a drag ends the move and writes `point`. The animations play on an inner content frame, so the frame and its strip never scale, shake or blink, and the strip ignores the frame's alpha |
@@ -544,7 +604,7 @@ drawn.
 | `normalize(v)` | A stock key's text only: trimmed |
 | `onChange()` | The instance's `Apply()`, so a write by path, from the panel, the slash command or a reset, reaches the frame |
 | `min`, `max`, `step` / `values` | A number row's bounds, or a list's `{ value, text }` choices. The voice's and the text to speech voice's are functions, read when drawn: the packs the host ships, then `tts` and `off`; the client's voices, led (when it lists any) by `{ value = false, text = "Default (<first voice>)" }` (`SETTINGS_STRINGS.TTS_VOICE_DEFAULT`), so the stored default names the voice it speaks. The font row's is the `Ka0sMedia_Font` picker's list, a function as before |
-| `get` | A color row's only (no row has a `set`): the kind's color as the instance reads it, either stored shape, answered in the host's shape (`d.colorEncode`'s, else `{ r, g, b, a = 1 }`). `Schema.Get` answers through it, so a color a 1.2 instance stored as an array still reaches the host's swatch as its own color and a default color reads as the default; a write still stores through the host's seam |
+| `get` | A color row's, and from 5.6 the font row's (a stored `"@skin"` answered as `"Skin font"`); no row has a `set`. A color row's is the kind's stored color (from 5.6 never the skin's it may draw in), either stored shape, answered in the host's shape (`d.colorEncode`'s, else `{ r, g, b, a = 1 }`). `Schema.Get` answers through it, so a color a 1.2 instance stored as an array still reaches the host's swatch as its own color and a default color reads as the default; a write still stores through the host's seam |
 | `label`, `tooltip`, `group`, `subgroup`, `tab`, `startsLine`, `disabledIf`, `dialogControl`, `hasAlpha` | The panel's: `group` is the tab's word (Look, Sound, Texts), `subgroup` the Texts tab's two (Colors, Stock texts), `disabledIf` a predicate |
 | `page` | `opts.page`, when given |
 
@@ -597,7 +657,9 @@ copied from `opts.before`, `render(ctx)` calling `BuildSettings(ctx, { options, 
 **Without one**, `parent` is a frame and the section is built of plain frames, one line each: a
 check button for a toggle, a value between - and + buttons for a number, a button stepping through
 the choices for a list, a swatch opening the client's `ColorPickerFrame` (when it has
-`SetupColorPickerAndShow`) for a color. The per-key text boxes are the Options build's alone.
+`SetupColorPickerAndShow`) for a color. The per-key text boxes are the Options build's alone. From
+5.6 the plain build is documented as **exempt** from skinning (the owner's U-3): stock templates
+nothing paints, a fallback for a host with no Options instance, which no Ka0s host may use.
 
 **Over each tab**, in either build: the **preview**, a sample line (`5  GO!  STOP`, each word in its
 kind's color) in the chosen face, outline and shadow at the chosen size up to 64, repainted on every
@@ -610,9 +672,9 @@ and **Reset position** (`ResetPosition`).
 
 | Tab | Rows |
 |---|---|
-| Look | Font, Size, Outline, Shadow, Shadow X offset, Shadow Y offset (disabled with no shadow), Animation, Hold; then (from 3.4, where 2.3 had a Glow choice after Outline) the **Glow** subgroup in AuraMaster's two columns: Glow behind the text and Glow color; Color (the swatch) and Use class color, options-ui-§17's adjacent pair, neither ever dimmed; Use the skin's color; Intensity (a percent) and Thickness (px); X offset and Y offset. Every Glow row but the toggle and the pair is disabled while the glow is off. The plain build shows Intensity as a percent |
+| Look | Font, Size, Outline (led by From skin from 5.6), Shadow, Use the skin's shadow (from 5.6; Shadow and its offsets are disabled while it is on), Shadow X offset, Shadow Y offset (disabled with no shadow), Animation, Hold; then (from 3.4, where 2.3 had a Glow choice after Outline) the **Glow** subgroup in AuraMaster's two columns: Glow behind the text and Glow color; Color (the swatch) and Use class color, options-ui-§17's adjacent pair, neither ever dimmed; Use the skin's color; Intensity (a percent) and Thickness (px); X offset and Y offset. Every Glow row but the toggle and the pair is disabled while the glow is off. The plain build shows Intensity as a percent |
 | Sound | Voice, Sound channel, Speak numbers from; with a client that lists a text to speech voice, Text to speech voice, Speech rate, Speech volume (disabled unless the voice is text to speech, and absent with no voice listed) |
-| Texts | Colors: one swatch per kind. Stock texts: per key, a text box for the player's own words (empty is the stock text) and **Mute** (the `muted` setting) |
+| Texts | Colors: one swatch per kind, from 5.6 Use the skin's color beside Numbers. Stock texts: per key, a text box for the player's own words (empty is the stock text) and **Mute** (the `muted` setting) |
 
 **The view** `BuildSettings` answers: `kind` (`"options"` or `"plain"`), `rows`, `preview` (the
 Label or FontString; nil in the one tab's layout from 4.5, which draws no sample line), `prefix` (the Options build's, nil off the host's route; from 3), and for the plain build `controls` (`{ row, control, sync }` each), `refresh`
@@ -721,6 +783,27 @@ until it takes this one: its settings have no rows and its writes go around its 
 calls `Suspend()` and its return `Resume()`; its profile change calls `Apply()`. The `addon` field is
 what finds the packs and the bundled faces under `Interface\AddOns\<addon>\libs\LibKa0s\`.
 
+### Moving onto the skin, once
+
+From 5.6 the defaults follow the skin, and a profile that never stored a look value follows with no
+step: AceDB stores no value equal to its default, and a host seeding from the rows gets the new
+defaults. Only a value a host wrote into profiles at a 4.5 default (a migration step, a copied
+table) stays behind, and moves **once**, from a step under the host's own per-profile record (not
+`skin.fullSkinReset`, already true wherever the v1.85.0 step ran, so `Skin.FollowOnce` with it
+moves nothing):
+
+```lua
+-- Combat Trail's step (core/Database.lua), once per profile, from Database:Init and OnProfileChanged:
+local keys = Callout:FollowKeys(profile.callout, "callout.")   -- e.g. { "callout.font", "callout.outline" }
+LibStub("LibKa0s-Skin-1.0").ResetToSkin(profile, keys)
+```
+
+The list, in order, each named only while `t` holds its `FOLLOW_FROM` value: **`font`** at
+`"Ka0s Oxanium SemiBold"` (written `"@skin"`, read as `"Skin font"`), **`outline`** at
+`"THICKOUTLINE"` (written `"@skin"`), **`glowColorFromSkin`** at `false` (written `true`). Nothing
+else moves: the shadow and number companions are new keys no profile stored, a meaning kind's stored
+4.5 default already reads as following, and a value the player picked stays.
+
 ### The degradation stub
 
 A host that degrades without the library (anti-pattern #47) stubs the **instance**, in a file that
@@ -750,7 +833,7 @@ NS.CalloutStub = {
 From 3 the instance has `SchemaRows`, so a stub written against 1.2 gains it; from 4 it has
 `SettingsTab` too, and from `Callout.lua` 3 `GetGlowColor`. Pin it with
 `T.assertSurfaceParity(liveInstance, NS.CalloutStub, "Callout instance")`;
-`members-4.5.json` lists the lib-level surface, which a host reads through `Callout:New` and the
+`members-5.6.json` lists the lib-level surface, which a host reads through `Callout:New` and the
 constants above.
 
 ## What is not here
