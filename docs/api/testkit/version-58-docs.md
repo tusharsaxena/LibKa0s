@@ -42,7 +42,9 @@ texture did, which is the Combat Trail class of regression the audit found in fo
   dropped first). Then a family the surface drew has to move on its own: `color` always, `font` and
   `shadow` in the first pass only, because the second holds the owner's fonts ignored and a face
   stays put there by rule. `texture` is not asked by default, because a white base under a token
-  tint is a correct texture that never moves.
+  tint is a correct texture that never moves. The cost: a plain Texture drawn from skin art (a
+  background, a window art path) that stops following still passes on its tint unless its surface
+  declares `expect = "texture"`, so every art-textured surface should declare it.
 - **Every StatusBar's fill.** Each StatusBar the surface holds (an object whose `GetObjectType`
   answers `"StatusBar"`, or a stand-in with no `GetObjectType` that has `SetStatusBarTexture`) has
   to draw its fill on a switch and move it. The fill is read off the bar's `SetStatusBarTexture` and
@@ -73,7 +75,8 @@ texture did, which is the Combat Trail class of regression the audit found in fo
 | `clear` | `true`: a StatusBar drawn clear (its `GetAlpha()` 0, or the alpha `GetStatusBarColor` answers 0) is left out of the fill check. A bar that is a value holder under a Texture the host draws over it |
 
 `W.factsProblems` rejects an `expect` or `hold` that is not a known family name or a non-empty list
-of them, and a `clear` that is not a boolean.
+of them, a family named in both `expect` and `hold` (`"surface ... names ... in both expect and
+hold"`: a family is asked to move or held fixed, never both), and a `clear` that is not a boolean.
 
 ### The library declares its own surfaces (97.18 a, e)
 
@@ -90,14 +93,15 @@ Charts bar row (each `expect = "texture"`), a TestStrip, a Footer, a DragHandle 
 |---|---|---|
 | `table` | a table constructor of exactly three or four components (`local NORMAL = { 1, 0.82, 0 }`), a trailing separator allowed, over several lines too | two numbers, a number above 1 or below 0 |
 | `keyed` | `{ r = .., g = .., b = .. }`, an `a` allowed, each a component (`C.MESSAGE = { r = 0.2, g = 0.75, b = 0.3 }`) | any other key in the table |
-| `assign` | three or four names assigned three or four components in one statement on one line (`local LINE_R, LINE_G, LINE_B = 1, 0.82, 0`), when a value is a fraction or the names end r, g, b (and a) | whole numbers to names that are no channels (`local rows, named, done = 0, 0, 0`) |
+| `assign` | three or four names assigned three or four components in one statement on one line (`local LINE_R, LINE_G, LINE_B = 1, 0.82, 0`), when a value is a fraction or the names end r, g, b (and a); a name ending in a digit or an underscore (`u1`, `x_`) ends in no channel letter | whole numbers to names that are no channels (`local rows, named, done = 0, 0, 0`, `local u1, v1, u2, v2 = 0, 0, 1, 1`) |
 | `return` | a `return` of three or four components with a fraction or a 1 among them (`return 0.45, 0.45, 0.5`, `return 1, 1, 1`), every `return` on the line read | `return 0, 0, 0` |
 | `call` | `RGBA(c, r, g, b, a)` with a literal at 2, 3 or 4 (`NS.RGBA(stored, 0.35, 0.55, 0.85, 1)`), through `V.GLOBAL_COLOR_ARGS`, which now carries `CreateColor` too | `RGBA(c, dr, dg, db, 1)` |
 
 A component is a numeric literal from 0 to 1. Two new color categories take only these new shapes,
 never a call, so no host row written against revision 57 goes stale: **`tex coords, inset or
-padding`** (the line, comment cut, names `coord`, `crop`, `inset`, `pad`, `margin` or `offset`, in
-any case) and **`fully clear color`** (a `table` whose fourth component, or a `keyed` table whose
+padding`** (the code on the line, its comment cut, names `coord`, `crop`, `inset`, `pad`, `margin`
+or `offset`, in any case, in a name or a string: `{ 0.07, 0.93, 0.07, 0.93 } -- texcoord` is still a
+color hit, `ICON_COORDS = { 0.07, 0.93, 0.07, 0.93 }` is not) and **`fully clear color`** (a `table` whose fourth component, or a `keyed` table whose
 `a`, is a literal 0). The existing categories read the new shapes as they read a call: a meaning
 color table, a chat line and the rest.
 

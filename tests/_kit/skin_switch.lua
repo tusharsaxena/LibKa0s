@@ -38,7 +38,8 @@
 -- a white base: every StatusBar the surface holds draws its fill (its SetStatusBarTexture, or a
 -- SetTexture or SetAtlas on the Texture GetStatusBarTexture answers) and that fill moves; a surface
 -- with `expect = "texture"` (or a list of families) asks the same of every texture it draws, and has
--- to draw one. A StatusBar drawn clear (alpha 0, or a bar color of alpha 0) is left out when the
+-- to draw one. A plain Texture drawn from skin art (a background, a window art path) is asked only
+-- under `expect = "texture"`: without it, art that stops following still passes on its tint. A StatusBar drawn clear (alpha 0, or a bar color of alpha 0) is left out when the
 -- surface says `clear = true`, and a family a ruling holds fixed is left out by `hold`. A string
 -- whose face moves while no color is set on it on a switch keeps the client's color under a skin's
 -- face, and is reported too; a SetFontObject or a |c escape in its text counts as a color set.
@@ -543,6 +544,12 @@ local function surfaceProblem(s, seen)
   for _, field in ipairs({ "expect", "hold" }) do
     local problem = familiesProblem(s, field)
     if problem then return problem end
+  end
+  local held = setOfList(s.hold)
+  for fam in pairs(setOfList(s.expect)) do
+    if held[fam] then
+      return ("surface %q names %q in both expect and hold: a family is asked to move or held fixed"):format(s.name, fam)
+    end
   end
   return nil
 end

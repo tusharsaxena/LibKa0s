@@ -356,6 +356,11 @@ test("skin values: counters and zero returns are no color (97.19)", function()
   assertEqual(#V.scan("if not g then return 0, 0, 0 end"), 0)
   assertEqual(one("local r, g, b = 1, 1, 1").shape, "assign", "whole numbers to channel names")
   assertEqual(one("return 1, 1, 1").shape, "return", "a white, which zeros never are")
+  -- red at 28c679f0: a name ending in a digit or an underscore raised in channelNames.
+  assertEqual(#V.scan("local a1, b2, c3 = 0, 0, 1"), 0, "names ending in a digit are no channels")
+  assertEqual(#V.scan("local u1, v1, u2, v2 = 0, 0, 1, 1"), 0)
+  assertEqual(#V.scan("local c1, c2, c3 = 0.2, 0.4, 0.6"), 1, "fractions are still a color")
+  assertEqual(#V.scan("local x_, y_, z_ = 0.5, 0.5, 0.2"), 1)
 end)
 
 test("skin values: a kept color of alpha 0 draws nothing, so no hit (97.19)", function()

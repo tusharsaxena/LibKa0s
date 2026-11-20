@@ -289,10 +289,12 @@ local function colorLike(values, ones)
 end
 
 --- Names that end r, g, b (and a) in that order, any case: `r, g, b`, `LINE_R, LINE_G, LINE_B`.
+--- A name that ends in a digit or an underscore (`u1`, `x_`) ends in no channel letter.
 local function channelNames(names)
   local want = { "r", "g", "b", "a" }
   for i, name in ipairs(names) do
-    if name:match("([%a])%s*$"):lower() ~= want[i] then return false end
+    local last = name:match("(%a)%s*$")
+    if not last or last:lower() ~= want[i] then return false end
   end
   return true
 end
@@ -471,7 +473,8 @@ local function isClearColor(hit, ctx)
 end
 
 --- What a table or a statement of components holds when it is no color: texture coordinates, an
---- inset or a padding, read off the line (kit revision 58). A call's colors are never this.
+--- inset or a padding, read off the code on the line: its comment is cut, so the word has to be in
+--- a name or a string there (kit revision 58). A call's colors are never this.
 local GEOMETRY_WORDS = { "coord", "crop", "inset", "pad", "margin", "offset" }
 local function isGeometry(hit)
   if hit.shape == "call" or hit.shape == "row" or hit.shape == "escape" then return false end

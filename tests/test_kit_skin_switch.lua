@@ -540,6 +540,8 @@ test("skin switch: expect, hold and clear take only what they can mean", functio
   assertTrue(problem({ hold = {} }):find("hold", 1, true) ~= nil)
   assertTrue(problem({ hold = 3 }):find("hold", 1, true) ~= nil)
   assertTrue(problem({ clear = "yes" }):find("clear", 1, true) ~= nil)
+  assertTrue(problem({ expect = "texture", hold = { "shadow", "texture" } })
+    :find("in both expect and hold", 1, true) ~= nil, "a family asked and held is a contradiction")
 end)
 
 -- ── the library's own surfaces (SD-LK-97.18 a, e) ────────────────────────────────────────────
