@@ -233,6 +233,15 @@ function lib.OwnerWarnings(owner, sink)
   lib.__ownerSinks[owner] = type(sink) == "function" and sink or nil
 end
 
+-- Tell `who`'s sink of `widget`, built with `owner` (nil or unregistered) inside `frame`.
+local function warnOwner(sink, widget, frame, who, owner, kind)
+  local name = type(frame.GetName) == "function" and frame:GetName() or nil
+  local given = owner == nil and "no skin owner" or ("the unregistered owner %q"):format(tostring(owner))
+  local ok, err = pcall(sink, ("LibKa0s: a %s was built with %s inside %s, which %s's skin paints; pass owner = %q"
+    .. " so it follows the skin"):format(tostring(kind), given, name or "an unnamed frame", who, who), widget, frame)
+  if not ok and type(geterrorhandler) == "function" then geterrorhandler()(err) end
+end
+
 --- The check each constructor runs on what it built (`kind` names it in the message). Internal.
 function lib.__checkOwner(widget, parent, owner, kind)
   if next(lib.__ownerSinks) == nil or type(widget) ~= "table" or lib.__ownerWarned[widget] then return end
@@ -243,11 +252,7 @@ function lib.__checkOwner(widget, parent, owner, kind)
   local sink = who and lib.__ownerSinks[who]
   if not sink then return end
   lib.__ownerWarned[widget] = true
-  local name = type(frame.GetName) == "function" and frame:GetName() or nil
-  local given = owner == nil and "no skin owner" or ("the unregistered owner %q"):format(tostring(owner))
-  local ok, err = pcall(sink, ("LibKa0s: a %s was built with %s inside %s, which %s's skin paints; pass owner = %q"
-    .. " so it follows the skin"):format(tostring(kind), given, name or "an unnamed frame", who, who), widget, frame)
-  if not ok and type(geterrorhandler) == "function" then geterrorhandler()(err) end
+  warnOwner(sink, widget, frame, who, owner, kind)
 end
 
 --- True while a control built with `panel` (`opts.panel == true`) sits on the settings page of an

@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-WaypointArrow-1.0` |
 | Files and minors | `WaypointArrow.lua` minor **3** · `WaypointArrowSettings.lua` minor **3** (paired on `WaypointArrow.lua`'s minor) |
-| Shipped in | unreleased |
+| Shipped in | v1.108.0 |
 | Status | **Current** |
 | Supersedes | [version 2.2](./version-2.2-docs.md) (v1.101.0 – v1.107.0) — the same surface, with a text whose color was the swatch's (or the class color) and whose shadow was the Font shadow row's under every skin: no `fontColorFromSkin` or `fontShadowFromSkin` (LibKa0s#97). |
 | Superseded by | — |

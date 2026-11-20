@@ -527,6 +527,21 @@ local function familiesProblem(s, field)
   return nil
 end
 
+-- `expect` and `hold`: each a known family or list of them, and no family in both.
+local function familyFieldsProblem(s)
+  for _, field in ipairs({ "expect", "hold" }) do
+    local problem = familiesProblem(s, field)
+    if problem then return problem end
+  end
+  local held = setOfList(s.hold)
+  for fam in pairs(setOfList(s.expect)) do
+    if held[fam] then
+      return ("surface %q names %q in both expect and hold: a family is asked to move or held fixed"):format(s.name, fam)
+    end
+  end
+  return nil
+end
+
 local function surfaceProblem(s, seen)
   if type(s) ~= "table" or type(s.name) ~= "string" or s.name == "" then return "a surface has no name" end
   if seen[s.name] then return ("surface %q is declared twice"):format(s.name) end
@@ -541,17 +556,7 @@ local function surfaceProblem(s, seen)
   if s.clear ~= nil and type(s.clear) ~= "boolean" then
     return ("surface %q has clear %q: true or nothing"):format(s.name, tostring(s.clear))
   end
-  for _, field in ipairs({ "expect", "hold" }) do
-    local problem = familiesProblem(s, field)
-    if problem then return problem end
-  end
-  local held = setOfList(s.hold)
-  for fam in pairs(setOfList(s.expect)) do
-    if held[fam] then
-      return ("surface %q names %q in both expect and hold: a family is asked to move or held fixed"):format(s.name, fam)
-    end
-  end
-  return nil
+  return familyFieldsProblem(s)
 end
 
 --- What is wrong with the host's facts, in reading order.

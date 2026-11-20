@@ -9,7 +9,7 @@
 | Payload | `testkit/`, the files version 57 lists; no file added |
 | Version | **58** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | unreleased (the release after v1.107.0) |
+| First released in | v1.108.0 |
 | Status | **Current** |
 | Supersedes | [version 57](version-57-docs.md) — the skin-switch test passed a surface when any one setter moved, so a bar whose color followed the skin passed with a texture that never did, and the typed-value scanner read colors only in calls, escapes and `{ text, r, g, b }` rows |
 | Superseded by | — |

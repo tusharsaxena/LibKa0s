@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **30** · `WidgetsDropdown.lua` **3** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **16** · `WidgetsDragHandleTip.lua` **3** · `WidgetsLineChart.lua` **8** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **2** |
-| Shipped in | unreleased |
+| Shipped in | v1.108.0 |
 | Status | **Current** |
 | Supersedes | [version 29.2.7.15.2.7.8.6.1.1](./version-29.2.7.15.2.7.8.6.1.1-docs.md) (v1.107.0) — a window's footer chained every mark, shown or hidden, so a hidden mark kept an empty slot and the left line was cut short of it (LibKa0s#94); a drag strip whose rect read secret fell back to a point into the strip, which a restricted tree refuses, so its tooltip did not render (LibKa0s#99); a data bar's border and its gloss kept Ka0s Default's under a skin that states its own, a submenu row's arrow stayed gray under every skin, and a menu measured a secret label, raising; nothing reported a widget built with no owner inside an owned window, and a host's `spec.edge` kept its first skin's color (LibKa0s#97). |
 | Superseded by | — |

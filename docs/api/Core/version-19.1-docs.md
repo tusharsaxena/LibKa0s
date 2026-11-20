@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **19** · `CorePixel.lua` minor **1** |
-| Shipped in | unreleased (the next release after v1.107.0) |
+| Shipped in | v1.108.0 |
 | Status | **Current** |
 | Supersedes | [version 18.1](./version-18.1-docs.md) (v1.105.0 – v1.107.0) — the same members; a host `skin` table never reached the owner's facade. |
 | Superseded by | — |

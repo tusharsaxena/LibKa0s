@@ -634,15 +634,20 @@ end
 --- The text's color as r, g, b, a: the player's class color while Use class color is on (and the
 --- client answers one), else from minor 3 the skin's HUD text color while Use the skin's color is on
 --- (and the facade answers one), else the swatch.
+local function plainRGBA(ok, r, g, b, a)   -- a call's answer while it is plain numbers (alpha 1 by default)
+  if ok and plainNumber(r) and plainNumber(g) and plainNumber(b) then return r, g, b, plainNumber(a) and a or 1 end
+end
+
 local function textColor(S)
   if setting(S, "useClassColorFont") and type(core.ClassColor) == "function" then
     local ok, r, g, b = pcall(core.ClassColor, "player")
-    if ok and plainNumber(r) and plainNumber(g) and plainNumber(b) then return r, g, b, 1 end
+    local cr, cg, cb, ca = plainRGBA(ok, r, g, b)
+    if cr then return cr, cg, cb, ca end
   end
   local facade = setting(S, "fontColorFromSkin") and skinFacade(S) or nil
   if facade and type(facade.HudTextColor) == "function" then
-    local ok, r, g, b, a = pcall(facade.HudTextColor)
-    if ok and plainNumber(r) and plainNumber(g) and plainNumber(b) then return r, g, b, plainNumber(a) and a or 1 end
+    local r, g, b, a = plainRGBA(pcall(facade.HudTextColor))
+    if r then return r, g, b, a end
   end
   local c = setting(S, "fontColor")
   local r, g, b = rgbOf(c)

@@ -986,9 +986,10 @@ local function shellRegions(rec, frame, T)
   P.fill(rec, t, T, "win.bg")
 end
 
--- The window's body and title face. A frame with a backdrop: Core.ApplySkin with the skin's table, its
--- edge clear (shellEdges draws it); a frame with none: the fill region. Then `frame.title`'s font.
-local function shellBody(owner, rec, frame, T, style)
+-- The window, the host's edge not kept: the stock art faded, then a frame with a backdrop Core.ApplySkin
+-- (its edge clear), one with none the fill region; `frame.title`'s font, the edge and the bands.
+local function shellBody(owner, rec, frame, T, opts, style)
+  if rec.regions.stock then P.fadeAll(rec, P.stockRegions(frame, opts)) end
   local c = core()
   if not P.hasBackdrop(frame) then
     shellRegions(rec, frame, T)
@@ -997,6 +998,8 @@ local function shellBody(owner, rec, frame, T, style)
   end
   local title = rawget(frame, "title")
   if P.isFS(title) then P.font(owner, rec, title, "title") end
+  shellEdges(rec, frame, T, opts, style)
+  shellBands(rec, frame, T, opts, style == "flat" and T["win.borderSize"] or 1)
 end
 
 -- The slots `opts.tokens` remaps on a window (minor 11), and the fill slots among every box's.
@@ -1038,10 +1041,7 @@ prim.Shell = function(owner, frame, opts)
     if opts.noBands then P.hide(rec, "grad"); P.hide(rec, "art")
     else shellBands(rec, frame, T, opts, tonumber(opts.inset) or 1) end
   else
-    if rec.regions.stock then P.fadeAll(rec, P.stockRegions(frame, opts)) end
-    shellBody(owner, rec, frame, T, style)
-    shellEdges(rec, frame, T, opts, style)
-    shellBands(rec, frame, T, opts, style == "flat" and T["win.borderSize"] or 1)
+    shellBody(owner, rec, frame, T, opts, style)
   end
   if P.layBand then P.layBand(owner, rec, frame, T) end   -- S.Band's holder (SkinPaintExtras minor 17)
 end

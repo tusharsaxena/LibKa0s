@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Callout-1.0` |
 | Files and minors | `Callout.lua` minor **5** · `CalloutSettings.lua` minor **6** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2, minors 4 to 6 at 3) |
-| Shipped in | unreleased |
+| Shipped in | v1.108.0 |
 | Status | **Current** |
 | Supersedes | [version 4.5](./version-4.5-docs.md) (v1.102.0) — a drag strip that carried no close mark and whose settings mark opened only the `skin` owner's registered opener (the descriptor had no `onClose` or `onSettings`, LibKa0s#100), and a look that kept the owner's L17 settings under every skin (LibKa0s#97). This key was 5.5 on the branch until `SD-LK-97` Batch C moved `CalloutSettings.lua`; 5.5 never shipped |
 | Superseded by | — |

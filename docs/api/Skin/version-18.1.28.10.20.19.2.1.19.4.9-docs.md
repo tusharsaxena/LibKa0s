@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **18** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **28** · `SkinDefsOthers.lua` **10** · `SkinPaint.lua` **20** · `SkinPaintExtras.lua` **19** · `SkinPaintHud.lua` **2** · `SkinAceConfirm.lua` **1** · `SkinPaintControls.lua` **19** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
-| Shipped in | unreleased |
+| Shipped in | v1.108.0 |
 | Status | **Current** |
 | Supersedes | [version 18.1.28.10.19.19.1.1.18.4.9](./version-18.1.28.10.19.19.1.1.18.4.9-docs.md) (v1.105.0 – v1.107.0) — the same surface: `S.BarGloss` left a fill Texture alone, so no bar of data drawn as a Texture (the Widgets Bar, a Charts bar) wore Glass's gloss, and `S.ApplyBarFill` set only a color on a StatusBar with no texture, which then drew nothing, and `S.Shell` had no way to keep a host's edge, so a host-skinned window never wore its skin's gradient or art (LibKa0s#97). |
 | Superseded by | — |

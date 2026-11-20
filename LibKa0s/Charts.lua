@@ -417,6 +417,12 @@ local function mergedFonts(given)
   return out
 end
 
+-- Widgets' owner check (W.OwnerWarnings) on a context built with no registered owner.
+local function checkOwner(ctx, content, owner)
+  local W = LibStub("LibKa0s-Widgets-1.0", true)
+  if W and type(W.__checkOwner) == "function" then W.__checkOwner(ctx, content, owner, "chart context") end
+end
+
 -- ── the context ──────────────────────────────────────────────────────────────────────────────
 
 -- Published for ChartsRender.lua, which adds the factories, the chrome and the renderers.
@@ -452,8 +458,7 @@ function lib:New(content, host)
     plainSeams(ctx, host)
   end
   syncColors(ctx)
-  local W = LibStub("LibKa0s-Widgets-1.0", true)
-  if W and type(W.__checkOwner) == "function" then W.__checkOwner(ctx, content, host.owner, "chart context") end
+  checkOwner(ctx, content, host.owner)
   return ctx
 end
 

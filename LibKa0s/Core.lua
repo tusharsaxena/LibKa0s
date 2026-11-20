@@ -210,39 +210,8 @@ function lib.__SkinFacade(owner)
   return Skin:For(owner)
 end
 
---- Wear the skin. A no-op on a frame with no SetBackdrop — a frame created without the
---- BackdropTemplate inherit is undecorated, not broken, and a missing skin is not worth erroring
---- over in the middle of building someone's window.
----
---- `skin` is optional and defaults to `lib.SKIN`. It exists so a host that overrides the skin —
---- DebugLog's descriptor `skin` field is the only one today — reaches THIS implementation rather
---- than a second copy of the same five calls somewhere else, which is how a title tint ends up
---- applied on one window and not its twin.
----
---- Every step past the backdrop is guarded on the key being present, so a caller passing a plain
---- WoW backdrop table (no `bg`, no `innerBorder`, …) gets a plain backdrop rather than a raise
---- midway through building a window that is not yet hidden or Esc-wired.
----
---- `owner` (minor 13) is optional: an addon folder name. When it names a REGISTERED skin owner
---- (`LibKa0s-Skin-1.0`'s `IsOwner`) and `skin` is absent, the window is handed to that owner's
---- facade after this paint (`S.Shell(frame)`), so it wears the owner's skin and repaints with it.
---- Any other call, an unregistered name or a missing Skin major included, is minor 12's, call for
---- call. A host's own `skin` table wins over the owner.
----
---- `skin.skinBands` (minor 19), true on a host table whose `bg` follows the owner's `win.bg`: the
---- owner's `S.Shell` with `keepEdge` keeps the host's backdrop, fill and edge and draws the skin's
---- gradient and art inside `skin.insets.left`, live. A later table without it hides them again.
-function lib.ApplySkin(frame, skin, owner)
-  if not frame or not frame.SetBackdrop then return end
-  local S = (skin == nil or type(skin) == "table") and lib.__SkinFacade(owner) or nil
-  local host = type(skin) == "table" and skin or nil
-  skin = host or lib.SKIN
-
-  applyBackdrop(frame, skin)
-  applyInnerBorder(frame, skin)
-  applyAccents(frame, skin)
-  hideHeaderRule(frame)
-  if not S then return end
+-- ApplySkin's hand-off to the owner's facade: the window's S.Shell, or keepEdge's bands (minor 19).
+local function ownerShell(S, frame, host, owner)
   local Skin = LibStub("LibKa0s-Skin-1.0", true)
   local rec = Skin and type(Skin.painted) == "table" and Skin.painted[frame]
   local call = rec and rec.owner == owner and rec.calls.Shell
@@ -251,6 +220,38 @@ function lib.ApplySkin(frame, skin, owner)
   local inset = tonumber(type(host.insets) == "table" and host.insets.left) or 1
   if host.skinBands == true then return S.Shell(frame, { keepEdge = true, noTopBar = true, inset = inset }) end
   if kept then S.Shell(frame, { keepEdge = true, noTopBar = true, noBands = true }) end
+end
+
+--- Wear the skin. A no-op on a frame with no SetBackdrop — a frame created without the BackdropTemplate
+--- inherit is undecorated, not broken, and a missing skin is not worth erroring over mid-build.
+---
+--- `skin` is optional and defaults to `lib.SKIN`. It exists so a host that overrides the skin — DebugLog's
+--- descriptor `skin` field is the only one today — reaches THIS implementation rather than a second copy
+--- of the same five calls somewhere else, which is how a title tint ends up on one window and not its twin.
+---
+--- Every step past the backdrop is guarded on the key being present, so a caller passing a plain
+--- WoW backdrop table (no `bg`, no `innerBorder`, …) gets a plain backdrop rather than a raise
+--- midway through building a window that is not yet hidden or Esc-wired.
+---
+--- `owner` (minor 13) is optional: an addon folder name. When it names a REGISTERED skin owner
+--- (`LibKa0s-Skin-1.0`'s `IsOwner`) and `skin` is absent, the window is handed to that owner's
+--- facade after this paint (`S.Shell(frame)`), so it wears the owner's skin and repaints with it.
+--- Any other call, an unregistered name or a missing Skin major included, is minor 12's, call for call.
+--- A host's own `skin` table wins over the owner.
+---
+--- `skin.skinBands` (minor 19), on a host table whose `bg` follows `win.bg`: the owner's `S.Shell` with
+--- `keepEdge` keeps the host's edge and draws the gradient and art inside `skin.insets.left`, live; a
+--- later table without it hides them.
+function lib.ApplySkin(frame, skin, owner)
+  if not frame or not frame.SetBackdrop then return end
+  local S = (skin == nil or type(skin) == "table") and lib.__SkinFacade(owner) or nil
+  local host = type(skin) == "table" and skin or nil
+  skin = host or lib.SKIN
+  applyBackdrop(frame, skin)
+  applyInnerBorder(frame, skin)
+  applyAccents(frame, skin)
+  hideHeaderRule(frame)
+  if S then return ownerShell(S, frame, host, owner) end
 end
 
 -- What the close control is drawn at, and how much of that slot the art fills. The slot is the

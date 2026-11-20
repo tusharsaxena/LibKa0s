@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Charts-1.0` |
 | Files and minors | `Charts.lua` minor **3** · `ChartsRender.lua` minor **2** |
-| Shipped in | unreleased |
+| Shipped in | v1.108.0 |
 | Status | **Current** |
 | Supersedes | [version 2.1](./version-2.1-docs.md) (v1.105.0 – v1.107.0) — a host's `fill` stood in for a bar of data when it named no `barFill`, so the bars were drawn flat under every skin, and no chart bar wore the skin's gloss (LibKa0s#97). |
 | Superseded by | — |

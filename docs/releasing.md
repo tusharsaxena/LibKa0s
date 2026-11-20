@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.107.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.108.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -407,6 +407,19 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    with a strip declares `settings` on its `LibKa0s icons:` line; a host's strip `tooltipPlace` stops
    placing and is deleted, and every strip passes `onClose` (the run's `AF-STRIP-*`). A suite that
    pinned strip literals or the hook re-pins them (the CHANGELOG's v1.107.0 block lists them).
+   v1.108.0 (Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/`, LibKa0s#94, #97, #99,
+   #100) adds no payload file, no `NEEDS_*` floor and kit revision 58. Seven majors move (Core 19.1,
+   Widgets 30.3.7.16.3.8.8.6.1.2, Callout 5.6, WaypointArrow 3.3, Charts 3.2, Skin
+   18.1.28.10.20.19.2.1.19.4.9, Options 38.5.46.3.7.2.9.17.3.1.4.20.13.7.5.8.7.12.1.1.1.4); Callout
+   gains `FROM_SKIN`, `MEANING`, `FOLLOW_FROM`, `FollowKeys` and `MoveToSkin`, Widgets
+   `OwnerWarnings`. **It changes defaults (LibKa0s#97):** every composed font, border and bar group,
+   swatch and shadow starts on the skin, a `W.Bar`'s border and gloss, a Charts bar of data, the
+   call-out's look and the waypoint arrow's text follow the skin, so a host's look moves from the
+   re-vendor alone wherever it kept a Ka0s pick by leaving an option out; an owner-sanctioned
+   override opts out (`fromSkin = false` and the per-part opt-outs). Kit revision 58's skin guards
+   may turn a host's suite red, which is intended. The CHANGELOG's v1.108.0 block lists, per host,
+   what each owes (the companions' AceDB defaults, one-time moves through `Skin.ResetToSkin` or
+   `Callout:MoveToSkin`, re-pins), and each is a re-vendor smoke line.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not. DpsRace left the loop and the table's Consumers column on 2026-11-19 (`AF-DR-LK` of
    Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`): it is retired, merged into Combat Trail, and is not a consumer.
@@ -476,7 +489,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.107.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.108.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
