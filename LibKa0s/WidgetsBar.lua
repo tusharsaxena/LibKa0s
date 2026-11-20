@@ -49,7 +49,8 @@ if not lib then return end
 -- follows the skin unless the host says otherwise (`borderFromSkin` defaults true; `borderShow`
 -- false stays the no-border default under a skin of None), and a data fill drawn on the skin's
 -- texture wears the skin's gloss (S.BarGloss on the fill Texture, `glossFromSkin` default true),
--- shown with the fill and following a switch.
+-- shown with the fill and following a switch. Still minor 2 (SD-LK-97.1): a bar runs the shell's
+-- owner check (Widgets.lua's THE OWNER CHECK).
 local BAR_MINOR = 2
 -- Paired on the SHELL's minor as well as this file's own, as WidgetsCopyWindow.lua is.
 if lib.__barMinor and lib.__barMinor >= BAR_MINOR
@@ -596,6 +597,8 @@ function lib.Bar(parent, opts)
   bar:ApplyStyle(styleFrom(opts))
   watchOwner(bar)
   bar:SetScript("OnSizeChanged", function(self) self:Layout() end)
+  -- Still minor 2 (SD-LK-97.1): the shell's owner check (Widgets.lua's THE OWNER CHECK).
+  if type(lib.__checkOwner) == "function" then lib.__checkOwner(bar, parent, bar.owner, "Bar") end
   return bar
 end
 

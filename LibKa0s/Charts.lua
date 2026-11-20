@@ -96,7 +96,9 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- through `barFill`. With no host barFill an owner's context paints S.BarTexture and the skin's
 -- gloss (S.BarGloss on the Texture), so a window chart bar and a HUD bar match under Glass; an
 -- owner-less one paints Ka0s Default's bar texture where the Skin major is loaded. A host's `fill`
--- no longer stands in for a bar of data, which drew it flat under every skin.
+-- no longer stands in for a bar of data, which drew it flat under every skin. Still minor 3
+-- (SD-LK-97.1): a context built on `content` runs LibKa0s-Widgets-1.0's owner check (Widgets.lua's
+-- THE OWNER CHECK, read at call time), so a host that sinks it hears of an owner-less chart.
 local MAJOR, MINOR = "LibKa0s-Charts-1.0", 3
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
@@ -450,6 +452,8 @@ function lib:New(content, host)
     plainSeams(ctx, host)
   end
   syncColors(ctx)
+  local W = LibStub("LibKa0s-Widgets-1.0", true)
+  if W and type(W.__checkOwner) == "function" then W.__checkOwner(ctx, content, host.owner, "chart context") end
   return ctx
 end
 

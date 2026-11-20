@@ -12,7 +12,7 @@
 | Shipped in | v1.105.0 |
 | Status | Superseded |
 | Supersedes | [version 18.1.27.9.19.19.1.1.17.4.9](./version-18.1.27.9.19.19.1.1.17.4.9-docs.md) (v1.97.0 – v1.104.0) — the same surface, with Ka0s Default's fainter rows, seven skins' `icon.hot` within 10 L* of their rest or their heading, and eight skins' section-header bands sitting among their rows. |
-| Superseded by | [version 18.1.28.10.19.19.2.1.19.4.9](./version-18.1.28.10.19.19.2.1.19.4.9-docs.md) |
+| Superseded by | [version 18.1.28.10.20.19.2.1.19.4.9](./version-18.1.28.10.20.19.2.1.19.4.9-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). Core members are used optionally, resolved at call time: `SkinEUI.lua`'s `SafeRegisterEvent` (with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner`), and from `SkinPaintExtras.lua` 18 Core 16's pixel edges (with a Core that lacks them `P.px` answers its `n` and no edge is re-sized on a scale change) |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 18, SkinOwnerTokens = 1, SkinDefs = 28, SkinDefsOthers = 10, SkinPaint = 19, SkinPaintExtras = 19, SkinPaintHud = 1, SkinAceConfirm = 1, SkinPaintControls = 18, SkinEUI = 4, SkinAce = 9 }` |
 
@@ -2219,6 +2219,6 @@ the LibStub race later keeps every owner, record and facade; the resolve cache a
 - `thirdPartySkinAddons`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
 - `thirdPartySkinsOff`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
 
-## Moving to version 18.1.28.10.19.19.2.1.19.4.9
+## Moving to version 18.1.28.10.20.19.2.1.19.4.9
 
-Nothing breaks, and no member moves (`SD-LK-97` Batch B, LibKa0s#97). `S.BarGloss` takes a bar's fill Texture as well as a StatusBar (SkinPaintHud 2), its gloss a region of the Texture's parent, and both shapes answer the gloss; `S.ApplyBarFill` gives a StatusBar with no texture the skin's `bar.texture`, recorded (SkinPaintControls 19). See [version 18.1.28.10.19.19.2.1.19.4.9](./version-18.1.28.10.19.19.2.1.19.4.9-docs.md). A degradation facade needs no change.
+Nothing breaks, and no member moves (`SD-LK-97` Batch B, LibKa0s#97). `S.BarGloss` takes a bar's fill Texture as well as a StatusBar (SkinPaintHud 2), its gloss a region of the Texture's parent, and both shapes answer the gloss; `S.ApplyBarFill` gives a StatusBar with no texture the skin's `bar.texture`, recorded (SkinPaintControls 19); and `S.Shell` takes `keepEdge` and `noBands` (SkinPaint 20, Batch D), which a window painted without them never sees. See [version 18.1.28.10.20.19.2.1.19.4.9](./version-18.1.28.10.20.19.2.1.19.4.9-docs.md). A degradation facade needs no change.

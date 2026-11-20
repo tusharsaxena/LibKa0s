@@ -38,7 +38,8 @@ local DROPDOWN_MINOR = 3
 -- dropdown's arrow is, and the gray back for an owner-less open (SD-LK-97.4); and the menu measures
 -- no secret label and reads no width that answers a secret, so a host whose labels may be secret
 -- (Multi Meters' segment picker under the Combat restriction) opens the skinned menu at its
--- `opts.width`, where it fell back to the client's (the owner's U-21).
+-- `opts.width`, where it fell back to the client's (the owner's U-21). Still minor 3 (SD-LK-97.1):
+-- a dropdown runs the shell's owner check (Widgets.lua's THE OWNER CHECK).
 -- Paired on the SHELL's minor as well as this file's own, as WidgetsCopyWindow.lua is.
 if lib.__dropdownMinor and lib.__dropdownMinor >= DROPDOWN_MINOR
   and lib.__dropdownShellMinor == lib.MINOR then return end
@@ -821,7 +822,10 @@ end
 ---                             for a dropdown on the owner's settings page (THE SCOPE SWITCHES)
 --- @return table  the dropdown
 function lib.Dropdown(parent, width, opts)
-  return MakeDropdown(parent, width, opts)
+  local dd = MakeDropdown(parent, width, opts)
+  -- Still minor 3 (SD-LK-97.1): the shell's owner check (Widgets.lua's THE OWNER CHECK).
+  if type(lib.__checkOwner) == "function" then lib.__checkOwner(dd, parent, opts and opts.owner, "Dropdown") end
+  return dd
 end
 
 --- Open the shared popup menu on `rows` (minor 21), a dropdown's options, each with its row options

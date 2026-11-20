@@ -1,4 +1,4 @@
-# `LibKa0s-Skin-1.0` — version 18.1.28.10.19.19.2.1.19.4.9
+# `LibKa0s-Skin-1.0` — version 18.1.28.10.20.19.2.1.19.4.9
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Skin surface points here rather than restating it. It describes the
@@ -8,15 +8,27 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
-| Files and minors | `Skin.lua` **18** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **28** · `SkinDefsOthers.lua` **10** · `SkinPaint.lua` **19** · `SkinPaintExtras.lua` **19** · `SkinPaintHud.lua` **2** · `SkinAceConfirm.lua` **1** · `SkinPaintControls.lua` **19** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
+| Files and minors | `Skin.lua` **18** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **28** · `SkinDefsOthers.lua` **10** · `SkinPaint.lua` **20** · `SkinPaintExtras.lua` **19** · `SkinPaintHud.lua` **2** · `SkinAceConfirm.lua` **1** · `SkinPaintControls.lua` **19** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
 | Shipped in | unreleased |
 | Status | **Current** |
-| Supersedes | [version 18.1.28.10.19.19.1.1.18.4.9](./version-18.1.28.10.19.19.1.1.18.4.9-docs.md) (v1.105.0 – v1.107.0) — the same surface: `S.BarGloss` left a fill Texture alone, so no bar of data drawn as a Texture (the Widgets Bar, a Charts bar) wore Glass's gloss, and `S.ApplyBarFill` set only a color on a StatusBar with no texture, which then drew nothing (LibKa0s#97). |
+| Supersedes | [version 18.1.28.10.19.19.1.1.18.4.9](./version-18.1.28.10.19.19.1.1.18.4.9-docs.md) (v1.105.0 – v1.107.0) — the same surface: `S.BarGloss` left a fill Texture alone, so no bar of data drawn as a Texture (the Widgets Bar, a Charts bar) wore Glass's gloss, and `S.ApplyBarFill` set only a color on a StatusBar with no texture, which then drew nothing, and `S.Shell` had no way to keep a host's edge, so a host-skinned window never wore its skin's gradient or art (LibKa0s#97). |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). Core members are used optionally, resolved at call time: `SkinEUI.lua`'s `SafeRegisterEvent` (with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner`), and from `SkinPaintExtras.lua` 18 Core 16's pixel edges (with a Core that lacks them `P.px` answers its `n` and no edge is re-sized on a scale change) |
-| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 18, SkinOwnerTokens = 1, SkinDefs = 28, SkinDefsOthers = 10, SkinPaint = 19, SkinPaintExtras = 19, SkinPaintHud = 2, SkinAceConfirm = 1, SkinPaintControls = 19, SkinEUI = 4, SkinAce = 9 }` |
+| Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 18, SkinOwnerTokens = 1, SkinDefs = 28, SkinDefsOthers = 10, SkinPaint = 20, SkinPaintExtras = 19, SkinPaintHud = 2, SkinAceConfirm = 1, SkinPaintControls = 19, SkinEUI = 4, SkinAce = 9 }` |
 
-## What changed at this version: a bar of data drawn as a Texture wears the gloss, and ApplyBarFill draws a texture-less bar (SkinPaintHud minor 2, SkinPaintControls minor 19)
+## What changed at this version: a host's window keeps its edge and wears the skin's bands (SkinPaint minor 20)
+
+LibKa0s#97 (`SD-LK-97` Batch D of Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/`; the audit's row SD-LK-97.16, which closes Quick Comms' pad-window GAP). No member and no token is added, and no function: two `S.Shell` options.
+
+- **`opts.keepEdge`.** The window's backdrop, its fill, its edge and Core's inner rule are the host's: `S.Shell` paints no body and no edge (it hides an edge and inner rule of its own an earlier paint drew) and draws only the bands, the window gradient (`win.bgTop` / `win.bgBottom`) and the tiled art (`win.bgTexture`), plus the top and bottom bars as `noTopBar` and `bottomBar` say, `opts.inset` (default 1) in from the frame's edge, at their usual sublevels. Stock art is not faded. Recorded as any Shell is, so a switch repaints the bands and never the host's edge.
+- **`opts.noBands`**, with `keepEdge`: the gradient and the art are hidden. `Core.ApplySkin` (Core minor 19) uses the pair: a host `skin` table with `skinBands = true` and a registered owner is handed to `S.Shell(frame, { keepEdge = true, noTopBar = true, inset = skin.insets.left })`, and a later table without it, on a frame so painted, to `{ keepEdge = true, noTopBar = true, noBands = true }`; a later call with no table hands it `{}`, so a bare call's repeat of the recorded opts (minor 18) never keeps `keepEdge` on a window the owner now paints whole.
+- **Unchanged.** A Shell without `keepEdge` paints what minor 19 painted.
+
+`tests/test_skin_follow_shells.lua`, red under SkinPaint 19 and Core 18. The file stays at 1048 lines: its header notes for minors 4 to 8 were condensed (the window block's peel trigger, 1050 lines or a minor that adds a function, does not fire).
+
+**What a consumer owes at its re-vendor:** nothing. A degradation facade's `Shell` may ignore both options.
+
+## What changed at version 18.1.28.10.19.19.2.1.19.4.9: a bar of data drawn as a Texture wears the gloss, and ApplyBarFill draws a texture-less bar (SkinPaintHud minor 2, SkinPaintControls minor 19)
 
 LibKa0s#97 (`SD-LK-97` Batch B of Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/`; the audit `docs/2026-11-20-SKIN_DEFAULTS_AUDIT/`, rows SD-LK-97.3 and SD-LK-97.17; the owner's ruling R-2: under any skin every skinnable element takes the skin's value by default). No member, no token and no facade entry is added, removed or renamed, so `Skin.lua` stays at 18 and a host's Skin facade owes nothing.
 
@@ -1377,7 +1389,7 @@ skins' own (`win.bgTexture`, `tab.texture`, `tab.onTexture`,
 
 | Primitive | Paints | Tokens |
 |---|---|---|
-| `Shell(frame, opts)` | A window. On a backdrop frame, `Core.ApplySkin` with the skin's table (the backdrop with its own edge clear, `frame.title`'s color; `frame.divider` hidden since `R4-SEP`, no line under the title in any skin); a frame with no backdrop gets its fill as a region. On any frame the edge (`win.border*`, flat, bevel or nine-slice) and the inner rule (`win.inner`, 1px inside the edge) on the edge holder, over the window's children (SkinPaint minor 9; Core's own inner rule is cleared and given back on unpaint), the window gradient, the tiled art, the top bar (unless `opts.noTopBar`; on a backdrop frame above the backdrop's fill, BACKGROUND 3, since SkinPaint minor 18) and the bottom bar (`opts.bottomBar`, true or a height), and the title font on `frame.title`. A call with no opts on a frame its owner painted with an opts table repeats them (minor 18). `opts.noBorder` draws no edge and no inner rule. `opts.tokens` remaps `bg`, `border`, `inner`, `top`, `bottom`, `text`, `divider` (*The slot remap*, below; SkinPaint minor 11). | `win.*`, `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.height`, `divider`, `foot.bg`, `font.title` |
+| `Shell(frame, opts)` | A window. On a backdrop frame, `Core.ApplySkin` with the skin's table (the backdrop with its own edge clear, `frame.title`'s color; `frame.divider` hidden since `R4-SEP`, no line under the title in any skin); a frame with no backdrop gets its fill as a region. On any frame the edge (`win.border*`, flat, bevel or nine-slice) and the inner rule (`win.inner`, 1px inside the edge) on the edge holder, over the window's children (SkinPaint minor 9; Core's own inner rule is cleared and given back on unpaint), the window gradient, the tiled art, the top bar (unless `opts.noTopBar`; on a backdrop frame above the backdrop's fill, BACKGROUND 3, since SkinPaint minor 18) and the bottom bar (`opts.bottomBar`, true or a height), and the title font on `frame.title`. A call with no opts on a frame its owner painted with an opts table repeats them (minor 18). `opts.noBorder` draws no edge and no inner rule. `opts.keepEdge` (minor 20) leaves the backdrop, fill and edge to the host and draws only the bands, `opts.inset` in; `opts.noBands` with it hides the gradient and art. `opts.tokens` remaps `bg`, `border`, `inner`, `top`, `bottom`, `text`, `divider` (*The slot remap*, below; SkinPaint minor 11). | `win.*`, `title.bg` / `bgTop` / `bgBottom`, `title.text`, `title.height`, `divider`, `foot.bg`, `font.title` |
 | `Panel(frame, opts)` | A flat panel; `opts.inset` paints it as an inset, `opts.popup` as a floating box in `popup.*`, `opts.noBg` / `opts.noBorder` leave out a half, `opts.nav` recolors the backdrop the frame already wears, or boxes it when the skin states `nav.borderStyle`. `opts.tokens` remaps `bg` and `border` (SkinPaint minor 11). | `panel.bg`, `panel.border`; `nav.bg`, `nav.border`, `nav.borderStyle`, `nav.borderSize` |
 | `Inset(frame, opts)` | A recessed area. `opts.tokens` remaps `bg` and `border` (SkinPaint minor 11). | `input.bg`, `input.border`, `input.borderStyle`, `input.borderSize` |
 | `FadeRegions(frame, ...)` | Fades every texture region of the frame (and of each further frame) that no primitive made. Under every skin, Ka0s Default included (SkinPaint minor 6). | none |

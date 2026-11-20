@@ -26,6 +26,8 @@
 
 `tests/test_skin_follow_bars.lua` (the Charts cases) and `tests/test_charts_host.lua`'s host-fill case, re-pinned, red under 2.
 
+**Still minor 3: an owner-less context in an owned window is reported (`SD-LK-97` Batch D, 97.1).** `Charts:New(content, host)` runs `LibKa0s-Widgets-1.0`'s owner check on `content` (read at call time; a payload without it checks nothing): with a host's sink registered through `W.OwnerWarnings(owner, sink)`, a context built with no registered `host.owner` under a frame that owner's skin paints is reported to it once, as "a chart context" (the Widgets document's *An owner-less widget in an owned window is reported*). Nothing is drawn differently. Combat Trail's Insights contexts (`SD-SK-CT.1`) are the case it names. `tests/test_skin_follow_shells.lua`.
+
 **What a consumer owes at its re-vendor:** a host that passed `fill` and no `barFill` sees its bars of data drawn in a bar texture (Ka0s Default's with no owner, the owner's with one) where they were flat; a host that wants them flat passes `barFill = fill`. Ka0s Combat Trail still owes `SD-SK-CT.1` (pass its owner and a `barFill` through its own skin). Loot History and Drop Watcher (an owner, or a `barFill`) owe nothing.
 
 ## What changed at version 2.1: a mark's tooltip opens beside the window group (`LK-92B`, LibKa0s#92)

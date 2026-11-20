@@ -2222,6 +2222,21 @@ Total.
 - arrow follow: the Text block carries the color and shadow companions at their rows' paths plus FromSkin
 - callout follow: the suite releases its bench
 
+### test_skin_follow_shells.lua (12)
+
+- owner check: an owner-less dropdown inside an owned window is reported to its owner (97.1)
+- owner check: every Widgets constructor and a chart context run it (97.1)
+- owner check: an owned widget, a widget outside the window, and a second build say nothing (97.1)
+- owner check: with no sink nothing is walked, and another owner's sink is not told (97.1)
+- owner check: a raising sink costs one error, never the constructor (97.1)
+- drag handle: a host's spec.edge is called again with the new handle.edge (97.5)
+- drag handle: a raising edge painter costs one error and the repaint finishes (97.5)
+- host bands: skinBands draws the owner's gradient under the host's own edge (97.16)
+- host bands: the art band, a switch, and a host table without skinBands (97.16)
+- host bands: a later ApplySkin with no host table is the owner's whole Shell again (97.16)
+- host bands: no skinBands, an unregistered owner or no owner is minor 18's paint (97.16)
+- skin follow shells: the suite releases its bench
+
 ### test_header_buttons.lua (25)
 
 - header buttons: Core's registry records an opener, answers HasSettings, and OpenSettings calls it
@@ -5803,6 +5818,7 @@ Total.
 | test_widgets_bar.lua | 24 |
 | test_skin_follow_bars.lua | 15 |
 | test_skin_follow_callout.lua | 22 |
+| test_skin_follow_shells.lua | 12 |
 | test_header_buttons.lua | 25 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
@@ -5952,4 +5968,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5022** |
+| **Total** | **5034** |
