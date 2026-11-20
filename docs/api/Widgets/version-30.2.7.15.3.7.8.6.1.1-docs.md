@@ -1,4 +1,4 @@
-# `LibKa0s-Widgets-1.0` — version 30.2.7.15.2.7.8.6.1.1
+# `LibKa0s-Widgets-1.0` — version 30.2.7.15.3.7.8.6.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Widgets surface points here rather than restating it. It describes the
@@ -8,17 +8,32 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
-| Files and minors | `Widgets.lua` **30** · `WidgetsDropdown.lua` **2** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **15** · `WidgetsDragHandleTip.lua` **2** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **1** |
+| Files and minors | `Widgets.lua` **30** · `WidgetsDropdown.lua` **2** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **15** · `WidgetsDragHandleTip.lua` **3** · `WidgetsLineChart.lua` **7** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **1** |
 | Shipped in | unreleased |
 | Status | **Current** |
-| Supersedes | [version 29.2.7.15.2.7.8.6.1.1](./version-29.2.7.15.2.7.8.6.1.1-docs.md) (v1.107.0) — a window's footer chained every mark, shown or hidden, so a hidden mark kept an empty slot and the left line was cut short of it (LibKa0s#94). |
+| Supersedes | [version 29.2.7.15.2.7.8.6.1.1](./version-29.2.7.15.2.7.8.6.1.1-docs.md) (v1.107.0) — a window's footer chained every mark, shown or hidden, so a hidden mark kept an empty slot and the left line was cut short of it (LibKa0s#94); a drag strip whose rect read secret fell back to a point into the strip, which a restricted tree refuses, so its tooltip did not render (LibKa0s#99). |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
-| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 30, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 15, WidgetsDragHandleTip = 2, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 30, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 15, WidgetsDragHandleTip = 3, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 1 }` |
 
-## What changed at this version: the footer lays only its shown marks (`SD-LK-94`, LibKa0s#94)
+## What changed at this version: the footer lays only its shown marks, and a secret strip's tooltip opens above its nearest readable ancestor (`SD-LK-94`, `SD-LK-99`, LibKa0s#94, LibKa0s#99)
 
-Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/` (`SD-LK-94`). `Widgets.lua` moves 29 -> **30**; every other file stays at its minor. No member, no `FOOTER` figure and no `opts` field changes; the footer gains one method.
+Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/` (`SD-LK-94`, `SD-LK-99`). `Widgets.lua` moves 29 -> **30** and `WidgetsDragHandleTip.lua` 2 -> **3**; every other file stays at its minor. No member, no `FOOTER` or `DRAG_HANDLE` figure, no spec key and no `opts` field changes; the footer gains one method.
+
+### A strip whose rect reads secret (`SD-LK-99`, WidgetsDragHandleTip 3, LibKa0s#99)
+
+The owner's ruling R-3 (2026-11-20). Through WidgetsDragHandleTip 2 the strip's tooltip, and its marks', was placed from the strip's own rect; when that rect read secret (an Aura Master container attached under a parent holding auras, in an instance) or not at all, the fallback was a relative point, `BOTTOM` on the strip's `TOP`, which the client refuses in a restricted tree, so the tooltip did not render.
+
+- **Above the strip whenever the strip's rect reads.** Unchanged: centered above it, below only when the screen has no room above, by an absolute point on `UIParent`.
+- **Otherwise above the nearest ancestor whose rect reads.** The placement walks `GetParent()` from the strip, up to but not including `UIParent` (whose rect is the screen), at most 32 frames, and attaches the tooltip above the first frame whose left, bottom, right and top all read as plain numbers (`issecretvalue` false), with the same above/below rule, through `LibKa0s-Tooltip-1.0`'s `PlaceAttached`. The point is still an absolute one on `UIParent`, computed from that ancestor's rect, so nothing is anchored into the restricted tree. A mark's tooltip walks from its strip, as it places by its strip.
+- **Secret all the way up: no tooltip, and no error.** The tooltip is hidden and its points cleared; no relative point is written into the strip. An unplaced strip with no readable ancestor reads the same way. The relative point survives only in a copy with no Tooltip major loaded, as through 2.
+- **No host override.** The walk is automatic; a host passes nothing.
+
+`tests/test_tooltip_sites.lua` gains six cases (a readable strip above itself, not its parent; a secret strip above its readable parent, its mark too; a secret parent skipped for the grandparent; a readable ancestor at the screen's top taking the tooltip below it; secret all the way up, strip and mark, no tooltip and no point; an unreadable strip under UIParent, no tooltip) and the minor's own, the secrets the kit's (`testkit/secrets.lua`), red under 2. The minor 2 case that pinned the relative point on an unreadable strip is replaced by the last.
+
+**What a consumer owes at its re-vendor:** nothing in code. Aura Master's known limitation ("A strip whose position reads secret shows no tooltip") and its smoke line DRAG-20 now read: the tooltip opens above the nearest container whose position reads. A suite that pinned the relative point on an unreadable strip re-pins no tooltip.
+
+### The footer lays only its shown marks (`SD-LK-94`, Widgets 30, LibKa0s#94)
 
 Through 29 the footer's layout chained **every** mark in `foot.marks` from the corner, shown or hidden: the right line anchored beside the last one and the left line ran up to the right line. A host that builds the most marks any of its tabs needs and hides the ones a tab does not bind kept an empty slot, and its status line was cut with "…" short of it (Ka0s Drop Watcher's main window, three marks, about 40 px early on the tabs that bind one).
 
@@ -1694,7 +1709,10 @@ case and costs the simple host nothing.
 centered **above the strip** (below only when the screen has no room above: `SR-L1` of the run's
 smoke round 1, one rule for every attached tooltip, where it opened below), through `LibKa0s-Tooltip-1.0`, owned by `UIParent` at
 `ANCHOR_NONE` and placed by an absolute point, which the restricted tree described next accepts. From
-WidgetsDragHandleTip 2 a host's `tooltipPlace` no longer moves it (retired, accepted unread). The history below is why the owner was a
+WidgetsDragHandleTip 2 a host's `tooltipPlace` no longer moves it (retired, accepted unread). From
+WidgetsDragHandleTip 3 a strip whose own rect reads secret places it above its nearest ancestor whose
+rect reads, by the same absolute point, and shows none when no ancestor reads (LibKa0s#99; *What
+changed at this version*). The history below is why the owner was a
 field through minor 13; minor 14 answers it once, for every host.
 
 **`tooltipOwner` was a correctness knob, not a style one, and it is why the field existed.**

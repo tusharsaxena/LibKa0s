@@ -12,7 +12,7 @@
 | Shipped in | v1.107.0 |
 | Status | Superseded |
 | Supersedes | [version 28.2.7.14.1.7.8.6.1.1](./version-28.2.7.14.1.7.8.6.1.1-docs.md) (v1.106.0) — a drag strip's marks read [settings][close][?], 10px of air apart, white under the pointer; its settings mark was opt-in; `ApplyLevel` left the settings mark at its birth level (LibKa0s#96); a host's `tooltipPlace` could move the strip's tooltip beside the strip; a HUD-docked mode strip did arithmetic on geometry that read secret (LibKa0s#95). |
-| Superseded by | [version 30.2.7.15.2.7.8.6.1.1](./version-30.2.7.15.2.7.8.6.1.1-docs.md) |
+| Superseded by | [version 30.2.7.15.3.7.8.6.1.1](./version-30.2.7.15.3.7.8.6.1.1-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 29, WidgetsDropdown = 2, WidgetsReorder = 7, WidgetsDragHandle = 15, WidgetsDragHandleTip = 2, WidgetsLineChart = 7, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 1 }` |
 
@@ -2371,6 +2371,6 @@ visual fidelity as unverified.
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
 
-## Moving to version 30.2.7.15.2.7.8.6.1.1
+## Moving to version 30.2.7.15.3.7.8.6.1.1
 
-`Widgets.lua` 29 -> 30 (`SD-LK-94`, LibKa0s#94): a window's footer lays only its shown marks, so a hidden mark leaves no gap and the left line is not cut short of it; a mark's show or hide, and the footer's show, re-lay it, and `foot:Relayout()` does on demand. No member and no `FOOTER` figure changes. See that document's *What changed at this version*.
+`Widgets.lua` 29 -> 30 (`SD-LK-94`, LibKa0s#94): a window's footer lays only its shown marks, so a hidden mark leaves no gap and the left line is not cut short of it; a mark's show or hide, and the footer's show, re-lay it, and `foot:Relayout()` does on demand. No member and no `FOOTER` figure changes. `WidgetsDragHandleTip.lua` 2 -> 3 (`SD-LK-99`, LibKa0s#99): a drag strip whose rect reads secret places its tooltip above its nearest readable ancestor, by an absolute point on UIParent, and shows none when no ancestor reads, where 2 wrote a point into the strip. See that document's *What changed at this version*.

@@ -154,7 +154,7 @@ Total.
 - tooltip place: launcher: the button's own scale (the minimap's) is applied before the third is read
 - tooltip place: Replace re-runs the last placement after the tooltip grew
 
-### test_tooltip_sites.lua (18)
+### test_tooltip_sites.lua (24)
 
 - tooltip sites: an icon browser cell opens beside the browser window
 - tooltip sites: the icon browser's toolbar tips attach above their control
@@ -172,7 +172,13 @@ Total.
 - tooltip sites: the launcher re-places its own minimap button's tooltip, and no one else's
 - tooltip sites: the skin picker's toolbar controls attach their tips above
 - tooltip sites: unreadable geometry attaches every chrome tip above its element by hand
-- tooltip sites: a drag strip with unreadable geometry attaches its tip above by hand
+- tooltip sites: a strip whose rect reads places above the strip, not its readable parent
+- tooltip sites: a strip whose rect reads secret places above its nearest readable ancestor
+- tooltip sites: the walk skips a secret parent for the nearest readable one further up
+- tooltip sites: a readable ancestor at the screen's top takes the tooltip below it
+- tooltip sites: a strip secret all the way up shows no tooltip, raises nothing, anchors nothing
+- tooltip sites: a strip with unreadable geometry and no readable ancestor shows no tooltip
+- tooltip sites: WidgetsDragHandleTip is at minor 3 or later, the readable-ancestor walk
 - tooltip sites: a body site with unreadable geometry falls back above its element
 
 ### test_tooltip_guard.lua (3)
@@ -5650,7 +5656,7 @@ Total.
 | test_core_resize.lua | 26 |
 | test_tooltip.lua | 32 |
 | test_tooltip_place.lua | 20 |
-| test_tooltip_sites.lua | 18 |
+| test_tooltip_sites.lua | 24 |
 | test_tooltip_guard.lua | 3 |
 | test_env.lua | 9 |
 | test_compat.lua | 64 |
@@ -5870,4 +5876,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4956** |
+| **Total** | **4962** |

@@ -14,15 +14,18 @@ cannot drift. Release order is in
 
 Opened 2026-11-20, on `feat/2026-11-20-libka0s-94-97-99-100` (off `master` at v1.107.0): LibKa0s#94, #97, #99 and #100 (Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/`). Written as the next release; the version is named at release.
 
-Versions in this release: `LibKa0s-Widgets-1.0` key **30.2.7.15.2.7.8.6.1.1** (Widgets minor 30); every other file at its v1.107.0 minor, and the test kit at revision **57**. No `NEEDS_*` floor rises, no member changes, and no file is added.
+Versions in this release: `LibKa0s-Widgets-1.0` key **30.2.7.15.3.7.8.6.1.1** (Widgets minor 30, WidgetsDragHandleTip minor 3); every other file at its v1.107.0 minor, and the test kit at revision **57**. No `NEEDS_*` floor rises, no member changes, and no file is added.
 
 ### Fixed
 
-- **A window's footer lays only its shown marks (LibKa0s#94, Widgets minor 30, `SD-LK-94`).** Through minor 29 `Footer` chained every mark from the corner, shown or hidden, so a host that hid the marks a tab does not bind kept an empty slot and its left status line was cut short of it (Ka0s Drop Watcher's main window, about 40 px). A hidden mark now takes no slot: the chain, the right line and the left line skip it. Each mark's show and hide, and the footer's own show, re-lay the footer (hooked once each), and `foot:Relayout()` re-lays it on demand. `FOOTER`'s figures do not move. `tests/test_widgets_footer.lua` gains seven cases, red under minor 29. The API document is [`docs/api/Widgets/version-30.2.7.15.2.7.8.6.1.1-docs.md`](docs/api/Widgets/version-30.2.7.15.2.7.8.6.1.1-docs.md).
+- **A window's footer lays only its shown marks (LibKa0s#94, Widgets minor 30, `SD-LK-94`).** Through minor 29 `Footer` chained every mark from the corner, shown or hidden, so a host that hid the marks a tab does not bind kept an empty slot and its left status line was cut short of it (Ka0s Drop Watcher's main window, about 40 px). A hidden mark now takes no slot: the chain, the right line and the left line skip it. Each mark's show and hide, and the footer's own show, re-lay the footer (hooked once each), and `foot:Relayout()` re-lays it on demand. `FOOTER`'s figures do not move. `tests/test_widgets_footer.lua` gains seven cases, red under minor 29. The API document is [`docs/api/Widgets/version-30.2.7.15.3.7.8.6.1.1-docs.md`](docs/api/Widgets/version-30.2.7.15.3.7.8.6.1.1-docs.md).
+
+- **A drag strip whose rect reads secret shows its tooltip above its nearest readable ancestor (LibKa0s#99, WidgetsDragHandleTip minor 3, `SD-LK-99`).** The owner's ruling R-3. Through minor 2 a strip whose edges read secret (an Aura Master container attached under a parent holding auras, in an instance) fell back to a relative point on the strip, which the restricted tree refuses, so its tooltip, and its marks', did not render. The placement now walks the strip's ancestors (`GetParent`, up to but not including UIParent) and attaches the tooltip above the nearest one whose rect reads, with the same above/below rule, by an absolute point on UIParent, so nothing anchors into the restricted tree; above the strip still whenever the strip's rect reads. Secret all the way up, the tooltip is hidden: no tooltip and no error. `tests/test_tooltip_sites.lua` gains seven cases with the kit's secrets, red under minor 2.
 
 ### What a consumer owes at its re-vendor
 
 - Nothing in code. A host that re-anchored the footer's lines to close the gap drops the workaround; a footer stub owes `Relayout` only where its host calls it.
+- Nothing in code for LibKa0s#99. Aura Master's known limitation "A strip whose position reads secret shows no tooltip" and its smoke DRAG-20 now expect the tooltip above the nearest readable container; a suite that pinned the relative point on an unreadable strip re-pins no tooltip.
 
 ## v1.107.0 — 2026-11-19
 
