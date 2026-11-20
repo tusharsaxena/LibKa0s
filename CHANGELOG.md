@@ -62,6 +62,12 @@ Versions in this release: `LibKa0s-Core-1.0` key **19.1** (Core minor 19); `LibK
   - *`test_skin_values`, new hits.* A color kept in a three- or four-number table, a keyed `{ r, g, b }` table, a multi-assignment (`local R, G, B = 1, 0.82, 0`), a `return` triple or an `RGBA(c, r, g, b, a)` fallback default. Read a token instead, or add a row with its `why` and `cause`. An option's typed default (`default = { r = .., g = .., b = .. }`) is the ruling R-2 case: it follows the skin, through a FollowOnce key list where a stored value equal to the old default must move.
   - *The new category.* A row that borrows a cause id for a value that draws no look moves to `category = "unreachable default"` or `category = "white base for tinting"` and drops `cause` (Aura Master's A7 rows on `normal.r or 1` / `fallback.r or 1`, the Skin Tester's A5 row on the NavItem's white base; the owner's U-6). A new hit on three or four fractions that are no color (`local x, y, s = 0.5, 0.5, 0.8`, on a line naming none of `coord`, `crop`, `inset`, `pad`, `margin`, `offset`) takes a row with `category = "not a color"`. A row may not carry both.
 
+Release gate (`docs/automated-tests/20261120-184818/`): lint pass, 0/0 in 378 files;
+tests pass, 5079 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Current — `Widgets.lua` (the file that defines `W.TestStrip`) moves to minor 30 for the footer's layout and the owner check every library widget runs at build, a report through a registered sink that draws nothing; the strip's placement and look do not move (`tests/test_widgets_teststrip.lua` and `tests/test_widgets_teststrip_dock.lua` green, unchanged since v1.107.0), and no Sim minor moves.
+
 ## v1.107.0 — 2026-11-19
 
 Opened 2026-11-19, on `feat/2026-11-19-adoption-feedback` (off `master` at v1.106.0): the library half of the owner's feedback on the LibKa0s v1.105 adoption smoke (Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`, its `inputs/OWNER_FEEDBACK.md` and rulings), items `AF-LK-01` and `AF-LK-02`, with LibKa0s#96 and LibKa0s#95, then `AF-DR-LK` and this release, `AF-LK-03`. Built to WowAddonStandards v2.115.0, whose HUD header rule (which marks a window owes, and the drag strip's marks and their order) this release implements on the library side.
