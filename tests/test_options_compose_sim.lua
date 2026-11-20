@@ -402,8 +402,9 @@ end)
 
 -- ── the minor ────────────────────────────────────────────────────────────────────────────────
 
-test("compose sim: OptionsCompose is at minor 19", function()
+test("compose sim: OptionsCompose is at minor 19 or later", function()
   -- red under: the change landing without its bump: every host vendors minor 18, and a minor-18
-  -- copy loaded first would keep a tab with no Sim mode row.
-  assertEqual(T.options.MODULES.OptionsCompose, 19)
+  -- copy loaded first would keep a tab with no Sim mode row. The exact pin moved to minor 20's
+  -- suite, tests/test_options_compose_follow.lua.
+  assertTrue(T.options.MODULES.OptionsCompose >= 19)
 end)

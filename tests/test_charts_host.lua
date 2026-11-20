@@ -77,13 +77,15 @@ test("host: two contexts keep their own seams, so one addon never paints another
   assertEqual(b, 0)
 end)
 
-test("host: a host fill stands in for the bar fill when it names no barFill", function()
+test("host: a host fill paints the track and never a bar of data, which only barFill draws (minor 3)", function()
+  -- Through minor 2 a host fill stood in for barFill and drew the bars flat under every skin
+  -- (SD-LK-97.15); tests/test_skin_follow_bars.lua has the owner-less and skinned halves.
   local m, Charts = F.env()
   local n = 0
   local ctx = Charts:New(F.content(m), { fill = function() n = n + 1 end })
   ctx:renderBarSection(ctx:Pool("b"), ctx:sectionHeader(nil, "H"),
     { { label = "A", frac = 1, color = RED, value = "1" } }, 0, 500, 8)
-  assertEqual(n, 2, "the track and the fill")
+  assertEqual(n, 1, "the track only")
 end)
 
 test("host: the default tooltip shows a title and its lines, and an empty one shows nothing", function()

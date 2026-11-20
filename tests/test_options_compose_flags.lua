@@ -6,8 +6,9 @@
 --
 -- What is pinned:
 --
---   * WITHOUT `flagsFromSkin` FontGroup's Font flags row is minor 13's: the same values, order,
---     default and tooltip, and no "From skin".
+--   * WITH `flagsFromSkin = false` FontGroup's Font flags row is minor 13's: the same values, order,
+--     default and tooltip, and no "From skin". Through compose minor 19 that was the row with no
+--     `flagsFromSkin`; since minor 20 (LibKa0s#97, SD-LK-97.7) no `flagsFromSkin` is `true`.
 --   * WITH IT the row leads with "From skin" (the Skin major's FROM_SKIN), defaults to it, keeps every
 --     other flag in its order, and says what it follows; the shared lists are never written to.
 --   * WITH `fromSkin = true` as well the block is the minimum font setting (D-07): face, size, color
@@ -39,9 +40,9 @@ test("compose flags: OptionsCompose is at minor 14 or later", function()
   assertTrue(T.options.MODULES.OptionsCompose >= 14)
 end)
 
-test("compose flags: without flagsFromSkin the Font flags row is minor 13's", function()
+test("compose flags: flagsFromSkin = false is minor 13's Font flags row", function()
   local O = host()
-  local row = rowAt(O.FontGroup({ prefix = "t." }), "t.fontFlags")
+  local row = rowAt(O.FontGroup({ prefix = "t.", flagsFromSkin = false }), "t.fontFlags")
   assertEqual(row.default, "OUTLINE")
   assertEqual(table.concat(row.sorting, "|"), "|OUTLINE|THICKOUTLINE|MONOCHROME|OUTLINE, MONOCHROME")
   assertNil(row.values["@skin"], "no From skin in the plain list")
@@ -67,8 +68,9 @@ end)
 test("compose flags: fromSkin and flagsFromSkin together are the minimum font setting", function()
   local O = host()
   local rows = O.FontGroup({ prefix = "t.", fromSkin = true, flagsFromSkin = true })
-  assertEqual(paths(rows), "t.font,t.fontSize,t.fontColor,t.useClassColorFont,t.fontFlags,t.fontShadow,t.fontFromSkin",
-    "face, size, color, class color, flags, shadow, and Use the skin's font")
+  assertEqual(paths(rows), "t.font,t.fontSize,t.fontColor,t.useClassColorFont,t.fontFlags,t.fontShadow,t.fontFromSkin,"
+    .. "t.fontColorFromSkin,t.fontShadowFromSkin",
+    "face, size, color, class color, flags, shadow, and Use the skin's font, color and shadow (minor 20)")
   assertEqual(rowAt(rows, "t.fontFlags").default, "@skin")
   assertEqual(rowAt(rows, "t.fontFromSkin").label, "Use the skin's font")
   assertEqual(rowAt(rows, "t.useClassColorFont").type, "bool")

@@ -154,7 +154,7 @@ Total.
 - tooltip place: launcher: the button's own scale (the minimap's) is applied before the third is read
 - tooltip place: Replace re-runs the last placement after the tooltip grew
 
-### test_tooltip_sites.lua (18)
+### test_tooltip_sites.lua (24)
 
 - tooltip sites: an icon browser cell opens beside the browser window
 - tooltip sites: the icon browser's toolbar tips attach above their control
@@ -172,7 +172,13 @@ Total.
 - tooltip sites: the launcher re-places its own minimap button's tooltip, and no one else's
 - tooltip sites: the skin picker's toolbar controls attach their tips above
 - tooltip sites: unreadable geometry attaches every chrome tip above its element by hand
-- tooltip sites: a drag strip with unreadable geometry attaches its tip above by hand
+- tooltip sites: a strip whose rect reads places above the strip, not its readable parent
+- tooltip sites: a strip whose rect reads secret places above its nearest readable ancestor
+- tooltip sites: the walk skips a secret parent for the nearest readable one further up
+- tooltip sites: a readable ancestor at the screen's top takes the tooltip below it
+- tooltip sites: a strip secret all the way up shows no tooltip, raises nothing, anchors nothing
+- tooltip sites: a strip with unreadable geometry and no readable ancestor shows no tooltip
+- tooltip sites: WidgetsDragHandleTip is at minor 3 or later, the readable-ancestor walk
 - tooltip sites: a body site with unreadable geometry falls back above its element
 
 ### test_tooltip_guard.lua (3)
@@ -642,7 +648,7 @@ Total.
 
 ### test_callout.lua (52)
 
-- callout: the major loads at minor 4 and reports its one file
+- callout: the major loads at minor 5 and reports its one file
 - callout: without Core the major is absent (no NewLibrary)
 - callout: New refuses a descriptor without a db, naming it
 - callout: a method called on something that is not an instance raises
@@ -695,7 +701,7 @@ Total.
 - suspend: the countdown stops with no onDone, everything goes, and Show is refused until Resume
 - suspend: Stats reports the state a host's diagnostics prints
 
-### test_callout_look.lua (27)
+### test_callout_look.lua (32)
 
 - look: each animation is the setting's, built once from its own steps
 - look: slam lands from 2.2x and fades in; pulse swells and settles; shake runs out and back
@@ -716,6 +722,11 @@ Total.
 - position: a drag that ends without a relative point saves the point twice and finite offsets
 - unlock: the drag strip is built over the frame, hidden while locked, shown unlocked
 - unlock: the strip's own drag saves the point; d.label names it
+- strip marks: d.onClose and d.onSettings reach the strip, each under pcall
+- strip marks: a raising onClose or onSettings reaches the error handler, not the strip
+- strip marks: a descriptor without them builds the strip as before
+- strip marks: on the real strip, the X is present and calls onClose; the gear calls onSettings
+- strip marks: on the real strip, a descriptor without them has no X, the gear as before
 - unlock: locking mid-drag ends the move and saves the point
 - unlock: a Suspend mid-drag on the strip ends the move and saves the point
 - unlock: a lock with no drag running leaves the point alone
@@ -760,7 +771,7 @@ Total.
 
 ### test_callout_settings.lua (34)
 
-- callout settings: CalloutSettings is at minor 5, paired on the Callout shell's minor
+- callout settings: CalloutSettings is at minor 6, paired on the Callout shell's minor
 - callout settings: the rows are Look, Sound then Texts, each path-less and bound to the instance
 - callout settings: the Texts tab has a color per kind, and a text box and a mute per stock key
 - callout settings: text to speech rows are there only while the client lists a voice
@@ -825,7 +836,7 @@ Total.
 
 ### test_callout_layout.lua (17)
 
-- callout layout: CalloutSettings is at minor 5, and an instance carries SettingsTab
+- callout layout: CalloutSettings is at minor 6, and an instance carries SettingsTab
 - callout layout: SettingsTab answers one host tab, Callout, that draws the side layout
 - callout layout: a Preview heading over the preview block, then side tabs Look and Sound
 - callout layout: Look holds the face rows and the Colors section; no Sound rows, no stock texts
@@ -864,7 +875,7 @@ Total.
 
 ### test_waypoint_arrow.lua (37)
 
-- arrow: the major loads at minor 2 and reports its two files
+- arrow: the major loads at minor 3 and reports its two files
 - arrow: without Core the major is absent (no NewLibrary)
 - arrow: New refuses a descriptor that does not say where the art sits
 - arrow: a method called on something that is not an instance raises
@@ -914,7 +925,7 @@ Total.
 - arrow settings: a change configures the arrow, then tells the host
 - arrow settings: the rows pass a Schema instance's shape check, and a write reaches the arrow
 - arrow settings: ConfigureFrom reads the host's paths
-- arrow settings: the Text block is the Font block's six rows, the companion, then three extras
+- arrow settings: the Text block is the Font block's six rows, the companions, then three extras
 - arrow settings: given an Options instance the Font rows are O.FontGroup's own
 - arrow settings: a Text row's change configures the arrow
 - arrow settings: every row, the Text block's too, passes a Schema instance's shape check
@@ -1013,7 +1024,7 @@ Total.
 - host: a host's colors and fonts win, field by field, and a function is read
 - host: the text, paint, fill, barFill and panel seams each carry their draws
 - host: two contexts keep their own seams, so one addon never paints another's chart
-- host: a host fill stands in for the bar fill when it names no barFill
+- host: a host fill paints the track and never a bar of data, which only barFill draws (minor 3)
 - host: the default tooltip shows a title and its lines, and an empty one shows nothing
 - host: a host's tip and hideTip replace it
 - host: an owner nobody registered draws the plain way, with no skin
@@ -1823,6 +1834,14 @@ Total.
 - submenu: a dropdown's rows ignore submenu, radio and selected
 - submenu: a child wears the opener's skin
 
+### test_widgets_menu_follow.lua (5)
+
+- menu follow: a skinned menu's submenu arrow wears the opener's icon.arrow, desaturated (97.4)
+- menu follow: an owner-less open gives the pooled arrow its gray back (97.4)
+- menu follow: a secret label is not measured, and the host's width is the floor (U-21)
+- menu follow: a plain label still grows the menu past the host's width floor (U-21)
+- menu follow: a measured width that answers a secret is not read (U-21)
+
 ### test_widgets_reorderlist.lua (24)
 
 - widgets: ReorderList reports where a drag landed
@@ -2105,7 +2124,7 @@ Total.
 - TestStrip dock: docking again replaces the dock, and hooks each frame once
 - TestStrip dock: the dock never shows or hides the strip
 
-### test_widgets_footer.lua (18)
+### test_widgets_footer.lua (25)
 
 - Footer: FOOTER publishes HEIGHT 24 and the slot's figures
 - Footer: a write to FOOTER.HEIGHT does not move the next footer
@@ -2122,6 +2141,13 @@ Total.
 - Footer: opts.resize builds Core.MakeResizable's grip on the footer, in its corner
 - Footer: a host's own gripParent in opts.resize wins
 - Footer: two footers share no regions
+- Footer: a hidden middle mark leaves no gap when the footer re-lays (SetGrip)
+- Footer: Relayout skips a hidden outermost mark
+- Footer: every mark hidden lays the right line at the corner's inset, grip or not
+- Footer: a mark's OnHide and OnShow re-lay the footer, with no call from the host
+- Footer: the footer's own OnShow re-lays it (a mark hidden while the window was hidden)
+- Footer: each mark is hooked once, so one show or hide re-lays once
+- Footer: a host's own hook on a mark still runs beside the re-lay
 - Footer skin: a registered owner's hairline is its divider and its lines its text.muted
 - Footer skin: an owned mark rests in icon.tint and lights in icon.hot
 - Footer skin: an unregistered owner draws the owner-less footer
@@ -2152,6 +2178,64 @@ Total.
 - bar: a non-Solid border style draws through LibSharedMedia's border on a backdrop child
 - bar: an acquire with no Pool major degrades to the same order
 - bar: the suite releases its two benches
+
+### test_skin_follow_bars.lua (15)
+
+- bar follow: a style with no borderFromSkin follows the skin's border (97.2)
+- bar follow: borderFromSkin false keeps the host's own border under every skin (97.2)
+- bar follow: an owner-less bar still draws no border by default (97.2)
+- gloss: S.BarGloss on a Texture lays the look on its parent, anchored to it (97.3)
+- gloss: a hidden Texture's gloss is hidden, fromSkin false and Ka0s Default build none (97.3)
+- bar follow: under Glass the Bar's fill wears the gloss, which follows a switch (97.3)
+- bar follow: the gloss shows only with its fill, a segment's included (97.3)
+- bar follow: glossFromSkin false and the style's own texture draw no gloss (97.3)
+- bar fill: ApplyBarFill gives a StatusBar with no texture the skin's bar texture (97.17)
+- bar fill: ApplyBarFill keeps a host's own texture, and a Texture takes the color only (97.17)
+- charts follow: a host fill no longer stands in for a bar of data (97.15)
+- charts follow: an owner-less bar of data paints Ka0s Default's bar texture (97.15)
+- charts follow: an owner's chart bar wears the skin's gloss under Glass (U-4)
+- charts follow: a strip column's gloss fades with its column, a zero stub's included (U-4)
+- bar follow: the suite releases its benches
+
+### test_skin_follow_callout.lua (22)
+
+- callout follow: the look's defaults are the skin's (97.10, U-1)
+- callout follow: with an owner the text wears the skin's HUD face, outline and shadow (97.10, 97.12)
+- callout follow: Use the skin's shadow off draws the stored shadow; Shadow off draws none (97.10)
+- callout follow: the halo goes through HudFont too, thick and shadowless (97.12)
+- callout follow: a picked face keeps its stored size; a picked outline wins (97.10, 97.12)
+- callout follow: the glow takes the skin's glow color by default (97.10)
+- callout follow: a skin switch repaints the face and the shadow (97.12)
+- callout follow: numbers draw the skin's HUD text color; off, the swatch (97.11)
+- callout follow: info, go, stop, warn and error draw the skin's meaning colors (U-2)
+- callout follow: a meaning color the player picks wins; one at a default still follows (U-2)
+- callout follow: the swatch's reader is the stored color, never the drawn one (U-2)
+- callout follow: owner-less, the text is set directly, @skin an outline, the defaults' colors (97.12)
+- callout follow: FollowKeys names only the look settings still at their minor-4 defaults (97.10)
+- callout follow: MoveToSkin writes the Skin font, @skin and true for the keys FollowKeys names (97.10)
+- callout follow: a stored @skin face (ResetToSkin over FollowKeys) still draws the skin's face (97.10)
+- callout follow: the rows carry the outline's From skin, the shadow and number companions (CalloutSettings 6)
+- callout follow: through the Options engine a stored @skin font row shows the Skin font (97.10)
+- arrow follow: the text color is the skin's HUD text color by default; class color first (97.13)
+- arrow follow: a skin that answers no HUD text color leaves the swatch (97.13)
+- arrow follow: the text shadow follows the skin unless Use the skin's shadow is off (97.14)
+- arrow follow: the Text block carries the color and shadow companions at their rows' paths plus FromSkin
+- callout follow: the suite releases its bench
+
+### test_skin_follow_shells.lua (12)
+
+- owner check: an owner-less dropdown inside an owned window is reported to its owner (97.1)
+- owner check: every Widgets constructor and a chart context run it (97.1)
+- owner check: an owned widget, a widget outside the window, and a second build say nothing (97.1)
+- owner check: with no sink nothing is walked, and another owner's sink is not told (97.1)
+- owner check: a raising sink costs one error, never the constructor (97.1)
+- drag handle: a host's spec.edge is called again with the new handle.edge (97.5)
+- drag handle: a raising edge painter costs one error and the repaint finishes (97.5)
+- host bands: skinBands draws the owner's gradient under the host's own edge (97.16)
+- host bands: the art band, a switch, and a host table without skinBands (97.16)
+- host bands: a later ApplySkin with no host table is the owner's whole Shell again (97.16)
+- host bands: no skinBands, an unregistered owner or no owner is minor 18's paint (97.16)
+- skin follow shells: the suite releases its bench
 
 ### test_header_buttons.lua (25)
 
@@ -4188,7 +4272,7 @@ Total.
 - compose sim: an open, idle sim window reads ticked and one untick closes it (R7-L1)
 - compose sim: ticking opens the sim window, the box stays ticked and follows show and hide (R7-L1)
 - compose sim: Reset all settings closes an open, idle sim window (R7-L1)
-- compose sim: OptionsCompose is at minor 19
+- compose sim: OptionsCompose is at minor 19 or later
 
 ### test_options_compose_tooltips.lua (12)
 
@@ -4288,7 +4372,7 @@ Total.
 ### test_options_compose_skin.lua (25)
 
 - compose skin: OptionsCompose is at minor 12 or later, and OptionsWidgets at 35 or later
-- compose skin: without fromSkin the three groups emit exactly the rows they did
+- compose skin: fromSkin = false emits exactly the rows the three groups did
 - compose skin: fromSkin appends one companion per picker, after the canonical rows
 - compose skin: the canonical rows are unchanged beside the companion, and so is every list
 - compose skin: omit and keys reach the companion like any canonical leaf
@@ -4311,15 +4395,31 @@ Total.
 - compose skin: a real style disables the bar's rows and Show border reads true
 - compose skin: the icon family keeps its plain companion path
 - compose skin: the bar family governs the thickness, and fromSkin = true still does not
-- compose skin: fromSkin alone leaves Font flags typed, because only a host on S.FontFlags reads @skin
+- compose skin: flagsFromSkin = false leaves Font flags typed, for a host not drawing through S.FontFlags
 
 ### test_options_compose_flags.lua (5)
 
 - compose flags: OptionsCompose is at minor 14 or later
-- compose flags: without flagsFromSkin the Font flags row is minor 13's
+- compose flags: flagsFromSkin = false is minor 13's Font flags row
 - compose flags: flagsFromSkin leads with From skin and defaults to it
 - compose flags: fromSkin and flagsFromSkin together are the minimum font setting
 - compose flags: omit, keys, defaults and labels reach the From skin row
+
+### test_options_compose_follow.lua (13)
+
+- compose follow: OptionsCompose is at minor 20
+- compose follow: FontGroup with no fromSkin emits Use the skin's font, on and governing the picker
+- compose follow: FontGroup with no flagsFromSkin leads Font flags with From skin and defaults to it
+- compose follow: flagsFromSkin = false is minor 19's typed Font flags row
+- compose follow: FontGroup emits Use the skin's color and Use the skin's shadow, both on
+- compose follow: the swatch stays live and Font shadow is disabled while its companion is on
+- compose follow: BarGroup, BorderGroup and ColorPair carry a color companion after their picker's
+- compose follow: fromSkin = false is minor 19's block for all four composers
+- compose follow: colorFromSkin = false and shadowFromSkin = false each take one part back
+- compose follow: omit, defaults, labels and keys reach every companion
+- compose follow: a companion the host writes in extra is kept and not emitted twice
+- compose follow: a record-backed group binds its companions to the record
+- compose follow: a rendered block draws the companions and Font shadow follows its own
 
 ### test_options_throttle.lua (4)
 
@@ -5345,7 +5445,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 57
+- the kit is revision 58
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -5483,7 +5583,7 @@ Total.
 - prune-icons: a sounds list keeps its packs whole; all keeps everything
 - prune-icons: an unknown pack is refused and nothing is removed from either folder
 
-### test_kit_skin_values.lua (29)
+### test_kit_skin_values.lua (39)
 
 - skin values: a planted color of each shape is reported, and only those lines
 - skin values: a planted texture of each shape is reported, and only those lines
@@ -5503,6 +5603,16 @@ Total.
 - skin values: a stale row fails
 - skin values: a row that repeats a category is stale
 - skin values: a row needs its file, substring, why and cause id
+- skin values: a color kept in a table, a keyed table, an assignment or a return is reported (97.19)
+- skin values: each new shape says which it is (97.19)
+- skin values: a table over several lines is read whole (97.19)
+- skin values: tex coords, an inset or a padding of components is no color (97.19)
+- skin values: counters and zero returns are no color (97.19)
+- skin values: a kept color of alpha 0 draws nothing, so no hit (97.19)
+- skin values: the categories that took a call take the new shapes where they should (97.19)
+- skin values: a row may name a kit row category in place of a cause (U-6)
+- skin values: three or four numbers that are no color take the "not a color" category (review of SD-LK-GUARD)
+- skin values: a row category is one the kit names, and never beside a cause (U-6)
 - skin values: it reads the tracked scope, without the seam or a file git does not track
 - skin values: a host's paths replace the scope
 - skin values: no git fails
@@ -5515,7 +5625,7 @@ Total.
 - skin values suite: a causeless row fails
 - skin values suite: no git fails
 
-### test_kit_skin_switch.lua (35)
+### test_kit_skin_switch.lua (54)
 
 - skin switch: the probe gives every token a value of its kind
 - skin switch: every probe color is its own, and none is Ka0s Default's
@@ -5538,6 +5648,25 @@ Total.
 - skin switch: a surface that only draws noise is told so
 - skin switch: a setter only one skin draws is a change
 - skin switch: a host that skips an unchanged repaint still reads as changing
+- skin switch: a bar whose texture never moves fails while its color still moves (97.18 b)
+- skin switch: a bar whose texture and color follow passes (97.18 b)
+- skin switch: a StatusBar drawn on no switch is reported (97.18 c)
+- skin switch: a bar's fill Texture drawn by SetTexture is read (97.18 c)
+- skin switch: a clear StatusBar is left out when the surface says clear (97.18 c)
+- skin switch: a bar color of alpha 0 counts as clear (97.18 c)
+- skin switch: a white base under a token tint passes by default (97.18 d)
+- skin switch: expect = "texture" asks a Texture fill's path to move (97.18 d)
+- skin switch: a surface that expects a texture and draws none fails (97.18 d)
+- skin switch: a color that never moves fails while the face still moves (97.18 b)
+- skin switch: a string whose face moves and whose color is never set is reported (97.18 b)
+- skin switch: a string colored by its font object or a |c escape is not colorless (review of SD-LK-GUARD)
+- skin switch: a face that stays put fails in the first pass and is not asked in the second (97.18 b)
+- skin switch: a shadow that never moves fails while the color moves (97.18 b)
+- skin switch: hold = "texture" leaves a StatusBar's fill out (97.18 b)
+- skin switch: a family moves when any one of its setters does
+- skin switch: expect, hold and clear take only what they can mean
+- skin switch: the live run declares the library's own surfaces (97.18 e)
+- skin switch: the fixture's LSM fake paints a distinct bar texture per skin (97.18 a)
 - skin switch: the first pass clears the Scope
 - skin switch: the first pass turns a companion on
 - skin switch: a Scope-ignored surface is excluded from the second pass
@@ -5620,14 +5749,27 @@ Total.
 
 - skin values: skinning-§1 (skipped: Kit.skinValues is not set in the runner, so this repo's typed colors and textures are not gated yet. Every addon that adopted skins owes skinning-§1; wire Kit.skinValues to adopt it)
 
-### test_skin_switch.lua (6)
+### test_skin_switch.lua (19)
 
 - skin switch: the check is falsifiable, a surface that redraws a literal is reported
+- skin switch: the check is falsifiable, a bar whose texture never moves is reported
 - skin switch: a window's panel changes
 - skin switch: a window's panel changes with the Scope ignored
 - skin switch: a string changes
 - skin switch: a string changes with the Scope ignored
 - skin switch: a settings row changes
+- skin switch: a Bar changes
+- skin switch: a Bar changes with the Scope ignored
+- skin switch: a Charts bar row changes
+- skin switch: a Charts bar row changes with the Scope ignored
+- skin switch: a TestStrip changes
+- skin switch: a TestStrip changes with the Scope ignored
+- skin switch: a Footer changes
+- skin switch: a Footer changes with the Scope ignored
+- skin switch: a DragHandle changes
+- skin switch: a DragHandle changes with the Scope ignored
+- skin switch: a Dropdown row changes
+- skin switch: a Dropdown row changes with the Scope ignored
 
 ### test_client_globals.lua (3)
 
@@ -5643,7 +5785,7 @@ Total.
 | test_core_resize.lua | 26 |
 | test_tooltip.lua | 32 |
 | test_tooltip_place.lua | 20 |
-| test_tooltip_sites.lua | 18 |
+| test_tooltip_sites.lua | 24 |
 | test_tooltip_guard.lua | 3 |
 | test_env.lua | 9 |
 | test_compat.lua | 64 |
@@ -5660,7 +5802,7 @@ Total.
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
 | test_callout.lua | 52 |
-| test_callout_look.lua | 27 |
+| test_callout_look.lua | 32 |
 | test_callout_voice.lua | 30 |
 | test_callout_settings.lua | 34 |
 | test_callout_schema.lua | 25 |
@@ -5701,6 +5843,7 @@ Total.
 | test_widgets.lua | 58 |
 | test_widgets_menu.lua | 23 |
 | test_widgets_submenu.lua | 18 |
+| test_widgets_menu_follow.lua | 5 |
 | test_widgets_reorderlist.lua | 24 |
 | test_widgets_draghandle.lua | 49 |
 | test_widgets_draghandle_place.lua | 5 |
@@ -5713,8 +5856,11 @@ Total.
 | test_widgets_searchbox.lua | 16 |
 | test_widgets_teststrip.lua | 21 |
 | test_widgets_teststrip_dock.lua | 22 |
-| test_widgets_footer.lua | 18 |
+| test_widgets_footer.lua | 25 |
 | test_widgets_bar.lua | 24 |
+| test_skin_follow_bars.lua | 15 |
+| test_skin_follow_callout.lua | 22 |
+| test_skin_follow_shells.lua | 12 |
 | test_header_buttons.lua | 25 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
@@ -5804,6 +5950,7 @@ Total.
 | test_icon_rule.lua | 12 |
 | test_options_compose_skin.lua | 25 |
 | test_options_compose_flags.lua | 5 |
+| test_options_compose_follow.lua | 13 |
 | test_options_throttle.lua | 4 |
 | test_perf_core.lua | 79 |
 | test_perf_run.lua | 42 |
@@ -5853,14 +6000,14 @@ Total.
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 20 |
 | test_kit_vendor_sync.lua | 41 |
-| test_kit_skin_values.lua | 29 |
-| test_kit_skin_switch.lua | 35 |
+| test_kit_skin_values.lua | 39 |
+| test_kit_skin_switch.lua | 54 |
 | test_kit_client_globals.lua | 16 |
 | test_eol.lua | 2 |
 | test_layout_cap.lua | 13 |
 | test_diagnostics_contract.lua | 8 |
 | test_lizard_sighted.lua | 8 |
-| test_skin_switch.lua | 6 |
+| test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4949** |
+| **Total** | **5076** |

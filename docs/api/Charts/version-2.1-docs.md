@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Charts-1.0` |
 | Files and minors | `Charts.lua` minor **2** · `ChartsRender.lua` minor **1** |
 | Shipped in | v1.105.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 1.1](./version-1.1-docs.md) (v1.84.0 – v1.104.0) — the default tooltip followed the cursor (`ANCHOR_CURSOR_RIGHT`), and a host's `tip` had no way to place through the library. |
-| Superseded by | — |
+| Superseded by | [version 3.2](./version-3.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`) |
 | Optional at call time | `LibKa0s-Pool-1.0` (the default `host.pool`), `LibKa0s-Skin-1.0` (`host.owner`), `LibKa0s-Tooltip-1.0` (where a tooltip opens, `ctx:PlaceTip`), `GameTooltip` (the default tooltip) |
 | Confirm in-game | `LibStub("LibKa0s-Charts-1.0").MODULES` → `{ Charts = 2, ChartsRender = 1 }` |
@@ -207,3 +207,9 @@ until it adopts. `ChartsRender.lua` is paired on the shell's minor (`__renderMin
 
 None as of v1.84.0's first cut. Loot History and DPS Race adopt it at their re-vendor
 (Ka0sAddonsCommonTasks `docs/2026-10-31-FINDINGS_REMEDIATION/M2_LIBRARY_RELEASE.md`, step 4).
+
+## Moving to version 3.2
+
+The same surface: no member is added or removed. See [version 3.2](./version-3.2-docs.md). Re-vendor the whole folder; a stub needs no change.
+
+**A bar of data is drawn only through `barFill`** (`Charts.lua` 3, `SD-LK-97.15`, LibKa0s#97): a host's `fill` no longer stands in for a missing `barFill`. With no `barFill`, an owner's context paints `S.BarTexture` and, new, `S.BarGloss` (the skin's gloss under Glass, the owner's U-4), and an owner-less one Ka0s Default's bar texture through the Skin major. A host that wants its bars flat passes `barFill = fill`.

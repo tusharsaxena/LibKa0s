@@ -462,12 +462,136 @@ test("tooltip sites: unreadable geometry attaches every chrome tip above its ele
   end)
 end)
 
-DH.test("tooltip sites: a drag strip with unreadable geometry attaches its tip above by hand", function()
+-- ── a strip whose rect reads secret (WidgetsDragHandleTip minor 3, SD-LK-99, LibKa0s#99) ────────
+--
+-- The owner's ruling R-3 (2026-11-20): a strip whose own rect reads secret places its tooltip above
+-- the NEAREST ANCESTOR WHOSE RECT READS, by the same absolute point on UIParent, with the same
+-- above/below rule; above the strip whenever the strip reads; secret all the way up is no tooltip and
+-- no error. The secrets are the kit's (testkit/secrets.lua): a wrapper traps any arithmetic on it,
+-- so a case that passes did none, and `issecretvalue` answers true for each.
+
+local Kit = dofile("tests/_kit/framework.lua")
+
+--- Run `fn()` with the client's `issecretvalue` answering the kit's secrets, restored after.
+local function withSecretValue(fn)
+  local saved = rawget(mocks, "issecretvalue")
+  mocks.issecretvalue = function(v) return Kit.isSecret(v) end
+  local ok, err = pcall(fn)
+  mocks.issecretvalue = saved
+  if not ok then error(err, 0) end
+end
+
+--- Make `f`'s every geometry read secret (its parent, when named, still reads), undone with `geo`'s.
+local function secretGeo(f, parent)
+  for _, k in ipairs(GEO) do undo[#undo + 1] = { f, k, rawget(f, k) } end
+  for _, k in ipairs({ "GetLeft", "GetBottom", "GetRight", "GetTop", "GetWidth", "GetHeight" }) do
+    rawset(f, k, function() return Kit.secret(500) end)
+  end
+  rawset(f, "GetEffectiveScale", function() return 1 end)
+  if parent then rawset(f, "GetParent", function() return parent end) end
+  return f
+end
+
+--- A frame under UIParent, as an ancestor of a strip.
+local function holder(parent)
+  return mocks.CreateFrame("Frame", nil, parent or mocks.UIParent)
+end
+
+DH.test("tooltip sites: a strip whose rect reads places above the strip, not its readable parent", function()
+  -- red under: a walk that started at the parent
+  withSecretValue(function()
+    onScreen(mocks, function(_, tip)
+      local parent = geo(holder(), 600, 400, 600, 300, mocks.UIParent)
+      local h = W.DragHandle(parent, DH.baseSpec({ tooltip = { title = "Buffs" }, onRightClick = function() end }))
+      geo(h, 800, 600, 160, 18, parent)
+      h:__fire("OnEnter")
+      assertAbove(mocks, tip, 800, 960, 618, "readable strip")
+      assertTrue(tip:IsShown(), "shown")
+    end)
+  end)
+end)
+
+DH.test("tooltip sites: a strip whose rect reads secret places above its nearest readable ancestor", function()
+  -- red under: WidgetsDragHandleTip minor 2, which fell back to a relative point on the strip (a
+  -- point into the restricted tree, refused in the client: Aura Master's strip, LibKa0s#99)
+  withSecretValue(function()
+    onScreen(mocks, function(_, tip)
+      local parent = geo(holder(), 700, 500, 400, 120, mocks.UIParent)
+      local h = W.DragHandle(parent, DH.baseSpec({ tooltip = { title = "Buffs" }, onRightClick = function() end }))
+      secretGeo(h, parent)
+      h:__fire("OnEnter")
+      assertAbove(mocks, tip, 700, 1100, 620, "secret strip, readable parent")
+      assertTrue(tip:IsShown(), "shown")
+      geo(h.help, 942, 600, 14, 18, h)
+      h.help:__fire("OnEnter")
+      assertAbove(mocks, tip, 700, 1100, 620, "a mark of the secret strip places by the same ancestor")
+    end)
+  end)
+end)
+
+DH.test("tooltip sites: the walk skips a secret parent for the nearest readable one further up", function()
+  withSecretValue(function()
+    onScreen(mocks, function(_, tip)
+      local outer = geo(holder(), 100, 200, 300, 400, mocks.UIParent)
+      local inner = secretGeo(holder(outer), outer)
+      local h = W.DragHandle(inner, DH.baseSpec({ tooltip = { title = "Buffs" } }))
+      secretGeo(h, inner)
+      h:__fire("OnEnter")
+      assertAbove(mocks, tip, 100, 400, 600, "the grandparent")
+    end)
+  end)
+end)
+
+DH.test("tooltip sites: a readable ancestor at the screen's top takes the tooltip below it", function()
+  -- the strip's own rule (SR-L1): below only when there is no room above
+  withSecretValue(function()
+    onScreen(mocks, function(_, tip)
+      local parent = geo(holder(), 700, 1000, 400, 70, mocks.UIParent)
+      local h = W.DragHandle(parent, DH.baseSpec({ tooltip = { title = "Buffs" } }))
+      secretGeo(h, parent)
+      h:__fire("OnEnter")
+      local p = tip.__point
+      assertTrue(p ~= nil, "placed")
+      assertEqual(p.point, "TOP", "below the ancestor")
+      assertTrue(p.rel == mocks.UIParent, "an absolute point on UIParent")
+      assertEqual(p.x, 900, "centered on the ancestor")
+      assertEqual(p.y, 998, "TIP_GAP under its bottom")
+    end)
+  end)
+end)
+
+DH.test("tooltip sites: a strip secret all the way up shows no tooltip, raises nothing, anchors nothing", function()
+  -- red under: minor 2's relative point on the strip, or a placement above UIParent (the screen)
+  withSecretValue(function()
+    onScreen(mocks, function(_, tip)
+      local parent = secretGeo(holder(), mocks.UIParent)
+      local h = W.DragHandle(parent, DH.baseSpec({ tooltip = { title = "Buffs" }, onRightClick = function() end }))
+      secretGeo(h, parent)
+      h:__fire("OnEnter")
+      assertNil(tip.__point, "no point, so nothing anchored into the restricted tree")
+      assertTrue(not tip:IsShown(), "no tooltip")
+      geo(h.help, 942, 600, 14, 18, h)
+      h.help:__fire("OnEnter")
+      assertNil(tip.__point, "a mark: no point either")
+      assertTrue(not tip:IsShown(), "a mark: no tooltip")
+    end)
+  end)
+end)
+
+DH.test("tooltip sites: a strip with unreadable geometry and no readable ancestor shows no tooltip", function()
+  -- An unplaced strip under UIParent reads nil, as a secret one does. Through minor 2 it was attached
+  -- by a relative point on the strip; from minor 3 nothing anchors into the strip.
   onScreen(mocks, function(_, tip)
     local h = W.DragHandle(mocks.UIParent, DH.baseSpec({ tooltip = { title = "Buffs" } }))
     h:__fire("OnEnter")
-    assertAboveRelative(tip, h, "strip")
+    assertNil(tip.__point, "no relative point on the strip")
+    assertTrue(not tip:IsShown(), "no tooltip")
   end)
+end)
+
+DH.test("tooltip sites: WidgetsDragHandleTip is at minor 3 or later, the readable-ancestor walk", function()
+  assertTrue(W.MODULES.WidgetsDragHandleTip >= 3)
+  assertTrue(W.__dragTipMinor >= 3)
 end)
 
 test("tooltip sites: a body site with unreadable geometry falls back above its element", function()

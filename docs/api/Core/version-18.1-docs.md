@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **18** · `CorePixel.lua` minor **1** |
 | Shipped in | v1.105.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 17.1](./version-17.1-docs.md) (v1.91.0 – v1.104.0) — the same members, with no settings-opener registry. |
-| Superseded by | — |
+| Superseded by | [version 19.1](./version-19.1-docs.md) |
 | Requires | nothing new: `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 18, CorePixel = 1 }` |
 
@@ -646,3 +646,12 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
+
+## Moving to version 19.1
+
+The same members. See [version 19.1](./version-19.1-docs.md). Re-vendor the whole folder; a stub needs no
+change.
+
+**A host skin table can wear its owner's bands** (`SD-LK-97` Batch D, LibKa0s#97, 97.16): `ApplySkin(frame,
+skin, owner)` with `skin.skinBands = true` and a registered `owner` draws the owner's window gradient and
+background art inside the host's own edge, and follows its switches. Without the field nothing moves.

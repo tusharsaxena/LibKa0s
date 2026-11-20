@@ -10,9 +10,9 @@
 | Version | **57** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.105.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 56](version-56-docs.md) — a frame held only by its registration could be collected, and no suite could fake a screen to place a tooltip on |
-| Superseded by | — |
+| Superseded by | [version 58](version-58-docs.md) — each setter family moves on its own in the skin-switch test, every StatusBar's fill is read, and the typed-value scanner reads the shapes a color is kept in |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `57` |
 
