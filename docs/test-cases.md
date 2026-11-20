@@ -648,7 +648,7 @@ Total.
 
 ### test_callout.lua (52)
 
-- callout: the major loads at minor 4 and reports its one file
+- callout: the major loads at minor 5 and reports its one file
 - callout: without Core the major is absent (no NewLibrary)
 - callout: New refuses a descriptor without a db, naming it
 - callout: a method called on something that is not an instance raises
@@ -701,7 +701,7 @@ Total.
 - suspend: the countdown stops with no onDone, everything goes, and Show is refused until Resume
 - suspend: Stats reports the state a host's diagnostics prints
 
-### test_callout_look.lua (27)
+### test_callout_look.lua (32)
 
 - look: each animation is the setting's, built once from its own steps
 - look: slam lands from 2.2x and fades in; pulse swells and settles; shake runs out and back
@@ -722,6 +722,11 @@ Total.
 - position: a drag that ends without a relative point saves the point twice and finite offsets
 - unlock: the drag strip is built over the frame, hidden while locked, shown unlocked
 - unlock: the strip's own drag saves the point; d.label names it
+- strip marks: d.onClose and d.onSettings reach the strip, each under pcall
+- strip marks: a raising onClose or onSettings reaches the error handler, not the strip
+- strip marks: a descriptor without them builds the strip as before
+- strip marks: on the real strip, the X is present and calls onClose; the gear calls onSettings
+- strip marks: on the real strip, a descriptor without them has no X, the gear as before
 - unlock: locking mid-drag ends the move and saves the point
 - unlock: a Suspend mid-drag on the strip ends the move and saves the point
 - unlock: a lock with no drag running leaves the point alone
@@ -5673,7 +5678,7 @@ Total.
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
 | test_callout.lua | 52 |
-| test_callout_look.lua | 27 |
+| test_callout_look.lua | 32 |
 | test_callout_voice.lua | 30 |
 | test_callout_settings.lua | 34 |
 | test_callout_schema.lua | 25 |
@@ -5876,4 +5881,4 @@ Total.
 | test_skin_switch.lua | 6 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **4962** |
+| **Total** | **4967** |

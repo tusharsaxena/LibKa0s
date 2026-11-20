@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Callout-1.0` |
 | Files and minors | `Callout.lua` minor **4** · `CalloutSettings.lua` minor **5** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2, minors 4 and 5 at 3) |
 | Shipped in | v1.102.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 3.4](./version-3.4-docs.md) (v1.100.0) — the same surface, with the Look defaults before the owner's (Oxanium Bold, a 2 px shadow down and right, the glow at the old "soft" look in each word's kind color) and a sample line in the one tab's preview block |
-| Superseded by | — |
+| Superseded by | [version 5.5](./version-5.5-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
 | Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row; from 4, for the side layout, `Section` and `SideTabs` (Options' OptionsNav minor 7), each presence-checked), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame), from `Callout.lua` 3 the skin facade's `GlowColor` (Use the skin's color) and `LibKa0s-Core-1.0`'s `ClassColor` (Use class color, `RAID_CLASS_COLORS`), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 4, CalloutSettings = 5 }` |
@@ -750,3 +750,9 @@ order, so the whole-folder copy brings them in with no load-list change in the h
 **Consumer census.** Not measured: the major is new at v1.96.0, after the v1.83.0 stamp of
 [`CONSUMERS.md`](../CONSUMERS.md). Ka0s Combat Trail is its one planned consumer (LibKa0s#85); every
 export's verdict is *zero — planned at v1.96.0* until the next re-run.
+
+## Moving to version 5.5
+
+The same surface: no member is added or removed. See [version 5.5](./version-5.5-docs.md). Re-vendor the whole folder; a stub needs no change.
+
+**The descriptor takes `onClose` and `onSettings`** (`Callout.lua` 5, `SD-LK-100`, LibKa0s#100): functions the drag strip's close mark and settings mark call, under pcall. A host passes `onClose` to give its strip the X the standard's strip mark rule requires (close hides or disables the call-out), and `onSettings` to open its own page. A host that passes neither keeps minor 4's strip.

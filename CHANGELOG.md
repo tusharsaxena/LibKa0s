@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-20, on `feat/2026-11-20-libka0s-94-97-99-100` (off `master` at v1.107.0): LibKa0s#94, #97, #99 and #100 (Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/`). Written as the next release; the version is named at release.
 
-Versions in this release: `LibKa0s-Widgets-1.0` key **30.2.7.15.3.7.8.6.1.1** (Widgets minor 30, WidgetsDragHandleTip minor 3); every other file at its v1.107.0 minor, and the test kit at revision **57**. No `NEEDS_*` floor rises, no member changes, and no file is added.
+Versions in this release: `LibKa0s-Widgets-1.0` key **30.2.7.15.3.7.8.6.1.1** (Widgets minor 30, WidgetsDragHandleTip minor 3); `LibKa0s-Callout-1.0` key **5.5** (Callout minor 5); every other file at its v1.107.0 minor, and the test kit at revision **57**. No `NEEDS_*` floor rises, no member changes, and no file is added.
 
 ### Fixed
 
@@ -22,9 +22,14 @@ Versions in this release: `LibKa0s-Widgets-1.0` key **30.2.7.15.3.7.8.6.1.1** (W
 
 - **A drag strip whose rect reads secret shows its tooltip above its nearest readable ancestor (LibKa0s#99, WidgetsDragHandleTip minor 3, `SD-LK-99`).** The owner's ruling R-3. Through minor 2 a strip whose edges read secret (an Aura Master container attached under a parent holding auras, in an instance) fell back to a relative point on the strip, which the restricted tree refuses, so its tooltip, and its marks', did not render. The placement now walks the strip's ancestors (`GetParent`, up to but not including UIParent) and attaches the tooltip above the nearest one whose rect reads, with the same above/below rule, by an absolute point on UIParent, so nothing anchors into the restricted tree; above the strip still whenever the strip's rect reads. Secret all the way up, the tooltip is hidden: no tooltip and no error. `tests/test_tooltip_sites.lua` gains seven cases with the kit's secrets, red under minor 2.
 
+### Added
+
+- **A call-out's drag strip carries its close mark and opens the host's settings (LibKa0s#100, Callout minor 5, `SD-LK-100`, [docs](docs/api/Callout/version-5.5-docs.md)).** Through minor 4 `buildHandle` built the strip with no `onClose` or `onSettings`, so it showed no X (the standard's strip mark rule, v2.115.0, puts [?][settings][close] on every strip) and its settings mark could open only the `skin` owner's registered opener. The descriptor now takes `onClose` and `onSettings` (functions), handed to `Widgets.DragHandle` and each called under pcall, a raise reaching the error handler and a `CALLOUT` debug line. A descriptor without them builds minor 4's strip. Five cases in `tests/test_callout_look.lua`, three over the stand-in strip's spec and two over the real `WidgetsDragHandle.lua`, red under minor 4. Documentation: `docs/api/Callout/version-5.5-docs.md` (4.5 superseded, with its *Moving to version 5.5*) and `members-5.5.json`, the index row in `docs/api/README.md`, `README.md`'s Callout row.
+
 ### What a consumer owes at its re-vendor
 
 - Nothing in code. A host that re-anchored the footer's lines to close the gap drops the workaround; a footer stub owes `Relayout` only where its host calls it.
+- Combat Trail (the one Callout consumer) passes `onClose` (its countdown's enable toggle off) and `onSettings` (its Race page) in `core/CalloutSettings.lua`'s descriptor and retires the Documented deviation citing LibKa0s#100. A stub of the Callout instance needs no change.
 - Nothing in code for LibKa0s#99. Aura Master's known limitation "A strip whose position reads secret shows no tooltip" and its smoke DRAG-20 now expect the tooltip above the nearest readable container; a suite that pinned the relative point on an unreadable strip re-pins no tooltip.
 
 ## v1.107.0 — 2026-11-19

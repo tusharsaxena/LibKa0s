@@ -16,8 +16,9 @@
 -- (the frame's global name), `addon` and `vendorPath` (where the payload sits, for the voice packs
 -- and the bundled fonts), `soundsBase` (the folder holding the packs, overriding the one `addon`
 -- implies), `skin` (a registered skin owner, for the "Skin font" choice, the drag strip and,
--- from minor 3, the glow's skin color), `label` (the drag strip's text) and `debug` (`debug(tag, msg)`). docs/api/Callout/version-4.5-docs.md
--- is the full contract.
+-- from minor 3, the glow's skin color), `label` (the drag strip's text), from minor 5 `onClose` and
+-- `onSettings` (the drag strip's close and settings marks) and `debug` (`debug(tag, msg)`).
+-- docs/api/Callout/version-5.5-docs.md is the full contract.
 --
 -- ── WHERE A WRITE GOES (minor 2) ─────────────────────────────────────────────────────────────
 --
@@ -75,7 +76,12 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 -- `shadowY = 1`), and a black glow at full intensity, 1 px thick, 1 px right and 1 px down
 -- (`glowCustom`, `glowColor = { 0, 0, 0 }`, `glowIntensity = 1`, `glowThickness = 1`, `glowX = 1`,
 -- `glowY = -1`). A host that stored its own values reads them as before; `GLOW_LEGACY` is unchanged.
-local MAJOR, MINOR = "LibKa0s-Callout-1.0", 4
+-- Minor 5 (LibKa0s#100, `SD-LK-100`): the descriptor's `onClose` and `onSettings` (functions) reach
+-- the drag strip, so the strip carries its close mark (the standard's HUD header rule: close hides or
+-- disables the display) and its settings mark opens the host's page. Each is called under pcall, as
+-- every host callback here is. Without them the strip is minor 4's: no X, and the settings mark
+-- opens the `skin` owner's registered opener.
+local MAJOR, MINOR = "LibKa0s-Callout-1.0", 5
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -700,9 +706,18 @@ local function endDrag(S)
   savePosition(S)
 end
 
+--- Minor 5: the descriptor's strip callback `key` under pcall (`call`), or nil when it is not a function.
+local function hostMark(S, key)
+  local fn = S.d[key]
+  if type(fn) ~= "function" then return nil end
+  return function() call(S, fn) end
+end
+
 --- The drag strip over the frame while it is unlocked, when LibKa0s-Widgets-1.0 is present. It is a
 --- child of the frame, which never animates (the animations play on S.content), and it ignores the
---- frame's alpha and sits HANDLE_LEVEL over it (frame-layering-§2).
+--- frame's alpha and sits HANDLE_LEVEL over it (frame-layering-§2). From minor 5 the descriptor's
+--- `onClose` builds the strip's close mark and `onSettings` is what its settings mark opens; a
+--- descriptor without them builds minor 4's strip.
 local function buildHandle(S)
   local Widgets = resolve("LibKa0s-Widgets-1.0")
   if not (Widgets and type(Widgets.DragHandle) == "function") then return end
@@ -712,6 +727,7 @@ local function buildHandle(S)
     canDrag = function() return not S.locked end,
     onDragStart = function() S.moving = true end,
     onDragStop = function() S.moving = nil; savePosition(S) end,
+    onClose = hostMark(S, "onClose"), onSettings = hostMark(S, "onSettings"),   -- minor 5
   })
   if not handle then return end
   handle:SetPoint("BOTTOM", S.frame, "TOP", 0, HANDLE_GAP)

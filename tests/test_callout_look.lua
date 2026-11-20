@@ -358,6 +358,83 @@ test("unlock: the strip's own drag saves the point; d.label names it", function(
   assertEqual(db.point[4], -100)
 end)
 
+-- ── the strip's marks (minor 5, LibKa0s#100) ─────────────────────────────────────────────────
+
+test("strip marks: d.onClose and d.onSettings reach the strip, each under pcall", function()
+  -- red under minor 4: buildHandle passed neither, so the strip's spec carried no onClose or onSettings
+  local closed, opened = 0, 0
+  local c, m = newCallout({ onClose = function() closed = closed + 1 end,
+    onSettings = function() opened = opened + 1 end }, withHandle)
+  parts(c)
+  local spec = rawget(m.__handles[1], "__spec")
+  assertEqual(type(spec.onClose), "function", "the strip is handed a close")
+  assertEqual(type(spec.onSettings), "function", "and a settings opener")
+  spec.onClose()
+  spec.onSettings()
+  assertEqual(closed, 1, "the strip's close calls the host's onClose")
+  assertEqual(opened, 1, "the strip's settings mark calls the host's onSettings")
+  assertNil(spec.settings, "the settings mark stays the strip's default (built), not forced")
+end)
+
+test("strip marks: a raising onClose or onSettings reaches the error handler, not the strip", function()
+  local c, m = newCallout({ onClose = function() error("close boom") end,
+    onSettings = function() error("settings boom") end }, withHandle)
+  parts(c)
+  local spec = rawget(m.__handles[1], "__spec")
+  spec.onClose()
+  spec.onSettings()
+  assertEqual(#m.__errors, 2, "both raises reach the error handler")
+  assertTrue(tostring(m.__errors[1]):find("close boom", 1, true) ~= nil)
+  assertTrue(tostring(m.__errors[2]):find("settings boom", 1, true) ~= nil)
+end)
+
+test("strip marks: a descriptor without them builds the strip as before", function()
+  local c, m = newCallout({ onClose = "not a function" }, withHandle)
+  parts(c)
+  local spec = rawget(m.__handles[1], "__spec")
+  assertNil(spec.onClose, "no close handed over, so the strip draws no X")
+  assertNil(spec.onSettings, "no opener handed over, so the strip falls back to the owner's")
+  assertEqual(spec.label, "Call-out", "the rest of the spec is unchanged")
+end)
+
+-- The real LibKa0s-Widgets-1.0 strip, loaded before Callout: the marks the host's fields build.
+local function withRealWidgets(m)
+  local Loader = (_G.LK_TEST and _G.LK_TEST.loader) or dofile("tests/_kit/loader.lua")
+  Loader.load("LibKa0s/Core.lua", nil, m)
+  Loader.load("LibKa0s/Widgets.lua", nil, m)
+  Loader.load("LibKa0s/WidgetsDragHandle.lua", nil, m)
+  Loader.load("LibKa0s/WidgetsDragHandleTip.lua", nil, m)
+end
+
+local function realStrip(c)
+  for _, child in ipairs({ c:Frame():GetChildren() }) do
+    if rawget(child, "settings") ~= nil or rawget(child, "help") ~= nil then return child end
+  end
+  return nil
+end
+
+test("strip marks: on the real strip, the X is present and calls onClose; the gear calls onSettings", function()
+  local closed, opened = 0, 0
+  local c = newCallout({ onClose = function() closed = closed + 1 end,
+    onSettings = function() opened = opened + 1 end }, withRealWidgets)
+  local h = realStrip(c)
+  assertTrue(h ~= nil, "the real strip is built")
+  assertTrue(h.close ~= nil, "the close mark is built")
+  assertTrue(h.settings ~= nil, "the settings mark is built")
+  h.close:__fire("OnClick", "LeftButton")
+  assertEqual(closed, 1, "a left click on the X calls onClose")
+  h.settings:__fire("OnClick", "LeftButton")
+  assertEqual(opened, 1, "a left click on the gear calls onSettings")
+end)
+
+test("strip marks: on the real strip, a descriptor without them has no X, the gear as before", function()
+  local c = newCallout(nil, withRealWidgets)
+  local h = realStrip(c)
+  assertTrue(h ~= nil, "the real strip is built")
+  assertNil(h.close, "no onClose: no X")
+  assertTrue(h.settings ~= nil, "the settings mark is the strip's standard one, as at minor 4")
+end)
+
 test("unlock: locking mid-drag ends the move and saves the point", function()
   local c, m, db = newCallout()
   local f = parts(c)
