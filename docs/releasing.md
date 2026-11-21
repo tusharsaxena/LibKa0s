@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.108.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.109.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -420,6 +420,16 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    may turn a host's suite red, which is intended. The CHANGELOG's v1.108.0 block lists, per host,
    what each owes (the companions' AceDB defaults, one-time moves through `Skin.ResetToSkin` or
    `Callout:MoveToSkin`, re-pins), and each is a re-vendor smoke line.
+   v1.109.0 (Ka0sAddonsCommonTasks `docs/2026-11-21-SYNC_FOLLOWUPS/`, `FU-LK-*`) adds four payload files, no member,
+   no `NEEDS_*` floor and kit revision 59 (a README-only count fix). The three band peels move code and nothing else:
+   `CalloutRoute.lua` and `CalloutSound.lua` after `Callout.lua` (Callout 6.1.1.6), `OptionsComposeMaster.lua` after
+   `OptionsCompose.lua` (OptionsCompose 21) and `SkinPaintNav.lua` after `SkinPaintControls.lua` (SkinPaintControls 20).
+   `LibKa0s.xml` loads all four, so a host's TOC does not change. A host whose tests load library files by name (a
+   `tests/loader.lua`, a fixture's file list) adds each new file directly after the file it was peeled from in the re-vendor
+   commit: without them its call-outs have no `Get` / `Set` and no voice, its Options instance no `O.MasterControls`, and
+   its tabs, nav items, drawers and list rows go unpainted. A suite pinning `Callout 5`, `OptionsCompose 20`,
+   `SkinPaintControls 19` or `KIT_VERSION` 58 re-pins it. No Skin facade, major or instance member moves, no icon or
+   sound is added, and nothing a player sees changes, so the re-vendor owes no smoke line of its own.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not. DpsRace left the loop and the table's Consumers column on 2026-11-19 (`AF-DR-LK` of
    Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`): it is retired, merged into Combat Trail, and is not a consumer.
@@ -435,6 +445,10 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    Every file that prints must appear in the table's third column. A second lookup site nobody
    recorded is a file the checklist never points a reviewer at — which is exactly how
    AbsorbTracker's `settings/Schema.lua` went unnamed until the 2026-08-01 v2 adoption run.
+
+   **The v1.109.0 sweep (2026-11-21, every roster addon at its `master`) found these hosts looking a major up that
+   its row's Consumers cell does not name** (a cell that counts "all N" rather than naming is listed too): `Core` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `DebugLog` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Slash` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Launcher` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Options` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Media` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Widgets` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster, WhatGroup; `Perf` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Lifecycle` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Env` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Pool` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Item` OutfitterReborn; `Toast` CombatTrail, QuickComms, SkillMaster; `Tooltip` BankLedger, CombatTrail, ConsumableMaster, DropWatcher, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PremadeGroupsFilterExtension, QuickComms, RangeMaster, SkillMaster, WhatGroup; `Compat` CombatTrail, OutfitterReborn, PanelMaster, RangeMaster; `Bus` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Schema` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Sim` CombatTrail, RangeMaster, SkillMaster, WhatGroup; `Skin` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster. The peels add no surface, so no row's wiring moved with this release; the cells are left for a sweep that reads each site,
+   and this list is what it starts from.
 
 ## Re-vendoring consumers
 
@@ -489,7 +503,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.108.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.109.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
