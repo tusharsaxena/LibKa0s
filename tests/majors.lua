@@ -79,9 +79,11 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Callout-1.0",
-    files = { "Callout", "CalloutSettings" },
+    files = { "Callout", "CalloutRoute", "CalloutSound", "CalloutSettings" },
     primary = "Callout",
     paired = {
+      { file = "CalloutRoute", minorField = "__routeMinor", probeField = "__routeShellMinor" },
+      { file = "CalloutSound", minorField = "__soundMinor", probeField = "__soundShellMinor" },
       { file = "CalloutSettings", minorField = "__settingsMinor", probeField = "__settingsShellMinor" },
     },
   },
@@ -111,7 +113,7 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Skin-1.0",
-    files = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls", "SkinEUI", "SkinAce" },
+    files = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls", "SkinPaintNav", "SkinEUI", "SkinAce" },
     primary = "Skin",
     paired = {
       { file = "SkinOwnerTokens", minorField = "__tokensMinor", probeField = "__tokensShellMinor" },
@@ -122,6 +124,7 @@ local MAJORS = {
       { file = "SkinPaintHud", minorField = "__hudMinor", probeField = "__hudShellMinor" },
       { file = "SkinAceConfirm", minorField = "__confirmMinor", probeField = "__confirmShellMinor" },
       { file = "SkinPaintControls", minorField = "__controlsMinor", probeField = "__controlsShellMinor" },
+      { file = "SkinPaintNav", minorField = "__paintNavMinor", probeField = "__paintNavShellMinor" },
       { file = "SkinEUI", minorField = "__euiMinor", probeField = "__euiShellMinor" },
       { file = "SkinAce", minorField = "__aceMinor", probeField = "__aceShellMinor" },
     },
@@ -165,7 +168,7 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Options-1.0",
-    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerQueue", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" },
+    files = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose", "OptionsComposeMaster", "OptionsScroll", "OptionsNav", "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerQueue", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" },
     primary = "Options",
     paired = {
       { file = "OptionsRegistry", minorField = "__registryMinor", probeField = "__registryShellMinor" },
@@ -179,6 +182,7 @@ local MAJORS = {
       { file = "OptionsHeader", minorField = "__headerMinor", probeField = "__headerShellMinor" },
       { file = "OptionsCombat",  minorField = "__combatMinor",  probeField = "__combatShellMinor" },
       { file = "OptionsCompose", minorField = "__composeMinor", probeField = "__composeShellMinor" },
+      { file = "OptionsComposeMaster", minorField = "__masterMinor", probeField = "__masterShellMinor" },
       { file = "OptionsScroll",  minorField = "__scrollMinor",  probeField = "__scrollShellMinor" },
       { file = "OptionsNav",     minorField = "__navMinor",     probeField = "__navShellMinor" },
       { file = "OptionsDrawer",  minorField = "__drawerMinor",  probeField = "__drawerShellMinor" },

@@ -25,9 +25,9 @@ local OWNER = "TestHost"
 local SKULL = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8"
 local OPENER = "TestHostOpener"
 
-local SKIN = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls" }
+local SKIN = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls", "SkinPaintNav" }
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest",
-  "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav",
+  "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader", "OptionsCombat", "OptionsCompose", "OptionsComposeMaster", "OptionsScroll", "OptionsNav",
   "OptionsDrawer", "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerQueue", "OptionsSkinPickerRows",
   "OptionsSwitch", "OptionsMedia" }
 

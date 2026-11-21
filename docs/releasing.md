@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.108.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.109.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -25,16 +25,16 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   eighty-two, by their exact constant names: `MINOR` in `Core.lua`, `PIXEL_MINOR` in `CorePixel.lua`, `MINOR` in `Tooltip.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   eighty-six, by their exact constant names: `MINOR` in `Core.lua`, `PIXEL_MINOR` in `CorePixel.lua`, `MINOR` in `Tooltip.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Role.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
-   `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Glow.lua`, `MINOR` in `Toast.lua`, `MINOR` in `Callout.lua`, `SETTINGS_MINOR` in `CalloutSettings.lua`, `MINOR` in `WaypointArrow.lua`, `SETTINGS_MINOR` in `WaypointArrowSettings.lua`, `MINOR` in `Charts.lua`, `RENDER_MINOR` in `ChartsRender.lua`, `MINOR` in `Media.lua`, `ICONS_MINOR` in `MediaIcons.lua` (a generated file: change the
-   constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `TOKENS_MINOR` in `SkinOwnerTokens.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `OTHERS_MINOR` in `SkinDefsOthers.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `HUD_MINOR` in `SkinPaintHud.lua`, `CONFIRM_MINOR` in `SkinAceConfirm.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
+   `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Glow.lua`, `MINOR` in `Toast.lua`, `MINOR` in `Callout.lua`, `ROUTE_MINOR` in `CalloutRoute.lua`, `SOUND_MINOR` in `CalloutSound.lua`, `SETTINGS_MINOR` in `CalloutSettings.lua`, `MINOR` in `WaypointArrow.lua`, `SETTINGS_MINOR` in `WaypointArrowSettings.lua`, `MINOR` in `Charts.lua`, `RENDER_MINOR` in `ChartsRender.lua`, `MINOR` in `Media.lua`, `ICONS_MINOR` in `MediaIcons.lua` (a generated file: change the
+   constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `TOKENS_MINOR` in `SkinOwnerTokens.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `OTHERS_MINOR` in `SkinDefsOthers.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `HUD_MINOR` in `SkinPaintHud.lua`, `CONFIRM_MINOR` in `SkinAceConfirm.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `PAINTNAV_MINOR` in `SkinPaintNav.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
    `Slash.lua`, `PARSE_MINOR` in `SlashParse.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `DROPDOWN_MINOR` in `WidgetsDropdown.lua`, `REORDER_MINOR` in
    `WidgetsReorder.lua`, `DRAG_MINOR` in
    `WidgetsDragHandle.lua`, `DRAGTIP_MINOR` in `WidgetsDragHandleTip.lua`, `CHART_MINOR` in `WidgetsLineChart.lua`, `AUTOCOMPLETE_MINOR` in `WidgetsAutocomplete.lua`, `COPY_MINOR` in `WidgetsCopyWindow.lua`, `HEADER_MINOR` in `WidgetsHeader.lua`, `BAR_MINOR` in `WidgetsBar.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WINDOW_MINOR` in `DebugLogWindow.lua`, `WIDGETS_MINOR` in
    `OptionsWidgets.lua`, `FLOW_MINOR` in `OptionsFlow.lua`, `IDS_MINOR` in `OptionsIds.lua`, `SUGGEST_MINOR` in `OptionsIdSuggest.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
    `TABS_MINOR` in `OptionsTabs.lua`, `TABBED_MINOR` in `OptionsTabbed.lua`, `HEADER_MINOR` in `OptionsHeader.lua`, `COMBAT_MINOR` in `OptionsCombat.lua`, `SCROLL_MINOR`
-   in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `DRAWER_MINOR` in `OptionsDrawer.lua`, `KEYBINDS_MINOR` in `OptionsKeybinds.lua`, `APPEARANCE_MINOR` in `OptionsAppearance.lua`, `PICKER_MINOR` in `OptionsSkinPicker.lua`, `QUEUE_MINOR` in `OptionsSkinPickerQueue.lua`, `ROWS_MINOR` in `OptionsSkinPickerRows.lua`, `SWITCH_MINOR` in `OptionsSwitch.lua`, `MEDIA_MINOR` in `OptionsMedia.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
+   in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `DRAWER_MINOR` in `OptionsDrawer.lua`, `KEYBINDS_MINOR` in `OptionsKeybinds.lua`, `APPEARANCE_MINOR` in `OptionsAppearance.lua`, `PICKER_MINOR` in `OptionsSkinPicker.lua`, `QUEUE_MINOR` in `OptionsSkinPickerQueue.lua`, `ROWS_MINOR` in `OptionsSkinPickerRows.lua`, `SWITCH_MINOR` in `OptionsSwitch.lua`, `MEDIA_MINOR` in `OptionsMedia.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MASTER_MINOR` in `OptionsComposeMaster.lua`, `MINOR` in `Perf.lua`,
    `SAMPLER_MINOR` in `PerfSampler.lua`, `COMMANDS_MINOR` in `PerfCommands.lua`, `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`, `MINOR` in `Sim.lua`,
    `TIMELINE_MINOR` in `SimTimeline.lua`, `SIM_PANEL_MINOR` in `SimPanel.lua`, `RENDER_MINOR` in `SimPanelRender.lua`, `MINOR` in `IconBrowserSources.lua`, `WINDOW_MINOR` in `IconBrowserWindow.lua`, `BROWSER_MINOR` in `IconBrowser.lua`. The secondary files carry
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
@@ -43,12 +43,12 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 3. **A new module is also a new row in `tests/majors.lua`'s `MAJORS`** — its major string, its files in
    `LibKa0s.xml` order, its primary, and any `paired` secondary. `tests/test_versioning.lua` iterates
    that table rather than naming files inline, so a module missing from it is a module nothing
-   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of twenty-two and a
-   `paired` array of twenty-one (`{ OptionsRegistry, __registryMinor, __registryShellMinor }`,
+   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of twenty-three and a
+   `paired` array of twenty-two (`{ OptionsRegistry, __registryMinor, __registryShellMinor }`,
    `{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`, `{ OptionsFlow, __flowMinor, __flowShellMinor }`,
    `{ OptionsIds, __idsMinor, __idsShellMinor }`, `{ OptionsIdSuggest, __suggestMinor, __suggestShellMinor }`, `{ OptionsIdList, __idListMinor, __idListShellMinor }`,
    `{ OptionsTabs, __tabsMinor, __tabsShellMinor }`, `{ OptionsTabbed, __tabbedMinor, __tabbedShellMinor }`, `{ OptionsHeader, __headerMinor, __headerShellMinor }`, `{ OptionsCombat, __combatMinor, __combatShellMinor }`,
-   `{ OptionsCompose, __composeMinor, __composeShellMinor }`,
+   `{ OptionsCompose, __composeMinor, __composeShellMinor }`, `{ OptionsComposeMaster, __masterMinor, __masterShellMinor }`,
    `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`, `{ OptionsNav, __navMinor, __navShellMinor }`,
    `{ OptionsDrawer, __drawerMinor, __drawerShellMinor }`,
    `{ OptionsKeybinds, __keybindsMinor, __keybindsShellMinor }`,
@@ -420,6 +420,18 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    may turn a host's suite red, which is intended. The CHANGELOG's v1.108.0 block lists, per host,
    what each owes (the companions' AceDB defaults, one-time moves through `Skin.ResetToSkin` or
    `Callout:MoveToSkin`, re-pins), and each is a re-vendor smoke line.
+   v1.109.0 (Ka0sAddonsCommonTasks `docs/2026-11-21-SYNC_FOLLOWUPS/`, `FU-LK-*`) adds four payload files, no member,
+   no `NEEDS_*` floor and kit revision 59 (a README-only count fix). The three band peels move code and nothing else:
+   `CalloutRoute.lua` and `CalloutSound.lua` after `Callout.lua` (Callout 6.1.1.6), `OptionsComposeMaster.lua` after
+   `OptionsCompose.lua` (OptionsCompose 21) and `SkinPaintNav.lua` after `SkinPaintControls.lua` (SkinPaintControls 20).
+   Two comment-only bumps ride with them: `Compat.lua` 5 (Compat key 5) and `Sim.lua` 4 (Sim key 4.3.11.4), whose comments
+   now cite the standard's forever-quirks-§4 for the Forever names entry v2.117.0 moved out of client-quirks-§5.
+   `LibKa0s.xml` loads all four new files, so a host's TOC does not change. A host whose tests load library files by name (a
+   `tests/loader.lua`, a fixture's file list) adds each new file directly after the file it was peeled from in the re-vendor
+   commit: without them its call-outs have no `Get` / `Set` and no voice, its Options instance no `O.MasterControls`, and
+   its tabs, nav items, drawers and list rows go unpainted. A suite pinning `Callout 5`, `OptionsCompose 20`,
+   `SkinPaintControls 19`, `Compat 4`, `Sim 3` or `KIT_VERSION` 58 re-pins it. No Skin facade, major or instance member moves, no icon or
+   sound is added, and nothing a player sees changes, so the re-vendor owes no smoke line of its own.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not. DpsRace left the loop and the table's Consumers column on 2026-11-19 (`AF-DR-LK` of
    Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`): it is retired, merged into Combat Trail, and is not a consumer.
@@ -436,11 +448,15 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    recorded is a file the checklist never points a reviewer at — which is exactly how
    AbsorbTracker's `settings/Schema.lua` went unnamed until the 2026-08-01 v2 adoption run.
 
+   **The v1.109.0 sweep (2026-11-21, every roster addon at its `master`) found these hosts looking a major up that
+   its row's Consumers cell does not name** (a cell that counts "all N" rather than naming is listed too): `Core` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `DebugLog` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Slash` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Launcher` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Options` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Media` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Widgets` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster, WhatGroup; `Perf` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Lifecycle` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Env` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Pool` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Item` OutfitterReborn; `Toast` CombatTrail, QuickComms, SkillMaster; `Tooltip` BankLedger, CombatTrail, ConsumableMaster, DropWatcher, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PremadeGroupsFilterExtension, QuickComms, RangeMaster, SkillMaster, WhatGroup; `Compat` CombatTrail, OutfitterReborn, PanelMaster, RangeMaster; `Bus` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Schema` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster; `Sim` CombatTrail, RangeMaster, SkillMaster, WhatGroup; `Skin` CombatTrail, OutfitterReborn, RangeMaster, SkillMaster. The peels add no surface, so no row's wiring moved with this release; the cells are left for a sweep that reads each site,
+   and this list is what it starts from.
+
 ## Re-vendoring consumers
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the eighty-two `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the eighty-six `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
@@ -489,7 +505,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.108.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.109.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:

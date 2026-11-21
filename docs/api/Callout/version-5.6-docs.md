@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Callout-1.0` |
 | Files and minors | `Callout.lua` minor **5** · `CalloutSettings.lua` minor **6** (paired on `Callout.lua`'s minor; minor 3 needs the shell at 2, minors 4 to 6 at 3) |
 | Shipped in | v1.108.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 4.5](./version-4.5-docs.md) (v1.102.0) — a drag strip that carried no close mark and whose settings mark opened only the `skin` owner's registered opener (the descriptor had no `onClose` or `onSettings`, LibKa0s#100), and a look that kept the owner's L17 settings under every skin (LibKa0s#97). This key was 5.5 on the branch until `SD-LK-97` Batch C moved `CalloutSettings.lua`; 5.5 never shipped |
-| Superseded by | — |
+| Superseded by | [version 6.1.1.6](./version-6.1.1.6-docs.md) (v1.109.0) — the same members, the write route and the sound moved to `CalloutRoute.lua` and `CalloutSound.lua` (`FU-LK-CALLOUT`) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called) |
 | Optional at call time | the host's write seam and prefix (`d.set`, `d.path`, from 2), the host's `LibKa0s-Options-1.0` instance, handed to `BuildSettings` (`EnsureScroll`, `TextRow`, `InlineButtonPair`, `RenderRows`, all four checked before anything is drawn, and the `Ka0sMedia_Font` picker through its row; from 4, for the side layout, `Section` and `SideTabs` (Options' OptionsNav minor 7), each presence-checked), `LibKa0s-Media-1.0` (`Font`, `FONTS`, the bundled faces), `LibKa0s-Skin-1.0` (`IsOwner`, `For(owner).GetFont`, the "Skin font" choice), `LibKa0s-Widgets-1.0` (`DragHandle`, the strip over an unlocked frame; from 5 its `onClose` and `onSettings`, which minor 15 of its `WidgetsDragHandle.lua` reads), from `Callout.lua` 3 the skin facade's `GlowColor` (Use the skin's color) and `LibKa0s-Core-1.0`'s `ClassColor` (Use class color, `RAID_CLASS_COLORS`), `LibSharedMedia-3.0` (`Fetch`, `List`), `PlaySoundFile`, `C_VoiceChat.GetTtsVoices` and `C_VoiceChat.SpeakText`, each presence-checked |
 | Confirm in-game | `LibStub("LibKa0s-Callout-1.0").MODULES` → `{ Callout = 5, CalloutSettings = 6 }` |
@@ -866,3 +866,7 @@ order, so the whole-folder copy brings them in with no load-list change in the h
 **Consumer census.** Not measured: the major is new at v1.96.0, after the v1.83.0 stamp of
 [`CONSUMERS.md`](../CONSUMERS.md). Ka0s Combat Trail is its one planned consumer (LibKa0s#85); every
 export's verdict is *zero — planned at v1.96.0* until the next re-run.
+
+## Moving to version 6.1.1.6
+
+No member is added or removed and nothing a host sees changes. See [version 6.1.1.6](./version-6.1.1.6-docs.md). Re-vendor the whole folder: `LibKa0s.xml` loads the two new files after `Callout.lua`, so the host's TOC does not change. A host whose tests load library files by name adds `CalloutRoute.lua` and `CalloutSound.lua` after `Callout.lua`, or its call-outs have no `Get` / `Set` and no voice; a suite pinning `Callout 5` re-pins it at 6. A stub needs no change.

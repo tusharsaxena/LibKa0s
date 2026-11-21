@@ -201,7 +201,7 @@ Total.
 
 ### test_compat.lua (64)
 
-- compat: registers minor 4 with exactly the seventeen public members
+- compat: registers minor 5 with exactly the seventeen public members
 - compat: the Core floor keeps the major absent from a payload without Core
 - compat: the source reads every global bare, never through the global table
 - compat: IsSecret is false for every value when the client has no secrets system
@@ -648,7 +648,7 @@ Total.
 
 ### test_callout.lua (52)
 
-- callout: the major loads at minor 5 and reports its one file
+- callout: the major loads at minor 6 and reports its primary file
 - callout: without Core the major is absent (no NewLibrary)
 - callout: New refuses a descriptor without a db, naming it
 - callout: a method called on something that is not an instance raises
@@ -4407,7 +4407,7 @@ Total.
 
 ### test_options_compose_follow.lua (13)
 
-- compose follow: OptionsCompose is at minor 20
+- compose follow: OptionsCompose is at minor 21
 - compose follow: FontGroup with no fromSkin emits Use the skin's font, on and governing the picker
 - compose follow: FontGroup with no flagsFromSkin leads Font flags with From skin and defaults to it
 - compose follow: flagsFromSkin = false is minor 19's typed Font flags row
@@ -5016,7 +5016,7 @@ Total.
 - sim sample: Sample() reads the client at call time, not at load
 - sim sample: with no Compat, or a client that is neither, Sample() answers retail
 - sim sample: an unknown client raises at the caller's line
-- sim sample: the shell's minor is 3
+- sim sample: the shell's minor is 4
 
 ### test_loader.lua (6)
 
@@ -5445,7 +5445,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 58
+- the kit is revision 59
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key

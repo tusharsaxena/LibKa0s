@@ -22,7 +22,7 @@ local installBindings = dofile("tests/_kit/mock_bindings.lua")
 
 local OWNER, OTHER = "LootHistory", "BankLedger"
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader",
-                  "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
+                  "OptionsCombat", "OptionsCompose", "OptionsComposeMaster", "OptionsScroll", "OptionsNav", "OptionsDrawer",
                   "OptionsKeybinds" }
 
 local function survey(m, obj) return m.__paint(obj) end

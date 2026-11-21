@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **18** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **28** · `SkinDefsOthers.lua` **10** · `SkinPaint.lua` **20** · `SkinPaintExtras.lua` **19** · `SkinPaintHud.lua` **2** · `SkinAceConfirm.lua` **1** · `SkinPaintControls.lua` **19** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
 | Shipped in | v1.108.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 18.1.28.10.19.19.1.1.18.4.9](./version-18.1.28.10.19.19.1.1.18.4.9-docs.md) (v1.105.0 – v1.107.0) — the same surface: `S.BarGloss` left a fill Texture alone, so no bar of data drawn as a Texture (the Widgets Bar, a Charts bar) wore Glass's gloss, and `S.ApplyBarFill` set only a color on a StatusBar with no texture, which then drew nothing, and `S.Shell` had no way to keep a host's edge, so a host-skinned window never wore its skin's gradient or art (LibKa0s#97). |
-| Superseded by | — |
+| Superseded by | [version 18.1.28.10.20.19.2.1.20.1.4.9](./version-18.1.28.10.20.19.2.1.20.1.4.9-docs.md) (v1.109.0) — the same surface, the tabs and the navigation, drawer and list-row primitives moved to `SkinPaintNav.lua` (`FU-LK-PAINTCTL`) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). Core members are used optionally, resolved at call time: `SkinEUI.lua`'s `SafeRegisterEvent` (with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner`), and from `SkinPaintExtras.lua` 18 Core 16's pixel edges (with a Core that lacks them `P.px` answers its `n` and no edge is re-sized on a scale change) |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 18, SkinOwnerTokens = 1, SkinDefs = 28, SkinDefsOthers = 10, SkinPaint = 20, SkinPaintExtras = 19, SkinPaintHud = 2, SkinAceConfirm = 1, SkinPaintControls = 19, SkinEUI = 4, SkinAce = 9 }` |
 
@@ -2241,3 +2241,7 @@ the LibStub race later keeps every owner, record and facade; the resolve cache a
 - `addonName`: no consumer as of v1.83.0, kept because the scan counts a read of the Options descriptor inside a Skin file; it is `lib:New`'s `addonName`, which is passed there.
 - `thirdPartySkinAddons`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
 - `thirdPartySkinsOff`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
+
+## Moving to version 18.1.28.10.20.19.2.1.20.1.4.9
+
+No member is added or removed and nothing a host sees changes. See [version 18.1.28.10.20.19.2.1.20.1.4.9](./version-18.1.28.10.20.19.2.1.20.1.4.9-docs.md). Re-vendor the whole folder: `LibKa0s.xml` loads `SkinPaintNav.lua` after `SkinPaintControls.lua`, so the host's TOC does not change. A host whose tests load library files by name adds it there, or its tabs, nav items, drawers and list rows go unpainted; a suite pinning `SkinPaintControls 19` re-pins it at 20. A Skin facade owes nothing.

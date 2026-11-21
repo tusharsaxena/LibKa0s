@@ -228,8 +228,8 @@ test("sim sample: an unknown client raises at the caller's line", function()
   end
 end)
 
-test("sim sample: the shell's minor is 3", function()
+test("sim sample: the shell's minor is 4", function()
   local _, Sim = env()
-  assertEqual(Sim.MINOR, 3)
-  assertEqual(Sim.MODULES.Sim, 3)
+  assertEqual(Sim.MINOR, 4)
+  assertEqual(Sim.MODULES.Sim, 4)
 end)

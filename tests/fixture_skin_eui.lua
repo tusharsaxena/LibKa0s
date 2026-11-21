@@ -24,7 +24,7 @@ local F = dofile("tests/fixture_skin_paint.lua")
 local E = {}
 
 E.OWNER = "LootHistory"
-E.FILES = { "Core", "CorePixel", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls", "SkinEUI" }
+E.FILES = { "Core", "CorePixel", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls", "SkinPaintNav", "SkinEUI" }
 
 local PRIMITIVES = { "Shell", "Panel", "Inset", "FadeRegions", "FadeNineSlice", "Button",
   "WhiteButtonLabel", "StateButtonLabel", "EditBox", "Checkbox", "Dropdown", "ScrollBar", "Tab",

@@ -12,9 +12,9 @@ local F = dofile("tests/fixture_skin_paint.lua")
 local Loader = (_G.LK_TEST and _G.LK_TEST.loader) or dofile("tests/_kit/loader.lua")
 
 local OWNER, OTHER, THIRD = "LootHistory", "BankLedger", "KickCD"
-local SKIN_FILES = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls", "SkinEUI" }
+local SKIN_FILES = { "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint", "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls", "SkinPaintNav", "SkinEUI" }
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader",
-                  "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
+                  "OptionsCombat", "OptionsCompose", "OptionsComposeMaster", "OptionsScroll", "OptionsNav", "OptionsDrawer",
                   "OptionsKeybinds", "OptionsAppearance", "OptionsSkinPicker", "OptionsSkinPickerQueue", "OptionsSkinPickerRows", "OptionsSwitch", "OptionsMedia" }
 local LSM = { ["font:Ka0s Expressway"] = "Fonts\\Expressway.ttf", ["font:Ka0s Nunito"] = "Fonts\\Nunito.ttf" }
 

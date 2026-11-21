@@ -27,17 +27,19 @@ local function live(m) return #m.__timers() end
 
 -- ── load and construction ────────────────────────────────────────────────────────────────────
 
-test("callout: the major loads at minor 5 and reports its one file", function()
+test("callout: the major loads at minor 6 and reports its primary file", function()
   local _, Callout = env()
   assertEqual(Callout.MAJOR, MAJOR)
-  assertEqual(Callout.MINOR, 5)
-  assertEqual(Callout.MODULES.Callout, 5)
+  assertEqual(Callout.MINOR, 6)
+  assertEqual(Callout.MODULES.Callout, 6)
   assertEqual(T.callout, T.mocks.LibStub(MAJOR), "the runner's whole-payload load carries it too")
 end)
 
 test("callout: without Core the major is absent (no NewLibrary)", function()
   local m = buildMocks()
   Loader.load("LibKa0s/Callout.lua", nil, m)
+  Loader.load("LibKa0s/CalloutRoute.lua", nil, m)
+  Loader.load("LibKa0s/CalloutSound.lua", nil, m)
   assertNil(m.LibStub(MAJOR, true))
 end)
 

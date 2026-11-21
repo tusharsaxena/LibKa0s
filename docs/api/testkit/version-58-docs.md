@@ -10,9 +10,9 @@
 | Version | **58** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.108.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 57](version-57-docs.md) — the skin-switch test passed a surface when any one setter moved, so a bar whose color followed the skin passed with a texture that never did, and the typed-value scanner read colors only in calls, escapes and `{ text, r, g, b }` rows |
-| Superseded by | — |
+| Superseded by | [version 59](version-59-docs.md) — the README's counts no longer go stale |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `58` |
 

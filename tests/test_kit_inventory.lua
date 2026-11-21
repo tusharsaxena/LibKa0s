@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 58", function()
-  assertEqual(Kit.VERSION, 58, "the release after v1.107.0 ships revision 58: each setter family moves on its own in the skin-switch test, and the scanner reads a kept color (LibKa0s#97, SD-LK-GUARD)")
-  assertEqual(T.KIT_VERSION, 58, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 59", function()
+  assertEqual(Kit.VERSION, 59, "the release after v1.108.0 ships revision 59: the README counts its eight suites and names the roster rather than a count of its copies (FU-LK-KITDOC)")
+  assertEqual(T.KIT_VERSION, 59, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

@@ -9,10 +9,10 @@
 |---|---|
 | Major | `LibKa0s-Compat-1.0` |
 | Files and minors | `Compat.lua` minor **4** |
-| Shipped in | v1.94.0 |
-| Status | **Current** |
+| Shipped in | v1.94.0 – v1.108.0 |
+| Status | Superseded |
 | Supersedes | [version 3](./version-3-docs.md) (v1.93.0) — thirteen members, with no character identity. |
-| Superseded by | — |
+| Superseded by | [version 5](./version-5-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Compat-1.0").MODULES` → `{ Compat = 4 }` |
 
 ## What changed at this version: character identity (`W1-LK-02`)
@@ -434,3 +434,7 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 `Compat.lua` is a new entry in `LibKa0s.xml`, immediately after `Env.lua`. A consumer whose test
 harness derives its load list from that XML picks it up with no edit; a consumer that re-types the
 list adds one row after `libs/LibKa0s/Env.lua`.
+
+## Moving to version 5
+
+**Take it; nothing moves.** Version 5 is this surface and this behavior; only the character-identity comment in `Compat.lua` changes, citing the standard's forever-quirks-§4 where this version cites client-quirks-§5 (the entry moved at WowAddonStandards v2.117.0). A suite pinning minor 4 re-pins it at 5. See [version 5](./version-5-docs.md).

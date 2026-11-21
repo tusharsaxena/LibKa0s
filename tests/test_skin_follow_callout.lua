@@ -37,6 +37,8 @@ local function bench()
   local m, Skin = FS.env({ lsm = LSM })
   m.STANDARD_TEXT_FONT = "Fonts\\FRIZQT__.TTF"
   Loader.load("LibKa0s/Callout.lua", nil, m)
+  Loader.load("LibKa0s/CalloutRoute.lua", nil, m)
+  Loader.load("LibKa0s/CalloutSound.lua", nil, m)
   Loader.load("LibKa0s/CalloutSettings.lua", nil, m)
   return m, Skin, m.LibStub("LibKa0s-Callout-1.0")
 end

@@ -25,7 +25,7 @@ local installBindings = dofile("tests/_kit/mock_bindings.lua")
 
 local OWNER, OTHER = "LootHistory", "BankLedger"
 local OPTIONS = { "Options", "OptionsRegistry", "OptionsWidgets", "OptionsFlow", "OptionsIds", "OptionsIdSuggest", "OptionsIdList", "OptionsTabs", "OptionsTabbed", "OptionsHeader",
-                  "OptionsCombat", "OptionsCompose", "OptionsScroll", "OptionsNav", "OptionsDrawer",
+                  "OptionsCombat", "OptionsCompose", "OptionsComposeMaster", "OptionsScroll", "OptionsNav", "OptionsDrawer",
                   "OptionsKeybinds" }
 
 local WHITE, GRAY, GOLD = "1,1,1,1", "0.800,0.800,0.800,1", "1,0.820,0,1"

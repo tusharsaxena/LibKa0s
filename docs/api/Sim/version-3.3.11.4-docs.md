@@ -10,10 +10,10 @@
 | Major | `LibKa0s-Sim-1.0` |
 | Files and minors | `Sim.lua` **3** · `SimTimeline.lua` **3** · `SimPanel.lua` **11** · `SimPanelRender.lua` **4** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `3.3.11.4` |
-| Shipped in | v1.105.0 |
-| Status | **Current** |
+| Shipped in | v1.105.0 – v1.108.0 |
+| Status | Superseded |
 | Supersedes | [version 2.3.10.3](./version-2.3.10.3-docs.md) — the same surface without `SAMPLE` and `Sample`, which are new; the panel's title band carried the close mark alone, and the default panel title read `name .. " - Simulation"` and was no string a host could override. |
-| Superseded by | — |
+| Superseded by | [version 4.3.11.4](./version-4.3.11.4-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 3, SimTimeline = 3, SimPanel = 11, SimPanelRender = 4 }` |
 
@@ -1088,3 +1088,7 @@ bodies only define functions; no frame, timer or event registration exists until
 host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
 into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
 parse time only.
+
+## Moving to version 4.3.11.4
+
+**Take it; nothing moves.** Version 4.3.11.4 is this surface and this behavior; `Sim.lua` moves to 4 and only its sample-character comment changes, citing the standard's forever-quirks-§4 where this version cites client-quirks-§5 (the entry moved at WowAddonStandards v2.117.0). A suite pinning `Sim.MINOR` 3 re-pins it at 4. See [version 4.3.11.4](./version-4.3.11.4-docs.md).
