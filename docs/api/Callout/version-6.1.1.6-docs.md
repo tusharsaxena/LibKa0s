@@ -19,7 +19,7 @@
 
 ## What changed at this version: the write route and the sound peel (`FU-LK-CALLOUT`)
 
-A pure move, on the two seams `CLAUDE.md`'s census entry named for `Callout.lua` (`FU-LK-CALLOUT` of Ka0sAddonsCommonTasks `docs/2026-11-21-SYNC_FOLLOWUPS/`, the owner's ruling *fix* on the band files): no public or private member and no behavior changes, so `members-6.1.1.6.json` lists the same names as version 5.6. `Callout.lua` 1416 -> 1113 lines at **minor 6**.
+A pure move, on the two seams `CLAUDE.md`'s census entry named for `Callout.lua` (`FU-LK-CALLOUT` of Ka0sAddonsCommonTasks `docs/2026-11-21-SYNC_FOLLOWUPS/`, the owner's ruling *fix* on the band files): no public member, no instance member and no behavior changes (the private lib fields the peel needs, `__calloutKit`, `__write`, `__sound` and the two files' pairing minors, are described below), so `members-6.1.1.6.json` lists the same names as version 5.6. `Callout.lua` 1416 -> 1113 lines at **minor 6**.
 
 - **`CalloutRoute.lua` minor 1** (new, loaded after `Callout.lua`) carries the write-route section (`prefixOf` through `write`: the host's prefix, `encodeColor`, the leaf keys, `validFor`, `defaultOf`, `writeWhole`), the setting verbs that are its only callers (`Get`, `Set` with its minor-2 glow choice and `keepLegacyLook`, `GetColor`, `SetColor`, `ResetPosition`) and the private readers `CalloutSettings.lua`'s schema rows take off an instance (`__validFor`, `__defaultFor`, `__colorFor`, `__glowColorFor`, `__prefixOf`, `__known`), unchanged.
 - **`CalloutSound.lua` minor 1** (new, loaded after `CalloutRoute.lua`) carries the sound section (`soundsBase` through `sound`: the pack lines, the client's text to speech) and `TtsVoices`, unchanged.

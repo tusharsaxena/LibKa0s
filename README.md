@@ -82,7 +82,7 @@ LibStub major, and twenty-five of them ship today:
   value parser.
 - `LibKa0s-Launcher-1.0` builds the minimap button and the broker plugin as ONE LibDataBroker
   object, registered twice. Neither broker library is a dependency.
-- `LibKa0s-Options-1.0` has the most files: twenty-two, under one major. It holds the Blizzard
+- `LibKa0s-Options-1.0` has the most files: twenty-three, under one major. It holds the Blizzard
   settings-canvas shell, the translation from schema row to AceGUI widget, the page's chrome (the tab
   strip, the banner, the header block, the secondary strip and the nav rail), the two-column flow
   engine that lays a page out, the drawer that folds a row of choices under a header bar, the key binding model under a

@@ -27,7 +27,7 @@ local function live(m) return #m.__timers() end
 
 -- ── load and construction ────────────────────────────────────────────────────────────────────
 
-test("callout: the major loads at minor 6 and reports its one file", function()
+test("callout: the major loads at minor 6 and reports its primary file", function()
   local _, Callout = env()
   assertEqual(Callout.MAJOR, MAJOR)
   assertEqual(Callout.MINOR, 6)

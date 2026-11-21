@@ -648,7 +648,7 @@ Total.
 
 ### test_callout.lua (52)
 
-- callout: the major loads at minor 6 and reports its one file
+- callout: the major loads at minor 6 and reports its primary file
 - callout: without Core the major is absent (no NewLibrary)
 - callout: New refuses a descriptor without a db, naming it
 - callout: a method called on something that is not an instance raises
