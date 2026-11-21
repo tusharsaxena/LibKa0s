@@ -79,9 +79,11 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Callout-1.0",
-    files = { "Callout", "CalloutSettings" },
+    files = { "Callout", "CalloutRoute", "CalloutSound", "CalloutSettings" },
     primary = "Callout",
     paired = {
+      { file = "CalloutRoute", minorField = "__routeMinor", probeField = "__routeShellMinor" },
+      { file = "CalloutSound", minorField = "__soundMinor", probeField = "__soundShellMinor" },
       { file = "CalloutSettings", minorField = "__settingsMinor", probeField = "__settingsShellMinor" },
     },
   },

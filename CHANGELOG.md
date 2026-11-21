@@ -10,6 +10,18 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.109.0 — unreleased
+
+Opened 2026-11-21, on `feat/2026-11-21-sync-followups` (off `master` at v1.108.0): the follow-ups v1.108.0's sync-docs pass left open (Ka0sAddonsCommonTasks `docs/2026-11-21-SYNC_FOLLOWUPS/00_PLAN.md`), items `FU-LK-CALLOUT`, `FU-LK-COMPOSE`, `FU-LK-PAINTCTL`, `FU-LK-KITDOC`, `FU-LK-CONSUMERS` and this release, `FU-LK-REL`. The owner's ruling on the three payload files whose band triggers had fired is **fix**: each peels on the seam its census entry named, as the v1.91.0 peels did, with no member and no behavior change.
+
+Versions so far: `LibKa0s-Callout-1.0` key **6.1.1.6** (Callout minor 6, CalloutRoute minor 1, CalloutSound minor 1, CalloutSettings minor 6); every other file at its v1.108.0 minor, and the test kit at revision **58**. No `NEEDS_*` floor rises.
+
+### The band files peeled
+
+Each a pure move on the seam `CLAUDE.md`'s census named. No member, option or behavior changes; the existing suites pass unchanged apart from the file lists that load the moved code and the pins of a moved minor.
+
+- **Callout minor 6, CalloutRoute minor 1, CalloutSound minor 1 (`FU-LK-CALLOUT`, [docs](docs/api/Callout/version-6.1.1.6-docs.md)).** The write-route section (`prefixOf` through `write`), the setting verbs that are its only callers (`Get`, `Set`, `GetColor`, `SetColor`, `ResetPosition`) and the private readers `CalloutSettings.lua` takes off an instance moved to the new `CalloutRoute.lua`; the sound section (`soundsBase` through `sound`) and `TtsVoices` to the new `CalloutSound.lua`. Both load after `Callout.lua`, are paired on its minor and read the shell's locals through `lib.__calloutKit`; the shell reads `lib.__write` (the drag's saved point) and `lib.__sound` at call time. `Callout.lua` 1416 -> 1113. A payload without `CalloutRoute.lua` has call-outs with no setting verbs and no settings section; one without `CalloutSound.lua` is silent.
+
 ## v1.108.0 — 2026-11-20
 
 Opened 2026-11-20, on `feat/2026-11-20-libka0s-94-97-99-100` (off `master` at v1.107.0): LibKa0s#94, #97, #99 and #100 (Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/`), items `SD-LK-94`, `SD-LK-99`, `SD-LK-100`, `SD-LK-97` Batches A to D and `SD-LK-GUARD`, then this release, `SD-LK-REL`. Built to WowAddonStandards v2.116.0; LibKa0s#97 implements `skinning-§6` (From skin is the default for every element) on the library side, under the owner's rulings R-2 and U-1 to U-31 (the audit `docs/2026-11-20-SKIN_DEFAULTS_AUDIT/` of the same repo).

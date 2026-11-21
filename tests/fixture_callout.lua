@@ -113,6 +113,8 @@ local function env(before)
   if before then before(m) end
   Loader.load("LibKa0s/Core.lua", nil, m)
   Loader.load("LibKa0s/Callout.lua", nil, m)
+  Loader.load("LibKa0s/CalloutRoute.lua", nil, m)
+  Loader.load("LibKa0s/CalloutSound.lua", nil, m)
   Loader.load("LibKa0s/CalloutSettings.lua", nil, m)
   return m, m.LibStub(F.MAJOR, true)
 end
