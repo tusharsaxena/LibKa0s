@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261121-203937`](20261121-203937/) | `a0b017ea` | clean | 1.108.0 → 1.109.0 | 0/0 | 382 | 5076/3/5079 | skip | 113699 | 16329 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261120-184818`](20261120-184818/) | `59c1f0a0` | clean | 1.107.0 → 1.108.0 | 0/0 | 378 | 5076/3/5079 | skip | 113617 | 16328 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261119-205557`](20261119-205557/) | `72653ecc` | clean | 1.106.0 → 1.107.0 | 0/0 | 373 | 4948/3/4951 | skip | 111203 | 15952 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261119-095355`](20261119-095355/) | `d9cd43b3` | clean | 1.105.0 → 1.106.0 | 0/0 | 372 | 4945/3/4948 | skip | 111171 | 15943 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -228,17 +229,17 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 ## Test suite
 
 **5079 cases** — 5076 passed, 0 failed, 3 skipped. The generated inventory
-[`20261120-184818/test-cases.md`](20261120-184818/test-cases.md) is the authority on which cases existed at this run;
+[`20261121-203937/test-cases.md`](20261121-203937/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **4951 → 5079** since the previous run.
+Unchanged from the previous run at 5079 cases.
 
 **3 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 378 files** (`luacheck .`).
+**0 warnings / 0 errors over 382 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -255,8 +256,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261120-184818`](20261120-184818/) — **this run's measurement, not its diff.** Max CCN **15** across 16328
-functions, **0** of them warned on; 13 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261121-203937`](20261121-203937/) — **this run's measurement, not its diff.** Max CCN **15** across 16329
+functions, **0** of them warned on; 11 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -275,17 +276,15 @@ None.
 
 | Band | File | LOC | Disposition |
 |---|---|---|---|
-| 1000–1500 (on notice) | `LibKa0s/Callout.lua` | 1416 | **On notice, unruled: `CLAUDE.md`'s band census (2026-11-14, plan rows L11 and L12).** New to the band at minor 2, 977 -> 1121 with the host write route and the leaf keys, then 1145 with the branch review's whole-table split and color reader. Seam: the write-route section (`prefixOf` through `write`), or the sound section, to a secondary paired on the Callout shell; a peel is a new shipped file and so a release. **Re-check trigger: the lead's ruling, which `CLAUDE.md` leaves open.** |
+| 1000–1500 (on notice) | `LibKa0s/Callout.lua` | 1113 | **On notice, unruled: `CLAUDE.md`'s band census (2026-11-14, plan rows L11 and L12).** New to the band at minor 2, 977 -> 1121 with the host write route and the leaf keys, then 1145 with the branch review's whole-table split and color reader. Seam: the write-route section (`prefixOf` through `write`), or the sound section, to a secondary paired on the Callout shell; a peel is a new shipped file and so a release. **Re-check trigger: the lead's ruling, which `CLAUDE.md` leaves open.** |
 | 1000–1500 (on notice) | `LibKa0s/IconBrowser.lua` | 1006 | **Newly crossed at minor 2 (LibKa0s#92's placed cell tooltips). On notice, unruled: `CLAUDE.md`'s band census (2026-11-16, v1.105.0's close).** Seam: the build half (`buildToolbar` through `buildHint`), to a secondary paired on the IconBrowser shell; a peel is a release, and the ruling is the lead's. **Re-check trigger: 1100 lines, or the next IconBrowser minor.** |
 | 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1280 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-04`) to `LibKa0s/OptionsRegistry.lua`, then accepted at 1261 and re-ruled at v1.65.0; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. Seam: the reset walk. **Re-check trigger: the next member added to `Options.lua`, or 1400 lines.** |
-| 1000–1500 (on notice) | `LibKa0s/OptionsCompose.lua` | 1217 | **Accepted: `CLAUDE.md`'s census row (2026-11-04, `R6-SIM-L`, `R6-REL2`).** New to the band at minor 19, 974 -> 1073 with the Sim mode row, then 1080 with `R6-REL2`'s `masterTail` split; the minor is not yet shipped, so a peel is a release. Seam: the Master controls block (`masterRows`, `masterButtons` and the sim row), to a file of its own paired on the Options shell. **Re-check trigger: 1150 lines, or the next OptionsCompose minor that adds a composer.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsIdList.lua` | 1339 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: `O.IdList` and its entry-line layout, one piece of machinery, so a seam is named before the append at the trigger. **Re-check trigger: 1350 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsSkinPicker.lua` | 1399 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4` (2026-10-31, `FX-LK-SIZE`).** The rows' section peeled to `LibKa0s/OptionsSkinPickerRows.lua` at minor 5. Seam now: the queue, to a file of its own. **Re-check trigger: 1400 lines.** It fired at minor 11 (`R6-L1`, 1490, then 1493 with `R6-REL`'s CCN split), 7 under the cap; this `R6-REL` re-cut carries it unpeeled, and the peel is the lead's and the owner's call (`CLAUDE.md`'s census row). **The queue peeled at minor 12 (v1.105.0, 1493 -> 1396)**; 1399 at the close with LibKa0s#86's header marks and the `buildMarks` CCN split, 1 under the trigger. Seam now: the instance verbs at the attach's foot. |
 | 1000–1500 (on notice) | `LibKa0s/OptionsTabs.lua` | 1185 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-03`) to `LibKa0s/OptionsCombat.lua`, then accepted at 1293; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. The tabbed page peeled to `LibKa0s/OptionsTabbed.lua` at minor 12. Seam now: `O.PageHeader` and `O.SubTabStrip`. **Re-check trigger: the next member added, or 1300 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsWidgets.lua` | 1164 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Came off the census (3852) when the id surface moved out; the flow engine peeled to `LibKa0s/OptionsFlow.lua` at minor 39. Seam now: the choice grid. **Re-check trigger: 1250 lines, or the next maker added.** |
 | 1000–1500 (on notice) | `LibKa0s/Skin.lua` | 1121 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4`, since v1.85.0's re-cut (2026-11-01); accepted in the band census at minor 11 until then.** The owner-token block peeled to `LibKa0s/SkinOwnerTokens.lua`. Seam now: the frame registry and the repaint. **Re-check trigger: 1100 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/SkinPaint.lua` | 1048 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4` (2026-10-31, `FX-LK-SIZE`).** The next-minor trigger fired at minors 14, 15 and 16, and the peel waits, ruled in that row (2026-11-01). Seam: the window block, to `LibKa0s/SkinPaintExtras.lua`. **Re-check trigger: 1050 lines, or the next SkinPaint minor that adds a function, and that change peels first.** |
-| 1000–1500 (on notice) | `LibKa0s/SkinPaintControls.lua` | 1114 | **Accepted, ruled in `CLAUDE.md`'s band census (2026-11-02, `R3-L1`, `R3-L3`).** The minor is not yet shipped, and a peel is a release. Seam: the navigation, drawer and list-row section, to a file of its own paired on the Skin shell. **Re-check trigger: 1100 lines, or the next SkinPaintControls minor.** The minor half fired at minor 17 (`R4-L4`); this `R4-REL3` re-cut carries it unpeeled, and the peel is the lead's and the owner's call (`CLAUDE.md`'s census row). It fired again at minor 18 (`SR2-L5`, 1073 -> 1092), carried unpeeled on the same call. |
 | 1000–1500 (on notice) | `LibKa0s/WaypointArrow.lua` | 1273 | **On notice, unruled: `CLAUDE.md`'s band census (2026-11-14, Skill Master round 9, rows L1 to L4).** New to the band at minor 2: 778 at minor 1 -> 1204 with the text, position and menu, 1253 with the review's fixes (the menu's lifecycle, the share lead, offsets in the parent's units). The seam is the menu section or the font section, to a secondary paired on the shell; trigger 1300 lines or the next minor |
 | 1000–1500 (on notice) | `tests/test_media.lua` | 1048 | **Newly crossed with `R3-L6` and `R3-L7`. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's `R3-REL` re-cut.** A suite, so a peel is no release. Seam: the font inventory and license section, to a suite of its own. **Re-check trigger: 1100 lines, or the next face added to `FONTS`.** |
 

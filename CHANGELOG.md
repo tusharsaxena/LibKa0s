@@ -31,6 +31,12 @@ Each a pure move on the seam `CLAUDE.md`'s census named. No member, option or be
 - **The test kit's README counts its suites and stops counting its copies (test kit revision 59, `FU-LK-KITDOC`, [docs](docs/api/testkit/version-59-docs.md)).** It said the kit carries seven suites of its own; it carries eight, and says so. It said it was byte-identical in thirteen places (`testkit/`, this repo's `tests/_kit/` and eleven consumers') and that twelve repositories need its gates, when the roster has grown past both; it now names WowAddonStandards' `standards/ADDONS.md` as the roster and carries no count that a new addon makes wrong. `framework.lua` changes in `Kit.VERSION` alone. No member, case or mock changes; a consumer suite pinning `KIT_VERSION` 58 re-pins it at 59.
 - **The consumer census is re-measured at v1.109.0 (`FU-LK-CONSUMERS`, [CONSUMERS.md](docs/api/CONSUMERS.md)).** Stamped v1.83.0 until now. The v1.83.0 copy of the tool ran unchanged across the nineteen roster addons at their `master`: 825 exports across twenty-five majors, 357 consumed, 150 thin, 166 zero with a verdict carried from v1.83.0 and 152 zero that no one has read yet (`zero — UNREAD`, most of them WaypointArrow's and Callout's, whose instances the tool does not resolve). The two generated tables are replaced; the v1.83.0 narrative stays as that run's record. Reading the 152 is owed before any of them is ruled dead.
 
+Release gate (`docs/automated-tests/20261121-203937/`): lint pass, 0/0 in 382 files;
+tests pass, 5079 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — the release moves none of step 5's minors (`Sim.lua`, `SimTimeline.lua`, `SimPanel.lua`, `Widgets.lua`).
+
 ## v1.108.0 — 2026-11-20
 
 Opened 2026-11-20, on `feat/2026-11-20-libka0s-94-97-99-100` (off `master` at v1.107.0): LibKa0s#94, #97, #99 and #100 (Ka0sAddonsCommonTasks `docs/2026-11-20-LIBKA0S_94_97_99_100/`), items `SD-LK-94`, `SD-LK-99`, `SD-LK-100`, `SD-LK-97` Batches A to D and `SD-LK-GUARD`, then this release, `SD-LK-REL`. Built to WowAddonStandards v2.116.0; LibKa0s#97 implements `skinning-§6` (From skin is the default for every element) on the library side, under the owner's rulings R-2 and U-1 to U-31 (the audit `docs/2026-11-20-SKIN_DEFAULTS_AUDIT/` of the same repo).
