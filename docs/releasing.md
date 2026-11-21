@@ -25,7 +25,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   eighty-four, by their exact constant names: `MINOR` in `Core.lua`, `PIXEL_MINOR` in `CorePixel.lua`, `MINOR` in `Tooltip.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   eighty-five, by their exact constant names: `MINOR` in `Core.lua`, `PIXEL_MINOR` in `CorePixel.lua`, `MINOR` in `Tooltip.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Role.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Glow.lua`, `MINOR` in `Toast.lua`, `MINOR` in `Callout.lua`, `ROUTE_MINOR` in `CalloutRoute.lua`, `SOUND_MINOR` in `CalloutSound.lua`, `SETTINGS_MINOR` in `CalloutSettings.lua`, `MINOR` in `WaypointArrow.lua`, `SETTINGS_MINOR` in `WaypointArrowSettings.lua`, `MINOR` in `Charts.lua`, `RENDER_MINOR` in `ChartsRender.lua`, `MINOR` in `Media.lua`, `ICONS_MINOR` in `MediaIcons.lua` (a generated file: change the
    constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `TOKENS_MINOR` in `SkinOwnerTokens.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `OTHERS_MINOR` in `SkinDefsOthers.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `HUD_MINOR` in `SkinPaintHud.lua`, `CONFIRM_MINOR` in `SkinAceConfirm.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
@@ -34,7 +34,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `WidgetsDragHandle.lua`, `DRAGTIP_MINOR` in `WidgetsDragHandleTip.lua`, `CHART_MINOR` in `WidgetsLineChart.lua`, `AUTOCOMPLETE_MINOR` in `WidgetsAutocomplete.lua`, `COPY_MINOR` in `WidgetsCopyWindow.lua`, `HEADER_MINOR` in `WidgetsHeader.lua`, `BAR_MINOR` in `WidgetsBar.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WINDOW_MINOR` in `DebugLogWindow.lua`, `WIDGETS_MINOR` in
    `OptionsWidgets.lua`, `FLOW_MINOR` in `OptionsFlow.lua`, `IDS_MINOR` in `OptionsIds.lua`, `SUGGEST_MINOR` in `OptionsIdSuggest.lua`, `IDLIST_MINOR` in `OptionsIdList.lua`,
    `TABS_MINOR` in `OptionsTabs.lua`, `TABBED_MINOR` in `OptionsTabbed.lua`, `HEADER_MINOR` in `OptionsHeader.lua`, `COMBAT_MINOR` in `OptionsCombat.lua`, `SCROLL_MINOR`
-   in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `DRAWER_MINOR` in `OptionsDrawer.lua`, `KEYBINDS_MINOR` in `OptionsKeybinds.lua`, `APPEARANCE_MINOR` in `OptionsAppearance.lua`, `PICKER_MINOR` in `OptionsSkinPicker.lua`, `QUEUE_MINOR` in `OptionsSkinPickerQueue.lua`, `ROWS_MINOR` in `OptionsSkinPickerRows.lua`, `SWITCH_MINOR` in `OptionsSwitch.lua`, `MEDIA_MINOR` in `OptionsMedia.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MINOR` in `Perf.lua`,
+   in `OptionsScroll.lua`, `NAV_MINOR` in `OptionsNav.lua`, `DRAWER_MINOR` in `OptionsDrawer.lua`, `KEYBINDS_MINOR` in `OptionsKeybinds.lua`, `APPEARANCE_MINOR` in `OptionsAppearance.lua`, `PICKER_MINOR` in `OptionsSkinPicker.lua`, `QUEUE_MINOR` in `OptionsSkinPickerQueue.lua`, `ROWS_MINOR` in `OptionsSkinPickerRows.lua`, `SWITCH_MINOR` in `OptionsSwitch.lua`, `MEDIA_MINOR` in `OptionsMedia.lua`, `COMPOSE_MINOR` in `OptionsCompose.lua`, `MASTER_MINOR` in `OptionsComposeMaster.lua`, `MINOR` in `Perf.lua`,
    `SAMPLER_MINOR` in `PerfSampler.lua`, `COMMANDS_MINOR` in `PerfCommands.lua`, `PANEL_MINOR` in `PerfPanel.lua`, `MINOR` in `Widgets.lua`, `MINOR` in `Sim.lua`,
    `TIMELINE_MINOR` in `SimTimeline.lua`, `SIM_PANEL_MINOR` in `SimPanel.lua`, `RENDER_MINOR` in `SimPanelRender.lua`, `MINOR` in `IconBrowserSources.lua`, `WINDOW_MINOR` in `IconBrowserWindow.lua`, `BROWSER_MINOR` in `IconBrowser.lua`. The secondary files carry
    their own name rather than `MINOR` because they attach to a shell that already owns that local. A
@@ -43,12 +43,12 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 3. **A new module is also a new row in `tests/majors.lua`'s `MAJORS`** — its major string, its files in
    `LibKa0s.xml` order, its primary, and any `paired` secondary. `tests/test_versioning.lua` iterates
    that table rather than naming files inline, so a module missing from it is a module nothing
-   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of twenty-two and a
-   `paired` array of twenty-one (`{ OptionsRegistry, __registryMinor, __registryShellMinor }`,
+   checks. `LibKa0s-Options-1.0` is the widest row and the one to copy: a `files` list of twenty-three and a
+   `paired` array of twenty-two (`{ OptionsRegistry, __registryMinor, __registryShellMinor }`,
    `{ OptionsWidgets, __widgetsMinor, __widgetsShellMinor }`, `{ OptionsFlow, __flowMinor, __flowShellMinor }`,
    `{ OptionsIds, __idsMinor, __idsShellMinor }`, `{ OptionsIdSuggest, __suggestMinor, __suggestShellMinor }`, `{ OptionsIdList, __idListMinor, __idListShellMinor }`,
    `{ OptionsTabs, __tabsMinor, __tabsShellMinor }`, `{ OptionsTabbed, __tabbedMinor, __tabbedShellMinor }`, `{ OptionsHeader, __headerMinor, __headerShellMinor }`, `{ OptionsCombat, __combatMinor, __combatShellMinor }`,
-   `{ OptionsCompose, __composeMinor, __composeShellMinor }`,
+   `{ OptionsCompose, __composeMinor, __composeShellMinor }`, `{ OptionsComposeMaster, __masterMinor, __masterShellMinor }`,
    `{ OptionsScroll, __scrollMinor, __scrollShellMinor }`, `{ OptionsNav, __navMinor, __navShellMinor }`,
    `{ OptionsDrawer, __drawerMinor, __drawerShellMinor }`,
    `{ OptionsKeybinds, __keybindsMinor, __keybindsShellMinor }`,
@@ -440,7 +440,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the eighty-four `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the eighty-five `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,

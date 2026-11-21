@@ -44,10 +44,10 @@ local function host()
   return O, rec
 end
 
-test("compose follow: OptionsCompose is at minor 20", function()
+test("compose follow: OptionsCompose is at minor 21", function()
   -- red under: the change landing without its bump: a minor-19 copy loaded first would keep every
   -- group off the skin for a host that never asked.
-  assertEqual(T.options.MODULES.OptionsCompose, 20)
+  assertEqual(T.options.MODULES.OptionsCompose, 21)
 end)
 
 -- ── SD-LK-97.6: the font picker follows the skin by default ─────────────────────────────────

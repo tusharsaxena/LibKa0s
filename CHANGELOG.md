@@ -14,13 +14,15 @@ cannot drift. Release order is in
 
 Opened 2026-11-21, on `feat/2026-11-21-sync-followups` (off `master` at v1.108.0): the follow-ups v1.108.0's sync-docs pass left open (Ka0sAddonsCommonTasks `docs/2026-11-21-SYNC_FOLLOWUPS/00_PLAN.md`), items `FU-LK-CALLOUT`, `FU-LK-COMPOSE`, `FU-LK-PAINTCTL`, `FU-LK-KITDOC`, `FU-LK-CONSUMERS` and this release, `FU-LK-REL`. The owner's ruling on the three payload files whose band triggers had fired is **fix**: each peels on the seam its census entry named, as the v1.91.0 peels did, with no member and no behavior change.
 
-Versions so far: `LibKa0s-Callout-1.0` key **6.1.1.6** (Callout minor 6, CalloutRoute minor 1, CalloutSound minor 1, CalloutSettings minor 6); every other file at its v1.108.0 minor, and the test kit at revision **58**. No `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-Callout-1.0` key **6.1.1.6** (Callout minor 6, CalloutRoute minor 1, CalloutSound minor 1, CalloutSettings minor 6); `LibKa0s-Options-1.0` key **38.5.46.3.7.2.9.17.3.1.4.21.1.13.7.5.8.7.12.1.1.1.4** (OptionsCompose minor 21, OptionsComposeMaster minor 1); every other file at its v1.108.0 minor, and the test kit at revision **58**. No `NEEDS_*` floor rises.
 
 ### The band files peeled
 
 Each a pure move on the seam `CLAUDE.md`'s census named. No member, option or behavior changes; the existing suites pass unchanged apart from the file lists that load the moved code and the pins of a moved minor.
 
 - **Callout minor 6, CalloutRoute minor 1, CalloutSound minor 1 (`FU-LK-CALLOUT`, [docs](docs/api/Callout/version-6.1.1.6-docs.md)).** The write-route section (`prefixOf` through `write`), the setting verbs that are its only callers (`Get`, `Set`, `GetColor`, `SetColor`, `ResetPosition`) and the private readers `CalloutSettings.lua` takes off an instance moved to the new `CalloutRoute.lua`; the sound section (`soundsBase` through `sound`) and `TtsVoices` to the new `CalloutSound.lua`. Both load after `Callout.lua`, are paired on its minor and read the shell's locals through `lib.__calloutKit`; the shell reads `lib.__write` (the drag's saved point) and `lib.__sound` at call time. `Callout.lua` 1416 -> 1113. A payload without `CalloutRoute.lua` has call-outs with no setting verbs and no settings section; one without `CalloutSound.lua` is silent.
+
+- **OptionsCompose minor 21, OptionsComposeMaster minor 1 (`FU-LK-COMPOSE`, [docs](docs/api/Options/version-38.5.46.3.7.2.9.17.3.1.4.21.1.13.7.5.8.7.12.1.1.1.4-docs.md)).** The Master controls block (`O.MasterControls`, THE SIM ROW, `masterTail`, `masterRows`, `masterButtons` and their words) moved to the new `OptionsComposeMaster.lua`, loaded after `OptionsCompose.lua`, paired on the Options shell and reading the composer's locals through `lib.__composeKit`; `lib.__AttachCompose` calls its `lib.__AttachComposeMaster` last, so `Options.lua` does not move. `OptionsCompose.lua` 1217 -> 883, out of the band. A payload without the new file has no `O.MasterControls`.
 
 ## v1.108.0 — 2026-11-20
 

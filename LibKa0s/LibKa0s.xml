@@ -62,6 +62,7 @@
 	<Script file="OptionsHeader.lua"/>
 	<Script file="OptionsCombat.lua"/>
 	<Script file="OptionsCompose.lua"/>
+	<Script file="OptionsComposeMaster.lua"/>
 	<Script file="OptionsScroll.lua"/>
 	<Script file="OptionsNav.lua"/>
 	<Script file="OptionsDrawer.lua"/>

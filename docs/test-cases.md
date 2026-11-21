@@ -4407,7 +4407,7 @@ Total.
 
 ### test_options_compose_follow.lua (13)
 
-- compose follow: OptionsCompose is at minor 20
+- compose follow: OptionsCompose is at minor 21
 - compose follow: FontGroup with no fromSkin emits Use the skin's font, on and governing the picker
 - compose follow: FontGroup with no flagsFromSkin leads Font flags with From skin and defaults to it
 - compose follow: flagsFromSkin = false is minor 19's typed Font flags row
