@@ -18,7 +18,7 @@ player, and it never appears in the addon list. It is vendored whole-folder into
 [README.md → Installing](README.md#installing). A player who has a Ka0s addon already has every copy
 of this library they will ever need.
 
-The only runtime requirement is therefore World of Warcraft (Retail), by way of whichever host addon
+The only runtime requirement is therefore World of Warcraft (Retail or WoW Forever), by way of whichever host addon
 vendored the code.
 
 `LibKa0s-Glow-1.0` drives LibCustomGlow-1.0 but does not carry it: the consumer vendors
@@ -44,7 +44,7 @@ Four tools. Only the first has a version that matters.
 | `lizard` | 1.24.0 | 1.24.0 | The `complexity` suite. Recorded on every run; at the tag it gates (`automated-tests-§3`). The kit's sighted shadow (`testkit/lizard_sighted.lua`, kit revision 35) is written against 1.24.0's Lua reader; another version still runs, and its own blind spots surface as parity failures rather than as a quiet undercount. |
 
 The "verified with" column is the toolchain of the last recorded run,
-[`docs/automated-tests/20261031-202020/manifest.json`](docs/automated-tests/20261031-202020/manifest.json)
+[`docs/automated-tests/20261120-184818/manifest.json`](docs/automated-tests/20261120-184818/manifest.json)
 → `host` — evidence, not a pin. `luacheck` is pinned nowhere and pinning it would be false precision;
 `lizard` is named rather than pinned (see its row); `lua5.1` is not a preference. "5.2 will probably work" is **false**, and it costs an
 hour to disprove: 5.2 removed `setfenv`, and the loader is the first thing every suite touches.
@@ -128,7 +128,7 @@ Python 3, Pillow and NumPy only, and labels the showcases in the bundled Fira Sa
 | Pillow | Reads the source PNGs and writes the TGAs (`from PIL import Image`, in `icon_cleaner.py`, `bar_textures.py` and `glass_textures.py`); `skin_gallery.py` crops the screenshots and draws the showcase with it | `sudo apt install python3-pil` |
 | NumPy | The recolor, solidify and normalize stages, the bar gradients and the Glass coverage are array work (`import numpy as np`, in `icon_cleaner.py`, `bar_textures.py` and `glass_textures.py`), as is `skin_gallery.py`'s edge search | `sudo apt install python3-numpy` |
 | fontTools | `fonts.py --build`: cuts the static weights of Nunito, Vollkorn, Bitter, Inter and Oxanium from upstream's variable fonts (`fontTools.varLib.instancer`, inside `instance`); and `tools/glyph_safe_set.py`, which reads every shipped face's cmap to regenerate the kit's display-glyph safe set (`--check` reports a stale block). The suite never needs it | `sudo apt install python3-fonttools` |
-| GitHub CLI | Fetches the upstream PNGs through `gh api`, which the script uses in place of raw.githubusercontent.com because that host times out from here often enough to be useless in a script | `sudo apt install gh && gh auth login` |
+| GitHub CLI | Fetches the upstream PNGs through `gh api`, which the script uses in place of raw.githubusercontent.com because that host times out from here often enough to be useless in a script; refreshing the kit's generated client name sets uses it too, by hand: `tools/client_globals_data.lua`'s header fetches Ketho/BlizzardInterfaceResources' `GlobalAPI.lua` and `FrameXML.lua` with `gh api` (`tools/client_globals_data.lua:5-8`), and the script itself is pure Lua 5.1 | `sudo apt install gh && gh auth login` |
 | resvg-py | `icon_cleaner.py` only: renders the Phosphor and Game-icons SVGs to 64×64 (`import resvg_py`, inside `render_svg`). No distro package exists, so it lives in a venv with its own Pillow and NumPy (below) | `python3 -m venv tools/artwork/.venv && tools/artwork/.venv/bin/pip install resvg-py pillow numpy` |
 | `git` | `icon_cleaner.py --fetch` clones Phosphor and Game-icons shallowly at the commits pinned in the script, into `tools/artwork/.cache/src/` | already present (see above) |
 

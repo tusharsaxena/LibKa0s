@@ -442,6 +442,10 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
 tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json from the LIVE
                         surface, loaded through the same mock the suites use. Generated, never
                         hand-edited; tests/test_versioning.lua regenerates and compares on every run
+tools/client_globals_data.lua -- writes the kit's generated client name sets,
+                        testkit/client_globals_live.lua and client_globals_forever.lua, from
+                        Ketho/BlizzardInterfaceResources' GlobalAPI.lua and FrameXML.lua (fetched
+                        by hand with gh api, as its header shows). Pure Lua 5.1. Not shipped
 tools/prune-icons.lua -- after the cp -r re-vendor, deletes every icon under <Addon>/libs/LibKa0s/
                         media/icons/ that the addon's `LibKa0s icons:` line does not declare, and
                         every voice pack under media/sounds/ its `LibKa0s sounds:` line does not
