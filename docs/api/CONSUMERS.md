@@ -8,21 +8,39 @@ feature branch checked out was measured as merged, not as in flight). That run i
 Outfitter Reborn, Range Master and Skill Master are new to the census since v1.83.0; DpsRace is gone from the roster, so
 its hits are gone from every row, and the hand-read host lists carried from v1.83.0 have their DpsRace entries struck.
 
-**What this run did not do: read the new zeros.** The tables below are the scan's, with every verdict v1.83.0 read by
-hand carried forward unchanged (its `kept because` reason and, for the 32 rows marked *read by hand*, its host list).
-**152 zero-consumer exports carry no hand verdict and read `zero — UNREAD`**: exports added since v1.83.0 (most of
-them `LibKa0s-WaypointArrow-1.0`'s 65 and `LibKa0s-Callout-1.0`'s 39, then Widgets, IconBrowser, Charts and Tooltip)
-and the few whose last caller left. The scan does not resolve those two majors' instances (the tool's `INSTANCE`
-table predates them), so an instance method or descriptor field a host does use may read zero here. Reading each one
-is owed before any of them is called dead; until then an UNREAD row is a question, not a verdict. Everything from
-*The numbers* to *Method* below the next rule is the v1.83.0 page's text, kept as that run's record.
+**What the scan could not do, and the hand read that followed.** The tables below are the scan's, with every verdict
+v1.83.0 read by hand carried forward unchanged (its `kept because` reason and, for the 32 rows then marked *read by
+hand*, its host list). The scan left 152 zero-consumer exports with no hand verdict, `zero — UNREAD` in its first render
+(commit `5a77e534`): exports added since v1.83.0 (most of them `LibKa0s-WaypointArrow-1.0`'s 65 and
+`LibKa0s-Callout-1.0`'s 39, then Widgets, IconBrowser, Charts and Tooltip) and the few whose last caller left. The tool
+does not resolve those two majors' instances (its `INSTANCE` table predates them), and it counts a descriptor only where
+it is a literal handed to `:New(` or `CopyWindow(`.
+
+**The 152 were then read by hand** (the same item, `FU-LK-CONSUMERS`): each export searched for by name in the nineteen
+addons' `master` (`libs/` and `tests/_kit/` excluded) and in this library's own files, then read at every hit. Each
+verdict is a row of the run's `verdicts.tsv` (a reason for each zero, a `hand_hosts` list for each consumer found), and
+both tables were rendered again by the same `census-render.lua`, so no generated row was edited by hand. **Fifteen have
+consumers the scan cannot see**, each marked *read by hand*: descriptor fields a host hands through its own wrapper
+(Callout's `name`, `db`, `path`, `set` and `colorEncode` through Combat Trail's `NS.NewCallout(d)`, and Toast's
+`soundFile`, `stackGap` and `stackGrow` through `NS.NewToast(d)`), and the strip dock's fields, which hosts pass in
+`TestStrip`'s options or `DockTestStrip`'s spec (Widgets' `dock` with 11 hosts, `titleBar` 7, `window` 6, `target` 5,
+`clear` and `onOffset` 4 each, `gap` 3). **The other 137 are zero:** 109 are read inside the library only (a
+validator's list, a layout constant, a pure helper published for a suite, an English fallback a host overrides by key);
+20 are descriptor fields no host passes, each host keeping the default; one is a scan artifact (Core's `Hide` is
+`d.Hide` on a divider texture, not a descriptor field); and **seven have no reader anywhere outside their own
+definition and the library's suite**: Core `HasSettings`, Tooltip `SetCloseTip`, Callout `GLOWS` and `SETTINGS`,
+WaypointArrow `IsStyle` and `MENU_ITEMS`, and Widgets `OwnerWarnings`, kept for the published surface because `-1.0` is
+additive-only. The carried Toast rows read by hand at v1.83.0 (`build`, `name`, `width` and the rest, Drop Watcher alone)
+predate Combat Trail's and Quick Comms' toasts, which pass the same fields through their own `NS.NewToast(d)`; those
+rows were not read again here, so their counts are low. Everything from *The numbers* to *Method* below the next rule is
+the v1.83.0 page's text, kept as that run's record.
 
 | Verdict at v1.109.0 | Exports |
 |---|---|
-| consumed (three or more hosts) | 357 |
-| thin (one or two hosts) | 150 |
+| consumed (three or more hosts) | 364 |
+| thin (one or two hosts) | 158 |
 | zero, a verdict carried from v1.83.0 | 166 (161 documented, 5 deliberate host copies) |
-| **zero, UNREAD** | **152** |
+| zero, read by hand at v1.109.0 | 137 (109 read inside the library only, 20 descriptor fields no host passes, 7 with no reader, 1 scan artifact) |
 | **total** | **825** (358 lib-level, 231 instance, 236 descriptor fields, across twenty-five majors) |
 
 ---
@@ -538,13 +556,13 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 
 | Major | Export | Evidence | Hits by class | Verdict |
 |---|---|---|---|---|
-| Core | `lib.HasSettings` | ? | call 0 | zero — UNREAD |
-| Core | `lib.RegisterSettingsOpener` | ? | call 0 | zero — UNREAD |
-| Core | `Hide` (descriptor) | ? | call 0 | zero — UNREAD |
-| Tooltip | `lib.CLOSE_STRINGS` | ? | call 0 | zero — UNREAD |
-| Tooltip | `lib.GroupOf` | ? | call 0 · name-only 2 · def 1 · test 11 | zero — UNREAD |
-| Tooltip | `lib.SetCloseTip` | ? | call 0 | zero — UNREAD |
-| Role | `lib.TALENT_GROUP_ROLE` | ? | call 0 | zero — UNREAD |
+| Core | `lib.HasSettings` | no host calls it; the library's own suite (tests/test_header_buttons.lua) is its only reader | call 0 | zero — kept, documented |
+| Core | `lib.RegisterSettingsOpener` | internal only: called by Launcher:New for every host | call 0 | zero — kept, documented |
+| Core | `Hide` (descriptor) | scan artifact; `d` there is a texture, not a descriptor | call 0 | zero — kept, documented |
+| Tooltip | `lib.CLOSE_STRINGS` | internal only: read by `lib.CloseTip` (Tooltip.lua:464) | call 0 | zero — kept, documented |
+| Tooltip | `lib.GroupOf` | internal only; DropWatcher's `RT.GroupOf` (modules/RowTooltip.lua:101) is its own resolver for its docked panels, handed to `PlaceBeside` as an explicit group, not a copy of this one | call 0 · name-only 2 · def 1 · test 11 | zero — kept, documented |
+| Tooltip | `lib.SetCloseTip` | no host calls it; the library's own suite is its only caller | call 0 | zero — kept, documented |
+| Role | `lib.TALENT_GROUP_ROLE` | internal only: read through its local alias | call 0 | zero — kept, documented |
 | Lifecycle | `Hold` (instance) | stubs only (18 stub lines across 6 hosts) | call 0 · name-only 5 · def 5 · stub 34 · test 113 | zero — kept, documented |
 | Lifecycle | `PrintHolds` (instance) | stubs only | call 0 · stub 17 · test 6 | zero — kept, documented |
 | Lifecycle | `Release` (instance) | stubs only; the 7 name hits are other tables' `Release` | call 0 · name-only 18 · def 10 · stub 33 · test 201 | zero — kept, documented |
@@ -556,130 +574,122 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 | Toast | `lib.POINT` | name-only hits are host constants of the same name | call 0 · name-only 4 · stub 6 · test 100 | zero — kept, documented |
 | Toast | `lib.STRATA` | name-only hits are host constants of the same name | call 0 · name-only 93 · test 115 | zero — kept, documented |
 | Toast | `lib.WIDTH` | name-only hits are host constants of the same name | call 0 · name-only 52 · test 55 | zero — kept, documented |
-| Toast | `soundFile` (descriptor) | ? | call 0 | zero — UNREAD |
 | Toast | `soundKit` (descriptor) | no host passes it | call 0 | zero — kept, documented |
-| Toast | `stackGap` (descriptor) | ? | call 0 | zero — UNREAD |
-| Toast | `stackGrow` (descriptor) | ? | call 0 | zero — UNREAD |
-| Callout | `lib.ANIMS` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.CHANNELS` | ? | call 0 · name-only 2 · test 2 | zero — UNREAD |
-| Callout | `lib.DEFAULTS` | ? | call 0 · name-only 6 · stub 1 · test 12 | zero — UNREAD |
-| Callout | `lib.FOLLOW_FROM` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.FONT_DEFAULT` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.FONT_FACES` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.FONT_GAME` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.FONT_SKIN` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.FROM_SKIN` | ? | call 0 · name-only 16 · stub 59 · test 64 | zero — UNREAD |
-| Callout | `lib.FollowKeys` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.GLOWS` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.KINDS` | ? | call 0 · name-only 7 · test 17 | zero — UNREAD |
-| Callout | `lib.LINES` | ? | call 0 · name-only 2 · stub 1 · test 16 | zero — UNREAD |
-| Callout | `lib.MAX_FROM` | ? | call 0 · test 1 | zero — UNREAD |
-| Callout | `lib.MEANING` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.OFF` | ? | call 0 · name-only 10 · stub 8 · test 109 | zero — UNREAD |
-| Callout | `lib.OUTLINES` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.PACKS` | ? | call 0 · test 10 | zero — UNREAD |
-| Callout | `lib.PLAY_COUNTDOWN` | ? | call 0 · test 2 | zero — UNREAD |
-| Callout | `lib.SETTINGS` | ? | call 0 · name-only 2 · stub 1 · test 17 | zero — UNREAD |
-| Callout | `lib.SETTINGS_SIDE_TABS` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.SETTINGS_STRINGS` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.SETTINGS_TABS` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.SIZE_MAX` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.SIZE_MIN` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.SOUND_EXT` | ? | call 0 · test 2 | zero — UNREAD |
-| Callout | `lib.STOCK` | ? | call 0 · test 1 | zero — UNREAD |
-| Callout | `lib.STOCK_ORDER` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.STRATA` | ? | call 0 · name-only 93 · test 115 | zero — UNREAD |
-| Callout | `lib.TTS` | ? | call 0 | zero — UNREAD |
-| Callout | `lib.WIDTH` | ? | call 0 · name-only 52 · test 55 | zero — UNREAD |
-| Callout | `colorEncode` (descriptor) | ? | call 0 | zero — UNREAD |
-| Callout | `db` (descriptor) | ? | call 0 | zero — UNREAD |
-| Callout | `label` (descriptor) | ? | call 0 | zero — UNREAD |
-| Callout | `name` (descriptor) | ? | call 0 | zero — UNREAD |
-| Callout | `path` (descriptor) | ? | call 0 | zero — UNREAD |
-| Callout | `set` (descriptor) | ? | call 0 | zero — UNREAD |
-| Callout | `soundsBase` (descriptor) | ? | call 0 | zero — UNREAD |
-| Callout | `vendorPath` (descriptor) | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.ARRIVE` | ? | call 0 · test 1 | zero — UNREAD |
-| WaypointArrow | `lib.ART` | ? | call 0 · name-only 4 · test 10 | zero — UNREAD |
-| WaypointArrow | `lib.COMPACT_FROM` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.DEFAULTS` | ? | call 0 · name-only 6 · stub 1 · test 12 | zero — UNREAD |
-| WaypointArrow | `lib.DEFAULT_POINT` | ? | call 0 · name-only 3 | zero — UNREAD |
-| WaypointArrow | `lib.DEFAULT_STYLE` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.DISTANCE_UNITS` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.Distance` | ? | call 0 · name-only 4 · def 3 · test 10 | zero — UNREAD |
-| WaypointArrow | `lib.DistanceUnitsValues` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.FAR` | ? | call 0 · test 10 | zero — UNREAD |
-| WaypointArrow | `lib.FLAGS_FROM_SKIN` | ? | call 0 · name-only 3 | zero — UNREAD |
-| WaypointArrow | `lib.FONT_DEFAULT` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.FONT_FLAGS` | ? | call 0 · name-only 1 · stub 5 · test 19 | zero — UNREAD |
-| WaypointArrow | `lib.FONT_SIZE_MAX` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.FONT_SIZE_MIN` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.Fade` | ? | call 0 · test 14 | zero — UNREAD |
-| WaypointArrow | `lib.FormatDistance` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.GROUND` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.GroundFrame` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.GroundTexCoord` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.HIT_PAD` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.IsStyle` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.MEDIA_DIR` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.MENU_ITEMS` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.MapWorldPos` | ? | call 0 · name-only 3 · def 1 · test 4 | zero — UNREAD |
-| WaypointArrow | `lib.Mix` | ? | call 0 · test 1 | zero — UNREAD |
-| WaypointArrow | `lib.NEAR` | ? | call 0 · test 17 | zero — UNREAD |
-| WaypointArrow | `lib.POSITION_MAX` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.POSITION_MIN` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.PlayerFacing` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.PlayerWorldPos` | ? | call 0 · name-only 1 · def 1 · test 4 | zero — UNREAD |
-| WaypointArrow | `lib.Rotation` | ? | call 0 · test 3 | zero — UNREAD |
-| WaypointArrow | `lib.SAMPLE_ROTATION` | ? | call 0 · test 1 | zero — UNREAD |
-| WaypointArrow | `lib.SAMPLE_YARDS` | ? | call 0 · test 1 | zero — UNREAD |
-| WaypointArrow | `lib.SCALE_MAX` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SCALE_MIN` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SCALE_STEP` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SETTINGS` | ? | call 0 · name-only 2 · stub 1 · test 17 | zero — UNREAD |
-| WaypointArrow | `lib.SETTINGS_STRINGS` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SHADOW_BOX` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SHADOW_OFFSET` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SHARE_LEAD` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SKIN_FAR` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SKIN_NEAR` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.STRATA` | ? | call 0 · name-only 93 · test 115 | zero — UNREAD |
-| WaypointArrow | `lib.STRINGS` | ? | call 0 · name-only 1 · stub 5 · test 191 | zero — UNREAD |
-| WaypointArrow | `lib.STYLES` | ? | call 0 · name-only 7 · test 23 | zero — UNREAD |
-| WaypointArrow | `lib.ShareText` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.StyleValues` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.TEXT_GAP` | ? | call 0 · name-only 7 · test 1 | zero — UNREAD |
-| WaypointArrow | `lib.TEXT_POSITIONS` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.TEXT_ROOM` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.TextPositionValues` | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.UNITS` | ? | call 0 · name-only 11 · test 40 | zero — UNREAD |
-| WaypointArrow | `arrive` (descriptor) | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `canDrag` (descriptor) | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `far` (descriptor) | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `format` (descriptor) | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `mediaBase` (descriptor) | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `menu` (descriptor) | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `near` (descriptor) | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `onMoved` (descriptor) | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `parent` (descriptor) | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `point` (descriptor) | ? | call 0 | zero — UNREAD |
-| WaypointArrow | `vendorPath` (descriptor) | ? | call 0 | zero — UNREAD |
-| Charts | `lib.RangeScale` | ? | call 0 | zero — UNREAD |
-| Charts | `lib.StripLabels` | ? | call 0 | zero — UNREAD |
-| Charts | `lib.StripSlots` | ? | call 0 | zero — UNREAD |
-| Charts | `lib.tipText` | ? | call 0 · test 40 | zero — UNREAD |
+| Callout | `lib.ANIMS` | internal only (Callout.lua:307, 835) | call 0 | zero — kept, documented |
+| Callout | `lib.CHANNELS` | internal only (Callout.lua:308); the name hits are Combat Trail's own `Share.CHANNELS` and other addons' locals | call 0 · name-only 2 · test 2 | zero — kept, documented |
+| Callout | `lib.DEFAULTS` | internal only; read by Combat Trail's tests (tests/test_countdown.lua) to hold its seeded profile to it | call 0 · name-only 6 · stub 1 · test 12 | zero — kept, documented |
+| Callout | `lib.FOLLOW_FROM` | internal only | call 0 | zero — kept, documented |
+| Callout | `lib.FONT_DEFAULT` | internal only (Callout.lua:480, CalloutSettings.lua:250) | call 0 | zero — kept, documented |
+| Callout | `lib.FONT_FACES` | internal only | call 0 | zero — kept, documented |
+| Callout | `lib.FONT_GAME` | internal only (Callout.lua:479, CalloutSettings.lua:279) | call 0 | zero — kept, documented |
+| Callout | `lib.FONT_SKIN` | internal only; Skill Master's `FONT_SKIN` (settings/Trainers.lua:67) is a WaypointArrow settings word, not this | call 0 | zero — kept, documented |
+| Callout | `lib.FROM_SKIN` | internal only; every host name hit is LibKa0s-Skin-1.0's `FROM_SKIN` or a host stub's copy of it | call 0 · name-only 16 · stub 59 · test 64 | zero — kept, documented |
+| Callout | `lib.FollowKeys` | internal only | call 0 | zero — kept, documented |
+| Callout | `lib.GLOWS` | no reader at all, inside the library or out: kept for the published surface | call 0 | zero — kept, documented |
+| Callout | `lib.KINDS` | internal only (Callout.lua:128, CalloutSettings.lua:481); read by Combat Trail's tests (tests/test_callout_settings.lua:55) to count the rows | call 0 · name-only 7 · test 17 | zero — kept, documented |
+| Callout | `lib.LINES` | read by Combat Trail's tests only (tests/test_countdown.lua:156); the library builds it from `STOCK_ORDER` and `MAX_FROM` | call 0 · name-only 2 · stub 1 · test 16 | zero — kept, documented |
+| Callout | `lib.MAX_FROM` | internal only; read by Combat Trail's tests (tests/test_countdown.lua:358) | call 0 · test 1 | zero — kept, documented |
+| Callout | `lib.MEANING` | internal only | call 0 | zero — kept, documented |
+| Callout | `lib.OFF` | internal only; the name hits are other tables' `OFF` | call 0 · name-only 10 · stub 8 · test 109 | zero — kept, documented |
+| Callout | `lib.OUTLINES` | internal only (Callout.lua:302) | call 0 | zero — kept, documented |
+| Callout | `lib.PACKS` | internal only; read by Combat Trail's tests (tests/test_countdown.lua:152) to hold `NS.CALLOUT_PACKS` to it | call 0 · test 10 | zero — kept, documented |
+| Callout | `lib.PLAY_COUNTDOWN` | internal only (CalloutSettings.lua:295); read by Combat Trail's tests (tests/test_countdown.lua:176) | call 0 · test 2 | zero — kept, documented |
+| Callout | `lib.SETTINGS` | no reader outside its own definition (Callout.lua:314); the name hits are other majors' `SETTINGS` | call 0 · name-only 2 · stub 1 · test 17 | zero — kept, documented |
+| Callout | `lib.SETTINGS_SIDE_TABS` | internal only | call 0 | zero — kept, documented |
+| Callout | `lib.SETTINGS_STRINGS` | internal only (CalloutSettings.lua:203) | call 0 | zero — kept, documented |
+| Callout | `lib.SETTINGS_TABS` | internal only | call 0 | zero — kept, documented |
+| Callout | `lib.SIZE_MAX` | internal only (Callout.lua:302, CalloutSettings.lua:398) | call 0 | zero — kept, documented |
+| Callout | `lib.SIZE_MIN` | internal only (Callout.lua:302, CalloutSettings.lua:398) | call 0 | zero — kept, documented |
+| Callout | `lib.SOUND_EXT` | internal only; read by Combat Trail's tests (tests/test_countdown.lua:157) | call 0 · test 2 | zero — kept, documented |
+| Callout | `lib.STOCK` | internal only (CalloutRoute.lua:73, CalloutSettings.lua:296) | call 0 · test 1 | zero — kept, documented |
+| Callout | `lib.STOCK_ORDER` | internal only (Callout.lua:166, CalloutRoute.lua:130) | call 0 | zero — kept, documented |
+| Callout | `lib.STRATA` | internal only; the name hits are other majors' and hosts' `STRATA` | call 0 · name-only 93 · test 115 | zero — kept, documented |
+| Callout | `lib.TTS` | internal only (Callout.lua:282, CalloutSettings.lua:446) | call 0 | zero — kept, documented |
+| Callout | `lib.WIDTH` | internal only; the name hits are other tables' `WIDTH` | call 0 · name-only 52 · test 55 | zero — kept, documented |
+| Callout | `label` (descriptor) | no descriptor passes it (CombatTrail modules/Countdown.lua:88 and core/CalloutSetup.lua:90-95 are the only fields set) | call 0 | zero — kept, documented |
+| Callout | `soundsBase` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| Callout | `vendorPath` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.ARRIVE` | internal only; Skill Master keeps the default | call 0 · test 1 | zero — kept, documented |
+| WaypointArrow | `lib.ART` | internal only; Skill Master's `C.ART` (modules/Chrome.lua:114) is its own control-strip pitch | call 0 · name-only 4 · test 10 | zero — kept, documented |
+| WaypointArrow | `lib.COMPACT_FROM` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.DEFAULTS` | internal only; read by Skill Master's tests (tests/test_round8.lua:670, tests/test_round9.lua:81) to hold its seeded profile to it | call 0 · name-only 6 · stub 1 · test 12 | zero — kept, documented |
+| WaypointArrow | `lib.DEFAULT_POINT` | internal only | call 0 · name-only 3 | zero — kept, documented |
+| WaypointArrow | `lib.DEFAULT_STYLE` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.DISTANCE_UNITS` | internal only (WaypointArrow.lua:201, WaypointArrowSettings.lua:137) | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.Distance` | internal only; Skill Master's `NS.Trainers.Distance` (modules/Trainers.lua:150) is its own trainer-popup measure | call 0 · name-only 4 · def 3 · test 10 | zero — kept, documented |
+| WaypointArrow | `lib.DistanceUnitsValues` | internal only; Skill Master takes the row through `SettingsRows` | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.FAR` | internal only (WaypointArrow.lua:237, 1264) | call 0 · test 10 | zero — kept, documented |
+| WaypointArrow | `lib.FLAGS_FROM_SKIN` | internal only (WaypointArrow.lua:129, 663) | call 0 · name-only 3 | zero — kept, documented |
+| WaypointArrow | `lib.FONT_DEFAULT` | internal only (WaypointArrow.lua:128, WaypointArrowSettings.lua:200) | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.FONT_FLAGS` | internal only (WaypointArrow.lua:195); Skill Master's `FONT_FLAGS` (settings/Trainers.lua:61) is a settings word it hands `SettingsRows` | call 0 · name-only 1 · stub 5 · test 19 | zero — kept, documented |
+| WaypointArrow | `lib.FONT_SIZE_MAX` | internal only (WaypointArrow.lua:192, WaypointArrowSettings.lua:220) | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.FONT_SIZE_MIN` | internal only (WaypointArrow.lua:192, WaypointArrowSettings.lua:220) | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.Fade` | internal only | call 0 · test 14 | zero — kept, documented |
+| WaypointArrow | `lib.FormatDistance` | internal only; Skill Master overrides its words through `d.strings` | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.GROUND` | internal only (WaypointArrow.lua:257, 263) | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.GroundFrame` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.GroundTexCoord` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.HIT_PAD` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.IsStyle` | no reader outside its own definition (WaypointArrow.lua:1269); the library's suite is its only caller: kept for the published surface | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.MEDIA_DIR` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.MENU_ITEMS` | no reader at all, inside the library or out (WaypointArrow.lua:154): kept for the published surface | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.MapWorldPos` | internal only, through the local; Skill Master's `NS.Compat.MapWorldPos` (core/Compat.lua:406) is its own | call 0 · name-only 3 · def 1 · test 4 | zero — kept, documented |
+| WaypointArrow | `lib.Mix` | internal only | call 0 · test 1 | zero — kept, documented |
+| WaypointArrow | `lib.NEAR` | internal only (WaypointArrow.lua:237, 1264) | call 0 · test 17 | zero — kept, documented |
+| WaypointArrow | `lib.POSITION_MAX` | internal only (WaypointArrow.lua:202) | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.POSITION_MIN` | internal only (WaypointArrow.lua:202) | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.PlayerFacing` | internal only, through the local | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.PlayerWorldPos` | internal only, through the local; Skill Master's `NS.Compat.PlayerWorldPos` (core/Compat.lua:421) is its own | call 0 · name-only 1 · def 1 · test 4 | zero — kept, documented |
+| WaypointArrow | `lib.Rotation` | internal only; read by Skill Master's tests (tests/test_round6.lua:1169) | call 0 · test 3 | zero — kept, documented |
+| WaypointArrow | `lib.SAMPLE_ROTATION` | internal only; read by Skill Master's tests (tests/test_round6.lua:1363) | call 0 · test 1 | zero — kept, documented |
+| WaypointArrow | `lib.SAMPLE_YARDS` | internal only; read by Skill Master's tests (tests/test_round6.lua:1362) | call 0 · test 1 | zero — kept, documented |
+| WaypointArrow | `lib.SCALE_MAX` | internal only (WaypointArrow.lua:189, WaypointArrowSettings.lua:172) | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SCALE_MIN` | internal only (WaypointArrow.lua:189, WaypointArrowSettings.lua:172) | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SCALE_STEP` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SETTINGS` | internal only; Skill Master reaches it through `ConfigureFrom` | call 0 · name-only 2 · stub 1 · test 17 | zero — kept, documented |
+| WaypointArrow | `lib.SETTINGS_STRINGS` | internal only (WaypointArrowSettings.lua:115) | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SHADOW_BOX` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SHADOW_OFFSET` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SHARE_LEAD` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SKIN_FAR` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SKIN_NEAR` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.STRATA` | internal only (WaypointArrow.lua:539); the name hits are other majors' and hosts' `STRATA` | call 0 · name-only 93 · test 115 | zero — kept, documented |
+| WaypointArrow | `lib.STRINGS` | internal only (WaypointArrow.lua:277, 897) | call 0 · name-only 1 · stub 5 · test 191 | zero — kept, documented |
+| WaypointArrow | `lib.STYLES` | internal only (WaypointArrow.lua:1269, WaypointArrowSettings.lua:126) | call 0 · name-only 7 · test 23 | zero — kept, documented |
+| WaypointArrow | `lib.ShareText` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.StyleValues` | internal only; Skill Master takes the row through `SettingsRows` | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.TEXT_GAP` | internal only | call 0 · name-only 7 · test 1 | zero — kept, documented |
+| WaypointArrow | `lib.TEXT_POSITIONS` | internal only (WaypointArrow.lua:199, WaypointArrowSettings.lua:136) | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.TEXT_ROOM` | internal only | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.TextPositionValues` | internal only; Skill Master takes the row through `SettingsRows` | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.UNITS` | internal only; Skill Master's `UNITS` (settings/Trainers.lua:75) is a settings word | call 0 · name-only 11 · test 40 | zero — kept, documented |
+| WaypointArrow | `arrive` (descriptor) | no descriptor passes it (Skill Master's one `Arrow:New`, modules/WaypointArrow.lua:209) | call 0 | zero — kept, documented |
+| WaypointArrow | `canDrag` (descriptor) | no descriptor passes it; the omission is recorded at the call | call 0 | zero — kept, documented |
+| WaypointArrow | `far` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| WaypointArrow | `format` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| WaypointArrow | `mediaBase` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| WaypointArrow | `menu` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| WaypointArrow | `near` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| WaypointArrow | `onMoved` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| WaypointArrow | `parent` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| WaypointArrow | `point` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| WaypointArrow | `vendorPath` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| Charts | `lib.RangeScale` | internal only | call 0 | zero — kept, documented |
+| Charts | `lib.StripLabels` | internal only | call 0 | zero — kept, documented |
+| Charts | `lib.StripSlots` | internal only | call 0 | zero — kept, documented |
+| Charts | `lib.tipText` | internal only; DropWatcher's `tipText` (tests/run.lua:101) is its own test helper | call 0 · test 40 | zero — kept, documented |
 | Media | `lib.BACKGROUNDS` | no host call | call 0 | zero — kept, documented |
 | Media | `lib.BORDERS` | no host call | call 0 | zero — kept, documented |
 | Media | `lib.Background` | no host call | call 0 · name-only 5 · def 1 · test 90 | zero — kept, documented |
 | Media | `lib.Border` | no host call | call 0 · name-only 5 · def 3 · test 144 | zero — kept, documented |
 | Media | `lib.FONTS` | no host reads the table by name | call 0 · test 37 | zero — kept, documented |
-| Media | `lib.ICONS` | ? | call 0 · test 43 | zero — UNREAD |
-| Media | `lib.ICON_SETS` | ? | call 0 | zero — UNREAD |
-| Media | `lib.IconAuthor` | ? | call 0 | zero — UNREAD |
+| Media | `lib.ICONS` | internal only; read by five hosts' tests (BankLedger, LibKa0sSkinTester, LootHistory, PrettyChat, RangeMaster tests/test_mediasetup.lua) to hold their pruned `media/icons/` to it | call 0 · test 43 | zero — kept, documented |
+| Media | `lib.ICON_SETS` | internal only | call 0 | zero — kept, documented |
+| Media | `lib.IconAuthor` | internal only, from another major | call 0 | zero — kept, documented |
 | Media | `lib.TEXTURES` | no host reads the table by name | call 0 · test 5 | zero — kept, documented |
 | Media | `lib.Texture` | ConsumableMaster's two `Texture` hits are its own `MacroDisplay.Texture` | call 0 · name-only 12 · def 2 · stub 2 · test 207 | zero — kept, documented |
 | Media | `lib.VENDOR_PATH` | default value | call 0 · test 2 | zero — kept, documented |
-| Skin | `lib.CLIENT_DEFAULTS` | ? | call 0 · test 4 | zero — UNREAD |
+| Skin | `lib.CLIENT_DEFAULTS` | internal only; read by host tests only | call 0 · test 4 | zero — kept, documented |
 | Skin | `lib.GetOverride` | no host calls it; read by hand | call 0 · test 36 | zero — kept, documented |
 | Skin | `lib.GetSkin` | no host calls it; read by hand | call 0 · test 14 | zero — kept, documented |
 | Skin | `lib.IsFromSkin` | no host calls it; read by hand | call 0 | zero — kept, documented |
@@ -688,7 +698,7 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 | Skin | `lib.OnReloadRequest` | no host calls it; read by hand | call 0 · test 7 | zero — kept, documented |
 | Skin | `lib.OwnerLabel` | no host calls it; read by hand | call 0 · test 16 | zero — kept, documented |
 | Skin | `lib.Owners` | no host calls it; read by hand | call 0 | zero — kept, documented |
-| Skin | `lib.RETIRED_FONTS` | ? | call 0 · name-only 12 | zero — UNREAD |
+| Skin | `lib.RETIRED_FONTS` | internal only; fifteen hosts carry a local `RETIRED_FONTS` copy in `core/Database.lua` or `core/Database_Migrations.lua` (for example PartyFrameEnhanced core/Database.lua:147, WhatGroup core/Database.lua:30) | call 0 · name-only 12 | zero — kept, documented |
 | Skin | `lib.RegisterSkin` | no host calls it; read by hand | call 0 · test 45 | zero — kept, documented |
 | Skin | `lib.Repaint` | no host calls it; read by hand | call 0 · name-only 2 · def 3 · test 13 | zero — kept, documented |
 | Skin | `lib.SCHEMA` | no host calls it; read by hand | call 0 · name-only 1 · stub 1 · test 27 | zero — kept, documented |
@@ -710,31 +720,24 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 | Skin | `thirdPartySkinAddons` (descriptor) | not a descriptor field | call 0 | zero — kept, documented |
 | Skin | `thirdPartySkinsOff` (descriptor) | not a descriptor field | call 0 | zero — kept, documented |
 | Widgets | `lib.AUTOCOMPLETE` | no host reads it | call 0 | zero — kept, documented |
-| Widgets | `lib.BAR` | ? | call 0 · name-only 5 · stub 1 · test 41 | zero — UNREAD |
-| Widgets | `lib.BarCompute` | ? | call 0 · test 6 | zero — UNREAD |
-| Widgets | `lib.BarShade` | ? | call 0 · def 1 · test 2 | zero — UNREAD |
+| Widgets | `lib.BAR` | internal only; Skill Master's degradation stub mirrors it (core/WidgetsSetup.lua:97) and its tests read it | call 0 · name-only 5 · stub 1 · test 41 | zero — kept, documented |
+| Widgets | `lib.BarCompute` | internal only; read by host tests only | call 0 · test 6 | zero — kept, documented |
+| Widgets | `lib.BarShade` | internal only; Skill Master's `BarShade` (core/WidgetsSetup.lua:93) is its library-absent stub | call 0 · def 1 · test 2 | zero — kept, documented |
 | Widgets | `lib.ChartMath` | no host calls it; LootHistory aligns its in/out strip through the chart instance's `XToPixel` instead | call 0 · test 2 | zero — kept, documented |
-| Widgets | `lib.DRAG_HANDLE_STRINGS` | ? | call 0 | zero — UNREAD |
-| Widgets | `lib.HEADER_STRINGS` | ? | call 0 · test 2 | zero — UNREAD |
-| Widgets | `lib.HeaderButton` | ? | call 0 · test 3 | zero — UNREAD |
-| Widgets | `lib.OwnerWarnings` | ? | call 0 | zero — UNREAD |
+| Widgets | `lib.DRAG_HANDLE_STRINGS` | internal only | call 0 | zero — kept, documented |
+| Widgets | `lib.HEADER_STRINGS` | internal only; read by WhatGroup's tests (tests/test_frame_header.lua:109) | call 0 · test 2 | zero — kept, documented |
+| Widgets | `lib.HeaderButton` | internal only | call 0 · test 3 | zero — kept, documented |
+| Widgets | `lib.OwnerWarnings` | no reader at all, inside the library or out (Widgets.lua:231; Charts.lua:420 cites it in a comment): kept for the published surface | call 0 | zero — kept, documented |
 | Widgets | `applySkin` (descriptor) | no host passes it since v1.80.0 | call 0 | zero — kept, documented |
 | Widgets | `backdrop` (descriptor) | no `CopyWindow` descriptor passes it | call 0 | zero — kept, documented |
-| Widgets | `clear` (descriptor) | ? | call 0 | zero — UNREAD |
-| Widgets | `dock` (descriptor) | ? | call 0 | zero — UNREAD |
-| Widgets | `gap` (descriptor) | ? | call 0 | zero — UNREAD |
 | Widgets | `hoverXs` (descriptor) | hit scan sees no descriptor literal naming it | call 0 | zero — kept, documented |
-| Widgets | `inset` (descriptor) | ? | call 0 | zero — UNREAD |
+| Widgets | `inset` (descriptor) | no `TestStrip` options or `DockTestStrip` spec passes it | call 0 | zero — kept, documented |
 | Widgets | `integer` (descriptor) | hit scan sees no descriptor literal naming it | call 0 | zero — kept, documented |
 | Widgets | `makeCloseButton` (descriptor) | no `CopyWindow` descriptor passes it | call 0 | zero — kept, documented |
 | Widgets | `markers` (descriptor) | hit scan sees no descriptor literal naming it | call 0 | zero — kept, documented |
-| Widgets | `onOffset` (descriptor) | ? | call 0 | zero — UNREAD |
-| Widgets | `onSettings` (descriptor) | ? | call 0 | zero — UNREAD |
+| Widgets | `onSettings` (descriptor) | no `CopyWindow` passes it; AbsorbTracker's `onSettings` (modules/Bar.lua:149) goes to `DragHandle`'s options table, an alias of its `settings` (WidgetsDragHandle.lua:576), outside this definition | call 0 | zero — kept, documented |
 | Widgets | `scrollName` (descriptor) | library-internal caller only | call 0 | zero — kept, documented |
 | Widgets | `series` (descriptor) | hit scan sees no descriptor literal naming it | call 0 | zero — kept, documented |
-| Widgets | `target` (descriptor) | ? | call 0 | zero — UNREAD |
-| Widgets | `titleBar` (descriptor) | ? | call 0 | zero — UNREAD |
-| Widgets | `window` (descriptor) | ? | call 0 | zero — UNREAD |
 | Widgets | `xMax` (descriptor) | hit scan sees no descriptor literal naming it | call 0 | zero — kept, documented |
 | Widgets | `xMin` (descriptor) | hit scan sees no descriptor literal naming it | call 0 | zero — kept, documented |
 | Widgets | `yMax` (descriptor) | hit scan sees no descriptor literal naming it | call 0 | zero — kept, documented |
@@ -759,19 +762,19 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 | DebugLog | `applySkin` (descriptor) | no host passes it since v1.80.0 | call 0 | zero — kept, documented |
 | DebugLog | `diagnosticsEnablesLogging` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
 | DebugLog | `makeCloseButton` (descriptor) | BankLedger core/DebugLogSetup.lua:146 and LootHistory core/DebugLogSetup.lua:163 record why | call 0 | zero — kept, documented |
-| DebugLog | `onSettings` (descriptor) | ? | call 0 | zero — UNREAD |
+| DebugLog | `onSettings` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
 | DebugLog | `skin` (descriptor) | no descriptor passes it (MultiMeters settings/Schema_Compose.lua:248 is a locale key) | call 0 | zero — kept, documented |
 | Slash | `CliResetAll` (instance) | LootHistory settings/Slash.lua:433-435 and BankLedger settings/Slash.lua:478-479 record why | call 0 · name-only 6 · def 3 · stub 11 · test 64 | zero — deliberate host copy |
 | Launcher | `lib.STRINGS` | no host reads the table by name | call 0 · name-only 1 · stub 5 · test 191 | zero — kept, documented |
 | Launcher | `Object` (instance) | read by host tests only (110 hits) | call 0 · def 2 · stub 15 · test 140 | zero — kept, documented |
 | Launcher | `L` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
-| Launcher | `entryClients` (descriptor) | ? | call 0 | zero — UNREAD |
-| Launcher | `owner` (descriptor) | ? | call 0 | zero — UNREAD |
+| Launcher | `entryClients` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
+| Launcher | `owner` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
 | Options | `lib.APPEARANCE_STRINGS` | no host call | call 0 · stub 1 · test 1 | zero — kept, documented |
 | Options | `lib.KEYBIND_STRINGS` | no host call | call 0 · test 9 | zero — kept, documented |
 | Options | `lib.LAYOUT` | KickCD core/Constants.lua:109-116 records the deletion; no host reads the table by name | call 0 · name-only 7 · stub 2 · test 106 | zero — kept, documented |
 | Options | `lib.PatchAlwaysShowScrollbar` | reached through `EnsureScroll` | call 0 · stub 16 · test 25 | zero — kept, documented |
-| Options | `lib.SKIN_NOTICE_VERSION` | ? | call 0 · test 2 | zero — UNREAD |
+| Options | `lib.SKIN_NOTICE_VERSION` | internal only; read by Combat Trail's test harness (tests/run.lua:72) | call 0 · test 2 | zero — kept, documented |
 | Options | `lib.SKIN_PICKER_STRINGS` | no host call | call 0 · test 17 | zero — kept, documented |
 | Options | `lib.STRINGS` | no host reads the table by name | call 0 · name-only 1 · stub 5 · test 191 | zero — kept, documented |
 | Options | `CHROME_GAP` (instance) | no host draws such chrome today | call 0 · name-only 2 · stub 7 · test 25 | zero — kept, documented |
@@ -787,13 +790,13 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 | Options | `VISIBILITY_SORT` (instance) | MultiMeters settings/Schema_Compose.lua:602-611 records why | call 0 · stub 4 · test 16 | zero — deliberate host copy |
 | Options | `VISIBILITY_VALUES` (instance) | MultiMeters settings/Schema_Compose.lua:602-611 records why | call 0 · stub 4 · test 16 | zero — deliberate host copy |
 | Options | `afterRestoreAll` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
-| IconBrowser | `lib.BUILTIN_TABS` | ? | call 0 · test 1 | zero — UNREAD |
-| IconBrowser | `lib.GLYPH_LABELS` | ? | call 0 | zero — UNREAD |
-| IconBrowser | `lib.MacroIcons` | ? | call 0 · test 2 | zero — UNREAD |
-| IconBrowser | `lib.SKIN_TOKENS` | ? | call 0 · name-only 29 · stub 16 · test 31 | zero — UNREAD |
-| IconBrowser | `lib.STRINGS` | ? | call 0 · name-only 1 · stub 5 · test 191 | zero — UNREAD |
-| IconBrowser | `lib.Sources` | ? | call 0 · test 2 | zero — UNREAD |
-| IconBrowser | `lib.WOWHEAD_ICONS` | ? | call 0 | zero — UNREAD |
+| IconBrowser | `lib.BUILTIN_TABS` | internal only | call 0 · test 1 | zero — kept, documented |
+| IconBrowser | `lib.GLYPH_LABELS` | internal only | call 0 | zero — kept, documented |
+| IconBrowser | `lib.MacroIcons` | internal only | call 0 · test 2 | zero — kept, documented |
+| IconBrowser | `lib.SKIN_TOKENS` | internal only; the name hits are each host's own `NS.SKIN_TOKENS` | call 0 · name-only 29 · stub 16 · test 31 | zero — kept, documented |
+| IconBrowser | `lib.STRINGS` | no host reads the table by name; the name hits are other majors' `STRINGS` | call 0 · name-only 1 · stub 5 · test 191 | zero — kept, documented |
+| IconBrowser | `lib.Sources` | internal only | call 0 · test 2 | zero — kept, documented |
+| IconBrowser | `lib.WOWHEAD_ICONS` | internal only | call 0 | zero — kept, documented |
 | Perf | `lib.DEFAULT_RING` | default value | call 0 · test 2 | zero — kept, documented |
 | Perf | `lib.SCHEMA` | read by host tests only | call 0 · name-only 1 · stub 1 · test 27 | zero — kept, documented |
 | Perf | `lib.STRINGS` | no host reads the table by name | call 0 · name-only 1 · stub 5 · test 191 | zero — kept, documented |
@@ -837,9 +840,9 @@ where a deliberate copy records its reason. *Hits by class* is the tool's raw co
 | Perf | `L` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
 | Perf | `decorate` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
 | Perf | `onChange` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
-| Perf | `onSettings` (descriptor) | ? | call 0 | zero — UNREAD |
+| Perf | `onSettings` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
 | Perf | `ring` (descriptor) | no descriptor passes it | call 0 | zero — kept, documented |
-| Sim | `lib.SAMPLE` | ? | call 0 · name-only 7 · test 18 | zero — UNREAD |
+| Sim | `lib.SAMPLE` | internal only; read by host tests only (BankLedger, DropWatcher, SkillMaster), which hold their library-absent fallbacks to it | call 0 · name-only 7 · test 18 | zero — kept, documented |
 | Sim | `lib.STRINGS` | no host reads the table by name; LootHistory settings/Slash.lua:233 is LibKa0s-Slash-1.0's `lib.STRINGS` | call 0 · name-only 1 · stub 5 · test 191 | zero — kept, documented |
 | Sim | `PanelRows` (instance) | reached through the library's step panel; the host defs are library-absent stubs | call 0 · def 6 · test 40 | zero — kept, documented |
 | Sim | `Pause` (instance) | BankLedger's only "call" is its library-absent stub (core/SimSetup.lua:76-91, host contract H9), which the scan's block detector misses; DropWatcher's and LootHistory's name hits are their own stubs and other tables' members | call 2 · name-only 5 · def 3 · test 18 | zero — kept, documented (read by hand) |
@@ -868,7 +871,7 @@ here are uncapped.
 |---|---|---|---|---|
 | Core | `lib.ApplySkin` | 13: AuraMaster, BankLedger, CombatTrail, DropWatcher, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PremadeGroupsFilterExtension, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 13 · name-only 28 · def 9 · stub 32 · test 114 | consumed (13) |
 | Core | `lib.ClassColor` | 6: AuraMaster, CombatTrail, MultiMeters, PartyFrameEnhanced, RangeMaster, SkillMaster | call 7 · name-only 39 · def 3 · stub 8 · test 27 | consumed (6) |
-| Core | `lib.HasSettings` | none | call 0 | zero — UNREAD |
+| Core | `lib.HasSettings` | none | call 0 | zero — kept, documented |
 | Core | `lib.IsConcatSafe` | 18: AbsorbTracker, BankLedger, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 18 · name-only 11 · stub 37 · test 97 | consumed (18) |
 | Core | `lib.MakeCloseButton` | 17: AuraMaster, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 17 · name-only 23 · def 19 · stub 37 · test 174 | consumed (17) |
 | Core | `lib.MakeResizable` | 8: BankLedger, CombatTrail, DropWatcher, LootHistory, MultiMeters, OutfitterReborn, QuickComms, SkillMaster | call 8 · name-only 15 · def 2 · stub 9 · test 52 | consumed (8) |
@@ -876,7 +879,7 @@ here are uncapped.
 | Core | `lib.OpenSettings` | AuraMaster `settings/PresetPicker.lua:488` | call 1 · name-only 27 · def 10 · test 60 | thin (1) |
 | Core | `lib.RGBA` | ConsumableMaster `core/CoreSetup.lua:163`; MultiMeters `core/CoreSetup.lua:243`; QuickComms `settings/SchemaMembers.lua:447` | call 4 · name-only 7 · stub 2 · test 49 | consumed (3) |
 | Core | `lib.RaiseStaticPopups` | 4: AuraMaster, CombatTrail, OutfitterReborn, RangeMaster | call 4 · name-only 4 · stub 2 · test 5 | consumed (4) |
-| Core | `lib.RegisterSettingsOpener` | none | call 0 | zero — UNREAD |
+| Core | `lib.RegisterSettingsOpener` | none | call 0 | zero — kept, documented |
 | Core | `lib.ResolveColor` | 10: AbsorbTracker, AuraMaster, ConsumableMaster, DropWatcher, KickCD, OutfitterReborn, PanelMaster, PartyFrameEnhanced, QuickComms, RangeMaster | call 11 · name-only 31 · def 1 · stub 9 · test 22 | consumed (10) |
 | Core | `lib.SECRET` | 4: AbsorbTracker, KickCD, MultiMeters, RangeMaster | call 4 · name-only 3 · stub 12 · test 338 | consumed (4) |
 | Core | `lib.SKIN` | 11: AuraMaster, CombatTrail, DropWatcher, LibKa0sSkinTester, MultiMeters, OutfitterReborn, PremadeGroupsFilterExtension, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 11 · name-only 8 · stub 27 · test 69 | consumed (11) |
@@ -884,20 +887,20 @@ here are uncapped.
 | Core | `lib.SafeRegisterEvents` | 14: AbsorbTracker, AuraMaster, CombatTrail, DropWatcher, KickCD, LootHistory, MultiMeters, OutfitterReborn, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster | call 14 · name-only 4 · def 1 · stub 15 · test 12 | consumed (14) |
 | Core | `lib.SafeRegisterUnitEvent` | 14: AbsorbTracker, AuraMaster, CombatTrail, DropWatcher, KickCD, LootHistory, MultiMeters, OutfitterReborn, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster | call 14 · name-only 30 · def 1 · stub 15 · test 17 | consumed (14) |
 | Core | `lib.SafeToString` | all 19 | call 19 · name-only 91 · stub 102 · test 193 | consumed (19) |
-| Core | `Hide` (descriptor) | none | call 0 | zero — UNREAD |
+| Core | `Hide` (descriptor) | none | call 0 | zero — kept, documented |
 | Core | `prefix` (descriptor) | all 19 | call 19 | consumed (19) |
 | Core | `sep` (descriptor) | PrettyChat `core/CoreSetup.lua:176` | call 1 | thin (1) |
 | Core | `sink` (descriptor) | 6: ConsumableMaster, DropWatcher, LibKa0sSkinTester, PremadeGroupsFilterExtension, QuickComms, WhatGroup | call 6 | consumed (6) |
 | Tooltip | `lib.AttachTitleTip` | 4: BankLedger, CombatTrail, MultiMeters, SkillMaster | call 8 · test 6 | consumed (4) |
-| Tooltip | `lib.CLOSE_STRINGS` | none | call 0 | zero — UNREAD |
+| Tooltip | `lib.CLOSE_STRINGS` | none | call 0 | zero — kept, documented |
 | Tooltip | `lib.CloseTip` | BankLedger `modules/Browser_Chrome.lua:82`; MultiMeters `modules/HeaderControls.lua:522` | call 3 | thin (2) |
-| Tooltip | `lib.GroupOf` | none | call 0 · name-only 2 · def 1 · test 11 | zero — UNREAD |
+| Tooltip | `lib.GroupOf` | none | call 0 · name-only 2 · def 1 · test 11 | zero — kept, documented |
 | Tooltip | `lib.Own` | 5: CombatTrail, ConsumableMaster, MultiMeters, QuickComms, RangeMaster | call 7 · name-only 10 · def 3 · test 18 | consumed (5) |
 | Tooltip | `lib.PlaceAttached` | 7: CombatTrail, DropWatcher, LibKa0sSkinTester, LootHistory, OutfitterReborn, QuickComms, SkillMaster | call 12 · name-only 4 · def 2 · test 66 | consumed (7) |
 | Tooltip | `lib.PlaceBeside` | 12: CombatTrail, ConsumableMaster, DropWatcher, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PremadeGroupsFilterExtension, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 21 · name-only 6 · def 1 · test 79 | consumed (12) |
 | Tooltip | `lib.PlaceLauncher` | SkillMaster `modules/Chrome.lua:237` | call 1 · name-only 1 · def 1 · test 5 | thin (1) |
 | Tooltip | `lib.Replace` | LootHistory `core/Compat.lua:646`; OutfitterReborn `core/CoreSetup.lua:149` | call 2 · name-only 2 · test 23 | thin (2) |
-| Tooltip | `lib.SetCloseTip` | none | call 0 | zero — UNREAD |
+| Tooltip | `lib.SetCloseTip` | none | call 0 | zero — kept, documented |
 | Tooltip | `lib.SetGroup` | ConsumableMaster `modules/MacroBar.lua:179` | call 2 · name-only 5 · def 3 · test 9 | thin (1) |
 | Tooltip | `lib.TIP_GAP` | 6: CombatTrail, LibKa0sSkinTester, MultiMeters, QuickComms, RangeMaster, WhatGroup | call 7 · name-only 7 · test 48 | consumed (6) |
 | Env | `lib.GetAddOnMetadata` | all 19 | call 19 · name-only 36 · def 1 · test 140 | consumed (19) |
@@ -926,7 +929,7 @@ here are uncapped.
 | Role | `lib.SetOverride` | DropWatcher `core/CompatClient.lua:202`; QuickComms `core/Compat.lua:257` | call 4 · name-only 38 · test 33 | thin (2) |
 | Role | `lib.Spec` | DropWatcher `core/Compat.lua:353`; QuickComms `core/Compat.lua:135` | call 3 · name-only 20 · def 3 · test 74 | thin (2) |
 | Role | `lib.SpecsForClass` | QuickComms `core/Compat.lua:271` | call 2 · name-only 1 · def 1 · test 1 | thin (1) |
-| Role | `lib.TALENT_GROUP_ROLE` | none | call 0 | zero — UNREAD |
+| Role | `lib.TALENT_GROUP_ROLE` | none | call 0 | zero — kept, documented |
 | Lifecycle | `lib.HOLD_DISABLED` | all 19 | call 21 · name-only 43 · stub 13 · test 34 | consumed (19) |
 | Lifecycle | `lib.HOLD_PERF` | 12: AuraMaster, CombatTrail, DropWatcher, LibKa0sSkinTester, LootHistory, OutfitterReborn, PanelMaster, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 12 · name-only 1 · stub 10 · test 113 | consumed (12) |
 | Lifecycle | `lib.New` | 16: AuraMaster, BankLedger, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, SkillMaster, WhatGroup | call 16 · name-only 242 · def 39 · stub 29 · test 1103 | consumed (16) |
@@ -1016,151 +1019,151 @@ here are uncapped.
 | Toast | `scale` (descriptor) | DropWatcher `modules/Toast.lua:510` | call 0 | thin (1, read by hand) |
 | Toast | `setPosition` (descriptor) | DropWatcher `modules/Toast.lua:515` | call 1 | thin (1, read by hand) |
 | Toast | `sound` (descriptor) | DropWatcher `modules/Toast.lua:511` | call 1 | thin (1, read by hand) |
-| Toast | `soundFile` (descriptor) | none | call 0 | zero — UNREAD |
+| Toast | `soundFile` (descriptor) | CombatTrail `modules/BestToast.lua:366` | call 0 | thin (1, read by hand) |
 | Toast | `soundKit` (descriptor) | none | call 0 | zero — kept, documented |
 | Toast | `stack` (descriptor) | SkillMaster `modules/Alerts.lua:441` | call 1 | thin (1) |
-| Toast | `stackGap` (descriptor) | none | call 0 | zero — UNREAD |
-| Toast | `stackGrow` (descriptor) | none | call 0 | zero — UNREAD |
+| Toast | `stackGap` (descriptor) | DropWatcher `modules/Toast.lua:551` | call 0 | thin (1, read by hand) |
+| Toast | `stackGrow` (descriptor) | DropWatcher `modules/Toast.lua:549`; QuickComms `modules/AutoThank_Toast.lua:202` | call 0 | thin (2, read by hand) |
 | Toast | `width` (descriptor) | DropWatcher `modules/Toast.lua:505` | call 1 | thin (1, read by hand) |
-| Callout | `lib.ANIMS` | none | call 0 | zero — UNREAD |
-| Callout | `lib.CHANNELS` | none | call 0 · name-only 2 · test 2 | zero — UNREAD |
-| Callout | `lib.DEFAULTS` | none | call 0 · name-only 6 · stub 1 · test 12 | zero — UNREAD |
-| Callout | `lib.FOLLOW_FROM` | none | call 0 | zero — UNREAD |
-| Callout | `lib.FONT_DEFAULT` | none | call 0 | zero — UNREAD |
-| Callout | `lib.FONT_FACES` | none | call 0 | zero — UNREAD |
-| Callout | `lib.FONT_GAME` | none | call 0 | zero — UNREAD |
-| Callout | `lib.FONT_SKIN` | none | call 0 | zero — UNREAD |
-| Callout | `lib.FROM_SKIN` | none | call 0 · name-only 16 · stub 59 · test 64 | zero — UNREAD |
-| Callout | `lib.FollowKeys` | none | call 0 | zero — UNREAD |
-| Callout | `lib.GLOWS` | none | call 0 | zero — UNREAD |
+| Callout | `lib.ANIMS` | none | call 0 | zero — kept, documented |
+| Callout | `lib.CHANNELS` | none | call 0 · name-only 2 · test 2 | zero — kept, documented |
+| Callout | `lib.DEFAULTS` | none | call 0 · name-only 6 · stub 1 · test 12 | zero — kept, documented |
+| Callout | `lib.FOLLOW_FROM` | none | call 0 | zero — kept, documented |
+| Callout | `lib.FONT_DEFAULT` | none | call 0 | zero — kept, documented |
+| Callout | `lib.FONT_FACES` | none | call 0 | zero — kept, documented |
+| Callout | `lib.FONT_GAME` | none | call 0 | zero — kept, documented |
+| Callout | `lib.FONT_SKIN` | none | call 0 | zero — kept, documented |
+| Callout | `lib.FROM_SKIN` | none | call 0 · name-only 16 · stub 59 · test 64 | zero — kept, documented |
+| Callout | `lib.FollowKeys` | none | call 0 | zero — kept, documented |
+| Callout | `lib.GLOWS` | none | call 0 | zero — kept, documented |
 | Callout | `lib.GLOW_LEGACY` | CombatTrail `core/Database.lua:124` | call 1 | thin (1) |
-| Callout | `lib.KINDS` | none | call 0 · name-only 7 · test 17 | zero — UNREAD |
-| Callout | `lib.LINES` | none | call 0 · name-only 2 · stub 1 · test 16 | zero — UNREAD |
-| Callout | `lib.MAX_FROM` | none | call 0 · test 1 | zero — UNREAD |
-| Callout | `lib.MEANING` | none | call 0 | zero — UNREAD |
+| Callout | `lib.KINDS` | none | call 0 · name-only 7 · test 17 | zero — kept, documented |
+| Callout | `lib.LINES` | none | call 0 · name-only 2 · stub 1 · test 16 | zero — kept, documented |
+| Callout | `lib.MAX_FROM` | none | call 0 · test 1 | zero — kept, documented |
+| Callout | `lib.MEANING` | none | call 0 | zero — kept, documented |
 | Callout | `lib.MigrateGlow` | CombatTrail `core/Database.lua:167` | call 1 | thin (1) |
 | Callout | `lib.MoveToSkin` | CombatTrail `core/Database.lua:104` | call 2 | thin (1) |
 | Callout | `lib.New` | CombatTrail `core/CalloutSetup.lua:96` | call 1 · name-only 257 · def 39 · stub 29 · test 1103 | thin (1) |
-| Callout | `lib.OFF` | none | call 0 · name-only 10 · stub 8 · test 109 | zero — UNREAD |
-| Callout | `lib.OUTLINES` | none | call 0 | zero — UNREAD |
-| Callout | `lib.PACKS` | none | call 0 · test 10 | zero — UNREAD |
-| Callout | `lib.PLAY_COUNTDOWN` | none | call 0 · test 2 | zero — UNREAD |
-| Callout | `lib.SETTINGS` | none | call 0 · name-only 2 · stub 1 · test 17 | zero — UNREAD |
-| Callout | `lib.SETTINGS_SIDE_TABS` | none | call 0 | zero — UNREAD |
-| Callout | `lib.SETTINGS_STRINGS` | none | call 0 | zero — UNREAD |
-| Callout | `lib.SETTINGS_TABS` | none | call 0 | zero — UNREAD |
-| Callout | `lib.SIZE_MAX` | none | call 0 | zero — UNREAD |
-| Callout | `lib.SIZE_MIN` | none | call 0 | zero — UNREAD |
-| Callout | `lib.SOUND_EXT` | none | call 0 · test 2 | zero — UNREAD |
-| Callout | `lib.STOCK` | none | call 0 · test 1 | zero — UNREAD |
-| Callout | `lib.STOCK_ORDER` | none | call 0 | zero — UNREAD |
-| Callout | `lib.STRATA` | none | call 0 · name-only 93 · test 115 | zero — UNREAD |
-| Callout | `lib.TTS` | none | call 0 | zero — UNREAD |
-| Callout | `lib.WIDTH` | none | call 0 · name-only 52 · test 55 | zero — UNREAD |
+| Callout | `lib.OFF` | none | call 0 · name-only 10 · stub 8 · test 109 | zero — kept, documented |
+| Callout | `lib.OUTLINES` | none | call 0 | zero — kept, documented |
+| Callout | `lib.PACKS` | none | call 0 · test 10 | zero — kept, documented |
+| Callout | `lib.PLAY_COUNTDOWN` | none | call 0 · test 2 | zero — kept, documented |
+| Callout | `lib.SETTINGS` | none | call 0 · name-only 2 · stub 1 · test 17 | zero — kept, documented |
+| Callout | `lib.SETTINGS_SIDE_TABS` | none | call 0 | zero — kept, documented |
+| Callout | `lib.SETTINGS_STRINGS` | none | call 0 | zero — kept, documented |
+| Callout | `lib.SETTINGS_TABS` | none | call 0 | zero — kept, documented |
+| Callout | `lib.SIZE_MAX` | none | call 0 | zero — kept, documented |
+| Callout | `lib.SIZE_MIN` | none | call 0 | zero — kept, documented |
+| Callout | `lib.SOUND_EXT` | none | call 0 · test 2 | zero — kept, documented |
+| Callout | `lib.STOCK` | none | call 0 · test 1 | zero — kept, documented |
+| Callout | `lib.STOCK_ORDER` | none | call 0 | zero — kept, documented |
+| Callout | `lib.STRATA` | none | call 0 · name-only 93 · test 115 | zero — kept, documented |
+| Callout | `lib.TTS` | none | call 0 | zero — kept, documented |
+| Callout | `lib.WIDTH` | none | call 0 · name-only 52 · test 55 | zero — kept, documented |
 | Callout | `addon` (descriptor) | CombatTrail `core/CalloutSetup.lua:90` | call 1 | thin (1) |
-| Callout | `colorEncode` (descriptor) | none | call 0 | zero — UNREAD |
-| Callout | `db` (descriptor) | none | call 0 | zero — UNREAD |
+| Callout | `colorEncode` (descriptor) | CombatTrail `modules/Countdown.lua:96` | call 0 | thin (1, read by hand) |
+| Callout | `db` (descriptor) | CombatTrail `modules/Countdown.lua:90` | call 0 | thin (1, read by hand) |
 | Callout | `debug` (descriptor) | CombatTrail `core/CalloutSetup.lua:93` | call 1 | thin (1) |
-| Callout | `label` (descriptor) | none | call 0 | zero — UNREAD |
-| Callout | `name` (descriptor) | none | call 0 | zero — UNREAD |
+| Callout | `label` (descriptor) | none | call 0 | zero — kept, documented |
+| Callout | `name` (descriptor) | CombatTrail `modules/Countdown.lua:89` | call 0 | thin (1, read by hand) |
 | Callout | `packs` (descriptor) | CombatTrail `core/CalloutSetup.lua:92` | call 1 | thin (1) |
-| Callout | `path` (descriptor) | none | call 0 | zero — UNREAD |
-| Callout | `set` (descriptor) | none | call 0 | zero — UNREAD |
+| Callout | `path` (descriptor) | CombatTrail `modules/Countdown.lua:94` | call 0 | thin (1, read by hand) |
+| Callout | `set` (descriptor) | CombatTrail `modules/Countdown.lua:95` | call 0 | thin (1, read by hand) |
 | Callout | `skin` (descriptor) | CombatTrail `core/CalloutSetup.lua:91` | call 1 | thin (1) |
-| Callout | `soundsBase` (descriptor) | none | call 0 | zero — UNREAD |
-| Callout | `vendorPath` (descriptor) | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.ARRIVE` | none | call 0 · test 1 | zero — UNREAD |
-| WaypointArrow | `lib.ART` | none | call 0 · name-only 4 · test 10 | zero — UNREAD |
-| WaypointArrow | `lib.COMPACT_FROM` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.DEFAULTS` | none | call 0 · name-only 6 · stub 1 · test 12 | zero — UNREAD |
-| WaypointArrow | `lib.DEFAULT_POINT` | none | call 0 · name-only 3 | zero — UNREAD |
-| WaypointArrow | `lib.DEFAULT_STYLE` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.DISTANCE_UNITS` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.Distance` | none | call 0 · name-only 4 · def 3 · test 10 | zero — UNREAD |
-| WaypointArrow | `lib.DistanceUnitsValues` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.FAR` | none | call 0 · test 10 | zero — UNREAD |
-| WaypointArrow | `lib.FLAGS_FROM_SKIN` | none | call 0 · name-only 3 | zero — UNREAD |
-| WaypointArrow | `lib.FONT_DEFAULT` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.FONT_FLAGS` | none | call 0 · name-only 1 · stub 5 · test 19 | zero — UNREAD |
-| WaypointArrow | `lib.FONT_SIZE_MAX` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.FONT_SIZE_MIN` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.Fade` | none | call 0 · test 14 | zero — UNREAD |
-| WaypointArrow | `lib.FormatDistance` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.GROUND` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.GroundFrame` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.GroundTexCoord` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.HIT_PAD` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.IsStyle` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.MEDIA_DIR` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.MENU_ITEMS` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.MapWorldPos` | none | call 0 · name-only 3 · def 1 · test 4 | zero — UNREAD |
-| WaypointArrow | `lib.Mix` | none | call 0 · test 1 | zero — UNREAD |
-| WaypointArrow | `lib.NEAR` | none | call 0 · test 17 | zero — UNREAD |
+| Callout | `soundsBase` (descriptor) | none | call 0 | zero — kept, documented |
+| Callout | `vendorPath` (descriptor) | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.ARRIVE` | none | call 0 · test 1 | zero — kept, documented |
+| WaypointArrow | `lib.ART` | none | call 0 · name-only 4 · test 10 | zero — kept, documented |
+| WaypointArrow | `lib.COMPACT_FROM` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.DEFAULTS` | none | call 0 · name-only 6 · stub 1 · test 12 | zero — kept, documented |
+| WaypointArrow | `lib.DEFAULT_POINT` | none | call 0 · name-only 3 | zero — kept, documented |
+| WaypointArrow | `lib.DEFAULT_STYLE` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.DISTANCE_UNITS` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.Distance` | none | call 0 · name-only 4 · def 3 · test 10 | zero — kept, documented |
+| WaypointArrow | `lib.DistanceUnitsValues` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.FAR` | none | call 0 · test 10 | zero — kept, documented |
+| WaypointArrow | `lib.FLAGS_FROM_SKIN` | none | call 0 · name-only 3 | zero — kept, documented |
+| WaypointArrow | `lib.FONT_DEFAULT` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.FONT_FLAGS` | none | call 0 · name-only 1 · stub 5 · test 19 | zero — kept, documented |
+| WaypointArrow | `lib.FONT_SIZE_MAX` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.FONT_SIZE_MIN` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.Fade` | none | call 0 · test 14 | zero — kept, documented |
+| WaypointArrow | `lib.FormatDistance` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.GROUND` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.GroundFrame` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.GroundTexCoord` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.HIT_PAD` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.IsStyle` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.MEDIA_DIR` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.MENU_ITEMS` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.MapWorldPos` | none | call 0 · name-only 3 · def 1 · test 4 | zero — kept, documented |
+| WaypointArrow | `lib.Mix` | none | call 0 · test 1 | zero — kept, documented |
+| WaypointArrow | `lib.NEAR` | none | call 0 · test 17 | zero — kept, documented |
 | WaypointArrow | `lib.New` | SkillMaster `modules/WaypointArrow.lua:209` | call 1 · name-only 257 · def 39 · stub 29 · test 1103 | thin (1) |
-| WaypointArrow | `lib.POSITION_MAX` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.POSITION_MIN` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.PlayerFacing` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.PlayerWorldPos` | none | call 0 · name-only 1 · def 1 · test 4 | zero — UNREAD |
-| WaypointArrow | `lib.Rotation` | none | call 0 · test 3 | zero — UNREAD |
-| WaypointArrow | `lib.SAMPLE_ROTATION` | none | call 0 · test 1 | zero — UNREAD |
-| WaypointArrow | `lib.SAMPLE_YARDS` | none | call 0 · test 1 | zero — UNREAD |
-| WaypointArrow | `lib.SCALE_MAX` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SCALE_MIN` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SCALE_STEP` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SETTINGS` | none | call 0 · name-only 2 · stub 1 · test 17 | zero — UNREAD |
-| WaypointArrow | `lib.SETTINGS_STRINGS` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SHADOW_BOX` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SHADOW_OFFSET` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SHARE_LEAD` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SKIN_FAR` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.SKIN_NEAR` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.STRATA` | none | call 0 · name-only 93 · test 115 | zero — UNREAD |
-| WaypointArrow | `lib.STRINGS` | none | call 0 · name-only 1 · stub 5 · test 191 | zero — UNREAD |
-| WaypointArrow | `lib.STYLES` | none | call 0 · name-only 7 · test 23 | zero — UNREAD |
+| WaypointArrow | `lib.POSITION_MAX` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.POSITION_MIN` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.PlayerFacing` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.PlayerWorldPos` | none | call 0 · name-only 1 · def 1 · test 4 | zero — kept, documented |
+| WaypointArrow | `lib.Rotation` | none | call 0 · test 3 | zero — kept, documented |
+| WaypointArrow | `lib.SAMPLE_ROTATION` | none | call 0 · test 1 | zero — kept, documented |
+| WaypointArrow | `lib.SAMPLE_YARDS` | none | call 0 · test 1 | zero — kept, documented |
+| WaypointArrow | `lib.SCALE_MAX` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SCALE_MIN` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SCALE_STEP` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SETTINGS` | none | call 0 · name-only 2 · stub 1 · test 17 | zero — kept, documented |
+| WaypointArrow | `lib.SETTINGS_STRINGS` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SHADOW_BOX` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SHADOW_OFFSET` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SHARE_LEAD` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SKIN_FAR` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.SKIN_NEAR` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.STRATA` | none | call 0 · name-only 93 · test 115 | zero — kept, documented |
+| WaypointArrow | `lib.STRINGS` | none | call 0 · name-only 1 · stub 5 · test 191 | zero — kept, documented |
+| WaypointArrow | `lib.STYLES` | none | call 0 · name-only 7 · test 23 | zero — kept, documented |
 | WaypointArrow | `lib.SettingsRows` | SkillMaster `modules/WaypointArrow.lua:374` | call 2 · name-only 1 · def 2 · test 1 | thin (1) |
-| WaypointArrow | `lib.ShareText` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.StyleValues` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.TEXT_GAP` | none | call 0 · name-only 7 · test 1 | zero — UNREAD |
-| WaypointArrow | `lib.TEXT_POSITIONS` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.TEXT_ROOM` | none | call 0 | zero — UNREAD |
+| WaypointArrow | `lib.ShareText` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.StyleValues` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.TEXT_GAP` | none | call 0 · name-only 7 · test 1 | zero — kept, documented |
+| WaypointArrow | `lib.TEXT_POSITIONS` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.TEXT_ROOM` | none | call 0 | zero — kept, documented |
 | WaypointArrow | `lib.THROTTLE` | SkillMaster `modules/WaypointArrow.lua:40` | call 1 · name-only 9 · test 15 | thin (1) |
-| WaypointArrow | `lib.TextPositionValues` | none | call 0 | zero — UNREAD |
-| WaypointArrow | `lib.UNITS` | none | call 0 · name-only 11 · test 40 | zero — UNREAD |
+| WaypointArrow | `lib.TextPositionValues` | none | call 0 | zero — kept, documented |
+| WaypointArrow | `lib.UNITS` | none | call 0 · name-only 11 · test 40 | zero — kept, documented |
 | WaypointArrow | `addon` (descriptor) | SkillMaster `modules/WaypointArrow.lua:210` | call 1 | thin (1) |
-| WaypointArrow | `arrive` (descriptor) | none | call 0 | zero — UNREAD |
-| WaypointArrow | `canDrag` (descriptor) | none | call 0 | zero — UNREAD |
+| WaypointArrow | `arrive` (descriptor) | none | call 0 | zero — kept, documented |
+| WaypointArrow | `canDrag` (descriptor) | none | call 0 | zero — kept, documented |
 | WaypointArrow | `debug` (descriptor) | SkillMaster `modules/WaypointArrow.lua:217` | call 1 | thin (1) |
-| WaypointArrow | `far` (descriptor) | none | call 0 | zero — UNREAD |
-| WaypointArrow | `format` (descriptor) | none | call 0 | zero — UNREAD |
-| WaypointArrow | `mediaBase` (descriptor) | none | call 0 | zero — UNREAD |
-| WaypointArrow | `menu` (descriptor) | none | call 0 | zero — UNREAD |
+| WaypointArrow | `far` (descriptor) | none | call 0 | zero — kept, documented |
+| WaypointArrow | `format` (descriptor) | none | call 0 | zero — kept, documented |
+| WaypointArrow | `mediaBase` (descriptor) | none | call 0 | zero — kept, documented |
+| WaypointArrow | `menu` (descriptor) | none | call 0 | zero — kept, documented |
 | WaypointArrow | `menuItems` (descriptor) | SkillMaster `modules/WaypointArrow.lua:216` | call 1 | thin (1) |
 | WaypointArrow | `name` (descriptor) | SkillMaster `modules/WaypointArrow.lua:210` | call 1 | thin (1) |
-| WaypointArrow | `near` (descriptor) | none | call 0 | zero — UNREAD |
+| WaypointArrow | `near` (descriptor) | none | call 0 | zero — kept, documented |
 | WaypointArrow | `onArrive` (descriptor) | SkillMaster `modules/WaypointArrow.lua:214` | call 1 | thin (1) |
 | WaypointArrow | `onClear` (descriptor) | SkillMaster `modules/WaypointArrow.lua:215` | call 1 | thin (1) |
 | WaypointArrow | `onClick` (descriptor) | SkillMaster `modules/WaypointArrow.lua:214` | call 1 | thin (1) |
 | WaypointArrow | `onEnter` (descriptor) | SkillMaster `modules/WaypointArrow.lua:214` | call 1 | thin (1) |
 | WaypointArrow | `onLeave` (descriptor) | SkillMaster `modules/WaypointArrow.lua:214` | call 1 | thin (1) |
-| WaypointArrow | `onMoved` (descriptor) | none | call 0 | zero — UNREAD |
+| WaypointArrow | `onMoved` (descriptor) | none | call 0 | zero — kept, documented |
 | WaypointArrow | `onSampleClear` (descriptor) | SkillMaster `modules/WaypointArrow.lua:215` | call 1 | thin (1) |
-| WaypointArrow | `parent` (descriptor) | none | call 0 | zero — UNREAD |
+| WaypointArrow | `parent` (descriptor) | none | call 0 | zero — kept, documented |
 | WaypointArrow | `paths` (descriptor) | SkillMaster `modules/WaypointArrow.lua:213` | call 1 | thin (1) |
-| WaypointArrow | `point` (descriptor) | none | call 0 | zero — UNREAD |
+| WaypointArrow | `point` (descriptor) | none | call 0 | zero — kept, documented |
 | WaypointArrow | `set` (descriptor) | SkillMaster `modules/WaypointArrow.lua:213` | call 1 | thin (1) |
 | WaypointArrow | `skin` (descriptor) | SkillMaster `modules/WaypointArrow.lua:210` | call 1 | thin (1) |
 | WaypointArrow | `strata` (descriptor) | SkillMaster `modules/WaypointArrow.lua:210` | call 1 | thin (1) |
 | WaypointArrow | `strings` (descriptor) | SkillMaster `modules/WaypointArrow.lua:216` | call 1 | thin (1) |
-| WaypointArrow | `vendorPath` (descriptor) | none | call 0 | zero — UNREAD |
+| WaypointArrow | `vendorPath` (descriptor) | none | call 0 | zero — kept, documented |
 | Charts | `lib.K` | CombatTrail `modules/Results_Insights.lua:415`; DropWatcher `modules/InsightsSections.lua:81`; LootHistory `modules/Analytics.lua:187` | call 12 · name-only 2 · test 236 | consumed (3) |
 | Charts | `lib.New` | CombatTrail `modules/Results_Insights.lua:775`; DropWatcher `modules/WindowInsights.lua:157`; LootHistory `modules/AnalyticsCharts.lua:41` | call 3 · name-only 255 · def 39 · stub 29 · test 1103 | consumed (3) |
 | Charts | `lib.OTHER` | LootHistory `modules/AnalyticsFormat.lua:173` | call 1 · name-only 8 · stub 1 · test 251 | thin (1) |
-| Charts | `lib.RangeScale` | none | call 0 | zero — UNREAD |
+| Charts | `lib.RangeScale` | none | call 0 | zero — kept, documented |
 | Charts | `lib.StackSegments` | LootHistory `modules/AnalyticsFormat.lua:165` | call 1 · name-only 2 · def 1 · test 12 | thin (1) |
-| Charts | `lib.StripLabels` | none | call 0 | zero — UNREAD |
-| Charts | `lib.StripSlots` | none | call 0 | zero — UNREAD |
+| Charts | `lib.StripLabels` | none | call 0 | zero — kept, documented |
+| Charts | `lib.StripSlots` | none | call 0 | zero — kept, documented |
 | Charts | `lib.fitFontSize` | LootHistory `modules/Analytics.lua:187` | call 1 | thin (1) |
-| Charts | `lib.tipText` | none | call 0 · test 40 | zero — UNREAD |
+| Charts | `lib.tipText` | none | call 0 · test 40 | zero — kept, documented |
 | Charts | `lib.truncate` | CombatTrail `modules/Results_Insights.lua:490` | call 1 · test 3 | thin (1) |
 | Media | `lib.BACKGROUNDS` | none | call 0 | zero — kept, documented |
 | Media | `lib.BORDERS` | none | call 0 | zero — kept, documented |
@@ -1168,16 +1171,16 @@ here are uncapped.
 | Media | `lib.Border` | none | call 0 · name-only 5 · def 3 · test 144 | zero — kept, documented |
 | Media | `lib.FONTS` | none | call 0 · test 37 | zero — kept, documented |
 | Media | `lib.Font` | all 19 | call 19 · name-only 76 · def 3 · stub 20 · test 317 | consumed (19) |
-| Media | `lib.ICONS` | none | call 0 · test 43 | zero — UNREAD |
-| Media | `lib.ICON_SETS` | none | call 0 | zero — UNREAD |
+| Media | `lib.ICONS` | none | call 0 · test 43 | zero — kept, documented |
+| Media | `lib.ICON_SETS` | none | call 0 | zero — kept, documented |
 | Media | `lib.Icon` | all 19 | call 19 · name-only 168 · def 22 · test 697 | consumed (19) |
-| Media | `lib.IconAuthor` | none | call 0 | zero — UNREAD |
+| Media | `lib.IconAuthor` | none | call 0 | zero — kept, documented |
 | Media | `lib.RegisterLSM` | all 19 | call 19 · test 14 | consumed (19) |
 | Media | `lib.TEXTURES` | none | call 0 · test 5 | zero — kept, documented |
 | Media | `lib.Texture` | none | call 0 · name-only 12 · def 2 · stub 2 · test 207 | zero — kept, documented |
 | Media | `lib.VENDOR_PATH` | none | call 0 · test 2 | zero — kept, documented |
 | Skin | `lib.AliasAceType` | AuraMaster `settings/OptionsSetup.lua:98` | call 1 · test 5 | thin (1) |
-| Skin | `lib.CLIENT_DEFAULTS` | none | call 0 · test 4 | zero — UNREAD |
+| Skin | `lib.CLIENT_DEFAULTS` | none | call 0 · test 4 | zero — kept, documented |
 | Skin | `lib.Color` | 13: AuraMaster, BankLedger, ConsumableMaster, DropWatcher, KickCD, LootHistory, MultiMeters, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, WhatGroup | call 0 · name-only 162 · def 7 · stub 19 · test 408 | consumed (13, read by hand) |
 | Skin | `lib.DEFAULT` | CombatTrail `core/SkinSetup.lua:165`; LootHistory `core/SkinSetup.lua:833` | call 2 · name-only 11 · stub 19 · test 59 | thin (2) |
 | Skin | `lib.DefaultSkin` | 17: AbsorbTracker, AuraMaster, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 17 · test 34 | consumed (17) |
@@ -1203,7 +1206,7 @@ here are uncapped.
 | Skin | `lib.PaintAce` | 13: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, DropWatcher, KickCD, LootHistory, MultiMeters, PanelMaster, PremadeGroupsFilterExtension, QuickComms, RangeMaster, WhatGroup | call 26 · test 27 | consumed (13) |
 | Skin | `lib.PaintAceTree` | all 19 | call 38 · test 22 | consumed (19) |
 | Skin | `lib.PendingReload` | LibKa0sSkinTester `modules/Diagnostics.lua:48`; PremadeGroupsFilterExtension `core/SkinSetup.lua:573` | call 3 · test 1 | thin (2) |
-| Skin | `lib.RETIRED_FONTS` | none | call 0 · name-only 12 | zero — UNREAD |
+| Skin | `lib.RETIRED_FONTS` | none | call 0 · name-only 12 | zero — kept, documented |
 | Skin | `lib.RegisterOwner` | all 19 | call 19 · test 45 | consumed (19) |
 | Skin | `lib.RegisterSkin` | none | call 0 · test 45 | zero — kept, documented |
 | Skin | `lib.Repaint` | none | call 0 · name-only 2 · def 3 · test 13 | zero — kept, documented |
@@ -1239,11 +1242,11 @@ here are uncapped.
 | Widgets | `lib.AUTOCOMPLETE` | none | call 0 | zero — kept, documented |
 | Widgets | `lib.AcquireBar` | SkillMaster `modules/Broker.lua:352` | call 1 · def 1 · test 8 | thin (1) |
 | Widgets | `lib.Autocomplete` | BankLedger `modules/Browser.lua:213`; LootHistory `core/WidgetsSetup.lua:295` | call 4 · name-only 2 · test 52 | thin (2) |
-| Widgets | `lib.BAR` | none | call 0 · name-only 5 · stub 1 · test 41 | zero — UNREAD |
+| Widgets | `lib.BAR` | none | call 0 · name-only 5 · stub 1 · test 41 | zero — kept, documented |
 | Widgets | `lib.Bar` | RangeMaster `modules/Elements_Indicator.lua:57`; SkillMaster `modules/Journal.lua:701` | call 5 · name-only 21 · def 4 · stub 1 · test 643 | thin (2) |
-| Widgets | `lib.BarCompute` | none | call 0 · test 6 | zero — UNREAD |
+| Widgets | `lib.BarCompute` | none | call 0 · test 6 | zero — kept, documented |
 | Widgets | `lib.BarFormatTimer` | SkillMaster `modules/RowTooltip.lua:48` | call 1 · def 1 · test 6 | thin (1) |
-| Widgets | `lib.BarShade` | none | call 0 · def 1 · test 2 | zero — UNREAD |
+| Widgets | `lib.BarShade` | none | call 0 · def 1 · test 2 | zero — kept, documented |
 | Widgets | `lib.BarStyle` | RangeMaster `modules/Elements_Indicator.lua:58`; SkillMaster `modules/BarStyle.lua:122` | call 2 · name-only 17 · def 1 · stub 32 · test 38 | thin (2) |
 | Widgets | `lib.BarText` | SkillMaster `modules/Interact.lua:157` | call 4 · test 3 | thin (1) |
 | Widgets | `lib.ChartMath` | none | call 0 · test 2 | zero — kept, documented |
@@ -1251,20 +1254,20 @@ here are uncapped.
 | Widgets | `lib.ContextMenu` | 6: CombatTrail, DropWatcher, MultiMeters, OutfitterReborn, QuickComms, SkillMaster | call 12 · name-only 4 · def 4 · test 90 | consumed (6) |
 | Widgets | `lib.CopyWindow` | 5: BankLedger, CombatTrail, LootHistory, MultiMeters, QuickComms | call 9 · name-only 3 · def 1 · test 17 | consumed (5) |
 | Widgets | `lib.DRAG_HANDLE` | 4: AbsorbTracker, AuraMaster, KickCD, QuickComms | call 6 · test 27 | consumed (4) |
-| Widgets | `lib.DRAG_HANDLE_STRINGS` | none | call 0 | zero — UNREAD |
+| Widgets | `lib.DRAG_HANDLE_STRINGS` | none | call 0 | zero — kept, documented |
 | Widgets | `lib.DockTestStrip` | AuraMaster `modules/Anchors.lua:1120`; RangeMaster `modules/Container.lua:649` | call 4 · name-only 2 · test 7 | thin (2) |
 | Widgets | `lib.DragHandle` | 6: AbsorbTracker, AuraMaster, ConsumableMaster, KickCD, QuickComms, RangeMaster | call 12 · name-only 2 · def 1 · test 69 | consumed (6) |
 | Widgets | `lib.Dropdown` | 11: AuraMaster, BankLedger, CombatTrail, DropWatcher, LootHistory, MultiMeters, OutfitterReborn, PremadeGroupsFilterExtension, QuickComms, RangeMaster, SkillMaster | call 14 · name-only 5 · stub 19 · test 319 | consumed (11) |
 | Widgets | `lib.FOOTER` | 8: AuraMaster, BankLedger, CombatTrail, DropWatcher, LootHistory, OutfitterReborn, RangeMaster, SkillMaster | call 8 · test 53 | consumed (8) |
 | Widgets | `lib.Footer` | 8: AuraMaster, BankLedger, CombatTrail, DropWatcher, LootHistory, OutfitterReborn, RangeMaster, SkillMaster | call 14 · name-only 3 · def 2 · stub 18 · test 61 | consumed (8) |
 | Widgets | `lib.HEADER` | 5: CombatTrail, OutfitterReborn, PremadeGroupsFilterExtension, QuickComms, SkillMaster | call 5 · name-only 22 · test 54 | consumed (5) |
-| Widgets | `lib.HEADER_STRINGS` | none | call 0 · test 2 | zero — UNREAD |
-| Widgets | `lib.HeaderButton` | none | call 0 · test 3 | zero — UNREAD |
+| Widgets | `lib.HEADER_STRINGS` | none | call 0 · test 2 | zero — kept, documented |
+| Widgets | `lib.HeaderButton` | none | call 0 · test 3 | zero — kept, documented |
 | Widgets | `lib.HeaderButtons` | 12: AuraMaster, BankLedger, CombatTrail, DropWatcher, LootHistory, MultiMeters, OutfitterReborn, PremadeGroupsFilterExtension, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 20 · name-only 12 · def 4 · test 101 | consumed (12) |
 | Widgets | `lib.IconText` | OutfitterReborn `core/WidgetsSetup.lua:257` | call 2 · name-only 1 · def 1 · test 5 | thin (1) |
 | Widgets | `lib.LINE_CHART` | LootHistory `core/WidgetsSetup.lua:277` | call 1 · test 1 | thin (1) |
 | Widgets | `lib.LineChart` | LootHistory `core/WidgetsSetup.lua:261` | call 3 · name-only 2 · test 6 | thin (1) |
-| Widgets | `lib.OwnerWarnings` | none | call 0 | zero — UNREAD |
+| Widgets | `lib.OwnerWarnings` | none | call 0 | zero — kept, documented |
 | Widgets | `lib.ROW_BOX` | 4: ConsumableMaster, KickCD, LootHistory, SkillMaster | call 6 · test 12 | consumed (4) |
 | Widgets | `lib.ReleaseBars` | SkillMaster `modules/Broker.lua:543` | call 1 · def 1 · test 5 | thin (1) |
 | Widgets | `lib.ReorderList` | 6: ConsumableMaster, KickCD, LootHistory, QuickComms, RangeMaster, SkillMaster | call 15 · name-only 2 · test 68 | consumed (6) |
@@ -1275,28 +1278,28 @@ here are uncapped.
 | Widgets | `anchorTo` (descriptor) | 4: BankLedger, CombatTrail, LootHistory, MultiMeters | call 4 | consumed (4) |
 | Widgets | `applySkin` (descriptor) | none | call 0 | zero — kept, documented |
 | Widgets | `backdrop` (descriptor) | none | call 0 | zero — kept, documented |
-| Widgets | `clear` (descriptor) | none | call 0 | zero — UNREAD |
-| Widgets | `dock` (descriptor) | none | call 0 | zero — UNREAD |
+| Widgets | `clear` (descriptor) | 4: AbsorbTracker, AuraMaster, KickCD, RangeMaster | call 0 | consumed (4, read by hand) |
+| Widgets | `dock` (descriptor) | 11: AbsorbTracker, AuraMaster, BankLedger, CombatTrail, DropWatcher, KickCD, LootHistory, MultiMeters, OutfitterReborn, RangeMaster, SkillMaster | call 0 | consumed (11, read by hand) |
 | Widgets | `editWidth` (descriptor) | MultiMeters `modules/Export_Modal.lua:349` | call 1 | thin (1) |
 | Widgets | `font` (descriptor) | BankLedger `modules/Export.lua:285`; LootHistory `modules/Export.lua:377`; MultiMeters `modules/Export_Modal.lua:347` | call 3 | consumed (3) |
 | Widgets | `fontSize` (descriptor) | LootHistory `modules/Export.lua:378`; MultiMeters `modules/Export_Modal.lua:348` | call 2 | thin (2) |
-| Widgets | `gap` (descriptor) | none | call 0 | zero — UNREAD |
+| Widgets | `gap` (descriptor) | AuraMaster `modules/Anchors.lua:1201`; KickCD `modules/SimStrip.lua:93`; RangeMaster `modules/Container.lua:632` | call 0 | consumed (3, read by hand) |
 | Widgets | `height` (descriptor) | CombatTrail `core/WidgetsSetup.lua:270`; LibKa0sSkinTester `modules/ShowroomWidgets.lua:203`; MultiMeters `modules/Export_Modal.lua:345` | call 3 | consumed (3) |
 | Widgets | `hoverXs` (descriptor) | none | call 0 | zero — kept, documented |
-| Widgets | `inset` (descriptor) | none | call 0 | zero — UNREAD |
+| Widgets | `inset` (descriptor) | none | call 0 | zero — kept, documented |
 | Widgets | `integer` (descriptor) | none | call 0 | zero — kept, documented |
 | Widgets | `makeCloseButton` (descriptor) | none | call 0 | zero — kept, documented |
 | Widgets | `markers` (descriptor) | none | call 0 | zero — kept, documented |
 | Widgets | `name` (descriptor) | 5: BankLedger, CombatTrail, LibKa0sSkinTester, LootHistory, MultiMeters | call 5 | consumed (5) |
-| Widgets | `onOffset` (descriptor) | none | call 0 | zero — UNREAD |
-| Widgets | `onSettings` (descriptor) | none | call 0 | zero — UNREAD |
+| Widgets | `onOffset` (descriptor) | 4: BankLedger, DropWatcher, LootHistory, MultiMeters | call 0 | consumed (4, read by hand) |
+| Widgets | `onSettings` (descriptor) | none | call 0 | zero — kept, documented |
 | Widgets | `scrollName` (descriptor) | none | call 0 | zero — kept, documented |
 | Widgets | `series` (descriptor) | none | call 0 | zero — kept, documented |
-| Widgets | `target` (descriptor) | none | call 0 | zero — UNREAD |
+| Widgets | `target` (descriptor) | 5: AbsorbTracker, AuraMaster, DropWatcher, KickCD, RangeMaster | call 0 | consumed (5, read by hand) |
 | Widgets | `title` (descriptor) | 5: BankLedger, CombatTrail, LibKa0sSkinTester, LootHistory, MultiMeters | call 5 | consumed (5) |
-| Widgets | `titleBar` (descriptor) | none | call 0 | zero — UNREAD |
+| Widgets | `titleBar` (descriptor) | 7: BankLedger, CombatTrail, DropWatcher, LootHistory, MultiMeters, OutfitterReborn, SkillMaster | call 0 | consumed (7, read by hand) |
 | Widgets | `width` (descriptor) | CombatTrail `core/WidgetsSetup.lua:270`; LibKa0sSkinTester `modules/ShowroomWidgets.lua:203`; MultiMeters `modules/Export_Modal.lua:344` | call 3 | consumed (3) |
-| Widgets | `window` (descriptor) | none | call 0 | zero — UNREAD |
+| Widgets | `window` (descriptor) | 6: BankLedger, CombatTrail, DropWatcher, LootHistory, MultiMeters, SkillMaster | call 0 | consumed (6, read by hand) |
 | Widgets | `xMax` (descriptor) | none | call 0 | zero — kept, documented |
 | Widgets | `xMin` (descriptor) | none | call 0 | zero — kept, documented |
 | Widgets | `yMax` (descriptor) | none | call 0 | zero — kept, documented |
@@ -1357,7 +1360,7 @@ here are uncapped.
 | DebugLog | `makeCloseButton` (descriptor) | none | call 0 | zero — kept, documented |
 | DebugLog | `name` (descriptor) | all 19 | call 19 | consumed (19) |
 | DebugLog | `onClear` (descriptor) | AuraMaster `core/DebugLogSetup.lua:207`; ConsumableMaster `core/DebugLogSetup.lua:284`; MultiMeters `core/DebugLogSetup.lua:428` | call 3 | consumed (3) |
-| DebugLog | `onSettings` (descriptor) | none | call 0 | zero — UNREAD |
+| DebugLog | `onSettings` (descriptor) | none | call 0 | zero — kept, documented |
 | DebugLog | `onVisibilityChanged` (descriptor) | all 19 | call 19 | consumed (19) |
 | DebugLog | `print` (descriptor) | all 19 | call 19 | consumed (19) |
 | DebugLog | `safeToString` (descriptor) | 16: AbsorbTracker, AuraMaster, CombatTrail, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 16 | consumed (16) |
@@ -1429,7 +1432,7 @@ here are uncapped.
 | Launcher | `L` (descriptor) | none | call 0 | zero — kept, documented |
 | Launcher | `debug` (descriptor) | 18: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 18 | consumed (18) |
 | Launcher | `debugAtEnable` (descriptor) | 18: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 18 | consumed (18) |
-| Launcher | `entryClients` (descriptor) | none | call 0 | zero — UNREAD |
+| Launcher | `entryClients` (descriptor) | none | call 0 | zero — kept, documented |
 | Launcher | `extraEntries` (descriptor) | SkillMaster `core/LauncherSetup.lua:68` | call 1 | thin (1) |
 | Launcher | `icon` (descriptor) | 18: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 18 | consumed (18) |
 | Launcher | `isEnabled` (descriptor) | 18: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 18 | consumed (18) |
@@ -1441,7 +1444,7 @@ here are uncapped.
 | Launcher | `onTooltipShow` (descriptor) | BankLedger `core/LauncherSetup.lua:287`; LootHistory `core/LauncherSetup.lua:273`; OutfitterReborn `core/LauncherSetup.lua:169` | call 3 | consumed (3) |
 | Launcher | `openSettings` (descriptor) | 18: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 18 | consumed (18) |
 | Launcher | `openSkinPicker` (descriptor) | 18: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 18 | consumed (18) |
-| Launcher | `owner` (descriptor) | none | call 0 | zero — UNREAD |
+| Launcher | `owner` (descriptor) | none | call 0 | zero — kept, documented |
 | Launcher | `print` (descriptor) | 18: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 18 | consumed (18) |
 | Launcher | `setEnabled` (descriptor) | 18: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 18 | consumed (18) |
 | Launcher | `version` (descriptor) | 18: AbsorbTracker, AuraMaster, BankLedger, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 18 | consumed (18) |
@@ -1450,7 +1453,7 @@ here are uncapped.
 | Options | `lib.LAYOUT` | none | call 0 · name-only 7 · stub 2 · test 106 | zero — kept, documented |
 | Options | `lib.New` | all 19 | call 19 · name-only 239 · def 39 · stub 29 · test 1103 | consumed (19) |
 | Options | `lib.PatchAlwaysShowScrollbar` | none | call 0 · stub 16 · test 25 | zero — kept, documented |
-| Options | `lib.SKIN_NOTICE_VERSION` | none | call 0 · test 2 | zero — UNREAD |
+| Options | `lib.SKIN_NOTICE_VERSION` | none | call 0 · test 2 | zero — kept, documented |
 | Options | `lib.SKIN_PICKER_STRINGS` | none | call 0 · test 17 | zero — kept, documented |
 | Options | `lib.STRINGS` | none | call 0 · name-only 1 · stub 5 · test 191 | zero — kept, documented |
 | Options | `AceGUI` (instance) | 6: AuraMaster, BankLedger, PanelMaster, PremadeGroupsFilterExtension, QuickComms, WhatGroup | call 11 · name-only 63 · stub 29 · test 984 | consumed (6) |
@@ -1550,18 +1553,18 @@ here are uncapped.
 | Options | `skipRestoreAll` (descriptor) | 18: AbsorbTracker, AuraMaster, BankLedger, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PartyFrameEnhanced, PremadeGroupsFilterExtension, PrettyChat, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 18 | consumed (18) |
 | Options | `sliderCommit` (descriptor) | ConsumableMaster `settings/OptionsSetup.lua:232` | call 1 | thin (1) |
 | Options | `validate` (descriptor) | 17: AbsorbTracker, AuraMaster, BankLedger, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, MultiMeters, OutfitterReborn, PanelMaster, PartyFrameEnhanced, PremadeGroupsFilterExtension, QuickComms, RangeMaster, SkillMaster, WhatGroup | call 17 | consumed (17) |
-| IconBrowser | `lib.BUILTIN_TABS` | none | call 0 · test 1 | zero — UNREAD |
+| IconBrowser | `lib.BUILTIN_TABS` | none | call 0 · test 1 | zero — kept, documented |
 | IconBrowser | `lib.ColorFrom` | QuickComms `modules/Library.lua:305` | call 1 · def 1 · test 1 | thin (1) |
-| IconBrowser | `lib.GLYPH_LABELS` | none | call 0 | zero — UNREAD |
+| IconBrowser | `lib.GLYPH_LABELS` | none | call 0 | zero — kept, documented |
 | IconBrowser | `lib.IsGlyph` | OutfitterReborn `modules/IconBrowserSetup.lua:49`; QuickComms `modules/Library.lua:270` | call 2 · name-only 15 · def 3 · test 20 | thin (2) |
-| IconBrowser | `lib.MacroIcons` | none | call 0 · test 2 | zero — UNREAD |
+| IconBrowser | `lib.MacroIcons` | none | call 0 · test 2 | zero — kept, documented |
 | IconBrowser | `lib.New` | OutfitterReborn `modules/IconBrowserSetup.lua:136`; QuickComms `settings/IconBrowser.lua:60` | call 4 · name-only 254 · def 39 · stub 29 · test 1103 | thin (2) |
-| IconBrowser | `lib.SKIN_TOKENS` | none | call 0 · name-only 29 · stub 16 · test 31 | zero — UNREAD |
-| IconBrowser | `lib.STRINGS` | none | call 0 · name-only 1 · stub 5 · test 191 | zero — UNREAD |
-| IconBrowser | `lib.Sources` | none | call 0 · test 2 | zero — UNREAD |
+| IconBrowser | `lib.SKIN_TOKENS` | none | call 0 · name-only 29 · stub 16 · test 31 | zero — kept, documented |
+| IconBrowser | `lib.STRINGS` | none | call 0 · name-only 1 · stub 5 · test 191 | zero — kept, documented |
+| IconBrowser | `lib.Sources` | none | call 0 · test 2 | zero — kept, documented |
 | IconBrowser | `lib.Tint` | OutfitterReborn `modules/IconBrowserSetup.lua:66`; QuickComms `modules/Library.lua:298` | call 2 · name-only 4 · def 3 · test 9 | thin (2) |
 | IconBrowser | `lib.ValidColor` | OutfitterReborn `modules/IconBrowserSetup.lua:59`; QuickComms `modules/Library.lua:288` | call 3 · name-only 2 · def 1 · test 5 | thin (2) |
-| IconBrowser | `lib.WOWHEAD_ICONS` | none | call 0 | zero — UNREAD |
+| IconBrowser | `lib.WOWHEAD_ICONS` | none | call 0 | zero — kept, documented |
 | Perf | `lib.DEFAULT_RING` | none | call 0 · test 2 | zero — kept, documented |
 | Perf | `lib.EncodeJSON` | SkillMaster `core/PerfSetup.lua:10` | call 1 · test 18 | thin (1) |
 | Perf | `lib.New` | 14: AbsorbTracker, AuraMaster, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PartyFrameEnhanced, QuickComms, RangeMaster, SkillMaster | call 14 · name-only 244 · def 39 · stub 29 · test 1103 | consumed (14) |
@@ -1620,7 +1623,7 @@ here are uncapped.
 | Perf | `log` (descriptor) | 14: AbsorbTracker, AuraMaster, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PartyFrameEnhanced, QuickComms, RangeMaster, SkillMaster | call 14 | consumed (14) |
 | Perf | `name` (descriptor) | 14: AbsorbTracker, AuraMaster, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PartyFrameEnhanced, QuickComms, RangeMaster, SkillMaster | call 14 | consumed (14) |
 | Perf | `onChange` (descriptor) | none | call 0 | zero — kept, documented |
-| Perf | `onSettings` (descriptor) | none | call 0 | zero — UNREAD |
+| Perf | `onSettings` (descriptor) | none | call 0 | zero — kept, documented |
 | Perf | `print` (descriptor) | 14: AbsorbTracker, AuraMaster, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PartyFrameEnhanced, QuickComms, RangeMaster, SkillMaster | call 14 | consumed (14) |
 | Perf | `ring` (descriptor) | none | call 0 | zero — kept, documented |
 | Perf | `showLog` (descriptor) | 14: AbsorbTracker, AuraMaster, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PartyFrameEnhanced, QuickComms, RangeMaster, SkillMaster | call 14 | consumed (14) |
@@ -1630,7 +1633,7 @@ here are uncapped.
 | Perf | `version` (descriptor) | 14: AbsorbTracker, AuraMaster, CombatTrail, ConsumableMaster, DropWatcher, KickCD, LibKa0sSkinTester, LootHistory, MultiMeters, OutfitterReborn, PartyFrameEnhanced, QuickComms, RangeMaster, SkillMaster | call 14 | consumed (14) |
 | Sim | `lib.New` | 9: AbsorbTracker, BankLedger, CombatTrail, DropWatcher, KickCD, LootHistory, MultiMeters, RangeMaster, SkillMaster | call 10 · name-only 248 · def 39 · stub 29 · test 1103 | consumed (9) |
 | Sim | `lib.NewSeam` | 9: AbsorbTracker, BankLedger, CombatTrail, DropWatcher, KickCD, LootHistory, MultiMeters, RangeMaster, SkillMaster | call 9 · test 8 | consumed (9) |
-| Sim | `lib.SAMPLE` | none | call 0 · name-only 7 · test 18 | zero — UNREAD |
+| Sim | `lib.SAMPLE` | none | call 0 · name-only 7 · test 18 | zero — kept, documented |
 | Sim | `lib.STRINGS` | none | call 0 · name-only 1 · stub 5 · test 191 | zero — kept, documented |
 | Sim | `lib.Sample` | 8: BankLedger, CombatTrail, DropWatcher, KickCD, LootHistory, MultiMeters, SkillMaster, WhatGroup | call 8 · name-only 5 · def 5 · test 106 | consumed (8) |
 | Sim | `AddListener` (instance) | 8: AbsorbTracker, BankLedger, DropWatcher, KickCD, LootHistory, MultiMeters, RangeMaster, SkillMaster | call 11 · name-only 5 · test 2 | consumed (8) |
