@@ -150,7 +150,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [4](./Compat/version-4-docs.md) | **`Compat.lua` 4** (character identity: `RegionalNames`, `UnitCharacterName`, `CharacterKey`, `RealmKey`, `W1-LK-02`) | v1.94.0 | **Current** |
+| [5](./Compat/version-5-docs.md) | **`Compat.lua` 5** (comment-only: the Forever names citation moves to the standard's forever-quirks-§4, `FU-LK-REL`) | v1.109.0 | **Current** |
+| [4](./Compat/version-4-docs.md) | `Compat.lua` 4 (character identity: `RegionalNames`, `UnitCharacterName`, `CharacterKey`, `RealmKey`, `W1-LK-02`) | v1.94.0 – v1.108.0 | Superseded |
 | [3](./Compat/version-3-docs.md) | `Compat.lua` 3 (`ForClient` accepts `"both"` in an array, `WFP-RV2-LK`) | v1.93.0 | Superseded |
 | [2](./Compat/version-2-docs.md) | `Compat.lua` 2 | v1.92.0 | Superseded |
 | [1](./Compat/version-1-docs.md) | `Compat.lua` 1 | v1.55.0 – v1.91.0 | Superseded |
@@ -557,7 +558,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [3.3.11.4](./Sim/version-3.3.11.4-docs.md) | **`Sim.lua` 3** (the sample characters, `SAMPLE` and `Sample(client)`; LibKa0s#87, `LK-87`) · `SimTimeline.lua` 3 · **`SimPanel.lua` 11** (the default title is the string `PANEL_TITLE`, `%s - SIM`; LibKa0s#78, `LK-78`; the controls' and rows' tooltips beside the panel, LibKa0s#92, `LK-92B`) · **`SimPanelRender.lua` 4** (the title band's marks are Widgets' `HeaderButtons`: settings beside the close; LibKa0s#86, `LK-86`) | v1.105.0 | **Current** |
+| [4.3.11.4](./Sim/version-4.3.11.4-docs.md) | **`Sim.lua` 4** (comment-only: the Forever identity citation moves to the standard's forever-quirks-§4, `FU-LK-REL`) · `SimTimeline.lua` 3 · `SimPanel.lua` 11 · `SimPanelRender.lua` 4 | v1.109.0 | **Current** |
+| [3.3.11.4](./Sim/version-3.3.11.4-docs.md) | `Sim.lua` 3 (the sample characters, `SAMPLE` and `Sample(client)`; LibKa0s#87, `LK-87`) · `SimTimeline.lua` 3 · **`SimPanel.lua` 11** (the default title is the string `PANEL_TITLE`, `%s - SIM`; LibKa0s#78, `LK-78`; the controls' and rows' tooltips beside the panel, LibKa0s#92, `LK-92B`) · **`SimPanelRender.lua` 4** (the title band's marks are Widgets' `HeaderButtons`: settings beside the close; LibKa0s#86, `LK-86`) | v1.105.0 – v1.108.0 | Superseded |
 | [2.3.10.3](./Sim/version-2.3.10.3-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · `SimPanel.lua` 10 · **`SimPanelRender.lua` 3** (an owned panel's header on the band, `R5-L3`) | v1.85.0 – v1.104.0 | Superseded |
 | [2.3.10.2](./Sim/version-2.3.10.2-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · `SimPanel.lua` 10 · **`SimPanelRender.lua` 2** (a 30 high title band) | v1.85.0 | Superseded |
 | [2.3.10.1](./Sim/version-2.3.10.1-docs.md) | `Sim.lua` 2 · `SimTimeline.lua` 3 · **`SimPanel.lua` 10** (an owned panel's tooltip title `gtip.title`) · `SimPanelRender.lua` 1 | v1.85.0 | Superseded |

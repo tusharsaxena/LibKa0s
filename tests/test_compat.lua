@@ -106,10 +106,10 @@ local INERT = pack(0, 0, false, 1, false)
 
 -- -- registration and shape (3) -----------------------------------------------------------------
 
-test("compat: registers minor 4 with exactly the seventeen public members", function()
+test("compat: registers minor 5 with exactly the seventeen public members", function()
   assertEqual(compat.MAJOR, "LibKa0s-Compat-1.0")
-  assertEqual(compat.MINOR, 4)
-  assertEqual(compat.MODULES.Compat, 4)
+  assertEqual(compat.MINOR, 5)
+  assertEqual(compat.MODULES.Compat, 5)
   local names = {}
   for _, member in ipairs(T.publicMembers(compat)) do
     assertEqual(member.kind, "function", member.name .. " kind")
@@ -131,7 +131,7 @@ test("compat: the Core floor keeps the major absent from a payload without Core"
   Loader.loadSource(src, "@LibKa0s/Compat.lua", nil, bare)
   local lib = bare.LibStub("LibKa0s-Compat-1.0", true)
   assertTrue(lib ~= nil, "with Core: registered")
-  assertEqual(lib.MINOR, 4)
+  assertEqual(lib.MINOR, 5)
 end)
 
 test("compat: the source reads every global bare, never through the global table", function()

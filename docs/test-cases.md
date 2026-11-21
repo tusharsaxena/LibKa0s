@@ -201,7 +201,7 @@ Total.
 
 ### test_compat.lua (64)
 
-- compat: registers minor 4 with exactly the seventeen public members
+- compat: registers minor 5 with exactly the seventeen public members
 - compat: the Core floor keeps the major absent from a payload without Core
 - compat: the source reads every global bare, never through the global table
 - compat: IsSecret is false for every value when the client has no secrets system
@@ -5016,7 +5016,7 @@ Total.
 - sim sample: Sample() reads the client at call time, not at load
 - sim sample: with no Compat, or a client that is neither, Sample() answers retail
 - sim sample: an unknown client raises at the caller's line
-- sim sample: the shell's minor is 3
+- sim sample: the shell's minor is 4
 
 ### test_loader.lua (6)
 

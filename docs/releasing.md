@@ -424,11 +424,13 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    no `NEEDS_*` floor and kit revision 59 (a README-only count fix). The three band peels move code and nothing else:
    `CalloutRoute.lua` and `CalloutSound.lua` after `Callout.lua` (Callout 6.1.1.6), `OptionsComposeMaster.lua` after
    `OptionsCompose.lua` (OptionsCompose 21) and `SkinPaintNav.lua` after `SkinPaintControls.lua` (SkinPaintControls 20).
-   `LibKa0s.xml` loads all four, so a host's TOC does not change. A host whose tests load library files by name (a
+   Two comment-only bumps ride with them: `Compat.lua` 5 (Compat key 5) and `Sim.lua` 4 (Sim key 4.3.11.4), whose comments
+   now cite the standard's forever-quirks-§4 for the Forever names entry v2.117.0 moved out of client-quirks-§5.
+   `LibKa0s.xml` loads all four new files, so a host's TOC does not change. A host whose tests load library files by name (a
    `tests/loader.lua`, a fixture's file list) adds each new file directly after the file it was peeled from in the re-vendor
    commit: without them its call-outs have no `Get` / `Set` and no voice, its Options instance no `O.MasterControls`, and
    its tabs, nav items, drawers and list rows go unpainted. A suite pinning `Callout 5`, `OptionsCompose 20`,
-   `SkinPaintControls 19` or `KIT_VERSION` 58 re-pins it. No Skin facade, major or instance member moves, no icon or
+   `SkinPaintControls 19`, `Compat 4`, `Sim 3` or `KIT_VERSION` 58 re-pins it. No Skin facade, major or instance member moves, no icon or
    sound is added, and nothing a player sees changes, so the re-vendor owes no smoke line of its own.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not. DpsRace left the loop and the table's Consumers column on 2026-11-19 (`AF-DR-LK` of
