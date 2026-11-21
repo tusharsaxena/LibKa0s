@@ -25,10 +25,10 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    before reading a clean run as a clean adoption.
 2. **Bump the minor of every file you changed** — and if you touched `testkit/`, bump
    `Kit.VERSION` too and re-vendor the kit into `tests/_kit/` here before the gate can pass. All
-   eighty-five, by their exact constant names: `MINOR` in `Core.lua`, `PIXEL_MINOR` in `CorePixel.lua`, `MINOR` in `Tooltip.lua`, `MINOR` in `Env.lua`, `MINOR` in
+   eighty-six, by their exact constant names: `MINOR` in `Core.lua`, `PIXEL_MINOR` in `CorePixel.lua`, `MINOR` in `Tooltip.lua`, `MINOR` in `Env.lua`, `MINOR` in
    `Compat.lua`, `MINOR` in `Role.lua`, `MINOR` in `Lifecycle.lua`, `MINOR` in `Bus.lua`, `MINOR` in `Schema.lua`, `MINOR` in
    `Pool.lua`, `MINOR` in `Item.lua`, `MINOR` in `Glow.lua`, `MINOR` in `Toast.lua`, `MINOR` in `Callout.lua`, `ROUTE_MINOR` in `CalloutRoute.lua`, `SOUND_MINOR` in `CalloutSound.lua`, `SETTINGS_MINOR` in `CalloutSettings.lua`, `MINOR` in `WaypointArrow.lua`, `SETTINGS_MINOR` in `WaypointArrowSettings.lua`, `MINOR` in `Charts.lua`, `RENDER_MINOR` in `ChartsRender.lua`, `MINOR` in `Media.lua`, `ICONS_MINOR` in `MediaIcons.lua` (a generated file: change the
-   constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `TOKENS_MINOR` in `SkinOwnerTokens.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `OTHERS_MINOR` in `SkinDefsOthers.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `HUD_MINOR` in `SkinPaintHud.lua`, `CONFIRM_MINOR` in `SkinAceConfirm.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
+   constant in `tools/artwork/icon_cleaner.py` and rebuild, never the file), `MINOR` in `Skin.lua`, `TOKENS_MINOR` in `SkinOwnerTokens.lua`, `DEFS_MINOR` in `SkinDefs.lua`, `OTHERS_MINOR` in `SkinDefsOthers.lua`, `PAINT_MINOR` in `SkinPaint.lua`, `EXTRAS_MINOR` in `SkinPaintExtras.lua`, `HUD_MINOR` in `SkinPaintHud.lua`, `CONFIRM_MINOR` in `SkinAceConfirm.lua`, `CONTROLS_MINOR` in `SkinPaintControls.lua`, `PAINTNAV_MINOR` in `SkinPaintNav.lua`, `EUI_MINOR` in `SkinEUI.lua`, `ACE_MINOR` in `SkinAce.lua`, `MINOR` in `DebugLog.lua`, `MINOR` in
    `Slash.lua`, `PARSE_MINOR` in `SlashParse.lua`, `MINOR` in `Launcher.lua`, `MINOR` in `Options.lua`, `REGISTRY_MINOR` in `OptionsRegistry.lua`, `DROPDOWN_MINOR` in `WidgetsDropdown.lua`, `REORDER_MINOR` in
    `WidgetsReorder.lua`, `DRAG_MINOR` in
    `WidgetsDragHandle.lua`, `DRAGTIP_MINOR` in `WidgetsDragHandleTip.lua`, `CHART_MINOR` in `WidgetsLineChart.lua`, `AUTOCOMPLETE_MINOR` in `WidgetsAutocomplete.lua`, `COPY_MINOR` in `WidgetsCopyWindow.lua`, `HEADER_MINOR` in `WidgetsHeader.lua`, `BAR_MINOR` in `WidgetsBar.lua`, `DIAG_MINOR` in `DebugLogDiagnostics.lua`, `GATES_MINOR` in `DebugLogGates.lua`, `WINDOW_MINOR` in `DebugLogWindow.lua`, `WIDGETS_MINOR` in
@@ -440,7 +440,7 @@ host already carrying the old copy keeps running it, and nothing errors to say s
 
 Two payloads, with different destinations and different reasons for existing.
 
-**The library** is the inner `LibKa0s/` folder and nothing else — the eighty-five `.lua` files, the
+**The library** is the inner `LibKa0s/` folder and nothing else — the eighty-six `.lua` files, the
 `.xml`, `LICENSE`, and since v1.9.0 the `media/` subtree. The license lives in the ship folder so
 that every `cp -r` carries the MIT notice into the consumer's zip with no per-addon step;
 `LibKa0s.xml` does not load it and nothing else needs to know it is there. `docs/`, `README.md`,
