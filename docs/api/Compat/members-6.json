@@ -1,0 +1,33 @@
+{
+  "major": "LibKa0s-Compat-1.0",
+  "versionKey": "6",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Compat", "minor": 6 }
+  ],
+  "members": [
+    { "name": "BankerKind", "kind": "function" },
+    { "name": "CONTAINER_PATTERNS_BY_CLIENT", "kind": "table" },
+    { "name": "CanAccess", "kind": "function" },
+    { "name": "CanViewCharacterBank", "kind": "function" },
+    { "name": "CharacterKey", "kind": "function" },
+    { "name": "ClientKey", "kind": "function" },
+    { "name": "ContainerGroups", "kind": "function" },
+    { "name": "ForClient", "kind": "function" },
+    { "name": "GetSpecialization", "kind": "function" },
+    { "name": "GetSpecializationInfo", "kind": "function" },
+    { "name": "GetSpellCooldown", "kind": "function" },
+    { "name": "GetSpellInfo", "kind": "function" },
+    { "name": "GetSpellName", "kind": "function" },
+    { "name": "GetSpellTexture", "kind": "function" },
+    { "name": "IsForever", "kind": "function" },
+    { "name": "IsRetail", "kind": "function" },
+    { "name": "IsSafeKey", "kind": "function" },
+    { "name": "IsSecret", "kind": "function" },
+    { "name": "NumPurchasedBankTabs", "kind": "function" },
+    { "name": "RealmKey", "kind": "function" },
+    { "name": "RegionalNames", "kind": "function" },
+    { "name": "UnitCharacterName", "kind": "function" },
+    { "name": "UnreadyBankContainers", "kind": "function" }
+  ]
+}

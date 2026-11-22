@@ -106,18 +106,22 @@ local INERT = pack(0, 0, false, 1, false)
 
 -- -- registration and shape (3) -----------------------------------------------------------------
 
-test("compat: registers minor 5 with exactly the seventeen public members", function()
+test("compat: registers minor 6 with exactly the twenty-three public members", function()
   assertEqual(compat.MAJOR, "LibKa0s-Compat-1.0")
-  assertEqual(compat.MINOR, 5)
-  assertEqual(compat.MODULES.Compat, 5)
+  assertEqual(compat.MINOR, 6)
+  assertEqual(compat.MODULES.Compat, 6)
   local names = {}
   for _, member in ipairs(T.publicMembers(compat)) do
-    assertEqual(member.kind, "function", member.name .. " kind")
+    -- One data member, the pattern table of minor 6; every other member is a function.
+    local kind = member.name == "CONTAINER_PATTERNS_BY_CLIENT" and "table" or "function"
+    assertEqual(member.kind, kind, member.name .. " kind")
     names[#names + 1] = member.name
   end
-  assertEqual(table.concat(names, ","), "CanAccess,CharacterKey,ClientKey,ForClient,GetSpecialization,"
+  assertEqual(table.concat(names, ","), "BankerKind,CONTAINER_PATTERNS_BY_CLIENT,CanAccess,"
+    .. "CanViewCharacterBank,CharacterKey,ClientKey,ContainerGroups,ForClient,GetSpecialization,"
     .. "GetSpecializationInfo,GetSpellCooldown,GetSpellInfo,GetSpellName,GetSpellTexture,IsForever,"
-    .. "IsRetail,IsSafeKey,IsSecret,RealmKey,RegionalNames,UnitCharacterName")
+    .. "IsRetail,IsSafeKey,IsSecret,NumPurchasedBankTabs,RealmKey,RegionalNames,UnitCharacterName,"
+    .. "UnreadyBankContainers")
 end)
 
 test("compat: the Core floor keeps the major absent from a payload without Core", function()
@@ -131,7 +135,7 @@ test("compat: the Core floor keeps the major absent from a payload without Core"
   Loader.loadSource(src, "@LibKa0s/Compat.lua", nil, bare)
   local lib = bare.LibStub("LibKa0s-Compat-1.0", true)
   assertTrue(lib ~= nil, "with Core: registered")
-  assertEqual(lib.MINOR, 5)
+  assertEqual(lib.MINOR, 6)
 end)
 
 test("compat: the source reads every global bare, never through the global table", function()
@@ -624,7 +628,15 @@ local ABSENT_ANSWERS = {
   { member = "UnitCharacterName",     args = pack("player"), answer = pack(nil, nil) },
   { member = "CharacterKey",          args = pack(),     answer = pack(nil) },
   { member = "RealmKey",              args = pack(),     answer = pack(nil) },
+  { member = "CanViewCharacterBank",  args = pack(),     answer = pack(nil) },
+  { member = "NumPurchasedBankTabs",  args = pack("Character"), answer = pack(nil) },
+  { member = "BankerKind",            args = pack(8),    answer = pack(nil) },
+  { member = "UnreadyBankContainers", args = pack({}, nil, nil), answer = pack(nil) },
 }
+
+--- The one absent answer that is a table: ContainerGroups() with no Enum.BagIndex, the documented
+--- fallback (bags 0..5, both bank groups empty). Compared by content, since a fresh table answers.
+local ABSENT_GROUPS = { bags = "0,1,2,3,4,5", bank = "", accountBank = "" }
 
 test("compat: with every rung removed each member answers the documented absent value", function()
   with({
@@ -635,6 +647,7 @@ test("compat: with every rung removed each member answers the documented absent 
     WOW_PROJECT_ID = ABSENT, WOW_PROJECT_MAINLINE = ABSENT, WOW_PROJECT_CAMELOT = ABSENT,
     UnitName = ABSENT, UnitNameUnmodified = ABSENT, GetRealmName = ABSENT,
     RegionalUniqueNamesEnabled = ABSENT, C_GameRules = ABSENT,
+    C_Bank = ABSENT, Enum = ABSENT,
   }, function()
     local covered = {}
     for _, row in ipairs(ABSENT_ANSWERS) do
@@ -642,8 +655,16 @@ test("compat: with every rung removed each member answers the documented absent 
       assertTuple(got, row.answer, row.member)
       covered[row.member] = true
     end
+    local got = pack(compat.ContainerGroups())
+    assertEqual(got.n, 1, "ContainerGroups: arity")
+    for group, want in pairs(ABSENT_GROUPS) do
+      assertEqual(table.concat(got[1][group], ","), want, "ContainerGroups: " .. group)
+    end
+    covered.ContainerGroups = true
     for _, member in ipairs(T.publicMembers(compat)) do
-      assertTrue(covered[member.name], member.name .. " has no row in the absent table")
+      if member.kind == "function" then
+        assertTrue(covered[member.name], member.name .. " has no row in the absent table")
+      end
     end
   end)
 end)

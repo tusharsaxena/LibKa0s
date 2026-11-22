@@ -150,7 +150,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [5](./Compat/version-5-docs.md) | **`Compat.lua` 5** (comment-only: the Forever names citation moves to the standard's forever-quirks-§4, `FU-LK-REL`) | v1.109.0 | **Current** |
+| [6](./Compat/version-6-docs.md) | **`Compat.lua` 6** (the container groups and bank readers: `ContainerGroups`, `CONTAINER_PATTERNS_BY_CLIENT`, `CanViewCharacterBank`, `NumPurchasedBankTabs`, `BankerKind`, `UnreadyBankContainers`; LibKa0s#101, `K101-LK-01`) | v1.110.0 | **Current** |
+| [5](./Compat/version-5-docs.md) | `Compat.lua` 5 (comment-only: the Forever names citation moves to the standard's forever-quirks-§4, `FU-LK-REL`) | v1.109.0 | Superseded |
 | [4](./Compat/version-4-docs.md) | `Compat.lua` 4 (character identity: `RegionalNames`, `UnitCharacterName`, `CharacterKey`, `RealmKey`, `W1-LK-02`) | v1.94.0 – v1.108.0 | Superseded |
 | [3](./Compat/version-3-docs.md) | `Compat.lua` 3 (`ForClient` accepts `"both"` in an array, `WFP-RV2-LK`) | v1.93.0 | Superseded |
 | [2](./Compat/version-2-docs.md) | `Compat.lua` 2 | v1.92.0 | Superseded |
@@ -583,7 +584,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [59](./testkit/version-59-docs.md) | same files; `README.md` only: eight suites of its own, and no count of the places it sits in or the repositories that run its gates, which name the roster instead (`FU-LK-KITDOC`) | v1.109.0 | **Current** |
+| [60](./testkit/version-60-docs.md) | same files; **`mock_client.lua`**: each profile carries its client's `Enum.BagIndex` (Retail 20 members, Forever 27), `Enum.BankType` and `C_Bank.CanViewBank` (the account bank viewable on Retail only), installed only where neither the consumer's mock set nor `_G` has an `Enum` (or a `C_Bank`) (LibKa0s#101, `K101-LK-02`) | v1.110.0 | **Current** |
+| [59](./testkit/version-59-docs.md) | same files; `README.md` only: eight suites of its own, and no count of the places it sits in or the repositories that run its gates, which name the roster instead (`FU-LK-KITDOC`) | v1.109.0 | Superseded |
 | [58](./testkit/version-58-docs.md) | same files; **`skin_switch.lua`**, **`test_skin_switch.lua`**: each setter family (texture, color, font, shadow) moves on its own, every StatusBar a surface holds draws its fill and moves it (read off `SetStatusBarTexture` and the fill Texture's `SetTexture` / `SetAtlas`), a string whose face moves with no color set is reported, and the surface fields `expect`, `hold` and `clear` (SD-LK-97.18, U-5); **`skin_values.lua`**, **`test_skin_values.lua`**: three- and four-component tables, keyed r/g/b tables, multi-assigned triples, `return` triples and `RGBA` fallback defaults are read, two categories take only those shapes, and a host row may name a kit row `category` in place of a `cause` (SD-LK-97.19, U-6); LibKa0s#97, `SD-LK-GUARD` | v1.108.0 | Superseded |
 | [57](./testkit/version-57-docs.md) | **adds `mock_screen.lua`**, the opt-in fake screen and tooltip recorder (LibKa0s#92, plan row LK-92A); **`mock_events.lua`**, **`mock_ace.lua`**: a frame is held, per build, while it has a raw event registration, and released by `UnregisterEvent`, `UnregisterAllEvents` or the embedded-frame override (`M.__heldFrame`, `M.__releaseFrame`; LibKa0s#75, plan row LK-75) | v1.105.0 – v1.107.0 | Superseded |
 | [56](./testkit/version-56-docs.md) | same files; **`glyphs.lua`**: the generated face list gains `BebasNeue-Regular.ttf` and `RussoOne-Regular.ttf` (`LibKa0s-Media-1.0` 13.1), the safe set unchanged at 117 non-ASCII code points (plan row L2) | v1.97.0 – v1.104.0 | Superseded |

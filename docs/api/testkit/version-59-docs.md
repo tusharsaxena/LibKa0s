@@ -10,9 +10,9 @@
 | Version | **59** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.109.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 58](version-58-docs.md) — the README counted seven suites of its own and thirteen places it sits in |
-| Superseded by | — |
+| Superseded by | [version 60](version-60-docs.md) — each client profile carries its `Enum.BagIndex`, `Enum.BankType` and `C_Bank.CanViewBank` |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `59` |
 
