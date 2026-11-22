@@ -28,6 +28,12 @@ Versions in this release: `LibKa0s-Compat-1.0` key **6** (Compat minor 6); every
 
 - **`CanViewCharacterBank`'s documented difference from Loot History's copy.** When `C_Bank.CanViewBank` exists and answers nil, the library answers false (Bank Ledger's rule), where Loot History's copy read it as viewable. No client and no mock answers nil there, so the code stands; `Compat.lua`'s comment and the [version 6 document](docs/api/Compat/version-6-docs.md) now say so, and the document adds the adoption note for `UnreadyBankContainers` (pass `purchased` only when the host has no remembered bank shape, to keep Loot History's first-visit rule). No behavior changes.
 
+Release gate (`docs/automated-tests/20261122-101023/`): lint pass, 0/0 in 383 files;
+tests pass, 5118 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — the release moved no minor of `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua`, `SimPanelRender.lua` or `Widgets.lua`; only `Compat.lua` 6 and the test kit moved, so no host's scenarios or test-mode strips are affected.
+
 ## v1.109.0 — 2026-11-21
 
 Opened 2026-11-21, on `feat/2026-11-21-sync-followups` (off `master` at v1.108.0): the follow-ups v1.108.0's sync-docs pass left open (Ka0sAddonsCommonTasks `docs/2026-11-21-SYNC_FOLLOWUPS/00_PLAN.md`), items `FU-LK-CALLOUT`, `FU-LK-COMPOSE`, `FU-LK-PAINTCTL`, `FU-LK-KITDOC`, `FU-LK-CONSUMERS` and this release, `FU-LK-REL`. The owner's ruling on the three payload files whose band triggers had fired is **fix**: each peels on the seam its census entry named, as the v1.91.0 peels did, with no member and no behavior change. Built to WowAddonStandards v2.117.0 (one quirks catalog per client; nothing in it binds this library: `library-stack-§7` now cites forever-quirks-§4 for `LibKa0s-Compat-1.0`'s character-identity readers (`RegionalNames`, `UnitCharacterName`, `CharacterKey`, `RealmKey`), a citation that moves no code, and `documentation-§3`'s quirks files do not apply to a library repo).
