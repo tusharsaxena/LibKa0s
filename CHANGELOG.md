@@ -10,6 +10,16 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.110.0 — unreleased
+
+Opened 2026-11-22, on `feat/2026-11-22-libka0s-101` (off `master` at v1.109.0): LibKa0s#101, the shared container-group and bank-readiness reader (Ka0sAddonsCommonTasks `docs/2026-11-22-LIBKA0S_101_CONTAINER_READER/00_PLAN.md`), item `K101-LK-01`.
+
+Versions in this release so far: `LibKa0s-Compat-1.0` key **6** (Compat minor 6); every other file at its v1.109.0 minor, and the test kit at revision 59. No `NEEDS_*` floor rises.
+
+### The container groups and bank readiness (`K101-LK-01`)
+
+- **Compat minor 6** ([docs](docs/api/Compat/version-6-docs.md)): six members for what BankLedger, LootHistory and OutfitterReborn each carried a copy of. `ContainerGroups()` answers `{ bags, bank, accountBank }`, sorted, de-duplicated ids matched by anchored, case-sensitive `Enum.BagIndex` member names, never numbers; the row is a per-client declaration picked by `ClientKey()`, so the keyring (`Keyring`, -1) is in the bags on WoW Forever only and the account bank (`AccountBankTab_N`) is declared on Retail only. With no `Enum.BagIndex` the bags are `{ 0, 1, 2, 3, 4, 5 }`. `CONTAINER_PATTERNS_BY_CLIENT` publishes the patterns for a consumer's suite to pin. `CanViewCharacterBank()` is three-valued (nil when the build cannot tell), `NumPurchasedBankTabs(bankTypeName)` and `BankerKind(interactionType)` read their enums by name, and the pure `UnreadyBankContainers(shape, memory, purchased)` answers the ids that read 0 after reporting slots, or, on a first visit with fewer containers answering than bought tabs, the marker `{ short = true, answering, purchased }`. The deadlines and the memory stay in the consumers. A new suite, `tests/test_compat_containers.lua`, carries the three copies' cases on both kit profiles; `tests/test_compat.lua`'s registration and absent-table cases grow to twenty-three members.
+
 ## v1.109.0 — 2026-11-21
 
 Opened 2026-11-21, on `feat/2026-11-21-sync-followups` (off `master` at v1.108.0): the follow-ups v1.108.0's sync-docs pass left open (Ka0sAddonsCommonTasks `docs/2026-11-21-SYNC_FOLLOWUPS/00_PLAN.md`), items `FU-LK-CALLOUT`, `FU-LK-COMPOSE`, `FU-LK-PAINTCTL`, `FU-LK-KITDOC`, `FU-LK-CONSUMERS` and this release, `FU-LK-REL`. The owner's ruling on the three payload files whose band triggers had fired is **fix**: each peels on the seam its census entry named, as the v1.91.0 peels did, with no member and no behavior change. Built to WowAddonStandards v2.117.0 (one quirks catalog per client; nothing in it binds this library: `library-stack-§7` now cites forever-quirks-§4 for `LibKa0s-Compat-1.0`'s character-identity readers (`RegionalNames`, `UnitCharacterName`, `CharacterKey`, `RealmKey`), a citation that moves no code, and `documentation-§3`'s quirks files do not apply to a library repo).

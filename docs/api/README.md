@@ -150,7 +150,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [5](./Compat/version-5-docs.md) | **`Compat.lua` 5** (comment-only: the Forever names citation moves to the standard's forever-quirks-§4, `FU-LK-REL`) | v1.109.0 | **Current** |
+| [6](./Compat/version-6-docs.md) | **`Compat.lua` 6** (the container groups and bank readers: `ContainerGroups`, `CONTAINER_PATTERNS_BY_CLIENT`, `CanViewCharacterBank`, `NumPurchasedBankTabs`, `BankerKind`, `UnreadyBankContainers`; LibKa0s#101, `K101-LK-01`) | v1.110.0 (unreleased) | **Current** |
+| [5](./Compat/version-5-docs.md) | `Compat.lua` 5 (comment-only: the Forever names citation moves to the standard's forever-quirks-§4, `FU-LK-REL`) | v1.109.0 | Superseded |
 | [4](./Compat/version-4-docs.md) | `Compat.lua` 4 (character identity: `RegionalNames`, `UnitCharacterName`, `CharacterKey`, `RealmKey`, `W1-LK-02`) | v1.94.0 – v1.108.0 | Superseded |
 | [3](./Compat/version-3-docs.md) | `Compat.lua` 3 (`ForClient` accepts `"both"` in an array, `WFP-RV2-LK`) | v1.93.0 | Superseded |
 | [2](./Compat/version-2-docs.md) | `Compat.lua` 2 | v1.92.0 | Superseded |

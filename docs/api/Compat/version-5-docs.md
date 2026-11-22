@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Compat-1.0` |
 | Files and minors | `Compat.lua` minor **5** |
 | Shipped in | v1.109.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 4](./version-4-docs.md) (v1.94.0 – v1.108.0) — the same seventeen members and the same behavior; its character-identity comment cited the standard's client-quirks-§5, where the WoW Forever names entry no longer lives. |
-| Superseded by | — |
+| Superseded by | [version 6](./version-6-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Compat-1.0").MODULES` → `{ Compat = 5 }` |
 
 ## What changed at this version: one citation (`FU-LK-REL`)
@@ -440,3 +440,7 @@ diff -r LibKa0s <Addon>/libs/LibKa0s                       # bytes  — SHOULD b
 `Compat.lua` is a new entry in `LibKa0s.xml`, immediately after `Env.lua`. A consumer whose test
 harness derives its load list from that XML picks it up with no edit; a consumer that re-types the
 list adds one row after `libs/LibKa0s/Env.lua`.
+
+## Moving to version 6
+
+**Additive; nothing this version has moves.** Version 6 keeps these seventeen members and their behavior exactly, and adds the container groups and bank readers of LibKa0s#101: `ContainerGroups`, `CONTAINER_PATTERNS_BY_CLIENT`, `CanViewCharacterBank`, `NumPurchasedBankTabs`, `BankerKind` and `UnreadyBankContainers`. A suite pinning minor 5 re-pins it at 6, and a host gating its wiring with `Kit.assertSurfaceParity` on this major wires the six new members or adds them to its `ignore` list. See [version 6](./version-6-docs.md).

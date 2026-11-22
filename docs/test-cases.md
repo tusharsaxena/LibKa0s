@@ -201,7 +201,7 @@ Total.
 
 ### test_compat.lua (64)
 
-- compat: registers minor 5 with exactly the seventeen public members
+- compat: registers minor 6 with exactly the twenty-three public members
 - compat: the Core floor keeps the major absent from a payload without Core
 - compat: the source reads every global bare, never through the global table
 - compat: IsSecret is false for every value when the client has no secrets system
@@ -265,6 +265,38 @@ Total.
 - compat: the character and realm keys are AceDB 40's, on both shapes
 - compat: the ruleset follows AceDB 40's order
 - compat: a secret name part is never concatenated
+
+### test_compat_containers.lua (29)
+
+- compat containers: the pattern table is published, one row per client, anchored
+- compat containers: writing to the published table changes no answer
+- compat containers: Retail's groups come by name, the type constants and the keyring excluded
+- compat containers: WoW Forever's bags hold the keyring, and it declares no account bank
+- compat containers: a client that is neither reads Retail's bags and bank and no account bank
+- compat containers: no id belongs to two groups and no group lists an id twice
+- compat containers: the patterns are case-sensitive and anchored at both ends
+- compat containers: the pre-tab bank series is matched, and two names for one id count once
+- compat containers: with no Enum.BagIndex the bags are 0..5 and the bank groups empty
+- compat containers: every call answers fresh tables
+- compat containers: the client and the enum are read at call time
+- compat containers: CanViewCharacterBank asks C_Bank.CanViewBank for Enum.BankType.Character by name
+- compat containers: CanViewCharacterBank normalizes the answer to a boolean
+- compat containers: CanViewCharacterBank is nil when the build cannot tell
+- compat containers: a secret CanViewBank answer reads as cannot tell, never tested
+- compat containers: NumPurchasedBankTabs reads the bank type by name
+- compat containers: NumPurchasedBankTabs is nil without the API, the member or a plain number
+- compat containers: NumPurchasedBankTabs with a name that is not a string calls nothing
+- compat containers: BankerKind names the bank each banker type opens
+- compat containers: BankerKind reads the enum by name, so a renumbered or older build follows
+- compat containers: BankerKind is nil without the enum, and never compares a secret
+- compat containers: a bank whose remembered containers all answer is ready
+- compat containers: visit 2 with a partly loaded bank names the containers still at 0, sorted
+- compat containers: a tab that never had slots, or that the shape does not carry, never blocks
+- compat containers: with no memory and no purchase count the first read is taken as found
+- compat containers: a first visit with fewer containers answering than bought tabs is the marker
+- compat containers: with a memory the purchase count is not consulted
+- compat containers: UnreadyBankContainers is pure: it reads no client and changes no input
+- compat containers: on the active kit profile the library picks that client's row
 
 ### test_role.lua (29)
 
@@ -5789,6 +5821,7 @@ Total.
 | test_tooltip_guard.lua | 3 |
 | test_env.lua | 9 |
 | test_compat.lua | 64 |
+| test_compat_containers.lua | 29 |
 | test_role.lua | 29 |
 | test_lifecycle.lua | 22 |
 | test_lifecycle_debug.lua | 14 |
@@ -6010,4 +6043,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5076** |
+| **Total** | **5105** |
