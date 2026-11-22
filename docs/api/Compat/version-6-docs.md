@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Compat-1.0` |
 | Files and minors | `Compat.lua` minor **6** |
-| Shipped in | v1.110.0 (unreleased) |
+| Shipped in | v1.110.0 |
 | Status | **Current** |
 | Supersedes | [version 5](./version-5-docs.md) (v1.109.0) — seventeen members, with no container groups and no bank readers. |
 | Superseded by | — |

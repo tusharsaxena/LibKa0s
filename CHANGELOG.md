@@ -10,11 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.110.0 — unreleased
+## v1.110.0 — 2026-11-22
 
-Opened 2026-11-22, on `feat/2026-11-22-libka0s-101` (off `master` at v1.109.0): LibKa0s#101, the shared container-group and bank-readiness reader (Ka0sAddonsCommonTasks `docs/2026-11-22-LIBKA0S_101_CONTAINER_READER/00_PLAN.md`), items `K101-LK-01` and `K101-LK-02`.
+Opened 2026-11-22, on `feat/2026-11-22-libka0s-101` (off `master` at v1.109.0): LibKa0s#101, the shared container-group and bank-readiness reader (Ka0sAddonsCommonTasks `docs/2026-11-22-LIBKA0S_101_CONTAINER_READER/00_PLAN.md`), items `K101-LK-01`, `K101-LK-02`, the review fixes `K101-LK-REV` and this release, `K101-LK-REL`. Built to WowAddonStandards v2.117.0, as v1.109.0 was: the one change to the standard since is a roster row (Loot History and Bank Ledger ship Retail · Forever) and moves no rule. The account bank declared on Retail only follows the port bundle's ruling R1 (Ka0sAddonsCommonTasks `docs/2026-11-22-LOOTHISTORY_BANKLEDGER_FOREVER_PORT/00_DESIGN.md`), not a standard section.
 
-Versions in this release so far: `LibKa0s-Compat-1.0` key **6** (Compat minor 6); every other file at its v1.109.0 minor, and the test kit at revision **60** (`K101-LK-02`). No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Compat-1.0` key **6** (Compat minor 6); every other file at its v1.109.0 minor, and the test kit at revision **60** (`K101-LK-02`). No `NEEDS_*` floor rises, no member is removed and no payload file is added, so a host's TOC and a test loader that names library files do not change. A host whose gate checks `Kit.assertSurfaceParity` on `LibKa0s-Compat-1.0` wires the six new members or lists them in `ignore`; a suite pinning `Compat.MINOR` 5 or `KIT_VERSION` 59 re-pins it at 6 or 60.
 
 ### The container groups and bank readiness (`K101-LK-01`)
 
@@ -23,6 +23,10 @@ Versions in this release so far: `LibKa0s-Compat-1.0` key **6** (Compat minor 6)
 ### The test kit's client profiles carry the bank shape (`K101-LK-02`)
 
 - **Test kit revision 60** ([docs](docs/api/testkit/version-60-docs.md)): `mock_client.lua`'s two profiles each fill their client's `Enum.BagIndex` (Retail 12.1.5's 20 members, six character and five account tabs; WoW Forever 1.60.1's 27, nine of each; both with `Keyring` -1 and the type constants -2 and -3), `Enum.BankType` and `C_Bank.CanViewBank` (the character bank viewable on both, the account bank on Retail only; a non-number raises the client's usage line). They install an `Enum` or a `C_Bank` only when neither the consumer's mock set nor `_G` has one, never add a member to a consumer's own, and replace only their own tables on a second apply, so a consumer's own `tests/wow_mock.lua` build still wins. On a bare kit harness `Compat.ContainerGroups()` now answers each client's real groups and `Compat.CanViewCharacterBank()` true. `tests/test_compat_containers.lua`'s profile cases read the active profile instead of planting an enum. No kit member or case is added or renamed; a consumer suite pinning `KIT_VERSION` 59 re-pins it at 60.
+
+### Review fixes (`K101-LK-REV`)
+
+- **`CanViewCharacterBank`'s documented difference from Loot History's copy.** When `C_Bank.CanViewBank` exists and answers nil, the library answers false (Bank Ledger's rule), where Loot History's copy read it as viewable. No client and no mock answers nil there, so the code stands; `Compat.lua`'s comment and the [version 6 document](docs/api/Compat/version-6-docs.md) now say so, and the document adds the adoption note for `UnreadyBankContainers` (pass `purchased` only when the host has no remembered bank shape, to keep Loot History's first-visit rule). No behavior changes.
 
 ## v1.109.0 — 2026-11-21
 

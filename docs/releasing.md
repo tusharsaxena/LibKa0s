@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.109.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.110.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -432,6 +432,16 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    its tabs, nav items, drawers and list rows go unpainted. A suite pinning `Callout 5`, `OptionsCompose 20`,
    `SkinPaintControls 19`, `Compat 4`, `Sim 3` or `KIT_VERSION` 58 re-pins it. No Skin facade, major or instance member moves, no icon or
    sound is added, and nothing a player sees changes, so the re-vendor owes no smoke line of its own.
+   v1.110.0 (LibKa0s#101, Ka0sAddonsCommonTasks `docs/2026-11-22-LIBKA0S_101_CONTAINER_READER/`) adds no payload file and
+   no `NEEDS_*` floor, and moves the kit to revision 60. `Compat.lua` moves to minor 6 (Compat key 6): the major gains
+   `ContainerGroups`, `CONTAINER_PATTERNS_BY_CLIENT`, `CanViewCharacterBank`, `NumPurchasedBankTabs`, `BankerKind` and
+   `UnreadyBankContainers`, so a host whose gate runs `Kit.assertSurfaceParity` on `LibKa0s-Compat-1.0` wires the six or
+   lists them in `ignore`, and a suite pinning `Compat 5` re-pins it at 6. Kit revision 60's client profiles install
+   `Enum.BagIndex`, `Enum.BankType` and `C_Bank.CanViewBank` only where the host's mock set and `_G` have none, so a
+   host's own `tests/wow_mock.lua` build still wins; a suite pinning `KIT_VERSION` 59 re-pins it at 60. No Skin facade or
+   instance member moves, no icon or sound is added, and nothing a player sees changes from the re-vendor alone. Bank
+   Ledger, Loot History and Outfitter Reborn adopt the readers in the same run; the version 6 document's adoption notes
+   say what each keeps (Loot History maps nil from `CanViewCharacterBank` to readable at the call site).
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not. DpsRace left the loop and the table's Consumers column on 2026-11-19 (`AF-DR-LK` of
    Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`): it is retired, merged into Combat Trail, and is not a consumer.
@@ -505,7 +515,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.109.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.110.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
