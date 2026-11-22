@@ -12,13 +12,17 @@ cannot drift. Release order is in
 
 ## v1.110.0 — unreleased
 
-Opened 2026-11-22, on `feat/2026-11-22-libka0s-101` (off `master` at v1.109.0): LibKa0s#101, the shared container-group and bank-readiness reader (Ka0sAddonsCommonTasks `docs/2026-11-22-LIBKA0S_101_CONTAINER_READER/00_PLAN.md`), item `K101-LK-01`.
+Opened 2026-11-22, on `feat/2026-11-22-libka0s-101` (off `master` at v1.109.0): LibKa0s#101, the shared container-group and bank-readiness reader (Ka0sAddonsCommonTasks `docs/2026-11-22-LIBKA0S_101_CONTAINER_READER/00_PLAN.md`), items `K101-LK-01` and `K101-LK-02`.
 
-Versions in this release so far: `LibKa0s-Compat-1.0` key **6** (Compat minor 6); every other file at its v1.109.0 minor, and the test kit at revision 59. No `NEEDS_*` floor rises.
+Versions in this release so far: `LibKa0s-Compat-1.0` key **6** (Compat minor 6); every other file at its v1.109.0 minor, and the test kit at revision **60** (`K101-LK-02`). No `NEEDS_*` floor rises.
 
 ### The container groups and bank readiness (`K101-LK-01`)
 
 - **Compat minor 6** ([docs](docs/api/Compat/version-6-docs.md)): six members for what BankLedger, LootHistory and OutfitterReborn each carried a copy of. `ContainerGroups()` answers `{ bags, bank, accountBank }`, sorted, de-duplicated ids matched by anchored, case-sensitive `Enum.BagIndex` member names, never numbers; the row is a per-client declaration picked by `ClientKey()`, so the keyring (`Keyring`, -1) is in the bags on WoW Forever only and the account bank (`AccountBankTab_N`) is declared on Retail only. With no `Enum.BagIndex` the bags are `{ 0, 1, 2, 3, 4, 5 }`. `CONTAINER_PATTERNS_BY_CLIENT` publishes the patterns for a consumer's suite to pin. `CanViewCharacterBank()` is three-valued (nil when the build cannot tell), `NumPurchasedBankTabs(bankTypeName)` and `BankerKind(interactionType)` read their enums by name, and the pure `UnreadyBankContainers(shape, memory, purchased)` answers the ids that read 0 after reporting slots, or, on a first visit with fewer containers answering than bought tabs, the marker `{ short = true, answering, purchased }`. The deadlines and the memory stay in the consumers. A new suite, `tests/test_compat_containers.lua`, carries the three copies' cases on both kit profiles; `tests/test_compat.lua`'s registration and absent-table cases grow to twenty-three members.
+
+### The test kit's client profiles carry the bank shape (`K101-LK-02`)
+
+- **Test kit revision 60** ([docs](docs/api/testkit/version-60-docs.md)): `mock_client.lua`'s two profiles each fill their client's `Enum.BagIndex` (Retail 12.1.5's 20 members, six character and five account tabs; WoW Forever 1.60.1's 27, nine of each; both with `Keyring` -1 and the type constants -2 and -3), `Enum.BankType` and `C_Bank.CanViewBank` (the character bank viewable on both, the account bank on Retail only; a non-number raises the client's usage line). They install an `Enum` or a `C_Bank` only when neither the consumer's mock set nor `_G` has one, never add a member to a consumer's own, and replace only their own tables on a second apply, so a consumer's own `tests/wow_mock.lua` build still wins. On a bare kit harness `Compat.ContainerGroups()` now answers each client's real groups and `Compat.CanViewCharacterBank()` true. `tests/test_compat_containers.lua`'s profile cases read the active profile instead of planting an enum. No kit member or case is added or renamed; a consumer suite pinning `KIT_VERSION` 59 re-pins it at 60.
 
 ## v1.109.0 — 2026-11-21
 

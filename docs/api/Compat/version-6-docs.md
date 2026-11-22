@@ -358,8 +358,8 @@ The consumer kit (`testkit/mock_base.lua`) carries **no** `C_Spell`, no `C_Speci
 | `GetSpellCooldown` | `0, 0, false, 1, false` | same |
 | `GetSpecialization` | `1` (legacy rung) | same |
 | `GetSpecializationInfo(1)` | `250, <spec name>` (legacy rung) | same |
-| `ContainerGroups()` | the fallback: bags `0..5`, both bank groups empty (the kit carries no `Enum.BagIndex` at revision 59) | same |
-| `CanViewCharacterBank` / `NumPurchasedBankTabs` / `BankerKind` | `nil` / `nil` / `nil` (no `C_Bank`, no `Enum.BankType`, no `Enum.PlayerInteractionType`) | same |
+| `ContainerGroups()` | the profile's client (kit revision 60): under `retail` bags `0..5`, bank `6..11`, accountBank `12..16`; under `forever` bags `-1, 0..5`, bank `6..14`, accountBank empty. Through revision 59, which carried no `Enum.BagIndex`, the fallback: bags `0..5`, both bank groups empty | same |
+| `CanViewCharacterBank` / `NumPurchasedBankTabs` / `BankerKind` | `true` / `nil` / `nil` under both profiles (kit revision 60 carries `Enum.BankType` and `C_Bank.CanViewBank` only; no `FetchNumPurchasedBankTabs`, no `Enum.PlayerInteractionType`). Through revision 59: `nil` / `nil` / `nil` | same |
 
 ## Degradation
 

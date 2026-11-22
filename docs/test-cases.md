@@ -266,7 +266,7 @@ Total.
 - compat: the ruleset follows AceDB 40's order
 - compat: a secret name part is never concatenated
 
-### test_compat_containers.lua (29)
+### test_compat_containers.lua (30)
 
 - compat containers: the pattern table is published, one row per client, anchored
 - compat containers: writing to the published table changes no answer
@@ -297,6 +297,7 @@ Total.
 - compat containers: with a memory the purchase count is not consulted
 - compat containers: UnreadyBankContainers is pure: it reads no client and changes no input
 - compat containers: on the active kit profile the library picks that client's row
+- compat containers: on the active kit profile the character bank is viewable
 
 ### test_role.lua (29)
 
@@ -5333,12 +5334,21 @@ Total.
 - resize mock: StartMoving marks the frame user-placed, and SetUserPlaced clears it
 - resize mock: a frame's own stub (M.__stubFrame) carries the surface too
 
-### test_mock_client.lua (4)
+### test_mock_client.lua (13)
 
 - mock client: retail is the live Retail shape, with no Camelot constant
 - mock client: forever is Camelot, with the spec globals gone
 - mock client: an unknown profile name raises
 - mock client: applying retail after forever restores the Camelot-free shape
+- mock client: retail carries 12.1.5's 20-member Enum.BagIndex, six character and five account tabs
+- mock client: forever carries 1.60.1's 27-member Enum.BagIndex, nine tabs of each kind
+- mock client: C_Bank.CanViewBank is character-and-account on retail, character only on forever
+- mock client: a consumer's own Enum.BagIndex, Enum.BankType and C_Bank win over the profile
+- mock client: a consumer's Enum without BagIndex is left without it, the absence it may be testing
+- mock client: inside the profile's own Enum a re-apply keeps a member another fake merged in
+- mock client: a C_Bank or Enum on the real global table wins over the profile
+- mock client: applying retail after forever replaces the profile's own tables
+- mock client: every apply builds fresh tables, so a case's edit reaches no other mock set
 
 ### test_mock_lines.lua (5)
 
@@ -5477,7 +5487,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 59
+- the kit is revision 60
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -5821,7 +5831,7 @@ Total.
 | test_tooltip_guard.lua | 3 |
 | test_env.lua | 9 |
 | test_compat.lua | 64 |
-| test_compat_containers.lua | 29 |
+| test_compat_containers.lua | 30 |
 | test_role.lua | 29 |
 | test_lifecycle.lua | 22 |
 | test_lifecycle_debug.lua | 14 |
@@ -6017,7 +6027,7 @@ Total.
 | test_mock_record.lua | 42 |
 | test_mock_events.lua | 22 |
 | test_mock_resize.lua | 6 |
-| test_mock_client.lua | 4 |
+| test_mock_client.lua | 13 |
 | test_mock_lines.lua | 5 |
 | test_mock_bindings.lua | 17 |
 | test_mock_layers.lua | 7 |
@@ -6043,4 +6053,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5105** |
+| **Total** | **5115** |

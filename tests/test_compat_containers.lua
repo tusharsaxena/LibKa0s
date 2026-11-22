@@ -9,8 +9,9 @@
 --
 -- NO CASE TRUSTS WHAT THE BASE MOCK HAPPENS TO CARRY. Every case installs the Enum, C_Bank and project
 -- constants it reads through `with`, so the two kit profiles (default and KA0S_KIT_CLIENT=forever)
--- run the same assertions; the profile case at the end plants each client's own enum and pins that
--- the active profile is the row the library picks.
+-- run the same assertions. The profile cases at the end plant nothing: they read the Enum and
+-- C_Bank the kit's active profile carries (kit revision 60) and pin that the library picks that
+-- client's row.
 
 local T = _G.LK_TEST
 local compat, mocks = T.compat, T.mocks
@@ -421,16 +422,19 @@ test("compat containers: UnreadyBankContainers is pure: it reads no client and c
   assertEqual(marker and marker.answering, 0, "no shape on a first visit: none answering")
 end)
 
--- -- the active profile (1) ---------------------------------------------------------------------
+-- -- the active profile (2) ---------------------------------------------------------------------
 
 test("compat containers: on the active kit profile the library picks that client's row", function()
   local client = T.loader.MockClient.current()
   local forever = client == "forever"
-  with(enum({ BagIndex = bagIndex(forever) }), function()
-    local g = compat.ContainerGroups()
-    assertEqual(compat.ClientKey(), client, "KA0S_KIT_CLIENT reaches Compat")
-    assertEqual(g.bags[1], forever and -1 or 0, client .. ": the keyring only on Forever")
-    assertEqual(#g.bank, forever and 9 or 6, client .. ": character tabs")
-    assertEqual(#g.accountBank, forever and 0 or 5, client .. ": the account bank only on Retail")
-  end)
+  local g = compat.ContainerGroups()
+  assertEqual(compat.ClientKey(), client, "KA0S_KIT_CLIENT reaches Compat")
+  assertEqual(list(g.bags), forever and "-1,0,1,2,3,4,5" or "0,1,2,3,4,5", client .. ": the keyring only on Forever")
+  assertEqual(list(g.bank), list(forever and range(6, 14) or range(6, 11)), client .. ": character tabs")
+  assertEqual(list(g.accountBank), forever and "" or list(range(12, 16)), client .. ": the account bank only on Retail")
+end)
+
+test("compat containers: on the active kit profile the character bank is viewable", function()
+  assertEqual(compat.CanViewCharacterBank(), true, T.loader.MockClient.current() .. ": the kit's C_Bank.CanViewBank")
+  assertNil(compat.NumPurchasedBankTabs("Character"), "the kit models no FetchNumPurchasedBankTabs")
 end)
