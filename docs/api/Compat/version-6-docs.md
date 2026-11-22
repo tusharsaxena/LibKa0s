@@ -230,7 +230,10 @@ Measured shapes, as the two consumers' mocks build them from each client's
   `C_Bank.CanViewBank(Enum.BankType.Character)`, the bank type read by name, and `nil` when the build
   cannot tell (no `C_Bank.CanViewBank`, no `Enum.BankType.Character`, or a secret answer, which is
   never tested). A caller reads `nil` as readable. LootHistory's copy answered `true` there, so its
-  adoption maps `nil` to readable at the call site and its behavior does not change. A warband-only
+  adoption maps `nil` to readable at the call site and its behavior does not change. A present API's
+  own answer is normalized to a boolean, BankLedger's rule: a `nil` answer from it reads `false`,
+  where LootHistory's copy (`fn(t) ~= false`) read it as viewable. No client and no kit profile
+  answers `nil` there, so the two copies agree on every answer a build gives. A warband-only
   banker answers `false`: the bank frame opens on the Warband Bank alone.
 - **`NumPurchasedBankTabs(bankTypeName)`** takes the `Enum.BankType` member name (`"Character"`,
   `"Account"`), so a caller never passes a number. `nil` when the name is not a string (no rung is
@@ -268,6 +271,10 @@ ready read, and `purchased` is the number of tabs bought (`NumPurchasedBankTabs`
 - **Only remembered containers block.** An id that never had slots (an unbought tab) never blocks,
   and an id `shape` does not carry is not judged: the caller decides what it read. With a memory,
   `purchased` is not consulted.
+- **An empty memory is no memory.** A stored `{}` or an all-zero memory takes the first-visit row,
+  so with a number `purchased` it waits on the marker. LootHistory's copy took the per-container
+  path for any stored table and answered ready at once; an adopter that keeps that rule passes
+  `purchased` only when it has no stored memory at all.
 - **A tab answering fewer slots is loaded**, not loading: only `0` after slots counts.
 - **The caller keeps the memory and the deadline** (the lead's call 4): BankLedger diffs within one
   visit and keeps 6 s, LootHistory diffs against stored history and keeps 5 s. Unifying them waits

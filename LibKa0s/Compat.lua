@@ -574,6 +574,8 @@ end
 --- from `C_Bank.CanViewBank(Enum.BankType.Character)`, the bank type read BY NAME, and nil when the
 --- build cannot tell (no C_Bank.CanViewBank, no Enum.BankType.Character, or a secret answer).
 --- Three-valued on purpose: a caller reads nil as readable. A warband-only banker answers false.
+--- A present API's own answer is normalized to a boolean, so a nil answer from it reads false
+--- (BankLedger's copy); no client or kit profile answers nil there.
 ---
 --- @return boolean|nil
 function lib.CanViewCharacterBank()
