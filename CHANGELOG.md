@@ -10,6 +10,17 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.111.0 — unreleased
+
+Opened 2026-11-23, on `feat/2026-11-23-strip-right-click` (off `master` at v1.110.0): a drag strip's right-click opens what its gear opens (Ka0sAddonsCommonTasks `docs/2026-11-23-STRIP_RIGHT_CLICK/00_PLAN.md`), item `SRC-LK-01` and this release, `SRC-LK-REL`. The owner's words, 2026-11-23: "Right clicking on any unlock strip should open the relevant settings page - same way as clicking the gear icon. This seems to work for AuraMaster but not AbsorbTracker."
+
+Versions in this release so far: `LibKa0s-Widgets-1.0` key **30.3.7.17.3.8.8.6.1.2** (WidgetsDragHandle minor 17); every other file at its v1.110.0 minor, and the test kit at revision **60**. No `NEEDS_*` floor rises.
+
+### A strip's right-click opens what its gear opens (`SRC-LK-01`)
+
+- **WidgetsDragHandle minor 17** ([docs](docs/api/Widgets/version-30.3.7.17.3.8.8.6.1.2-docs.md)): a strip that carries the settings mark (every strip but one built with `settings = false`) and no `onRightClick` answers a right-click, on the strip and on each mark (the `?`, the gear, the X), with the settings mark's own action: `settings` when it is a function, else `onSettings`, else Core's `OpenSettings(settingsOwner or owner)`, under pcall. It is the function the gear's left click runs, so the two cannot open different pages. Through minor 16 such a strip registered no click, so Ka0s Absorb Tracker's strip, whose gear opens the bar's Appearance page, did nothing on a right-click. A host's `onRightClick` still wins; a strip with `settings = false` and none still registers no click; a left click on the strip is still the drag's. New suite `tests/test_widgets_draghandle_rightclick.lua` (nine cases). The file stays under the 1000-line band (998): four older header notes were condensed.
+- **What a re-vendoring host owes:** nothing in code where the strip's gear is the page its right-click should open. A host suite that pinned no click on a strip with a gear re-pins it (the strip and the `?` register `RightButtonUp`, the gear and the X `LeftButtonUp, RightButtonUp`). A host whose `onRightClick` opens another page than its gear (KickCD's two strips and QuickComms' pad strip open the root page) reconciles it with the standard's unlock-strip rule.
+
 ## v1.110.0 — 2026-11-22
 
 Opened 2026-11-22, on `feat/2026-11-22-libka0s-101` (off `master` at v1.109.0): LibKa0s#101, the shared container-group and bank-readiness reader (Ka0sAddonsCommonTasks `docs/2026-11-22-LIBKA0S_101_CONTAINER_READER/00_PLAN.md`), items `K101-LK-01`, `K101-LK-02`, the review fixes `K101-LK-REV` and this release, `K101-LK-REL`. Built to WowAddonStandards v2.117.0, as v1.109.0 was: the one change to the standard since is a roster row (Loot History and Bank Ledger ship Retail · Forever) and moves no rule. The account bank declared on Retail only follows the port bundle's ruling R1 (Ka0sAddonsCommonTasks `docs/2026-11-22-LOOTHISTORY_BANKLEDGER_FOREVER_PORT/00_DESIGN.md`), not a standard section.
