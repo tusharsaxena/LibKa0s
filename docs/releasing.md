@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.110.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.111.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -442,6 +442,15 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    instance member moves, no icon or sound is added, and nothing a player sees changes from the re-vendor alone. Bank
    Ledger, Loot History and Outfitter Reborn adopt the readers in the same run; the version 6 document's adoption notes
    say what each keeps (Loot History maps nil from `CanViewCharacterBank` to readable at the call site).
+   v1.111.0 (Ka0sAddonsCommonTasks `docs/2026-11-23-STRIP_RIGHT_CLICK/`) adds no payload file, no member and no
+   `NEEDS_*` floor, and leaves the kit at revision 60. `WidgetsDragHandle.lua` moves to minor 17 (Widgets key
+   30.3.7.17.3.8.8.6.1.2): a strip that carries the settings mark and no `onRightClick` answers a right-click, on the
+   strip and every mark, with the settings mark's own action, so a suite pinning `WidgetsDragHandle 16`, or no click
+   registered on a strip with a gear, re-pins it. A host whose `onRightClick` opens another page than its gear (KickCD's
+   cast-bar and icon-grid strips, Quick Comms' pad strip) drops it in the re-vendor commit, per WowAddonStandards
+   v2.118.0's unlock-strip rule (anti-pattern #123); one whose `onRightClick` calls the gear's function (Aura Master,
+   Range Master) may drop it as redundant. Each host's re-vendor owes one smoke line: a right-click on each unlock strip
+   opens what its gear opens.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not. DpsRace left the loop and the table's Consumers column on 2026-11-19 (`AF-DR-LK` of
    Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`): it is retired, merged into Combat Trail, and is not a consumer.
@@ -515,7 +524,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.110.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.111.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:

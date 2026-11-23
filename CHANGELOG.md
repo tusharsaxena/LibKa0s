@@ -10,11 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.111.0 — unreleased
+## v1.111.0 — 2026-11-23
 
-Opened 2026-11-23, on `feat/2026-11-23-strip-right-click` (off `master` at v1.110.0): a drag strip's right-click opens what its gear opens (Ka0sAddonsCommonTasks `docs/2026-11-23-STRIP_RIGHT_CLICK/00_PLAN.md`), item `SRC-LK-01` and this release, `SRC-LK-REL`. The owner's words, 2026-11-23: "Right clicking on any unlock strip should open the relevant settings page - same way as clicking the gear icon. This seems to work for AuraMaster but not AbsorbTracker."
+Opened 2026-11-23, on `feat/2026-11-23-strip-right-click` (off `master` at v1.110.0): a drag strip's right-click opens what its gear opens (Ka0sAddonsCommonTasks `docs/2026-11-23-STRIP_RIGHT_CLICK/00_PLAN.md`), item `SRC-LK-01` and this release, `SRC-LK-REL`. Built to WowAddonStandards v2.118.0, which lands the rule this release implements: standalone-windows, *The drag strip's marks*, *A right-click opens what the gear opens*, and anti-pattern #123 (`SRC-STD-01`). The owner's words, 2026-11-23: "Right clicking on any unlock strip should open the relevant settings page - same way as clicking the gear icon. This seems to work for AuraMaster but not AbsorbTracker."
 
-Versions in this release so far: `LibKa0s-Widgets-1.0` key **30.3.7.17.3.8.8.6.1.2** (WidgetsDragHandle minor 17); every other file at its v1.110.0 minor, and the test kit at revision **60**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Widgets-1.0` key **30.3.7.17.3.8.8.6.1.2** (WidgetsDragHandle minor 17); every other file at its v1.110.0 minor, and the test kit at revision **60**. No `NEEDS_*` floor rises, no member is added or removed and no payload file is added, so a host's TOC, its test loader and any Skin facade do not change; a suite pinning `WidgetsDragHandle 16` re-pins it at 17.
 
 ### A strip's right-click opens what its gear opens (`SRC-LK-01`)
 

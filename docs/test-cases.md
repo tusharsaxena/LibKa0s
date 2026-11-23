@@ -2000,6 +2000,18 @@ Total.
 - draghandle marks: the settings mark is built unless the host passes settings = false
 - draghandle marks: a strip with no onClose shows no X, never a mark that does nothing
 
+### test_widgets_draghandle_rightclick.lua (9)
+
+- draghandle right-click: a strip whose gear is onSettings opens it on a right-click
+- draghandle right-click: a function `settings` is what the right-click runs
+- draghandle right-click: with no opener of its own the right-click reaches the owner's
+- draghandle right-click: every mark passes the right-click to the gear's action
+- draghandle right-click: a left click on the strip is still the drag's
+- draghandle right-click: an opener that raises is reported, never thrown at the click
+- draghandle right-click: a host's own onRightClick is called instead of the gear's
+- draghandle right-click: a strip with settings = false and no onRightClick registers nothing
+- draghandle right-click: the minor and its module row moved
+
 ### test_widgets_linechart_math.lua (21)
 
 - chart math: the file attaches to the Widgets shell and records its minor
@@ -5893,6 +5905,7 @@ Total.
 | test_widgets_draghandle_layers.lua | 12 |
 | test_widgets_draghandle_fit.lua | 10 |
 | test_widgets_draghandle_marks.lua | 7 |
+| test_widgets_draghandle_rightclick.lua | 9 |
 | test_widgets_linechart_math.lua | 21 |
 | test_widgets_linechart.lua | 22 |
 | test_widgets_autocomplete.lua | 37 |
@@ -6053,4 +6066,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5115** |
+| **Total** | **5124** |

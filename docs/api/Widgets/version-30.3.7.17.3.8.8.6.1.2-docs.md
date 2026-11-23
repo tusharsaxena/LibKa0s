@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **30** · `WidgetsDropdown.lua` **3** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **17** · `WidgetsDragHandleTip.lua` **3** · `WidgetsLineChart.lua` **8** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **2** |
-| Shipped in | v1.111.0 (unreleased) |
+| Shipped in | v1.111.0 |
 | Status | **Current** |
 | Supersedes | [version 30.3.7.16.3.8.8.6.1.2](./version-30.3.7.16.3.8.8.6.1.2-docs.md) (v1.108.0) — a drag strip answered a right-click only when its host passed `onRightClick`, so a strip whose gear opened its settings did nothing on a right-click (Ka0s Absorb Tracker's) |
 | Superseded by | — |
