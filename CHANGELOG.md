@@ -35,6 +35,12 @@ Versions in this release: `LibKa0s-Core-1.0` key **20.1** (Core minor 20); `LibK
 
 - **SkinDefsOthers minor 11**: the owner: "High contrast skin makes the bar container text look really weird with an exaggerated shadow. Only happens for AuraMaster". High Contrast's `hud.shadowX` 2 / `hud.shadowY` -2 drew a second, solid black copy of every outlined HUD glyph; it now inherits 1, -1 like every skin, its edge coming from the HUD outline. A host suite that pinned 2, -2 re-pins it.
 
+Release gate (`docs/automated-tests/20261124-012313/`): lint pass, 0/0 in 386 files;
+tests pass, 5158 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — the release moved no minor of `Sim.lua`, `SimTimeline.lua`, `SimPanel.lua`, `SimPanelRender.lua` or `Widgets.lua`; Core 20's `standIn` serves a host's own preview and changes no library scenario or test-mode strip.
+
 ## v1.111.0 — 2026-11-23
 
 Opened 2026-11-23, on `feat/2026-11-23-strip-right-click` (off `master` at v1.110.0): a drag strip's right-click opens what its gear opens (Ka0sAddonsCommonTasks `docs/2026-11-23-STRIP_RIGHT_CLICK/00_PLAN.md`), item `SRC-LK-01` and this release, `SRC-LK-REL`. Built to WowAddonStandards v2.118.0, which lands the rule this release implements: standalone-windows, *The drag strip's marks*, *A right-click opens what the gear opens*, and anti-pattern #123 (`SRC-STD-01`). The owner's words, 2026-11-23: "Right clicking on any unlock strip should open the relevant settings page - same way as clicking the gear icon. This seems to work for AuraMaster but not AbsorbTracker."
