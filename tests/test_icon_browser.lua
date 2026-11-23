@@ -550,14 +550,16 @@ end)
 
 -- ── the header marks (IconBrowserWindow minor 2, LibKa0s#86) ───────────────────────────────
 
-test("icon browser: the window opts out of the settings mark, with its reason", function()
-  -- red under: IconBrowserWindow minor 1, which recorded no header (tests/test_header_buttons.lua has the strip)
+test("icon browser: the window is a companion of the settings row that opened it", function()
+  -- red under: IconBrowserWindow minor 1, which recorded no header (tests/test_header_buttons.lua has the strip);
+  -- and minor 2, which took the waiver path (settings = false + settingsOptOut) rather than companion (FB-LK-03)
   local _, B = boot()
   openOn(B, nil)
   local hb = B.frame.headerButtons
   assertTrue(type(hb) == "table", "the browser records its header")
   assertNil(hb.settings, "no settings mark: opened from a settings row")
-  assertTrue(type(hb.optOut) == "string" and hb.optOut:find("settings row", 1, true) ~= nil, tostring(hb.optOut))
+  assertTrue(hb.companion == true, "recorded as a companion")
+  assertNil(hb.optOut, "not a waiver")
   assertEqual(table.concat(hb.order, ","), "close")
 end)
 

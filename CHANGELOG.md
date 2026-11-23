@@ -10,6 +10,31 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.112.0 — unreleased
+
+Opened 2026-11-24, on `feat/2026-11-24-feedback-batch` (off `master` at v1.111.0): the library half of the owner's 2026-11-24 feedback batch (Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/00_PLAN.md`), items `FB-LK-01` to `FB-LK-04` and this release, `FB-LK-REL`. Built to WowAddonStandards v2.119.0, which lands the rule `FB-LK-03` implements: standalone-windows, *Settings is on every window but a companion*, the companion window defined, and anti-pattern #124; and options-ui-§17's preview stand-in and class -> skin -> swatch order, which `FB-LK-01` implements.
+
+Versions in this release: `LibKa0s-Core-1.0` key **20.1** (Core minor 20); `LibKa0s-Skin-1.0` key **18.1.28.11.20.19.2.1.21.1.4.9** (SkinDefsOthers minor 11, SkinPaintControls minor 21); `LibKa0s-Widgets-1.0` key **30.3.7.17.3.8.8.7.2.2** (WidgetsCopyWindow minor 7, WidgetsHeader minor 2); `LibKa0s-IconBrowser-1.0` key **1.3.2** (IconBrowserWindow minor 3); every other file at its v1.111.0 minor, and the test kit at revision **60**. No `NEEDS_*` floor rises, no member is removed and no payload file is added, so a host's TOC and a test loader that names library files do not change. Core gains one lib-level member, `FollowColor`, so a host whose gate checks `Kit.assertSurfaceParity` on `LibKa0s-Core-1.0` wires it or lists it in `ignore`.
+
+### The preview stand-in and the class -> skin -> swatch ladder (`FB-LK-01`)
+
+- **Core minor 20** ([docs](docs/api/Core/version-20.1-docs.md)): the owner, 2026-11-24: "Unit > Text label > font when use class is enabled, it doesnt actually use the class color, instead it uses the label color (on my hunter I expect it to be green)", and "Use class color for fill doesnt seem to work, always uses the normal cast color". A preview, unlock or sim frame describing a target, focus or party member that is not there asked `ClassColor` for that unit, got nil and drew the swatch. `ClassColor(unit[, standIn])` and `ResolveColor(stored, on[, unit][, standIn])` now resolve `standIn` (a host passes `"player"` while previewing) when `UnitExists(unit)` is false; a unit that exists is never replaced. `FollowColor(stored, classOn, unit, fromSkin, skinReader[, token][, standIn])` is the one ladder: a class color that resolved first (stored alpha kept), else the skin's color while `fromSkin` is true, else the stored swatch, answering `r, g, b, a` and `"class"`, `"skin"` or `"stored"`. An unresolved class falls to the skin, which KickCD's and Absorb Tracker's private copies did not do.
+
+### A disabled primary button looks disabled (`FB-LK-02`)
+
+- **SkinPaintControls minor 21** ([docs](docs/api/Skin/version-18.1.28.11.20.19.2.1.21.1.4.9-docs.md)): the owner: "Done button has weird looking fontcolor ... It should look like this (from skin tester)". A disabled primary kept `btnPrimary.bg` under `text.disabled`, the skin's dim text on its bright primary fill, in every skin (Outfitter Reborn's New Outfit "Done" while the name is empty). A disabled primary now paints the plain `btn.*` box with `text.disabled`, exactly as a disabled normal button; enabled again it is a primary. A host's own `opts.tokens.bg` remap (Combat Trail's `ct.primary.off*`) still wins.
+
+### A companion window carries no settings mark (`FB-LK-03`)
+
+- **WidgetsHeader minor 2** ([docs](docs/api/Widgets/version-30.3.7.17.3.8.8.7.2.2-docs.md)): the owner: "window title bars should all have a gear icon (on non companion windows)". `HeaderButtons(bar, { companion = true, ... })` draws no settings mark, needs no `settingsOptOut`, wins over `settings`, and records `hb.companion = true` with `hb.optOut` nil. `settings = false` with a reason stays the waiver for a non-companion.
+- **WidgetsCopyWindow minor 7**: the copy window is a companion of the export modal or console that opened it: the close alone, `f.settingsButton` nil, `onSettings` accepted unread.
+- **IconBrowserWindow minor 3** ([docs](docs/api/IconBrowser/version-1.3.2-docs.md)): the browser's header is recorded as a companion; the waiver fields stay in its spec for an older Widgets copy.
+- **What a re-vendoring host owes:** a host suite that clicked the copy window's settings mark drops that case. A host's companion windows move to `companion = true` at the re-vendor (the standard's rule binds then).
+
+### High Contrast's HUD shadow is 1, -1 (`FB-LK-04`)
+
+- **SkinDefsOthers minor 11**: the owner: "High contrast skin makes the bar container text look really weird with an exaggerated shadow. Only happens for AuraMaster". High Contrast's `hud.shadowX` 2 / `hud.shadowY` -2 drew a second, solid black copy of every outlined HUD glyph; it now inherits 1, -1 like every skin, its edge coming from the HUD outline. A host suite that pinned 2, -2 re-pins it.
+
 ## v1.111.0 — 2026-11-23
 
 Opened 2026-11-23, on `feat/2026-11-23-strip-right-click` (off `master` at v1.110.0): a drag strip's right-click opens what its gear opens (Ka0sAddonsCommonTasks `docs/2026-11-23-STRIP_RIGHT_CLICK/00_PLAN.md`), item `SRC-LK-01` and this release, `SRC-LK-REL`. Built to WowAddonStandards v2.118.0, which lands the rule this release implements: standalone-windows, *The drag strip's marks*, *A right-click opens what the gear opens*, and anti-pattern #123 (`SRC-STD-01`). The owner's words, 2026-11-23: "Right clicking on any unlock strip should open the relevant settings page - same way as clicking the gear icon. This seems to work for AuraMaster but not AbsorbTracker."

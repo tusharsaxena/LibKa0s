@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **18** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **28** · `SkinDefsOthers.lua` **10** · `SkinPaint.lua` **20** · `SkinPaintExtras.lua` **19** · `SkinPaintHud.lua` **2** · `SkinAceConfirm.lua` **1** · `SkinPaintControls.lua` **20** · `SkinPaintNav.lua` **1** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
 | Shipped in | v1.109.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 18.1.28.10.20.19.2.1.19.4.9](./version-18.1.28.10.20.19.2.1.19.4.9-docs.md) (v1.108.0) — the same surface and the same paint, with the tabs and the navigation, drawer and list-row primitives in `SkinPaintControls.lua` |
-| Superseded by | — |
+| Superseded by | [version 18.1.28.11.20.19.2.1.21.1.4.9](./version-18.1.28.11.20.19.2.1.21.1.4.9-docs.md) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (`NEEDS_CORE = 1`). Core members are used optionally, resolved at call time: `SkinEUI.lua`'s `SafeRegisterEvent` (with a Core that lacks it no `ADDON_LOADED` / `PLAYER_LOGIN` retry frame is made, and owners register with EllesmereUI only at `RegisterOwner`), and from `SkinPaintExtras.lua` 18 Core 16's pixel edges (with a Core that lacks them `P.px` answers its `n` and no edge is re-sized on a scale change) |
 | Confirm in-game | `LibStub("LibKa0s-Skin-1.0").MODULES` → `{ Skin = 18, SkinOwnerTokens = 1, SkinDefs = 28, SkinDefsOthers = 10, SkinPaint = 20, SkinPaintExtras = 19, SkinPaintHud = 2, SkinAceConfirm = 1, SkinPaintControls = 20, SkinPaintNav = 1, SkinEUI = 4, SkinAce = 9 }` |
 
@@ -2250,3 +2250,7 @@ the LibStub race later keeps every owner, record and facade; the resolve cache a
 - `addonName`: no consumer as of v1.83.0, kept because the scan counts a read of the Options descriptor inside a Skin file; it is `lib:New`'s `addonName`, which is passed there.
 - `thirdPartySkinAddons`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
 - `thirdPartySkinsOff`: no consumer as of v1.83.0, kept because the `d` read here is EllesmereUI's saved table in `SkinEUI.lua`, not a host descriptor, so no host can pass it.
+
+## Moving to version 18.1.28.11.20.19.2.1.21.1.4.9
+
+`SkinDefsOthers.lua` 10 -> 11 and `SkinPaintControls.lua` 20 -> 21 (`FB-LK-02`, `FB-LK-04`, Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/`): a disabled primary Button paints the plain `btn.*` box under `text.disabled`, and High Contrast's HUD shadow is 1, -1. No member moves.

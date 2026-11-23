@@ -74,9 +74,23 @@ test("skin hud tokens: every other skin states its own, and they read", function
       assertTrue(ratio >= 4.5, ("%s: %s contrast %.2f, want >= 4.5"):format(key, name, ratio))
     end
   end
-  local hc = Skin:ResolveSkin("contrast")
-  assertEqual(hc["hud.shadowX"], 2, "High Contrast's heavier shadow")
-  assertEqual(hc["hud.shadowY"], -2)
+end)
+
+test("skin hud tokens: every skin's HUD shadow sits 1, -1, High Contrast's included", function()
+  -- FB-LK-04 (Ka0sAddonsCommonTasks docs/2026-11-24-FEEDBACK_BATCH, the owner's A finding, images
+  -- 45-48): High Contrast's 2, -2 under an outlined HUD glyph drew a second, solid black copy of the
+  -- letter on AuraMaster's bars. The edge comes from the HUD outline. red under: SkinDefsOthers
+  -- minor 10's `extra`, hud.shadowX = 2, hud.shadowY = -2.
+  local _, Skin = F.env()
+  for _, key in ipairs(KEYS) do
+    local t = Skin:ResolveSkin(key)
+    assertEqual(t["hud.shadowX"], 1, key .. ": hud.shadowX")
+    assertEqual(t["hud.shadowY"], -1, key .. ": hud.shadowY")
+  end
+  local S = F.owner(Skin, OWNER, "contrast")
+  local x, y = S.HudShadow()
+  assertEqual(x, 1, "High Contrast's HudShadow offset")
+  assertEqual(y, -1)
 end)
 
 test("skin hud tokens: the getters answer the owner's skin and are in the facade", function()
