@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.111.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.112.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -451,6 +451,16 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    v2.118.0's unlock-strip rule (anti-pattern #123); one whose `onRightClick` calls the gear's function (Aura Master,
    Range Master) may drop it as redundant. Each host's re-vendor owes one smoke line: a right-click on each unlock strip
    opens what its gear opens.
+   v1.112.0 (Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/`) adds no payload file and no `NEEDS_*` floor, and
+   leaves the kit at revision 60. Core moves to minor 20 (key 20.1): `ClassColor` and `ResolveColor` take an optional
+   `standIn`, and the lib-level `FollowColor` is new, so a host whose gate checks `Kit.assertSurfaceParity` on
+   `LibKa0s-Core-1.0` wires it or lists it in `ignore`. Skin moves to 18.1.28.11.20.19.2.1.21.1.4.9 (SkinDefsOthers 11:
+   High Contrast's HUD shadow 1, -1; SkinPaintControls 21: a disabled primary Button paints the plain `btn.*` box), so
+   a suite pinning either re-pins it. Widgets moves to 30.3.7.17.3.8.8.7.2.2 (WidgetsHeader 2: `HeaderButtons`'
+   `companion = true`; WidgetsCopyWindow 7: the copy window is a companion, its settings mark gone) and IconBrowser to
+   1.3.2. A host suite that clicked the copy window's settings mark drops that case. Per WowAddonStandards v2.119.0
+   (anti-patterns #124, #125), each host's companion windows move to `companion = true` in the re-vendor commit, and
+   its class-color ladders follow class, then skin, then swatch, with `standIn = "player"` in a preview.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not. DpsRace left the loop and the table's Consumers column on 2026-11-19 (`AF-DR-LK` of
    Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`): it is retired, merged into Combat Trail, and is not a consumer.
@@ -524,7 +534,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.111.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.112.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:

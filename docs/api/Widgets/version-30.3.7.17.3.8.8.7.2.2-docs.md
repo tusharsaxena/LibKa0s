@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **30** · `WidgetsDropdown.lua` **3** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **17** · `WidgetsDragHandleTip.lua` **3** · `WidgetsLineChart.lua` **8** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **7** · `WidgetsHeader.lua` **2** · `WidgetsBar.lua` **2** |
-| Shipped in | v1.112.0 (unreleased) |
+| Shipped in | v1.112.0 |
 | Status | **Current** |
 | Supersedes | [version 30.3.7.17.3.8.8.6.1.2](./version-30.3.7.17.3.8.8.6.1.2-docs.md) (v1.111.0) — `HeaderButtons` had no way to say a window is a companion, and the copy window built the settings mark |
 | Superseded by | — |

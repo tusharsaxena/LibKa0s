@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **20** · `CorePixel.lua` minor **1** |
-| Shipped in | v1.112.0 (unreleased) |
+| Shipped in | v1.112.0 |
 | Status | **Current** |
 | Supersedes | [version 19.1](./version-19.1-docs.md) (v1.108.0) — `ClassColor` and `ResolveColor` knew only the real unit, so a preview, unlock or sim frame describing an absent target, focus or party member drew the stored swatch; no shared class -> skin -> swatch ladder |
 | Superseded by | — |

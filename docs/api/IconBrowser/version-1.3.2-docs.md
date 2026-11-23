@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-IconBrowser-1.0` |
 | Files and minors | `IconBrowserSources.lua` minor **1** · `IconBrowserWindow.lua` minor **3** · `IconBrowser.lua` minor **2** |
-| Shipped in | v1.112.0 (unreleased) |
+| Shipped in | v1.112.0 |
 | Status | **Current** |
 | Supersedes | [version 1.2.2](./version-1.2.2-docs.md) (v1.105.0) — the browser opted out of the settings mark through the waiver path |
 | Superseded by | — |

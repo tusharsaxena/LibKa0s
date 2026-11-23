@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Skin-1.0` |
 | Files and minors | `Skin.lua` **18** · `SkinOwnerTokens.lua` **1** · `SkinDefs.lua` **28** · `SkinDefsOthers.lua` **11** · `SkinPaint.lua` **20** · `SkinPaintExtras.lua` **19** · `SkinPaintHud.lua` **2** · `SkinAceConfirm.lua` **1** · `SkinPaintControls.lua` **21** · `SkinPaintNav.lua` **1** · `SkinEUI.lua` **4** · `SkinAce.lua` **9** |
-| Shipped in | v1.112.0 (unreleased) |
+| Shipped in | v1.112.0 |
 | Status | **Current** |
 | Supersedes | [version 18.1.28.10.20.19.2.1.20.1.4.9](./version-18.1.28.10.20.19.2.1.20.1.4.9-docs.md) (v1.109.0) — a disabled primary Button kept its primary fill under the disabled label; High Contrast drew its HUD shadow 2, -2 |
 | Superseded by | — |

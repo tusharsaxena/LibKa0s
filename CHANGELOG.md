@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.112.0 — unreleased
+## v1.112.0 — 2026-11-24
 
 Opened 2026-11-24, on `feat/2026-11-24-feedback-batch` (off `master` at v1.111.0): the library half of the owner's 2026-11-24 feedback batch (Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/00_PLAN.md`), items `FB-LK-01` to `FB-LK-04` and this release, `FB-LK-REL`. Built to WowAddonStandards v2.119.0, which lands the rule `FB-LK-03` implements: standalone-windows, *Settings is on every window but a companion*, the companion window defined, and anti-pattern #124; and options-ui-§17's preview stand-in and class -> skin -> swatch order, which `FB-LK-01` implements.
 
