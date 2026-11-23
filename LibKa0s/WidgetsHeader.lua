@@ -263,6 +263,13 @@ local function place(bar, list, spec)
   return offsets, right
 end
 
+--- The answer's empty shell: a companion (minor 2) records `companion` and never an opt-out.
+local function newAnswer(spec)
+  local companion = spec.companion == true or nil
+  return { extras = {}, order = {}, companion = companion,
+    optOut = (not companion and spec.settings == false) and spec.settingsOptOut or nil }
+end
+
 --- Build a window's header marks on `bar` (minor 1), right-aligned, left to right `spec.extras` in
 --- their order, settings, close.
 ---
@@ -296,9 +303,7 @@ end
 ---                  companion = true for a companion (minor 2), else nil }
 function lib.HeaderButtons(bar, spec)
   spec = type(spec) == "table" and spec or {}
-  local companion = spec.companion == true or nil
-  local hb = { extras = {}, order = {}, companion = companion,
-    optOut = (not companion and spec.settings == false) and spec.settingsOptOut or nil }
+  local hb = newAnswer(spec)
   hb.settings = buildSettings(bar, spec)
   hb.close = buildClose(bar, spec)
   local list = {}
