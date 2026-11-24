@@ -380,6 +380,25 @@ end
 
 local PREFIX = { npc = "c", object = "o" }
 
+--- A coordinate on the database's 0..1000 scale, or nil.
+local function coord(v)
+  v = num(v)
+  if v and v >= 0 and v <= COORD_SCALE then return v end
+  return nil
+end
+
+--- One map's flat `{ x, y, x, y, ... }` list as new `{ x = 0..1, y = 0..1 }` points, a pair with
+--- either value off the scale skipped; nil when no pair is usable.
+local function mapPoints(coords)
+  local points = {}
+  for i = 1, #coords - 1, 2 do
+    local x, y = coord(coords[i]), coord(coords[i + 1])
+    if x and y then points[#points + 1] = { x = x / COORD_SCALE, y = y / COORD_SCALE } end
+  end
+  if #points == 0 then return nil end
+  return points
+end
+
 --- Where a creature or an object stands: a new table `{ [uiMapID] = { { x, y }, ... } }` with x and
 --- y on 0..1 (the database's 0..1000 over 1000), or nil when ForeverDB has no spot for it.
 ---
@@ -398,16 +417,8 @@ function lib.Spots(kind, sourceID)
   if not maps then return nil end
   local out, any = {}, false
   for mapID, coords in pairs(maps) do
-    if id(mapID) and type(coords) == "table" then
-      local points = {}
-      for i = 1, #coords - 1, 2 do
-        local x, y = num(coords[i]), num(coords[i + 1])
-        if x and y and x >= 0 and y >= 0 and x <= COORD_SCALE and y <= COORD_SCALE then
-          points[#points + 1] = { x = x / COORD_SCALE, y = y / COORD_SCALE }
-        end
-      end
-      if #points > 0 then out[mapID], any = points, true end
-    end
+    local points = id(mapID) and type(coords) == "table" and mapPoints(coords)
+    if points then out[mapID], any = points, true end
   end
   if not any then return nil end
   return out
