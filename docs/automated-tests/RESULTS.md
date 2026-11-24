@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261124-194116`](20261124-194116/) | `92cccaee` | clean | 1.113.0 → 1.113.0 | 0/0 | 388 | 5184/3/5187 | skip | 115329 | 16566 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261124-110824`](20261124-110824/) | `b4bca425` | clean | 1.113.0 → 1.113.0 | 0/0 | 388 | 5184/3/5187 | skip | 115311 | 16565 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261124-104546`](20261124-104546/) | `220a596c` | clean | 1.112.0 → 1.113.0 | 0/0 | 388 | 5183/3/5186 | skip | 115280 | 16563 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261124-012313`](20261124-012313/) | `eb83fe29` | clean | 1.111.0 → 1.112.0 | 0/0 | 386 | 5155/3/5158 | skip | 114653 | 16495 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -237,10 +238,10 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 ## Test suite
 
 **5187 cases** — 5184 passed, 0 failed, 3 skipped. The generated inventory
-[`20261124-110824/test-cases.md`](20261124-110824/test-cases.md) is the authority on which cases existed at this run;
+[`20261124-194116/test-cases.md`](20261124-194116/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **5186 → 5187** since the previous run.
+Unchanged from the previous run at 5187 cases.
 
 **3 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
@@ -264,7 +265,7 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261124-110824`](20261124-110824/) — **this run's measurement, not its diff.** Max CCN **15** across 16565
+Current as of [`20261124-194116`](20261124-194116/) — **this run's measurement, not its diff.** Max CCN **15** across 16566
 functions, **0** of them warned on; 11 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
