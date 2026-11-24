@@ -9,10 +9,12 @@
     { "file": "SimPanelRender", "minor": 4 }
   ],
   "members": [
+    { "name": "CROWD_MAX", "kind": "number" },
     { "name": "New", "kind": "function" },
     { "name": "NewSeam", "kind": "function" },
     { "name": "SAMPLE", "kind": "table" },
     { "name": "STRINGS", "kind": "table" },
-    { "name": "Sample", "kind": "function" }
+    { "name": "Sample", "kind": "function" },
+    { "name": "SampleCrowd", "kind": "function" }
   ]
 }

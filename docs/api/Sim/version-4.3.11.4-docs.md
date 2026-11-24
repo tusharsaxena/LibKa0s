@@ -1097,4 +1097,4 @@ parse time only.
 
 ## Moving to version 5.3.11.4
 
-**Take it; a start now shows the step panel.** `Sim.lua` moves to 5: every successful `sim:Start` (and so the typed `start`, the panel's Start, a `Restart`, the Master controls Sim box and a host's own call) shows the step panel, where this version showed it on the bare `/<slash> sim` line alone. A headless session stays headless. A suite pinning `Sim.MINOR` 4 re-pins it at 5. See [version 5.3.11.4](./version-5.3.11.4-docs.md).
+**Take it; a start now shows the step panel.** `Sim.lua` moves to 5: every successful `sim:Start` (and so the typed `start`, the panel's Start, a `Restart`, the Master controls Sim box and a host's own call) shows the step panel, where this version showed it on the bare `/<slash> sim` line alone. A headless session stays headless. The library gains `SampleCrowd(client, n, seed)` and `CROWD_MAX`, the sample crowd beyond the five, and the naming convention's rule 6 is retired: every named sample person comes from the library. A suite pinning `Sim.MINOR` 4 re-pins it at 5. See [version 5.3.11.4](./version-5.3.11.4-docs.md).

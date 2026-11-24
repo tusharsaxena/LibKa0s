@@ -12,14 +12,18 @@
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `5.3.11.4` |
 | Shipped in | unreleased (v1.113.0) |
 | Status | **Current** |
-| Supersedes | [version 4.3.11.4](./version-4.3.11.4-docs.md) (v1.109.0 – v1.112.0) — only a bare `/<slash> sim` opened the step panel there; a start, typed or otherwise, left it closed. |
+| Supersedes | [version 4.3.11.4](./version-4.3.11.4-docs.md) (v1.109.0 – v1.112.0) — only a bare `/<slash> sim` opened the step panel there, a start left it closed; and the library named five sample people, every host keeping its own crowd (the convention's rule 6). |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 5, SimTimeline = 3, SimPanel = 11, SimPanelRender = 4 }` |
 
-## What changed at this version: every start shows the step panel (`FB2-LK-01`)
+## What changed at this version: every start shows the step panel (`FB2-LK-01`), and the sample crowd (`FB2-LK-03`, LibKa0s#104)
 
-**`Sim.lua` moves 4 -> 5**; `SimTimeline.lua`, `SimPanel.lua` and `SimPanelRender.lua` do not move. The owner, 2026-11-24 (Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/R2_SMOKE_FEEDBACK.md`, decision D2): "When i do /lh sim start loot - it plays the simulation but doesnt show the simulation window - sim mode whether started from a command like /xx sim start <scenario> or from just plain /xx sim should always show the sim stepper window". Through version 4.3.11.4 only the bare line (`RunVerb("")`) called `ShowPanel()`.
+**`Sim.lua` moves 4 -> 5**; `SimTimeline.lua`, `SimPanel.lua` and `SimPanelRender.lua` do not move. Two changes ride the one bump.
+
+### Every start shows the step panel (`FB2-LK-01`)
+
+The owner, 2026-11-24 (Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/R2_SMOKE_FEEDBACK.md`, decision D2): "When i do /lh sim start loot - it plays the simulation but doesnt show the simulation window - sim mode whether started from a command like /xx sim start <scenario> or from just plain /xx sim should always show the sim stepper window". Through version 4.3.11.4 only the bare line (`RunVerb("")`) called `ShowPanel()`.
 
 - **`sim:Start(opts)` shows the panel on success** (since 5): after `prepare` returns with the session still live, and before listeners are told, `Start` calls `sim:ShowPanel()`, read at call time and under `pcall` (a panel that raises is a debug line, never a failed start). `Start` is the one choke point, so every start shows it: the typed `start`, the panel's Start row and its picker's Start, a `Restart` (typed, the controls' or a test strip's), the Master controls Sim box (the host's `toggleSim`) and a host's own `sim:Start` call. A panel the player closed opens again at the next start.
 - **Headless stays headless.** Where `SimPanel.lua` has not attached (its floor unmet, or no panel file), `ShowPanel` is the shell's fallback and answers `false`; `Start` still answers `true`.
@@ -27,6 +31,12 @@
 - The bare line still prints the status and the usage and shows the panel, starting nothing.
 
 **What a consumer owes at its re-vendor:** nothing in code. A host that called `sim:ShowPanel()` itself after its own start may drop the call (it is harmless). A host whose simulator does not run on this major follows the same rule by hand (WowAddonStandards v2.120.0). A suite that pins `Sim.MINOR` or `MODULES.Sim` at 4 re-pins it at 5, and one that asserted the panel stays closed after a start re-pins it shown. Smoke: `/<slash> sim start <scenario>` opens the step panel.
+
+### The sample crowd (`FB2-LK-03`, LibKa0s#104)
+
+The owner, 2026-11-24: "adopt the predefined test mode names consistently across all addon's test/sim modes" (decision D1, option (a) of LibKa0s#104). Two lib-level members are added (**Since 5**): `SampleCrowd(client, n, seed)`, a deterministic crowd of up to `CROWD_MAX` (64) sample people beyond the five protagonists, and `CROWD_MAX`. The naming convention's **rule 6 is retired**: every named sample person in every addon comes from the library, the five or the crowd, and a host keeps its seeded determinism by seeding the crowd, never by keeping a list of its own (*Sample characters*, below). `SAMPLE` and `Sample(client)` are unchanged.
+
+**What a consumer owes at its re-vendor:** nothing; a host that stubs the library table by name adds `SampleCrowd` and `CROWD_MAX`. **At adoption** (LibKa0s#104's step 3, every roster addon): its own `Sample*`/`Mock*` literals and invented pools (DropWatcher's `OTHERS` and its sim roster's `NAMES`, `RAID_NAMES` and `SURNAMES`; Loot History's, Bank Ledger's, Multi Meters', Skill Master's and Combat Trail's) move onto `Sample()` and `SampleCrowd()`, seeded where its suites depend on the order.
 
 ## What changed at version 4.3.11.4: one citation (`FU-LK-REL`)
 
@@ -333,10 +343,12 @@ Read straight off the LibStub table.
 | `STRINGS` | 1 | The built-in English lines, every key overridable through `d.L` (below). |
 | `SAMPLE` | 3 | `{ retail = rows, forever = rows }`: the collection's sample characters, five per client. Read-only. *Sample characters*, below. |
 | `Sample(client) -> rows` | 3 | A copy of one client's set; nil is the active client. *Sample characters*, below. |
+| `SampleCrowd(client, n, seed) -> rows` | **5** | A copy of `n` sample people beyond the five, `0` to `CROWD_MAX`, the same for the same seed. *The crowd*, below. |
+| `CROWD_MAX` | **5** | `64`: the largest crowd `SampleCrowd` answers, enough for a 40-player raid roster with the five. |
 | `MAJOR` · `MINOR` | 1 | `"LibKa0s-Sim-1.0"` and the live minor. |
 | `MODULES` | 1 | `{ Sim = <minor>, SimTimeline = <minor>, SimPanel = <minor>, SimPanelRender = <minor> }`: the live minors, and the values that pick this document. |
 
-## Sample characters: `Sim.SAMPLE` and `Sim.Sample(client)` (`Sim.lua` minor 3)
+## Sample characters: `Sim.SAMPLE`, `Sim.Sample(client)` (`Sim.lua` minor 3) and `Sim.SampleCrowd(client, n, seed)` (minor 5)
 
 The collection's one set of named sample characters: the protagonists a test mode, a sim or a showcase draws (LibKa0s#87; the owner's ruling Q4 of 2026-11-16 in Ka0sAddonsCommonTasks `docs/2026-11-16-LIBKA0S_ISSUES_75_PLUS/`: the standard owns the naming convention, in preview-mode, and LibKa0s owns the data). They are pure data on the shell: no frame, no event, no read of the client until `Sample()` asks which client it is. They are not tied to `Sim:New`; a host's test mode reads them with no session.
 
@@ -349,7 +361,7 @@ WowAddonStandards preview-mode mirrors this list (`STD-02` of the same run). `te
 3. **The client's identity shape** (the standard's `clients` and `forever-quirks-§4`). Retail: `Name-Realm`, with a `specID` that is one of the class's own. WoW Forever: `First Surname`, with **no realm in the identity**, a class the client has (no Death Knight, Monk, Demon Hunter or Evoker), and a classic talent tree (1 to 3, in `LibKa0s-Role-1.0`'s `TALENT_GROUP_ROLE` order) in place of a spec ID, which is class-wide there and the client's alone.
 4. **A pet only on a class that has one** (Hunter, Warlock).
 5. **Names are data, never localized**, and never pass through a host's `L` table. A spec label in the data is English, for docs and tests; a host that draws a spec name asks the client for its own.
-6. **The protagonists converge; roster pools do not.** A host that seeds a crowd (DropWatcher's sim roster, MultiMeters' sim world) keeps its own pool for its seeded determinism, and a new pool name still follows rules 1 to 5.
+Rule 6 is **retired at minor 5** (LibKa0s#104). Through version 4.3.11.4 it read "The protagonists converge; roster pools do not": a host that seeded a crowd (DropWatcher's sim roster, MultiMeters' sim world) kept its own pool. Now **every named sample person comes from the library**: the five below, or `SampleCrowd`'s crowd. A host seeds the crowd for its determinism.
 
 ### The data
 
@@ -369,9 +381,36 @@ A row's fields: `name`, `realm`, `fullName`, `classFile`, `spec`, `role`; Retail
 
 A fresh copy of one client's set, which the caller owns (a write to it never reaches `SAMPLE` or another host). `client` is `"retail"` or `"forever"`; nil asks `LibKa0s-Compat-1.0`'s `ClientKey()` **at call time** and answers Retail's set where Compat is absent or the client is neither. Anything else raises `Sample: unknown client "<value>"` at the caller's line.
 
+### `Sim.SampleCrowd(client, n, seed) -> rows` (Since 5)
+
+`n` sample people beyond the five, as a fresh array the caller owns, each row shaped as `Sample(client)`'s (`name`, `realm`, `fullName`, `classFile`, `spec`, `role`; Retail's `specID`; Forever's `surname` and `tree`; `pet` on a Hunter or a Warlock). Every row follows rules 1 to 5, and no crowd name, surname or pet is a protagonist's.
+
+- **`client`** as `Sample` takes it: `"retail"`, `"forever"`, or nil for the active client through `LibKa0s-Compat-1.0` at call time (Retail without it). Anything else raises `SampleCrowd: unknown client "<value>"` at the caller's line.
+- **`n`** an integer from `0` to `CROWD_MAX` (64); anything else, nil included, raises `SampleCrowd: n must be an integer from 0 to 64, got <value>`. A 40-player raid is you, the five and 34 of the crowd (or 39 of the crowd).
+- **`seed`** a number, floored, or nil, which is seed `1`. **The same seed answers the same crowd on every call and every client load**, and a smaller crowd is the head of a larger one with the same seed, so a host that asks for more keeps its first people. The seed orders the 64 people, the order classes break ties in, and each spec; a non-number raises `SampleCrowd: seed must be a number or nil`.
+- **The same people on both clients.** A seed names the same people in the same order on Retail and on WoW Forever; only the identity shape, the class (Forever has no Death Knight, Monk, Demon Hunter or Evoker) and the spec differ.
+- **Roles balanced.** Slot `i` takes the role `TANK`, `HEALER`, `DAMAGER`, `DAMAGER`, `DAMAGER` in turn, so any crowd holds `floor((n + 4) / 5)` tanks, `floor((n + 3) / 5)` healers and the rest damage: a five-person group's shape, repeated.
+- **Every class the client has.** Each slot takes the least-used class with a spec of its role (a pure damage class before a hybrid in a tie, so the hybrids are left for the tank and healer slots), so a crowd of at least the client's class count (13 on Retail, 9 on WoW Forever) holds every class.
+- **Realms and pets.** Every third person is from `Mockrealm`, the rest from `Samplerealm` (on Forever the realm is the stand-in label, never part of `fullName`). Every Hunter and Warlock carries a pet from a fixed list (`Mockclaw`, `Mockimp`, ...), cycled in crowd order.
+
+The default crowd's head (seed 1):
+
+| # | `name` | Retail `fullName` · class spec · `specID` | Forever `fullName` · class spec · `tree` | `role` (Retail / Forever) | `pet` (Retail / Forever) |
+|---|---|---|---|---|---|
+| 1 | `Samplefrost` | `Samplefrost-Samplerealm` · WARRIOR Protection · 73 | `Samplefrost Mocklace` · WARRIOR Protection · 3 | `TANK` / `TANK` | — / — |
+| 2 | `Samplecliff` | `Samplecliff-Samplerealm` · SHAMAN Restoration · 264 | `Samplecliff Mockcrag` · PRIEST Discipline · 1 | `HEALER` / `HEALER` | — / — |
+| 3 | `Mockcopper` | `Mockcopper-Mockrealm` · ROGUE Assassination · 259 | `Mockcopper Samplecoin` · ROGUE Subtlety · 3 | `DAMAGER` / `DAMAGER` | — / — |
+| 4 | `Samplelight` | `Samplelight-Samplerealm` · MAGE Frost · 64 | `Samplelight Mockhalo` · HUNTER Marksmanship · 2 | `DAMAGER` / `DAMAGER` | — / Mockclaw |
+| 5 | `Samplecoal` | `Samplecoal-Samplerealm` · WARLOCK Destruction · 267 | `Samplecoal Mockkiln` · WARLOCK Demonology · 2 | `DAMAGER` / `DAMAGER` | Mockimp / Mockimp |
+| 6 | `Samplepalm` | `Samplepalm-Mockrealm` · DEMONHUNTER Vengeance · 581 | `Samplepalm Mockreed` · PALADIN Protection · 2 | `TANK` / `TANK` | — / — |
+| 7 | `Sampleiron` | `Sampleiron-Samplerealm` · EVOKER Preservation · 1468 | `Sampleiron Mockanvil` · SHAMAN Restoration · 3 | `HEALER` / `HEALER` | — / — |
+| 8 | `Samplealt` | `Samplealt-Samplerealm` · HUNTER Beast Mastery · 253 | `Samplealt Mockbank` · MAGE Frost · 3 | `DAMAGER` / `DAMAGER` | Mockclaw / — |
+| 9 | `Samplemarsh` | `Samplemarsh-Mockrealm` · PRIEST Shadow · 258 | `Samplemarsh Mockbog` · DRUID Feral · 2 | `DAMAGER` / `DAMAGER` | — / — |
+| 10 | `Mockfrost` | `Mockfrost-Samplerealm` · DEATHKNIGHT Unholy · 252 | `Mockfrost Sampleice` · ROGUE Subtlety · 3 | `DAMAGER` / `DAMAGER` | — / — |
+
 ### What a consumer owes
 
-**At its re-vendor: nothing.** The two members are lib-level; the five hosts that check a Sim stub by name (BankLedger, KickCD, LootHistory, Skill Master, DropWatcher) compare it with the **instance** `Sim:New` builds, which gains no member, so no stub moves. A host that also stubs the library table by name adds `SAMPLE` and `Sample`. **At adoption** (phase [3] of the same run), a host's own sample characters move onto the data and its names onto the convention; a host that reads them without the library degrades to a copy of the rows above.
+**At its re-vendor: nothing.** The two members are lib-level; the five hosts that check a Sim stub by name (BankLedger, KickCD, LootHistory, Skill Master, DropWatcher) compare it with the **instance** `Sim:New` builds, which gains no member, so no stub moves. A host that also stubs the library table by name adds `SAMPLE` and `Sample`, and since 5 `SampleCrowd` and `CROWD_MAX`. **At adoption** (phase [3] of the same run), a host's own sample characters move onto the data and its names onto the convention; a host that reads them without the library degrades to a copy of the rows above.
 
 ## The seam: `Sim:NewSeam(compat, opts)`
 
