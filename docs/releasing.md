@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.112.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.113.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -461,6 +461,15 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    1.3.2. A host suite that clicked the copy window's settings mark drops that case. Per WowAddonStandards v2.119.0
    (anti-patterns #124, #125), each host's companion windows move to `companion = true` in the re-vendor commit, and
    its class-color ladders follow class, then skin, then swatch, with `standIn = "player"` in a preview.
+   v1.113.0 (Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/R2_SMOKE_FEEDBACK.md`, round 2) adds no payload file
+   and no `NEEDS_*` floor, and leaves the kit at revision 60. Sim moves to minor 5 (key 5.3.11.4): every successful
+   `sim:Start` shows the step panel (headless sessions excepted), and the lib-level `SampleCrowd` and `CROWD_MAX` are
+   new, so a host stub of the Sim library table adds both and a suite pinning `Sim 4` re-pins it at 5. Widgets moves to
+   30.4.7.17.3.8.8.7.2.2 (WidgetsDropdown 4: an owned menu's selected row stands 20 CIEDE2000 off `menu.text`, else
+   Ka0s Default's gold, which Azeroth alone takes; a ticked `W.ContextMenu` row paints selected), so a suite pinning an
+   Azeroth selection or a ticked row's plain color re-pins it. Per WowAddonStandards v2.120.0 (anti-patterns #126 to
+   #128), each host drops any hide of the panel after a start, draws its own menus' selections apart, and moves every
+   named sample person onto `Sim.Sample` and `Sim.SampleCrowd` (LibKa0s#104), each a re-vendor smoke line.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not. DpsRace left the loop and the table's Consumers column on 2026-11-19 (`AF-DR-LK` of
    Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`): it is retired, merged into Combat Trail, and is not a consumer.
@@ -534,7 +543,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.112.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.113.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:

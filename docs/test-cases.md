@@ -1881,6 +1881,17 @@ Total.
 - menu: the dropdown's own label is one line
 - menu: an owned menu reads its title, disabled and rule colors from the skin
 
+### test_widgets_menu_selected.lua (8)
+
+- menu selected: every shipped skin's selected row stands off its plain row
+- menu selected: the skins that need the gold fallback are the pinned list
+- menu selected: Ka0s Default keeps its own gold, and Azeroth takes the gold fallback
+- menu selected: the selected color replaces a row's value color (class, quality)
+- menu selected: a preset row (isActive, Character: Current) paints selected the same way
+- menu selected: a multi-select dropdown's selected rows follow the same rule
+- menu selected: the rule's ΔE00 is the shared fixture's, and it answers textSel or the gold
+- menu selected: a ticked W.ContextMenu row (radio, selected) paints selected, not a tick beside plain text
+
 ### test_widgets_submenu.lua (18)
 
 - submenu: a click on a submenu row opens its rows beside the row, and the parent stays
@@ -5084,7 +5095,7 @@ Total.
 - sim host: a stand-down mid-run stops first, suppresses cleanup delivery and hides the panel
 - sim host: a latch set without a stop is caught by Fire's self-stop backstop
 
-### test_sim_sample.lua (13)
+### test_sim_sample.lua (22)
 
 - sim sample: SAMPLE holds a retail and a forever set of five characters, and nothing else
 - sim sample: every name, surname and pet is fictional by the convention
@@ -5098,7 +5109,30 @@ Total.
 - sim sample: Sample() reads the client at call time, not at load
 - sim sample: with no Compat, or a client that is neither, Sample() answers retail
 - sim sample: an unknown client raises at the caller's line
-- sim sample: the shell's minor is 4
+- sim sample: SampleCrowd holds enough people for a 40-player raid roster, on both clients
+- sim sample: every crowd row follows the convention, rules 1 to 5, on both clients and many seeds
+- sim sample: crowd names are unique and never a protagonist's name, surname or pet
+- sim sample: a crowd covers every class the client has once it is that large
+- sim sample: a crowd's roles are balanced, a tank and a healer for every three damage
+- sim sample: a seed replays its crowd, and a crowd is a copy the caller owns
+- sim sample: the same seed names the same people on both clients, in the same order
+- sim sample: SampleCrowd() reads the client through Compat at call time
+- sim sample: SampleCrowd refuses an unknown client, a bad size and a bad seed at the caller's line
+- sim sample: the shell's minor is 5
+
+### test_sim_start_panel.lua (11)
+
+- sim start panel: a host's own sim:Start shows the panel
+- sim start panel: a typed start shows the panel
+- sim start panel: a typed start reopens a panel the player closed
+- sim start panel: the bare verb still shows the panel and starts nothing
+- sim start panel: a Restart shows the panel again
+- sim start panel: the panel's Start row and picker start with the panel shown
+- sim start panel: the Master controls Sim box (the host's toggleSim) shows the panel
+- sim start panel: a refused start shows nothing
+- sim start panel: a headless session (no Widgets, no panel) starts and stays headless
+- sim start panel: a session that ended inside prepare shows nothing
+- sim start panel: a ShowPanel that raises never fails the start
 
 ### test_loader.lua (6)
 
@@ -5936,6 +5970,7 @@ Total.
 | test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
 | test_widgets_menu.lua | 23 |
+| test_widgets_menu_selected.lua | 8 |
 | test_widgets_submenu.lua | 18 |
 | test_widgets_menu_follow.lua | 5 |
 | test_widgets_reorderlist.lua | 24 |
@@ -6065,7 +6100,8 @@ Total.
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
 | test_sim_host.lua | 7 |
-| test_sim_sample.lua | 13 |
+| test_sim_sample.lua | 22 |
+| test_sim_start_panel.lua | 11 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -6105,4 +6141,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5155** |
+| **Total** | **5183** |

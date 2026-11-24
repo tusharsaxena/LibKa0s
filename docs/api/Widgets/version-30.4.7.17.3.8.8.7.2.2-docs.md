@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **30** · `WidgetsDropdown.lua` **4** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **17** · `WidgetsDragHandleTip.lua` **3** · `WidgetsLineChart.lua` **8** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **7** · `WidgetsHeader.lua` **2** · `WidgetsBar.lua` **2** |
-| Shipped in | unreleased (v1.113.0) |
+| Shipped in | v1.113.0 |
 | Status | **Current** |
 | Supersedes | [version 30.3.7.17.3.8.8.7.2.2](./version-30.3.7.17.3.8.8.7.2.2-docs.md) (v1.112.0) — an owned menu's selected row was `menu.textSel` whatever it stood against, so where a skin's accent sat near its `menu.text` (Azeroth) the selection read like every other row |
 | Superseded by | — |

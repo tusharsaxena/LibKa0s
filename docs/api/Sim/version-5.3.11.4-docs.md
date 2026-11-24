@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Sim-1.0` |
 | Files and minors | `Sim.lua` **5** · `SimTimeline.lua` **3** · `SimPanel.lua` **11** · `SimPanelRender.lua` **4** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `5.3.11.4` |
-| Shipped in | unreleased (v1.113.0) |
+| Shipped in | v1.113.0 |
 | Status | **Current** |
 | Supersedes | [version 4.3.11.4](./version-4.3.11.4-docs.md) (v1.109.0 – v1.112.0) — only a bare `/<slash> sim` opened the step panel there, a start left it closed; and the library named five sample people, every host keeping its own crowd (the convention's rule 6). |
 | Superseded by | — |

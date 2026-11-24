@@ -10,7 +10,7 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.113.0 — unreleased
+## v1.113.0 — 2026-11-24
 
 Opened 2026-11-24, on `feat/2026-11-24-feedback-batch` (after v1.112.0, still local): round 2 of the owner's 2026-11-24 feedback batch (Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/R2_SMOKE_FEEDBACK.md`), items `FB2-LK-01` to `FB2-LK-03` and this release, `FB2-LK-REL`. Built to WowAddonStandards v2.120.0, which lands the three rules this release implements (a sim start shows the step panel; a selected row's text is distinct; one source of sample names).
 
