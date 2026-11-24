@@ -224,7 +224,10 @@ pytest, `python3 -m unittest discover -s tools/seeds` runs the same cases.
 - **What the scan cannot see.** The assumption scan is a static read: a name built at run time
   (`_G[name]`), a member read through a local that is not a direct `Enum.X` alias, and a bare call of
   a name no source and no kit file knows (a host's global, an upvalue) are not checked. A false
-  negative there costs a missed flag, never a red gate.
+  negative there costs a missed flag, never a red gate. A cached global (`local GetTime = GetTime`,
+  `local X = _G.X`) is checked at its capture, the one place it reads the client; its later calls go
+  through the upvalue and are not. A local copied under another name (`local now = GetTime`) is not
+  seen at all.
 - **No shared helper.** The tool copies the addon seed tools' pattern (the build pin, the cache, the
   bundle, the rulings) and imports nothing across repos; LibKa0s#91, the survey that led to the
   contracts, closed on 2026-11-16 without one.

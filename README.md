@@ -455,8 +455,14 @@ tools/gen-api-members.lua -- writes docs/api/<Major>/members-<version-key>.json 
                         hand-edited; tests/test_versioning.lua regenerates and compares on every run
 tools/client_globals_data.lua -- writes the kit's generated client name sets,
                         testkit/client_globals_live.lua and client_globals_forever.lua, from
-                        Ketho/BlizzardInterfaceResources' GlobalAPI.lua and FrameXML.lua (fetched
-                        by hand with gh api, as its header shows). Pure Lua 5.1. Not shipped
+                        Ketho/BlizzardInterfaceResources' GlobalAPI.lua and FrameXML.lua, as frozen
+                        in a seed bundle; `tools/seeds/libseeds.py apply` drives it. Pure Lua 5.1.
+                        Not shipped
+tools/seeds/libseeds.py -- the seed contract's tool (docs/validate-seeds.md): checks the source
+                        branch for a newer commit, freezes it into a bundle under docs/seed-research/,
+                        derives candidates and flags, records rulings in
+                        tools/seeds/{retail,forever}_rulings.json, and regenerates the kit's name
+                        sets. Python 3 stdlib only, its tests in tools/seeds/test_libseeds.py. Not shipped
 tools/prune-icons.lua -- after the cp -r re-vendor, deletes every icon under <Addon>/libs/LibKa0s/
                         media/icons/ that the addon's `LibKa0s icons:` line does not declare, and
                         every voice pack under media/sounds/ its `LibKa0s sounds:` line does not
@@ -494,7 +500,10 @@ docs/                -- development docs (not shipped)
                         api/CONSUMERS.md is the consumer census: which hosts call each public
                         export, stamped with the release it measured
   skins/             -- the skin mockups and how a set of in-game screenshots is made
+  seed-research/     -- one frozen bundle per seed run, <date>-<flavor>/: the pinned sources, the
+                        candidates, the rulings and the analysis (validate-seeds.md)
   releasing.md       -- the two version numbers, the release order, the re-vendor rule
+  validate-seeds.md  -- the seed contract: re-validating the kit's client name sets against their source
   record-schema.md   -- the capture record, field by field
   adoption-prompt.md -- the per-addon adoption prompt
   fast-gate-adoption-prompt.md -- the drop-in brief for adopting the fast test gate in a consumer

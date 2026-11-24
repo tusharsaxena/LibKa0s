@@ -309,6 +309,21 @@ def declared_locals(code: str) -> set[str]:
     return names
 
 
+def cached_globals(code: str, known: set[str]) -> list[tuple[str, int]]:
+    """A cached client global (`local GetTime = GetTime`, `local X = _G.X`) reads the global once,
+    at the capture, and every later call goes through the upvalue: `(name, pos)` per capture of a
+    known name. A local copied under another name (`local now = GetTime`) is not one."""
+    out = []
+    for m in re.finditer(r"\blocal\s+([\w \t,]+?)\s*=\s*([^\n;]+)", code):
+        targets = [w for w in re.split(r"[\s,]+", m.group(1)) if w]
+        values = [v.strip() for v in m.group(2).split(",")]
+        for target, value in zip(targets, values):
+            cap = re.fullmatch(r"(_G\.)?([A-Za-z_]\w*)", value)
+            if cap and cap.group(2) in known and cap.group(2) not in LUA_KEYWORDS and (cap.group(1) or cap.group(2) == target):
+                out.append((cap.group(2), m.start(2)))
+    return out
+
+
 def _site(path: Path, code: str, pos: int, repo: Path) -> str:
     return "%s:%d" % (path.relative_to(repo).as_posix(), code.count("\n", 0, pos) + 1)
 
@@ -335,6 +350,8 @@ def scan_payload(repo: Path, known: set[str]) -> dict[str, dict[str, list[str]]]
                 add("enum", enum + "." + a.group(1), _site(path, code, a.start(), repo))
         for m in re.finditer(r"(?<![\w.:])(C_\w+)\.(\w+)", code):
             add("capi", m.group(1) + "." + m.group(2), _site(path, code, m.start(), repo))
+        for name, pos in cached_globals(code, known):
+            add("global", name, _site(path, code, pos, repo))
         mine = declared_locals(code)
         for m in re.finditer(r"(?<![\w.:])([A-Za-z_]\w*)\s*\(", code):
             name = m.group(1)

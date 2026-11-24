@@ -189,6 +189,21 @@ class ScanTests(unittest.TestCase):
         self.assertEqual(sorted(found["global"]), ["FakeAlpha", "FakeGone", "pairs", "print"])
         self.assertEqual(found["global"]["FakeAlpha"], ["LibKa0s/Fake.lua:10"])
 
+    def test_scan_flags_a_cached_global_at_its_capture(self):
+        (self.fx.dir / "LibKa0s" / "Cache.lua").write_text(
+            "local FakeGone = FakeGone\n"
+            "local FakeAlpha, n = _G.FakeAlpha, 3\n"
+            "local Unknown = Unknown\n"
+            "local Other = FakeAlpha\n"
+            "return function() return FakeGone(), Unknown(), Other() end\n")
+        known = {"FakeAlpha", "FakeGone", "pairs", "print", "own", "C_Fake.Member"}
+        found = L.scan_payload(self.fx.dir, known)
+        # The capture is the read; the later call goes through the upvalue. A name no source knows,
+        # and a local copied from another local's name, are not client reads.
+        self.assertEqual(found["global"]["FakeGone"], ["LibKa0s/Cache.lua:1", "LibKa0s/Fake.lua:11"])
+        self.assertEqual(found["global"]["FakeAlpha"], ["LibKa0s/Cache.lua:2", "LibKa0s/Fake.lua:10"])
+        self.assertNotIn("Unknown", found["global"])
+
     def test_missing_on(self):
         enums = L.parse_enums(LUA_ENUM)
         self.assertFalse(L.missing_on("enum", "FakeRule", set(), enums))
