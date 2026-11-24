@@ -61,7 +61,7 @@ end
 
 test("report: the pointer string is pinned, and Report and Serialize are on every instance", function()
   assertEqual(debuglog.STRINGS.REPORT_WRITTEN, POINTER)
-  assertEqual(debuglog.MODULES.DebugLogDiagnostics, 11)
+  assertEqual(debuglog.MODULES.DebugLogDiagnostics, 12)
   local D = newLog()
   assertEqual(type(D.Report), "function", "D:Report")
   assertEqual(type(D.Serialize), "function", "D:Serialize")

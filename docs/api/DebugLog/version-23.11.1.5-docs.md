@@ -10,9 +10,9 @@
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **23** · `DebugLogDiagnostics.lua` minor **11** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **5** |
 | Shipped in | v1.105.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 22.10.1.4](./version-22.10.1.4-docs.md) (shipped in v1.99.0) — Copy carried each message's color, texture and hyperlink escapes, and there was no report seam or serializer. |
-| Superseded by | — |
+| Superseded by | [version 23.12.1.5](./version-23.12.1.5-docs.md) (v1.114.0) — the identity header names `LibKa0s-ForeverDB-1.0` and prints its line. |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 23, DebugLogDiagnostics = 11, DebugLogGates = 1, DebugLogWindow = 5 }` |
 
@@ -1107,3 +1107,7 @@ does not permit. Re-vendor the whole folder and the floor is unobservable.
 **Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws the debug console its own way; every host left it at the skinning rollout for the skin owner path.
+
+## Moving to version 23.12.1.5
+
+`DebugLogDiagnostics.lua` moves to 12 (`SF-LK-01`, LibKa0s#105): the report's `LibKa0s running:` line names the new `LibKa0s-ForeverDB-1.0`, and the identity section ends with one ForeverDB line from that major's `Status()`, which never loads the data addon. No member change. A host suite that pins `DebugLogDiagnostics 11` re-pins it at 12. See [version 23.12.1.5](./version-23.12.1.5-docs.md).

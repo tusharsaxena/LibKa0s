@@ -10,9 +10,9 @@
 | Version | **60** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.110.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 59](version-59-docs.md) — the client profiles carried no container or bank shape, so `Compat.ContainerGroups` answered its fallback and the bank readers nil under both |
-| Superseded by | — |
+| Superseded by | [version 61](version-61-docs.md) — adds `mock_foreverdb.lua`, the opt-in fake of the ForeverDB data addon |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `60` |
 

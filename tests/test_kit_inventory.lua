@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 60", function()
-  assertEqual(Kit.VERSION, 60, "the release after v1.109.0 ships revision 60: each client profile carries its Enum.BagIndex, Enum.BankType and C_Bank.CanViewBank (LibKa0s#101, K101-LK-02)")
-  assertEqual(T.KIT_VERSION, 60, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 61", function()
+  assertEqual(Kit.VERSION, 61, "the release after v1.113.0 ships revision 61: the opt-in fake of the ForeverDB data addon, mock_foreverdb.lua (LibKa0s#105, SF-LK-01)")
+  assertEqual(T.KIT_VERSION, 61, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

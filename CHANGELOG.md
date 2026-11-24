@@ -10,6 +10,21 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.114.0 — unreleased
+
+Opened 2026-11-25, on `feat/2026-11-25-seeds-foreverdb`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-SEEDS_AND_FOREVERDB/` (LibKa0s#93, #102, #105), item `SF-LK-01` so far; the release bookkeeping is `SF-LK-REL`.
+
+Versions so far: `LibKa0s-ForeverDB-1.0` key **1** (ForeverDB minor 1, a new major); `LibKa0s-DebugLog-1.0` key **23.12.1.5** (DebugLogDiagnostics minor 12); every other file at its v1.113.0 minor, and the test kit at revision **61**. No `NEEDS_*` floor rises.
+
+### The ForeverDB major (`SF-LK-01`, LibKa0s#105)
+
+- **ForeverDB minor 1** ([docs](docs/api/ForeverDB/version-1-docs.md)), `LibKa0s/ForeverDB.lua`, loaded after `Item.lua`: the one reader of ForeverDB, WoW Forever's LoadOnDemand data addon, an optional dependency for every host (`## OptionalDeps`, never `## Dependencies`). `Available()` answers `ok, reason` (`"client"` off Forever through Compat's `IsForever`, `"missing"`, the client's load reason, `"reshaped"`), and its first call is the library's one `C_AddOns.LoadAddOn("ForeverDB")`, once a session, so a host's first lookup is what loads the 12 MB. `IsLoaded()` and `Status()` never load. The lookups `Meta`, `NPC`, `Item`, `Quest` (givers and enders by kind), `ItemSources` (creature, object and container sources with chances on 0..1, nil where the database says 0, most likely first; vendors; the world-drop level), `VendorPrice` (the lowest price seen and its vendor), `Spots` (map points on 0..1) and `TrainerSpells` each answer a fresh table or nil: no pcall, no raise on a missing, old or reshaped database, never one of ForeverDB's own rows. `ForeverDB_Full` and `ForeverDB_Locales` are not read in this minor.
+- **Licensing:** ForeverDB's data is GPL-3.0 and this library is MIT, so no row of it is in the payload, the tests or the kit; the fake is invented data in its shape.
+- **`Status()` is a member the spec did not list** (its §4 names `IsLoaded()` for the diagnostics): the report's line needs the installed state and the TOC version as well as the loaded state, and building it here keeps the C_AddOns reads in the one module that owns them.
+- **DebugLogDiagnostics minor 12** ([docs](docs/api/DebugLog/version-23.12.1.5-docs.md)): the report's `LibKa0s running:` line names ForeverDB, and the identity section ends with one `ForeverDB: present=... loaded=... version=...` line (plus `build=` and `hash=` when loaded) from `Status()`, so the report never loads it. No member change.
+- **Kit revision 61** ([docs](docs/api/testkit/version-61-docs.md)): adds the opt-in `testkit/mock_foreverdb.lua`, the fake of the data addon: presets `present`, `missing`, `loadfails` and `reshaped`, the global handed over at the load and never before, a load count, an invented database (ids 990000 and up) and optional client constants. `tests/_kit/` re-synced.
+- Tests: the new `tests/test_foreverdb.lua` (the client gate, every failure answer, every member's mapping, chance and coordinate scaling, fresh tables, a reshaped database, no load at file load, the diagnostics line with and without the addon loaded) and `tests/test_mock_foreverdb.lua`; `tests/test_debuglog_diagnostics.lua` and `tests/test_debuglog_report.lua` re-pin `DebugLogDiagnostics 12`, `tests/test_kit_inventory.lua` revision 61.
+
 ## v1.113.0 — 2026-11-24
 
 Opened 2026-11-24, on `feat/2026-11-24-feedback-batch` (after v1.112.0, still local): round 2 of the owner's 2026-11-24 feedback batch (Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/R2_SMOKE_FEEDBACK.md`), items `FB2-LK-01` to `FB2-LK-03` and this release, `FB2-LK-REL`. Built to WowAddonStandards v2.120.0, which lands the three rules this release implements (a sim start shows the step panel; a selected row's text is distinct; one source of sample names).
