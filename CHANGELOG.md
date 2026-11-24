@@ -10,11 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.114.0 — unreleased
+## v1.114.0 — 2026-11-25
 
-Opened 2026-11-25, on `feat/2026-11-25-seeds-foreverdb`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-SEEDS_AND_FOREVERDB/` (LibKa0s#93, #102, #105), items `SF-LK-01` and `SF-LK-02` so far; the release bookkeeping is `SF-LK-REL`.
+Opened 2026-11-25, on `feat/2026-11-25-seeds-foreverdb`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-SEEDS_AND_FOREVERDB/` (LibKa0s#93, #102, #105), items `SF-LK-01` and `SF-LK-02` and this release, `SF-LK-REL`. Built to WowAddonStandards v2.121.0, which lands the rules this release implements: clients-§10's second evidence source for Forever (ForeverDB) and clients-§11, optional runtime data addons, read only through `LibKa0s-ForeverDB-1.0`.
 
-Versions so far: `LibKa0s-ForeverDB-1.0` key **1** (ForeverDB minor 1, a new major); `LibKa0s-DebugLog-1.0` key **23.12.1.5** (DebugLogDiagnostics minor 12); every other file at its v1.113.0 minor, and the test kit at revision **62**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-ForeverDB-1.0` key **1** (ForeverDB minor 1, a new major); `LibKa0s-DebugLog-1.0` key **23.12.1.5** (DebugLogDiagnostics minor 12); every other file at its v1.113.0 minor, and the test kit at revision **62**. No `NEEDS_*` floor rises.
 
 ### The ForeverDB major (`SF-LK-01`, LibKa0s#105)
 

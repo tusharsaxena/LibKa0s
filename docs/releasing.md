@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.113.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.114.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -471,6 +471,16 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    suite pinning an owned selection at the skin's `menu.textSel` or a ticked row's plain color re-pins it at the gold. Per WowAddonStandards v2.120.0 (anti-patterns #126 to
    #128), each host drops any hide of the panel after a start, draws its own menus' selections apart, and moves every
    named sample person onto `Sim.Sample` and `Sim.SampleCrowd` (LibKa0s#104), each a re-vendor smoke line.
+   v1.114.0 (Ka0sAddonsCommonTasks `docs/2026-11-25-SEEDS_AND_FOREVERDB/`) adds one payload file, `ForeverDB.lua` (the
+   new `LibKa0s-ForeverDB-1.0`, loaded by `LibKa0s.xml` directly after `Item.lua`), and no `NEEDS_*` floor, so a host
+   whose tests load library files by name and reach for the major adds it after `Item.lua` in the re-vendor commit; a
+   host that does not adopt it owes no loader line. `DebugLogDiagnostics.lua` moves to minor 12 (the report names
+   ForeverDB and prints one `ForeverDB:` identity line, no member change), so a host suite that pins
+   `DebugLogDiagnostics 11` re-pins it at 12. The kit moves to revision 62: revision 61's opt-in
+   `tests/_kit/mock_foreverdb.lua`, and `client_globals_forever.lua` regenerated at Ketho's `forever` `e230342` (17 names
+   added, 3 removed, none called by any consumer), which a consumer's whole-folder re-vendor of `tests/_kit/` carries; a
+   suite pinning `KIT_VERSION` re-pins it at 62. Per WowAddonStandards v2.121.0 (clients-§11), a host that adopts the
+   major lists ForeverDB in `## OptionalDeps` only and gates the feature on Forever.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not. DpsRace left the loop and the table's Consumers column on 2026-11-19 (`AF-DR-LK` of
    Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`): it is retired, merged into Combat Trail, and is not a consumer.
@@ -544,7 +554,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.113.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.114.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
