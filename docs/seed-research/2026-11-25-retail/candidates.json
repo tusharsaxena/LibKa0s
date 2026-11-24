@@ -1,0 +1,94 @@
+{
+  "assumptions": {
+    "capi": {
+      "count": 30,
+      "missing": 3
+    },
+    "enum": {
+      "count": 10,
+      "missing": 2
+    },
+    "global": {
+      "count": 60,
+      "missing": 1
+    }
+  },
+  "branch": "live",
+  "build": "f3b334b33bd19fa6a0250f7922ecfa83db7fe356",
+  "buildDate": "2026-10-22",
+  "candidates": [],
+  "date": "2026-11-25",
+  "diff": {
+    "added": [],
+    "removed": []
+  },
+  "flags": [
+    {
+      "build": "absent on live",
+      "key": "shipped:enum:GameRule.PvPRuleset",
+      "notes": [
+        "LibKa0s/Compat.lua:395"
+      ],
+      "shipped": "GameRule.PvPRuleset"
+    },
+    {
+      "build": "absent on live",
+      "key": "shipped:enum:GameRule.RPRuleset",
+      "notes": [
+        "LibKa0s/Compat.lua:395"
+      ],
+      "shipped": "GameRule.RPRuleset"
+    },
+    {
+      "build": "absent on live",
+      "key": "shipped:capi:C_SpecializationInfo.GetSpecializationInfoForClassID",
+      "notes": [
+        "LibKa0s/Role.lua:189",
+        "LibKa0s/Role.lua:190"
+      ],
+      "shipped": "C_SpecializationInfo.GetSpecializationInfoForClassID"
+    },
+    {
+      "build": "absent on live",
+      "key": "shipped:capi:C_Traits.GetGroupCurrencyInfo",
+      "notes": [
+        "LibKa0s/Role.lua:287",
+        "LibKa0s/Role.lua:299"
+      ],
+      "shipped": "C_Traits.GetGroupCurrencyInfo"
+    },
+    {
+      "build": "absent on live",
+      "key": "shipped:capi:C_Traits.GetGroupDisplayInfoByTreeID",
+      "notes": [
+        "LibKa0s/Role.lua:271",
+        "LibKa0s/Role.lua:299"
+      ],
+      "shipped": "C_Traits.GetGroupDisplayInfoByTreeID"
+    },
+    {
+      "build": "absent on live",
+      "key": "shipped:global:RegionalUniqueNamesEnabled",
+      "notes": [
+        "LibKa0s/Compat.lua:404"
+      ],
+      "shipped": "RegionalUniqueNamesEnabled"
+    }
+  ],
+  "flavor": "retail",
+  "kit": {
+    "date": "2026-10-22",
+    "names": 10556,
+    "path": "testkit/client_globals_live.lua",
+    "sha": "f3b334b33bd19fa6a0250f7922ecfa83db7fe356"
+  },
+  "reach": {
+    "kitNames": 10556,
+    "unreached": []
+  },
+  "tool": "tools/seeds/libseeds.py derive",
+  "upstream": {
+    "enums": 909,
+    "names": 10556
+  }
+}

@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 61", function()
-  assertEqual(Kit.VERSION, 61, "the release after v1.113.0 ships revision 61: the opt-in fake of the ForeverDB data addon, mock_foreverdb.lua (LibKa0s#105, SF-LK-01)")
-  assertEqual(T.KIT_VERSION, 61, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 62", function()
+  assertEqual(Kit.VERSION, 62, "v1.114.0 ships revision 62: revision 61's opt-in fake of the ForeverDB data addon, mock_foreverdb.lua (LibKa0s#105, SF-LK-01), and the forever name set regenerated at Ketho's e230342 (LibKa0s#93, SF-LK-02)")
+  assertEqual(T.KIT_VERSION, 62, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

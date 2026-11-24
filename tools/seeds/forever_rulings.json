@@ -1,0 +1,10 @@
+{
+  "regen:forever": {
+    "reason": "the branch moved d1ee569 -> e230342 (2026-11-14): 17 names added, 3 removed, none of the 3 called anywhere in the collection (grep, 2026-11-25); owner answer 3 of 03_SPEC.md says regenerate",
+    "ruling": "accept"
+  },
+  "shipped:capi:C_SpecializationInfo.GetSpecializationInfoForClassID": {
+    "reason": "guarded rung: the namespaced read is tried only when present (Role.lua:189), then the global GetSpecializationInfoForClassID (Role.lua:192), which forever lists",
+    "ruling": "keep"
+  }
+}

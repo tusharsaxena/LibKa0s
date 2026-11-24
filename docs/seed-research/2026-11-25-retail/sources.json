@@ -1,0 +1,21 @@
+{
+  "branch": "live",
+  "date": "2026-11-25",
+  "files": {
+    "FrameXML.lua": {
+      "bytes": 223487,
+      "sha256": "de8c54121435c71c23ff2e24129e7e89e3efda9f5d3bc0c18469dda92e439360"
+    },
+    "GlobalAPI.lua": {
+      "bytes": 233162,
+      "sha256": "85e43997d86d790688fee47bd4a1f2d490f87a901691d9682fdf2ab5162351e5"
+    },
+    "LuaEnum.lua": {
+      "bytes": 209403,
+      "sha256": "817b860732fef3c7808fe851747a981068be4ec227415d358c573b0846af7e90"
+    }
+  },
+  "flavor": "retail",
+  "sha": "f3b334b33bd19fa6a0250f7922ecfa83db7fe356",
+  "shaDate": "2026-10-22"
+}

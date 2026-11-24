@@ -12,9 +12,9 @@ cannot drift. Release order is in
 
 ## v1.114.0 — unreleased
 
-Opened 2026-11-25, on `feat/2026-11-25-seeds-foreverdb`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-SEEDS_AND_FOREVERDB/` (LibKa0s#93, #102, #105), item `SF-LK-01` so far; the release bookkeeping is `SF-LK-REL`.
+Opened 2026-11-25, on `feat/2026-11-25-seeds-foreverdb`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-SEEDS_AND_FOREVERDB/` (LibKa0s#93, #102, #105), items `SF-LK-01` and `SF-LK-02` so far; the release bookkeeping is `SF-LK-REL`.
 
-Versions so far: `LibKa0s-ForeverDB-1.0` key **1** (ForeverDB minor 1, a new major); `LibKa0s-DebugLog-1.0` key **23.12.1.5** (DebugLogDiagnostics minor 12); every other file at its v1.113.0 minor, and the test kit at revision **61**. No `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-ForeverDB-1.0` key **1** (ForeverDB minor 1, a new major); `LibKa0s-DebugLog-1.0` key **23.12.1.5** (DebugLogDiagnostics minor 12); every other file at its v1.113.0 minor, and the test kit at revision **62**. No `NEEDS_*` floor rises.
 
 ### The ForeverDB major (`SF-LK-01`, LibKa0s#105)
 
@@ -24,6 +24,15 @@ Versions so far: `LibKa0s-ForeverDB-1.0` key **1** (ForeverDB minor 1, a new maj
 - **DebugLogDiagnostics minor 12** ([docs](docs/api/DebugLog/version-23.12.1.5-docs.md)): the report's `LibKa0s running:` line names ForeverDB, and the identity section ends with one `ForeverDB: present=... loaded=... version=...` line (plus `build=` and `hash=` when loaded) from `Status()`, so the report never loads it. No member change.
 - **Kit revision 61** ([docs](docs/api/testkit/version-61-docs.md)): adds the opt-in `testkit/mock_foreverdb.lua`, the fake of the data addon: presets `present`, `missing`, `loadfails` and `reshaped`, the global handed over at the load and never before, a load count, an invented database (ids 990000 and up) and optional client constants. `tests/_kit/` re-synced.
 - Tests: the new `tests/test_foreverdb.lua` (the client gate, every failure answer, every member's mapping, chance and coordinate scaling, fresh tables, a reshaped database, no load at file load, the diagnostics line with and without the addon loaded) and `tests/test_mock_foreverdb.lua`; `tests/test_debuglog_diagnostics.lua` and `tests/test_debuglog_report.lua` re-pin `DebugLogDiagnostics 12`, `tests/test_kit_inventory.lua` revision 61.
+
+### The library's seed contract (`SF-LK-02`, LibKa0s#93)
+
+- **`docs/validate-seeds.md`**, the contract `/dev-copilot:validate-seeds LibKa0s <retail|forever>` runs: flavors `retail` (Ketho/BlizzardInterfaceResources branch `live`) and `forever` (branch `forever`), the build being the branch's commit sha. What it re-checks is the kit's client name sets, `testkit/client_globals_{live,forever}.lua`, and the shipped payload's client assumptions: every `Enum.X.Y` it reads (aliases too), every `C_X.Y` it names and every bare global it calls.
+- **`tools/seeds/libseeds.py`** (standard library only, with `test_libseeds.py`, 17 cases on invented fixtures): `status` (the branch head against the kit file's sha and the newest bundle), `freeze` (the three files at the sha, gzipped into the bundle's `raw/`, the cache outside the checkout), `derive` (offline from `raw/`: the kit-globals diff, the assumptions, the reach check, and a coverage gate), `rule`, `check`, `report` and `apply`, which regenerates a name set through the unchanged `tools/client_globals_data.lua` only when the flavor's `regen:<branch>` candidate is ruled accept. Rulings in `tools/seeds/{retail,forever}_rulings.json`, keyed by name.
+- **The first runs**, `docs/seed-research/2026-11-25-retail/` and `2026-11-25-forever/`: `live` has not moved (`f3b334b`, the kit's sha, 10556 names, reproduced exactly). `forever` moved from `d1ee569` to `e230342` (2026-11-14): 17 names added, 3 removed (`C_GameRules.SetForeverExperiencePreset`, `ShouldShowBattlePetIcon`, `SmartNavigation_SetReturnFrameFocusButton`), none of them called in any collection checkout. Seven payload assumptions are absent on a client (six on Retail, one on Forever), and every one is a guarded rung, ruled `keep` with its guard cited. Nothing needs owner review.
+- **Kit revision 62** ([docs](docs/api/testkit/version-62-docs.md)): `client_globals_forever.lua` regenerated at `e230342` (10559 names), the owner's answer 3 of the run's spec; `tests/_kit/` re-synced. No other kit file changes.
+- **The gate** in `CLAUDE.md` gains `python3 -m pytest -q tools/seeds` (unittest without pytest); `DEPENDENCIES.md` names the tool and pytest; the documentation map names the contract and `docs/seed-research/`.
+- Tests: `tests/test_kit_inventory.lua` re-pins revision 62.
 
 ## v1.113.0 — 2026-11-24
 

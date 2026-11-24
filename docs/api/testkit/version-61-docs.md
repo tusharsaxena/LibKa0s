@@ -9,10 +9,10 @@
 | Payload | `testkit/`, the files version 57 lists, **plus `mock_foreverdb.lua`** |
 | Version | **61** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.114.0 |
-| Status | **Current** |
+| First released in | never released alone: v1.114.0 ships [version 62](version-62-docs.md) |
+| Status | Superseded |
 | Supersedes | [version 60](version-60-docs.md) — the kit had no fake of the ForeverDB data addon, so no suite could prove that `LibKa0s-ForeverDB-1.0` loads it only at a host's first lookup |
-| Superseded by | — |
+| Superseded by | [version 62](version-62-docs.md) — `client_globals_forever.lua` regenerated at Ketho/BlizzardInterfaceResources `forever` `e230342` |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `61` |
 

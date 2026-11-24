@@ -564,7 +564,7 @@ in the place a library keeps its registers — this file.
 
 **Every `.md` under `docs/` appears below.** Frozen and generated directories are named once each and
 never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests/`,
-`docs/adoption/`, `docs/superpowers/`.
+`docs/adoption/`, `docs/superpowers/`, `docs/seed-research/`.
 
 | Doc | Covers |
 |---|---|
@@ -572,6 +572,7 @@ never enumerated per run: `docs/audits/`, `docs/reviews/`, `docs/automated-tests
 | [`docs/api/`](docs/api/) | **The source of truth for every public contract** — one document per shipped version, per major (`Core`, `Tooltip`, `Env`, `Compat`, `Role`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `ForeverDB`, `Glow`, `Toast`, `Callout`, `WaypointArrow`, `Charts`, `Media`, `Skin`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `IconBrowser`, `Perf`, `Sim`, and `testkit`), and beside each one a generated `members-<version-key>.json` naming that version's public surface as data. A superseded document is never edited to describe new behavior; a manifest is never hand-edited at all — regenerate with `lua tools/gen-api-members.lua` |
 | [`docs/api/CONSUMERS.md`](docs/api/CONSUMERS.md) | The consumer census: for every public export, which hosts call it (file:line), each textual hit classified as call / host duplicate / degradation stub, and a verdict on every zero-consumer export. Stamped with the version it measured; re-run with the tool it names after a release that adds a surface |
 | [`docs/releasing.md`](docs/releasing.md) | The two version numbers (repo semver and the load-bearing per-file LibStub minor), the numbered release order, and the re-vendor rule |
+| [`docs/validate-seeds.md`](docs/validate-seeds.md) | The seed-validation contract `/dev-copilot:validate-seeds LibKa0s <retail\|forever>` runs: the kit's client name sets and the payload's client assumptions re-checked against Ketho/BlizzardInterfaceResources (`tools/seeds/libseeds.py`), with its frozen bundles under `docs/seed-research/` |
 | [`docs/record-schema.md`](docs/record-schema.md) | The in-game Perf capture record, field by field — the contract each consumer's `perf-analysis/README.md` points at rather than restating |
 | [`docs/adoption-prompt.md`](docs/adoption-prompt.md) | The brief handed to a consumer repo adopting a major: what to wire, what to delete, and what must not be hand-rolled |
 | [`docs/fast-gate-adoption-prompt.md`](docs/fast-gate-adoption-prompt.md) | The drop-in brief for adopting the fast test gate in a consumer repo — what to copy, and the measured before/after it replaced |
@@ -589,12 +590,16 @@ and `docs/adoption/` were each in exactly that state before this section was wri
 
 ## The green gate
 
-No commit without both of these clean, from the repo root:
+No commit without all of these clean, from the repo root:
 
 ```sh
 lua tests/run.lua   # 0 failed  — `lua` MUST be 5.1; see DEPENDENCIES.md for why
 ~/.claude/dev-copilot/bin/ka0s-bounded luacheck .  # 0 warnings / 0 errors; luacheck loads no kit, so it runs bounded (testing-§15)
+python3 -m pytest -q tools/seeds   # the seed tool's cases; without pytest: python3 -m unittest discover -s tools/seeds
 ```
+
+The third line is the seed contract's own gate ([`docs/validate-seeds.md`](docs/validate-seeds.md)
+`## Gate`, LibKa0s#93), which also runs the suite under `KA0S_KIT_CLIENT=forever`.
 
 That `luacheck` figure is **scoped by `.luacheckrc`'s `exclude_files`**, not repo-wide: everything
 but `tests/_kit/` (the same scope `docs/releasing.md` step 1 gives). How many files that is, no
