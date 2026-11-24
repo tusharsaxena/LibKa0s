@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **30** · `WidgetsDropdown.lua` **3** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **17** · `WidgetsDragHandleTip.lua` **3** · `WidgetsLineChart.lua` **8** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **7** · `WidgetsHeader.lua` **2** · `WidgetsBar.lua` **2** |
 | Shipped in | v1.112.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 30.3.7.17.3.8.8.6.1.2](./version-30.3.7.17.3.8.8.6.1.2-docs.md) (v1.111.0) — `HeaderButtons` had no way to say a window is a companion, and the copy window built the settings mark |
-| Superseded by | — |
+| Superseded by | [version 30.4.7.17.3.8.8.7.2.2](./version-30.4.7.17.3.8.8.7.2.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 30, WidgetsDropdown = 3, WidgetsReorder = 7, WidgetsDragHandle = 17, WidgetsDragHandleTip = 3, WidgetsLineChart = 8, WidgetsAutocomplete = 8, WidgetsCopyWindow = 7, WidgetsHeader = 2, WidgetsBar = 2 }` |
 
@@ -2458,3 +2458,7 @@ visual fidelity as unverified.
 **Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
+
+## Moving to version 30.4.7.17.3.8.8.7.2.2
+
+`WidgetsDropdown.lua` 3 -> 4 (`FB2-LK-02`, Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/`): an owned menu's selected row paints `menu.textSel` only while it stands 20 CIEDE2000 off `menu.text`, else Ka0s Default's gold; of the shipped skins only Azeroth moves. A suite that pinned an Azeroth selection at `menu.textSel` re-pins it at the gold.

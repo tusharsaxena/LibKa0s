@@ -14,12 +14,17 @@ cannot drift. Release order is in
 
 Opened 2026-11-24, on `feat/2026-11-24-feedback-batch` (after v1.112.0, still local): round 2 of the owner's 2026-11-24 feedback batch (Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/R2_SMOKE_FEEDBACK.md`), items `FB2-LK-01` to `FB2-LK-03` and this release, `FB2-LK-REL`. Built to WowAddonStandards v2.120.0, which lands the three rules this release implements (a sim start shows the step panel; a selected row's text is distinct; one source of sample names).
 
-Versions in this release: `LibKa0s-Sim-1.0` key **5.3.11.4** (Sim minor 5); every other file at its v1.112.0 minor, and the test kit at revision **60**.
+Versions in this release: `LibKa0s-Sim-1.0` key **5.3.11.4** (Sim minor 5); `LibKa0s-Widgets-1.0` key **30.4.7.17.3.8.8.7.2.2** (WidgetsDropdown minor 4); every other file at its v1.112.0 minor, and the test kit at revision **60**.
 
 ### Every start shows the step panel (`FB2-LK-01`)
 
 - **Sim minor 5** ([docs](docs/api/Sim/version-5.3.11.4-docs.md)): the owner: "When i do /lh sim start loot - it plays the simulation but doesnt show the simulation window - sim mode whether started from a command like /xx sim start <scenario> or from just plain /xx sim should always show the sim stepper window". Only the bare `/<slash> sim` called `ShowPanel()`. A successful `sim:Start` now shows the step panel (read at call time, under `pcall`), so the typed `start`, the panel's Start row and picker, a `Restart`, the Master controls Sim box (the host's `toggleSim`) and a host's own start all show it. A headless session (the shell's `ShowPanel` fallback) stays headless, and a refused or stood-down start shows nothing. New suite `tests/test_sim_start_panel.lua`.
 - **What a re-vendoring host owes:** nothing in code; a suite pinning `Sim 4` re-pins it at 5. Each host with a sim owes one smoke line: `/<slash> sim start <scenario>` opens the step panel.
+
+### A selected row always stands off a plain row (`FB2-LK-02`)
+
+- **WidgetsDropdown minor 4** ([docs](docs/api/Widgets/version-30.4.7.17.3.8.8.7.2.2-docs.md)): the owner, on Loot History's character dropdown: "current character is not highlighted in gold. It uses the skin color. - in this specific case, make the current selected always be a different color than the other texts - e.g. gold in ka0s default". An owned menu's selected row paints `menu.textSel` only while it stands at least 20 CIEDE2000 off `menu.text` (the library's hover floor), else Ka0s Default's gold `1, 0.82, 0`. Of the nine shipped skins only Azeroth (16.3) takes the gold. The selection still replaces a row's value color (class, quality), and a preset row (`isActive`, "Character: Current") lights the same way. New suite `tests/test_widgets_menu_selected.lua` (seven cases, every shipped skin walked).
+- **What a re-vendoring host owes:** nothing in code; a suite pinning an Azeroth selection at `menu.textSel`, or `WidgetsDropdown 3`, re-pins it. A host that draws its own selection (a list, its own menu) matches the rule. Smoke: under Azeroth, a dropdown's selected row is gold.
 
 ## v1.112.0 — 2026-11-24
 
