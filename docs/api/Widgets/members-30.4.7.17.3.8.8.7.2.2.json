@@ -48,6 +48,7 @@
     { "name": "ReleaseBars", "kind": "function" },
     { "name": "ReorderList", "kind": "function" },
     { "name": "SearchBox", "kind": "function" },
+    { "name": "SelectedColor", "kind": "function" },
     { "name": "TEST_STRIP", "kind": "table" },
     { "name": "TestStrip", "kind": "function" }
   ]

@@ -466,7 +466,8 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `sim:Start` shows the step panel (headless sessions excepted), and the lib-level `SampleCrowd` and `CROWD_MAX` are
    new, so a host stub of the Sim library table adds both and a suite pinning `Sim 4` re-pins it at 5. Widgets moves to
    30.4.7.17.3.8.8.7.2.2 (WidgetsDropdown 4: an owned menu's selected row stands 20 CIEDE2000 off `menu.text`, else
-   Ka0s Default's gold, which Azeroth alone takes; a ticked `W.ContextMenu` row paints selected), so a suite pinning an
+   Ka0s Default's gold, which Azeroth alone takes; a ticked `W.ContextMenu` row paints selected; `W.SelectedColor(owner)`
+   answers that color for a host's own menu), so a suite pinning an
    Azeroth selection or a ticked row's plain color re-pins it. Per WowAddonStandards v2.120.0 (anti-patterns #126 to
    #128), each host drops any hide of the panel after a start, draws its own menus' selections apart, and moves every
    named sample person onto `Sim.Sample` and `Sim.SampleCrowd` (LibKa0s#104), each a re-vendor smoke line.

@@ -1881,7 +1881,7 @@ Total.
 - menu: the dropdown's own label is one line
 - menu: an owned menu reads its title, disabled and rule colors from the skin
 
-### test_widgets_menu_selected.lua (8)
+### test_widgets_menu_selected.lua (9)
 
 - menu selected: every shipped skin's selected row stands off its plain row
 - menu selected: the skins that need the gold fallback are the pinned list
@@ -1891,6 +1891,7 @@ Total.
 - menu selected: a multi-select dropdown's selected rows follow the same rule
 - menu selected: the rule's ΔE00 is the shared fixture's, and it answers textSel or the gold
 - menu selected: a ticked W.ContextMenu row (radio, selected) paints selected, not a tick beside plain text
+- menu selected: W.SelectedColor(owner) answers the color the shared menu paints, for a host's own menu
 
 ### test_widgets_submenu.lua (18)
 
@@ -5970,7 +5971,7 @@ Total.
 | test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
 | test_widgets_menu.lua | 23 |
-| test_widgets_menu_selected.lua | 8 |
+| test_widgets_menu_selected.lua | 9 |
 | test_widgets_submenu.lua | 18 |
 | test_widgets_menu_follow.lua | 5 |
 | test_widgets_reorderlist.lua | 24 |
@@ -6141,4 +6142,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5183** |
+| **Total** | **5184** |

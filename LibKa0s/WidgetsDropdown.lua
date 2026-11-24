@@ -949,3 +949,19 @@ function lib.CloseMenu()
   if menu and menu:IsShown() then menu:Hide() end
   closeFrom(2)   -- minor 23: every cascading level, which OnHide closes too in the client
 end
+
+--- The color `owner`'s selected menu row paints (minor 4, FB2-LK-REV): its skin's `menu.textSel`
+--- while that stands SEL_DE00_MIN CIEDE2000 off its `menu.text`, else Ka0s Default's gold (THE
+--- SELECTION'S CONTRAST). The shared menu paints the same color; a host that draws its own menu or
+--- picker list reads its selected row's color here rather than the raw token (WowAddonStandards
+--- skinning-§4, *A selected entry reads apart*). An unregistered or missing owner reads the gold.
+--- Read at call time, so it follows the owner's skin choice. Answers r, g, b.
+--- @param owner string|nil
+--- @return number, number, number
+function lib.SelectedColor(owner)
+  local Skin, c = skinOf(owner), SEL_FALLBACK
+  if Skin then
+    c = distinctSel(token(Skin, owner, "menu.textSel", MENU_PAL.sel), token(Skin, owner, "menu.text", MENU_PAL.text))
+  end
+  return c[1], c[2], c[3]
+end

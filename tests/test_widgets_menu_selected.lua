@@ -13,7 +13,8 @@
 -- `menu.text`; otherwise Ka0s Default's gold (1, 0.82, 0). The selected color replaces any value color
 -- (`opt.color`: class, quality) the row would otherwise wear. A preset row (`isActive`,
 -- "Character: Current") paints selected the same way. Every shipped skin is walked: the skins'
--- definitions (SkinDefs.lua, SkinDefsOthers.lua) resolved through Skin:ResolveSkin.
+-- definitions (SkinDefs.lua, SkinDefsOthers.lua) resolved through Skin:ResolveSkin. W.SelectedColor(owner)
+-- (FB2-LK-REV) answers the same color for a menu a host draws itself.
 
 local T = _G.LK_TEST
 local test, assertEqual, assertTrue = T.test, T.assertEqual, T.assertTrue
@@ -222,4 +223,31 @@ test("menu selected: a ticked W.ContextMenu row (radio, selected) paints selecte
   local menu = W.ContextMenu(m.CreateFrame("Frame", nil, m.UIParent), rows)
   assertEqual(rgb(painted(m, menu.buttons[2])), rgb(GOLD), "an owner-less menu's ticked row is the gold")
   W.CloseMenu()
+end)
+
+test("menu selected: W.SelectedColor(owner) answers the color the shared menu paints, for a host's own menu", function()
+  -- red under: no public surface, so a host menu that reads the raw `menu.textSel` token (the
+  -- standard's skinning-§4 before FB2-LK-REV) paints Azeroth's accent, 16.3 off its plain rows.
+  local m, Skin, W = env()
+  assertEqual(type(W.SelectedColor), "function", "the public member")
+  F.owner(Skin, OWNER, "ka0s")
+  local state = {}
+  for _, key in ipairs(skinKeys(Skin)) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    local dd = W.Dropdown(m.UIParent, 120, { owner = OWNER })
+    dd:SetOptions({ { value = "a", label = "A" }, { value = "b", label = "B" } })
+    dd:SelectValue("a")
+    local menu = open(m, dd, state)
+    local r, g, b = W.SelectedColor(OWNER)
+    assertEqual(rgb({ r, g, b }), rgb(painted(m, menu.buttons[1])), key .. ": the shared menu's own selected color")
+    assertEqual(rgb({ r, g, b }), rgb(expectedSel(Skin:ResolveSkin(key))), key .. ": the rule's color")
+    W.CloseMenu()
+  end
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  for _, owner in ipairs({ "NotAnOwner", "" }) do
+    local r, g, b = W.SelectedColor(owner)
+    assertEqual(rgb({ r, g, b }), rgb(GOLD), "an unregistered owner reads Ka0s Default's gold")
+  end
+  local r, g, b = W.SelectedColor()
+  assertEqual(rgb({ r, g, b }), rgb(GOLD), "no owner reads Ka0s Default's gold")
 end)
