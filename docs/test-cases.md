@@ -1883,13 +1883,13 @@ Total.
 
 ### test_widgets_menu_selected.lua (9)
 
-- menu selected: every shipped skin's selected row stands off its plain row
-- menu selected: the skins that need the gold fallback are the pinned list
-- menu selected: Ka0s Default keeps its own gold, and Azeroth takes the gold fallback
+- menu selected: every shipped skin's selected row is the gold, standing off its plain row
+- menu selected: the skins whose text is too near the gold are the pinned list
+- menu selected: WoW Forever paints the gold, not its tan accent, and a title keeps the accent
 - menu selected: the selected color replaces a row's value color (class, quality)
 - menu selected: a preset row (isActive, Character: Current) paints selected the same way
 - menu selected: a multi-select dropdown's selected rows follow the same rule
-- menu selected: the rule's ΔE00 is the shared fixture's, and it answers textSel or the gold
+- menu selected: the rule's ΔE00 is the shared fixture's, and it answers the gold or textSel
 - menu selected: a ticked W.ContextMenu row (radio, selected) paints selected, not a tick beside plain text
 - menu selected: W.SelectedColor(owner) answers the color the shared menu paints, for a host's own menu
 

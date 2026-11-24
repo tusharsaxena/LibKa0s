@@ -2461,4 +2461,4 @@ visual fidelity as unverified.
 
 ## Moving to version 30.4.7.17.3.8.8.7.2.2
 
-`WidgetsDropdown.lua` 3 -> 4 (`FB2-LK-02`, Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/`): an owned menu's selected row paints `menu.textSel` only while it stands 20 CIEDE2000 off `menu.text`, else Ka0s Default's gold; of the shipped skins only Azeroth moves. A suite that pinned an Azeroth selection at `menu.textSel` re-pins it at the gold.
+`WidgetsDropdown.lua` 3 -> 4 (`FB2-LK-02`, Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/`): an owned menu's selected row paints Ka0s Default's gold in every skin, the skin's `menu.textSel` only where the gold stands under 20 CIEDE2000 off `menu.text` (no shipped skin; `FB2-LK-04`); every shipped skin but Ka0s Default moves. A suite that pinned an owned selection at `menu.textSel` re-pins it at the gold.

@@ -168,7 +168,9 @@ test("skin owner: the shared menu follows its opener, and an owner-less open put
   local menu = open(m, owned, state)
   assertEqual(rgba(survey(m, menu).backdropColor), tok(Skin, "obsidian", "menu.bg"))
   local sel, plain = menu.buttons[1], menu.buttons[2]
-  assertEqual(rgba(survey(m, sel.fs).textColor), tok(Skin, "obsidian", "menu.textSel"))
+  -- The selected row is Ka0s Default's gold in every skin, never Obsidian's blue accent (WidgetsDropdown
+  -- minor 4, THE SELECTION'S CONTRAST; the owner's ruling of 2026-11-24, FB2-LK-04).
+  assertEqual(rgba(survey(m, sel.fs).textColor), "1,0.820,0,1", "the selection is the gold")
   assertEqual(rgba(survey(m, plain.fs).textColor), tok(Skin, "obsidian", "menu.text"))
   assertEqual(rgba(survey(m, sel.__hl).color), tok(Skin, "obsidian", "menu.hover"))
 
