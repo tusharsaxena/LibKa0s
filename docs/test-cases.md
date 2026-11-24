@@ -576,7 +576,7 @@ Total.
 - item: LoadItem fires the callback once the item is loaded
 - item: LoadItem is inert without an id or without the API
 
-### test_foreverdb.lua (27)
+### test_foreverdb.lua (30)
 
 - foreverdb: registers minor 1 with exactly its public members
 - foreverdb: the Core floor keeps the major absent from a payload without Core
@@ -602,9 +602,12 @@ Total.
 - foreverdb: Meta answers the TOC version, build, hash and a copy of the counts
 - foreverdb: every answer is a fresh table, never ForeverDB's own row
 - foreverdb: a reshaped row or field reads nil and never raises
+- foreverdb: an out-of-range chance or coordinate reads as no value
 - foreverdb: a database with no meta answers Meta with the version alone
 - foreverdb: Status reports present, loaded and the version, and build and hash once loaded
 - foreverdb: the diagnostics report prints the ForeverDB line and never loads it
+- foreverdb: a client read that raises costs the report only the ForeverDB line
+- foreverdb: Status reads no Version for an addon the client does not know
 
 ### test_glow.lua (15)
 
@@ -5965,7 +5968,7 @@ Total.
 | test_schema_batch.lua | 22 |
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
-| test_foreverdb.lua | 27 |
+| test_foreverdb.lua | 30 |
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
@@ -6183,4 +6186,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5217** |
+| **Total** | **5220** |

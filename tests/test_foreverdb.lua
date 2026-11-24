@@ -373,6 +373,23 @@ test("foreverdb: a reshaped row or field reads nil and never raises", function()
   end)
 end)
 
+test("foreverdb: an out-of-range chance or coordinate reads as no value", function()
+  local D = FDB.fixture()
+  D.drop[I.blade] = { I.gnoll, 15000, I.kobold, -3, I.vendor, 10000 }
+  D.spm["c" .. I.gnoll] = { [I.mapA] = { 1200, 500, -5, 100, 250, 750 }, [I.mapB] = { 1001, 0 } }
+  with({ data = D }, function()
+    local s = fdbLib.ItemSources(I.blade)
+    assertEqual(#s.creatures, 3)
+    assertEqual(s.creatures[1].id, I.vendor); assertEqual(s.creatures[1].chance, 1, "10000 is the top")
+    assertNil(s.creatures[2].chance, "15000 is out of range")
+    assertNil(s.creatures[3].chance, "a negative chance is out of range")
+    local sp = fdbLib.Spots("npc", I.gnoll)
+    assertEqual(#sp[I.mapA], 1, "only the in-range pair")
+    assertEqual(sp[I.mapA][1].x, 0.25); assertEqual(sp[I.mapA][1].y, 0.75)
+    assertNil(sp[I.mapB], "a map with no in-range pair")
+  end)
+end)
+
 test("foreverdb: a database with no meta answers Meta with the version alone", function()
   local D = FDB.fixture()
   D.meta = nil
@@ -432,5 +449,26 @@ test("foreverdb: the diagnostics report prints the ForeverDB line and never load
   end)
   with({ preset = "missing", client = "retail" }, function()
     assertEqual(lineWith(reportLines(), "ForeverDB: "), "ForeverDB: present=no loaded=no", "absent")
+  end)
+end)
+
+test("foreverdb: a client read that raises costs the report only the ForeverDB line", function()
+  with({ preset = "missing", client = "retail" }, function()
+    local saved = mocks.C_AddOns.IsAddOnLoaded
+    mocks.C_AddOns.IsAddOnLoaded = function() error("boom") end
+    local ok, lines = pcall(reportLines)
+    mocks.C_AddOns.IsAddOnLoaded = saved
+    assertTrue(ok, "the report still builds")
+    assertEqual(lineWith(lines, "ForeverDB: "), "ForeverDB: unreadable")
+  end)
+end)
+
+test("foreverdb: Status reads no Version for an addon the client does not know", function()
+  with({ preset = "missing", client = "retail" }, function()
+    local saved, asked = mocks.C_AddOns.GetAddOnMetadata, false
+    mocks.C_AddOns.GetAddOnMetadata = function(...) asked = true; return saved(...) end
+    local s = fdbLib.Status()
+    mocks.C_AddOns.GetAddOnMetadata = saved
+    assertFalse(s.present); assertNil(s.version); assertFalse(asked, "no metadata read")
   end)
 end)

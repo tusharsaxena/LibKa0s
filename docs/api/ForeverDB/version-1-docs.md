@@ -55,15 +55,15 @@ this library, its tests or the kit holds a row of ForeverDB. The kit's fake
 |---|---|---|---|
 | `Available()` | function | 1 | `ok, reason` (exactly two values). See *When it loads*. |
 | `IsLoaded()` | function | 1 | Whether the client has ForeverDB loaded now, by any addon (`C_AddOns.IsAddOnLoaded`). Never loads anything; not gated on the client. |
-| `Status()` | function | 1 | A new `{ present, loaded, version, build, hash }` for the diagnostics report: `present` (the client knows the addon) and `loaded` are booleans, `version` is the TOC `Version` (readable unloaded), `build` and `hash` are `meta`'s and only when loaded. Never loads anything; not gated on the client. |
+| `Status()` | function | 1 | A new `{ present, loaded, version, build, hash }` for the diagnostics report: `present` (the client knows the addon) and `loaded` are booleans, `version` is the TOC `Version` (readable unloaded; read only when `present`), `build` and `hash` are `meta`'s and only when loaded. Never loads anything; not gated on the client. |
 | `Meta()` | function | 1 | A new `{ version, build, hash, counts }`, or nil when unavailable. `counts` is a new table of `meta.counts`' numeric entries. |
 | `NPC(id)` | function | 1 | A new `{ id, name, subname, minLevel, maxLevel, rank, faction }`, or nil. `faction` is `"A"`, `"H"`, `"AH"` or nil. |
 | `Item(id)` | function | 1 | A new `{ id, name, quality, requiredLevel, itemLevel, classID, subclassID, inventoryType, icon }`, or nil. |
 | `Quest(id)` | function | 1 | A new `{ id, title, level, minLevel, givers, enders }`, or nil. `givers` and `enders` are arrays (possibly empty) of `{ kind = "npc" \| "object", id }`. |
 | `ItemSources(id)` | function | 1 | A new `{ creatures, objects, items, vendors, worldMinLevel }`, or nil when ForeverDB names no source at all. See *Item sources*. |
 | `VendorPrice(itemID)` | function | 1 | `price, npcID` (copper; exactly two values): the lowest price any vendor of the item was seen asking, or `nil, nil`. |
-| `Spots(kind, id)` | function | 1 | A new `{ [uiMapID] = { { x, y }, ... } }`, x and y on 0..1, or nil. `kind` is `"npc"` or `"object"`. |
-| `TrainerSpells(npcID)` | function | 1 | A new `{ [spellName] = { cost, level } }`, or nil. |
+| `Spots(kind, id)` | function | 1 | A new `{ [uiMapID] = { { x = 0..1, y = 0..1 }, ... } }`, or nil. `kind` is `"npc"` or `"object"`. |
+| `TrainerSpells(npcID)` | function | 1 | A new `{ [spellName] = { cost = copper, level = n } }`, or nil. |
 
 `MAJOR`, `MINOR` and `MODULES` are the usual bookkeeping and are not listed in the member manifest.
 `__reset()` forgets the cached `Available()` answer; it is private, for tests, and a host never calls
@@ -97,10 +97,10 @@ it.
 | `NPC` | `npc[id] = { name, sub, minLv, maxLv, rank }` → `name`, `subname`, `minLevel`, `maxLevel`, `rank`; `nfac[id]` → `faction` |
 | `Item` | `item[id] = { name, quality, reqLevel, itemLevel, class, subclass, inventoryType, icon, ... }` → `name`, `quality`, `requiredLevel`, `itemLevel`, `classID`, `subclassID`, `inventoryType`, `icon`. The positions past the icon (allowable classes, required skill and rank, allowable races, faction and reputation) are not read in this version. |
 | `Quest` | `quest[id] = { title, level, minLevel }`; `qg[id]` and `qe[id] = { "c<id>", "o<id>", ... }` → `givers`, `enders` (`c` a creature, `kind = "npc"`; `o` an object, `kind = "object"`; any other entry skipped) |
-| `ItemSources` | `drop[id]`, `odrop[id]`, `idrop[id] = { sourceId, chancePer10000, ... }`; `vend[id] = { npcId, ... }`; `world[id]` |
+| `ItemSources` | `drop[id]`, `odrop[id]`, `idrop[id] = { sourceId, chancePer10000, ... }`; `vend[id] = { npcId, ... }`; `world[id]`. `chance` is the per-10000 figure over 10000, and nil (the rate unknown) unless it is above 0 and at most 10000 |
 | `VendorPrice` | `vend[item]` × `vp[npc][item] = { price, seen }` |
-| `Spots` | `spm["c<id>" \| "o<id>"] = { [uiMap] = { x, y, x, y, ... } }` on 0..1000 |
-| `TrainerSpells` | `trn[npc] = { [spellName] = { cost, level, ... } }` |
+| `Spots` | `spm["c<id>" \| "o<id>"] = { [uiMap] = { x, y, x, y, ... } }` on 0..1000 → each pair becomes a named point `{ x = x / 1000, y = y / 1000 }`; a pair with either value outside 0..1000 is skipped |
+| `TrainerSpells` | `trn[npc] = { [spellName] = { cost, level, ... } }` → named fields `{ cost = cost, level = level }` |
 | `Meta` | `meta = { build, hash, counts, ... }` and the TOC `Version` |
 
 A table this version does not read (`spf`, Shortest Path Forever's data, among them) is simply not

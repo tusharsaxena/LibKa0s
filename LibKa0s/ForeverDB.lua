@@ -161,13 +161,16 @@ end
 
 --- What the diagnostics report prints: a new table `{ present, loaded, version, build, hash }`.
 --- `present` (the client knows the addon) and `loaded` are booleans; `version` is the TOC Version,
---- read without loading; `build` and `hash` are the database's `meta` fields, only when it is
+--- read without loading and only when `present`; `build` and `hash` are the database's `meta` fields, only when it is
 --- loaded and its global is a table. Never loads anything, and is not gated on the client.
 ---
 --- @return table
 function lib.Status()
   local A = addons()
-  local out = { present = exists(A), loaded = loadedNow(A), version = tocVersion(A) }
+  local present = exists(A)
+  -- the Version is read only for an addon the client knows: a metadata read of an unknown name is
+  -- a call this library has no reason to risk in every Retail diagnostics report.
+  local out = { present = present, loaded = loadedNow(A), version = present and tocVersion(A) or nil }
   local D = ForeverDB
   if out.loaded and type(D) == "table" and type(D.meta) == "table" then
     out.build, out.hash = str(D.meta.build), str(D.meta.hash)
@@ -315,7 +318,7 @@ local function sources(name, itemID)
   for i = 1, #list - 1, 2 do
     local src, c = id(list[i]), num(list[i + 1])
     if src then
-      out[#out + 1] = { id = src, chance = (c and c > 0) and c / CHANCE_SCALE or nil }
+      out[#out + 1] = { id = src, chance = (c and c > 0 and c <= CHANCE_SCALE) and c / CHANCE_SCALE or nil }
     end
   end
   table.sort(out, byChance)
@@ -328,8 +331,9 @@ end
 --- `creatures` (from `drop`), `objects` (`odrop`) and `items` (`idrop`, the containers it comes
 --- out of) are arrays of `{ id = sourceID, chance = 0..1 }`, the most likely first (an unknown
 --- rate last, then by id). `chance` is the database's per-10000 figure over 10000, and nil where it
---- says 0, the rate unknown. `vendors` is an array of creature ids (`vend`). `worldMinLevel` is the
---- minimum level of a world drop (`world`), or nil. Every array is present, empty when it has none.
+--- says 0 (the rate unknown) or anything outside 0..10000. `vendors` is an array of creature ids
+--- (`vend`). `worldMinLevel` is the minimum level of a world drop (`world`), or nil. Every array
+--- is present, empty when it has none.
 ---
 --- @param itemID number
 --- @return table|nil
@@ -380,7 +384,8 @@ local PREFIX = { npc = "c", object = "o" }
 --- y on 0..1 (the database's 0..1000 over 1000), or nil when ForeverDB has no spot for it.
 ---
 --- `kind` is `"npc"` or `"object"`; anything else is no answer. From
---- `spm["c<id>" | "o<id>"] = { [uiMap] = { x, y, x, y, ... } }`; each point is `{ x = x, y = y }`.
+--- `spm["c<id>" | "o<id>"] = { [uiMap] = { x, y, x, y, ... } }`; each point is `{ x = x, y = y }`,
+--- and a pair with either value outside 0..1000 is skipped.
 ---
 --- @param kind string
 --- @param sourceID number
@@ -397,7 +402,9 @@ function lib.Spots(kind, sourceID)
       local points = {}
       for i = 1, #coords - 1, 2 do
         local x, y = num(coords[i]), num(coords[i + 1])
-        if x and y then points[#points + 1] = { x = x / COORD_SCALE, y = y / COORD_SCALE } end
+        if x and y and x >= 0 and y >= 0 and x <= COORD_SCALE and y <= COORD_SCALE then
+          points[#points + 1] = { x = x / COORD_SCALE, y = y / COORD_SCALE }
+        end
       end
       if #points > 0 then out[mapID], any = points, true end
     end

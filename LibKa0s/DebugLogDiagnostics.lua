@@ -339,7 +339,8 @@ local function identity(out, D, d)
   out:add(TAG, "combat: InCombatLockdown=%s UnitAffectingCombat=%s", read(InCombatLockdown),
     read(UnitAffectingCombat, "player"))
   out:joined(TAG, "LibKa0s running:", runningMinors())
-  foreverDB(out)
+  -- pcall'd like the reads above: Status() asks the client about an addon most clients lack.
+  if not pcall(foreverDB, out) then out:add(TAG, "ForeverDB: unreadable") end
 end
 
 -- ── the report ─────────────────────────────────────────────────────────────────────────────
