@@ -11,9 +11,9 @@
 | Files and minors | `Sim.lua` **4** · `SimTimeline.lua` **3** · `SimPanel.lua` **11** · `SimPanelRender.lua` **4** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `4.3.11.4` |
 | Shipped in | v1.109.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 3.3.11.4](./version-3.3.11.4-docs.md) (v1.105.0 – v1.108.0) — the same surface and behavior; its sample-character comment and *Sample characters* section cited the standard's client-quirks-§5 for WoW Forever's identity shape, where that entry no longer lives. |
-| Superseded by | — |
+| Superseded by | [version 5.3.11.4](./version-5.3.11.4-docs.md) (v1.113.0) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 4, SimTimeline = 3, SimPanel = 11, SimPanelRender = 4 }` |
 
@@ -1094,3 +1094,7 @@ bodies only define functions; no frame, timer or event registration exists until
 host that never simulates pays parse time and nothing else. Whole-folder vendoring ships the major
 into all fourteen consumers of this payload; the three adopters wire it, and the other eleven pay
 parse time only.
+
+## Moving to version 5.3.11.4
+
+**Take it; a start now shows the step panel.** `Sim.lua` moves to 5: every successful `sim:Start` (and so the typed `start`, the panel's Start, a `Restart`, the Master controls Sim box and a host's own call) shows the step panel, where this version showed it on the bare `/<slash> sim` line alone. A headless session stays headless. The library gains `SampleCrowd(client, n, seed)` and `CROWD_MAX`, the sample crowd beyond the five, and the naming convention's rule 6 is retired: every named sample person comes from the library. A suite pinning `Sim.MINOR` 4 re-pins it at 5. See [version 5.3.11.4](./version-5.3.11.4-docs.md).

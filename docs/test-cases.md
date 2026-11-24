@@ -67,6 +67,18 @@ Total.
 - core: Perf refuses to register when Core is missing or below NEEDS_CORE
 - core: Perf's own stringifier renders a secret as <secret>
 
+### test_core_follow_color.lua (9)
+
+- core follow color: a stand-in answers for a unit that does not exist
+- core follow color: a unit that exists is never replaced by the stand-in
+- core follow color: ResolveColor passes the stand-in through and keeps the stored alpha
+- core follow color: a class that resolves comes first, whatever the skin companion says
+- core follow color: an unresolved class falls to the skin while its companion is on
+- core follow color: the stand-in wins over the skin in a preview
+- core follow color: the skin's alpha is the stored one when the reader gives none
+- core follow color: the stored swatch when neither rung answers
+- core follow color: a reader may answer a color table
+
 ### test_core_resize.lua (26)
 
 - resize: MakeResizable makes the frame resizable and answers the grip it built
@@ -1177,7 +1189,7 @@ Total.
 - browser: the swatch tints every glyph; Choose hands a glyph its color, white as none
 - browser: the color picker its swatch opened closes with the browser, and only that one
 - browser: a host's picker tracking is used in place of the browser's
-- icon browser: the window opts out of the settings mark, with its reason
+- icon browser: the window is a companion of the settings row that opened it
 - icon browser: its close shows a tooltip on enter and hides it on leave
 
 ### test_icon_browser_search.lua (14)
@@ -1417,11 +1429,12 @@ Total.
 - skin defs: a section header's text reads on its band in every skin
 - skin defs: a mark goes visibly hot from its rest and from a heading in every skin
 
-### test_skin_hud_tokens.lua (6)
+### test_skin_hud_tokens.lua (7)
 
 - skin hud tokens: the schema carries them, in the HUD group
 - skin hud tokens: Ka0s Default is what the HUD draws today
 - skin hud tokens: every other skin states its own, and they read
+- skin hud tokens: every skin's HUD shadow sits 1, -1, High Contrast's included
 - skin hud tokens: the getters answer the owner's skin and are in the facade
 - skin hud tokens: HudShadow tells no shadow from the host's own
 - skin hud tokens: an owner token keeps the addon's pixels under Ka0s Default and follows otherwise
@@ -1587,9 +1600,31 @@ Total.
 - footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (midnight)
 - footer button hover: the sim panel's Start lights in the link color on enter, rest on leave (forever)
 - footer button hover: an owner-less sim panel's Start hovers Ka0s Default's link orange
-- footer button hover: a disabled primary keeps its rest fill under the pointer
+- footer button hover: a disabled primary shows no hover fill under the pointer
 - footer button hover: a primary whose fill is remapped hovers only by a remapped hoverBg
 - footer button hover: a primary with no backdrop repaints its fill region, the gradient included
+
+### test_skin_primary_disabled.lua (19)
+
+- skin primary disabled: a disabled primary paints the plain button box and the disabled label (ka0s)
+- skin primary disabled: enabling restores the primary, disabling takes it back (ka0s)
+- skin primary disabled: a disabled primary paints the plain button box and the disabled label (obsidian)
+- skin primary disabled: enabling restores the primary, disabling takes it back (obsidian)
+- skin primary disabled: a disabled primary paints the plain button box and the disabled label (azeroth)
+- skin primary disabled: enabling restores the primary, disabling takes it back (azeroth)
+- skin primary disabled: a disabled primary paints the plain button box and the disabled label (glass)
+- skin primary disabled: enabling restores the primary, disabling takes it back (glass)
+- skin primary disabled: a disabled primary paints the plain button box and the disabled label (contrast)
+- skin primary disabled: enabling restores the primary, disabling takes it back (contrast)
+- skin primary disabled: a disabled primary paints the plain button box and the disabled label (ember)
+- skin primary disabled: enabling restores the primary, disabling takes it back (ember)
+- skin primary disabled: a disabled primary paints the plain button box and the disabled label (wow)
+- skin primary disabled: enabling restores the primary, disabling takes it back (wow)
+- skin primary disabled: a disabled primary paints the plain button box and the disabled label (midnight)
+- skin primary disabled: enabling restores the primary, disabling takes it back (midnight)
+- skin primary disabled: a disabled primary paints the plain button box and the disabled label (forever)
+- skin primary disabled: enabling restores the primary, disabling takes it back (forever)
+- skin primary disabled: a host's own bg remap still wins while disabled
 
 ### test_skin_paint.lua (46)
 
@@ -1845,6 +1880,18 @@ Total.
 - menu: a dropdown takes the row options too, and onSelect its row
 - menu: the dropdown's own label is one line
 - menu: an owned menu reads its title, disabled and rule colors from the skin
+
+### test_widgets_menu_selected.lua (9)
+
+- menu selected: every shipped skin's selected row is the gold, standing off its plain row
+- menu selected: the skins whose text is too near the gold are the pinned list
+- menu selected: WoW Forever paints the gold, not its tan accent, and a title keeps the accent
+- menu selected: the selected color replaces a row's value color (class, quality)
+- menu selected: a preset row (isActive, Character: Current) paints selected the same way
+- menu selected: a multi-select dropdown's selected rows follow the same rule
+- menu selected: the rule's ΔE00 is the shared fixture's, and it answers the gold or textSel
+- menu selected: a ticked W.ContextMenu row (radio, selected) paints selected, not a tick beside plain text
+- menu selected: W.SelectedColor(owner) answers the color the shared menu paints, for a host's own menu
 
 ### test_widgets_submenu.lua (18)
 
@@ -2282,7 +2329,7 @@ Total.
 - host bands: no skinBands, an unregistered owner or no owner is minor 18's paint (97.16)
 - skin follow shells: the suite releases its bench
 
-### test_header_buttons.lua (25)
+### test_header_buttons.lua (27)
 
 - header buttons: Core's registry records an opener, answers HasSettings, and OpenSettings calls it
 - header buttons: a raising opener is caught and answers false
@@ -2297,6 +2344,8 @@ Total.
 - header buttons: hideOnSettings hides the window before settings opens
 - header buttons: a raising settings override is caught
 - header buttons: settings = false needs a reason, and records it
+- header buttons: a companion window carries no settings mark and needs no reason
+- header buttons: companion wins over settings, and extras still lay out
 - header buttons: the art comes from the owner's copy, else the word, else the glyph
 - header buttons: a mark's tooltip is attached above it, and tips = false is retired
 - header buttons: Core's close mark says Close above itself, and an owner's words replace it
@@ -2306,8 +2355,8 @@ Total.
 - header buttons: a drag strip's marks each carry a tooltip, the library's words without the host's
 - header buttons: the debug console reads Copy, Clear, settings, close, every control with a tooltip
 - header buttons: the console's tooltips are module strings a host's L overrides, rawget-keyed
-- header buttons: the console's onSettings overrides the registry, on both its windows
-- header buttons: the copy window reads settings, close, and hides itself before settings opens
+- header buttons: the console's onSettings overrides the registry; its copy window is a companion
+- header buttons: the copy window is a companion, close only, onSettings accepted unread
 - header buttons: the perf panel reads settings, close
 
 ### test_widgets_reorder.lua (7)
@@ -5047,7 +5096,7 @@ Total.
 - sim host: a stand-down mid-run stops first, suppresses cleanup delivery and hides the panel
 - sim host: a latch set without a stop is caught by Fire's self-stop backstop
 
-### test_sim_sample.lua (13)
+### test_sim_sample.lua (22)
 
 - sim sample: SAMPLE holds a retail and a forever set of five characters, and nothing else
 - sim sample: every name, surname and pet is fictional by the convention
@@ -5061,7 +5110,30 @@ Total.
 - sim sample: Sample() reads the client at call time, not at load
 - sim sample: with no Compat, or a client that is neither, Sample() answers retail
 - sim sample: an unknown client raises at the caller's line
-- sim sample: the shell's minor is 4
+- sim sample: SampleCrowd holds enough people for a 40-player raid roster, on both clients
+- sim sample: every crowd row follows the convention, rules 1 to 5, on both clients and many seeds
+- sim sample: crowd names are unique and never a protagonist's name, surname or pet
+- sim sample: a crowd covers every class the client has once it is that large
+- sim sample: a crowd's roles are balanced, a tank and a healer for every three damage
+- sim sample: a seed replays its crowd, and a crowd is a copy the caller owns
+- sim sample: the same seed names the same people on both clients, in the same order
+- sim sample: SampleCrowd() reads the client through Compat at call time
+- sim sample: SampleCrowd refuses an unknown client, a bad size and a bad seed at the caller's line
+- sim sample: the shell's minor is 5
+
+### test_sim_start_panel.lua (11)
+
+- sim start panel: a host's own sim:Start shows the panel
+- sim start panel: a typed start shows the panel
+- sim start panel: a typed start reopens a panel the player closed
+- sim start panel: the bare verb still shows the panel and starts nothing
+- sim start panel: a Restart shows the panel again
+- sim start panel: the panel's Start row and picker start with the panel shown
+- sim start panel: the Master controls Sim box (the host's toggleSim) shows the panel
+- sim start panel: a refused start shows nothing
+- sim start panel: a headless session (no Widgets, no panel) starts and stays headless
+- sim start panel: a session that ended inside prepare shows nothing
+- sim start panel: a ShowPanel that raises never fails the start
 
 ### test_loader.lua (6)
 
@@ -5836,6 +5908,7 @@ Total.
 | Suite | Cases |
 |-------|------:|
 | test_core.lua | 52 |
+| test_core_follow_color.lua | 9 |
 | test_core_resize.lua | 26 |
 | test_tooltip.lua | 32 |
 | test_tooltip_place.lua | 20 |
@@ -5884,12 +5957,13 @@ Total.
 | test_skin_stock_default.lua | 9 |
 | test_skin_defs.lua | 44 |
 | test_skin_row_contrast.lua | 7 |
-| test_skin_hud_tokens.lua | 6 |
+| test_skin_hud_tokens.lua | 7 |
 | test_skin_hud_members.lua | 30 |
 | test_skin_host_gaps.lua | 46 |
 | test_skin_width_parity.lua | 18 |
 | test_skin_button_contrast.lua | 10 |
 | test_footer_button_hover.lua | 46 |
+| test_skin_primary_disabled.lua | 19 |
 | test_skin_paint.lua | 46 |
 | test_skin_paint_controls.lua | 35 |
 | test_skin_eui.lua | 30 |
@@ -5897,6 +5971,7 @@ Total.
 | test_skin_ace_tree.lua | 14 |
 | test_widgets.lua | 58 |
 | test_widgets_menu.lua | 23 |
+| test_widgets_menu_selected.lua | 9 |
 | test_widgets_submenu.lua | 18 |
 | test_widgets_menu_follow.lua | 5 |
 | test_widgets_reorderlist.lua | 24 |
@@ -5917,7 +5992,7 @@ Total.
 | test_skin_follow_bars.lua | 15 |
 | test_skin_follow_callout.lua | 22 |
 | test_skin_follow_shells.lua | 12 |
-| test_header_buttons.lua | 25 |
+| test_header_buttons.lua | 27 |
 | test_widgets_reorder.lua | 7 |
 | test_widgets_skin.lua | 29 |
 | test_widgets_skin_scope.lua | 20 |
@@ -6026,7 +6101,8 @@ Total.
 | test_sim_isolation.lua | 11 |
 | test_sim_stub.lua | 6 |
 | test_sim_host.lua | 7 |
-| test_sim_sample.lua | 13 |
+| test_sim_sample.lua | 22 |
+| test_sim_start_panel.lua | 11 |
 | test_loader.lua | 6 |
 | test_parallel.lua | 4 |
 | test_kit_limits.lua | 12 |
@@ -6066,4 +6142,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5124** |
+| **Total** | **5184** |

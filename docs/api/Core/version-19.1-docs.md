@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Core-1.0` |
 | Files and minors | `Core.lua` minor **19** · `CorePixel.lua` minor **1** |
 | Shipped in | v1.108.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 18.1](./version-18.1-docs.md) (v1.105.0 – v1.107.0) — the same members; a host `skin` table never reached the owner's facade. |
-| Superseded by | — |
+| Superseded by | [version 20.1](./version-20.1-docs.md) |
 | Requires | nothing new: `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Core-1.0").MODULES` → `{ Core = 19, CorePixel = 1 }` |
 
@@ -674,3 +674,7 @@ removed or repurposed, so a host written against minor 1 keeps working unmodifie
 minor 3 is the only release in this major's history to have moved them. A host that read the table
 gets the new look for free; a host that copied the old values keeps the old look and no longer
 matches the collection.
+
+## Moving to version 20.1
+
+`Core.lua` 19 -> 20 (`FB-LK-01`, Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/`): `ClassColor` and `ResolveColor` take an optional `standIn`, resolved while the described unit does not exist, and `FollowColor` is the class -> skin -> swatch ladder. Nothing a host wrote against 19 changes.

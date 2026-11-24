@@ -31,7 +31,7 @@ read_globals = {
   -- via "/sw play": RunMacroText is protected and would fail in combat.
   "Stopwatch_Clear", "Stopwatch_Play", "Stopwatch_Pause", "StopwatchFrame",
   -- Capture context, so a saved record says who/where/what.
-  "UnitName", "UnitLevel", "UnitClass", "GetRealmName", "GetZoneText", "GetSubZoneText",
+  "UnitName", "UnitLevel", "UnitClass", "UnitExists", "GetRealmName", "GetZoneText", "GetSubZoneText",
   -- The client's class palette, read by LibKa0s-Core-1.0's ClassColor. RAID_CLASS_COLORS rather
   -- than C_ClassColor because it is the table every other UI on the player's screen already reads.
   "RAID_CLASS_COLORS",

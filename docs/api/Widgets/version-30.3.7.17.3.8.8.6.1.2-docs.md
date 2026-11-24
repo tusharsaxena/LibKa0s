@@ -10,9 +10,9 @@
 | Major | `LibKa0s-Widgets-1.0` |
 | Files and minors | `Widgets.lua` **30** · `WidgetsDropdown.lua` **3** · `WidgetsReorder.lua` **7** · `WidgetsDragHandle.lua` **17** · `WidgetsDragHandleTip.lua` **3** · `WidgetsLineChart.lua` **8** · `WidgetsAutocomplete.lua` **8** · `WidgetsCopyWindow.lua` **6** · `WidgetsHeader.lua` **1** · `WidgetsBar.lua` **2** |
 | Shipped in | v1.111.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 30.3.7.16.3.8.8.6.1.2](./version-30.3.7.16.3.8.8.6.1.2-docs.md) (v1.108.0) — a drag strip answered a right-click only when its host passed `onRightClick`, so a strip whose gear opened its settings did nothing on a right-click (Ka0s Absorb Tracker's) |
-| Superseded by | — |
+| Superseded by | [version 30.3.7.17.3.8.8.7.2.2](./version-30.3.7.17.3.8.8.7.2.2-docs.md) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, unchanged); the pixel edges need Core minor 16 and are resolved at call time; `LibKa0s-Skin-1.0` is resolved at call time and is optional |
 | Confirm in-game | `LibStub("LibKa0s-Widgets-1.0").MODULES` → `{ Widgets = 30, WidgetsDropdown = 3, WidgetsReorder = 7, WidgetsDragHandle = 17, WidgetsDragHandleTip = 3, WidgetsLineChart = 8, WidgetsAutocomplete = 8, WidgetsCopyWindow = 6, WidgetsHeader = 1, WidgetsBar = 2 }` |
 
@@ -2445,3 +2445,7 @@ visual fidelity as unverified.
 **Consumer census, v1.83.0** ([`CONSUMERS.md`](../CONSUMERS.md)). No host calls or passes these, and each is kept:
 
 - `applySkin`: no consumer as of v1.83.0, kept because it remains the whole-job hook for a host that draws `CopyWindow` its own way; every host left it at the skinning rollout for the skin owner path.
+
+## Moving to version 30.3.7.17.3.8.8.7.2.2
+
+`WidgetsCopyWindow.lua` 6 -> 7 and `WidgetsHeader.lua` 1 -> 2 (`FB-LK-03`, Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/`): `HeaderButtons` takes `companion = true` (no settings mark, no reason), and the copy window is one. A host that clicked the copy window's settings mark drops it.

@@ -13,6 +13,11 @@
 --     talent tree 1-3 whose role is the one LibKa0s-Role-1.0 seeds for that tree;
 --   * a pet only on a class that has one.
 --
+-- `Sim.SampleCrowd(client, n, seed)` (Sim minor 5, LibKa0s#104, FB2-LK-03) answers the crowd beyond
+-- those five, held to the same convention, with rule 6 retired: every named sample person in every
+-- addon comes from the library, so the crowd must be big enough for a 40-player raid roster, cover
+-- every class the client has, balance its roles and replay for a seed.
+--
 -- Profile-independent: every case states its client through the kit's MockClient on a mock set of
 -- its own, so `KA0S_KIT_CLIENT=forever` runs the same cases to the same answers.
 
@@ -228,8 +233,193 @@ test("sim sample: an unknown client raises at the caller's line", function()
   end
 end)
 
-test("sim sample: the shell's minor is 4", function()
+-- -- SampleCrowd(client, n, seed) (minor 5, LibKa0s#104) ---------------------------------------
+
+-- The classes each client has, and the roles a role-balanced crowd draws in turn.
+local CLASSES = {
+  retail = { "DEATHKNIGHT", "DEMONHUNTER", "DRUID", "EVOKER", "HUNTER", "MAGE", "MONK", "PALADIN", "PRIEST",
+    "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR" },
+  forever = { "DRUID", "HUNTER", "MAGE", "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR" },
+}
+local SEEDS = { 1, 2, 7, 42, 20261124, 2147483646 }
+
+--- Hold one crowd row to the convention, by its client's shape (the protagonists' cases, row by row).
+local function conventional(m, client, c, where)
+  assertTrue(fictional(c.name), where .. ": name " .. tostring(c.name))
+  if c.surname ~= nil then assertTrue(fictional(c.surname), where .. ": surname " .. tostring(c.surname)) end
+  if c.pet ~= nil then
+    assertTrue(fictional(c.pet), where .. ": pet " .. tostring(c.pet))
+    assertTrue(PET_CLASSES[c.classFile] == true, where .. ": a pet on " .. tostring(c.classFile))
+  else
+    assertNil(PET_CLASSES[c.classFile], where .. ": a " .. tostring(c.classFile) .. " with no pet")
+  end
+  assertTrue(REALMS[c.realm] == true, where .. ": realm " .. tostring(c.realm))
+  for _, field in ipairs({ "name", "surname", "realm", "fullName", "pet", "spec" }) do
+    if c[field] ~= nil then noRealRealm(c[field], where .. "." .. field) end
+  end
+  assertEqual(type(c.spec), "string", where .. ": spec label")
+  if client == "retail" then
+    assertNil(c.surname, where .. ": retail has no surname")
+    assertNil(c.tree, where .. ": retail has no tree")
+    assertEqual(c.fullName, c.name .. "-" .. c.realm, where .. ": fullName")
+    local specs = RETAIL_SPECS[c.classFile]
+    assertTrue(specs ~= nil and specs[c.specID] ~= nil, where .. ": specID " .. tostring(c.specID))
+    assertEqual(c.role, specs[c.specID], where .. ": role")
+  else
+    assertEqual(c.fullName, c.name .. " " .. tostring(c.surname), where .. ": fullName has no realm")
+    assertNil(c.specID, where .. ": no forever spec ID")
+    local trees = m.LibStub("LibKa0s-Role-1.0").TALENT_GROUP_ROLE[c.classFile]
+    assertTrue(trees ~= nil, where .. ": " .. tostring(c.classFile) .. " is not a forever class")
+    assertTrue(c.tree == 1 or c.tree == 2 or c.tree == 3, where .. ": tree " .. tostring(c.tree))
+    assertEqual(c.role, trees[c.tree], where .. ": role")
+  end
+end
+
+local function rowKey(c)
+  local keys, out = {}, {}
+  for k in pairs(c) do keys[#keys + 1] = k end
+  table.sort(keys)
+  for _, k in ipairs(keys) do out[#out + 1] = k .. "=" .. tostring(c[k]) end
+  return table.concat(out, ";")
+end
+
+local function crowdKey(rows)
+  local out = {}
+  for i, c in ipairs(rows) do out[i] = rowKey(c) end
+  return table.concat(out, "|")
+end
+
+test("sim sample: SampleCrowd holds enough people for a 40-player raid roster, on both clients", function()
   local _, Sim = env()
-  assertEqual(Sim.MINOR, 4)
-  assertEqual(Sim.MODULES.Sim, 4)
+  assertEqual(type(Sim.SampleCrowd), "function")
+  assertTrue(type(Sim.CROWD_MAX) == "number" and Sim.CROWD_MAX >= 39, "CROWD_MAX covers 39 raiders besides you")
+  for _, client in ipairs({ "retail", "forever" }) do
+    for _, n in ipairs({ 0, 1, 4, 5, 19, 35, 39, Sim.CROWD_MAX }) do
+      assertEqual(#Sim.SampleCrowd(client, n), n, client .. " n=" .. n)
+    end
+    -- The raid DropWatcher simulates: you, the five protagonists and 34 of the crowd, all apart.
+    local seen = {}
+    local raid = Sim.Sample(client)
+    for _, c in ipairs(Sim.SampleCrowd(client, 35, 9)) do raid[#raid + 1] = c end
+    assertEqual(#raid, 40, client)
+    for _, c in ipairs(raid) do
+      assertNil(seen[c.fullName], client .. ": " .. c.fullName .. " twice in the raid")
+      seen[c.fullName] = true
+    end
+  end
+end)
+
+test("sim sample: every crowd row follows the convention, rules 1 to 5, on both clients and many seeds", function()
+  local m, Sim = env()
+  for _, client in ipairs({ "retail", "forever" }) do
+    for _, seed in ipairs(SEEDS) do
+      for i, c in ipairs(Sim.SampleCrowd(client, Sim.CROWD_MAX, seed)) do
+        conventional(m, client, c, ("%s seed %d #%d %s"):format(client, seed, i, tostring(c.name)))
+      end
+    end
+  end
+end)
+
+test("sim sample: crowd names are unique and never a protagonist's name, surname or pet", function()
+  local _, Sim = env()
+  for _, client in ipairs({ "retail", "forever" }) do
+    local taken = {}
+    for _, row in ipairs(Sim.SAMPLE[client]) do
+      for _, field in ipairs({ "name", "surname", "pet" }) do
+        if row[field] then taken[row[field]] = row.name .. "." .. field end
+      end
+    end
+    for _, seed in ipairs(SEEDS) do
+      local names, full = {}, {}
+      for i, c in ipairs(Sim.SampleCrowd(client, Sim.CROWD_MAX, seed)) do
+        local where = ("%s seed %d #%d"):format(client, seed, i)
+        assertNil(taken[c.name], where .. ": " .. c.name .. " is the protagonist " .. tostring(taken[c.name]))
+        if c.surname then assertNil(taken[c.surname], where .. ": surname " .. c.surname .. " is a protagonist's") end
+        if c.pet then assertNil(taken[c.pet], where .. ": pet " .. c.pet .. " is a protagonist's") end
+        assertNil(names[c.name], where .. ": name repeated")
+        assertNil(full[c.fullName], where .. ": fullName repeated")
+        names[c.name], full[c.fullName] = true, true
+      end
+    end
+  end
+end)
+
+test("sim sample: a crowd covers every class the client has once it is that large", function()
+  local _, Sim = env()
+  for _, client in ipairs({ "retail", "forever" }) do
+    for _, seed in ipairs(SEEDS) do
+      for _, n in ipairs({ #CLASSES[client], 20, 40, Sim.CROWD_MAX }) do
+        local have = {}
+        for _, c in ipairs(Sim.SampleCrowd(client, n, seed)) do have[c.classFile] = true end
+        assertEqual(sortedKeys(have), table.concat(CLASSES[client], ","), ("%s seed %d n=%d"):format(client, seed, n))
+      end
+    end
+  end
+end)
+
+test("sim sample: a crowd's roles are balanced, a tank and a healer for every three damage", function()
+  local _, Sim = env()
+  for _, client in ipairs({ "retail", "forever" }) do
+    for n = 1, Sim.CROWD_MAX do
+      local count = { TANK = 0, HEALER = 0, DAMAGER = 0 }
+      for _, c in ipairs(Sim.SampleCrowd(client, n, n)) do count[c.role] = count[c.role] + 1 end
+      local where = ("%s n=%d"):format(client, n)
+      assertEqual(count.TANK, math.floor((n + 4) / 5), where .. " tanks")
+      assertEqual(count.HEALER, math.floor((n + 3) / 5), where .. " healers")
+      assertEqual(count.DAMAGER, n - count.TANK - count.HEALER, where .. " damage")
+    end
+  end
+end)
+
+test("sim sample: a seed replays its crowd, and a crowd is a copy the caller owns", function()
+  local _, Sim = env()
+  for _, client in ipairs({ "retail", "forever" }) do
+    for _, seed in ipairs(SEEDS) do
+      local a, b = Sim.SampleCrowd(client, 40, seed), Sim.SampleCrowd(client, 40, seed)
+      assertEqual(crowdKey(a), crowdKey(b), client .. " seed " .. seed)
+      a[1].name = "Changed"
+      assertTrue(Sim.SampleCrowd(client, 40, seed)[1].name ~= "Changed", client .. ": a write reached the next call")
+    end
+    assertEqual(crowdKey(Sim.SampleCrowd(client, 12)), crowdKey(Sim.SampleCrowd(client, 12, 1)), client .. ": nil is seed 1")
+    assertTrue(crowdKey(Sim.SampleCrowd(client, 12, 2)) ~= crowdKey(Sim.SampleCrowd(client, 12, 3)), client .. ": seeds differ")
+    -- A smaller crowd is the larger one's head, so a host that asks for more keeps its first people.
+    local big, small = Sim.SampleCrowd(client, Sim.CROWD_MAX, 5), Sim.SampleCrowd(client, 10, 5)
+    for i = 1, 10 do assertEqual(rowKey(small[i]), rowKey(big[i]), client .. " head #" .. i) end
+  end
+end)
+
+test("sim sample: the same seed names the same people on both clients, in the same order", function()
+  local _, Sim = env()
+  for _, seed in ipairs(SEEDS) do
+    local r, f = Sim.SampleCrowd("retail", 30, seed), Sim.SampleCrowd("forever", 30, seed)
+    for i = 1, 30 do assertEqual(r[i].name, f[i].name, "seed " .. seed .. " #" .. i) end
+  end
+end)
+
+test("sim sample: SampleCrowd() reads the client through Compat at call time", function()
+  local m, Sim = env("retail")
+  assertEqual(Sim.SampleCrowd(nil, 3, 4)[1].fullName, Sim.SampleCrowd("retail", 3, 4)[1].fullName, "on retail")
+  MockClient.apply(m, "forever")
+  assertEqual(Sim.SampleCrowd(nil, 3, 4)[1].fullName, Sim.SampleCrowd("forever", 3, 4)[1].fullName, "on forever")
+  local _, bare = env("forever", { noCompat = true })
+  assertEqual(bare.SampleCrowd(nil, 3, 4)[1].fullName, bare.SampleCrowd("retail", 3, 4)[1].fullName, "no Compat")
+end)
+
+test("sim sample: SampleCrowd refuses an unknown client, a bad size and a bad seed at the caller's line", function()
+  local _, Sim = env()
+  local function raises(needle, ...)
+    local ok, err = pcall(Sim.SampleCrowd, ...)
+    assertFalse(ok, needle)
+    assertTrue(tostring(err):find(needle, 1, true) ~= nil, tostring(err))
+  end
+  raises('SampleCrowd: unknown client "classic"', "classic", 3)
+  for _, bad in ipairs({ -1, 1.5, Sim.CROWD_MAX + 1, "x" }) do raises("SampleCrowd: n must be", "retail", bad) end
+  raises("SampleCrowd: n must be", "retail", nil)
+  raises("SampleCrowd: seed must be", "retail", 3, "x")
+end)
+
+test("sim sample: the shell's minor is 5", function()
+  local _, Sim = env()
+  assertEqual(Sim.MINOR, 5)
+  assertEqual(Sim.MODULES.Sim, 5)
 end)

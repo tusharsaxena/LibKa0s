@@ -274,7 +274,7 @@ local function primaryButton(m)
   return b
 end
 
-test("footer button hover: a disabled primary keeps its rest fill under the pointer", function()
+test("footer button hover: a disabled primary shows no hover fill under the pointer", function()
   local m, Skin = F.env()
   local S = F.owner(Skin, "LootHistory", "obsidian")
   local b, on = primaryButton(m), true
@@ -282,12 +282,13 @@ test("footer button hover: a disabled primary keeps its rest fill under the poin
   S.Button(b, { primary = true })
   on = false; b:__fire("OnDisable")
   b:__fire("OnEnter")
-  assertEqual(F.rgba(m.__paint(b).backdropColor), F.tok(Skin, "obsidian", "btnPrimary.bg"), "no hover fill while disabled")
+  -- SkinPaintControls minor 21 (tests/test_skin_primary_disabled.lua): disabled, a primary is the plain box.
+  assertEqual(F.rgba(m.__paint(b).backdropColor), F.tok(Skin, "obsidian", "btn.bg"), "no hover fill while disabled")
   on = true; b:__fire("OnEnable")
   b:__fire("OnEnter")
   assertEqual(F.rgba(m.__paint(b).backdropColor), F.tok(Skin, "obsidian", "btnPrimary.hoverBg"), "enabled, it hovers")
   on = false; b:__fire("OnDisable")
-  assertEqual(F.rgba(m.__paint(b).backdropColor), F.tok(Skin, "obsidian", "btnPrimary.bg"), "disabled while hovered: rest")
+  assertEqual(F.rgba(m.__paint(b).backdropColor), F.tok(Skin, "obsidian", "btn.bg"), "disabled while hovered: the plain box")
 end)
 
 test("footer button hover: a primary whose fill is remapped hovers only by a remapped hoverBg", function()

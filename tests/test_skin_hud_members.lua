@@ -248,7 +248,7 @@ test("skin hud members: HudFont's false draws no shadow, and clears the last one
   local S = F.owner(Skin, OWNER, "contrast")
   local fs = fontString(m)
   local obj = S.HudFont(fs, { face = FACE, size = 12, shadow = true })
-  assertEqual(obj.shadow[1], 2, "High Contrast's")
+  assertEqual(obj.shadow[1], 1, "High Contrast's (1, -1 since SkinDefsOthers minor 11)")
   Skin:SetChoice(OWNER, "ka0s", "ka0s")
   assertEqual(S.HudShadow(), false)
   obj = S.HudFont(fs, { face = FACE, size = 12, shadow = true })

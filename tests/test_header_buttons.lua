@@ -203,6 +203,31 @@ test("header buttons: settings = false needs a reason, and records it", function
   assertEqual(joined(hb.order), "close")
 end)
 
+test("header buttons: a companion window carries no settings mark and needs no reason", function()
+  -- WidgetsHeader minor 2 (FB-LK-03 of Ka0sAddonsCommonTasks docs/2026-11-24-FEEDBACK_BATCH, the
+  -- owner's T finding): a popup, dialog or confirm that belongs to another window is a companion, told
+  -- apart from a waiver. red under: minor 1, which built the gear whatever `companion` said.
+  local b, frame = bar()
+  local hb = W.HeaderButtons(b, { owner = nextName(), frame = frame, companion = true })
+  assertNil(hb.settings, "no settings mark")
+  assertTrue(hb.companion == true, "recorded as a companion")
+  assertNil(hb.optOut, "a companion is not a waiver")
+  assertEqual(joined(hb.order), "close")
+  assertEqual(hb.offsets.close, -6)
+  assertEqual(#hb.right, 1, "S.Header's list is the close alone")
+  assertTrue(hb.right[1].frame == hb.close)
+end)
+
+test("header buttons: companion wins over settings, and extras still lay out", function()
+  local hb = W.HeaderButtons(bar(), { owner = nextName(), companion = true, settings = true, extras = {
+    { key = "a", label = "A", width = 30, onClick = function() end } } })
+  assertNil(hb.settings)
+  assertEqual(joined(hb.order), "a,close")
+  assertEqual(hb.offsets.a, -30, "past the close and a gap, no settings slot")
+  local plain = W.HeaderButtons(bar(), { owner = nextName() })
+  assertTrue(plain.companion == nil and plain.settings ~= nil, "a window that is not one keeps the gear")
+end)
+
 test("header buttons: the art comes from the owner's copy, else the word, else the glyph", function()
   local hb = W.HeaderButtons(bar(), { owner = "HBArtHost", extras = {
     { key = "copy", icon = "copy", label = "Copy", width = 40 } } })
@@ -399,7 +424,7 @@ test("header buttons: the console's tooltips are module strings a host's L overr
   assertEqual(said.Clear, T.debuglog.STRINGS.CLEAR_TIP, "an AceLocale-style __index answers no key")
 end)
 
-test("header buttons: the console's onSettings overrides the registry, on both its windows", function()
+test("header buttons: the console's onSettings overrides the registry; its copy window is a companion", function()
   local n = 0
   local D = T.debuglog:New{ name = nextName("HBConsole"), addonName = "HBConsoleOwn", title = "Host",
     font = "Interface\\Fonts\\ARIALN.TTF", isEnabled = function() return false end, setEnabled = function() end,
@@ -408,22 +433,22 @@ test("header buttons: the console's onSettings overrides the registry, on both i
   D._frameForTest.settingsButton:__fire("OnClick")
   D:ShowCopy()
   local copy = D._copyWindowForTest:GetFrame()
-  copy.settingsButton:__fire("OnClick")
-  assertEqual(n, 2)
+  assertNil(copy.settingsButton, "the copy window carries close only (WidgetsCopyWindow minor 7)")
+  assertEqual(n, 1)
 end)
 
-test("header buttons: the copy window reads settings, close, and hides itself before settings opens", function()
-  local owner, order = nextName("HBCopy"), {}
-  core.RegisterSettingsOpener(owner, function() order[#order + 1] = "open" end)
-  local win = W.CopyWindow{ addonName = owner }
+test("header buttons: the copy window is a companion, close only, onSettings accepted unread", function()
+  -- WidgetsCopyWindow minor 7 (FB-LK-03): it belongs to the export modal or console that opened it.
+  -- red under: minor 6, which built the gear and hid itself before settings opened.
+  local owner, n = nextName("HBCopy"), 0
+  core.RegisterSettingsOpener(owner, function() n = n + 1 end)
+  local win = W.CopyWindow{ addonName = owner, onSettings = function() n = n + 1 end }
   local f = win:Show("text")
-  assertSettingsThenClose(f.headerButtons, "copy window")
-  assertEqual(joined(f.headerButtons.order), "settings,close")
-  TitleTips.check({ { "settings", f.settingsButton }, { "close", f.closeButton } }, "copy window")
-  local hide = f.Hide
-  rawset(f, "Hide", function(self) order[#order + 1] = "hide"; return hide(self) end)
-  f.settingsButton:__fire("OnClick")
-  assertEqual(joined(order), "hide,open", "FULLSCREEN, so it hides first")
+  assertTrue(f.headerButtons.companion == true, "a companion")
+  assertNil(f.settingsButton, "no settings mark")
+  assertEqual(joined(f.headerButtons.order), "close")
+  TitleTips.check({ { "close", f.closeButton } }, "copy window")
+  assertEqual(n, 0)
 end)
 
 test("header buttons: the perf panel reads settings, close", function()
