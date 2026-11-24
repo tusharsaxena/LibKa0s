@@ -34,6 +34,17 @@ Versions in this release: `LibKa0s-ForeverDB-1.0` key **1** (ForeverDB minor 1, 
 - **The gate** in `CLAUDE.md` gains `python3 -m pytest -q tools/seeds` (unittest without pytest); `DEPENDENCIES.md` names the tool and pytest; the documentation map names the contract and `docs/seed-research/`.
 - Tests: `tests/test_kit_inventory.lua` re-pins revision 62.
 
+### The release (`SF-LK-REL`)
+
+- **ForeverDB's `Spots` under CCN 15**: the release run's complexity suite measured `lib.Spots` at 17, so the range check moved into two file-local helpers (`coord`, `mapPoints`), with the same answers. ForeverDB stays minor 1, since the file has not shipped.
+- `docs/releasing.md`'s semver and provenance template, and the README's standards pointer (v2.121.0) and kit line, move to this release.
+
+Release gate (`docs/automated-tests/20261125-021723/`): lint pass, 0/0 in 392 files;
+tests pass, 5223 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim file and not `Widgets.lua` moved; the release moves ForeverDB 1 and DebugLogDiagnostics 12 only.
+
 ## v1.113.0 — 2026-11-24
 
 Opened 2026-11-24, on `feat/2026-11-24-feedback-batch` (after v1.112.0, still local): round 2 of the owner's 2026-11-24 feedback batch (Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/R2_SMOKE_FEEDBACK.md`), items `FB2-LK-01` to `FB2-LK-03` and this release, `FB2-LK-REL`. Built to WowAddonStandards v2.120.0, which lands the three rules this release implements (a sim start shows the step panel; a selected row's text is distinct; one source of sample names).
