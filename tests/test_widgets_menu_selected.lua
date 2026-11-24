@@ -197,3 +197,29 @@ test("menu selected: the rule's ΔE00 is the shared fixture's, and it answers te
   assertEqual(rgb(rule({ 0.9, 0.9, 0.9, 1 }, { 0.9, 0.9, 0.9, 1 })), rgb(GOLD), "a textSel equal to text")
   assertEqual(rgb(rule({ 0.89, 0.71, 0.35, 1 }, { 0.91, 0.87, 0.74, 1 })), rgb(GOLD), "Azeroth's pair")
 end)
+
+test("menu selected: a ticked W.ContextMenu row (radio, selected) paints selected, not a tick beside plain text", function()
+  -- red under: a tick or radio beside unchanged text, which the standard's skinning-§4 (v2.120.0,
+  -- "a mark alone is not enough") rules out.
+  local m, Skin, W = env()
+  F.owner(Skin, OWNER, "ka0s")
+  local on = "two"
+  local rows = { { label = "One", radio = true, selected = function() return on == "one" end },
+                 { label = "Two", radio = true, selected = function() return on == "two" end },
+                 { label = "Flag", selected = true }, { label = "Plain" } }
+  for _, key in ipairs(skinKeys(Skin)) do
+    Skin:SetChoice(OWNER, "ka0s", key)
+    local menu = W.ContextMenu(m.CreateFrame("Frame", nil, m.UIParent), rows, { owner = OWNER })
+    local t = Skin:ResolveSkin(key)
+    local want = rgb(expectedSel(t))
+    assertEqual(rgb(painted(m, menu.buttons[1])), rgb(t["menu.text"]), key .. ": an unticked radio is plain")
+    assertEqual(rgb(painted(m, menu.buttons[2])), want, key .. ": the ticked radio is selected")
+    assertEqual(rgb(painted(m, menu.buttons[3])), want, key .. ": a selected = true row is selected")
+    assertEqual(rgb(painted(m, menu.buttons[4])), rgb(t["menu.text"]), key .. ": a plain row is plain")
+    W.CloseMenu()
+  end
+  Skin:SetChoice(OWNER, "ka0s", "ka0s")
+  local menu = W.ContextMenu(m.CreateFrame("Frame", nil, m.UIParent), rows)
+  assertEqual(rgb(painted(m, menu.buttons[2])), rgb(GOLD), "an owner-less menu's ticked row is the gold")
+  W.CloseMenu()
+end)

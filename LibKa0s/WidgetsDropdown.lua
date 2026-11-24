@@ -43,7 +43,8 @@ local DROPDOWN_MINOR = 4
 -- Minor 4 (FB2-LK-02 of Ka0sAddonsCommonTasks docs/2026-11-24-FEEDBACK_BATCH, decision D3): a selected
 -- row's label always stands visibly off a plain row's. An owned menu's selection is `menu.textSel`
 -- only while it stands SEL_DE00_MIN CIEDE2000 off `menu.text`; otherwise Ka0s Default's gold (THE
--- SELECTION'S CONTRAST, below). The selection still replaces a row's value color.
+-- SELECTION'S CONTRAST, below). The selection still replaces a row's value color, and a W.ContextMenu
+-- row with a tick column (`radio`, `selected`) paints selected while it is ticked.
 -- Paired on the SHELL's minor as well as this file's own, as WidgetsCopyWindow.lua is.
 if lib.__dropdownMinor and lib.__dropdownMinor >= DROPDOWN_MINOR
   and lib.__dropdownShellMinor == lib.MINOR then return end
@@ -289,6 +290,9 @@ end
 -- state the value set alone does not express.
 local function rowSelected(dd, opt)
   if opt.isActive then return opt.isActive(dd) and true or false end
+  -- A W.ContextMenu row with a tick column is selected while it is ticked (minor 4): a tick beside
+  -- unchanged text is not enough (WowAddonStandards skinning-§4, *A selected entry reads apart*).
+  if tickColumn(dd, opt) then return rowTicked(opt) end
   if dd.multi then
     return (opt.value == "all") and (not next(dd._selected)) or (dd._selected[opt.value] or false)
   end
