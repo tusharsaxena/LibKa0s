@@ -34,7 +34,8 @@
 -- closures over a private state table, so nothing a host can index mutates them:
 --
 --   Start(opts)      -> ok, line   unknown scenario, already running, refusal (inside seam:Live),
---                                  the stood-down backstop; then the session, STARTED, prepare.
+--                                  the stood-down backstop; then the session, STARTED, prepare,
+--                                  and the step panel shown (minor 5: every start shows it).
 --                                  The scenarios are read at call time (a def listed after New
 --                                  starts, checked as New checks), and prepare gets a copy of the
 --                                  caller's opts, extra fields kept (minor 2)
@@ -94,7 +95,7 @@ local core = LibStub and LibStub("LibKa0s-Core-1.0", true)
 local NEEDS_CORE = 1
 if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary; module absent
 
-local MAJOR, MINOR = "LibKa0s-Sim-1.0", 4
+local MAJOR, MINOR = "LibKa0s-Sim-1.0", 5
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -608,6 +609,17 @@ local function runPrepare(S, session, def, opts)
   if S.session == session then S.sim:Stop("error") end
 end
 
+--- Every start shows the step panel (minor 5, FB2-LK-01 of Ka0sAddonsCommonTasks
+--- docs/2026-11-24-FEEDBACK_BATCH, decision D2): this is the one choke point the typed `start`,
+--- the panel's Start row and picker, a Restart, the Master controls Sim box and a host's own Start
+--- all go through. ShowPanel is read at call time, so a headless session (the shell's fallback
+--- answers false) stays headless, and SimPanel's own ShowPanel refuses while stood down. A panel
+--- that raises is a debug line, never a failed start.
+local function showOnStart(S)
+  local ok, err = pcall(function() return S.sim:ShowPanel() end)
+  if not ok then debugOut(S, "start: ShowPanel failed: %s", tostring(err)) end
+end
+
 -- ── the session's members ────────────────────────────────────────────────────────────────────
 
 --- Start, Stop and the two predicates.
@@ -627,6 +639,7 @@ local function installLifecycle(sim, S)
     debugOut(S, "started %s (size %s, seed %s)", tostring(opts.scenario), tostring(size), tostring(seed))
     runPrepare(S, session, def, resolvedOpts(opts, size, seed))
     if S.session ~= session then return false end   -- it ended inside prepare; its stop line printed
+    showOnStart(S)
     notify(S)
     return true, started
   end
