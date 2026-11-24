@@ -225,5 +225,6 @@ pytest, `python3 -m unittest discover -s tools/seeds` runs the same cases.
   (`_G[name]`), a member read through a local that is not a direct `Enum.X` alias, and a bare call of
   a name no source and no kit file knows (a host's global, an upvalue) are not checked. A false
   negative there costs a missed flag, never a red gate.
-- **A shared helper** for the build pin, the cache, the bundle and the rulings is LibKa0s#91's to
-  decide; until then the tool copies the addon tools' pattern and imports nothing across repos.
+- **No shared helper.** The tool copies the addon seed tools' pattern (the build pin, the cache, the
+  bundle, the rulings) and imports nothing across repos; LibKa0s#91, the survey that led to the
+  contracts, closed on 2026-11-16 without one.
