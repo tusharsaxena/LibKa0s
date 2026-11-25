@@ -10,6 +10,41 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.114.0 — 2026-11-25
+
+Opened 2026-11-25, on `feat/2026-11-25-seeds-foreverdb`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-SEEDS_AND_FOREVERDB/` (LibKa0s#93, #102, #105), items `SF-LK-01` and `SF-LK-02` and this release, `SF-LK-REL`. Built to WowAddonStandards v2.121.0, which lands the rules this release implements: clients-§10's second evidence source for Forever (ForeverDB) and clients-§11, optional runtime data addons, read only through `LibKa0s-ForeverDB-1.0`.
+
+Versions in this release: `LibKa0s-ForeverDB-1.0` key **1** (ForeverDB minor 1, a new major); `LibKa0s-DebugLog-1.0` key **23.12.1.5** (DebugLogDiagnostics minor 12); every other file at its v1.113.0 minor, and the test kit at revision **62**. No `NEEDS_*` floor rises.
+
+### The ForeverDB major (`SF-LK-01`, LibKa0s#105)
+
+- **ForeverDB minor 1** ([docs](docs/api/ForeverDB/version-1-docs.md)), `LibKa0s/ForeverDB.lua`, loaded after `Item.lua`: the one reader of ForeverDB, WoW Forever's LoadOnDemand data addon, an optional dependency for every host (`## OptionalDeps`, never `## Dependencies`). `Available()` answers `ok, reason` (`"client"` off Forever through Compat's `IsForever`, `"missing"`, the client's load reason, `"reshaped"`), and its first call is the library's one `C_AddOns.LoadAddOn("ForeverDB")`, once a session, so a host's first lookup is what loads the 12 MB. `IsLoaded()` and `Status()` never load. The lookups `Meta`, `NPC`, `Item`, `Quest` (givers and enders by kind), `ItemSources` (creature, object and container sources with chances on 0..1, nil where the database says 0, most likely first; vendors; the world-drop level), `VendorPrice` (the lowest price seen and its vendor), `Spots` (map points on 0..1) and `TrainerSpells` each answer a fresh table or nil: no pcall, no raise on a missing, old or reshaped database, never one of ForeverDB's own rows. `ForeverDB_Full` and `ForeverDB_Locales` are not read in this minor.
+- **Licensing:** ForeverDB's data is GPL-3.0 and this library is MIT, so no row of it is in the payload, the tests or the kit; the fake is invented data in its shape.
+- **`Status()` is a member the spec did not list** (its §4 names `IsLoaded()` for the diagnostics): the report's line needs the installed state and the TOC version as well as the loaded state, and building it here keeps the C_AddOns reads in the one module that owns them.
+- **DebugLogDiagnostics minor 12** ([docs](docs/api/DebugLog/version-23.12.1.5-docs.md)): the report's `LibKa0s running:` line names ForeverDB, and the identity section ends with one `ForeverDB: present=... loaded=... version=...` line (plus `build=` and `hash=` when loaded) from `Status()`, so the report never loads it. No member change.
+- **Kit revision 61** ([docs](docs/api/testkit/version-61-docs.md)): adds the opt-in `testkit/mock_foreverdb.lua`, the fake of the data addon: presets `present`, `missing`, `loadfails` and `reshaped`, the global handed over at the load and never before, a load count, an invented database (ids 990000 and up) and optional client constants. `tests/_kit/` re-synced.
+- Tests: the new `tests/test_foreverdb.lua` (the client gate, every failure answer, every member's mapping, chance and coordinate scaling, fresh tables, a reshaped database, no load at file load, the diagnostics line with and without the addon loaded) and `tests/test_mock_foreverdb.lua`; `tests/test_debuglog_diagnostics.lua` and `tests/test_debuglog_report.lua` re-pin `DebugLogDiagnostics 12`, `tests/test_kit_inventory.lua` revision 61.
+
+### The library's seed contract (`SF-LK-02`, LibKa0s#93)
+
+- **`docs/validate-seeds.md`**, the contract `/dev-copilot:validate-seeds LibKa0s <retail|forever>` runs: flavors `retail` (Ketho/BlizzardInterfaceResources branch `live`) and `forever` (branch `forever`), the build being the branch's commit sha. What it re-checks is the kit's client name sets, `testkit/client_globals_{live,forever}.lua`, and the shipped payload's client assumptions: every `Enum.X.Y` it reads (aliases too), every `C_X.Y` it names and every bare global it calls.
+- **`tools/seeds/libseeds.py`** (standard library only, with `test_libseeds.py`, 17 cases on invented fixtures): `status` (the branch head against the kit file's sha and the newest bundle), `freeze` (the three files at the sha, gzipped into the bundle's `raw/`, the cache outside the checkout), `derive` (offline from `raw/`: the kit-globals diff, the assumptions, the reach check, and a coverage gate), `rule`, `check`, `report` and `apply`, which regenerates a name set through the unchanged `tools/client_globals_data.lua` only when the flavor's `regen:<branch>` candidate is ruled accept. Rulings in `tools/seeds/{retail,forever}_rulings.json`, keyed by name.
+- **The first runs**, `docs/seed-research/2026-11-25-retail/` and `2026-11-25-forever/`: `live` has not moved (`f3b334b`, the kit's sha, 10556 names, reproduced exactly). `forever` moved from `d1ee569` to `e230342` (2026-11-14): 17 names added, 3 removed (`C_GameRules.SetForeverExperiencePreset`, `ShouldShowBattlePetIcon`, `SmartNavigation_SetReturnFrameFocusButton`), none of them called in any collection checkout. Seven payload assumptions are absent on a client (six on Retail, one on Forever), and every one is a guarded rung, ruled `keep` with its guard cited. Nothing needs owner review.
+- **Kit revision 62** ([docs](docs/api/testkit/version-62-docs.md)): `client_globals_forever.lua` regenerated at `e230342` (10559 names), the owner's answer 3 of the run's spec; `tests/_kit/` re-synced. No other kit file changes.
+- **The gate** in `CLAUDE.md` gains `python3 -m pytest -q tools/seeds` (unittest without pytest); `DEPENDENCIES.md` names the tool and pytest; the documentation map names the contract and `docs/seed-research/`.
+- Tests: `tests/test_kit_inventory.lua` re-pins revision 62.
+
+### The release (`SF-LK-REL`)
+
+- **ForeverDB's `Spots` under CCN 15**: the release run's complexity suite measured `lib.Spots` at 17, so the range check moved into two file-local helpers (`coord`, `mapPoints`), with the same answers. ForeverDB stays minor 1, since the file has not shipped.
+- `docs/releasing.md`'s semver and provenance template, and the README's standards pointer (v2.121.0) and kit line, move to this release.
+
+Release gate (`docs/automated-tests/20261125-021723/`): lint pass, 0/0 in 392 files;
+tests pass, 5223 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim file and not `Widgets.lua` moved; the release moves ForeverDB 1 and DebugLogDiagnostics 12 only.
+
 ## v1.113.0 — 2026-11-24
 
 Opened 2026-11-24, on `feat/2026-11-24-feedback-batch` (after v1.112.0, still local): round 2 of the owner's 2026-11-24 feedback batch (Ka0sAddonsCommonTasks `docs/2026-11-24-FEEDBACK_BATCH/R2_SMOKE_FEEDBACK.md`), items `FB2-LK-01` to `FB2-LK-03` and this release, `FB2-LK-REL`. Built to WowAddonStandards v2.120.0, which lands the three rules this release implements (a sim start shows the step panel; a selected row's text is distinct; one source of sample names).

@@ -68,6 +68,11 @@ local MAJORS = {
     primary = "Item",
   },
   {
+    major = "LibKa0s-ForeverDB-1.0",
+    files = { "ForeverDB" },
+    primary = "ForeverDB",
+  },
+  {
     major = "LibKa0s-Glow-1.0",
     files = { "Glow" },
     primary = "Glow",

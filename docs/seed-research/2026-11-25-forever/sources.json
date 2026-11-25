@@ -1,0 +1,21 @@
+{
+  "branch": "forever",
+  "date": "2026-11-25",
+  "files": {
+    "FrameXML.lua": {
+      "bytes": 203147,
+      "sha256": "6b40eb9f9b243155d2a6e3a8929aacabcbfc9674ebc8e21b15fa490b9fbc1b66"
+    },
+    "GlobalAPI.lua": {
+      "bytes": 239789,
+      "sha256": "9d6c48d345417e51fab30c471ca8398d4c934af69b5ace33f26f0237fd209f4a"
+    },
+    "LuaEnum.lua": {
+      "bytes": 219249,
+      "sha256": "ad1640d33555be9bd4911fb9344502618859db43bb836636349491d5fc76863f"
+    }
+  },
+  "flavor": "forever",
+  "sha": "e230342a476eb4ef484ba7b34adc0da6ecc6acc1",
+  "shaDate": "2026-11-14"
+}

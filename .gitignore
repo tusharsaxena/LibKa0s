@@ -25,3 +25,6 @@ Thumbs.db
 
 # Subagent-driven-development scratch (ledger, briefs, review packages)
 .superpowers/
+
+# The seed tool's bytecode (tools/seeds/libseeds.py; its download cache lives outside the checkout).
+tools/seeds/__pycache__/

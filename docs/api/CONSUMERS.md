@@ -122,6 +122,15 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.114.0, not in the census (2026-11-25), the ForeverDB reader.** The new major `LibKa0s-ForeverDB-1.0`
+(`ForeverDB.lua` minor 1: `Available`, `IsLoaded`, `Status`, `Meta`, `NPC`, `Item`, `Quest`, `ItemSources`,
+`VendorPrice`, `Spots`, `TrainerSpells`; `SF-LK-01` of Ka0sAddonsCommonTasks `docs/2026-11-25-SEEDS_AND_FOREVERDB/`,
+LibKa0s#105; [the document](ForeverDB/version-1-docs.md)). None gets a row here yet. **No host calls them at the
+tag:** the library's own diagnostics report reads `Status` (DebugLogDiagnostics minor 12), and the five consumers the
+owner named on 2026-11-25 (Drop Watcher, Loot History, Bank Ledger, Skill Master, Outfitter Reborn) adopt the major in
+the same run, each through its own feature; the next census re-run reads them. A host with a by-name parity case for a
+library-absent stub of this major adds the eleven members at its adoption.
+
 **v1.105.0, not in the census (2026-11-16).** DebugLog shell minor 23 and DebugLogDiagnostics minor 11
 add the report seam (`LK-79`, LibKa0s#79): the instance's `Report` and `Serialize`, the lib-level `Serialize` and
 the string `REPORT_WRITTEN` ([the document](DebugLog/version-23.11.1.5-docs.md)). None gets a row here yet. **No host

@@ -67,6 +67,7 @@ the file you need:
 | `LibKa0s-Schema-1.0` | `<Schema>` | `LibStub("LibKa0s-Schema-1.0").MODULES` |
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
+| `LibKa0s-ForeverDB-1.0` | `<ForeverDB>` | `LibStub("LibKa0s-ForeverDB-1.0").MODULES` |
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Toast-1.0` | `<Toast>` | `LibStub("LibKa0s-Toast-1.0").MODULES` |
 | `LibKa0s-Callout-1.0` | `<Callout>.<CalloutRoute>.<CalloutSound>.<CalloutSettings>` (two numbers through 5.6) | `LibStub("LibKa0s-Callout-1.0").MODULES` |
@@ -202,6 +203,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [3](./Item/version-3-docs.md) | `Item.lua` 3 | v1.75.0 | **Current** |
 | [2](./Item/version-2-docs.md) | `Item.lua` 2 | v1.56.0 – v1.74.0 | Superseded |
 | [1](./Item/version-1-docs.md) | `Item.lua` 1 | v1.15.0 – v1.55.0 | Superseded |
+
+### `LibKa0s-ForeverDB-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1](./ForeverDB/version-1-docs.md) | **`ForeverDB.lua` 1** (the new major: `Available`, `IsLoaded`, `Status`, `Meta`, `NPC`, `Item`, `Quest`, `ItemSources`, `VendorPrice`, `Spots`, `TrainerSpells`; LibKa0s#105, `SF-LK-01`) | v1.114.0 | **Current** |
 
 ### `LibKa0s-Glow-1.0`
 
@@ -363,7 +370,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [23.11.1.5](./DebugLog/version-23.11.1.5-docs.md) | **`DebugLog.lua` 23** (the buffer's messages plain, the colored view kept in `__view`, `REPORT_WRITTEN`; the `onSettings` field, LibKa0s#86) · **`DebugLogDiagnostics.lua` 11** (`D:Report`, `D:Serialize`, `lib.Serialize`; LibKa0s#79, `LK-79`) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 5** (a skin switch's rebuild keeps each message's colors) | v1.105.0 | **Current** |
+| [23.12.1.5](./DebugLog/version-23.12.1.5-docs.md) | `DebugLog.lua` 23 · **`DebugLogDiagnostics.lua` 12** (the identity header names ForeverDB and prints its line; LibKa0s#105, `SF-LK-01`) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 5 | v1.114.0 | **Current** |
+| [23.11.1.5](./DebugLog/version-23.11.1.5-docs.md) | **`DebugLog.lua` 23** (the buffer's messages plain, the colored view kept in `__view`, `REPORT_WRITTEN`; the `onSettings` field, LibKa0s#86) · **`DebugLogDiagnostics.lua` 11** (`D:Report`, `D:Serialize`, `lib.Serialize`; LibKa0s#79, `LK-79`) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 5** (a skin switch's rebuild keeps each message's colors) | v1.105.0 – v1.113.0 | Superseded |
 | [22.10.1.4](./DebugLog/version-22.10.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 10** (the identity header names WaypointArrow) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.99.0 – v1.104.0 | Superseded |
 | [22.9.1.4](./DebugLog/version-22.9.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 9** (the identity header names Callout) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.96.0 – v1.97.0 | Superseded |
 | [22.8.1.4](./DebugLog/version-22.8.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 8** (the identity header names Role) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.95.0 | Superseded |
@@ -591,7 +599,9 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [60](./testkit/version-60-docs.md) | same files; **`mock_client.lua`**: each profile carries its client's `Enum.BagIndex` (Retail 20 members, Forever 27), `Enum.BankType` and `C_Bank.CanViewBank` (the account bank viewable on Retail only), installed only where neither the consumer's mock set nor `_G` has an `Enum` (or a `C_Bank`) (LibKa0s#101, `K101-LK-02`) | v1.110.0 | **Current** |
+| [62](./testkit/version-62-docs.md) | same files; **`client_globals_forever.lua` regenerated** at Ketho/BlizzardInterfaceResources `forever` `e230342` (2026-11-14): 17 names added, 3 removed, 10559 in all; `live` unchanged at `f3b334b` (LibKa0s#93, `SF-LK-02`) | v1.114.0 | **Current** |
+| [61](./testkit/version-61-docs.md) | **adds `mock_foreverdb.lua`**, the opt-in fake of the ForeverDB data addon: presets `present`, `missing`, `loadfails` and `reshaped`, a load count, the global handed over at the load, and an invented database in ForeverDB's shape (LibKa0s#105, `SF-LK-01`) | never released alone (v1.114.0 ships 62) | Superseded |
+| [60](./testkit/version-60-docs.md) | same files; **`mock_client.lua`**: each profile carries its client's `Enum.BagIndex` (Retail 20 members, Forever 27), `Enum.BankType` and `C_Bank.CanViewBank` (the account bank viewable on Retail only), installed only where neither the consumer's mock set nor `_G` has an `Enum` (or a `C_Bank`) (LibKa0s#101, `K101-LK-02`) | v1.110.0 – v1.113.0 | Superseded |
 | [59](./testkit/version-59-docs.md) | same files; `README.md` only: eight suites of its own, and no count of the places it sits in or the repositories that run its gates, which name the roster instead (`FU-LK-KITDOC`) | v1.109.0 | Superseded |
 | [58](./testkit/version-58-docs.md) | same files; **`skin_switch.lua`**, **`test_skin_switch.lua`**: each setter family (texture, color, font, shadow) moves on its own, every StatusBar a surface holds draws its fill and moves it (read off `SetStatusBarTexture` and the fill Texture's `SetTexture` / `SetAtlas`), a string whose face moves with no color set is reported, and the surface fields `expect`, `hold` and `clear` (SD-LK-97.18, U-5); **`skin_values.lua`**, **`test_skin_values.lua`**: three- and four-component tables, keyed r/g/b tables, multi-assigned triples, `return` triples and `RGBA` fallback defaults are read, two categories take only those shapes, and a host row may name a kit row `category` in place of a `cause` (SD-LK-97.19, U-6); LibKa0s#97, `SD-LK-GUARD` | v1.108.0 | Superseded |
 | [57](./testkit/version-57-docs.md) | **adds `mock_screen.lua`**, the opt-in fake screen and tooltip recorder (LibKa0s#92, plan row LK-92A); **`mock_events.lua`**, **`mock_ace.lua`**: a frame is held, per build, while it has a raw event registration, and released by `UnregisterEvent`, `UnregisterAllEvents` or the embedded-frame override (`M.__heldFrame`, `M.__releaseFrame`; LibKa0s#75, plan row LK-75) | v1.105.0 – v1.107.0 | Superseded |

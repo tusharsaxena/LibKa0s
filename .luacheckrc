@@ -10,6 +10,7 @@ read_globals = {
   "C_AddOns",   -- Env's TOC reader and the id list help-art guard; never the bare globals
   "C_Map",   -- the player's map id, read by LibKa0s-Env-1.0
   "C_Item", "C_Timer", "ITEM_QUALITY_COLORS",   -- read by LibKa0s-Item-1.0
+  "ForeverDB",   -- the data addon LibKa0s-ForeverDB-1.0 reads, bare and at call time, after its own LoadAddOn
   -- An id list's name lookups (LibKa0s-Options-1.0's ResolveId / IdInput / IdList, minor 16), each
   -- read at call time and guarded, so a client without one degrades to id-only input.
   "C_Spell", "C_CurrencyInfo",

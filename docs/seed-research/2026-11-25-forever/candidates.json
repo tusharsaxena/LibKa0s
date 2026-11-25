@@ -1,0 +1,87 @@
+{
+  "assumptions": {
+    "capi": {
+      "count": 30,
+      "missing": 1
+    },
+    "enum": {
+      "count": 10,
+      "missing": 0
+    },
+    "global": {
+      "count": 60,
+      "missing": 0
+    }
+  },
+  "branch": "forever",
+  "build": "e230342a476eb4ef484ba7b34adc0da6ecc6acc1",
+  "buildDate": "2026-11-14",
+  "candidates": [
+    {
+      "key": "regen:forever",
+      "name": "regenerate testkit/client_globals_forever.lua at e230342a476e",
+      "notes": [
+        "kit at d1ee56987809 (2026-10-21)",
+        "17 added, 3 removed"
+      ]
+    }
+  ],
+  "date": "2026-11-25",
+  "diff": {
+    "added": [
+      "C_ActionBar.IsHighestSpellRank",
+      "C_BattleNet.GetDefaultTitleWhisperTarget",
+      "C_GameRules.SetForeverExperiencePresetPostLogin",
+      "C_GameRules.SetForeverExperiencePresetPreLogin",
+      "C_PetInfo.IsPetOrderMoveToPending",
+      "C_TradeSkillUI.HasNoReagentCost",
+      "CreateHDSDToggleOptions",
+      "GetHonorableKillsHeaderTextID",
+      "GetPartyInviteString",
+      "SetPaperDollBackgroundOverlayAlpha",
+      "SmartNavigation_ClearDirectionBufferThresholdInDirection",
+      "SmartNavigation_ClearDirectionBufferThresholds",
+      "SmartNavigation_ClearOutgoingNavigationCallbacks",
+      "SmartNavigation_GetCustomCursorAnchorPointForFrame",
+      "SmartNavigation_GetDirectionBufferThreshold",
+      "SubscriptionInterstitial_ShowSubscriptionPeriod",
+      "TryAddHonorColumn"
+    ],
+    "removed": [
+      "C_GameRules.SetForeverExperiencePreset",
+      "ShouldShowBattlePetIcon",
+      "SmartNavigation_SetReturnFrameFocusButton"
+    ]
+  },
+  "flags": [
+    {
+      "build": "absent on forever",
+      "key": "shipped:capi:C_SpecializationInfo.GetSpecializationInfoForClassID",
+      "notes": [
+        "LibKa0s/Role.lua:189",
+        "LibKa0s/Role.lua:190"
+      ],
+      "shipped": "C_SpecializationInfo.GetSpecializationInfoForClassID"
+    }
+  ],
+  "flavor": "forever",
+  "kit": {
+    "date": "2026-10-21",
+    "names": 10545,
+    "path": "testkit/client_globals_forever.lua",
+    "sha": "d1ee569878094270c0ad8d8b00de0762158fd578"
+  },
+  "reach": {
+    "kitNames": 10545,
+    "unreached": [
+      "C_GameRules.SetForeverExperiencePreset",
+      "ShouldShowBattlePetIcon",
+      "SmartNavigation_SetReturnFrameFocusButton"
+    ]
+  },
+  "tool": "tools/seeds/libseeds.py derive",
+  "upstream": {
+    "enums": 954,
+    "names": 10559
+  }
+}
