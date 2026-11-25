@@ -23,6 +23,12 @@ Versions in this release: `LibKa0s-ForeverDB-1.0` key **2** (ForeverDB minor 2);
 - **Kit revision 63** ([docs](docs/api/testkit/version-63-docs.md)): `testkit/mock_foreverdb.lua`'s invented fixture gains `qx`, `rew`, `start` and `skin` rows, five more items and two more quests; every earlier row unchanged. `tests/_kit/` re-synced.
 - Tests: the new `tests/test_foreverdb_lookups.lua` (the search order, limit and digit match, both session indexes and their rebuild, every field mapping, bad entries, every degraded answer on missing, loadfails, reshaped and Retail); `tests/test_foreverdb.lua` re-pins minor 2 and its member list, `tests/test_kit_inventory.lua` revision 63.
 
+Release gate (`docs/automated-tests/20261125-123730/`): lint pass, 0/0 in 393 files;
+tests pass, 5239 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim file and not `Widgets.lua` moved; the release moves ForeverDB 2 only.
+
 ## v1.114.0 — 2026-11-25
 
 Opened 2026-11-25, on `feat/2026-11-25-seeds-foreverdb`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-SEEDS_AND_FOREVERDB/` (LibKa0s#93, #102, #105), items `SF-LK-01` and `SF-LK-02` and this release, `SF-LK-REL`. Built to WowAddonStandards v2.121.0, which lands the rules this release implements: clients-§10's second evidence source for Forever (ForeverDB) and clients-§11, optional runtime data addons, read only through `LibKa0s-ForeverDB-1.0`.
