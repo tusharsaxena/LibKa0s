@@ -208,7 +208,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [2](./ForeverDB/version-2-docs.md) | **`ForeverDB.lua` 2** (Item Search's lookups: `SearchItems`, `QuestsForItem`, `RewardFrom`, `StartsQuest`, `SkinnedFrom`; `IS-LK-01`) | v1.115.0 | **Current** |
+| [3](./ForeverDB/version-3-docs.md) | **`ForeverDB.lua` 3** (objects with names: `Object`; Drop Watcher the one consumer; `ISF-LK-01`) | v1.116.0 | **Current** |
+| [2](./ForeverDB/version-2-docs.md) | **`ForeverDB.lua` 2** (Item Search's lookups: `SearchItems`, `QuestsForItem`, `RewardFrom`, `StartsQuest`, `SkinnedFrom`; `IS-LK-01`) | v1.115.0 | Superseded |
 | [1](./ForeverDB/version-1-docs.md) | **`ForeverDB.lua` 1** (the new major: `Available`, `IsLoaded`, `Status`, `Meta`, `NPC`, `Item`, `Quest`, `ItemSources`, `VendorPrice`, `Spots`, `TrainerSpells`; LibKa0s#105, `SF-LK-01`) | v1.114.0 | Superseded |
 
 ### `LibKa0s-Glow-1.0`
@@ -600,7 +601,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [63](./testkit/version-63-docs.md) | same files; **`mock_foreverdb.lua`**: the fixture gains invented `qx`, `rew`, `start` and `skin` rows, five more items and two more quests, for `LibKa0s-ForeverDB-1.0` minor 2's lookups (`IS-LK-01`) | v1.115.0 | **Current** |
+| [64](./testkit/version-64-docs.md) | same files; **`mock_foreverdb.lua`**: the fixture gains invented `obj` rows (two objects sharing a name, one with no name, one that is not a table) and the relic that drops from them, for `LibKa0s-ForeverDB-1.0` minor 3's `Object` (`ISF-LK-01`) | v1.116.0 | **Current** |
+| [63](./testkit/version-63-docs.md) | same files; **`mock_foreverdb.lua`**: the fixture gains invented `qx`, `rew`, `start` and `skin` rows, five more items and two more quests, for `LibKa0s-ForeverDB-1.0` minor 2's lookups (`IS-LK-01`) | v1.115.0 | Superseded |
 | [62](./testkit/version-62-docs.md) | same files; **`client_globals_forever.lua` regenerated** at Ketho/BlizzardInterfaceResources `forever` `e230342` (2026-11-14): 17 names added, 3 removed, 10559 in all; `live` unchanged at `f3b334b` (LibKa0s#93, `SF-LK-02`) | v1.114.0 | Superseded |
 | [61](./testkit/version-61-docs.md) | **adds `mock_foreverdb.lua`**, the opt-in fake of the ForeverDB data addon: presets `present`, `missing`, `loadfails` and `reshaped`, a load count, the global handed over at the load, and an invented database in ForeverDB's shape (LibKa0s#105, `SF-LK-01`) | never released alone (v1.114.0 ships 62) | Superseded |
 | [60](./testkit/version-60-docs.md) | same files; **`mock_client.lua`**: each profile carries its client's `Enum.BagIndex` (Retail 20 members, Forever 27), `Enum.BankType` and `C_Bank.CanViewBank` (the account bank viewable on Retail only), installed only where neither the consumer's mock set nor `_G` has an `Enum` (or a `C_Bank`) (LibKa0s#101, `K101-LK-02`) | v1.110.0 – v1.113.0 | Superseded |

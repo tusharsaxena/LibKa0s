@@ -576,9 +576,9 @@ Total.
 - item: LoadItem fires the callback once the item is loaded
 - item: LoadItem is inert without an id or without the API
 
-### test_foreverdb.lua (30)
+### test_foreverdb.lua (32)
 
-- foreverdb: registers minor 2 with exactly its public members
+- foreverdb: registers minor 3 with exactly its public members
 - foreverdb: the Core floor keeps the major absent from a payload without Core
 - foreverdb: the source reads every global bare, and calls LoadAddOn in one place
 - foreverdb: loading the library loads nothing; the first lookup is the load
@@ -593,6 +593,8 @@ Total.
 - foreverdb: the answer is kept for the session, and __reset asks again
 - foreverdb: NPC maps the row's positions and the faction
 - foreverdb: Item maps the row's first eight positions
+- foreverdb: Object answers the row's name, and no answer without one (minor 3)
+- foreverdb: Object reads a non-string or empty name as no answer, and a missing obj table
 - foreverdb: Quest maps the row and resolves givers and enders by kind
 - foreverdb: ItemSources scales chances to 0..1, unknown rates nil and last
 - foreverdb: ItemSources sorts the most likely source first
@@ -611,7 +613,7 @@ Total.
 
 ### test_foreverdb_lookups.lua (16)
 
-- foreverdb lookups: minor 2 registers the five new members
+- foreverdb lookups: minor 2 and later register the five Item Search members
 - foreverdb lookups: missing, loadfails, reshaped and Retail answer {} or nil
 - foreverdb lookups: a database without the tables answers {} or nil
 - foreverdb lookups: a bad id is no answer, and nothing raises
@@ -5632,7 +5634,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 63
+- the kit is revision 64
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -5987,7 +5989,7 @@ Total.
 | test_schema_batch.lua | 22 |
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
-| test_foreverdb.lua | 30 |
+| test_foreverdb.lua | 32 |
 | test_foreverdb_lookups.lua | 16 |
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
@@ -6206,4 +6208,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5236** |
+| **Total** | **5238** |

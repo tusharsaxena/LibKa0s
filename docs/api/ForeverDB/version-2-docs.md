@@ -10,9 +10,9 @@
 | Major | `LibKa0s-ForeverDB-1.0` |
 | Files and minors | `ForeverDB.lua` minor **2** |
 | Shipped in | v1.115.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 1](./version-1-docs.md) (shipped in v1.114.0) — items were looked up by id alone, and nothing read ForeverDB's quest objectives, quest rewards, quest starters or skinning |
-| Superseded by | — |
+| Superseded by | [version 3](./version-3-docs.md) (v1.116.0) — adds `Object(id)`, an object's name, so Drop Watcher names an object source; Drop Watcher becomes the only consumer |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called); `LibKa0s-Compat-1.0` at call time, with no floor; the ForeverDB addon at run time, optional |
 | Confirm in-game | `LibStub("LibKa0s-ForeverDB-1.0").MODULES` → `{ ForeverDB = 2 }` |
 
@@ -257,3 +257,12 @@ a table:
 - **`ForeverDB_Full` and `ForeverDB_Locales`.**
 - **Any copy of the data.** This major reads the live global and copies only the fields it answers.
 - **Events.** ForeverDB is static data; nothing here watches anything.
+
+## Moving to version 3
+
+`ForeverDB.lua` moves to 3 (`ISF-LK-01` of Ka0sAddonsCommonTasks
+`docs/2026-11-25-ITEM_SEARCH_FEEDBACK/`): one new lookup, `Object(id)`, answering `{ id, name }` from
+`obj` or nil (also nil when ForeverDB is unavailable). Every version 2 member is unchanged. A host
+stub of the library table adds `Object` answering nil, and a suite that pins `ForeverDB 2` or the
+member list re-pins it. Skill Master and Outfitter Reborn stop consuming the major in the same run,
+which leaves Drop Watcher its only consumer. See [version 3](./version-3-docs.md).
