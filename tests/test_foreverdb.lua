@@ -2,7 +2,8 @@
 -- addon (LibKa0s#105).
 --
 -- Every case installs the kit's fake (tests/_kit/mock_foreverdb.lua, kit revision 61; its `obj`
--- rows for minor 3's Object since revision 64) with the
+-- rows for minor 3's Object since revision 64; minor 4's spots, vendx and Full fake since revision
+-- 65, exercised in tests/test_foreverdb_spots.lua) with the
 -- client it means, so a case reads the same under both kit profiles (`lua tests/run.lua` and
 -- `KA0S_KIT_CLIENT=forever lua tests/run.lua`), and puts everything back after. The database the
 -- fake hands over is INVENTED in ForeverDB's real shape: ForeverDB is GPL-3.0 and this repo is MIT,
@@ -45,6 +46,9 @@ local function everyLookup()
     Quest = fdbLib.Quest(I.errand), ItemSources = fdbLib.ItemSources(I.blade),
     VendorPrice = p[1], Spots = fdbLib.Spots("npc", I.gnoll),
     TrainerSpells = fdbLib.TrainerSpells(I.trainer),
+    VendorPriceAt = (fdbLib.VendorPriceAt(I.vendor, I.blade)),
+    WorldToMap = (fdbLib.WorldToMap(I.continent, 600, -250)),
+    SpotsFromWorld = fdbLib.Spots("npc", I.wanderer),
   }
 end
 
@@ -67,18 +71,20 @@ end
 
 -- -- registration and shape -------------------------------------------------------------------
 
-test("foreverdb: registers minor 3 with exactly its public members", function()
+test("foreverdb: registers minor 4 with exactly its public members", function()
   assertEqual(fdbLib.MAJOR, "LibKa0s-ForeverDB-1.0")
-  assertEqual(fdbLib.MINOR, 3)
-  assertEqual(fdbLib.MODULES.ForeverDB, 3)
+  assertEqual(fdbLib.MINOR, 4)
+  assertEqual(fdbLib.MODULES.ForeverDB, 4)
   local names = {}
   for _, member in ipairs(T.publicMembers(fdbLib)) do
     names[#names + 1] = member.name .. ":" .. member.kind
   end
-  assertEqual(table.concat(names, ","), "Available:function,IsLoaded:function,Item:function,"
-    .. "ItemSources:function,Meta:function,NPC:function,Object:function,Quest:function,QuestsForItem:function,"
+  assertEqual(table.concat(names, ","), "Available:function,FullCost:function,FullStatus:function,"
+    .. "IsLoaded:function,Item:function,ItemSources:function,LoadFull:function,Meta:function,NPC:function,"
+    .. "Object:function,Quest:function,QuestsForItem:function,"
     .. "RewardFrom:function,SearchItems:function,SkinnedFrom:function,Spots:function,"
-    .. "StartsQuest:function,Status:function,TrainerSpells:function,VendorPrice:function")
+    .. "StartsQuest:function,Status:function,TrainerSpells:function,VendorPrice:function,"
+    .. "VendorPriceAt:function,WorldToMap:function")
 end)
 
 test("foreverdb: the Core floor keeps the major absent from a payload without Core", function()
@@ -91,13 +97,18 @@ test("foreverdb: the Core floor keeps the major absent from a payload without Co
   assertTrue(bare.LibStub("LibKa0s-ForeverDB-1.0", true) ~= nil, "with Core: registered")
 end)
 
-test("foreverdb: the source reads every global bare, and calls LoadAddOn in one place", function()
+test("foreverdb: the source reads every global bare, and calls LoadAddOn once per addon", function()
   local src = Loader.readFile("LibKa0s/ForeverDB.lua")
   assertFalse(src:find("_G.", 1, true), "ForeverDB.lua reads a global through `_G.`")
   assertFalse(src:find("_G[", 1, true), "ForeverDB.lua reads a global through `_G[`")
   local calls = 0
   for _ in src:gmatch("A%.LoadAddOn%(") do calls = calls + 1 end
-  assertEqual(calls, 1, "one LoadAddOn call site, Available()'s")
+  assertEqual(calls, 2, "two LoadAddOn call sites")
+  local base, full = 0, 0
+  for _ in src:gmatch("A%.LoadAddOn%(ADDON%)") do base = base + 1 end
+  for _ in src:gmatch("A%.LoadAddOn%(FULL%)") do full = full + 1 end
+  assertEqual(base, 1, "Available()'s, for ForeverDB")
+  assertEqual(full, 1, "LoadFull()'s, for ForeverDB_Full")
   assertFalse(src:find("pcall(", 1, true), "no pcall: defensive type checks instead")
 end)
 
@@ -358,7 +369,7 @@ test("foreverdb: Meta answers the TOC version, build, hash and a copy of the cou
   with({ version = "2099.02.03.4" }, function(fake)
     local m = fdbLib.Meta()
     assertEqual(m.version, "2099.02.03.4"); assertEqual(m.build, "2099-01-01")
-    assertEqual(m.hash, "0123456789abcdef"); assertEqual(m.counts.npc, 4)
+    assertEqual(m.hash, "0123456789abcdef"); assertEqual(m.counts.npc, 5)
     assertTrue(m.counts ~= fake.data.meta.counts, "a copy")
   end)
 end)
@@ -399,7 +410,9 @@ test("foreverdb: a reshaped row or field reads nil and never raises", function()
   D.qg[I.errand] = { "c", "z123", 5, "c" .. I.gnoll, "oabc" }
   D.drop[I.blade] = { I.gnoll, "high", "x", 100, I.kobold }
   D.vp[I.trainer][I.blade] = "free"
+  D.vendx[I.vendor] = { [I.blade] = { p = "dear" } }   -- minor 4: a reshaped vendx price falls to vp
   D.spm["c" .. I.gnoll] = { [I.mapA] = { 500, "y", 100 }, bad = { 1, 2 } }
+  D.spw["c" .. I.gnoll] = nil   -- minor 4 would answer the gnoll's world point instead
   D.trn[I.trainer] = { [1] = { 5, 5 }, ["Fixture Strike"] = "x" }
   with({ data = D }, function()
     assertNil(fdbLib.NPC(I.gnoll), "a row that is not a table")
@@ -485,7 +498,7 @@ test("foreverdb: the diagnostics report prints the ForeverDB line and never load
     local line = lineWith(reportLines(), "ForeverDB: ")
     assertEqual(line, "ForeverDB: present=yes loaded=no version=" .. FDB.VERSION, "not loaded")
     assertEqual(fake.loads, 0, "the report loads nothing")
-    assertTrue(lineWith(reportLines(), "ForeverDB 3") ~= nil, "the major among the running minors")
+    assertTrue(lineWith(reportLines(), "ForeverDB 4") ~= nil, "the major among the running minors")
   end)
   with({ loaded = true }, function(fake)
     local line = lineWith(reportLines(), "ForeverDB: ")

@@ -578,9 +578,9 @@ Total.
 
 ### test_foreverdb.lua (32)
 
-- foreverdb: registers minor 3 with exactly its public members
+- foreverdb: registers minor 4 with exactly its public members
 - foreverdb: the Core floor keeps the major absent from a payload without Core
-- foreverdb: the source reads every global bare, and calls LoadAddOn in one place
+- foreverdb: the source reads every global bare, and calls LoadAddOn once per addon
 - foreverdb: loading the library loads nothing; the first lookup is the load
 - foreverdb: on Retail Available answers false, client, and nothing loads
 - foreverdb: without Compat the client is taken as not Forever
@@ -629,6 +629,30 @@ Total.
 - foreverdb lookups: RewardFrom answers rew's quests, in order, once each
 - foreverdb lookups: StartsQuest answers start's quest
 - foreverdb lookups: SkinnedFrom names and sorts the creatures, chances on 0..1
+
+### test_foreverdb_spots.lua (21)
+
+- foreverdb spots: WorldToMap converts by the region's max edges, per zone
+- foreverdb spots: in the overlap, the zone whose polygon holds the point wins over the smaller one
+- foreverdb spots: WorldToMap answers nil off every region, on an unknown continent and for bad input
+- foreverdb spots: without zbord the smallest containing rectangle answers; without umaa nothing does
+- foreverdb spots: a malformed umaa row is skipped and the rest still answer
+- foreverdb spots: a malformed zbord entry or polygon leaves its zone a rectangle
+- foreverdb spots: Spots answers spw world points grouped by the map each lands on
+- foreverdb spots: spm wins over spw, and its origin says so
+- foreverdb spots: with ForeverDB_Full loaded, spz wins over spm and fills sources spm lacks
+- foreverdb spots: a malformed spz row falls through to spm; spz is never read off Forever
+- foreverdb spots: malformed spw entries and runs are skipped, and nothing usable is nil
+- foreverdb spots: the spw memo hands out fresh tables and follows a swapped spw table
+- foreverdb spots: VendorPriceAt reads vendx, then vp, with the origin
+- foreverdb spots: VendorPrice takes the lowest across vendx and vp, the first vendor on a tie
+- foreverdb spots: FullStatus reads the client's state and never loads anything
+- foreverdb spots: a dependency the client reports missing reads as base
+- foreverdb spots: LoadFull refuses in combat without caching, then loads once and measures it
+- foreverdb spots: LoadFull without debugprofilestop keeps the KB alone
+- foreverdb spots: LoadFull's refusals and failures
+- foreverdb spots: LoadFull with Full already loaded by another addon loads nothing
+- foreverdb spots: Status carries the Full state and cost, and never loads
 
 ### test_glow.lua (15)
 
@@ -5552,7 +5576,7 @@ Total.
 - screen mock: a tooltip records owner, points and anchor type in one ordered log
 - screen mock: rectOf reads a point relative to a frame the screen built, at the tooltip's scale
 
-### test_mock_foreverdb.lua (6)
+### test_mock_foreverdb.lua (7)
 
 - foreverdb mock: present hands the database over at the load, and counts it
 - foreverdb mock: missing, loadfails and reshaped answer as the client does
@@ -5560,6 +5584,7 @@ Total.
 - foreverdb mock: loaded and loadNow model another addon's load
 - foreverdb mock: client sets the project constants and restore puts them back
 - foreverdb mock: the fixture is fresh per call, invented, and in ForeverDB's shape
+- foreverdb mock: the ForeverDB_Full fake answers per preset and is counted apart (revision 65)
 
 ### test_surface_parity.lua (7)
 
@@ -5634,7 +5659,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 64
+- the kit is revision 65
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -5991,6 +6016,7 @@ Total.
 | test_item.lua | 23 |
 | test_foreverdb.lua | 32 |
 | test_foreverdb_lookups.lua | 16 |
+| test_foreverdb_spots.lua | 21 |
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
@@ -6187,7 +6213,7 @@ Total.
 | test_mock_layers.lua | 7 |
 | test_mock_paint.lua | 16 |
 | test_mock_screen.lua | 4 |
-| test_mock_foreverdb.lua | 6 |
+| test_mock_foreverdb.lua | 7 |
 | test_surface_parity.lua | 7 |
 | test_versioning.lua | 10 |
 | test_kitsync.lua | 12 |
@@ -6208,4 +6234,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5238** |
+| **Total** | **5260** |

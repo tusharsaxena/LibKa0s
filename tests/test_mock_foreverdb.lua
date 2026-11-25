@@ -97,12 +97,69 @@ test("foreverdb mock: the fixture is fresh per call, invented, and in ForeverDB'
   local a, b = FDB.fixture(), FDB.fixture()
   assertTrue(a ~= b and a.npc ~= b.npc, "a fresh copy each time")
   for role, n in pairs(I) do
-    if role:sub(1, 3) ~= "map" then
+    if role:sub(1, 3) == "map" then
+      assertTrue(n >= 9901 and n <= 9909, role .. " is in the invented map range")
+    elseif role == "continent" then
+      assertEqual(n, 99, "the one invented continent number (revision 65)")
+    else
       assertTrue(n >= 990000 and n <= 990999, role .. " is in the invented id range")
     end
   end
+  for key in pairs(a.umaa) do assertTrue(key >= 990000 and key <= 990999, "umaa keys are invented") end
   assertEqual(type(a.npc[I.gnoll][1]), "string", "rows are positional")
   assertEqual(#a.drop[I.blade] % 2, 0, "drop lists are flat pairs")
   assertTrue(a.spm["c" .. I.gnoll] ~= nil and a.spm["o" .. I.crate] ~= nil, "c<id> and o<id> keys")
   assertEqual(a.qg[I.errand][1], "c" .. I.gnoll)
+  assertEqual(#a.umaa[990402], 13, "umaa rows carry thirteen positions")
+  assertEqual(a.spw["c" .. I.wanderer][1][1], I.continent, "an spw run starts with its continent")
+  assertTrue(a.spm["c" .. I.wanderer] == nil, "the wanderer has world coordinates alone")
+  assertEqual(a.vendx[I.vendor][I.blade].p, 1400, "vendx prices are keyed p")
+  local f1, f2 = FDB.fullFixture(), FDB.fullFixture()
+  assertTrue(f1 ~= f2 and f1.spz ~= f2.spz, "the Full database is fresh per call too")
+  assertTrue(f1.spz["c" .. I.gnoll][I.mapB] ~= nil and a.spm["c" .. I.gnoll][I.mapB] == nil,
+    "the gnoll's spz row differs from its spm row")
+end)
+
+test("foreverdb mock: the ForeverDB_Full fake answers per preset and is counted apart (revision 65)", function()
+  local M = buildMocks()
+  local fake = FDB.install(M)
+  assertFalse(M.C_AddOns.DoesAddOnExist("ForeverDB_Full"), "no opts.full: the name is the mock's own")
+  assertEqual(fake.fullLoads, 0)
+  fake.restore()
+
+  local loads = 0
+  fake = FDB.install(M, { full = "present", onFullLoad = function() loads = loads + 1 end })
+  assertTrue(M.C_AddOns.DoesAddOnExist("ForeverDB_Full"))
+  local _, _, _, loadable, reason = M.C_AddOns.GetAddOnInfo("ForeverDB_Full")
+  assertTrue(loadable); assertEqual(reason, "DEMAND_LOADED", "LoadOnDemand, as the client says it")
+  assertNil(M.ForeverDBFull, "nothing before the load")
+  assertTrue((M.C_AddOns.LoadAddOn("ForeverDB_Full")))
+  assertEqual(fake.fullLoads, 1); assertEqual(fake.loads, 0, "counted apart from the base")
+  assertEqual(loads, 1, "onFullLoad ran inside the load")
+  assertTrue(M.ForeverDBFull == fake.fullData)
+  assertTrue((M.C_AddOns.IsAddOnLoaded("ForeverDB_Full")))
+  fake.restore()
+  assertNil(M.ForeverDBFull, "restore puts the global back")
+
+  fake = FDB.install(M, { full = "disabled" })
+  local _, _, _, dl, dr = M.C_AddOns.GetAddOnInfo("ForeverDB_Full")
+  assertFalse(dl); assertEqual(dr, "DISABLED")
+  assertEqual(select(2, M.C_AddOns.LoadAddOn("ForeverDB_Full")), "DISABLED")
+  fake.restore()
+
+  fake = FDB.install(M, { full = "loadfails", fullReason = "INTERFACE_VERSION" })
+  assertEqual(select(2, M.C_AddOns.LoadAddOn("ForeverDB_Full")), "INTERFACE_VERSION")
+  assertNil(M.ForeverDBFull)
+  fake.restore()
+
+  fake = FDB.install(M, { full = "reshaped" })
+  M.C_AddOns.LoadAddOn("ForeverDB_Full")
+  assertEqual(M.ForeverDBFull, "ForeverDBFull", "loaded, and not a table")
+  fake.restore()
+
+  fake = FDB.install(M, { full = "present", fullLoaded = true })
+  assertTrue(M.ForeverDBFull == fake.fullData, "another addon loaded it")
+  assertEqual(fake.fullLoads, 0)
+  fake.restore()
+  assertErrorMatches(function() FDB.install(M, { full = "absent" }) end, "unknown full preset")
 end)

@@ -10,9 +10,9 @@
 | Version | **64** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.116.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 63](version-63-docs.md) — the ForeverDB fake held one object, so nothing could exercise `LibKa0s-ForeverDB-1.0` minor 3's `Object` on a shared name, a nameless row or a row that is not a table |
-| Superseded by | — |
+| Superseded by | [version 65](version-65-docs.md) — `mock_foreverdb.lua`'s fixture gains the `umaa`, `zbord`, `spw` and `vendx` rows ForeverDB minor 4 reads, and a ForeverDB_Full fake (`opts.full`) with an `spz` row |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `64` |
 
