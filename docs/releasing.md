@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.115.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.116.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -491,6 +491,15 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    only Drop Watcher re-vendors in that run and calls the new members; Loot History and Bank Ledger remove their
    ForeverDB features there and leave the major's Consumers row, which now names Drop Watcher, Skill Master and
    Outfitter Reborn.
+   v1.116.0 (Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_FEEDBACK/`) adds no payload file and no `NEEDS_*`
+   floor. `ForeverDB.lua` moves to minor 3 (key 3): `Object` is new (an object's `{ id, name }`, or nil), every minor 2
+   member unchanged, so a host stub of the ForeverDB library table adds `Object` answering nil and a suite pinning
+   `ForeverDB 2` or the member list re-pins it. The kit moves to revision 64 (`mock_foreverdb.lua`'s fixture gains
+   invented `obj` rows, two sharing a name, one nameless and one not a table, the item that drops from them and two
+   spots; every earlier row unchanged), which a whole-folder re-vendor of `tests/_kit/` carries; a suite pinning
+   `KIT_VERSION` re-pins it at 64, and one counting the fixture's items or objects re-counts them. Consumers: only
+   Drop Watcher re-vendors in that run and calls `Object`; Skill Master and Outfitter Reborn remove their ForeverDB
+   reads there without re-vendoring and leave the major's Consumers row, which now names Drop Watcher alone.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not. DpsRace left the loop and the table's Consumers column on 2026-11-19 (`AF-DR-LK` of
    Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`): it is retired, merged into Combat Trail, and is not a consumer.
@@ -564,7 +573,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.115.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.116.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:
