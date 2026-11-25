@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261126-002415`](20261126-002415/) | `1a61374e` | clean | 1.116.0 → 1.117.0 | 0/0 | 394 | 5260/3/5263 | skip | 117543 | 16870 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261125-180017`](20261125-180017/) | `a23266df` | clean | 1.115.0 → 1.116.0 | 0/0 | 393 | 5238/3/5241 | skip | 116767 | 16753 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261125-123730`](20261125-123730/) | `0ee74e5b` | clean | 1.114.0 → 1.115.0 | 0/0 | 393 | 5236/3/5239 | skip | 116699 | 16746 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261125-021723`](20261125-021723/) | `6e8d2484` | clean | 1.113.0 → 1.114.0 | 0/0 | 392 | 5220/3/5223 | skip | 116276 | 16693 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -240,18 +241,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**5241 cases** — 5238 passed, 0 failed, 3 skipped. The generated inventory
-[`20261125-180017/test-cases.md`](20261125-180017/test-cases.md) is the authority on which cases existed at this run;
+**5263 cases** — 5260 passed, 0 failed, 3 skipped. The generated inventory
+[`20261126-002415/test-cases.md`](20261126-002415/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **5239 → 5241** since the previous run.
+Moved **5241 → 5263** since the previous run.
 
 **3 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 393 files** (`luacheck .`).
+**0 warnings / 0 errors over 394 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -268,8 +269,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261125-180017`](20261125-180017/) — **this run's measurement, not its diff.** Max CCN **15** across 16753
-functions, **0** of them warned on; 11 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261126-002415`](20261126-002415/) — **this run's measurement, not its diff.** Max CCN **15** across 16870
+functions, **0** of them warned on; 12 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -289,6 +290,7 @@ None.
 | Band | File | LOC | Disposition |
 |---|---|---|---|
 | 1000–1500 (on notice) | `LibKa0s/Callout.lua` | 1113 | **Accepted: `CLAUDE.md`'s band census (ruled 2026-11-21 with the peel, `FU-LK-CALLOUT`).** 1416 -> 1113 at minor 6, when both named seams peeled: the write route and the setting verbs to `LibKa0s/CalloutRoute.lua`, the sound to `LibKa0s/CalloutSound.lua`. What is left is one piece. Seam left: the animations section (`ANIM_STEPS` through `stopAnims`), to a secondary paired on the Callout shell. **Re-check trigger: 1250 lines, or the next Callout minor that adds a function.** |
+| 1000–1500 (on notice) | `LibKa0s/ForeverDB.lua` | 1050 | **New to the band at minor 4 (`ISR3-LK-01` of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_ROUND3/`). On notice, unruled; not yet in `CLAUDE.md`'s band census.** 687 -> 1050 with the world-to-map section (`UMAA_BOUNDS` through `worldSpots`, about 230 lines with its notes) and the ForeverDB_Full section. Seam: the world-to-map section, to a secondary paired on the ForeverDB shell; a peel is a new shipped file and so a release, and the ruling is the lead's. **Re-check trigger: 1200 lines, or the next ForeverDB minor.** |
 | 1000–1500 (on notice) | `LibKa0s/IconBrowser.lua` | 1006 | **Newly crossed at minor 2 (LibKa0s#92's placed cell tooltips). On notice, unruled: `CLAUDE.md`'s band census (2026-11-16, v1.105.0's close).** Seam: the build half (`buildToolbar` through `buildHint`), to a secondary paired on the IconBrowser shell; a peel is a release, and the ruling is the lead's. **Re-check trigger: 1100 lines, or the next IconBrowser minor.** |
 | 1000–1500 (on notice) | `LibKa0s/Options.lua` | 1280 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Peeled 2026-09-26 (`LK-ATS-04`) to `LibKa0s/OptionsRegistry.lua`, then accepted at 1261 and re-ruled at v1.65.0; that acceptance outlived its shelf life (audit `LK-17d`) and is not renewed. Seam: the reset walk. **Re-check trigger: the next member added to `Options.lua`, or 1400 lines.** |
 | 1000–1500 (on notice) | `LibKa0s/OptionsIdList.lua` | 1339 | **Tracked: `CLAUDE.md` § *Documented deviations*, the `automated-tests-§4` row (2026-10-07).** Moved unchanged out of `LibKa0s/OptionsWidgets.lua` by the id peel: `O.IdList` and its entry-line layout, one piece of machinery, so a seam is named before the append at the trigger. **Re-check trigger: 1350 lines.** |

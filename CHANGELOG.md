@@ -25,6 +25,12 @@ Versions in this release: `LibKa0s-ForeverDB-1.0` key **4** (ForeverDB minor 4);
 - **Kit revision 65** ([docs](docs/api/testkit/version-65-docs.md)): `testkit/mock_foreverdb.lua`'s invented fixture gains an invented continent in `umaa` (its map and two overlapping zones) with `zbord` polygons, `spw` world coordinates for a new creature (the wanderer) and one under the gnoll's `spm` row, and a `vendx` price dearer than the cheapest `vp` one; and a ForeverDB_Full fake (`opts.full`, `fullData`, `fullLoaded`, `onFullLoad`, `fake.fullLoads`, `FDB.fullFixture()`, `FDB.FULL_PRESETS`) whose load installs an `spz` row that differs from the gnoll's `spm` row. Every earlier row unchanged; `meta.counts.npc` is 5. `tests/_kit/` re-synced.
 - Tests: the new `tests/test_foreverdb_spots.lua` (each origin and the precedence, the formula on hand-worked points, the overlap pick, the no-polygon fallback, nil off every region, malformed `umaa`, `zbord`, `spw` and `spz` rows, the memo, `VendorPriceAt`'s origins and `VendorPrice`'s lowest-of-both, `FullStatus` never loading, `LoadFull`'s combat refusal, single load, cost, refusals and `"reshaped"`, `Status`' Full fields); `tests/test_foreverdb.lua` re-pins minor 4, its member list, the two `LoadAddOn` call sites and the "ForeverDB 4" diagnostics line; `tests/test_mock_foreverdb.lua` covers the Full fake and the new rows; `tests/test_kit_inventory.lua` revision 65.
 
+Release gate (`docs/automated-tests/20261126-002415/`): lint pass, 0/0 in 394 files;
+tests pass, 5263 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim file and not `Widgets.lua` moved; the release moves ForeverDB 4 only.
+
 ## v1.116.0 — 2026-11-25
 
 Opened 2026-11-25, on `feat/2026-11-25-item-search-feedback`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_FEEDBACK/` (the owner's feedback on Drop Watcher's Item Search), item `ISF-LK-01` and this release, `ISF-LK-REL`. Built to WowAddonStandards v2.121.0, unchanged since v1.115.0.
