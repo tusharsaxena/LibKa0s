@@ -1,0 +1,26 @@
+{
+  "major": "LibKa0s-ForeverDB-1.0",
+  "versionKey": "2",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "ForeverDB", "minor": 2 }
+  ],
+  "members": [
+    { "name": "Available", "kind": "function" },
+    { "name": "IsLoaded", "kind": "function" },
+    { "name": "Item", "kind": "function" },
+    { "name": "ItemSources", "kind": "function" },
+    { "name": "Meta", "kind": "function" },
+    { "name": "NPC", "kind": "function" },
+    { "name": "Quest", "kind": "function" },
+    { "name": "QuestsForItem", "kind": "function" },
+    { "name": "RewardFrom", "kind": "function" },
+    { "name": "SearchItems", "kind": "function" },
+    { "name": "SkinnedFrom", "kind": "function" },
+    { "name": "Spots", "kind": "function" },
+    { "name": "StartsQuest", "kind": "function" },
+    { "name": "Status", "kind": "function" },
+    { "name": "TrainerSpells", "kind": "function" },
+    { "name": "VendorPrice", "kind": "function" }
+  ]
+}

@@ -578,7 +578,7 @@ Total.
 
 ### test_foreverdb.lua (30)
 
-- foreverdb: registers minor 1 with exactly its public members
+- foreverdb: registers minor 2 with exactly its public members
 - foreverdb: the Core floor keeps the major absent from a payload without Core
 - foreverdb: the source reads every global bare, and calls LoadAddOn in one place
 - foreverdb: loading the library loads nothing; the first lookup is the load
@@ -608,6 +608,25 @@ Total.
 - foreverdb: the diagnostics report prints the ForeverDB line and never loads it
 - foreverdb: a client read that raises costs the report only the ForeverDB line
 - foreverdb: Status reads no Version for an addon the client does not know
+
+### test_foreverdb_lookups.lua (16)
+
+- foreverdb lookups: minor 2 registers the five new members
+- foreverdb lookups: missing, loadfails, reshaped and Retail answer {} or nil
+- foreverdb lookups: a database without the tables answers {} or nil
+- foreverdb lookups: a bad id is no answer, and nothing raises
+- foreverdb lookups: the first lookup is the load, and there is only one
+- foreverdb lookups: SearchItems orders prefix matches, then shorter names, then id
+- foreverdb lookups: SearchItems is plain, trimmed, limited, and silent under two characters
+- foreverdb lookups: a query of digits matches that id first
+- foreverdb lookups: SearchItems answers fresh rows and skips rows with no name
+- foreverdb lookups: the name index is built once and follows a swapped item table
+- foreverdb lookups: QuestsForItem maps qx and quest, by quest id
+- foreverdb lookups: QuestsForItem skips bad entries and keeps a quest with no quest row
+- foreverdb lookups: QuestsForItem answers fresh rows and builds its index once
+- foreverdb lookups: RewardFrom answers rew's quests, in order, once each
+- foreverdb lookups: StartsQuest answers start's quest
+- foreverdb lookups: SkinnedFrom names and sorts the creatures, chances on 0..1
 
 ### test_glow.lua (15)
 
@@ -5613,7 +5632,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 62
+- the kit is revision 63
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -5969,6 +5988,7 @@ Total.
 | test_pool.lua | 23 |
 | test_item.lua | 23 |
 | test_foreverdb.lua | 30 |
+| test_foreverdb_lookups.lua | 16 |
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
@@ -6186,4 +6206,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5220** |
+| **Total** | **5236** |

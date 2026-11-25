@@ -10,9 +10,9 @@
 | Major | `LibKa0s-ForeverDB-1.0` |
 | Files and minors | `ForeverDB.lua` minor **1** |
 | Shipped in | v1.114.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | — (the first version of this major) |
-| Superseded by | — |
+| Superseded by | [version 2](./version-2-docs.md) (v1.115.0) — adds `SearchItems`, `QuestsForItem`, `RewardFrom`, `StartsQuest` and `SkinnedFrom` for Drop Watcher's Item Search |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called); `LibKa0s-Compat-1.0` at call time, with no floor; the ForeverDB addon at run time, optional |
 | Confirm in-game | `LibStub("LibKa0s-ForeverDB-1.0").MODULES` → `{ ForeverDB = 1 }` |
 
@@ -180,3 +180,12 @@ is absent (a partial payload). The stand-in answers the all-absent values: `Avai
 - **`ForeverDB_Full` and `ForeverDB_Locales`.**
 - **Any copy of the data.** This major reads the live global and copies only the fields it answers.
 - **Events.** ForeverDB is static data; nothing here watches anything.
+
+## Moving to version 2
+
+`ForeverDB.lua` moves to 2 (`IS-LK-01` of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH/`): five
+new lookups, `SearchItems`, `QuestsForItem`, `RewardFrom`, `StartsQuest` and `SkinnedFrom`, each
+answering `{}` (or nil, `StartsQuest`) when ForeverDB is unavailable. Every version 1 member is
+unchanged. A host stub of the library table adds the five (four answering `{}`, `StartsQuest` nil), and
+a suite that pins `ForeverDB 1` or the member list re-pins it. Loot History and Bank Ledger stop
+consuming the major in the same run. See [version 2](./version-2-docs.md).

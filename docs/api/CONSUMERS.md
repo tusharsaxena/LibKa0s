@@ -122,6 +122,14 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.115.0, not in the census (2026-11-25), Item Search's lookups.** `ForeverDB.lua` minor 2 adds `SearchItems`,
+`QuestsForItem`, `RewardFrom`, `StartsQuest` and `SkinnedFrom` (`IS-LK-01` of Ka0sAddonsCommonTasks
+`docs/2026-11-25-ITEM_SEARCH/`; [the document](ForeverDB/version-2-docs.md)). None gets a row here yet. **No host calls
+them at the tag:** Drop Watcher adopts all five for its Item Search in the same run. The major's runtime consumers become
+Drop Watcher, Skill Master and Outfitter Reborn; Loot History and Bank Ledger drop their ForeverDB features in that run
+and stop looking the major up. A host with a by-name parity case for a library-absent stub of this major adds the five
+members at its re-vendor.
+
 **v1.114.0, not in the census (2026-11-25), the ForeverDB reader.** The new major `LibKa0s-ForeverDB-1.0`
 (`ForeverDB.lua` minor 1: `Available`, `IsLoaded`, `Status`, `Meta`, `NPC`, `Item`, `Quest`, `ItemSources`,
 `VendorPrice`, `Spots`, `TrainerSpells`; `SF-LK-01` of Ka0sAddonsCommonTasks `docs/2026-11-25-SEEDS_AND_FOREVERDB/`,

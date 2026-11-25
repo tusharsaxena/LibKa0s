@@ -10,6 +10,25 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.115.0 — 2026-11-25
+
+Opened 2026-11-25, on `feat/2026-11-25-item-search`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH/` (Drop Watcher's Item Search, DropWatcher#17), item `IS-LK-01` and this release, `IS-LK-REL`. Built to WowAddonStandards v2.121.0, unchanged since v1.114.0.
+
+Versions in this release: `LibKa0s-ForeverDB-1.0` key **2** (ForeverDB minor 2); every other file at its v1.114.0 minor, and the test kit at revision **63**. No `NEEDS_*` floor rises.
+
+### Item Search's lookups (`IS-LK-01`)
+
+- **ForeverDB minor 2** ([docs](docs/api/ForeverDB/version-2-docs.md)): five new lookups for Drop Watcher's Item Search, every version 1 member unchanged. `SearchItems(query, limit)` finds items by name (plain, case-insensitive, trimmed; under two characters `{}`), prefix matches first, then shorter names, then id, with an all-digit query matching that id first; rows `{ id, name, quality, icon, requiredLevel }`, at most `limit` (default 50), from a lower-cased name index built once a session. `QuestsForItem(itemID)` answers the quests whose item objectives (`qx` position 10) list the item, by quest id, as `{ id, title, level, minLevel, races, classes, preQuests }` (masks nil for any, positions 3 and 4 merged), from an item → quests index built once a session. `RewardFrom(itemID)` (`rew`), `StartsQuest(itemID)` (`start`) and `SkinnedFrom(itemID)` (`skin`, `{ id, name, chance }` sorted as `ItemSources` sorts). Unavailable, each answers `{}` (`StartsQuest` nil); every answer is a fresh table, and the file header's six rules hold. `__reset()` also forgets the two indexes.
+- **Consumers:** the runtime consumers become Drop Watcher, Skill Master and Outfitter Reborn; Loot History and Bank Ledger remove their ForeverDB features in the same run.
+- **Kit revision 63** ([docs](docs/api/testkit/version-63-docs.md)): `testkit/mock_foreverdb.lua`'s invented fixture gains `qx`, `rew`, `start` and `skin` rows, five more items and two more quests; every earlier row unchanged. `tests/_kit/` re-synced.
+- Tests: the new `tests/test_foreverdb_lookups.lua` (the search order, limit and digit match, both session indexes and their rebuild, every field mapping, bad entries, every degraded answer on missing, loadfails, reshaped and Retail); `tests/test_foreverdb.lua` re-pins minor 2 and its member list, `tests/test_kit_inventory.lua` revision 63.
+
+Release gate (`docs/automated-tests/20261125-123730/`): lint pass, 0/0 in 393 files;
+tests pass, 5239 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim file and not `Widgets.lua` moved; the release moves ForeverDB 2 only.
+
 ## v1.114.0 — 2026-11-25
 
 Opened 2026-11-25, on `feat/2026-11-25-seeds-foreverdb`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-SEEDS_AND_FOREVERDB/` (LibKa0s#93, #102, #105), items `SF-LK-01` and `SF-LK-02` and this release, `SF-LK-REL`. Built to WowAddonStandards v2.121.0, which lands the rules this release implements: clients-§10's second evidence source for Forever (ForeverDB) and clients-§11, optional runtime data addons, read only through `LibKa0s-ForeverDB-1.0`.
