@@ -1,0 +1,9 @@
+Independent review, Ka0sAddonsCommonTasks docs/2026-11-25-SEEDS_AND_FOREVERDB (workflows wf_df07c1ab-8d1, wf_219c4c4a-92a)
+SF-LK-01: 3 findings (minor, minor, minor); fix pass: 05b56d10 SF-LK-01: review fixes (named shapes in the doc, guarded diagnostics read, range-checked scales); fix gate green=True
+  - [minor] docs/api/ForeverDB/version-1-docs.md:65 The API doc is the declared source of truth, and its contract rows for Spots and TrainerSpells read as positional: `{ [uiMapID] = { { x, y }, ... } }` and `{ [spellName] = { cost, level } }` (line 66
+  - [minor] LibKa0s/DebugLogDiagnostics.lua:342 `foreverDB(out)` is the only identity read that does not go through `read` or pcall. The comment at line 324 says identity reads are pcall'd so that one raise cannot cost the lines after it. `Status()
+  - [minor] LibKa0s/ForeverDB.lua:318 Scaled values are never range-checked, although the contract promises `chance` on 0..1 and x/y on 0..1. A reshaped or out-of-spec row (chance 15000, a coordinate of 1200 or -5) answers chance 1.5 or x
+SF-LK-02+REL: 2 findings (minor, minor); fix pass: 58b26061 SF-LK-02: review fixes (README layout names the seed tool, the scan checks cached globals); fix gate green=True
+  - [minor] README.md:456 The repo-layout tree lists every `tools/*` entry (gen-api-members, client_globals_data, prune-icons, glyph_safe_set, skin_gallery, artwork) but has no entry for the new `tools/seeds/` (libseeds.py, it
+  - [minor] tools/seeds/libseeds.py:338 `declared_locals` drops from the global scan every name the file declares as a local anywhere in the file. So a cached client global (`local GetTime = GetTime`, then `GetTime()`) is never checked: the
+Lead gate re-run 2026-11-25 at this head: green (see EXECUTION_RECORD.md).
