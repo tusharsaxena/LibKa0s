@@ -10,9 +10,9 @@
 | Version | **63** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.115.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 62](version-62-docs.md) — the ForeverDB fake carried no `qx`, `rew`, `start` or `skin` rows, so nothing could exercise `LibKa0s-ForeverDB-1.0` minor 2's lookups |
-| Superseded by | — |
+| Superseded by | [version 64](version-64-docs.md) — `mock_foreverdb.lua`'s fixture gains the `obj` rows ForeverDB minor 3's `Object` reads, and the relic that drops from them |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `63` |
 

@@ -1,7 +1,8 @@
 -- tests/test_foreverdb.lua -- LibKa0s-ForeverDB-1.0, the reader of WoW Forever's ForeverDB data
 -- addon (LibKa0s#105).
 --
--- Every case installs the kit's fake (tests/_kit/mock_foreverdb.lua, kit revision 61) with the
+-- Every case installs the kit's fake (tests/_kit/mock_foreverdb.lua, kit revision 61; its `obj`
+-- rows for minor 3's Object since revision 64) with the
 -- client it means, so a case reads the same under both kit profiles (`lua tests/run.lua` and
 -- `KA0S_KIT_CLIENT=forever lua tests/run.lua`), and puts everything back after. The database the
 -- fake hands over is INVENTED in ForeverDB's real shape: ForeverDB is GPL-3.0 and this repo is MIT,
@@ -40,6 +41,7 @@ local function everyLookup()
   local p = pack(fdbLib.VendorPrice(I.blade))
   return {
     Meta = fdbLib.Meta(), NPC = fdbLib.NPC(I.gnoll), Item = fdbLib.Item(I.blade),
+    Object = fdbLib.Object(I.crate),
     Quest = fdbLib.Quest(I.errand), ItemSources = fdbLib.ItemSources(I.blade),
     VendorPrice = p[1], Spots = fdbLib.Spots("npc", I.gnoll),
     TrainerSpells = fdbLib.TrainerSpells(I.trainer),
@@ -65,16 +67,16 @@ end
 
 -- -- registration and shape -------------------------------------------------------------------
 
-test("foreverdb: registers minor 2 with exactly its public members", function()
+test("foreverdb: registers minor 3 with exactly its public members", function()
   assertEqual(fdbLib.MAJOR, "LibKa0s-ForeverDB-1.0")
-  assertEqual(fdbLib.MINOR, 2)
-  assertEqual(fdbLib.MODULES.ForeverDB, 2)
+  assertEqual(fdbLib.MINOR, 3)
+  assertEqual(fdbLib.MODULES.ForeverDB, 3)
   local names = {}
   for _, member in ipairs(T.publicMembers(fdbLib)) do
     names[#names + 1] = member.name .. ":" .. member.kind
   end
   assertEqual(table.concat(names, ","), "Available:function,IsLoaded:function,Item:function,"
-    .. "ItemSources:function,Meta:function,NPC:function,Quest:function,QuestsForItem:function,"
+    .. "ItemSources:function,Meta:function,NPC:function,Object:function,Quest:function,QuestsForItem:function,"
     .. "RewardFrom:function,SearchItems:function,SkinnedFrom:function,Spots:function,"
     .. "StartsQuest:function,Status:function,TrainerSpells:function,VendorPrice:function")
 end)
@@ -241,6 +243,45 @@ test("foreverdb: Item maps the row's first eight positions", function()
   end)
 end)
 
+test("foreverdb: Object answers the row's name, and no answer without one (minor 3)", function()
+  with({}, function()
+    local o = fdbLib.Object(I.crate)
+    assertEqual(o.id, I.crate); assertEqual(o.name, "Fixture Crate")
+    local keys = {}
+    for k in pairs(o) do keys[#keys + 1] = k end
+    table.sort(keys)
+    assertEqual(table.concat(keys, ","), "id,name", "the name is the one fact read")
+    assertEqual(fdbLib.Object(I.boxA).name, "Fixture Strongbox")
+    assertEqual(fdbLib.Object(I.boxB).name, "Fixture Strongbox", "two objects may share a name")
+    assertNil(fdbLib.Object(I.husk), "a row with no name is no answer")
+    assertNil(fdbLib.Object(I.scrap), "a row that is not a table is no answer")
+    assertNil(fdbLib.Object(990999), "an unknown id")
+    assertNil(fdbLib.Object(tostring(I.crate)), "a string id is no answer")
+    assertNil(fdbLib.Object(nil)); assertNil(fdbLib.Object(-1)); assertNil(fdbLib.Object(0 / 0))
+  end)
+end)
+
+test("foreverdb: Object reads a non-string or empty name as no answer, and a missing obj table", function()
+  local D = FDB.fixture()
+  D.obj[I.boxA] = { 42 }
+  D.obj[I.boxB] = { "" }
+  with({ data = D }, function()
+    assertNil(fdbLib.Object(I.boxA), "a number for a name")
+    assertNil(fdbLib.Object(I.boxB), "an empty name")
+    assertEqual(fdbLib.Object(I.crate).name, "Fixture Crate", "the other rows still answer")
+  end)
+  D = FDB.fixture()
+  D.obj = "not a table"
+  with({ data = D }, function()
+    assertNil(fdbLib.Object(I.crate), "an obj that is not a table")
+  end)
+  D = FDB.fixture()
+  D.obj = nil
+  with({ data = D }, function()
+    assertNil(fdbLib.Object(I.crate), "no obj table at all")
+  end)
+end)
+
 test("foreverdb: Quest maps the row and resolves givers and enders by kind", function()
   with({}, function()
     local q = fdbLib.Quest(I.errand)
@@ -342,6 +383,10 @@ test("foreverdb: every answer is a fresh table, never ForeverDB's own row", func
     assertEqual(fake.data.spm["c" .. I.gnoll][I.mapA][1], 500)
     local t = fdbLib.TrainerSpells(I.trainer)
     assertTrue(t["Fixture Strike"] ~= fake.data.trn[I.trainer]["Fixture Strike"])
+    local o = fdbLib.Object(I.crate)
+    assertTrue(o ~= fake.data.obj[I.crate]); o.name = "Edited"
+    assertEqual(fdbLib.Object(I.crate).name, "Fixture Crate", "an edit reaches nothing")
+    assertEqual(fake.data.obj[I.crate][1], "Fixture Crate")
   end)
 end)
 
@@ -440,7 +485,7 @@ test("foreverdb: the diagnostics report prints the ForeverDB line and never load
     local line = lineWith(reportLines(), "ForeverDB: ")
     assertEqual(line, "ForeverDB: present=yes loaded=no version=" .. FDB.VERSION, "not loaded")
     assertEqual(fake.loads, 0, "the report loads nothing")
-    assertTrue(lineWith(reportLines(), "ForeverDB 2") ~= nil, "the major among the running minors")
+    assertTrue(lineWith(reportLines(), "ForeverDB 3") ~= nil, "the major among the running minors")
   end)
   with({ loaded = true }, function(fake)
     local line = lineWith(reportLines(), "ForeverDB: ")

@@ -61,9 +61,9 @@ end
 
 -- -- registration -------------------------------------------------------------------------------
 
-test("foreverdb lookups: minor 2 registers the five new members", function()
-  assertEqual(fdbLib.MINOR, 2)
-  assertEqual(fdbLib.MODULES.ForeverDB, 2)
+test("foreverdb lookups: minor 2 and later register the five Item Search members", function()
+  assertTrue(fdbLib.MINOR >= 2, "minor 2 or later (minor 3 adds Object)")
+  assertEqual(fdbLib.MODULES.ForeverDB, fdbLib.MINOR)
   for _, name in ipairs({ "SearchItems", "QuestsForItem", "RewardFrom", "StartsQuest", "SkinnedFrom" }) do
     assertEqual(type(fdbLib[name]), "function", name)
   end

@@ -122,6 +122,15 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.116.0, not in the census (2026-11-25), objects with names; Drop Watcher the one consumer.** `ForeverDB.lua`
+minor 3 adds `Object` (`ISF-LK-01` of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_FEEDBACK/`;
+[the document](ForeverDB/version-3-docs.md)). It gets no row here yet. **No host calls it at the tag:** Drop Watcher
+adopts it in the same run, to name its object sources (merging same-named objects and leaving out nameless ones).
+**`LibKa0s-ForeverDB-1.0`'s only consumer is Drop Watcher** (`core/ForeverDBSetup.lua`) from that run: Skill Master
+and Outfitter Reborn remove their ForeverDB reads and their `## OptionalDeps` entry (that bundle's `03_SPEC.md` §8) and
+stop looking the major up, keeping their vendored copies unchanged. A host with a by-name parity case for a
+library-absent stub of this major adds `Object` at its re-vendor.
+
 **v1.115.0, not in the census (2026-11-25), Item Search's lookups.** `ForeverDB.lua` minor 2 adds `SearchItems`,
 `QuestsForItem`, `RewardFrom`, `StartsQuest` and `SkinnedFrom` (`IS-LK-01` of Ka0sAddonsCommonTasks
 `docs/2026-11-25-ITEM_SEARCH/`; [the document](ForeverDB/version-2-docs.md)). None gets a row here yet. **No host calls
