@@ -10,9 +10,9 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.117.0 — unreleased
+## v1.117.0 — 2026-11-26
 
-Opened 2026-11-26, on `feat/2026-11-25-item-search-round3`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_ROUND3/` (the owner's third pass over Drop Watcher's Item Search), item `ISR3-LK-01` and this release, `ISR3-LK-REL`.
+Opened 2026-11-26, on `feat/2026-11-25-item-search-round3`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_ROUND3/` (the owner's third pass over Drop Watcher's Item Search), item `ISR3-LK-01` and this release, `ISR3-LK-REL`. Built to WowAddonStandards v2.121.0, unchanged since v1.116.0.
 
 Versions in this release: `LibKa0s-ForeverDB-1.0` key **4** (ForeverDB minor 4); every other file at its v1.116.0 minor, and the test kit at revision **65**. No `NEEDS_*` floor rises.
 
