@@ -23,6 +23,12 @@ Versions in this release: `LibKa0s-ForeverDB-1.0` key **3** (ForeverDB minor 3);
 - **Kit revision 64** ([docs](docs/api/testkit/version-64-docs.md)): `testkit/mock_foreverdb.lua`'s invented fixture gains four `obj` rows (two sharing the name "Fixture Strongbox", one with no name, one that is not a table), the item "Strongbox Relic" that drops from all four (`odrop`) and spots for the two strongboxes; every earlier row unchanged. `tests/_kit/` re-synced.
 - Tests: `tests/test_foreverdb.lua` gains `Object`'s cases (the name, a shared name, a nameless row, a non-table row, a non-string or empty name, a malformed or absent `obj`, bad ids, a fresh table, and nil on every degraded answer) and re-pins minor 3, its member list and the "ForeverDB 3" diagnostics line; `tests/test_foreverdb_lookups.lua` reads minor 2 or later; `tests/test_kit_inventory.lua` revision 64.
 
+Release gate (`docs/automated-tests/20261125-180017/`): lint pass, 0/0 in 393 files;
+tests pass, 5241 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim file and not `Widgets.lua` moved; the release moves ForeverDB 3 only.
+
 ## v1.115.0 — 2026-11-25
 
 Opened 2026-11-25, on `feat/2026-11-25-item-search`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH/` (Drop Watcher's Item Search, DropWatcher#17), item `IS-LK-01` and this release, `IS-LK-REL`. Built to WowAddonStandards v2.121.0, unchanged since v1.114.0.
