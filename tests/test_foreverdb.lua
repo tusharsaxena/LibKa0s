@@ -65,17 +65,18 @@ end
 
 -- -- registration and shape -------------------------------------------------------------------
 
-test("foreverdb: registers minor 1 with exactly its public members", function()
+test("foreverdb: registers minor 2 with exactly its public members", function()
   assertEqual(fdbLib.MAJOR, "LibKa0s-ForeverDB-1.0")
-  assertEqual(fdbLib.MINOR, 1)
-  assertEqual(fdbLib.MODULES.ForeverDB, 1)
+  assertEqual(fdbLib.MINOR, 2)
+  assertEqual(fdbLib.MODULES.ForeverDB, 2)
   local names = {}
   for _, member in ipairs(T.publicMembers(fdbLib)) do
     names[#names + 1] = member.name .. ":" .. member.kind
   end
   assertEqual(table.concat(names, ","), "Available:function,IsLoaded:function,Item:function,"
-    .. "ItemSources:function,Meta:function,NPC:function,Quest:function,Spots:function,"
-    .. "Status:function,TrainerSpells:function,VendorPrice:function")
+    .. "ItemSources:function,Meta:function,NPC:function,Quest:function,QuestsForItem:function,"
+    .. "RewardFrom:function,SearchItems:function,SkinnedFrom:function,Spots:function,"
+    .. "StartsQuest:function,Status:function,TrainerSpells:function,VendorPrice:function")
 end)
 
 test("foreverdb: the Core floor keeps the major absent from a payload without Core", function()
@@ -439,7 +440,7 @@ test("foreverdb: the diagnostics report prints the ForeverDB line and never load
     local line = lineWith(reportLines(), "ForeverDB: ")
     assertEqual(line, "ForeverDB: present=yes loaded=no version=" .. FDB.VERSION, "not loaded")
     assertEqual(fake.loads, 0, "the report loads nothing")
-    assertTrue(lineWith(reportLines(), "ForeverDB 1") ~= nil, "the major among the running minors")
+    assertTrue(lineWith(reportLines(), "ForeverDB 2") ~= nil, "the major among the running minors")
   end)
   with({ loaded = true }, function(fake)
     local line = lineWith(reportLines(), "ForeverDB: ")

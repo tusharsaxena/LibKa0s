@@ -10,9 +10,9 @@
 | Version | **62** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.114.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 61](version-61-docs.md) — the forever name set was Ketho/BlizzardInterfaceResources `forever` at `d1ee569` (2026-10-21), three weeks behind the branch |
-| Superseded by | — |
+| Superseded by | [version 63](version-63-docs.md) — `mock_foreverdb.lua`'s fixture gains the `qx`, `rew`, `start` and `skin` rows ForeverDB minor 2 reads |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `62` |
 
