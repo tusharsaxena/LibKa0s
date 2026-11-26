@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 64", function()
-  assertEqual(Kit.VERSION, 64, "v1.116.0 ships revision 64: mock_foreverdb.lua's fixture gains the obj rows ForeverDB minor 3's Object reads (two objects sharing a name, a nameless one, a non-table row) and the relic that drops from them (ISF-LK-01)")
-  assertEqual(T.KIT_VERSION, 64, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 65", function()
+  assertEqual(Kit.VERSION, 65, "v1.117.0 ships revision 65: mock_foreverdb.lua's fixture gains the umaa, zbord, spw and vendx rows ForeverDB minor 4 reads (an invented continent with two overlapping zones, a creature with world coordinates alone) and a ForeverDB_Full fake with an spz row (ISR3-LK-01)")
+  assertEqual(T.KIT_VERSION, 65, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

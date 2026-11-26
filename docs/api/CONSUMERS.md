@@ -122,6 +122,15 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.117.0, not in the census (2026-11-26), spots from world coordinates and Full, `vendx` prices.** `ForeverDB.lua`
+minor 4 adds `WorldToMap`, `VendorPriceAt`, `FullStatus`, `LoadFull` and `FullCost`, and changes `Spots` (it also reads
+ForeverDB_Full's `spz` and the base `spw`, and answers its origin second) and `VendorPrice` (the lowest across `vendx`
+and `vp`) (`ISR3-LK-01` of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_ROUND3/`;
+[the document](ForeverDB/version-4-docs.md)). None gets a row here yet. **Drop Watcher is still the only consumer**
+(`core/ForeverDBSetup.lua`), and in the same run it adopts `LoadFull` (its own policy: on the Item Search window's
+first open, never from the tooltip, deferred past combat), `VendorPriceAt` and `Spots`' origin. A host with a by-name
+parity case for a library-absent stub of this major adds the five new members at its re-vendor.
+
 **v1.116.0, not in the census (2026-11-25), objects with names; Drop Watcher the one consumer.** `ForeverDB.lua`
 minor 3 adds `Object` (`ISF-LK-01` of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_FEEDBACK/`;
 [the document](ForeverDB/version-3-docs.md)). It gets no row here yet. **No host calls it at the tag:** Drop Watcher

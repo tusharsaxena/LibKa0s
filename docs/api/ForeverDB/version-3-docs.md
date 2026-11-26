@@ -10,9 +10,9 @@
 | Major | `LibKa0s-ForeverDB-1.0` |
 | Files and minors | `ForeverDB.lua` minor **3** |
 | Shipped in | v1.116.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 2](./version-2-docs.md) (shipped in v1.115.0) — an object's name was not read, so a host drew an object source as "Object <id>" |
-| Superseded by | — |
+| Superseded by | [version 4](./version-4-docs.md) (v1.117.0) — `Spots` reads ForeverDB_Full's `spz` and the base `spw` world coordinates (through the new `WorldToMap`) beside `spm`, with an origin; `VendorPriceAt` and `vendx` prices; `FullStatus`, `LoadFull` and `FullCost` |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`, no member called); `LibKa0s-Compat-1.0` at call time, with no floor; the ForeverDB addon at run time, optional |
 | Confirm in-game | `LibStub("LibKa0s-ForeverDB-1.0").MODULES` → `{ ForeverDB = 3 }` |
 
@@ -281,3 +281,13 @@ a table:
 - **`ForeverDB_Full` and `ForeverDB_Locales`.**
 - **Any copy of the data.** This major reads the live global and copies only the fields it answers.
 - **Events.** ForeverDB is static data; nothing here watches anything.
+
+## Moving to version 4
+
+`ForeverDB.lua` moves to 4 (`ISR3-LK-01` of Ka0sAddonsCommonTasks
+`docs/2026-11-25-ITEM_SEARCH_ROUND3/`). Five new members (`WorldToMap`, `VendorPriceAt`, `FullStatus`,
+`LoadFull`, `FullCost`); `Spots` gains a second return and answers from `spz` and `spw` where `spm` has
+nothing; `VendorPrice` can answer a lower price, from `vendx`; `Status()` gains `full` and `fullCost`.
+A host stub of the library table adds the five members (answering as *Degradation* there says), and a
+suite that pins `ForeverDB 3` or the member list re-pins it. A host that cached `Spots` answers clears
+them once it loads ForeverDB_Full. See [version 4](./version-4-docs.md).

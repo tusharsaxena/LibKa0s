@@ -10,6 +10,27 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.117.0 — 2026-11-26
+
+Opened 2026-11-26, on `feat/2026-11-25-item-search-round3`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_ROUND3/` (the owner's third pass over Drop Watcher's Item Search), item `ISR3-LK-01` and this release, `ISR3-LK-REL`. Built to WowAddonStandards v2.121.0, unchanged since v1.116.0.
+
+Versions in this release: `LibKa0s-ForeverDB-1.0` key **4** (ForeverDB minor 4); every other file at its v1.116.0 minor, and the test kit at revision **65**. No `NEEDS_*` floor rises.
+
+### Spots from world coordinates and Full, `vendx` prices (`ISR3-LK-01`)
+
+- **ForeverDB minor 4** ([docs](docs/api/ForeverDB/version-4-docs.md)): `Spots(kind, id)` reads ForeverDB_Full's `spz` when that addon is loaded, then the base `spm`, then the base `spw` world coordinates converted point by point, and answers the table it came from as a second return (`"spz"`, `"spm"` or `"spw"`); the converted answer is memoized per key for the session and copied out fresh. The new, pure `WorldToMap(continent, worldX, worldY)` answers `uiMapID, x, y` through ForeverDB's own `umaa` world bounds and `zbord` zone polygons (the smallest region whose polygon holds the point, else the smallest with no polygon, normally the continent), no client map API. Measured offline at ForeverDB v2026.11.25.48 over the 1517 keys in both `spm` and `spw`: the map agrees with `spm` on 1428 (94.1%), `spm` points lie a median 0.89% of the map's width from the nearest converted point (p90 2.53%), and 11637 of the 14360 `spw` keys with no `spm` row convert (counts only; the method is in the document).
+- `VendorPriceAt(npcID, itemID)` is new (`vendx[npc][item].p`, else `vp`, with the origin), and `VendorPrice` takes the lowest across both for every vendor in `vend`, so it can answer lower than minor 3 did.
+- ForeverDB_Full on a host's demand: `FullStatus()` (`loaded`, `available`, `missing`, `disabled`, `client`, `base`; never loads), `LoadFull()` (the one `C_AddOns.LoadAddOn("ForeverDB_Full")`: refused in combat without caching, then once a session, measured with `collectgarbage("count")` and `debugprofilestop()`; `"reshaped"` when `ForeverDBFull` is not a table) and `FullCost()` (`{ kb, ms }`). `Status()` gains `full` and `fullCost`. The file header's rule 1 now names the Full load, and rule 3 `ForeverDBFull`; `.luacheckrc` reads `ForeverDBFull`.
+- The DebugLog diagnostics line is unchanged (`DebugLogDiagnostics.lua` stays at minor 12): the Full state is in `Status()` for a host's diagnostics.
+- **Kit revision 65** ([docs](docs/api/testkit/version-65-docs.md)): `testkit/mock_foreverdb.lua`'s invented fixture gains an invented continent in `umaa` (its map and two overlapping zones) with `zbord` polygons, `spw` world coordinates for a new creature (the wanderer) and one under the gnoll's `spm` row, and a `vendx` price dearer than the cheapest `vp` one; and a ForeverDB_Full fake (`opts.full`, `fullData`, `fullLoaded`, `onFullLoad`, `fake.fullLoads`, `FDB.fullFixture()`, `FDB.FULL_PRESETS`) whose load installs an `spz` row that differs from the gnoll's `spm` row. Every earlier row unchanged; `meta.counts.npc` is 5. `tests/_kit/` re-synced.
+- Tests: the new `tests/test_foreverdb_spots.lua` (each origin and the precedence, the formula on hand-worked points, the overlap pick, the no-polygon fallback, nil off every region, malformed `umaa`, `zbord`, `spw` and `spz` rows, the memo, `VendorPriceAt`'s origins and `VendorPrice`'s lowest-of-both, `FullStatus` never loading, `LoadFull`'s combat refusal, single load, cost, refusals and `"reshaped"`, `Status`' Full fields); `tests/test_foreverdb.lua` re-pins minor 4, its member list, the two `LoadAddOn` call sites and the "ForeverDB 4" diagnostics line; `tests/test_mock_foreverdb.lua` covers the Full fake and the new rows; `tests/test_kit_inventory.lua` revision 65.
+
+Release gate (`docs/automated-tests/20261126-002415/`): lint pass, 0/0 in 394 files;
+tests pass, 5263 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim file and not `Widgets.lua` moved; the release moves ForeverDB 4 only.
+
 ## v1.116.0 — 2026-11-25
 
 Opened 2026-11-25, on `feat/2026-11-25-item-search-feedback`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_FEEDBACK/` (the owner's feedback on Drop Watcher's Item Search), item `ISF-LK-01` and this release, `ISF-LK-REL`. Built to WowAddonStandards v2.121.0, unchanged since v1.115.0.
