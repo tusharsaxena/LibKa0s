@@ -23,6 +23,12 @@ Versions in this release: `LibKa0s-Media-1.0` key **14.1** (Media minor 14); eve
 - Tests: `tests/test_media.lua` gains three cases (the 114th name and its path; the bar's size, its width against the fat arrow's stem, its rounded ends and its white; the credit file), and the Open Iconic folder's count moves to 225.
 - Documentation: `README.md` (5,837 icons, the Media row, the payload tree, the kit line), `docs/releasing.md` (the version pointers at v1.118.0 and the v1.118.0 re-vendor note), `docs/api/Media/version-14.1-docs.md` (13.1 superseded), `docs/api/README.md`, the member manifests and `docs/test-cases.md`.
 
+Release gate (`docs/automated-tests/20261126-131708/`): lint pass, 0/0 in 394 files;
+tests pass, 5266 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim file and not `Widgets.lua` moved; the release moves Media 14 only.
+
 ## v1.117.0 — 2026-11-26
 
 Opened 2026-11-26, on `feat/2026-11-25-item-search-round3`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_ROUND3/` (the owner's third pass over Drop Watcher's Item Search), item `ISR3-LK-01` and this release, `ISR3-LK-REL`. Built to WowAddonStandards v2.121.0, unchanged since v1.116.0.
