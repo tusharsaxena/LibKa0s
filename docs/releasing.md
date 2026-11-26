@@ -4,7 +4,7 @@ Two version numbers, one of which is load-bearing at runtime.
 
 | Number | Lives in | Who reads it | When it moves |
 |---|---|---|---|
-| Repo semver (`v1.117.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
+| Repo semver (`v1.118.0`) | git tag, `CHANGELOG.md` heading | humans | once per release |
 | File minor (integer) | `MINOR` / `PIXEL_MINOR` / `PARSE_MINOR` / `DROPDOWN_MINOR` / `REORDER_MINOR` / `DRAG_MINOR` / `DIAG_MINOR` / `GATES_MINOR` / `WINDOW_MINOR` / `REGISTRY_MINOR` / `WIDGETS_MINOR` / `FLOW_MINOR` / `IDS_MINOR` / `SUGGEST_MINOR` / `IDLIST_MINOR` / `TABS_MINOR` / `TABBED_MINOR` / `COMBAT_MINOR` / `SCROLL_MINOR` / `NAV_MINOR` / `DRAWER_MINOR` / `KEYBINDS_MINOR` / `APPEARANCE_MINOR` / `MEDIA_MINOR` / `COMPOSE_MINOR` / `SAMPLER_MINOR` / `COMMANDS_MINOR` / `PANEL_MINOR` / `CHART_MINOR` / `AUTOCOMPLETE_MINOR` / `COPY_MINOR` / `ICONS_MINOR` / `TOKENS_MINOR` / `DEFS_MINOR` / `OTHERS_MINOR` / `PAINT_MINOR` / `EXTRAS_MINOR` / `HUD_MINOR` / `CONFIRM_MINOR` / `CONTROLS_MINOR` / `EUI_MINOR` / `ACE_MINOR` / `TIMELINE_MINOR` / `SIM_PANEL_MINOR` / `RENDER_MINOR` / `ROWS_MINOR` / `BROWSER_MINOR` at the top of each file in `LibKa0s/` | **LibStub, at load time** | every released change to that file |
 
 The semver tag is a courtesy. The **file minor is the mechanism**: LibStub keeps the highest minor it
@@ -512,6 +512,13 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    `KIT_VERSION` re-pins it at 65, and one counting the fixture's creatures re-counts them. Consumers: only Drop
    Watcher re-vendors in that run; it calls `LoadFull` under its own policy (never from a tooltip, never in combat),
    `VendorPriceAt` and `Spots`' origin, and clears its cached spots when ForeverDB_Full loads.
+   v1.118.0 (Ka0sAddonsCommonTasks `docs/2026-11-26-OWNER_FEEDBACK_ROUND4/`, `R4-LK-01`) adds one payload file pair,
+   `media/icons/dash.tga` and `media/icons/CREDITS.txt`, and no `NEEDS_*` floor. `Media.lua` moves to minor 14 (key
+   14.1): `ICONS` gains `dash`, its 114th name, drawn by `tools/artwork/dash_icon.py` (MIT, the library's own art);
+   no name moves and no signature changes. A suite counting the unprefixed (Open Iconic folder) names counts 225, and
+   one pinning `Media 13` re-pins it. The kit stays at revision 65. The pruned icon folder carries the new files only
+   for a host whose `LibKa0s icons:` line declares an unprefixed icon (`CREDITS.txt` rides with that folder's
+   license) or `dash` itself. Consumers: only Drop Watcher re-vendors in that run, and declares and draws `dash`.
 9. **Re-sweep the Consumers table against the source**, because it is maintained by hand and the
    wiring is not. DpsRace left the loop and the table's Consumers column on 2026-11-19 (`AF-DR-LK` of
    Ka0sAddonsCommonTasks `docs/2026-11-19-ADOPTION_FEEDBACK/`): it is retired, merged into Combat Trail, and is not a consumer.
@@ -585,7 +592,7 @@ the copy. The tool reads the declaration under it, and on a consumer that has no
 finds none and removes no icon, so the icons are committed whole (it still removes every voice pack
 there, since no sounds line means none):
 
-> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.117.0 (MIT).
+> Bundles [LibKa0s](https://github.com/tusharsaxena/LibKa0s) v1.118.0 (MIT).
 
 **And directly under it, the icon declaration** (`library-stack-§7`, standard v2.85.0; kit revision
 40), one line in one of three forms:

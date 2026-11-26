@@ -112,7 +112,7 @@ You need it to add or replace an icon; you do not need it to fix a typo, run the
 release that does not touch the art. Its sibling `tools/artwork/bar_textures.py` synthesizes the
 statusbars in `LibKa0s/media/textures/` from named constants — no network and no input files — and
 needs Python 3, Pillow and NumPy only; `tools/artwork/glass_textures.py` does the same for the Glass
-skin's border and fill. `tools/artwork/fonts.py` is the provenance record for the skin faces in
+skin's border and fill, and `tools/artwork/dash_icon.py` the library's own `dash` icon. `tools/artwork/fonts.py` is the provenance record for the skin faces in
 `LibKa0s/media/fonts/`, and for the Callout's two display faces beside them (Bebas Neue and Russo
 One, SIL OFL 1.1, google/fonts' static files shipped unchanged with their `-OFL.txt` texts): `--fetch` downloads them from google/fonts at pinned commits, and Prototype
 and Expressway's EULA from their authors' archives on dafont.com, and Expressway and the 2026-10-31
@@ -124,7 +124,7 @@ Python 3, Pillow and NumPy only, and labels the showcases in the bundled Fira Sa
 
 | Tool | Why | Install |
 |---|---|---|
-| Python 3 | The artwork tools are Python scripts (`tools/artwork/icon_cleaner.py`, `bar_textures.py`, `glass_textures.py`, `fonts.py`, `tools/skin_gallery.py` and `tools/glyph_safe_set.py`), and so is the seed tool, `tools/seeds/libseeds.py` (standard library only; `docs/validate-seeds.md`) | `sudo apt install python3` |
+| Python 3 | The artwork tools are Python scripts (`tools/artwork/icon_cleaner.py`, `bar_textures.py`, `glass_textures.py`, `dash_icon.py`, `fonts.py`, `tools/skin_gallery.py` and `tools/glyph_safe_set.py`), and so is the seed tool, `tools/seeds/libseeds.py` (standard library only; `docs/validate-seeds.md`) | `sudo apt install python3` |
 | pytest | Runs the seed tool's cases, `python3 -m pytest -q tools/seeds`, a line of the green gate in `CLAUDE.md`. Optional: without it, `python3 -m unittest discover -s tools/seeds` runs the same cases | `sudo apt install python3-pytest` |
 | Pillow | Reads the source PNGs and writes the TGAs (`from PIL import Image`, in `icon_cleaner.py`, `bar_textures.py` and `glass_textures.py`); `skin_gallery.py` crops the screenshots and draws the showcase with it | `sudo apt install python3-pil` |
 | NumPy | The recolor, solidify and normalize stages, the bar gradients and the Glass coverage are array work (`import numpy as np`, in `icon_cleaner.py`, `bar_textures.py` and `glass_textures.py`), as is `skin_gallery.py`'s edge search | `sudo apt install python3-numpy` |

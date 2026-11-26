@@ -10,6 +10,19 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.118.0 — 2026-11-26
+
+Opened 2026-11-26, on `feat/2026-11-26-owner-feedback-round4`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-26-OWNER_FEEDBACK_ROUND4/` (the owner's fourth pass over Drop Watcher's Item Search), item `R4-LK-01`, built in that run's review fix pass (`R4-REV`). Built to WowAddonStandards v2.121.0, unchanged since v1.117.0.
+
+Versions in this release: `LibKa0s-Media-1.0` key **14.1** (Media minor 14); every other file at its v1.117.0 minor, and the test kit at revision **65**. No `NEEDS_*` floor rises.
+
+### A `dash` icon (`R4-LK-01`)
+
+- **Media minor 14** ([docs](docs/api/Media/version-14.1-docs.md)): `ICONS` gains `dash`, its 114th name (after the 113 hand-written Open Iconic keys, before the generated names, so no name moves): a thick horizontal bar with rounded ends in the weight of Phosphor's fat up arrow, for Drop Watcher's "no skill-up" crafting mark beside `ph:arrow-fat-up` (the owner: "choose a thick dash instead"). On the 64x64 canvas it is 28 px wide, the arrow's stem exactly, and 14 px tall (56/256), so at 14 px on screen it is a solid 3 px line at any sub-pixel offset. White, the shape in alpha, unprefixed in `media/icons/`.
+- The library draws it itself: the new `tools/artwork/dash_icon.py` computes it from named constants, nothing traced or sampled (`--check` compares the file on disk), Pillow and NumPy only. MIT, the library's own art; the new `media/icons/CREDITS.txt` records that beside the Open Iconic license, and `tools/prune-icons.lua` keeps it with any icon of that folder.
+- Tests: `tests/test_media.lua` gains three cases (the 114th name and its path; the bar's size, its width against the fat arrow's stem, its rounded ends and its white; the credit file), and the Open Iconic folder's count moves to 225.
+- Documentation: `README.md` (5,837 icons, the Media row, the payload tree, the kit line), `docs/releasing.md` (the version pointers at v1.118.0 and the v1.118.0 re-vendor note), `docs/api/Media/version-14.1-docs.md` (13.1 superseded), `docs/api/README.md`, the member manifests and `docs/test-cases.md`.
+
 ## v1.117.0 — 2026-11-26
 
 Opened 2026-11-26, on `feat/2026-11-25-item-search-round3`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-25-ITEM_SEARCH_ROUND3/` (the owner's third pass over Drop Watcher's Item Search), item `ISR3-LK-01` and this release, `ISR3-LK-REL`. Built to WowAddonStandards v2.121.0, unchanged since v1.116.0.
