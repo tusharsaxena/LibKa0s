@@ -1159,7 +1159,7 @@ Total.
 - skin: Reskin works for a host with no owner, and a card keeps its caller's color
 - skin: setCard puts the owner's face back on the figure
 
-### test_media.lua (46)
+### test_media.lua (49)
 
 - media: ICON_SETS names the three sets, each with a prefix, a folder and a license
 - media: every name in ICONS has a file, and every file has a name, in every set
@@ -1207,6 +1207,9 @@ Total.
 - media: every statusbar, Ka0s Default's bar among them, is a 256x32 32-bit TGA
 - media: every skin's own bar is in TEXTURES, opaque and gray, and tiles along the bar
 - media: RegisterLSM registers the Glass border and background, and counts them
+- media: dash follows the 113 hand-written names, unprefixed, in media/icons
+- media: dash is a white rounded bar as wide as the fat arrow's stem, 12 to 14 of 64 tall
+- media: dash's credit ships beside it: drawn for the library, MIT, by its generator
 
 ### test_icon_browser_sources.lua (26)
 
@@ -6035,7 +6038,7 @@ Total.
 | test_charts.lua | 15 |
 | test_charts_draw.lua | 15 |
 | test_charts_host.lua | 15 |
-| test_media.lua | 46 |
+| test_media.lua | 49 |
 | test_icon_browser_sources.lua | 26 |
 | test_icon_browser.lua | 30 |
 | test_icon_browser_search.lua | 14 |
@@ -6234,4 +6237,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5260** |
+| **Total** | **5263** |

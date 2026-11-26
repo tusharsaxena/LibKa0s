@@ -9,10 +9,10 @@
 |---|---|
 | Major | `LibKa0s-Media-1.0` |
 | Files and minors | `Media.lua` minor **13** · `MediaIcons.lua` minor **1** |
-| Shipped in | unreleased (v1.97.0) |
-| Status | **Current** |
+| Shipped in | v1.97.0 |
+| Status | Superseded |
 | Supersedes | [version 12.1](./version-12.1-docs.md) (shipped in v1.85.0) — the same surface without the two Callout faces |
-| Superseded by | — |
+| Superseded by | [version 14.1](./version-14.1-docs.md) |
 | Confirm in-game | `LibStub("LibKa0s-Media-1.0").MODULES` → `{ Media = 13, MediaIcons = 1 }` |
 
 ## What changed at this version
@@ -595,3 +595,7 @@ and normalized line endings on everything, which is right for Lua and wrong for 
 - `lib.BORDERS`: no consumer as of v1.83.0, kept because it is the catalog `Border` reads.
 - `lib.Background`: no consumer as of v1.83.0, kept because the Skin major reaches it, so no host names it; the name-only hits are host functions of the same name.
 - `lib.Border`: no consumer as of v1.83.0, kept because the Skin major reaches it, so no host names it; the name-only hits are host functions of the same name.
+
+## Moving to 14.1
+
+Nothing to do. `ICONS` gains `dash` as its 114th name, so a test that counts the Open Iconic folder's names counts 225, and a host that wants the mark adds `dash` to its `LibKa0s icons:` line. Every name 13.1 carries still resolves to the same path.

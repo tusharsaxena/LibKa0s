@@ -137,7 +137,7 @@ test("media: the catalog holds every set, not just the first", function()
     local set = setOf(name)
     if set then per[set.id] = (per[set.id] or 0) + 1 end
   end
-  assertEqual(per["open-iconic"], 224, "113 semantic keys plus the 111 other Open Iconic marks")
+  assertEqual(per["open-iconic"], 225, "113 semantic keys, the dash, and the 111 other Open Iconic marks")
   assertTrue((per.phosphor or 0) > 1000, "Phosphor Fill holds " .. tostring(per.phosphor))
   assertTrue((per["game-icons"] or 0) > 3500, "Game-icons holds " .. tostring(per["game-icons"]))
 end)
@@ -154,7 +154,8 @@ test("media: the first 113 names are minor 4's, in minor 4's order", function()
   -- name never moves, and the hand-written list stays first.
   assertEqual(media.ICONS[1], "close")
   assertEqual(media.ICONS[113], "shield")
-  assertTrue(media.ICONS[114] ~= nil and media.ICONS[114]:find(":") == nil,
+  assertEqual(media.ICONS[114], "dash", "minor 14's dash follows them")
+  assertTrue(media.ICONS[115] ~= nil and media.ICONS[115]:find(":") == nil,
     "the other Open Iconic marks follow, unprefixed")
 end)
 
@@ -1045,4 +1046,72 @@ test("media: RegisterLSM registers the Glass border and background, and counts t
   assertEqual(backgrounds, 1)
   assertEqual(byKind.border and byKind.border["Ka0s Glass"], media.Border("X", "Ka0s Glass"))
   assertEqual(byKind.background and byKind.background["Ka0s Glass"], media.Background("X", "Ka0s Glass"))
+end)
+
+
+-- ── the dash (minor 14, R4-LK-01) ────────────────────────────────────────────────────────────
+
+--- The opaque extent of a TGA's alpha (alpha >= 128): first and last column, first and last row.
+local function opaqueBox(path)
+  local rows, w, h = tgaPixels(path)
+  if not rows then return nil end
+  local x0, x1, y0, y1
+  for y = 1, h do
+    for x = 1, w do
+      if rows[y][x][4] >= 128 then
+        x0 = math.min(x0 or x, x); x1 = math.max(x1 or x, x)
+        y0 = y0 or y; y1 = y
+      end
+    end
+  end
+  return x0, x1, y0, y1, rows
+end
+
+test("media: dash follows the 113 hand-written names, unprefixed, in media/icons", function()
+  -- red under: minor 13, which has no `dash`. Drop Watcher's "no skill-up" mark (owner feedback
+  -- round 4): a name past the 113 so no stored path moves, and before the generated names.
+  assertEqual(media.ICONS[114], "dash")
+  assertEqual(media.Icon("X", "dash"), "Interface\\AddOns\\X\\libs\\LibKa0s\\media\\icons\\dash")
+end)
+
+test("media: dash is a white rounded bar as wide as the fat arrow's stem, 12 to 14 of 64 tall", function()
+  -- The spec: as wide as `ph:arrow-fat-up`'s stem and 48-56/256 tall, so at 14 px it is a solid
+  -- 3 px line at any sub-pixel offset; rounded ends; white, the shape in alpha (Media's contract).
+  local file = ICON_DIR .. "/dash.tga"
+  local kind, w, h, bpp = tgaHeader(file)
+  assertTrue(kind == 2 or kind == 10, "dash.tga is not a true-color TGA")
+  assertEqual(bpp, 32, "dash.tga needs an alpha channel")
+  assertEqual(w, 64); assertEqual(h, 64)
+  local x0, x1, y0, y1, rows = opaqueBox(file)
+  assertTrue(x0 ~= nil, "dash.tga draws nothing")
+  local tall = y1 - y0 + 1
+  assertTrue(tall >= 12 and tall <= 14, "dash is " .. tall .. " px tall of 64")
+  -- The fat arrow's stem: its extent four rows above its bottom, clear of the stem's rounded foot.
+  local _, _, _, ay1, arrow = opaqueBox(ICON_DIR .. "/phosphor/arrow-fat-up.tga")
+  local s0, s1
+  for x = 1, 64 do
+    if arrow[ay1 - 4][x][4] >= 128 then s0 = s0 or x; s1 = x end
+  end
+  assertEqual(x1 - x0 + 1, s1 - s0 + 1, "the dash is as wide as the arrow's stem")
+  -- Rounded ends: the corner pixel of the bar's box is clear where its middle row is solid.
+  local mid = math.floor((y0 + y1) / 2)
+  assertTrue(rows[y0][x0][4] < 128 and rows[mid][x0][4] >= 128, "the dash's ends are not rounded")
+  for y = 1, 64 do
+    for x = 1, 64 do
+      local p = rows[y][x]
+      assertTrue(p[1] == 255 and p[2] == 255 and p[3] == 255, "dash.tga is not white at " .. x .. "," .. y)
+    end
+  end
+end)
+
+test("media: dash's credit ships beside it: drawn for the library, MIT, by its generator", function()
+  -- It is not Open Iconic's mark, though it shares that folder, so the folder says whose it is.
+  local fh = io.open(ICON_DIR .. "/CREDITS.txt", "rb")
+  assertTrue(fh ~= nil, "media/icons/CREDITS.txt is missing")
+  if not fh then return end
+  local body = fh:read("*a")
+  fh:close()
+  assertTrue(body:find("dash.tga", 1, true) ~= nil, "CREDITS.txt does not name dash.tga")
+  assertTrue(body:find("MIT", 1, true) ~= nil, "CREDITS.txt does not name the license")
+  assertTrue(body:find("tools/artwork/dash_icon.py", 1, true) ~= nil, "CREDITS.txt does not name the generator")
 end)
