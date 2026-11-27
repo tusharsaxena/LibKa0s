@@ -32,6 +32,7 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 | Run | Commit | Tree | Version | Lint w/e | Files | Tests | Perf | NLOC | Funcs | Avg NLOC | Avg CCN | Max CCN | CCN warn | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [`20261127-234144`](20261127-234144/) | `55a7c6dc` | clean | 1.118.0 → 1.119.0 | 0/0 | 421 | 5544/3/5547 | skip | 125259 | 17834 | 6.8 | 2.2 | 15 | 0 | **green** |
 | [`20261126-131708`](20261126-131708/) | `c06c772c` | clean | 1.117.0 → 1.118.0 | 0/0 | 394 | 5263/3/5266 | skip | 117598 | 16874 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261126-002415`](20261126-002415/) | `1a61374e` | clean | 1.116.0 → 1.117.0 | 0/0 | 394 | 5260/3/5263 | skip | 117543 | 16870 | 6.8 | 2.1 | 15 | 0 | **green** |
 | [`20261125-180017`](20261125-180017/) | `a23266df` | clean | 1.115.0 → 1.116.0 | 0/0 | 393 | 5238/3/5241 | skip | 116767 | 16753 | 6.8 | 2.1 | 15 | 0 | **green** |
@@ -242,18 +243,18 @@ archaeology, for the same reason a skip is never a pass (`automated-tests-§4`).
 
 ## Test suite
 
-**5266 cases** — 5263 passed, 0 failed, 3 skipped. The generated inventory
-[`20261126-131708/test-cases.md`](20261126-131708/test-cases.md) is the authority on which cases existed at this run;
+**5547 cases** — 5544 passed, 0 failed, 3 skipped. The generated inventory
+[`20261127-234144/test-cases.md`](20261127-234144/test-cases.md) is the authority on which cases existed at this run;
 `docs/test-cases.md` is that same list at HEAD.
 
-Moved **5263 → 5266** since the previous run.
+Moved **5266 → 5547** since the previous run.
 
 **3 case(s) reported a `skip`.** A skip is counted in the total and never in `passed`, and at
 the release gate it is NOT EVALUATED rather than passed (`automated-tests-§3`).
 
 ## Lint
 
-**0 warnings / 0 errors over 394 files** (`luacheck .`).
+**0 warnings / 0 errors over 421 files** (`luacheck .`).
 
 Read that figure with its scope attached: `.luacheckrc` excludes 1 path(s) from it — `tests/_kit/` —
 so nothing under them is in the count above. A `0/0` that never moves is partly a statement about
@@ -270,8 +271,8 @@ never asked.
 
 ## Complexity watch list
 
-Current as of [`20261126-131708`](20261126-131708/) — **this run's measurement, not its diff.** Max CCN **15** across 16874
-functions, **0** of them warned on; 12 file(s) in the 1000–1500 band and 0 over the 1500 cap
+Current as of [`20261127-234144`](20261127-234144/) — **this run's measurement, not its diff.** Max CCN **15** across 17834
+functions, **0** of them warned on; 13 file(s) in the 1000–1500 band and 0 over the 1500 cap
 (`layout-§1`).
 
 Every row below is generated from this run's own `lizard` output. **The `Disposition` column is
@@ -302,6 +303,7 @@ None.
 | 1000–1500 (on notice) | `LibKa0s/SkinPaint.lua` | 1048 | **Tracked: `CLAUDE.md` § *Documented deviations*, the tenth row, `automated-tests-§4` (2026-10-31, `FX-LK-SIZE`).** The next-minor trigger fired at minors 14, 15 and 16, and the peel waits, ruled in that row (2026-11-01). Seam: the window block, to `LibKa0s/SkinPaintExtras.lua`. **Re-check trigger: 1050 lines, or the next SkinPaint minor that adds a function, and that change peels first.** |
 | 1000–1500 (on notice) | `LibKa0s/WaypointArrow.lua` | 1273 | **On notice, unruled: `CLAUDE.md`'s band census (2026-11-14, Skill Master round 9, rows L1 to L4).** New to the band at minor 2: 778 at minor 1 -> 1204 with the text, position and menu, 1253 with the review's fixes (the menu's lifecycle, the share lead, offsets in the parent's units). The seam is the menu section or the font section, to a secondary paired on the shell; trigger 1300 lines or the next minor |
 | 1000–1500 (on notice) | `tests/test_media.lua` | 1117 | **Newly crossed with `R3-L6` and `R3-L7`. Accepted, ruled in `CLAUDE.md`'s band census at v1.85.0's `R3-REL` re-cut.** A suite, so a peel is no release. Seam: the font inventory and license section, to a suite of its own. **Re-check trigger: 1100 lines, or the next face added to `FONTS`.** |
+| 1000–1500 (on notice) | `tests/test_verdict_kernel.lua` | 1092 | **New to the band at `IS-B1` (DropWatcher#19): Drop Watcher's kernel suites, ported whole. Accepted — case count, not tangle; a suite, so a peel is no release. On notice; not yet in `CLAUDE.md`'s band census.** Seam: the WoW Forever list section (from line 1014), to a suite of its own beside `tests/test_verdict_offspec.lua`. **Re-check trigger: 1250 lines.** |
 
 `lizard` counts every `and`/`or` short-circuit as a decision, so in Lua a run of
 `t.k = rec.k or D.k` defaulting lines scores high with no visible branching at all: a large CCN

@@ -41,6 +41,12 @@ Versions in this release: `LibKa0s-Verdict-1.0` key **1.1.1.1.1.1.1.1.1.1.1** (V
 - **The Verdict document is complete** ([docs](docs/api/Verdict/version-1.1.1.1.1.1.1.1.1.1.1-docs.md)): its work-in-progress banner gives way to the consumers at the tag (none yet; Ka0s Drop Watcher and Ka0s Item Search adopt it in the same run, each through one `New(host)` instance), beside the promotion record of the owner's ruling R4. It and the DebugLog 23.13.1.5 document, with `docs/api/README.md`'s two rows, name v1.119.0 where they read unreleased.
 - Documentation: `README.md` (twenty-seven majors, the Verdict entry and row, the Core floor list, the payload tree, the kit line), `docs/releasing.md` (the version pointers at v1.119.0, twenty-seven `tests/majors.lua` rows, ninety-eight `.lua` files, the v1.119.0 re-vendor note under step 8, the Consumers table's Verdict row), `docs/api/CONSUMERS.md` (what moved at v1.119.0) and `docs/test-cases.md` (regenerated).
 
+Release gate (`docs/automated-tests/20261127-234144/`): lint pass, 0/0 in 421 files;
+tests pass, 5547 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Not applicable — no Sim file and not `Widgets.lua` moved; the release adds the Verdict major and moves DebugLogDiagnostics 13 only.
+
 ## v1.118.0 — 2026-11-26
 
 Opened 2026-11-26, on `feat/2026-11-26-owner-feedback-round4`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-26-OWNER_FEEDBACK_ROUND4/` (the owner's fourth pass over Drop Watcher's Item Search), item `R4-LK-01`, built in that run's review fix pass (`R4-REV`). Built to WowAddonStandards v2.121.0, unchanged since v1.117.0.
