@@ -12,7 +12,7 @@
 | Shipped in | v1.114.0 |
 | Status | Superseded |
 | Supersedes | [version 23.11.1.5](./version-23.11.1.5-docs.md) (shipped in v1.105.0) — the identity header did not name `LibKa0s-ForeverDB-1.0` and printed no ForeverDB line. |
-| Superseded by | [version 23.13.1.5](./version-23.13.1.5-docs.md) (unreleased) — the identity header names `LibKa0s-Verdict-1.0`. |
+| Superseded by | [version 23.13.1.5](./version-23.13.1.5-docs.md) (shipped in v1.119.0) — the identity header names `LibKa0s-Verdict-1.0`. |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`) and `LibKa0s-Widgets-1.0` minor ≥ 7 (`NEEDS_WIDGETS = 7`) |
 | Confirm in-game | `LibStub("LibKa0s-DebugLog-1.0").MODULES` → `{ DebugLog = 23, DebugLogDiagnostics = 12, DebugLogGates = 1, DebugLogWindow = 5 }` |
 

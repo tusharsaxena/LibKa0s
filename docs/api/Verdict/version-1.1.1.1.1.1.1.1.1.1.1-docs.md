@@ -9,18 +9,18 @@
 |---|---|
 | Major | `LibKa0s-Verdict-1.0` |
 | Files and minors | `Verdict.lua` minor **1** · `VerdictConstants.lua` minor **1** · `VerdictClassData.lua` minor **1** · `VerdictTierTokens.lua` minor **1** · `VerdictEvaluate.lua` minor **1** · `VerdictReads.lua` minor **1** · `VerdictCollect.lua` minor **1** · `VerdictFacts.lua` minor **1** · `VerdictScore.lua` minor **1** · `VerdictGear.lua` minor **1** · `VerdictSettings.lua` minor **1** (the ten secondaries paired on `Verdict.lua`'s minor) |
-| Shipped in | unreleased (v1.119.0) |
+| Shipped in | v1.119.0 |
 | Status | **Current** |
 | Supersedes | none (new major) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `LibKa0s-Compat-1.0`, `LibKa0s-Item-1.0` and `LibKa0s-Role-1.0` read at call time by the reads, each optional |
 | Confirm in-game | `LibStub("LibKa0s-Verdict-1.0").MODULES` → `{ Verdict = 1, VerdictConstants = 1, VerdictClassData = 1, VerdictTierTokens = 1, VerdictEvaluate = 1, VerdictReads = 1, VerdictCollect = 1, VerdictFacts = 1, VerdictScore = 1, VerdictGear = 1, VerdictSettings = 1 }` |
 
-> **Work in progress on `feat/2026-11-27-itemsearch-split`.** This version is being built in steps
-> (Ka0s Drop Watcher's plan `docs/superpowers/plans/2026-11-27-itemsearch-split.md`, tasks B1 to
-> B4). At this point of the branch the shell and the pure kernel (task B1) and the instance with its
-> reads, facts, scorer, collection verdict and gear snapshot (task B2) and the settings section
-> (task B3) are in place; this document is completed before the release (B4).
+> **Consumers at the tag: none yet.** Built in Ka0s Drop Watcher's plan
+> `docs/superpowers/plans/2026-11-27-itemsearch-split.md` (tasks B1 to B4, DropWatcher#19). Its two
+> consumers adopt it in the same run, each through one `New(host)` instance: Ka0s Drop Watcher (task C1,
+> its loot feed and group-side judging) and Ka0s Item Search (task C3, its tooltip block and window,
+> `client = "forever"`). The promotion record below is the owner's ruling R4.
 
 ## What changed at this version: the major is new
 

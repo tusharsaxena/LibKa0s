@@ -218,7 +218,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1.1.1.1.1.1.1.1.1.1.1](./Verdict/version-1.1.1.1.1.1.1.1.1.1.1-docs.md) | **`Verdict.lua` 1** · **`VerdictConstants.lua` 1** · **`VerdictClassData.lua` 1** · **`VerdictTierTokens.lua` 1** · **`VerdictEvaluate.lua` 1** · **`VerdictReads.lua` 1** · **`VerdictCollect.lua` 1** · **`VerdictFacts.lua` 1** · **`VerdictScore.lua` 1** · **`VerdictGear.lua` 1** · **`VerdictSettings.lua` 1** (new: the verdict engine promoted from Ka0s Drop Watcher, DropWatcher#19, owner ruling R4; the kernel and the per-instance reads, facts, scorer, collection verdict and gear snapshot; the Comparison settings section) | unreleased (v1.119.0) | **Current** |
+| [1.1.1.1.1.1.1.1.1.1.1](./Verdict/version-1.1.1.1.1.1.1.1.1.1.1-docs.md) | **`Verdict.lua` 1** · **`VerdictConstants.lua` 1** · **`VerdictClassData.lua` 1** · **`VerdictTierTokens.lua` 1** · **`VerdictEvaluate.lua` 1** · **`VerdictReads.lua` 1** · **`VerdictCollect.lua` 1** · **`VerdictFacts.lua` 1** · **`VerdictScore.lua` 1** · **`VerdictGear.lua` 1** · **`VerdictSettings.lua` 1** (new: the verdict engine promoted from Ka0s Drop Watcher, DropWatcher#19, owner ruling R4; the kernel and the per-instance reads, facts, scorer, collection verdict and gear snapshot; the Comparison settings section) | v1.119.0 | **Current** |
 
 ### `LibKa0s-Glow-1.0`
 
@@ -381,7 +381,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [23.13.1.5](./DebugLog/version-23.13.1.5-docs.md) | `DebugLog.lua` 23 · **`DebugLogDiagnostics.lua` 13** (the identity header names Verdict; DropWatcher#19) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 5 | unreleased (v1.119.0) | **Current** |
+| [23.13.1.5](./DebugLog/version-23.13.1.5-docs.md) | `DebugLog.lua` 23 · **`DebugLogDiagnostics.lua` 13** (the identity header names Verdict; DropWatcher#19) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 5 | v1.119.0 | **Current** |
 | [23.12.1.5](./DebugLog/version-23.12.1.5-docs.md) | `DebugLog.lua` 23 · **`DebugLogDiagnostics.lua` 12** (the identity header names ForeverDB and prints its line; LibKa0s#105, `SF-LK-01`) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 5 | v1.114.0 – v1.118.0 | Superseded |
 | [23.11.1.5](./DebugLog/version-23.11.1.5-docs.md) | **`DebugLog.lua` 23** (the buffer's messages plain, the colored view kept in `__view`, `REPORT_WRITTEN`; the `onSettings` field, LibKa0s#86) · **`DebugLogDiagnostics.lua` 11** (`D:Report`, `D:Serialize`, `lib.Serialize`; LibKa0s#79, `LK-79`) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 5** (a skin switch's rebuild keeps each message's colors) | v1.105.0 – v1.113.0 | Superseded |
 | [22.10.1.4](./DebugLog/version-22.10.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 10** (the identity header names WaypointArrow) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.99.0 – v1.104.0 | Superseded |

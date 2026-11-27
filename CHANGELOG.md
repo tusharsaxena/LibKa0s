@@ -10,11 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.119.0 — unreleased
+## v1.119.0 — 2026-11-27
 
 Opened 2026-11-27, on `feat/2026-11-27-itemsearch-split`: DropWatcher#19 (splitting Item Search out of Ka0s Drop Watcher into Ka0s Item Search), Drop Watcher's plan `docs/superpowers/plans/2026-11-27-itemsearch-split.md`, tasks B1 to B4, built from its design `docs/superpowers/specs/2026-11-27-itemsearch-split-design.md`. Built to WowAddonStandards v2.121.0.
 
-Versions so far: `LibKa0s-Verdict-1.0` key **1.1.1.1.1.1.1.1.1.1.1** (Verdict minor 1, VerdictConstants minor 1, VerdictClassData minor 1, VerdictTierTokens minor 1, VerdictEvaluate minor 1, VerdictReads minor 1, VerdictCollect minor 1, VerdictFacts minor 1, VerdictScore minor 1, VerdictGear minor 1, VerdictSettings minor 1; new); `LibKa0s-DebugLog-1.0` key **23.13.1.5** (DebugLogDiagnostics minor 13); every other file at its v1.118.0 minor, and the test kit at revision **65**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Verdict-1.0` key **1.1.1.1.1.1.1.1.1.1.1** (Verdict minor 1, VerdictConstants minor 1, VerdictClassData minor 1, VerdictTierTokens minor 1, VerdictEvaluate minor 1, VerdictReads minor 1, VerdictCollect minor 1, VerdictFacts minor 1, VerdictScore minor 1, VerdictGear minor 1, VerdictSettings minor 1; new); `LibKa0s-DebugLog-1.0` key **23.13.1.5** (DebugLogDiagnostics minor 13); every other file at its v1.118.0 minor, and the test kit at revision **65**. No `NEEDS_*` floor rises.
 
 ### The verdict engine (`IS-B1`)
 
@@ -34,6 +34,12 @@ Versions so far: `LibKa0s-Verdict-1.0` key **1.1.1.1.1.1.1.1.1.1.1** (Verdict mi
 - **`LibKa0s-Verdict-1.0`'s Comparison section** ([docs](docs/api/Verdict/version-1.1.1.1.1.1.1.1.1.1.1-docs.md)), on the owner's ruling R10 (the verdict's six settings and their two editors ship in the library as a drop-in section; each addon stores its own values). One more file, after `VerdictGear.lua`, paired on the shell's minor: **VerdictSettings minor 1** (`lib.Settings`): `DEFAULTS` (Drop Watcher's six, so a fresh host gives its out-of-box verdicts) and `Defaults()`; `Rows(spec)`, the six as schema rows at the host's root (Drop Watcher's `comparison.*` rows: order, types, ranges, checks, words, the two maps `skipRender`); `Section(ctx, O, spec, tab)`, drawn on the host's LibKa0s-Options-1.0 instance, Scoring (the four scalar rows), Weights (a sub-strip of your class's specs or talent trees, a slider per stat, the Pawn scale import box) and Unwanted types (a checkbox per weapon type, shields where a spec carries one), every write handed to `spec.set` as a fresh value; `Tabs(O, spec)`, the two editor tabs for `RenderTabbedSchema`; and the editors' pure halves, the client named per call. Moved from Drop Watcher's `settings/SchemaRows.lua`, `defaults/Profile.lua`, `settings/Editors.lua` and `settings/PageEditors.lua`. The words are Drop Watcher's locale keys, read from the host's table with rawget; the one changed is the import's "no stat" line, which no longer names Drop Watcher. VerdictReads (still minor 1, unreleased) gains `SpecName` and `TalentTreeNames`, the strip's names.
 - Tests: the new `tests/test_verdict_settings.lua` (the rows, defaults and checks against Drop Watcher's, the editors' pure halves on both clients, and the drawn section on a `tests/fixture_options.lua` page: the strip, a slider, the import box and a checkbox each writing through `spec.set`); Drop Watcher's test_settings_pages Comparison and editors cases, ported.
 - Documentation: the Verdict document and manifest move to key `1.1.1.1.1.1.1.1.1.1.1`; `docs/api/README.md`, `docs/releasing.md` (ninety-eight files) and `docs/test-cases.md`.
+
+### The release record (`IS-B4`)
+
+- **v1.119.0, dated 2026-11-27** under the owner's ruling R8 of the design (LibKa0s takes a new version; Drop Watcher's `## Version` does not move). Every file the release changes already carries its minor from `IS-B1` to `IS-B3`: the eleven Verdict files at 1 (new) and DebugLogDiagnostics at 13. The test kit stays at revision 65; no `NEEDS_*` floor rises.
+- **The Verdict document is complete** ([docs](docs/api/Verdict/version-1.1.1.1.1.1.1.1.1.1.1-docs.md)): its work-in-progress banner gives way to the consumers at the tag (none yet; Ka0s Drop Watcher and Ka0s Item Search adopt it in the same run, each through one `New(host)` instance), beside the promotion record of the owner's ruling R4. It and the DebugLog 23.13.1.5 document, with `docs/api/README.md`'s two rows, name v1.119.0 where they read unreleased.
+- Documentation: `README.md` (twenty-seven majors, the Verdict entry and row, the Core floor list, the payload tree, the kit line), `docs/releasing.md` (the version pointers at v1.119.0, twenty-seven `tests/majors.lua` rows, ninety-eight `.lua` files, the v1.119.0 re-vendor note under step 8, the Consumers table's Verdict row), `docs/api/CONSUMERS.md` (what moved at v1.119.0) and `docs/test-cases.md` (regenerated).
 
 ## v1.118.0 — 2026-11-26
 

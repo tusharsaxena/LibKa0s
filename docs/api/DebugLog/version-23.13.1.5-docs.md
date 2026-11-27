@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-DebugLog-1.0` |
 | Files and minors | `DebugLog.lua` minor **23** · `DebugLogDiagnostics.lua` minor **13** · `DebugLogGates.lua` minor **1** · `DebugLogWindow.lua` minor **5** |
-| Shipped in | unreleased (v1.119.0) |
+| Shipped in | v1.119.0 |
 | Status | **Current** |
 | Supersedes | [version 23.12.1.5](./version-23.12.1.5-docs.md) (shipped in v1.114.0) — the identity header did not name `LibKa0s-Verdict-1.0`. |
 | Superseded by | — |
