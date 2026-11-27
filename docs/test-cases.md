@@ -654,6 +654,180 @@ Total.
 - foreverdb spots: LoadFull with Full already loaded by another addon loads nothing
 - foreverdb spots: Status carries the Full state and cost, and never loads
 
+### test_verdict.lua (8)
+
+- verdict: the major loads and reports its five files, each paired on the shell
+- verdict: the kernel's public members are the major's own
+- verdict: no Core means no major, and every secondary loads to nothing without the shell
+- verdict: a secondary loaded again on the same shell is a no-op; a newer shell re-runs it
+- verdict: New(host) binds a client and raises on a host that names none
+- verdict: two instances keep their own hosts, and share the method table
+- verdict: the constants keep both clients' slots and slot plans
+- verdict: an evaluation's client picks its class list and its slot plans
+
+### test_verdict_classdata.lua (18)
+
+- verdict class data: ForClient names a client's list, Retail's for any other key
+- verdict class data: each list carries its data, its lookups and the stat keys; none is installed
+- verdict class data: Forever lists nine classes and no Death Knight, Monk, Demon Hunter or Evoker
+- verdict class data: ArmorFor("HUNTER", 30) is leather, ArmorFor("HUNTER", 40) is mail
+- verdict class data: Forever's rows are keyed by class and talent tree, with the Pawn index
+- verdict class data: thirteen classes with their client classIDs, each with an armor type
+- verdict class data: every spec row is well-formed and its class lists it
+- verdict class data: every spec has its place in its class, 1 to n with none twice
+- verdict class data: the Devourer Demon Hunter spec (1480) is an Intellect leather dual wielder
+- verdict class data: dual wield and Titan's Grip are the right specs
+- verdict class data: dual wield and Titan's Grip by spec, or by class when every spec agrees
+- verdict class data: shields go to Protection, Holy, Elemental and Restoration Shaman only
+- verdict class data: held off hands go to the caster and healer specs
+- verdict class data: a spec of another class is not trusted over the class
+- verdict class data: armor type is exact, and an unknown class or subclass cannot tell
+- verdict class data: weapon proficiencies by class
+- verdict class data: primary stat is the spec's, or the class's when every spec shares one
+- verdict class data: lookups never throw on junk input
+
+### test_verdict_tokens.lua (18)
+
+- verdict tier token: a concrete slot is upgrade, sidegrade or downgrade against what is worn there
+- verdict tier token: another class's token is cantUse; a slot not read is unknown, reason tierToken
+- verdict tier token: a Curio with no class line folds to its best slot
+- verdict tier token: a Curio of another class is cantUse, naming no slot
+- verdict tier token: the scorer is skipped, and neither the opts nor the facts are written
+- verdict tier token: the looter is judged on their own class and gear
+- verdict tier token: the Use text names the slot (Midnight's tokens), source use
+- verdict tier token: an older token's name names the slot, source name; else any
+- verdict tier token: the rungs run in order: table, then use, then name
+- verdict tier token: a secret, missing or non-string text reads no slot, never raises
+- verdict tier token: every word is the host's locale table's, read by Drop Watcher's keys
+- verdict tier token: the word keys are Drop Watcher's locale keys
+- verdict tier token: a reader's slot that is not a tier slot, or any, reads any; no facts reads nil
+- verdict tier token: the tooltip is not read when the table answers
+- verdict tier token: Users: every for a Curio or a listed any, yours for the class phrase, nil for a class list
+- verdict tier token text: EscapePattern escapes every magic character
+- verdict tier token text: WordMap, FirstWord and EndsWithWord read whole words, any case (TT-1)
+- verdict tier token text: TokenUseSlot reads the class phrase and the set <slot> item, in the words it is handed (TT-1)
+
+### test_verdict_kernel.lua (49)
+
+- verdict kernel: every equip location in SLOT_PLAN compares against its slot (retail)
+- verdict kernel: every equip location in SLOT_PLAN compares against its slot (forever)
+- verdict kernel: an equip location with no plan is unknown (not gear)
+- verdict kernel: pair compares against the lower of the two slots
+- verdict kernel: an empty slot is an upgrade with the emptySlot reason
+- verdict kernel: a slot that is not known is unknown, never an upgrade
+- verdict kernel: a one-hander compares against the main hand only, unless the candidate dual wields
+- verdict kernel: a dual wielder holding a two-hander compares a one-hander against the two-hander
+- verdict kernel: a two-hander compares against the average of both hands
+- verdict kernel: Titan's Grip compares a two-hander as a pair over both hands
+- verdict kernel: `either` marks a baseline picked as the lower of two worn items the drop could take (feedback-21 R5)
+- verdict kernel: an off hand against a wielded two-hander compares with the two-hander, never an empty slot
+- verdict kernel: ranged weapons are two-handers for hunters and main hand for wand users (retail)
+- verdict kernel: ranged weapons are two-handers for hunters and main hand for wand users (forever)
+- verdict kernel: a gun, crossbow or wand in the main hand is a two-hander for off hands and one-handers
+- verdict kernel: a unique-equipped drop compares against the item holding its category
+- verdict kernel: a unique drop whose own slot holds the category replaces that item
+- verdict kernel: compareOwned takes the better of equipped and owned per slot
+- verdict kernel: a known spec is judged by the item's own spec list
+- verdict kernel: a spec list read for another class leaves the candidate to the class tables
+- verdict kernel: the primary stat check takes every primary the item carries
+- verdict kernel: spec unknown falls back to ClassData for armor, jewelry, shields and off hands
+- verdict kernel: a known spec with no item spec list uses the spec's own class data
+- verdict kernel: the primary stat decides when every spec agrees, and is ambiguous otherwise
+- verdict kernel: an unknown class cannot be judged
+- verdict kernel: tier tokens are judged by their class list
+- verdict kernel: a class-restricted item refuses other classes
+- verdict kernel: an undesired subclass is doesntWant, but only when the item is usable
+- verdict kernel: the sidegrade band splits upgrade, sidegrade and downgrade
+- verdict kernel: ItemVerdict judges one item level as step 4 does, and the band is kept only when it is not 0
+- verdict kernel: with a score, the verdict takes the sign only when ilvl and score agree in sign
+- verdict kernel: the scorer is optional, may be pending, and may fail without harm
+- verdict kernel: a two-hander's score baseline is the average of both hands' scores
+- verdict kernel: scoreFirst, a lower item level with a higher score is an upgrade
+- verdict kernel: scoreFirst, a score within 1% defers to item level
+- verdict kernel: scoreFirst, no score is item level with reason noScore
+- verdict kernel: ilvlFirst unchanged
+- verdict kernel: verdict precedence is cant, then doesntWant, then unknown, then the comparison
+- verdict kernel: the track delta orders tracks by tier, then rank
+- verdict kernel: the output carries every field of spec 5.2 step 5
+- verdict kernel: nil and garbage inputs never throw and answer unknown with a reason
+- verdict kernel: garbage inside the tables never throws
+- verdict kernel: an internal failure is caught and reported as unknown
+- verdict kernel: heirloom protection keeps a slot holding an heirloom from being called an upgrade
+- verdict kernel: on Forever a mail drop for a level 30 Hunter is cantUse with reason armorLevel
+- verdict kernel: on Forever the item's spec list does not lift the armor level rule
+- verdict kernel: on Forever a relic is its class's alone: libram, idol, totem
+- verdict kernel: on Retail's class list a relic is not gear, never the relic reason
+- verdict kernel: on Forever an item with Strength for a Hunter is not cantUse by stat
+
+### test_verdict_offspec.lua (14)
+
+- verdict offspec: a Protection paladin's Intellect axe is an off-spec upgrade for Holy over an empty hand
+- verdict offspec: against the best Holy item owned, the off-spec verdict takes the band
+- verdict offspec: a refusal on the class skips the pass; so does a drop the main spec can use
+- verdict offspec: an unknown spec is skipped
+- verdict offspec: the spec list and the dual-wield flag are spec refusals too
+- verdict offspec: the best spec wins: verdict, then the larger difference (an empty slot largest), then the lower id
+- verdict offspec: doesntWant, cantUse and unknown are never chosen; with none left there is no off-spec
+- verdict offspec: item level only: the scorer is never asked, so it never waits on a score
+- verdict offspec: junk off-spec gear and junk undesired lists are tolerated and skip the spec
+- verdict offspec: Who derives a spec's candidate from ClassData, never from the main spec
+- verdict offspec: WornGear keeps each worn item the spec could wear, false where it could not
+- verdict offspec: Enabled(client) answers per client; no client named, no off-spec
+- verdict offspec: the pass runs on the evaluation's own client alone
+- verdict offspec: Who and WornGear read the class list the client names
+
+### test_verdict_golden.lua (49)
+
+- verdict golden: the table is Drop Watcher's, every kernel case named once
+- verdict golden kernel: upgrade: a plate helm 10 levels over the worn one
+- verdict golden kernel: downgrade: a plate helm 10 levels under
+- verdict golden kernel: sidegrade: equal item level
+- verdict golden kernel: sidegrade: at the band's edge (+10, band 10)
+- verdict golden kernel: upgrade: one past the band's edge (+11, band 10)
+- verdict golden kernel: downgrade: one past the band's lower edge (-11, band 10)
+- verdict golden kernel: upgrade: an empty slot
+- verdict golden kernel: upgrade: a ring against the lower of two worn rings
+- verdict golden kernel: cantUse: plate for a mage
+- verdict golden kernel: cantUse: an intellect plate helm for Arms (primary stat)
+- verdict golden kernel: cantUse: the item's class list leaves the warrior out
+- verdict golden kernel: doesntWant: plate is on Arms' undesired list
+- verdict golden kernel: unknown: the slot was never read
+- verdict golden kernel: unknown: a tabard is not gear
+- verdict golden kernel: unknown: no item level
+- verdict golden kernel: unknown: facts that are not a table
+- verdict golden kernel: ilvlFirst: item level and score agree
+- verdict golden kernel: ilvlFirst: the score disagrees, a sidegrade
+- verdict golden kernel: ilvlFirst: Pawn pending, item level alone with scorePending
+- verdict golden kernel: ilvlFirst: the weights scorer values strength (skipped: lib.Score lands with VerdictScore.lua (Item Search split plan, task B2))
+- verdict golden kernel: scoreFirst: the score decides over a lower item level
+- verdict golden kernel: scoreFirst: a tie within 1% falls to item level
+- verdict golden kernel: scoreFirst: no score, item level with noScore
+- verdict golden kernel: scoreFirst: Pawn pending, scorePending and noScore
+- verdict golden kernel: scoreFirst: the weights scorer by talent tree (skipped: lib.Score lands with VerdictScore.lua (Item Search split plan, task B2))
+- verdict golden kernel: forever: an intellect plate helm passes the soft stat gate
+- verdict golden kernel: forever: plate below level 40 is cantUse (armorLevel)
+- verdict golden kernel: compareOwned on: a better helm in the bags is the baseline
+- verdict golden kernel: compareOwned off: the bags are not read
+- verdict golden kernel: heirloomProtect on: an upgrade over an heirloom reads as a sidegrade
+- verdict golden kernel: heirloomProtect off: the upgrade stands
+- verdict golden kernel: tier token: an omni token folds to its best tier slot
+- verdict golden kernel: tier token: another class's token is cantUse
+- verdict golden kernel: group: a looter's upgrade over their inspected chest
+- verdict golden kernel: group: the item's spec list leaves the looter's spec out
+- verdict golden kernel: off-spec: a shield Fury cannot use is an upgrade for Protection
+- verdict golden kernel: collect: a mount not yet learned is newCollect (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: a known mount is collected (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: a pet with no answer yet is collectUnknown (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: a pet held 1 of 3 is collected, petPartial (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: a recipe of a profession you lack is cantUse (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: an appearance not learned is newCollect (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: a whitelisted known mount adds whitelisted (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: a lockbox answers its kind word (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: a whitelisted lockbox adds whitelisted (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: an item of no kind is item, category other (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: gear has no collection verdict (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: a forced item whose class is not read is unknown (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+
 ### test_glow.lua (15)
 
 - glow: the major registers with Core, and reports its file minor
@@ -6020,6 +6194,12 @@ Total.
 | test_foreverdb.lua | 32 |
 | test_foreverdb_lookups.lua | 16 |
 | test_foreverdb_spots.lua | 21 |
+| test_verdict.lua | 8 |
+| test_verdict_classdata.lua | 18 |
+| test_verdict_tokens.lua | 18 |
+| test_verdict_kernel.lua | 49 |
+| test_verdict_offspec.lua | 14 |
+| test_verdict_golden.lua | 35 |
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
@@ -6236,5 +6416,5 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
-| Skipped | 3 |
-| **Total** | **5263** |
+| Skipped | 17 |
+| **Total** | **5405** |

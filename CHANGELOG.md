@@ -10,6 +10,19 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.119.0 — unreleased
+
+Opened 2026-11-27, on `feat/2026-11-27-itemsearch-split`: DropWatcher#19 (splitting Item Search out of Ka0s Drop Watcher into Ka0s Item Search), Drop Watcher's plan `docs/superpowers/plans/2026-11-27-itemsearch-split.md`, tasks B1 to B4, built from its design `docs/superpowers/specs/2026-11-27-itemsearch-split-design.md`. Built to WowAddonStandards v2.121.0.
+
+Versions so far: `LibKa0s-Verdict-1.0` key **1.1.1.1.1** (Verdict minor 1, VerdictConstants minor 1, VerdictClassData minor 1, VerdictTierTokens minor 1, VerdictEvaluate minor 1; new); `LibKa0s-DebugLog-1.0` key **23.13.1.5** (DebugLogDiagnostics minor 13); every other file at its v1.118.0 minor, and the test kit at revision **65**. No `NEEDS_*` floor rises.
+
+### The verdict engine (`IS-B1`)
+
+- **New major `LibKa0s-Verdict-1.0`** ([docs](docs/api/Verdict/version-1.1.1.1.1-docs.md)), promoted on the owner's ruling: Tushar Saxena (owner), 2026-11-27, ruling R4 of the design (the upgrade engine is promoted, not copied). Consumers: Ka0s Drop Watcher and Ka0s Item Search. Conformant under library-stack-§7 bar 1, so no deviation row. Five files so far, loaded directly after `ForeverDB.lua`: **Verdict minor 1** (`LibKa0s/Verdict.lua`, the shell: `New(host)` binding a client, `CLIENTS`, the instance method table), **VerdictConstants minor 1** (`lib.C`, the item, slot and quality numbers the kernel reads, both clients' slots and slot plans kept), **VerdictClassData minor 1** (`lib.ClassData`, Drop Watcher's Retail and WoW Forever class lists and their lookups, `ForClient(key)`, nothing installed), **VerdictTierTokens minor 1** (`lib.TierTokens`, tier tokens judged as gear, the words read from the host's locale table by Drop Watcher's keys) and **VerdictEvaluate minor 1** (`lib.Evaluate`, `lib.Equippability`, `lib.ItemVerdict`, `lib.TrackDelta`, `lib.SubClassKey` and `lib.OffSpec`, the kernel and the off-spec pass), the four secondaries paired on the shell's minor. The code is Drop Watcher's, moved; the one change is that the client is named per call (`opts.client`), where Drop Watcher read it at file load.
+- **DebugLogDiagnostics minor 13** ([docs](docs/api/DebugLog/version-23.13.1.5-docs.md)): Verdict in the report's major list, directly after ForeverDB. No member change.
+- Tests: the new `tests/test_verdict.lua` (the load, the Core floor, the pairing, `New`, the per-client constants), `tests/test_verdict_classdata.lua`, `tests/test_verdict_tokens.lua`, `tests/test_verdict_kernel.lua` and `tests/test_verdict_offspec.lua` (Drop Watcher's kernel suites, ported, on `tests/fixture_verdict.lua`) and `tests/test_verdict_golden.lua` over `tests/fixtures/verdict_golden.lua`, Drop Watcher's golden table copied unchanged (its collection and weights cases declared skips until VerdictCollect and VerdictScore land); `tests/test_debuglog_diagnostics.lua` and `tests/test_debuglog_report.lua` re-pin `DebugLogDiagnostics 13`.
+- Documentation: `docs/api/Verdict/version-1.1.1.1.1-docs.md` (in progress) and its manifest, the DebugLog pair, `docs/api/README.md`, `docs/releasing.md` and `docs/test-cases.md`.
+
 ## v1.118.0 — 2026-11-26
 
 Opened 2026-11-26, on `feat/2026-11-26-owner-feedback-round4`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-26-OWNER_FEEDBACK_ROUND4/` (the owner's fourth pass over Drop Watcher's Item Search), item `R4-LK-01`, built in that run's review fix pass (`R4-REV`). Built to WowAddonStandards v2.121.0, unchanged since v1.117.0.

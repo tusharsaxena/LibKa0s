@@ -73,6 +73,17 @@ local MAJORS = {
     primary = "ForeverDB",
   },
   {
+    major = "LibKa0s-Verdict-1.0",
+    files = { "Verdict", "VerdictConstants", "VerdictClassData", "VerdictTierTokens", "VerdictEvaluate" },
+    primary = "Verdict",
+    paired = {
+      { file = "VerdictConstants", minorField = "__constantsMinor", probeField = "__constantsShellMinor" },
+      { file = "VerdictClassData", minorField = "__classDataMinor", probeField = "__classDataShellMinor" },
+      { file = "VerdictTierTokens", minorField = "__tierTokensMinor", probeField = "__tierTokensShellMinor" },
+      { file = "VerdictEvaluate", minorField = "__evaluateMinor", probeField = "__evaluateShellMinor" },
+    },
+  },
+  {
     major = "LibKa0s-Glow-1.0",
     files = { "Glow" },
     primary = "Glow",
