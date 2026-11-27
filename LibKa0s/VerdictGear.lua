@@ -491,7 +491,9 @@ end
 --- @param forced boolean|nil
 --- @return table|nil me, boolean pending
 function methods:Judge(link, forced)
-  local facts, status = self:Request(link, function(f, l) if f then self:Changed("item", l) end end)
+  -- One callback per instance, so a link judged again while it loads is announced once.
+  self.__onItem = self.__onItem or function(f, l) if f then self:Changed("item", l) end end
+  local facts, status = self:Request(link, self.__onItem)
   if not facts then return nil, status == "loading" end
   local me = self:JudgeFacts(facts, { forced = forced })
   if not scorePending(me) then return me, false end

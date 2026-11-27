@@ -246,3 +246,38 @@ test("verdict instances: a host with no config, or one that leaves a key out, ju
   assertEqual(W.v:JudgeFacts(facts).verdict, "upgrade", "the host's false wins")
   assertTrue(W.v:Config().weights ~= W.V.Settings.DEFAULTS.weights, "a default map is a fresh copy")
 end)
+
+test("verdict instances: a stood-down instance asks the client for no item", function()
+  local W = FC.new{ seed = rogue(leather(610, { loadsNeeded = 1 })) }
+  local control = W.V:New({ client = "retail", L = {} })
+  local _, status = control:Request(FC.link(3001))
+  assertEqual(status, "loading", "the control asks")
+  local asked = #W.m.loadRequests
+  assertTrue(asked > 0, "and the client was asked")
+  W.v:StandDown()
+  -- red under: Request never read self.down, so a stood-down instance armed loads and timers
+  local facts
+  facts, status = W.v:Request(FC.link(3001), function() end)
+  assertNil(facts); assertEqual(status, "unavailable")
+  assertEqual(#W.m.loadRequests, asked, "no load asked while stood down")
+  local me, pending = W.v:Judge(FC.link(3001))
+  assertNil(me); assertFalse(pending, "nothing is pending while stood down")
+  assertEqual(#W.m.loadRequests, asked)
+end)
+
+test("verdict instances: Judge twice on a loading item tells the host once", function()
+  local W = FC.new{ seed = rogue(leather(610, { loadsNeeded = 1 })) }
+  W.config = { scorer = "none" }
+  W.v:Judge(FC.link(3001))
+  W.v:Judge(FC.link(3001))
+  W.timers(); W.timers()
+  -- red under: each Judge added a fresh closure as another waiter
+  assertEqual(W.count("item"), 1, "one onChange item for the one load")
+  local got = 0
+  local cb = function() got = got + 1 end
+  W.item(3002, leather(612, { loadsNeeded = 1 }))
+  W.v:Request(FC.link(3002), cb)
+  W.v:Request(FC.link(3002), cb)
+  W.timers(); W.timers()
+  assertEqual(got, 1, "one callback handed twice runs once")
+end)

@@ -385,6 +385,14 @@ end
 
 local attempt
 
+-- Whether the array `list` holds `value`.
+local function tContainsValue(list, value)
+  for _, v in ipairs(list) do
+    if v == value then return true end
+  end
+  return false
+end
+
 local function finish(v, link, job, facts)
   store(v).loads[link] = nil
   for _, cb in ipairs(job.waiters) do cb(facts, link) end
@@ -414,7 +422,9 @@ end
 --- The facts of a link now when the client has the item (and its use spell's text); else nil, and
 --- `callback(facts, link)` runs once it has loaded or never does (after MAX_LOAD_TRIES), with nil
 --- facts for an item never loaded. The second return: "ready", "loading", "invalid" (no item in the
---- link; no callback) or "unavailable" (the client cannot load items; no callback).
+--- link; no callback) or "unavailable" (the client cannot load items, or the instance is stood
+--- down: nothing is asked for and no timer arms; no callback). A callback handed again for a link
+--- still loading is kept once.
 --- @param link string
 --- @param callback function|nil
 --- @return table|nil facts, string status
@@ -423,7 +433,7 @@ function methods:Request(link, callback)
   if not itemID then return nil, "invalid" end
   local facts = self:Facts(link)
   if facts and not spellLoading(self, facts) then return facts, "ready" end
-  if not (facts or self.R.CanRequestItemLoad()) then return nil, "unavailable" end
+  if self.down or not (facts or self.R.CanRequestItemLoad()) then return nil, "unavailable" end
   local loads = store(self).loads
   local job = loads[link]
   if not job then
@@ -431,7 +441,7 @@ function methods:Request(link, callback)
     loads[link] = job
     attempt(self, link, job)
   end
-  if callback then job.waiters[#job.waiters + 1] = callback end
+  if callback and not tContainsValue(job.waiters, callback) then job.waiters[#job.waiters + 1] = callback end
   return nil, "loading"
 end
 
