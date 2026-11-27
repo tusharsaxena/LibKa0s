@@ -134,11 +134,73 @@ C.TIER_SLOTS = { "INVTYPE_HEAD", "INVTYPE_SHOULDER", "INVTYPE_CHEST", "INVTYPE_H
 -- season.
 C.TIER_TOKENS = {}
 
--- The clients each client-gated part of the kernel serves: the off-spec pass is Retail's alone
--- (WoW Forever's spec is class-wide, so it has no other spec to judge). OffSpec.Enabled reads it.
+-- The clients each client-gated part of the engine serves: the off-spec pass is Retail's alone
+-- (WoW Forever's spec is class-wide, so it has no other spec to judge; OffSpec.Enabled reads it),
+-- and so is the appearance read (WoW Forever has no transmog; VerdictFacts.lua reads it).
 C.FEATURE_CLIENTS = {
-  offSpec = { "retail" },
+  offSpec  = { "retail" },
+  transmog = { "retail" },
 }
+
+--- Whether feature `name` (a C.FEATURE_CLIENTS key) serves `client`: pure; a nil or unknown client,
+--- or an unknown feature, answers false.
+--- @param name string
+--- @param client string|nil
+--- @return boolean
+function C.FeatureOn(name, client)
+  for _, token in ipairs(C.FEATURE_CLIENTS[name] or {}) do
+    if token == "both" or token == client then return true end
+  end
+  return false
+end
+
+-- trackStringID (C_Item.GetItemUpgradeInfo) -> tier, the locale-proof key the facts reader tries
+-- first. Empty until the client's ids are recorded in game; until then every track's tier comes
+-- from the enUS names of C.TRACK_TIER.
+C.TRACK_TIER_BY_STRING_ID = {}
+
+-- Enum.ItemRecipeSubclass.
+C.RECIPE_SUBCLASS = fromEnum(EnumTable.ItemRecipeSubclass, {
+  BOOK           = { "Book", 0 },
+  LEATHERWORKING = { "Leatherworking", 1 },
+  TAILORING      = { "Tailoring", 2 },
+  ENGINEERING    = { "Engineering", 3 },
+  BLACKSMITHING  = { "Blacksmithing", 4 },
+  COOKING        = { "Cooking", 5 },
+  ALCHEMY        = { "Alchemy", 6 },
+  FIRST_AID      = { "FirstAid", 7 },
+  ENCHANTING     = { "Enchanting", 8 },
+  FISHING        = { "Fishing", 9 },
+  JEWELCRAFTING  = { "Jewelcrafting", 10 },
+  INSCRIPTION    = { "Inscription", 11 },
+})
+
+-- A recipe subclass -> the skill line of the profession it needs (GetProfessionInfo's 7th return).
+-- Book and First Aid (retired) are absent, so no profession is checked for them.
+local RS = C.RECIPE_SUBCLASS
+C.RECIPE_SKILL_LINE = {
+  [RS.LEATHERWORKING] = 165, [RS.TAILORING] = 197, [RS.ENGINEERING] = 202, [RS.BLACKSMITHING] = 164,
+  [RS.COOKING] = 185, [RS.ALCHEMY] = 171, [RS.ENCHANTING] = 333, [RS.FISHING] = 356,
+  [RS.JEWELCRAFTING] = 755, [RS.INSCRIPTION] = 773,
+}
+
+-- Every category an item can fall in, in display order. `collectible` ones get a collection
+-- verdict (new or collected) instead of a gear one. `kind` ones are not gear and not collected:
+-- their verdict is their kind word. `lockbox` is Miscellaneous Junk that opens; `container` a bag,
+-- or on WoW Forever a quiver or ammo pouch; `reagent` a Trade Goods item; `other` is no item's
+-- category (a host's catch-all). Collect.CategoryOf decides, in its own precedence order.
+C.CATEGORIES = {
+  { key = "equipment", collectible = false }, { key = "tierToken", collectible = false },
+  { key = "mount", collectible = true }, { key = "pet", collectible = true },
+  { key = "toy", collectible = true }, { key = "recipe", collectible = true },
+  { key = "cosmetic", collectible = true },
+  { key = "lockbox", collectible = false, kind = true }, { key = "container", collectible = false, kind = true },
+  { key = "reagent", collectible = false, kind = true }, { key = "other", collectible = false, kind = true },
+}
+
+-- The bags the gear snapshot reads for the best item owned per slot: the backpack (0) and the four
+-- bag slots. The reagent bag (5) holds no gear, and the bank is not readable away from it.
+C.BAG_IDS = { 0, 1, 2, 3, 4 }
 
 -- ---------------------------------------------------------------------------------------------
 -- Inventory slots and slot plans

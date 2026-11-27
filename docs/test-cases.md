@@ -686,7 +686,7 @@ Total.
 - verdict class data: primary stat is the spec's, or the class's when every spec shares one
 - verdict class data: lookups never throw on junk input
 
-### test_verdict_tokens.lua (18)
+### test_verdict_tokens.lua (19)
 
 - verdict tier token: a concrete slot is upgrade, sidegrade or downgrade against what is worn there
 - verdict tier token: another class's token is cantUse; a slot not read is unknown, reason tierToken
@@ -706,6 +706,7 @@ Total.
 - verdict tier token text: EscapePattern escapes every magic character
 - verdict tier token text: WordMap, FirstWord and EndsWithWord read whole words, any case (TT-1)
 - verdict tier token text: TokenUseSlot reads the class phrase and the set <slot> item, in the words it is handed (TT-1)
+- verdict tier token: a host locale table missing a key reads that key as its own word
 
 ### test_verdict_kernel.lua (49)
 
@@ -776,7 +777,111 @@ Total.
 - verdict offspec: the pass runs on the evaluation's own client alone
 - verdict offspec: Who and WornGear read the class list the client names
 
-### test_verdict_golden.lua (49)
+### test_verdict_reads.lua (6)
+
+- verdict reads: every member answers its absent value on a client without the API
+- verdict reads: a secret answer is no answer
+- verdict reads: the tooltip line reader prefers the typed line, then any line
+- verdict reads: the class line, the opens line and the recipe line read their GlobalStrings
+- verdict reads: the talent tree is the group with the most points, none on a tie
+- verdict reads: Pawn is ready by PawnIsReady, else PawnIsInitialized; its error is never the host's
+
+### test_verdict_collect.lua (13)
+
+- verdict collect: CategoryOf names each category
+- verdict collect: CategoryOf's precedence
+- verdict collect: the out-of-scope classes are not watched; kinds and IsCollectible
+- verdict collect: Verdict reads new, collected and no answer; a pet's partial count
+- verdict collect: a recipe for a profession you lack is cantUse; a cosmetic reads transmogKnown
+- verdict collect: a kind's word, no gain; whitelisted; gear and a token answer nil
+- verdict collect: an item of no category reads as gear by the client's slot plans
+- verdict collect: Read fills a mount's, a pet's and a toy's collection state
+- verdict collect: Read fills a recipe's profession and known line
+- verdict collect: Read tells a lockbox from Junk that does not open; a reagent's tooltip is never read
+- verdict collect: Read spends the probes only where they decide; a tier token probes nothing
+- verdict collect: Read answers its argument, survives no facts, and defaults to lib.Reads
+- verdict collect: a burst of collection events reads once, then tells the host
+
+### test_verdict_facts.lua (21)
+
+- verdict facts: a cached ring reads every field
+- verdict facts: a chest reads its appearance on Retail alone, its account binds and no specs
+- verdict facts: the stats carry every primary stat on the tooltip, not the playing spec's alone
+- verdict facts: the track tier, by string id first, then by enUS name, else unset; the tooltip line
+- verdict facts: an item unique on its own takes its item id as the category
+- verdict facts: a token naming classes is a tier token, its slot from its name; class gear is not
+- verdict facts: a tier token's use text names the slot it makes, read once; gear's never
+- verdict facts: a use spell not loaded yet is waited on, and SPELL_TEXT_UPDATE reads it again
+- verdict facts: a relic is gear on Forever, not gear on Retail
+- verdict facts: the quality falls back to the link's color
+- verdict facts: Facts caches by link, per instance
+- verdict facts: at its cap the cache drops its least recently used quarter, never the whole
+- verdict facts: garbage links answer nil and never raise
+- verdict facts: learning an appearance re-reads the flag from the raw slot, then the collections
+- verdict facts: Request answers a cached item at once and never calls back
+- verdict facts: an uncached item loads, and every waiter is called back once
+- verdict facts: an item that never arrives is given up after MAX_LOAD_TRIES, with nil
+- verdict facts: a client that cannot load items answers unavailable
+- verdict facts: stood down, the cache and the loads are dropped and a late answer is ignored
+- verdict facts: LinkDetail, BetterLink and IdentityKey read how complete a link is
+- verdict facts: the level reads, gear's detailed else base, a bag location exact; the quality
+
+### test_verdict_score.lua (19)
+
+- verdict score: a Pawn v1 string imports its stats under GetItemStats' keys
+- verdict score: an import that is empty, not a Pawn string, or has no stat is refused
+- verdict score: ImportInto replaces one spec's weights in a fresh map and keeps the others
+- verdict score: a weights score is the sum of stat times weight; an unknown key counts 0, told
+- verdict score: HasWeights, and Resolve picks the adapter for every config
+- verdict score: the weights are keyed by spec on Retail and by class and talent tree on Forever
+- verdict score: with weights, a higher item level that scores lower is a sidegrade
+- verdict score: ScorerInUse and Scorer follow the host's config and whether Pawn is initialized
+- verdict score: for you, Pawn values the drop and the baseline on the drop's best visible scale
+- verdict score: for you, a drop that upgrades no scale is valued on your spec's (or your shown) scale
+- verdict score: for a looter, Pawn uses their class and spec's scale; pending while not read
+- verdict score: on Forever your score uses the scale of your top talent tree, else your custom one
+- verdict score: on Forever with no tree, and for another player, the best of the class's scales
+- verdict score: a Feral Druid tank uses Pawn 3, damage Pawn 2, by the host's role read
+- verdict score: ScoreFor with your weights is how = custom, and none without a scorer
+- verdict score: pawn not ready then ready -- pending, retried, judged again once Pawn answers
+- verdict score: a score that never answers is retried SCORE_TRIES times, then given up
+- verdict score: Pawn absent, or loaded but not initialized, never errors and never waits
+- verdict score: a stand-down drops the score retry; no onChange until the stand-up
+
+### test_verdict_gear.lua (18)
+
+- verdict gear: each worn slot is a copy of its facts at the current level; an empty slot is false
+- verdict gear: Retail's candidate carries its spec and no tree; the hand flags are the spec's
+- verdict gear: WoW Forever's candidate carries the class-wide spec, your talent tree and your level
+- verdict gear: a better bag item you can wear is owned for its slot; one you cannot is not
+- verdict gear: a pair gets your best two rings; a dual wielder's one-handers fill both hands
+- verdict gear: Titan's Grip puts a second two-hander in the off hand on Retail alone
+- verdict gear: a bag item with no slot plan is never asked of the item facts
+- verdict gear: on Forever a bow compares against slot 18, on Retail against the hands
+- verdict gear: OffSpecGear is the best item per slot that spec could wear, memoized per snapshot
+- verdict gear: the candidate's off-spec gear lets the kernel judge Holy against the bag mace
+- verdict gear: a bag item still loading leaves no off-spec gear; its arrival re-announces
+- verdict gear: the gear events share one throttled rebuild, which announces a change once
+- verdict gear: sorting your bags moves no gear, so it announces nothing
+- verdict gear: the host's deferWhile holds a bag event until PLAYER_REGEN_ENABLED
+- verdict gear: a bag-only rebuild keeps the worn slots as read; an equipment change reads them again
+- verdict gear: Retail rebuilds on your spec change alone; Forever on talents and levels
+- verdict gear: the first lazy read announces nothing; an item still loading is unknown, then rebuilt
+- verdict gear: stand-down drops pending refresh, and nothing fires until the stand-up
+
+### test_verdict_instances.lua (9)
+
+- verdict instances: the major reports its ten files, each secondary paired on the shell
+- verdict instances: two instances with different configs judge one item each their own way
+- verdict instances: each instance's signature is its own snapshot's, and a cache is never shared
+- verdict instances: a newer copy of the shell keeps every instance's host and methods
+- verdict instances: a read the host hands over replaces the library's, looked up at each call
+- verdict instances: Config fills the client's verdict mode when the host names none
+- verdict instances: StandUp registers the client's events once; StandDown drops them
+- verdict instances: JudgeFacts takes another player's candidate, without your heirloom rule
+- verdict instances: Judge on an uncached item asks for it and tells the host when it arrives
+
+### test_verdict_golden.lua (66)
 
 - verdict golden: the table is Drop Watcher's, every kernel case named once
 - verdict golden kernel: upgrade: a plate helm 10 levels over the worn one
@@ -798,12 +903,12 @@ Total.
 - verdict golden kernel: ilvlFirst: item level and score agree
 - verdict golden kernel: ilvlFirst: the score disagrees, a sidegrade
 - verdict golden kernel: ilvlFirst: Pawn pending, item level alone with scorePending
-- verdict golden kernel: ilvlFirst: the weights scorer values strength (skipped: lib.Score lands with VerdictScore.lua (Item Search split plan, task B2))
+- verdict golden kernel: ilvlFirst: the weights scorer values strength
 - verdict golden kernel: scoreFirst: the score decides over a lower item level
 - verdict golden kernel: scoreFirst: a tie within 1% falls to item level
 - verdict golden kernel: scoreFirst: no score, item level with noScore
 - verdict golden kernel: scoreFirst: Pawn pending, scorePending and noScore
-- verdict golden kernel: scoreFirst: the weights scorer by talent tree (skipped: lib.Score lands with VerdictScore.lua (Item Search split plan, task B2))
+- verdict golden kernel: scoreFirst: the weights scorer by talent tree
 - verdict golden kernel: forever: an intellect plate helm passes the soft stat gate
 - verdict golden kernel: forever: plate below level 40 is cantUse (armorLevel)
 - verdict golden kernel: compareOwned on: a better helm in the bags is the baseline
@@ -815,18 +920,35 @@ Total.
 - verdict golden kernel: group: a looter's upgrade over their inspected chest
 - verdict golden kernel: group: the item's spec list leaves the looter's spec out
 - verdict golden kernel: off-spec: a shield Fury cannot use is an upgrade for Protection
-- verdict golden kernel: collect: a mount not yet learned is newCollect (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
-- verdict golden kernel: collect: a known mount is collected (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
-- verdict golden kernel: collect: a pet with no answer yet is collectUnknown (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
-- verdict golden kernel: collect: a pet held 1 of 3 is collected, petPartial (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
-- verdict golden kernel: collect: a recipe of a profession you lack is cantUse (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
-- verdict golden kernel: collect: an appearance not learned is newCollect (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
-- verdict golden kernel: collect: a whitelisted known mount adds whitelisted (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
-- verdict golden kernel: collect: a lockbox answers its kind word (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
-- verdict golden kernel: collect: a whitelisted lockbox adds whitelisted (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
-- verdict golden kernel: collect: an item of no kind is item, category other (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
-- verdict golden kernel: collect: gear has no collection verdict (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
-- verdict golden kernel: collect: a forced item whose class is not read is unknown (skipped: lib.Collect lands with VerdictCollect.lua (Item Search split plan, task B2))
+- verdict golden kernel: collect: a mount not yet learned is newCollect
+- verdict golden kernel: collect: a known mount is collected
+- verdict golden kernel: collect: a pet with no answer yet is collectUnknown
+- verdict golden kernel: collect: a pet held 1 of 3 is collected, petPartial
+- verdict golden kernel: collect: a recipe of a profession you lack is cantUse
+- verdict golden kernel: collect: an appearance not learned is newCollect
+- verdict golden kernel: collect: a whitelisted known mount adds whitelisted
+- verdict golden kernel: collect: a lockbox answers its kind word
+- verdict golden kernel: collect: a whitelisted lockbox adds whitelisted
+- verdict golden kernel: collect: an item of no kind is item, category other
+- verdict golden kernel: collect: gear has no collection verdict
+- verdict golden kernel: collect: a forced item whose class is not read is unknown
+- verdict golden: the read half is Drop Watcher's, every case named once
+- verdict golden me: retail: a leather helm over the worn one is an upgrade
+- verdict golden me: retail: a plate helm is cantUse for a rogue
+- verdict golden me: retail: the weights scorer disagrees, a sidegrade
+- verdict golden me: retail: compareOwned reads the better helm in the bags
+- verdict golden me: retail: leather on the spec's undesired list is doesntWant
+- verdict golden me: retail: an upgrade over a worn heirloom is a sidegrade (the default protects)
+- verdict golden me: retail: Pawn ready but the drop unread, scorePending
+- verdict golden me: retail: Pawn values the drop and the helm on the drop's best scale
+- verdict golden me: retail: a mount not yet learned is newCollect
+- verdict golden me: retail: a box that reads Locked is a lockbox
+- verdict golden me: retail: off-spec, a shield Fury cannot use is an upgrade for Protection
+- verdict golden me: forever: a plate helm over the worn one, no score: item level, noScore
+- verdict golden me: forever: the weights scorer decides over a lower item level
+- verdict golden me: forever: Pawn ready but the drop unread, scorePending
+- verdict golden me: forever: plate at level 30 is cantUse (armorLevel)
+- verdict golden me: forever: a box that reads Locked is a lockbox
 
 ### test_glow.lua (15)
 
@@ -6196,10 +6318,16 @@ Total.
 | test_foreverdb_spots.lua | 21 |
 | test_verdict.lua | 8 |
 | test_verdict_classdata.lua | 18 |
-| test_verdict_tokens.lua | 18 |
+| test_verdict_tokens.lua | 19 |
 | test_verdict_kernel.lua | 49 |
 | test_verdict_offspec.lua | 14 |
-| test_verdict_golden.lua | 35 |
+| test_verdict_reads.lua | 6 |
+| test_verdict_collect.lua | 13 |
+| test_verdict_facts.lua | 21 |
+| test_verdict_score.lua | 19 |
+| test_verdict_gear.lua | 18 |
+| test_verdict_instances.lua | 9 |
+| test_verdict_golden.lua | 66 |
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
@@ -6416,5 +6544,5 @@ Total.
 | test_lizard_sighted.lua | 8 |
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
-| Skipped | 17 |
-| **Total** | **5405** |
+| Skipped | 3 |
+| **Total** | **5523** |

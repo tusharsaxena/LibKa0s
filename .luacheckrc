@@ -135,3 +135,17 @@ files["tests/"] = {
 files["LibKa0s/SkinEUI.lua"] = {
   read_globals = { "EllesmereUI", "EllesmereUIDB" },
 }
+
+-- LibKa0s-Verdict-1.0's client reads (VerdictReads.lua): the item, tooltip, inventory, container,
+-- collection and profession APIs it reads, and the two optional addons it calls (Pawn, CanIMogIt),
+-- each read bare at call time, guarded for absence and, for the addons, pcall'd. Scoped to the one
+-- file, so no other payload file may reach for them unchallenged.
+files["LibKa0s/VerdictReads.lua"] = {
+  read_globals = {
+    "C_TooltipInfo", "GetInventoryItemLink", "ItemLocation", "C_TransmogCollection",
+    "LOCALIZED_CLASS_NAMES_MALE", "LOCALIZED_CLASS_NAMES_FEMALE", "C_MountJournal", "C_PetJournal",
+    "C_ToyBox", "PlayerHasToy", "GetProfessions", "GetProfessionInfo", "CanIMogIt",
+    "PawnIsReady", "PawnIsInitialized", "PawnGetItemData", "PawnIsItemAnUpgrade", "PawnFindScaleForSpec",
+    "PawnIsScaleVisible", "PawnCommon", "PawnGetSingleValueFromItem",
+  },
+}

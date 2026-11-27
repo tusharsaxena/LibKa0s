@@ -313,3 +313,12 @@ test("verdict tier token text: TokenUseSlot reads the class phrase and the set <
     "another locale's words, handed over")
   assertNil(TT.TokenUseSlot("Create a soulbound set hand item appropriate for your class.", de), "the enUS line")
 end)
+
+test("verdict tier token: a host locale table missing a key reads that key as its own word", function()
+  local partial = { ["appropriate for your class"] = "pour votre classe" }
+  -- red under: wordsOf reading L[key] alone, so a missing key left the template nil and raised
+  assertTrue(TT.UseNamesClass("Cree une piece pour votre classe.", partial), "the key it holds")
+  assertEqual(TT.UseSlot("Create a soulbound set hand item pour votre classe.", partial), "INVTYPE_HAND",
+    "the template and the slot words it lacks read as English")
+  assertEqual(TT.NameSlot("Gauntlets of the Foreseen Conqueror", {}), "INVTYPE_HAND", "an empty table too")
+end)

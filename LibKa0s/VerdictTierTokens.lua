@@ -164,9 +164,13 @@ local ENUS = setmetatable({}, { __index = function(_, k) return k end })
 -- host's table that goes away takes its words with it.
 local cache = setmetatable({}, { __mode = "k" })
 
+-- A key the host's table does not hold reads as its own word, as AceLocale's default locale
+-- answers it, so a partial table never leaves a word nil.
+local function word(L, key) return L[key] or key end
+
 local function wordsOf(L, keys)
   local out = {}
-  for slot, key in pairs(keys) do out[slot] = L[key] end
+  for slot, key in pairs(keys) do out[slot] = word(L, key) end
   return out
 end
 
@@ -176,9 +180,9 @@ local function vocab(L)
   if words then return words end
   local K = TT.WORDS
   words = {
-    use = { phrase = L[K.phrase], template = L[K.template], slots = TT.WordMap(wordsOf(L, K.useSlots)) },
+    use = { phrase = word(L, K.phrase), template = word(L, K.template), slots = TT.WordMap(wordsOf(L, K.useSlots)) },
     names = TT.WordMap(wordsOf(L, K.names)),
-    curio = L[K.curio],
+    curio = word(L, K.curio),
   }
   cache[L] = words
   return words
