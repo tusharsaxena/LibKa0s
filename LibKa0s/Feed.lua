@@ -9,7 +9,7 @@
 -- oldest toast at the saved point, one timer per toast), and a feed mode there would be a behavior
 -- flag that turns its members around, so this is a major of its own, promoted with one consumer on
 -- the owner's ruling of 2026-11-27 (Loot History plan D24, ruling X1 of the #38 design).
--- docs/api/Feed/version-1.1.1-docs.md is the full contract and carries that record.
+-- docs/api/Feed/version-1.1.1.1-docs.md is the full contract and carries that record.
 --
 -- == THE CONTRACT =============================================================================
 --

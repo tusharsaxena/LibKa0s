@@ -363,6 +363,14 @@ test("feed model: a raising reducer keeps the newer payload and hands back its e
   assertEqual(e.payload, 2)
 end)
 
+test("feed model: a reducer answering nil keeps the newer payload", function()
+  local M, m = motion()
+  local e = { t = 1, phase = "hold", payload = 1, lastAt = 0, h = 48 }
+  local ok, err = M.Merge(e, 2, "k", m, 1, function() return nil end)
+  assertTrue(ok); assertNil(err)
+  assertEqual(e.payload, 2, "merge(old, new, key) or new")
+end)
+
 test("feed model: Drain presents only the newest n, oldest first, and frees the rest", function()
   local M = model()
   local waiting = { { key = 1 }, { key = 2 }, { key = 3 }, { key = 4 } }

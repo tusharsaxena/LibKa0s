@@ -797,7 +797,7 @@ Total.
 - feed: Refresh re-reads the getters and re-anchors the container
 - feed: __Step ticks a built feed whether the clock is armed or not
 
-### test_feed_model.lua (21)
+### test_feed_model.lua (22)
 
 - feed model: an empty descriptor snapshots every published default
 - feed model: garbage values fall back to the defaults, and unknown keys are ignored
@@ -819,6 +819,7 @@ Total.
 - feed model: no merge outside the window, with mergeWindow 0, or into a dropping entry
 - feed model: a merge into a waiting entry takes only the payload and the time
 - feed model: a raising reducer keeps the newer payload and hands back its error
+- feed model: a reducer answering nil keeps the newer payload
 - feed model: Drain presents only the newest n, oldest first, and frees the rest
 
 ### test_feed_style.lua (13)
@@ -6122,7 +6123,7 @@ Total.
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
 | test_feed.lua | 25 |
-| test_feed_model.lua | 21 |
+| test_feed_model.lua | 22 |
 | test_feed_style.lua | 13 |
 | test_feed_motion.lua | 12 |
 | test_feed_input.lua | 12 |
@@ -6340,4 +6341,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5346** |
+| **Total** | **5347** |

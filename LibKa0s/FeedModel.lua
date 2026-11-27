@@ -363,7 +363,7 @@ end
 
 --- Fold a push of `payload` under `key` into entry `e` at time `now`. Answers false when `e` cannot
 --- take it (dropping, or past the merge window); else true and the merge reducer's error, if any
---- (on an error the newer payload is kept). A live entry restarts its hold without replaying its
+--- (on an error, or a reducer answering nil, the newer payload is kept). A live entry restarts its hold without replaying its
 --- enter, snaps back to full alpha and pulses when motion.pulse is on; a waiting entry only takes
 --- the payload and the time.
 function M.Merge(e, payload, key, m, now, fn)
@@ -372,7 +372,7 @@ function M.Merge(e, payload, key, m, now, fn)
   local merged, err = payload, nil
   if type(fn) == "function" then
     local ok, out = pcall(fn, e.payload, payload, key)
-    if ok then merged = out else err = out end
+    if not ok then err = out elseif out ~= nil then merged = out end   -- nil: the newer payload
   end
   e.payload, e.lastAt = merged, now
   if e.phase == "wait" then return true, err end
