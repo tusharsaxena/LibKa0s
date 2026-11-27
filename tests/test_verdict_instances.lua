@@ -229,3 +229,20 @@ test("verdict instances: a registration the host refuses costs that event alone"
   for _, event in ipairs(W.v.__registered) do assertTrue(event ~= "BAG_UPDATE_DELAYED", event) end
   assertTrue(table.concat(lines, "\n"):find("BAG_UPDATE_DELAYED", 1, true) ~= nil, "a debug line names it")
 end)
+
+test("verdict instances: a host with no config, or one that leaves a key out, judges on the defaults", function()
+  local W = FC.new{ seed = function(m)
+    rogue()(m)
+    m.items[FC.link(3000)].quality = 7   -- the worn helm is an heirloom
+  end }
+  local facts = W.v:Facts(FC.link(3001))
+  local bare = W.V:New({ client = "retail", L = {} })
+  -- red under: Config answered {} and the verdict mode, so heirloomProtect read nil (off)
+  assertEqual(bare:Config().heirloomProtect, true, "Settings.DEFAULTS' value")
+  assertEqual(bare:JudgeFacts(facts).verdict, "sidegrade", "no config: your heirloom is protected")
+  W.config = { scorer = "none" }
+  assertEqual(W.v:JudgeFacts(facts).verdict, "sidegrade", "a key left out reads its default")
+  W.config = { scorer = "none", heirloomProtect = false }
+  assertEqual(W.v:JudgeFacts(facts).verdict, "upgrade", "the host's false wins")
+  assertTrue(W.v:Config().weights ~= W.V.Settings.DEFAULTS.weights, "a default map is a fresh copy")
+end)

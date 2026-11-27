@@ -111,7 +111,7 @@ answers through the newer methods.
 | Host field | What it is |
 |---|---|
 | `client` | `"retail"` or `"forever"` (required): the class list, the slots and plans, the off-spec and transmog gates, the default verdict mode and the events |
-| `config` | `function() -> vcfg`, read per judgment: `{ sidegradeBand, compareOwned, undesired, heirloomProtect, scorer, weights, verdictMode }`, Drop Watcher's `comparison.*` shape; `verdictMode` nil reads `VerdictModeFor(client)`. No config judges on the defaults |
+| `config` | `function() -> vcfg`, read per judgment: `{ sidegradeBand, compareOwned, undesired, heirloomProtect, scorer, weights, verdictMode }`, Drop Watcher's `comparison.*` shape; `verdictMode` nil reads `VerdictModeFor(client)`. A key the host leaves out, or every key with no config, reads `Settings.DEFAULTS`' value (a map as a fresh copy), so no config judges on the defaults, heirloom protection on |
 | `L` | The host's locale table, read by `TierTokens.WORDS`' keys (nil: enUS) |
 | `reads` | `{ [member] = fn }`: per-read overrides of `lib.Reads`, looked up at each access (`v.R`) |
 | `debug` | `function(tag, msg)` for the instance's debug lines |
@@ -122,7 +122,7 @@ answers through the newer methods.
 
 | Method | What it answers |
 |---|---|
-| `Client()`, `ClassData()`, `Config()` | The client, its class list, the host's config now with the verdict mode filled in |
+| `Client()`, `ClassData()`, `Config()` | The client, its class list, the host's config now with a missing key's default and the verdict mode filled in |
 | `Judge(link, forced)` | Your verdict and whether it is pending: `nil, true` while the item loads (asked for; `onChange("item", link)` on arrival), `me, true` while its score waits (retried every `SCORE_RETRY` s, `SCORE_TRIES` times; `onChange("score", link)` when it answers), `me, false` when settled, `nil, false` for a link with no item or a client that cannot load it |
 | `JudgeFacts(facts, opts)` | `lib.Collect.Verdict` first, else `lib.Evaluate` for your candidate (with your undesired list and `heirloomProtect`) or for `opts.candidate` (another player's: no heirloom rule); `opts.forced` is the host's own-list answer |
 | `Facts(link)`, `ReadFacts(link)`, `Request(link, cb)`, `FactsCounts()`, `RereadCollections()` | The cached facts, an uncached read, the load (`facts, status`: `ready`, `loading`, `invalid`, `unavailable`), the cache's counts, the collection re-read |

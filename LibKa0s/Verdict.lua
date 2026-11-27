@@ -163,13 +163,22 @@ function methods:Client() return self.client end
 --- @return table
 function methods:ClassData() return lib.ClassData.ForClient(self.client) end
 
---- The host's verdict config now (host.config()), a fresh table, the verdict mode filled in from
---- the client when the host names none. A host with no config judges on the defaults.
+--- The host's verdict config now (host.config()), a fresh table: a key the host leaves out (or
+--- every key, with no config) reads lib.Settings.DEFAULTS' value, a map as a fresh copy, and the
+--- verdict mode is the client's when the host names none. A host with no config judges on the
+--- defaults, heirloom protection on.
 --- @return table
 function methods:Config()
   local cfg = type(self.host.config) == "function" and self.host.config() or nil
   local out = {}
   for k, v in pairs(type(cfg) == "table" and cfg or {}) do out[k] = v end
+  local St, defaults = lib.Settings, nil
+  for _, key in ipairs(St and St.KEYS or {}) do
+    if out[key] == nil then
+      defaults = defaults or St.Defaults()
+      out[key] = defaults[key]
+    end
+  end
   if out.verdictMode == nil then out.verdictMode = lib.VerdictModeFor(self.client) end
   return out
 end
