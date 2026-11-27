@@ -298,6 +298,20 @@ test("verdict settings: the Pawn import box replaces the spec on screen's weight
   assertTrue(printed[2]:find("not a Pawn scale string", 1, true) ~= nil, printed[2])
 end)
 
+test("verdict settings: with no spec.print the import writes and puts no unprefixed line in chat", function()
+  local spec, store = host("retail", { print = false })
+  local _, _, scroll = weightsTab(spec)
+  local box = find(scroll, "EditBox", "Import a Pawn scale")
+  local bare, saved = {}, _G.print
+  _G.print = function(...) bare[#bare + 1] = table.concat({ ... }, " ") end
+  local ok, err = pcall(box.__fire, box, "OnEnterPressed", '( Pawn: v1: "Mine": Intellect=1.2 )')
+  _G.print = saved
+  assertTrue(ok, tostring(err))
+  assertEqual(store["comparison.weights"][62][INT], 1.2, "the import still writes")
+  -- red under: `spec.print or print`, the bare global with no addon prefix (slash-commands-§4)
+  assertEqual(#bare, 0, table.concat(bare, " | "))
+end)
+
 test("verdict settings: Unwanted types lists the class's weapon types and marks one per spec", function()
   local spec, store, writes = host("retail")
   local O, ctx, scroll = page()

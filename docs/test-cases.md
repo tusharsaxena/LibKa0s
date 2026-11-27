@@ -887,7 +887,7 @@ Total.
 - verdict instances: a stood-down instance asks the client for no item
 - verdict instances: Judge twice on a loading item tells the host once
 
-### test_verdict_settings.lua (21)
+### test_verdict_settings.lua (22)
 
 - verdict settings: VerdictSettings is at minor 1, paired on the Verdict shell's minor
 - verdict settings: the six defaults are Drop Watcher's (defaults/Profile.lua comparison)
@@ -906,6 +906,7 @@ Total.
 - verdict settings: a weight slider hands the whole map to spec.set, for the spec on screen
 - verdict settings: on Forever the strip opens on your top talent tree
 - verdict settings: the Pawn import box replaces the spec on screen's weights and says what came in
+- verdict settings: with no spec.print the import writes and puts no unprefixed line in chat
 - verdict settings: Unwanted types lists the class's weapon types and marks one per spec
 - verdict settings: the whole section draws Scoring, Weights and Unwanted types, each under its heading
 - verdict settings: Tabs answers the two editor tabs, keyed by their rows' group
@@ -6357,7 +6358,7 @@ Total.
 | test_verdict_score.lua | 19 |
 | test_verdict_gear.lua | 18 |
 | test_verdict_instances.lua | 15 |
-| test_verdict_settings.lua | 21 |
+| test_verdict_settings.lua | 22 |
 | test_verdict_golden.lua | 66 |
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
@@ -6576,4 +6577,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5550** |
+| **Total** | **5551** |

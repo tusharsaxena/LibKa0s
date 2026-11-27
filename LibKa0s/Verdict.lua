@@ -12,6 +12,8 @@
 --   VerdictFacts.lua      an item link's facts, cached per instance (lib.ItemRead; v:Facts, v:Request)
 --   VerdictScore.lua      the scorers (lib.Score; v:Scorer, v:ScoreFor)
 --   VerdictGear.lua       your gear snapshot and candidate, and the judge (v:Snapshot, v:Judge)
+--   VerdictSettings.lua   the Comparison section a host drops into its panel, its six rows,
+--                         defaults and two editors (lib.Settings)
 --
 -- == WHY THIS EXISTS ===========================================================================
 --

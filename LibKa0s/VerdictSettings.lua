@@ -23,7 +23,7 @@
 --            get = function(path) -> value, -- the host's stored value (nil reads as the default)
 --            set = function(path, value),   -- the host's write seam; an editor hands it a fresh map
 --            page = string | nil,           -- Rows: every row's `page`
---            print = function(line) | nil,  -- the import's chat line (the global print when nil)
+--            print = function(line) | nil,  -- the import's chat line, prefixed (none when nil)
 --            reads = { [member] = fn } | nil }  -- overrides of lib.Reads for the player's class,
 --                                               -- spec and talent trees, as host.reads
 --
@@ -475,11 +475,11 @@ local function weightRow(spec, key, stat)
 end
 
 -- Enter in the import box: the pasted Pawn scale replaces this spec's weights through spec.set,
--- the chat says what came in, and the page redraws its sliders.
+-- the chat says what came in (through spec.print, the host's prefixed printer; with none, no line:
+-- the prefix is the host's brand, slash-commands-§4), and the page redraws its sliders.
 local function importScale(O, ctx, spec, key, text, box)
   local map, result = lib.Score.ImportInto(getter(spec, "weights")(), key, text)
-  local say = type(spec.print) == "function" and spec.print or print
-  say(St.ImportText(result, specLabel(spec, key), spec.L))
+  if type(spec.print) == "function" then spec.print(St.ImportText(result, specLabel(spec, key), spec.L)) end
   if not map then return end
   write(spec, "weights", map)
   box:SetText("")
