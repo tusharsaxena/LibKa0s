@@ -106,7 +106,7 @@ test("feed style: the container is HIGH, not toplevel, clamped and mouse-off; ro
   assertFalse(c.__mouse, "the container takes no mouse itself")
   local r = row(feed)
   assertTrue(r.__parent == c, "a row is the container's child")
-  assertEqual(r:GetFrameLevel(), c:GetFrameLevel() + 1, "one level over the container")
+  assertEqual(r:GetFrameLevel(), c:GetFrameLevel() + 1, "the first row's band starts one over the container")
   assertTrue(r.__mouse, "rows take the mouse unless click-through")
   local glow
   for _, child in ipairs({ r:GetChildren() }) do
@@ -115,7 +115,42 @@ test("feed style: the container is HIGH, not toplevel, clamped and mouse-off; ro
     end
   end
   assertTrue(glow ~= nil, "the glow holder is a child of the row")
-  assertEqual(glow:GetFrameLevel(), r:GetFrameLevel() + 1, "one level over the row")
+  assertEqual(glow:GetFrameLevel(), r:GetFrameLevel() + 5, "at the top of the row's band")
+end)
+
+--- Every level a row's band holds: the row's own and each descendant frame's.
+local function bandOf(r)
+  local out = { r:GetFrameLevel() }
+  local function walk(f)
+    for _, child in ipairs({ f:GetChildren() }) do
+      out[#out + 1] = child:GetFrameLevel()
+      walk(child)
+    end
+  end
+  walk(r)
+  table.sort(out)
+  return out
+end
+
+test("feed style: overlapping rows and peer feeds sit in distinct level bands (frame-layering-§3)", function()
+  local feed, m, _, Feed = F.feed({ content = copyContent, motion = { smooth = false } })
+  feed:Push("a", { title = "A", icon = 1 })
+  feed:Push("b", { title = "B", icon = 1, highlight = true })
+  local ra, rb = F.row(feed, "A"), F.row(feed, "B")
+  local A, B = bandOf(ra), bandOf(rb)
+  assertTrue(A[#A] < B[1] or B[#B] < A[1], "the two rows' bands do not overlap")
+  for _, band in ipairs({ A, B }) do
+    for i = 2, #band do assertTrue(band[i] > band[i - 1], "each frame of a row has a level of its own") end
+  end
+  -- A row dropped by Dismiss fades where it stood while the other slides into its place: its band
+  -- is still its own.
+  assertTrue(feed:Dismiss("b"))
+  assertEqual(bandOf(rb)[1], B[1], "a dropping row keeps its band")
+  local second = Feed:New({ content = copyContent })
+  second:Push("x", { title = "X" })
+  local c1, c2 = feed:Frame():GetFrameLevel(), second:Frame():GetFrameLevel()
+  assertTrue(c2 - c1 >= 121, "the next feed's base clears the first feed's whole band")
+  assertEqual(#m.__errors, 0)
 end)
 
 -- == the fill =================================================================================
@@ -137,18 +172,18 @@ end)
 test("feed style: each bgType override draws the row's own fill over a keepEdge Shell record", function()
   local lsm = { ["background:Marble"] = "path\\marble" }
   local cases = {
-    { style = { bgFromSkin = false, bgType = "solid", bgColor = { 0.1, 0.2, 0.3, 0.4 } },
+    { style = { bgColorFromSkin = false, bgType = "solid", bgColor = { 0.1, 0.2, 0.3, 0.4 } },
       check = function(t) assertEqual(rgba(t.__color), "0.10,0.20,0.30,0.40", "solid") end },
-    { style = { bgFromSkin = false, bgType = "none" },
+    { style = { bgColorFromSkin = false, bgType = "none" },
       check = function(t) assertFalse(t:IsShown(), "none") end },
-    { style = { bgFromSkin = false, bgType = "gradient", bgColor = { 1, 0, 0, 1 }, bgColor2 = { 0, 0, 1, 1 } },
+    { style = { bgColorFromSkin = false, bgType = "gradient", bgColor = { 1, 0, 0, 1 }, bgColor2 = { 0, 0, 1, 1 } },
       check = function(t)
         assertEqual(t.__gradient.orientation, "HORIZONTAL", "gradient")
         assertEqual(t.__gradient.min.r, 1); assertEqual(t.__gradient.max.b, 1)
       end },
-    { style = { bgFromSkin = false, bgType = "texture", bgTexture = "Marble", bgColor = { 1, 1, 1, 0.5 } },
+    { style = { bgColorFromSkin = false, bgType = "texture", bgTexture = "Marble", bgColor = { 1, 1, 1, 0.5 } },
       check = function(t) assertEqual(t.__texture, "path\\marble", "texture through LSM") end },
-    { style = { bgFromSkin = false, bgType = "texture", bgTexture = "Absent", bgColor = { 0.5, 0.5, 0.5, 1 } },
+    { style = { bgColorFromSkin = false, bgType = "texture", bgTexture = "Absent", bgColor = { 0.5, 0.5, 0.5, 1 } },
       check = function(t) assertEqual(rgba(t.__color), "0.50,0.50,0.50,1.00", "an absent name is solid") end },
   }
   for i, c in ipairs(cases) do
@@ -170,7 +205,7 @@ test("feed style: a Refresh from the skin's fill to an override hides the skin's
   feed:Push("a", { title = "A" })
   local r = row(feed)
   assertTrue(Skin.painted[r].regions.fill:IsShown())
-  style = { bgFromSkin = false, bgType = "none" }
+  style = { bgColorFromSkin = false, bgType = "none" }
   feed:Refresh()
   assertFalse(Skin.painted[r].regions.fill:IsShown(), "the skin's fill no longer draws under the host's")
   assertFalse(fill(r):IsShown())
@@ -348,4 +383,99 @@ test("feed style: the countdown bar follows the hold, flat white without a skin"
   assertEqual(rgba(bar.__color), "1.00,1.00,1.00,1.00", "flat white")
   local full = Feed.WIDTH - 2
   assertTrue(math.abs(bar.__w - math.floor(full * 0.5 + 0.5)) <= 1, "half the hold left, half the width")
+end)
+
+test("feed style: a Refresh that turns timerBar off hides every live row's bar, a merge after included", function()
+  local motion = { timerBar = true, smooth = false }
+  local feed, _, _, Feed = F.feed({ content = copyContent, motion = function() return motion end })
+  feed:Push("a", { title = "A" })
+  F.settle(feed, Feed.ENTER_TIME + 1)
+  local bar
+  for _, t in ipairs(regions(row(feed), "Texture", "ARTWORK")) do bar = bar or t end
+  assertTrue(bar:IsShown(), "on: the bar shows while holding")
+  motion = { timerBar = false, smooth = false }
+  feed:Refresh()
+  F.step(feed, 0.05)
+  assertFalse(bar:IsShown(), "off: the next tick hides it")
+  assertEqual(feed:Push("a", { title = "A" }), "merged")
+  F.step(feed, 0.05)
+  assertFalse(bar:IsShown(), "and a merge's restarted hold draws none")
+end)
+
+test("feed style: a row's height and line steps count the size the skin draws, not the stored one", function()
+  local feed, m, Skin, S = skinned({ style = { fontSize = 30, fontSize2 = 20 } })
+  local Feed = m.LibStub(F.MAJOR)
+  Skin:SetChoice(OWNER, "ka0s", "obsidian")
+  feed:Push("a", { title = "A", sub = "s" })
+  local r = row(feed)
+  local big, small = S.HudFontSize(30, true), S.HudFontSize(20, true)
+  assertTrue(big ~= 30, "the skin draws the stored 30 at another size")
+  local pad = Feed.PADDING
+  assertEqual(r.__h, math.max(Feed.ROW_HEIGHT, pad * 2 + big + 2 + small + 2), "the height as drawn")
+  assertEqual(select(5, stringTitled(r, "s"):GetPoint()), -pad - (big + 2), "the sub steps under the title as drawn")
+end)
+
+test("feed style: the plain look draws the stored fill and edge and measures the client's fonts", function()
+  local before = rawget(_G, "GameFontHighlight")
+  _G.GameFontHighlight = { GetFont = function() return "Fonts\\x.ttf", 20, "" end }
+  local ok, err = pcall(function()
+    local feed, m, _, Feed = F.feed({ content = copyContent,
+      style = { bgColor = { 0.2, 0.1, 0, 0.5 }, borderColor = { 0, 1, 0, 1 }, fontSize = 40 } })
+    feed:Push("a", { title = "A", sub = "s" })
+    local r = row(feed)
+    assertEqual(rgba(fill(r).__color), "0.20,0.10,0.00,0.50", "the stored fill, the companion on")
+    assertEqual((edgeColor(r)), "0.00,1.00,0.00,1.00", "the stored edge")
+    local pad = Feed.PADDING
+    assertEqual(select(5, stringTitled(r, "s"):GetPoint()), -pad - (20 + 2), "the template's size, not fontSize 40")
+    assertEqual(#m.__errors, 0)
+  end)
+  _G.GameFontHighlight = before
+  assertTrue(ok, tostring(err))
+end)
+
+test("feed style: the bar's texture and color follow the skin each on its own companion", function()
+  local function barOf(style)
+    local feed, m, _, S = skinned({ style = style, motion = { timerBar = true, smooth = false } })
+    local LSM = m.LibStub:NewLibrary("LibSharedMedia-3.0", 1)
+    LSM.Fetch = function(_, kind, key) if kind == "statusbar" and key == "Mine" then return "path\\mine" end end
+    local calls = spy(S, "BarTexture")
+    feed:Push("a", { title = "A" })
+    local bar
+    for _, t in ipairs(regions(row(feed), "Texture", "ARTWORK")) do bar = bar or t end
+    return bar, calls, S
+  end
+  local bar, calls, S = barOf({ barTextureFromSkin = false, barTexture = "Mine" })
+  assertEqual(#calls, 0, "the texture off the skin")
+  assertEqual(bar.__texture, "path\\mine")
+  assertEqual(rgba(bar.__vertex), rgba({ S.BarFillColor() }), "while the color still follows it")
+  local _, calls2 = barOf({ barColorFromSkin = false, barColor = { 0.1, 0.2, 0.3, 1 } })
+  assertEqual(#calls2, 1, "the texture from the skin")
+  assertEqual(rgba({ calls2[1][2], calls2[1][3], calls2[1][4], calls2[1][5] }), "0.10,0.20,0.30,1.00",
+    "in the stored color")
+end)
+
+test("feed style: a gradient fill and an LSM border reuse their objects across repaints", function()
+  local feed, m = F.feed({ content = copyContent,
+    style = { bgType = "gradient", borderStyle = "Glow", borderSize = 3 } })
+  local LSM = m.LibStub:NewLibrary("LibSharedMedia-3.0", 1)
+  LSM.Fetch = function(_, kind, key) if kind == "border" and key == "Glow" then return "path\\glow" end end
+  local made, create = 0, m.CreateColor
+  m.CreateColor = function(...) made = made + 1; return create(...) end
+  feed:Push("a", { title = "A" })
+  local r = row(feed)
+  local edge
+  for _, child in ipairs({ r:GetChildren() }) do
+    if tostring(rawget(child, "__template") or ""):find("BackdropTemplate", 1, true) then edge = child end
+  end
+  local sets, setBackdrop = 0, edge.SetBackdrop
+  rawset(edge, "SetBackdrop", function(self, t) sets = sets + 1; return setBackdrop(self, t) end)
+  local first, backdrop = made, edge:GetBackdrop()
+  assertEqual(backdrop.edgeFile, "path\\glow")
+  for _ = 1, 5 do
+    assertTrue(feed:Repaint("a"))
+    assertEqual(feed:Push("a", { title = "A" }), "merged")
+  end
+  assertEqual(made, first, "no color object made after the first paint")
+  assertEqual(sets, 0, "the backdrop is set again only when its edge changes")
+  assertTrue(edge:GetBackdrop() == backdrop, "one backdrop table per row")
 end)

@@ -68,6 +68,77 @@ test("feed input: the freeze is derived, so dismissing the hovered row ends it",
   assertEqual(table.concat(feed:Visible(), ","), "c,b")
 end)
 
+--- Content that skips a payload carrying `skip`.
+local function skipping(spec, payload)
+  if payload.skip then return false end
+  spec.title = payload.title
+end
+
+--- After a hovered row left the stack by `how`, the freeze is gone and nothing waits.
+local function assertThawed(feed, how)
+  assertFalse(feed:Stats().frozen, how .. ": no live row is hovered, so the freeze ends")
+  assertEqual(feed:Stats().waiting, 0, how .. ": and the waiting list drained")
+  assertEqual(push(feed, "next"), "new", how .. ": the next push presents")
+end
+
+test("feed input: a hovered row dropped by Update, Repaint or a merge's content skip ends the freeze", function()
+  local cases = {
+    { "Update", function(feed) assertTrue(feed:Update("a", { title = "a", skip = true })) end },
+    { "Repaint", function(feed, payload) payload.skip = true; assertTrue(feed:Repaint("a")) end },
+    { "a merge", function(feed) assertFalse(feed:Push("a", { title = "a", skip = true })) end },
+  }
+  for _, case in ipairs(cases) do
+    local how, act = case[1], case[2]
+    local feed, _, _, Feed = F.feed({ motion = { pin = true }, content = skipping })
+    local payload = { title = "a" }
+    feed:Push("a", payload); push(feed, "b")
+    settle(feed, Feed.ENTER_TIME + 0.05)
+    hover(feed, "a")
+    assertTrue(feed:Stats().frozen, how)
+    assertEqual(push(feed, "c"), "queued", how)
+    act(feed, payload)
+    assertThawed(feed, how)
+    assertEqual(table.concat(feed:Visible(), ","), "next,c,b", how .. ": the stack closed up without it")
+  end
+end)
+
+test("feed input: ClearPreview, or a Preview over a hovered preview row, ends the freeze it held", function()
+  local feed, _, _, Feed = F.feed({ motion = { pin = true } })
+  feed:Preview({ { "p1", { title = "p1" } }, { "p2", { title = "p2" } } })
+  settle(feed, Feed.ENTER_TIME + 0.05)
+  hover(feed, "p1")
+  assertTrue(feed:Stats().frozen)
+  feed:ClearPreview()
+  assertEqual(feed:Stats().live, 0)
+  assertThawed(feed, "ClearPreview")
+  feed:Clear()
+  feed:Preview({ { "p1", { title = "p1" } } })
+  hover(feed, "p1")
+  assertTrue(feed:Stats().frozen)
+  assertEqual(feed:Preview({ { "q1", { title = "q1" } } }), 1)
+  assertThawed(feed, "a new Preview")
+end)
+
+test("feed input: the shown cap dropping a hovered row ends the freeze, and so does Refresh turning pin off", function()
+  local feed, _, _, Feed = F.feed({ motion = { pin = true }, layout = { shown = 1 } })
+  push(feed, "a")
+  settle(feed, Feed.ENTER_TIME + 0.05)
+  hover(feed, "a")
+  assertTrue(feed:Stats().frozen)
+  feed:Preview({ { "p1", { title = "p1" } } })
+  assertEqual(table.concat(feed:Visible(), ","), "p1", "a capped out")
+  assertFalse(feed:Stats().frozen, "the cap dropped the hovered row")
+  local motion = { pin = true }
+  local feed2 = F.feed({ motion = function() return motion end })
+  push(feed2, "a")
+  hover(feed2, "a")
+  assertEqual(push(feed2, "b"), "queued")
+  motion = { pin = false }
+  feed2:Refresh()
+  assertFalse(feed2:Stats().frozen, "pin off: the freeze is derived again on Refresh")
+  assertEqual(feed2:Stats().waiting, 0, "and the waiting list drained")
+end)
+
 test("feed input: onEnter and onLeave reach the host once each, a dropped hovered row included", function()
   local log = {}
   local feed, _, _, Feed = F.feed({ motion = { pin = false },
@@ -271,7 +342,7 @@ end)
 
 -- == the strip ================================================================================
 
-test("feed input: SetStrip docks the host's strip on the far edge and hides it under the handle", function()
+test("feed input: SetStrip docks the host's strip through Widgets' HUD docking, clear of the handle", function()
   local feed = F.feed({ strings = { HANDLE = "Move" } }, { widgets = true })
   feed:SetStrip("test", "Test mode")
   assertNil(feed:Frame(), "a strip set before the build waits for it")
@@ -282,12 +353,15 @@ test("feed input: SetStrip docks the host's strip on the far edge and hides it u
   assertTrue(tstrip:IsShown())
   assertEqual(tstrip.text:GetText(), "Test mode", "the host's text")
   assertFalse(tstrip:IsMouseEnabled(), "the strip takes no mouse")
+  assertTrue(type(rawget(tstrip, "Place")) == "function", "docked by the library, not by hand")
   local c = feed:Frame()
   assertEqual(tstrip.__point[1], "BOTTOMRIGHT"); assertTrue(tstrip.__point[2] == c); assertEqual(tstrip.__point[3], "TOPRIGHT")
+  assertEqual(tstrip:GetFrameLevel(), c:GetFrameLevel() + 5, "in the display's chrome band")
   feed:SetLocked(false)
-  assertFalse(tstrip:IsShown(), "hidden while the drag handle shows")
+  assertTrue(tstrip:IsShown(), "it stays up while the drag handle shows")
+  assertTrue(rawget(tstrip, "__dock").clear == handleOf(feed), "and stacks beyond the handle")
   feed:SetLocked(true)
-  assertTrue(tstrip:IsShown(), "back once locked")
+  assertTrue(tstrip:IsShown())
   feed:SetStrip("sim", "Simulation")
   s = stripsOf(feed)
   assertTrue(s.sim ~= nil and s.sim:IsShown(), "the sim strip")
@@ -304,4 +378,21 @@ test("feed input: SetStrip docks the host's strip on the far edge and hides it u
   bare:SetStrip("test", "x")
   push(bare, "a")
   assertEqual(next(stripsOf(bare)), nil, "no Widgets: no strip, and no error")
+end)
+
+test("feed input: a strip sits on the top edge growing down too, and flips under it near the screen's top", function()
+  local feed, m = F.feed({ layout = { grow = "DOWN" } }, { widgets = true })
+  feed:SetStrip("sim", "Simulation")
+  push(feed, "a")
+  local strip, c = stripsOf(feed).sim, feed:Frame()
+  assertEqual(strip.__point[1], "BOTTOMRIGHT"); assertEqual(strip.__point[3], "TOPRIGHT",
+    "on the top edge, whichever way the stack grows")
+  rawset(m.UIParent, "GetTop", function() return 1080 end)
+  rawset(m.UIParent, "GetEffectiveScale", function() return 1 end)
+  rawset(c, "GetTop", function() return 1078 end)
+  rawset(c, "GetEffectiveScale", function() return 1 end)
+  rawset(strip, "GetHeight", function() return 18 end)
+  feed:Refresh()   -- a re-anchor fires no script: the feed re-places the strip itself
+  assertTrue(strip:IsFlipped(), "the top edge would leave the screen")
+  assertEqual(strip.__point[1], "TOPRIGHT"); assertEqual(strip.__point[3], "BOTTOMRIGHT", "under the bottom edge")
 end)

@@ -36,7 +36,8 @@
 --
 -- Nothing is built until the first Push or Preview. Then one container (lib.STRATA, not toplevel,
 -- clamped to the screen, no mouse of its own) is anchored by its grow-origin edge at the layout's
--- slot, and rows are its children, one level over it, laid out by an absolute Y. `S.live` is the
+-- slot, and rows are its children, each in a level band of its own (LEVELS, below), laid out by
+-- an absolute Y. `S.live` is the
 -- stack, newest first; `S.leaving` holds rows dropped by the shown cap, by Dismiss or past their
 -- fade, which fade out over DROP_FADE where they stood while the stack closes up without them;
 -- `S.waiting` holds payloads pushed while the feed is frozen or held, in arrival order. Rows and
@@ -50,7 +51,14 @@
 -- from the tick; a raise there reaches geterrorhandler() and skips the payload.
 --
 -- The freeze is DERIVED, "a live row is hovered and motion.pin is on", recomputed on every enter,
--- leave, drop and click-through change (refreeze), never latched; FeedInput.lua sets the hover.
+-- leave, drop and click-through change (refreeze), never latched; FeedInput.lua sets the hover. A
+-- drop or a free of a hovered row only marks it due (unhover sets S.refreezeDue), because a drop
+-- can run inside the drain's own loop; every member that can drop or free one ends with
+-- flushFreeze, and the tick refreezes when it is due, so no path leaves a stale freeze behind.
+--
+-- LEVELS (frame-layering-§3). Each feed's container takes a base of its own, LEVEL_BASE plus
+-- LEVEL_STRIDE per feed built (wrapping after LEVEL_FEEDS), so peer feeds stack whole; each row
+-- takes a band of its own over it, fixed when the row is built (FeedRow.lua's ROW_BAND).
 --
 -- Minor 1 (LootHistory#38, tasks S1 to S3 of the Feed build): the skeleton, the engine, the input.
 --
@@ -98,6 +106,9 @@ lib.DROP_FADE = 0.2     -- s a dropped or dismissed row fades out over
 lib.MAX_DT = 0.1        -- s, the most one tick advances, so a hitch never skips a row's life
 
 local TAG = "Feed"
+local LEVEL_BASE = 1     -- the first feed's container level
+local LEVEL_STRIDE = 128 -- levels per feed: over FeedRow's ROW_BAND * ROW_BANDS (6 * 20 = 120)
+local LEVEL_FEEDS = 16   -- feeds before the bases wrap, kept far under the client's level ceiling
 local abs, min, max = math.abs, math.min, math.max
 local HUGE = math.huge
 
@@ -143,10 +154,12 @@ local function hostCall(S, fn, ...)
   if not ok then report(S, err) end
 end
 
---- `e` no longer hovered; the host's onLeave pairs the onEnter it had.
+--- `e` no longer hovered; the host's onLeave pairs the onEnter it had. The freeze is now due a
+--- recompute (refreeze): the member that dropped or freed `e` runs it once its own loop is done.
 local function unhover(S, e)
   if not e.hovered then return end
   e.hovered = nil
+  S.refreezeDue = true
   if e.row then hostCall(S, S.d.onLeave, e.row.frame, e.payload, e.key) end
 end
 
@@ -166,7 +179,8 @@ end
 local function acquireRow(S)
   local R = table.remove(S.free)
   if not R then
-    R = rows().Build(S.container)
+    S.rowsBuilt = S.rowsBuilt + 1
+    R = rows().Build(S.container, S.rowsBuilt)
     input().Hook(S, R)
   end
   R.frame:EnableMouse(not S.clickThrough)
@@ -362,12 +376,18 @@ local function refreeze(S)
       if e.hovered then frozen = true end
     end
   end
-  S.frozen = frozen
+  S.frozen, S.refreezeDue = frozen, nil
   if was and not frozen then
     relayout(S)
     drain(S)
     wake(S)
   end
+end
+
+--- The freeze recomputed when a drop or a free of a hovered row made it due. Never called from
+--- inside drop() itself: a drop runs within the drain's loop and within stepList's.
+local function flushFreeze(S)
+  if S.refreezeDue then refreeze(S) end
 end
 
 --- `e` out of the stack into its drop fade, the freeze recomputed, the stack closed up.
@@ -394,6 +414,7 @@ local function tryMerge(S, key, payload)
     drop(S, e)
     relayout(S)
     wake(S)
+    flushFreeze(S)
     return false
   end
   e.shownAlpha = e.alpha or 1
@@ -439,7 +460,7 @@ local function stepEntry(S, e, dt, m, clock)
   if e.phase ~= "drop" then slideY(S, e, dt) end
   e.dx, e.dy = dx, dy
   placeRow(S, e, dx, dy)
-  if m.timerBar then rows().Bar(R, bar) end
+  rows().Bar(R, m.timerBar and bar or nil)   -- every tick: a Refresh that turned it off hides it
   rows().Animate(R, e.pulse, clock)
   return false
 end
@@ -483,7 +504,7 @@ tick = function(S, dt)
   S.dirty = false
   local needLive, goneLive = stepList(S, S.live, dt, m, S.clockT, t)
   local needLeaving = stepList(S, S.leaving, dt, m, S.clockT, t)
-  if goneLive or S.dirty then
+  if goneLive or S.dirty or S.refreezeDue then
     refreeze(S)
     relayout(S)
     needLive = needLive or moving(S)
@@ -508,6 +529,7 @@ local function repaintAll(S)
   for _, e in ipairs(S.leaving) do R.Restyle(e.row, S.cfg) end
   relayout(S)
   wake(S)
+  flushFreeze(S)
 end
 
 --- The container, the clock and the skin subscription, once, on the first Push or Preview.
@@ -520,6 +542,8 @@ local function ensure(S)
   c:SetClampedToScreen(true)
   c:EnableMouse(false)
   c:SetHeight(1)
+  c:SetFrameLevel(LEVEL_BASE + LEVEL_STRIDE * ((lib.__feedsBuilt or 0) % LEVEL_FEEDS))
+  lib.__feedsBuilt = (lib.__feedsBuilt or 0) + 1
   S.container = c
   S.clock = CreateFrame("Frame")   -- no parent: a hidden UI does not stop the countdown
   S.onUpdate = function()
@@ -553,7 +577,9 @@ function METHODS:Push(key, payload, opts)
   local prev = key ~= nil and S.byKey[key] or nil   -- a live row past its merge window keeps running
   if key ~= nil then S.byKey[key] = e end
   if S.frozen or S.held then return queue(S, e) end
-  if present(S, e) then return "new" end
+  local shown = present(S, e)
+  flushFreeze(S)   -- the shown cap may have dropped a hovered row
+  if shown then return "new" end
   if prev and key ~= nil and S.byKey[key] == nil then S.byKey[key] = prev end
   return false
 end
@@ -577,6 +603,7 @@ function METHODS:Update(key, payload)
   if not paintEntry(S, e) then drop(S, e) end
   relayout(S)
   wake(S)
+  flushFreeze(S)
   return true
 end
 
@@ -588,6 +615,7 @@ function METHODS:Repaint(key)
   if not paintEntry(S, e) then drop(S, e) end
   relayout(S)
   wake(S)
+  flushFreeze(S)
   return true
 end
 
@@ -628,7 +656,7 @@ function METHODS:Clear()
   freeAll(S, S.waiting)
   wipe(S.byKey)
   sleep(S)
-  S.frozen, S.stripKind = false, nil
+  S.frozen, S.stripKind, S.refreezeDue = false, nil, nil
   input().Lock(S)
   if S.container then S.container:SetHeight(1) end
 end
@@ -655,6 +683,7 @@ function METHODS:Refresh()
   repaintAll(S)
   for _, e in ipairs(S.live) do e.py = nil end
   relayout(S)
+  refreeze(S)   -- motion.pin may have changed, and the cap may have dropped a hovered row
 end
 
 --- Drop only the preview rows (at once: a preview replaced is not a preview fading).
@@ -671,7 +700,10 @@ function METHODS:ClearPreview()
       end
     end
   end
-  if any then relayout(S) end
+  if not any then return end
+  relayout(S)
+  wake(S)
+  flushFreeze(S)   -- a hovered preview row freed here gets no OnLeave of its own
 end
 
 --- Push each `{ key, payload }` of `list` sticky, as preview rows, through the same present and
@@ -685,6 +717,7 @@ function METHODS:Preview(list)
   for _, item in ipairs(list) do
     if type(item) == "table" then present(S, newEntry(S, item[1], item[2], true, true)) end
   end
+  flushFreeze(S)   -- the shown cap may have dropped a hovered row
   local n = 0
   for _, e in ipairs(S.live) do
     if e.preview then n = n + 1 end
@@ -711,8 +744,9 @@ function METHODS:SetClickThrough(on)
   input().ClickThrough(state(self), on == true)
 end
 
---- Dock the "test" or "sim" strip with the host's `text` on the stack's far edge, or hide it with
---- nil. Hidden while the drag handle shows.
+--- Dock the "test" or "sim" strip with the host's `text` on the stack's top edge through Widgets'
+--- HUD docking (flipped under it near the screen's top, clear of the drag handle), or hide it with
+--- nil.
 function METHODS:SetStrip(kind, text)
   local S = state(self)
   S.stripKind = (kind == "test" or kind == "sim") and kind or nil
@@ -762,7 +796,7 @@ function lib:New(d)   -- luacheck: ignore 212/self
   for name, fn in pairs(METHODS) do inst[name] = fn end
   STATE[inst] = {
     d = d, live = {}, leaving = {}, waiting = {}, rows = {}, free = {}, entryFree = {}, byKey = {},
-    drainPresent = {}, drainFreed = {}, strips = {},
+    drainPresent = {}, drainFreed = {}, strips = {}, rowsBuilt = 0,
     frozen = false, held = false, locked = true, clickThrough = false, awake = false, built = false,
   }
   return inst

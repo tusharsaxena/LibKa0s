@@ -4,8 +4,10 @@
 -- style the shell snapshotted over the owner's skin, or the degraded look without one. The shell
 -- (Feed.lua) reads it through `lib.__row` at call time:
 --
---   Build(container)          a new row record over a frame parented to the container
---   Place(R, layout, style)   the regions laid out for the row's spec; answers the row's height
+--   Build(container, n)       the n-th row record over a frame parented to the container, in a
+--                             level band of its own (ROW_BAND levels, the n-th of ROW_BANDS)
+--   Place(R, layout, style)   the regions laid out for the row's spec at the font sizes it is
+--                             drawn at (Paint runs first); answers the row's height
 --   Paint(R, spec, cfg)       the spec's text and icon drawn, then Restyle
 --   Restyle(R, cfg)           the style re-applied (fill, border, fonts, text colors, bar, icon
 --                             edge, glow color), after a skin switch or a Refresh too
@@ -17,7 +19,9 @@
 -- loads before Skin), and every name used on it is one of Skin's trampolines, so a newer Skin minor's
 -- code draws. Each part has a `<part>FromSkin` companion that the snapshot defaults to true:
 --
---   fill     from skin: S.Shell(row, { noTopBar, noBands, noBorder }), recorded, so a skin switch
+--   fill     bgColorFromSkin (the ColorPair composer's name) rules the whole fill: bgType,
+--            bgColor, bgColor2 and bgTexture follow it.
+--            From skin: S.Shell(row, { noTopBar, noBands, noBorder }), recorded, so a skin switch
 --            repaints it (noBorder: the border is the style's own, below). Override: the row's
 --            Shell record is replaced with keepEdge (a repaint leaves the host's fill alone) and
 --            the row's own fill draws bgType: none, solid (WHITE8X8 tinted), gradient
@@ -27,20 +31,32 @@
 --            the color, meaning and class first: borderTint and spec.tint, borderClass, the skin's
 --            `bar.border`, else borderColor. A merge pulses its alpha (Animate)
 --   fonts    every string through S.HudFont, one font object per look; no string gets a SetFont of
---            its own. The title at fontSize, every other string at fontSize2
+--            its own. The title at fontSize, every other string at fontSize2, each scaled by
+--            S.HudFontSize; the drawn sizes are kept on the row for Place
 --   text     the spec's own color, then fontClass, then the skin's HudTextColor (the title) or
 --            HudLabelColor (the rest), else fontColor
---   bar      S.BarTexture in S.BarFillColor() from skin; else the LSM statusbar barTexture in
---            barColor, flat where none resolves
+--   bar      the two parts O.BarGroup emits, each on its own: barTextureFromSkin, S.BarTexture,
+--            else the LSM statusbar barTexture, flat where none resolves; barColorFromSkin,
+--            S.BarFillColor(), else barColor
 --   icon     S.IconBorder(holder, { fromSkin, hud }) crops 0.07 and draws the HUD's icon edge; a
 --            spec.tint draws its edge in the tint, over the skin's
---   glow     ADD-blend WHITE8X8 strips on a holder one level over the row: spec.highlight when it
+--   glow     ADD-blend WHITE8X8 strips on a holder at the top of the row's band: spec.highlight when it
 --            is a color, else the skin's GlowColor, else `sem.gold`, else glowColor
 --
--- THE DEGRADED LOOK. No Core facade, no Skin major or an unregistered owner: a WHITE8X8 fill at
--- { 0, 0, 0, 0.7 }, a 1 px edge at { 0.3, 0.3, 0.3, 1 }, GameFontHighlight for the title and
--- GameFontHighlightSmall for the rest, white text and the spec's colors where given, the bar flat
--- white. A host's style overrides still draw. Every facade call is presence-checked; none raises.
+-- THE DEGRADED LOOK. No Core facade, no Skin major or an unregistered owner: the style's stored
+-- values are the fallback (skinning-§6), FromSkin companion or not. So the fill is bgType in
+-- bgColor (a WHITE8X8 at { 0, 0, 0, 0.7 } by default), the edge borderColor ({ 0.3, 0.3, 0.3, 1 }),
+-- the text fontColor (white) and the spec's colors where given, the bar barColor, flat. The fonts
+-- are the client's templates, GameFontHighlight for the title and GameFontHighlightSmall for the
+-- rest: the font, fontSize, fontSize2, fontFlags and fontShadow overrides need the facade's
+-- S.HudFont and do not draw here, and Place measures the templates' own sizes. Every facade call
+-- is presence-checked; none raises.
+--
+-- LEVELS (frame-layering-§3). A row's band is ROW_BAND levels over its base, the container's level
+-- plus 1 plus ROW_BAND times its build index (wrapping after ROW_BANDS): the row at +0, the icon
+-- holder +1 (the skin's icon edge holder +2, which IconBorder makes one over it), the tint edge and
+-- the badge +3, the LSM backdrop edge +4, the glow +5. Set once at build, before any child exists,
+-- so overlapping rows (one fading where it stood while the stack slides over it) never interleave.
 --
 -- Minor 1 (LootHistory#38, task S2 of the Feed build): the rows.
 
@@ -64,8 +80,8 @@ local BAR_HEIGHT = 2
 local GLOW_SIZE = 2
 local TITLE_GAP, COUNT_GAP = 3, 4
 local FONT_TITLE, FONT_SMALL = "GameFontHighlight", "GameFontHighlightSmall"
-local DEGRADED_FILL = { 0, 0, 0, 0.7 }
 local DEGRADED_EDGE = { 0.3, 0.3, 0.3, 1 }
+local ROW_BAND, ROW_BANDS = 6, 20   -- levels per row, and bands before they wrap (2 * SHOWN_MAX)
 
 -- The Shell opts, shared by every row (Shell records the table and never writes it).
 local SHELL_SKIN = { noTopBar = true, noBands = true, noBorder = true }
@@ -132,9 +148,20 @@ local function media(kind, key)
   return nil
 end
 
-local function asColor(c)
-  if type(CreateColor) == "function" then return CreateColor(c[1], c[2], c[3], c[4]) end
-  return { r = c[1], g = c[2], b = c[3], a = c[4] }
+--- R[field], a color object made once per row and refreshed in place, so a gradient paint
+--- allocates nothing after the first.
+local function colorOn(R, field, c)
+  local o = R[field]
+  if not o then
+    if type(CreateColor) == "function" then o = CreateColor(c[1], c[2], c[3], c[4]) else o = {} end
+    R[field] = o
+  end
+  if type(o.SetRGBA) == "function" then
+    o:SetRGBA(c[1], c[2], c[3], c[4])
+  else
+    o.r, o.g, o.b, o.a = c[1], c[2], c[3], c[4]
+  end
+  return o
 end
 
 local function filled(s) return type(s) == "string" and s ~= "" end
@@ -210,7 +237,8 @@ local function buildIcon(R, f)
   -- a holder of its own one level over it.
   local over = CreateFrame("Frame", nil, holder)
   over:SetAllPoints(holder)
-  over:SetFrameLevel(level(holder) + 2)
+  over:SetFrameLevel(level(f) + 3)
+  R.iconOver = over
   R.iconTint = edges(over, "OVERLAY")
   hangEdges(R.iconTint, over, 1)
   R.badge = text(over)
@@ -220,7 +248,7 @@ end
 local function buildGlow(R, f)
   local g = CreateFrame("Frame", nil, f)
   g:SetAllPoints(f)
-  g:SetFrameLevel(level(f) + 1)
+  g:SetFrameLevel(level(f) + 5)
   R.glowHolder = g
   R.glow = edges(g, "OVERLAY")
   for i = 1, 4 do
@@ -231,11 +259,13 @@ local function buildGlow(R, f)
   g:Hide()
 end
 
---- A new row record over a frame parented to `container`, one level over it. Every region is made
---- here, once; a pooled row is repainted, never rebuilt.
-function Row.Build(container)
+--- The `n`-th row record of a feed over a frame parented to `container`, in its own band over it
+--- (LEVELS in the header). Every region is made here, once; a pooled row is repainted, never
+--- rebuilt, and keeps its band.
+function Row.Build(container, n)
   local f = CreateFrame("Frame", nil, container)
-  f:SetFrameLevel(level(container) + 1)
+  local band = ((tonumber(n) or 1) - 1) % ROW_BANDS
+  f:SetFrameLevel(level(container) + 1 + ROW_BAND * band)
   f:Hide()
   local R = { frame = f, spec = { lines = { {}, {}, {} } } }
   R.specLines = R.spec.lines   -- the three sub-tables the shell hands back after every wipe
@@ -335,12 +365,13 @@ end
 
 --- The regions laid out for R.spec: the icon on its side, the title line and each filled secondary
 --- line under it, the bar along the foot. Sizes the row to `layout.width` and its height, which it
---- answers. `st` (the style snapshot) gives the two font sizes the height counts.
+--- answers. The height and the line steps count the sizes the strings are DRAWN at, which the last
+--- paint kept on the row; `st` (the style snapshot) answers for a row not painted yet.
 function Row.Place(R, L, st)
   local model = lib.__model
   local spec, f = R.spec, R.frame
-  local titleSize = st and st.fontSize or model.FONT_SIZE
-  local lineSize = st and st.fontSize2 or model.FONT_SIZE2
+  local titleSize = R.titleSize or (st and st.fontSize) or model.FONT_SIZE
+  local lineSize = R.lineSize or (st and st.fontSize2) or model.FONT_SIZE2
   local h = model.RowHeight(spec, L, titleSize, lineSize)
   f:SetSize(L.width, h)
   local iconW = placeIcon(R, f, L)
@@ -383,7 +414,7 @@ end
 
 function BG.gradient(R, c, c2)
   R.bg:SetColorTexture(1, 1, 1, 1)
-  R.bg:SetGradient("HORIZONTAL", asColor(c), asColor(c2))
+  R.bg:SetGradient("HORIZONTAL", colorOn(R, "gc1", c), colorOn(R, "gc2", c2))
   R.bg:Show()
 end
 
@@ -399,7 +430,7 @@ local function paintFill(R, S, st)
   local f = R.frame
   local shell = S and S.Shell
   if type(shell) ~= "function" then shell = nil end
-  if shell and st.bgFromSkin then
+  if shell and st.bgColorFromSkin then
     shell(f, SHELL_SKIN)
     return R.bg:Hide()
   end
@@ -407,7 +438,6 @@ local function paintFill(R, S, st)
     shell(f, SHELL_KEEP)
     hideSkinFill(f)
   end
-  if not S and st.bgFromSkin then return BG.solid(R, DEGRADED_FILL) end
   local draw = BG[st.bgType] or BG.solid
   draw(R, st.bgColor, st.bgColor2, st.bgTexture)
 end
@@ -422,7 +452,6 @@ local function borderColor(R, S, st)
     local r, g, b, a = tokenColor(S, "bar.border")
     if r then return r, g, b, a end
   end
-  if not S and st.borderColorFromSkin then return unpack(DEGRADED_EDGE) end
   local c = st.borderColor
   return c[1], c[2], c[3], c[4]
 end
@@ -446,11 +475,16 @@ local function paintBackdropEdge(R, path, size, r, g, b, a)
   if not e then
     e = CreateFrame("Frame", nil, R.frame, "BackdropTemplate")
     e:SetAllPoints(R.frame)
+    e:SetFrameLevel(level(R.frame) + 4)
     R.edgeFrame = e
+    R.backdrop = {}
   end
   e:SetShown(path ~= nil)
   if path and type(e.SetBackdrop) == "function" then
-    e:SetBackdrop({ edgeFile = path, edgeSize = size })
+    if R.backdrop.edgeFile ~= path or R.backdrop.edgeSize ~= size then   -- one table, set on change
+      R.backdrop.edgeFile, R.backdrop.edgeSize = path, size
+      e:SetBackdrop(R.backdrop)
+    end
     e:SetBackdropBorderColor(r, g, b, a)
   end
 end
@@ -503,10 +537,24 @@ end
 local function setObject(fs, name) fs:SetFontObject(name) end
 local function fontOn(fs, S, face, size, st) hudFont(S, fs, face, size, st) end
 
+--- The size the client font object named `name` draws at, else `fallback`.
+local function objectSize(name, fallback)
+  local o = _G[name]
+  local fn = type(o) == "table" and o.GetFont
+  if type(fn) ~= "function" then return fallback end
+  local ok, _, size = pcall(fn, o)
+  if ok and finite(size) and size > 0 then return size end
+  return fallback
+end
+
+--- Every string's font, and the two sizes they draw at kept on the row for Place.
 local function paintFonts(R, S, st)
   if not (S and type(S.HudFont) == "function") then
     setObject(R.title, FONT_TITLE)
     eachSmall(R, setObject, FONT_SMALL)
+    local model = lib.__model
+    R.titleSize = objectSize(FONT_TITLE, model.FONT_SIZE)
+    R.lineSize = objectSize(FONT_SMALL, model.FONT_SIZE2)
     return
   end
   local face = faceOf(S, st)
@@ -517,6 +565,8 @@ local function paintFonts(R, S, st)
   end
   hudFont(S, R.title, face, big, st)
   eachSmall(R, fontOn, S, face, small, st)
+  R.titleSize = finite(big) and big or st.fontSize
+  R.lineSize = finite(small) and small or st.fontSize2
 end
 
 --- The text color a string without its own draws in: the class's, the skin's, else the style's.
@@ -558,17 +608,28 @@ end
 
 -- == paint: bar, icon, glow =================================================================
 
-local function paintBar(R, S, st)
-  if S and st.barFromSkin and type(S.BarTexture) == "function" then
-    return S.BarTexture(R.bar, fromFacade(S, "BarFillColor"))
+--- The bar's color: the skin's S.BarFillColor() under barColorFromSkin, else barColor.
+local function barColor(S, st)
+  if S and st.barColorFromSkin then
+    local r, g, b, a = fromFacade(S, "BarFillColor")
+    if r then return r, g, b, a end
   end
   local c = st.barColor
+  return c[1], c[2], c[3], c[4]
+end
+
+--- The texture and the color, each following the skin on its own companion.
+local function paintBar(R, S, st)
+  local r, g, b, a = barColor(S, st)
+  if S and st.barTextureFromSkin and type(S.BarTexture) == "function" then
+    return S.BarTexture(R.bar, r, g, b, a)
+  end
   local path = media("statusbar", st.barTexture)
   if path then
     R.bar:SetTexture(path)
-    return R.bar:SetVertexColor(c[1], c[2], c[3], c[4])
+    return R.bar:SetVertexColor(r, g, b, a)
   end
-  R.bar:SetColorTexture(c[1], c[2], c[3], c[4])
+  R.bar:SetColorTexture(r, g, b, a)
 end
 
 local function paintIcon(R, S)

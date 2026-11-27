@@ -822,9 +822,10 @@ Total.
 - feed model: a reducer answering nil keeps the newer payload
 - feed model: Drain presents only the newest n, oldest first, and frees the rest
 
-### test_feed_style.lua (13)
+### test_feed_style.lua (19)
 
 - feed style: the container is HIGH, not toplevel, clamped and mouse-off; rows sit above it
+- feed style: overlapping rows and peer feeds sit in distinct level bands (frame-layering-§3)
 - feed style: from the skin the fill is S.Shell with noTopBar and noBands, recorded
 - feed style: each bgType override draws the row's own fill over a keepEdge Shell record
 - feed style: a Refresh from the skin's fill to an override hides the skin's fill
@@ -837,6 +838,11 @@ Total.
 - feed style: a skin switch repaints the live rows through content
 - feed style: the degraded look draws without Skin, an unregistered owner or a Core facade
 - feed style: the countdown bar follows the hold, flat white without a skin
+- feed style: a Refresh that turns timerBar off hides every live row's bar, a merge after included
+- feed style: a row's height and line steps count the size the skin draws, not the stored one
+- feed style: the plain look draws the stored fill and edge and measures the client's fonts
+- feed style: the bar's texture and color follow the skin each on its own companion
+- feed style: a gradient fill and an LSM border reuse their objects across repaints
 
 ### test_feed_motion.lua (12)
 
@@ -853,10 +859,13 @@ Total.
 - feed motion: with smooth off a row snaps to its new Y
 - feed motion: settle calls content once at paintedAt + settle and never again
 
-### test_feed_input.lua (12)
+### test_feed_input.lua (16)
 
 - feed input: with pin, hovering any row freezes the feed: time, Y, queued pushes, merge in place
 - feed input: the freeze is derived, so dismissing the hovered row ends it
+- feed input: a hovered row dropped by Update, Repaint or a merge's content skip ends the freeze
+- feed input: ClearPreview, or a Preview over a hovered preview row, ends the freeze it held
+- feed input: the shown cap dropping a hovered row ends the freeze, and so does Refresh turning pin off
 - feed input: onEnter and onLeave reach the host once each, a dropped hovered row included
 - feed input: without pin only the hovered row pauses; the rest run on
 - feed input: a right-click dismisses with rightDismiss on and reaches onClick with it off
@@ -866,7 +875,8 @@ Total.
 - feed input: SetLocked(false) docks a DragHandle with the host's label on the far edge
 - feed input: an unlock is refused in combat and answers true without Widgets
 - feed input: a drag stop calls onMoved(x, y) with the nudge for the slot and re-anchors
-- feed input: SetStrip docks the host's strip on the far edge and hides it under the handle
+- feed input: SetStrip docks the host's strip through Widgets' HUD docking, clear of the handle
+- feed input: a strip sits on the top edge growing down too, and flips under it near the screen's top
 
 ### test_callout.lua (52)
 
@@ -6124,9 +6134,9 @@ Total.
 | test_toast_stack.lua | 36 |
 | test_feed.lua | 25 |
 | test_feed_model.lua | 22 |
-| test_feed_style.lua | 13 |
+| test_feed_style.lua | 19 |
 | test_feed_motion.lua | 12 |
-| test_feed_input.lua | 12 |
+| test_feed_input.lua | 16 |
 | test_callout.lua | 52 |
 | test_callout_look.lua | 32 |
 | test_callout_voice.lua | 30 |
@@ -6341,4 +6351,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5347** |
+| **Total** | **5357** |

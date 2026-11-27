@@ -46,8 +46,9 @@ test("feed model: an empty descriptor snapshots every published default", functi
   assertTrue(m.pulse); assertFalse(m.timerBar); assertTrue(m.smooth); assertTrue(m.pin)
   assertTrue(m.rightDismiss)
   assertEqual(m.settle, 0)
-  for _, k in ipairs({ "bgFromSkin", "borderStyleFromSkin", "borderColorFromSkin", "fontFromSkin",
-    "fontSizeFromSkin", "fontShadowFromSkin", "fontColorFromSkin", "barFromSkin", "glowColorFromSkin" }) do
+  for _, k in ipairs({ "bgColorFromSkin", "borderStyleFromSkin", "borderColorFromSkin", "fontFromSkin",
+    "fontSizeFromSkin", "fontShadowFromSkin", "fontColorFromSkin", "barTextureFromSkin", "barColorFromSkin",
+    "glowColorFromSkin" }) do
     assertTrue(s[k] == true, k .. " defaults to the skin")
   end
   assertFalse(s.borderTint); assertFalse(s.borderClass); assertFalse(s.fontClass)
@@ -63,7 +64,7 @@ test("feed model: garbage values fall back to the defaults, and unknown keys are
       rowHeight = math.huge, padding = -2, gap = "x", align = 1, iconSide = true, scale = 0, bogus = 1 },
     motion = { enter = "spin", enterTime = -1, hold = "long", fadeTime = 0 / 0, mergeWindow = -5,
       pulse = "yes", timerBar = 1, smooth = {}, pin = 0, rightDismiss = "no", settle = -1 },
-    style = { bgFromSkin = "no", bgType = "plaid", bgColor = { "r" }, borderSize = -1, fontSize = 0 },
+    style = { bgColorFromSkin = "no", bgType = "plaid", bgColor = { "r" }, borderSize = -1, fontSize = 0 },
     maxQueue = 0,
   })
   local L, m, s = cfg.layout, cfg.motion, cfg.style
@@ -77,7 +78,7 @@ test("feed model: garbage values fall back to the defaults, and unknown keys are
   assertEqual(m.fadeTime, Feed.FADE_TIME); assertEqual(m.mergeWindow, Feed.MERGE_WINDOW)
   assertTrue(m.pulse); assertFalse(m.timerBar); assertTrue(m.smooth); assertTrue(m.pin)
   assertTrue(m.rightDismiss); assertEqual(m.settle, 0)
-  assertTrue(s.bgFromSkin); assertEqual(s.bgType, "solid")
+  assertTrue(s.bgColorFromSkin); assertEqual(s.bgType, "solid")
   assertEqual(table.concat(s.bgColor, ","), table.concat(M.BG_COLOR, ","))
   assertEqual(s.borderSize, 1); assertEqual(s.fontSize, M.FONT_SIZE)
   assertEqual(cfg.maxQueue, Feed.MAX_QUEUE)
@@ -90,7 +91,7 @@ test("feed model: good values are kept, clamped where the contract clamps", func
       rowHeight = 40, iconSize = 60, padding = 4, gap = 0, align = "right", iconSide = "right", scale = 1.5 },
     motion = { enter = "left", enterTime = 0.5, hold = 2, fadeTime = 0, mergeWindow = 0, pulse = false,
       timerBar = true, smooth = false, pin = false, rightDismiss = false, settle = 1.5 },
-    style = { bgFromSkin = false, bgType = "gradient", bgColor = { r = 1, g = 0, b = 0 },
+    style = { bgColorFromSkin = false, bgType = "gradient", bgColor = { r = 1, g = 0, b = 0 },
       borderColor = { 0, 1, 0, 0.5 }, borderTint = true, fontFlags = "OUTLINE" },
     maxQueue = 3.7,
   })
@@ -105,7 +106,7 @@ test("feed model: good values are kept, clamped where the contract clamps", func
   assertEqual(m.fadeTime, 0); assertEqual(m.mergeWindow, 0)
   assertFalse(m.pulse); assertTrue(m.timerBar); assertFalse(m.smooth); assertFalse(m.pin)
   assertFalse(m.rightDismiss); assertEqual(m.settle, 1.5)
-  assertFalse(s.bgFromSkin); assertEqual(s.bgType, "gradient")
+  assertFalse(s.bgColorFromSkin); assertEqual(s.bgType, "gradient")
   assertEqual(table.concat(s.bgColor, ","), "1,0,0,1", "r/g/b keys read, alpha 1")
   assertEqual(table.concat(s.borderColor, ","), "0,1,0,0.5")
   assertTrue(s.borderTint); assertEqual(s.fontFlags, "OUTLINE")
@@ -126,7 +127,7 @@ test("feed model: each group is a value or a getter, and a getter that raises an
   assertEqual(n, 2, "each getter read once")
   assertEqual(cfg.layout.slot, "TOP")
   assertEqual(cfg.motion.hold, 9)
-  assertTrue(cfg.style.bgFromSkin, "the raising getter reads as an empty table")
+  assertTrue(cfg.style.bgColorFromSkin, "the raising getter reads as an empty table")
   assertEqual(cfg.maxQueue, 4)
   -- A getter answering something other than a table is an empty table, too.
   assertEqual(M.Snapshot({ layout = function() return 7 end }).layout.slot, "BOTTOMRIGHT")

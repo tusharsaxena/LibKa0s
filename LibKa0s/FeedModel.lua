@@ -162,9 +162,12 @@ local function snapMotion(raw)
 end
 
 --- Every `<part>FromSkin` flag defaults to true, so a host that passes no style draws the skin.
+--- The names are the ones the standard's composers emit (skinning-§6): ColorPair's `bgColorFromSkin`
+--- and O.BarGroup's `barTextureFromSkin` and `barColorFromSkin`.
 local FROM_SKIN = {
-  "bgFromSkin", "borderStyleFromSkin", "borderColorFromSkin", "fontFromSkin", "fontSizeFromSkin",
-  "fontShadowFromSkin", "fontColorFromSkin", "barFromSkin", "glowColorFromSkin",
+  "bgColorFromSkin", "borderStyleFromSkin", "borderColorFromSkin", "fontFromSkin", "fontSizeFromSkin",
+  "fontShadowFromSkin", "fontColorFromSkin", "barTextureFromSkin", "barColorFromSkin",
+  "glowColorFromSkin",
 }
 
 local function snapStyle(raw)

@@ -190,7 +190,7 @@ Every member raises when called on anything but an instance from `Feed:New`.
 | `SetLocked(locked)` | bool (now locked) | `false` makes the container movable and docks a `LibKa0s-Widgets-1.0` `DragHandle` on the stack's far edge with `d.strings.HANDLE`. Refused (answers true) in combat and without Widgets. `true` hides the handle; a lock during a drag ends the move and saves it through `onMoved` | **1** |
 | `IsLocked()` | bool | | **1** |
 | `SetClickThrough(on)` | — | `EnableMouse(not on)` on every row, and on every row acquired while on. Turning it on **also** ends every hover (each with its `onLeave`) and the freeze, and drains the waiting list, because the client fires no `OnLeave` when the mouse is disabled | **1** |
-| `SetStrip(kind, text)` | — | `kind` `"test"` or `"sim"` docks a `W.TestStrip` with the host's `text` across the stack's far edge; any other `kind` hides it. Hidden while the drag handle shows. Called before the build, it applies when the feed builds | **1** |
+| `SetStrip(kind, text)` | — | `kind` `"test"` or `"sim"` shows a `W.TestStrip` with the host's `text`, placed by the library's own HUD docking (`dock = "hud"`, preview-mode's *Where the strip sits*): on the container's top edge, flipped under it only while the top edge would leave the screen, stacked beyond the drag handle while that shows. Any other `kind` hides it. Called before the build, it applies when the feed builds | **1** |
 | `Visible()` | array of keys | Newest first; `false` for a key-less row. A new table per call (not a hot path) | **1** |
 | `Stats()` | table | `{ live, waiting, dropping, frozen, held, locked, clickThrough, awake, shown, built }`, every field always present; `shown` is the layout's cap once built, else 0 | **1** |
 | `Frame()` | frame or nil | The container once built | **1** |
@@ -247,13 +247,13 @@ clamped to 0..1.
 
 | Part | Keys (defaults) | Resolution | Since |
 |---|---|---|---|
-| Background | `bgFromSkin`, `bgType` (`"solid"`; or `"none"`, `"gradient"`, `"texture"`), `bgColor` (`{0, 0, 0, 0.7}`), `bgColor2` (`{0.15, 0.15, 0.15, 0.7}`), `bgTexture` (an LSM `background` name) | From skin: `S.Shell(row, { noTopBar = true, noBands = true, noBorder = true })`, recorded, so a skin switch repaints it. Override: the row's Shell record is replaced with `keepEdge`, so a skin repaint leaves the host's fill alone, and the row's own fill draws nothing, a tinted `WHITE8X8`, a horizontal gradient from `bgColor` to `bgColor2`, or the LSM background (solid when LibSharedMedia-3.0 or the name is absent) | **1** |
+| Background | `bgColorFromSkin` (the companion `O.ColorPair` emits for `bgColor`; it rules the whole fill, so `bgType` and `bgTexture` follow it too), `bgType` (`"solid"`; or `"none"`, `"gradient"`, `"texture"`), `bgColor` (`{0, 0, 0, 0.7}`), `bgColor2` (`{0.15, 0.15, 0.15, 0.7}`), `bgTexture` (an LSM `background` name) | From skin: `S.Shell(row, { noTopBar = true, noBands = true, noBorder = true })`, recorded, so a skin switch repaints it. Override: the row's Shell record is replaced with `keepEdge`, so a skin repaint leaves the host's fill alone, and the row's own fill draws nothing, a tinted `WHITE8X8`, a horizontal gradient from `bgColor` to `bgColor2`, or the LSM background (solid when LibSharedMedia-3.0 or the name is absent) | **1** |
 | Border | `borderStyleFromSkin`, `borderStyle`, `borderSize` (`1`), `borderColorFromSkin`, `borderColor` (`{0.3, 0.3, 0.3, 1}`), `borderTint` (`false`), `borderClass` (`false`) | The style, whether it shows and its size from `S.BarBorder(borderStyle, true, borderSize, borderStyleFromSkin)`, drawn on the row's own edge. The color, meaning and class first (skinning-§6): `borderTint` with a `spec.tint`, then `borderClass` (`core.ClassColor("player")`), then the skin's `bar.border`, else `borderColor`. While a row pulses the border's alpha breathes `0.6 + 0.4 * sin(pulse / PULSE_TIME * pi)` | **1** |
 | Fonts | `fontFromSkin`, `font` (an LSM `font` name or a path), `fontSizeFromSkin`, `fontSize` (`12`, the title), `fontSize2` (`10`, every other string), `fontFlags` (`"@skin"`), `fontShadowFromSkin`, `fontShadow` (`true`) | Every string through `S.HudFont` with the face from `S.Resolve("hud.font", font, fontFromSkin)`, the size from `S.HudFontSize`, the flags from `S.FontFlags`. One font object per look; no string gets a `SetFont` of its own. The owner's *Ignore fonts* is honored by the facade itself | **1** |
 | Text color | `fontColorFromSkin`, `fontColor` (white), `fontClass` (`false`) | The spec's own color wins (meaning first). Then `fontClass` (the class color); then from skin, `S.HudTextColor()` for the title and `S.HudLabelColor()` for the prefix, the secondary lines and the sub; else `fontColor` | **1** |
-| Countdown bar | `barFromSkin`, `barTexture` (an LSM `statusbar` name), `barColor` (white) | From skin: `S.BarTexture` in `S.BarFillColor()`. Else the named bar in `barColor`, flat where none resolves. Drawn only with `motion.timerBar` on, along the row's foot, at `1 - (t - enterTime) / hold` | **1** |
+| Countdown bar | `barTextureFromSkin`, `barTexture` (an LSM `statusbar` name), `barColorFromSkin`, `barColor` (white) | The two companions `O.BarGroup` emits, each on its own part. The texture: from skin `S.BarTexture`, else the named bar, flat where none resolves. The color: from skin `S.BarFillColor()`, else `barColor`. Drawn only with `motion.timerBar` on, along the row's foot, at `1 - (t - enterTime) / hold` | **1** |
 | Icon | — | `S.IconBorder(holder, { fromSkin = true, hud = true })` crops 0.07 and draws the HUD's icon edge; a `spec.tint` draws a 1 px edge of its own in the tint, over the skin's, with the badge on the same frame | **1** |
-| Glow | `glowColorFromSkin`, `glowColor` (`{1, 0.82, 0, 1}`) | ADD-blend `WHITE8X8` strips on a holder one level over the row (skinning-§1's overlay rule), shown while `spec.highlight` is set. The color: `spec.highlight` when it is a color; else, from skin, `S.GlowColor()`, then the `sem.gold` token; else `glowColor`. Its alpha breathes `0.35 + 0.35 * sin(clock * 4)` on the clock. No `LibKa0s-Glow-1.0` (it needs LibCustomGlow) | **1** |
+| Glow | `glowColorFromSkin`, `glowColor` (`{1, 0.82, 0, 1}`) | ADD-blend `WHITE8X8` strips on a holder over the row (skinning-§1's overlay rule), at the top of the row's level band (*Frame layering*), shown while `spec.highlight` is set. The color: `spec.highlight` when it is a color; else, from skin, `S.GlowColor()`, then the `sem.gold` token; else `glowColor`. Its alpha breathes `0.35 + 0.35 * sin(clock * 4)` on the clock. No `LibKa0s-Glow-1.0` (it needs LibCustomGlow) | **1** |
 
 **A live skin switch.** On the first build the library subscribes `OnLooksChanged` on the owner's
 facade and runs `RepaintAll` from it; the host wires nothing. A `style` change is the host's
@@ -261,10 +261,13 @@ facade and runs `RepaintAll` from it; the host wires nothing. A `style` change i
 
 ## The plain look (degraded)
 
-No Core facade, no Skin major or an unregistered owner: a `WHITE8X8` fill at `{0, 0, 0, 0.7}`, a 1 px
-edge at `{0.3, 0.3, 0.3, 1}`, `GameFontHighlight` for the title and `GameFontHighlightSmall` for the
-rest (the client's templates, not a typed face), white text and the spec's colors where given, the bar
-flat white. A host's style overrides still draw. Without `LibKa0s-Widgets-1.0` there is no drag
+No Core facade, no Skin major or an unregistered owner: the style's stored values are the fallback
+(skinning-§6), whatever the `FromSkin` companions say. The fill is `bgType` in `bgColor` (by default a
+`WHITE8X8` at `{0, 0, 0, 0.7}`), the 1 px edge `borderColor` (`{0.3, 0.3, 0.3, 1}`), the text
+`fontColor` (white) with the spec's colors where given, and the bar `barColor`, flat. The fonts are
+`GameFontHighlight` for the title and `GameFontHighlightSmall` for the rest (the client's templates,
+not a typed face): `font`, `fontSize`, `fontSize2`, `fontFlags` and `fontShadow` need the facade's
+`S.HudFont` and do not draw here, and a row is laid out at the templates' own sizes. Without `LibKa0s-Widgets-1.0` there is no drag
 handle and no strip: `SetLocked(false)` answers true and stays locked, and the host's nudge rows still
 move the feed. Every facade call is presence-checked; none raises. This is the Toast plain-skin
 precedent.
@@ -320,8 +323,13 @@ and never again for that paint.
   `HANDLE_TIP` is set) centered 2 px off the stack's far edge: over it growing up, under it growing
   down. A drag stop writes the nudge and re-anchors (see *Placement*). Combat refuses an unlock; the
   host also locks at `PLAYER_REGEN_DISABLED`, since it owns the combat rows.
-- **The strip.** `SetStrip` docks the strip across the same far edge, 2 px off; each kind is built
-  once and reused with new text. It shows while the feed is locked and hides under the handle.
+- **The strip.** `SetStrip` builds the strip with the library's HUD docking (Widgets minor 27,
+  `dock = "hud"`, `target` the container, `gap` 2, `clear` the drag handle) and never anchors it by
+  hand: on the container's top edge, outside it, whichever way the stack grows, flipped under its
+  bottom edge only while the top edge would leave the screen; no mouse; the chrome band Widgets sets;
+  stacked beyond the drag handle while that shows, so the two never overlap. A move or a re-anchor
+  fires no script, so the feed calls `strip:Place()` after each. Each kind is built once and reused
+  with new text, and it shows whenever its kind is set, locked or not.
 - **No polling.** `OnEnter` and `OnLeave` are the source; there is no `IsMouseOver` or `GetMouseFoci`
   call, so no client split is needed.
 
@@ -334,8 +342,14 @@ the one refusal, by choice.
 - **The container:** `STRATA` (`"HIGH"`), frame-layering's T5 **interactive** toast tier. Not toplevel
   (rows must not raise over each other or over a window the player clicks), clamped to the screen,
   mouse off. A host never sets a strata on it.
-- **Rows:** children of the container, the strata inherited, one level over it; the glow holder one
-  level over its row (skinning-§1's overlay rule).
+- **Peer feeds** stack whole (frame-layering-§3): each container takes a base of its own, level 1 plus
+  128 per feed built (wrapping after 16 feeds), a stride over a feed's whole row band.
+- **Rows:** children of the container, the strata inherited. Each row takes a band of its own, six
+  levels, fixed when the row is built (the container's level plus 1, plus 6 per row built before it,
+  wrapping after 20, twice `SHOWN_MAX`): the row at +0, the icon holder +1 (the skin's icon edge
+  +2, which `IconBorder` makes one over it), the tint edge and the badge +3, an LSM border's backdrop
+  +4, the glow +5 (skinning-§1's overlay rule). So a row fading where it stood while the stack slides
+  over it, or a row sliding in across its neighbor, never interleaves with it.
 - **The drag handle and the strip:** Widgets sets their own levels.
 - Click-through keeps the strata; only the mouse changes.
 - **Upstream:** frame-layering-§6's table of library-owned tiers gains the Feed row beside Callout's

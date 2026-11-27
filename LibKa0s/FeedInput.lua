@@ -6,8 +6,8 @@
 -- `lib.__shell`, also at call time:
 --
 --   Hook(S, R)              a newly built row's OnEnter, OnLeave and OnMouseUp, set once
---   Dock(S)                 the drag handle and the strips on the stack's far edge, again
---   Strip(S)                the strip of the kind set, built once per kind, shown while locked
+--   Dock(S)                 the drag handle on the stack's far edge and every strip re-placed
+--   Strip(S)                the strip of the kind set, built once per kind, docked by Widgets
 --   Lock(S)                 locked: a drag under way ends and is saved, the handle hides
 --   Unlock(S)               unlocked unless in combat or without Widgets; answers still-locked
 --   ClickThrough(S, on)     every row's mouse off (on) or back; on also ends hover and freeze
@@ -29,8 +29,13 @@
 -- UIParent units, becomes a nudge from the slot (FeedModel's NudgeFromRect), kept in the snapshot,
 -- the container is anchored from the slot again and `d.onMoved(x, y)` tells the host.
 --
--- THE STRIP. SetStrip("test" | "sim", text) docks a W.TestStrip with the host's text across the
--- same far edge; it shows while the feed is locked and hides under the drag handle.
+-- THE STRIP. SetStrip("test" | "sim", text) builds a W.TestStrip with the host's text and docks it
+-- through the library's own HUD docking (Widgets minor 27, `dock = "hud"`, preview-mode's *Where the
+-- strip sits*): on the container's top edge, outside it, CHROME_GAP off, flipped under its bottom
+-- edge only while the top would leave the screen, no mouse, the display's chrome band, and stacked
+-- beyond the drag handle while it shows (`clear`), so it never overlaps it. Nothing here anchors a
+-- strip by hand; a move or a re-anchor fires no script, so Dock calls `strip:Place()`. It shows
+-- whenever its kind is set, locked or not.
 --
 -- Minor 1 (LootHistory#38, task S3 of the Feed build): the input.
 
@@ -46,7 +51,7 @@ lib.MODULES = lib.MODULES or {}
 lib.MODULES.FeedInput = INPUT_MINOR
 
 local HUGE = math.huge
-local CHROME_GAP = 2   -- px between the stack's far edge and the drag handle or the strip
+local CHROME_GAP = 2   -- px between the stack and the drag handle (its far edge) or the strip (its top)
 
 local I = {}
 
@@ -58,44 +63,48 @@ local function widgets() return LibStub and LibStub("LibKa0s-Widgets-1.0", true)
 
 -- == the far edge =============================================================================
 
---- `f` on the stack's far edge, CHROME_GAP clear of it: over the stack growing up, under it growing
---- down. `full` spans the container's width (the strip); else it is centered (the handle).
-local function dockFar(S, f, full)
+--- The drag handle on the stack's far edge, CHROME_GAP clear of it and centered: over the stack
+--- growing up, under it growing down. (The strips are Widgets' to place, below.)
+local function dockFar(S, f)
   local c, up = S.container, S.cfg.layout.grow ~= "DOWN"
   local near, far = up and "BOTTOM" or "TOP", up and "TOP" or "BOTTOM"
-  local gap = up and CHROME_GAP or -CHROME_GAP
   f:ClearAllPoints()
-  if full then
-    f:SetPoint(near .. "LEFT", c, far .. "LEFT", 0, gap)
-    f:SetPoint(near .. "RIGHT", c, far .. "RIGHT", 0, gap)
-  else
-    f:SetPoint(near, c, far, 0, gap)
-  end
+  f:SetPoint(near, c, far, 0, up and CHROME_GAP or -CHROME_GAP)
+end
+
+--- Widgets' HUD dock spec for the feed's strips: the container's top edge, clear of the handle.
+local function stripDock(S, spec)
+  spec.dock, spec.target, spec.gap, spec.clear = "hud", S.container, CHROME_GAP, S.handle
+  return spec
+end
+
+--- Every strip docked again, so one built before the drag handle stacks beyond it once it exists.
+local function redockStrips(S)
+  local W = widgets()
+  if not (W and type(W.DockTestStrip) == "function") then return end
+  for _, strip in pairs(S.strips) do W.DockTestStrip(strip, stripDock(S, {})) end
 end
 
 function I.Dock(S)
-  if S.handle then dockFar(S, S.handle, false) end
-  for _, strip in pairs(S.strips) do dockFar(S, strip, true) end
+  if S.handle then dockFar(S, S.handle) end
+  for _, strip in pairs(S.strips) do
+    if type(strip.Place) == "function" then strip:Place() end
+  end
 end
 
 -- == the strip ================================================================================
 
---- The strip of the kind set shows while the feed is locked; every other strip, and any strip
---- under the drag handle, is hidden.
+--- The strip of the kind set shows; every other strip is hidden.
 local function showStrips(S)
-  for kind, strip in pairs(S.strips) do strip:SetShown(kind == S.stripKind and S.locked ~= false) end
+  for kind, strip in pairs(S.strips) do strip:SetShown(kind == S.stripKind) end
 end
 
 function I.Strip(S)
   if not S.built then return end
   local kind, W = S.stripKind, widgets()
   if kind and not S.strips[kind] and W and type(W.TestStrip) == "function" then
-    local strip = W.TestStrip(S.container, { kind = kind, owner = S.d.owner, text = S.stripText })
-    if strip then
-      strip:EnableMouse(false)
-      S.strips[kind] = strip
-      dockFar(S, strip, true)
-    end
+    local strip = W.TestStrip(S.container, stripDock(S, { kind = kind, owner = S.d.owner, text = S.stripText }))
+    if strip then S.strips[kind] = strip end
   end
   local strip = kind and S.strips[kind]
   if strip and strip.text then strip.text:SetText(S.stripText) end
@@ -209,7 +218,8 @@ local function buildHandle(S)
   if not handle then return nil end
   if type(handle.ApplyWidth) == "function" then handle:ApplyWidth() end
   S.handle = handle
-  dockFar(S, handle, false)
+  dockFar(S, handle)
+  redockStrips(S)
   return handle
 end
 
@@ -233,7 +243,7 @@ function I.Unlock(S)
   if not handle then return true end
   S.locked = false
   S.container:SetMovable(true)
-  dockFar(S, handle, false)
+  dockFar(S, handle)
   handle:Show()
   showStrips(S)
   return false
