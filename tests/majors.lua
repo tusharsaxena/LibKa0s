@@ -83,6 +83,15 @@ local MAJORS = {
     primary = "Toast",
   },
   {
+    major = "LibKa0s-Feed-1.0",
+    files = { "Feed", "FeedModel", "FeedRow" },
+    primary = "Feed",
+    paired = {
+      { file = "FeedModel", minorField = "__modelMinor", probeField = "__modelShellMinor" },
+      { file = "FeedRow", minorField = "__rowMinor", probeField = "__rowShellMinor" },
+    },
+  },
+  {
     major = "LibKa0s-Callout-1.0",
     files = { "Callout", "CalloutRoute", "CalloutSound", "CalloutSettings" },
     primary = "Callout",

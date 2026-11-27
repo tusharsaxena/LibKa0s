@@ -769,6 +769,42 @@ Total.
 - toast stack: Clear takes the whole stack down
 - toast stack: without the stack field (or with 1) it is the v1 toast: one frame, one at a time
 
+### test_feed.lua (9)
+
+- feed: the major loads at minor 1 and reports its three files
+- feed: the published defaults are the design's numbers
+- feed: without Core, or with a Core under minor 20, the major is absent
+- feed: the two secondaries are paired on the shell's minor
+- feed: the secondaries load to nothing without the shell
+- feed: New raises without d.content, naming it
+- feed: a method called on something that is not an instance raises
+- feed: every instance member is on a new feed, copied from the shell's method table
+- feed: Stats answers its full shape on a new feed
+
+### test_feed_model.lua (21)
+
+- feed model: an empty descriptor snapshots every published default
+- feed model: garbage values fall back to the defaults, and unknown keys are ignored
+- feed model: good values are kept, clamped where the contract clamps
+- feed model: each group is a value or a getter, and a getter that raises answers nothing
+- feed model: SlotOffset adds each slot's inset, inward from the screen edge
+- feed model: NudgeFromRect round-trips SlotOffset for every slot, both grows and two scales
+- feed model: NudgeFromRect clamps to plus or minus NUDGE_MAX
+- feed model: RowHeight never goes under rowHeight, and sums the filled lines
+- feed model: Layout stacks mixed heights with the gap, newest at 0
+- feed model: the fade enter eases out over enterTime
+- feed model: the four slides start a full width or height away, at full alpha
+- feed model: an enter of none is no enter at all
+- feed model: hold draws the exact bar, then the fade, then done
+- feed model: a drop fades from the alpha it had over DROP_FADE, whatever pauses
+- feed model: a sticky entry stops at the end of its enter and draws no bar
+- feed model: paused stops t, but not the pulse
+- feed model: a merge inside the window restarts the hold without replaying the enter
+- feed model: no merge outside the window, with mergeWindow 0, or into a dropping entry
+- feed model: a merge into a waiting entry takes only the payload and the time
+- feed model: a raising reducer keeps the newer payload and hands back its error
+- feed model: Drain presents only the newest n, oldest first, and frees the rest
+
 ### test_callout.lua (52)
 
 - callout: the major loads at minor 6 and reports its primary file
@@ -6023,6 +6059,8 @@ Total.
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
+| test_feed.lua | 9 |
+| test_feed_model.lua | 21 |
 | test_callout.lua | 52 |
 | test_callout_look.lua | 32 |
 | test_callout_voice.lua | 30 |
@@ -6237,4 +6275,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5263** |
+| **Total** | **5293** |

@@ -70,6 +70,7 @@ the file you need:
 | `LibKa0s-ForeverDB-1.0` | `<ForeverDB>` | `LibStub("LibKa0s-ForeverDB-1.0").MODULES` |
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Toast-1.0` | `<Toast>` | `LibStub("LibKa0s-Toast-1.0").MODULES` |
+| `LibKa0s-Feed-1.0` | `<Feed>.<FeedModel>.<FeedRow>` | `LibStub("LibKa0s-Feed-1.0").MODULES` |
 | `LibKa0s-Callout-1.0` | `<Callout>.<CalloutRoute>.<CalloutSound>.<CalloutSettings>` (two numbers through 5.6) | `LibStub("LibKa0s-Callout-1.0").MODULES` |
 | `LibKa0s-WaypointArrow-1.0` | `<WaypointArrow>.<WaypointArrowSettings>` | `LibStub("LibKa0s-WaypointArrow-1.0").MODULES` |
 | `LibKa0s-Charts-1.0` | `<Charts>.<ChartsRender>` | `LibStub("LibKa0s-Charts-1.0").MODULES` |
@@ -229,6 +230,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [2](./Toast/version-2-docs.md) | **`Toast.lua` 2** (`soundFile`, additive) | v1.85.0 | Superseded |
 | [1](./Toast/version-1-docs.md) | **`Toast.lua` 1** (new: the alert-toast shell, LibKa0s#60) | v1.79.0 – v1.84.0 | Superseded |
 
+### `LibKa0s-Feed-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1.1.1](./Feed/version-1.1.1-docs.md) | **`Feed.lua` 1** · **`FeedModel.lua` 1** · **`FeedRow.lua` 1** (new: the toast feed, Loot History #38, owner ruling X1/D24) | unreleased (v1.119.0) | **Current** |
+
 ### `LibKa0s-Callout-1.0`
 
 | Version | Files | Shipped in | Status |
@@ -374,7 +381,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [23.12.1.5](./DebugLog/version-23.12.1.5-docs.md) | `DebugLog.lua` 23 · **`DebugLogDiagnostics.lua` 12** (the identity header names ForeverDB and prints its line; LibKa0s#105, `SF-LK-01`) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 5 | v1.114.0 | **Current** |
+| [23.13.1.5](./DebugLog/version-23.13.1.5-docs.md) | `DebugLog.lua` 23 · **`DebugLogDiagnostics.lua` 13** (the identity header names Feed; Loot History #38) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 5 | unreleased (v1.119.0) | **Current** |
+| [23.12.1.5](./DebugLog/version-23.12.1.5-docs.md) | `DebugLog.lua` 23 · **`DebugLogDiagnostics.lua` 12** (the identity header names ForeverDB and prints its line; LibKa0s#105, `SF-LK-01`) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 5 | v1.114.0 – v1.118.0 | Superseded |
 | [23.11.1.5](./DebugLog/version-23.11.1.5-docs.md) | **`DebugLog.lua` 23** (the buffer's messages plain, the colored view kept in `__view`, `REPORT_WRITTEN`; the `onSettings` field, LibKa0s#86) · **`DebugLogDiagnostics.lua` 11** (`D:Report`, `D:Serialize`, `lib.Serialize`; LibKa0s#79, `LK-79`) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 5** (a skin switch's rebuild keeps each message's colors) | v1.105.0 – v1.113.0 | Superseded |
 | [22.10.1.4](./DebugLog/version-22.10.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 10** (the identity header names WaypointArrow) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.99.0 – v1.104.0 | Superseded |
 | [22.9.1.4](./DebugLog/version-22.9.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 9** (the identity header names Callout) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.96.0 – v1.97.0 | Superseded |

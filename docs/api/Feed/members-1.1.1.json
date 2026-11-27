@@ -1,0 +1,33 @@
+{
+  "major": "LibKa0s-Feed-1.0",
+  "versionKey": "1.1.1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Feed", "minor": 1 },
+    { "file": "FeedModel", "minor": 1 },
+    { "file": "FeedRow", "minor": 1 }
+  ],
+  "members": [
+    { "name": "DROP_FADE", "kind": "number" },
+    { "name": "ENTER_TIME", "kind": "number" },
+    { "name": "FADE_TIME", "kind": "number" },
+    { "name": "GAP", "kind": "number" },
+    { "name": "HOLD", "kind": "number" },
+    { "name": "ICON_SIZE", "kind": "number" },
+    { "name": "MAX_DT", "kind": "number" },
+    { "name": "MAX_QUEUE", "kind": "number" },
+    { "name": "MERGE_WINDOW", "kind": "number" },
+    { "name": "NUDGE_MAX", "kind": "number" },
+    { "name": "New", "kind": "function" },
+    { "name": "PADDING", "kind": "number" },
+    { "name": "PULSE_TIME", "kind": "number" },
+    { "name": "ROW_HEIGHT", "kind": "number" },
+    { "name": "SHOWN", "kind": "number" },
+    { "name": "SHOWN_MAX", "kind": "number" },
+    { "name": "SLIDE_TIME", "kind": "number" },
+    { "name": "SLOTS", "kind": "table" },
+    { "name": "SLOT_INSET", "kind": "number" },
+    { "name": "STRATA", "kind": "string" },
+    { "name": "WIDTH", "kind": "number" }
+  ]
+}

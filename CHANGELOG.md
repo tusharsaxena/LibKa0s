@@ -10,6 +10,19 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.119.0 — unreleased
+
+Opened 2026-11-27, on `feat/2026-11-27-feed`: Ka0s Loot History #38 (its plan `docs/superpowers/plans/2026-11-27-tooltip-toasts-farm.md`, task M3.0), built from the design `docs/superpowers/specs/2026-11-27-libka0s-feed-design.md`. Built to WowAddonStandards v2.121.0.
+
+Versions so far: `LibKa0s-Feed-1.0` key **1.1.1** (Feed minor 1, FeedModel minor 1, FeedRow minor 1; new); `LibKa0s-DebugLog-1.0` key **23.13.1.5** (DebugLogDiagnostics minor 13); every other file at its v1.118.0 minor, and the test kit at revision **65**. No `NEEDS_*` floor rises.
+
+### A toast feed
+
+- **New major `LibKa0s-Feed-1.0`** ([docs](docs/api/Feed/version-1.1.1-docs.md)), promoted with one consumer on the owner's ruling: Tushar Saxena (owner), 2026-11-27, Loot History plan D24 (ruling X1 of the #38 design), shipping with Ka0s Loot History #38. Second consumer: none named yet. Conformant under library-stack-§7 bar 1, so no deviation row. Three files, loaded directly after `Toast.lua`: **Feed minor 1** (`LibKa0s/Feed.lua`, the shell: `New(d)` raising without `d.content`, the published defaults `STRATA`, `SLOTS`, `MAX_QUEUE`, `SHOWN`, `SHOWN_MAX`, `WIDTH`, `ROW_HEIGHT`, `ICON_SIZE`, `PADDING`, `GAP`, `SLOT_INSET`, `NUDGE_MAX`, `ENTER_TIME`, `HOLD`, `FADE_TIME`, `MERGE_WINDOW`, `PULSE_TIME`, `SLIDE_TIME`, `DROP_FADE` and `MAX_DT`, the instance state and its method table; every instance member answers its degraded value until the engine lands), **FeedModel minor 1** (`LibKa0s/FeedModel.lua`, the pure model: the layout, motion and style snapshot, the slot and nudge math, row heights and the stack's layout, the enter, hold, fade and drop phase machine, merge in place and the drain) and **FeedRow minor 1** (`LibKa0s/FeedRow.lua`, the rows' shell), the two secondaries paired on the shell's minor.
+- **DebugLogDiagnostics minor 13** ([docs](docs/api/DebugLog/version-23.13.1.5-docs.md)): Feed in the report's major list, directly after Toast. No member change.
+- Tests: the new `tests/test_feed.lua` (the minors and `MODULES`, the defaults, the Core floor, the paired guards, `New` raising, the method table, `Stats`' shape) and `tests/test_feed_model.lua` (every model case) on `tests/fixture_feed.lua`; `tests/test_debuglog_diagnostics.lua` and `tests/test_debuglog_report.lua` re-pin `DebugLogDiagnostics 13`.
+- Documentation: `docs/api/Feed/version-1.1.1-docs.md` (in progress) and its manifest, the DebugLog pair, `docs/api/README.md`, `docs/releasing.md` and `docs/test-cases.md`.
+
 ## v1.118.0 — 2026-11-26
 
 Opened 2026-11-26, on `feat/2026-11-26-owner-feedback-round4`: the library half of Ka0sAddonsCommonTasks `docs/2026-11-26-OWNER_FEEDBACK_ROUND4/` (the owner's fourth pass over Drop Watcher's Item Search), item `R4-LK-01`, built in that run's review fix pass (`R4-REV`). Built to WowAddonStandards v2.121.0, unchanged since v1.117.0.
