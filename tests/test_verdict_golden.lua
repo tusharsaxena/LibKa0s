@@ -123,9 +123,14 @@ local function configOf(settings)
   return cfg
 end
 
-local function seed(m, s)
+-- The seed is split in three (who you are, what you carry, what the client knows) so no one
+-- function carries every optional field's guard.
+local function seedPlayer(m, s)
   m.__context.class, m.__context.classToken, m.__context.level = s.class, s.classFile, s.level
   if s.talents then m.seedTalents(s.specID, s.talents) else m.specID = s.specID end
+end
+
+local function seedItems(m, s)
   for l, d in pairs(s.items or {}) do
     local copy = {}
     for k, v in pairs(d) do copy[k] = v end
@@ -136,12 +141,21 @@ local function seed(m, s)
     m.bags[bag] = { size = 16 }
     for slot, l in pairs(slots) do m.bags[bag][slot] = l end
   end
+end
+
+local function seedClient(m, s)
   for l, data in pairs(s.tooltips or {}) do m.tooltips.hyperlink[l] = data end
   if s.mounts then
     for id, mount in pairs(s.mounts.byItem or {}) do m.mounts.byItem[id] = mount end
     for mount, known in pairs(s.mounts.collected or {}) do m.mounts.collected[mount] = known end
   end
   if s.pawn then FC.installPawn(m, { values = s.pawn.values, upgrades = s.pawn.upgrades }) end
+end
+
+local function seed(m, s)
+  seedPlayer(m, s)
+  seedItems(m, s)
+  seedClient(m, s)
 end
 
 test("verdict golden: the read half is Drop Watcher's, every case named once", function()
