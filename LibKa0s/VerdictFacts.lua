@@ -52,12 +52,14 @@ local lib = LibStub and LibStub("LibKa0s-Verdict-1.0", true)
 if not lib or not lib.C or not lib.TierTokens then return end
 
 local FACTS_MINOR = 1
+local ORDER = 70   -- its place in LibKa0s.xml (Verdict.lua, lib.__Stale)
 -- Minor 1 (DropWatcher#19, task B2): Drop Watcher's item facts and link reads, the cache per
 -- instance.
 if lib.__factsMinor and lib.__factsMinor >= FACTS_MINOR
-  and lib.__factsShellMinor == lib.MINOR then return end
+  and lib.__factsShellMinor == lib.MINOR and not lib.__Stale(ORDER) then return end
 lib.__factsMinor      = FACTS_MINOR
 lib.__factsShellMinor = lib.MINOR
+lib.__Ran(ORDER)
 
 lib.MODULES = lib.MODULES or {}
 lib.MODULES.VerdictFacts = FACTS_MINOR

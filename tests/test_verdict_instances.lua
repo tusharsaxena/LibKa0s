@@ -158,3 +158,33 @@ test("verdict instances: Judge on an uncached item asks for it and tells the hos
   me, pending = W.v:Judge("no link")
   assertNil(me); assertFalse(pending, "a link that names no item is not pending")
 end)
+
+test("verdict instances: a newer copy that bumps one secondary alone re-runs every file after it", function()
+  local W = FC.new{ seed = function(m)
+    rogue()(m)
+    m.items[FC.link(3000)].quality = 6   -- the worn helm is an artifact: no heirloom, until below
+  end }
+  W.config = { scorer = "none", heirloomProtect = true }
+  local facts = W.v:Facts(FC.link(3001))
+  assertEqual(W.v:JudgeFacts(facts).verdict, "upgrade", "quality 6 is no heirloom at minor 1")
+  local generation = W.V.__generation
+  for _, path in ipairs(FC.PATHS) do
+    if path:match("Verdict%u") then T.loader.load(path, nil, W.m) end
+  end
+  -- red under: a file that re-ran whenever any file had run since it (the same copy twice re-ran)
+  assertEqual(W.V.__generation, generation, "a second copy at the same minors runs nothing")
+  -- A second addon's copy whose VerdictConstants alone is at minor 2, with the heirloom quality
+  -- moved to 6: its other files keep their minors, as a release that bumps one file ships them.
+  local src = T.loader.readFile("LibKa0s/VerdictConstants.lua")
+    :gsub("local CONSTANTS_MINOR = 1", "local CONSTANTS_MINOR = 2", 1)
+    :gsub('HEIRLOOM  = { "Heirloom", 7 }', 'HEIRLOOM  = { "NoSuchQuality", 6 }', 1)
+  T.loader.loadSource(src, "VerdictConstants.lua@2", nil, W.m)
+  for _, path in ipairs(FC.PATHS) do
+    if path:match("Verdict%u") and not path:match("VerdictConstants") then T.loader.load(path, nil, W.m) end
+  end
+  assertEqual(W.V.C.QUALITY.HEIRLOOM, 6, "the newer constants won")
+  -- red under: each file ran only on its own minor, so Evaluate kept the table it captured at load
+  assertEqual(W.v:JudgeFacts(facts).verdict, "sidegrade", "the kernel reads the newer constants")
+  assertTrue(W.V.__ranAt[40] > W.V.__ranAt[10], "Evaluate re-ran on the newer constants")
+  assertEqual(W.V.__ranAt[100], W.V.__generation, "and so did every file after it, Settings last")
+end)

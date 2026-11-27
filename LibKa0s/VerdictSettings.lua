@@ -62,12 +62,14 @@ local lib = LibStub and LibStub("LibKa0s-Verdict-1.0", true)
 if not lib or not lib.ClassData or not lib.C or not lib.SubClassKey or not lib.Score then return end
 
 local SETTINGS_MINOR = 1
+local ORDER = 100   -- its place in LibKa0s.xml (Verdict.lua, lib.__Stale)
 -- Minor 1 (DropWatcher#19, task B3): Drop Watcher's six comparison rows, their defaults and the
 -- weights and unwanted-types editors.
 if lib.__settingsMinor and lib.__settingsMinor >= SETTINGS_MINOR
-  and lib.__settingsShellMinor == lib.MINOR then return end
+  and lib.__settingsShellMinor == lib.MINOR and not lib.__Stale(ORDER) then return end
 lib.__settingsMinor      = SETTINGS_MINOR
 lib.__settingsShellMinor = lib.MINOR
+lib.__Ran(ORDER)
 
 lib.MODULES = lib.MODULES or {}
 lib.MODULES.VerdictSettings = SETTINGS_MINOR

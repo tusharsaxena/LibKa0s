@@ -62,6 +62,19 @@ class list and the slot plans are Retail's and the off-spec pass does not run: t
 differ on purpose (no client named is no off-spec). The verdict mode stays the caller's
 (`opts.verdictMode`). Nothing in the major reads the client it runs on.
 
+## Loading: a file that runs re-runs every file after it
+
+Each secondary's own minor gates it, paired on the shell's, and the files after it in
+`LibKa0s.xml` capture what it builds at their load (`local C = lib.C`, the kernels built over
+`lib.ClassData`). So when a secondary runs, every secondary after it runs again on what it built,
+even at a minor already loaded: each file has an `ORDER` (its place in the load order, spaced by
+ten), records the generation it ran at in `lib.__ranAt[ORDER]` through `lib.__Ran(ORDER)`, and runs
+again while `lib.__Stale(ORDER)` (a file before it ran after it did). A second copy at the same
+minors runs nothing. Without the rule, a release that bumps `VerdictConstants.lua` alone, loaded
+after an older copy, left the older kernel judging on the constants it captured, and which set a
+verdict read hung on addon load order. A later minor keeps it: a new file takes an `ORDER` between
+its neighbors', and never reuses one.
+
 ## The lib-level surface
 
 | Member | What it is | Since |

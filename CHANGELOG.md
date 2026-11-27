@@ -41,6 +41,12 @@ Versions in this release: `LibKa0s-Verdict-1.0` key **1.1.1.1.1.1.1.1.1.1.1** (V
 - **The Verdict document is complete** ([docs](docs/api/Verdict/version-1.1.1.1.1.1.1.1.1.1.1-docs.md)): its work-in-progress banner gives way to the consumers at the tag (none yet; Ka0s Drop Watcher and Ka0s Item Search adopt it in the same run, each through one `New(host)` instance), beside the promotion record of the owner's ruling R4. It and the DebugLog 23.13.1.5 document, with `docs/api/README.md`'s two rows, name v1.119.0 where they read unreleased.
 - Documentation: `README.md` (twenty-seven majors, the Verdict entry and row, the Core floor list, the payload tree, the kit line), `docs/releasing.md` (the version pointers at v1.119.0, twenty-seven `tests/majors.lua` rows, ninety-eight `.lua` files, the v1.119.0 re-vendor note under step 8, the Consumers table's Verdict row), `docs/api/CONSUMERS.md` (what moved at v1.119.0) and `docs/test-cases.md` (regenerated).
 
+### The review fixes (`IS-F1`)
+
+The branch review of 2026-11-28 (`docs/reviews/2026-11-28/`), fixed before the tag. Every file is unreleased, so none bumps.
+
+- **A Verdict file that runs re-runs every file after it** (F-001): each secondary carries its `ORDER` (its place in `LibKa0s.xml`) and runs again, at a minor already loaded, when a file before it ran after it did (`lib.__Stale` / `lib.__Ran` on the shell). A release that bumps `VerdictConstants.lua` alone no longer leaves an older copy's kernel judging on the constants it captured at load; a second copy at the same minors still runs nothing. Test: `tests/test_verdict_instances.lua`.
+
 Release gate (`docs/automated-tests/20261127-234144/`): lint pass, 0/0 in 421 files;
 tests pass, 5547 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.

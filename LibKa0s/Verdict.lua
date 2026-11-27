@@ -99,6 +99,33 @@ local instanceMeta = { __index = methods }
 lib.__events = lib.__events or {}
 lib.__lifecycle = lib.__lifecycle or {}
 
+-- Which secondary file ran last at which generation (`[order] = generation`; each file's ORDER is
+-- its place in LibKa0s.xml, spaced by ten). A secondary's minor gates it alone, but the files after
+-- it capture what it builds (lib.C, lib.ClassData) at their load: so when one runs, every file after
+-- it in load order runs again on what it built, even at a minor already loaded. Without that, a
+-- release that bumps VerdictConstants alone, loaded after an older copy, left the older copy's
+-- kernel judging on the constants it captured, and which set a verdict read hung on load order.
+lib.__ranAt = lib.__ranAt or {}
+lib.__generation = lib.__generation or 0
+
+--- Whether the secondary at `order` must run again: a file before it in load order ran after it did.
+--- @param order number
+--- @return boolean
+function lib.__Stale(order)
+  local mine = lib.__ranAt[order] or 0
+  for o, g in pairs(lib.__ranAt) do
+    if o < order and g > mine then return true end
+  end
+  return false
+end
+
+--- Record that the secondary at `order` ran.
+--- @param order number
+function lib.__Ran(order)
+  lib.__generation = lib.__generation + 1
+  lib.__ranAt[order] = lib.__generation
+end
+
 -- The read table of one host: host.reads' member, else lib.Reads', looked up at each access.
 local function readsFor(host)
   return setmetatable({}, { __index = function(_, name)
