@@ -1,4 +1,4 @@
-# `LibKa0s-Verdict-1.0` — version 1.1.1.1.1.1.1.1.1.1
+# `LibKa0s-Verdict-1.0` — version 1.1.1.1.1.1.1.1.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Verdict surface points here rather than restating it. It describes the
@@ -8,20 +8,19 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Verdict-1.0` |
-| Files and minors | `Verdict.lua` minor **1** · `VerdictConstants.lua` minor **1** · `VerdictClassData.lua` minor **1** · `VerdictTierTokens.lua` minor **1** · `VerdictEvaluate.lua` minor **1** · `VerdictReads.lua` minor **1** · `VerdictCollect.lua` minor **1** · `VerdictFacts.lua` minor **1** · `VerdictScore.lua` minor **1** · `VerdictGear.lua` minor **1** (the nine secondaries paired on `Verdict.lua`'s minor) |
+| Files and minors | `Verdict.lua` minor **1** · `VerdictConstants.lua` minor **1** · `VerdictClassData.lua` minor **1** · `VerdictTierTokens.lua` minor **1** · `VerdictEvaluate.lua` minor **1** · `VerdictReads.lua` minor **1** · `VerdictCollect.lua` minor **1** · `VerdictFacts.lua` minor **1** · `VerdictScore.lua` minor **1** · `VerdictGear.lua` minor **1** · `VerdictSettings.lua` minor **1** (the ten secondaries paired on `Verdict.lua`'s minor) |
 | Shipped in | unreleased (v1.119.0) |
 | Status | **Current** |
 | Supersedes | none (new major) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `LibKa0s-Compat-1.0`, `LibKa0s-Item-1.0` and `LibKa0s-Role-1.0` read at call time by the reads, each optional |
-| Confirm in-game | `LibStub("LibKa0s-Verdict-1.0").MODULES` → `{ Verdict = 1, VerdictConstants = 1, VerdictClassData = 1, VerdictTierTokens = 1, VerdictEvaluate = 1, VerdictReads = 1, VerdictCollect = 1, VerdictFacts = 1, VerdictScore = 1, VerdictGear = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Verdict-1.0").MODULES` → `{ Verdict = 1, VerdictConstants = 1, VerdictClassData = 1, VerdictTierTokens = 1, VerdictEvaluate = 1, VerdictReads = 1, VerdictCollect = 1, VerdictFacts = 1, VerdictScore = 1, VerdictGear = 1, VerdictSettings = 1 }` |
 
 > **Work in progress on `feat/2026-11-27-itemsearch-split`.** This version is being built in steps
 > (Ka0s Drop Watcher's plan `docs/superpowers/plans/2026-11-27-itemsearch-split.md`, tasks B1 to
 > B4). At this point of the branch the shell and the pure kernel (task B1) and the instance with its
-> reads, facts, scorer, collection verdict and gear snapshot (task B2) are in place. The settings
-> section (B3) follows as a file of its own, so the version key grows a number again; this document
-> moves to the final key and is completed before the release (B4).
+> reads, facts, scorer, collection verdict and gear snapshot (task B2) and the settings section
+> (task B3) are in place; this document is completed before the release (B4).
 
 ## What changed at this version: the major is new
 
@@ -35,7 +34,9 @@ of `core/TextParse.lua` (`VerdictTierTokens.lua`), `core/ClassData.lua` and
 (`VerdictReads.lua`), `modules/Collectibles.lua` without the feed's re-read pass
 (`VerdictCollect.lua`), `modules/ItemFacts.lua` and `core/ItemRead.lua` (`VerdictFacts.lua`),
 `modules/Scoring.lua` (`VerdictScore.lua`) and `modules/Gear.lua` without `Qualities`, with the
-verdict half of `modules/LootFeed.lua`'s judge (`VerdictGear.lua`); pinned on both sides by one golden table (`tests/fixtures/verdict_golden.lua`,
+verdict half of `modules/LootFeed.lua`'s judge (`VerdictGear.lua`), and the Comparison page's six
+rows, defaults and two editors (`settings/SchemaRows.lua`, `defaults/Profile.lua`, `settings/Editors.lua`,
+`settings/PageEditors.lua`: `VerdictSettings.lua`, owner ruling R10); pinned on both sides by one golden table (`tests/fixtures/verdict_golden.lua`,
 copied unchanged from Drop Watcher).
 
 ## Why this exists: the promotion record
@@ -78,12 +79,13 @@ differ on purpose (no client named is no off-spec). The verdict mode stays the c
 | `TierTokens` | `Listed`, `UseNamesClass`, `UseSlot`, `NameSlot`, `IsCurio`, `Users`, `SlotOf`, `Fold`, the text parsers `EscapePattern`, `WordMap`, `FirstWord`, `EndsWithWord`, `TokenUseSlot`, and `WORDS`, the locale keys every word-reading member reads the host's locale table by (its last argument; with none, each key is its own word, and so is a key the table lacks) | **1** |
 | `C` | The constants: `ITEM_CLASS`, `MISC_SUBCLASS`, `ARMOR_SUBCLASS`, `WEAPON_SUBCLASS`, `QUALITY`, `TRACK_TIER`, `TRACK_TIER_BY_STRING_ID`, `TIER_SLOTS`, `TIER_TOKENS`, `FEATURE_CLIENTS` (`offSpec`, `transmog`) and `FeatureOn(name, client)`, `RECIPE_SUBCLASS`, `RECIPE_SKILL_LINE`, `CATEGORIES`, `BAG_IDS`, `SLOTS` and `SlotsFor(client)`, `SLOT` (the slots both clients share), `SLOT_KIND`, `SLOT_PLANS` and `SlotPlanFor(client)`, `UNIVERSAL_EQUIPLOC`, `ARMOR_TYPED_EQUIPLOC`. Read them, never write them | **1** |
 
-| `Reads` | The default client reads, each under its Drop Watcher compat name (`VerdictReads.lua`'s header): `IsSecret`, `GlobalString`, `ReadTooltipLine`, `InventoryItemLevel`, `InventoryItemLink`, `BagSlotCount`, `BagItemLink`, `BagItemLevelQuality`, `IsItemBindToAccount`, `IsItemBindToAccountUntilEquip`, `ItemEquipLoc`, `CanRequestItemLoad`, `GetItemInfo`, `GetDetailedItemLevel`, `GetItemStats`, `GetItemSpecs`, `GetItemUniqueness`, `GetItemUpgradeInfo`, `PlayerHasTransmog`, `ItemClassRestriction`, `ItemPrimaryStats`, `UnitClass`, `UnitLevel`, `PlayerSpecID`, `PlayerTalentTree`, `PlayerRole` (Role's Resolve with no store), `MountFromItem`, `MountCollected`, `PetSpeciesFromItem`, `PetCollected`, `IsToy`, `ToyCollected`, `IsCosmeticItem`, `RecipeKnown`, `ProfessionSkillLines`, `TierTokenSlot`, `ItemOpens`, `ItemUseText`, `CanRequestSpellLoad`, `RequestSpellLoad`, `ItemIDFromLink`, `QualityFromLink`, `LoadItem`, and the Pawn seam `PawnIsReady`, `PawnItemData`, `PawnUpgradeInfo`, `PawnScaleForSpec(classID, specID, tree, role, client)`, `PawnVisibleScale(…, client)`, `PawnCustomScale`, `PawnClassScales`, `PawnItemValue`. No member raises; each answers its absent value | **1** |
+| `Reads` | The default client reads, each under its Drop Watcher compat name (`VerdictReads.lua`'s header): `IsSecret`, `GlobalString`, `ReadTooltipLine`, `InventoryItemLevel`, `InventoryItemLink`, `BagSlotCount`, `BagItemLink`, `BagItemLevelQuality`, `IsItemBindToAccount`, `IsItemBindToAccountUntilEquip`, `ItemEquipLoc`, `CanRequestItemLoad`, `GetItemInfo`, `GetDetailedItemLevel`, `GetItemStats`, `GetItemSpecs`, `GetItemUniqueness`, `GetItemUpgradeInfo`, `PlayerHasTransmog`, `ItemClassRestriction`, `ItemPrimaryStats`, `UnitClass`, `UnitLevel`, `PlayerSpecID`, `PlayerTalentTree`, `SpecName`, `TalentTreeNames`, `PlayerRole` (Role's Resolve with no store), `MountFromItem`, `MountCollected`, `PetSpeciesFromItem`, `PetCollected`, `IsToy`, `ToyCollected`, `IsCosmeticItem`, `RecipeKnown`, `ProfessionSkillLines`, `TierTokenSlot`, `ItemOpens`, `ItemUseText`, `CanRequestSpellLoad`, `RequestSpellLoad`, `ItemIDFromLink`, `QualityFromLink`, `LoadItem`, and the Pawn seam `PawnIsReady`, `PawnItemData`, `PawnUpgradeInfo`, `PawnScaleForSpec(classID, specID, tree, role, client)`, `PawnVisibleScale(…, client)`, `PawnCustomScale`, `PawnClassScales`, `PawnItemValue`. No member raises; each answers its absent value | **1** |
 | `Collect` | `CategoryOf(facts, probe)`, `IsCollectible(facts)`, `Verdict(facts, forced, client)` (nil for gear and a tier token; `client` names whose slot plans say an item of no category reads as gear, either client's when nil), `Read(facts, R)` (fills `category` and `collect` through the reads `R`, `lib.Reads` when nil), `REREAD_DELAY` | **1** |
 | `ItemRead` | The link, pure: `ItemString`, `LinkDetail`, `BetterLink`, `IdentityKey`, `GEAR_CLASSES` | **1** |
 | `Facts` | `TrackTier(stringID, name)` and the cache tunables `MAX_LOAD_TRIES`, `CACHE_CAP`, `EVICT_SHARE`, `SPELL_LOAD_WAIT` (read at call time) | **1** |
 | `Score` | The pure halves: `PAWN_STATS`, `STAT_KEYS`, `SCORERS`, `ParseImport(text, warn)`, `ImportInto(map, spec, text, warn)`, `WeightsScore(stats, weights, warn)`, `HasWeights(map)`, `Resolve(configured, pawnReady, hasWeights)`, `WeightsFor(map, candidate, dropStats, client, warn)`, `WeightsScorer(map, client, warn)`; `warn(key, name)` is told of a stat it does not score | **1** |
 | `Gear` | `THROTTLE` (0.5 s), `SCORE_RETRY` (1 s), `SCORE_TRIES` (5), `SlotsFor(client)`, `ScorePending(me)` | **1** |
+| `Settings` | The Comparison section a host drops into its panel (owner ruling R10; `VerdictSettings.lua`'s header): `DEFAULTS` (Drop Watcher's six: `scorer = "auto"`, `weights = {}`, `sidegradeBand = 0`, `compareOwned = false`, `heirloomProtect = true`, `undesired = {}`) and `Defaults()` (a fresh copy), `KEYS`, `SCORERS`, `Checks`, `WORDS`; `Rows(spec)` (the six as schema rows at `spec.root`, `comparison` by default, the two maps `skipRender`); `Section(ctx, O, spec, tab)` (drawn on the host's Options instance `O`: `tab` `"scoring"`, `"weights"` or `"undesired"`, all three when nil; every write `spec.set(path, value)`, a map always a fresh table); `Tabs(O, spec)` (the two editor tabs for `RenderTabbedSchema`, keyed `Weights` and `Unwanted types`); the editors' pure halves `SpecNamer(specName, treeNames, L)`, `ClassSpecs(classFile, nameOf, client)`, `PickSpec(list, remembered, own)`, `StatsFor(specKey, client)`, `StatLabel(key, globals, L)`, `Weight`, `WithWeight`, `ImportText(result, specLabel, L)`, `UndesiredChoices(classFile, client, L)`, `IsUndesired`, `WithUndesired`, `WEIGHT_MIN` / `WEIGHT_MAX` / `WEIGHT_STEP`. The spec: `{ root, L, client, get(path), set(path, value), page, print, reads }` | **1** |
 
 ## The instance
 
@@ -123,4 +125,4 @@ The events, by client: `PLAYER_EQUIPMENT_CHANGED`, `BAG_UPDATE_DELAYED`, `PLAYER
 `SKILL_LINES_CHANGED` on both; `PLAYER_SPECIALIZATION_CHANGED` and `TRANSMOG_COLLECTION_UPDATED` on
 Retail; `TRAIT_CONFIG_UPDATED`, `CHARACTER_POINTS_CHANGED` and `PLAYER_LEVEL_UP` on WoW Forever.
 
-The member manifest is [`members-1.1.1.1.1.1.1.1.1.1.json`](./members-1.1.1.1.1.1.1.1.1.1.json).
+The member manifest is [`members-1.1.1.1.1.1.1.1.1.1.1.json`](./members-1.1.1.1.1.1.1.1.1.1.1.json).

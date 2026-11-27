@@ -881,6 +881,30 @@ Total.
 - verdict instances: JudgeFacts takes another player's candidate, without your heirloom rule
 - verdict instances: Judge on an uncached item asks for it and tells the host when it arrives
 
+### test_verdict_settings.lua (21)
+
+- verdict settings: VerdictSettings is at minor 1, paired on the Verdict shell's minor
+- verdict settings: the six defaults are Drop Watcher's (defaults/Profile.lua comparison)
+- verdict settings: Rows answers the six rows at the host's root, in Drop Watcher's order and shape
+- verdict settings: the rows' checks are Drop Watcher's
+- verdict settings: another root, no page, and the host's words
+- verdict settings: a weight write is a fresh map; 0 removes the stat and an emptied spec
+- verdict settings: a spec's stats are its primary stat, Stamina and the four secondaries
+- verdict settings: unwanted types are the class's weapons, then shields where a spec carries one
+- verdict settings: an unwanted mark is a fresh map, and the last one cleared drops the spec
+- verdict settings: the spec strip keeps the remembered spec, else yours, else the first
+- verdict settings: on Forever the strip lists your class's talent trees by name
+- verdict settings: the import's line says what came in, or why nothing did
+- verdict settings: Reads.SpecName and Reads.TalentTreeNames answer their absent values
+- verdict settings: Weights draws your class's specs as a sub-strip and one slider per stat
+- verdict settings: a weight slider hands the whole map to spec.set, for the spec on screen
+- verdict settings: on Forever the strip opens on your top talent tree
+- verdict settings: the Pawn import box replaces the spec on screen's weights and says what came in
+- verdict settings: Unwanted types lists the class's weapon types and marks one per spec
+- verdict settings: the whole section draws Scoring, Weights and Unwanted types, each under its heading
+- verdict settings: Tabs answers the two editor tabs, keyed by their rows' group
+- verdict settings: nothing to draw into, or a helpers missing a member, builds nothing and raises nothing
+
 ### test_verdict_golden.lua (66)
 
 - verdict golden: the table is Drop Watcher's, every kernel case named once
@@ -6327,6 +6351,7 @@ Total.
 | test_verdict_score.lua | 19 |
 | test_verdict_gear.lua | 18 |
 | test_verdict_instances.lua | 9 |
+| test_verdict_settings.lua | 21 |
 | test_verdict_golden.lua | 66 |
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
@@ -6545,4 +6570,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5523** |
+| **Total** | **5544** |

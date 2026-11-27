@@ -146,6 +146,6 @@ files["LibKa0s/VerdictReads.lua"] = {
     "LOCALIZED_CLASS_NAMES_MALE", "LOCALIZED_CLASS_NAMES_FEMALE", "C_MountJournal", "C_PetJournal",
     "C_ToyBox", "PlayerHasToy", "GetProfessions", "GetProfessionInfo", "CanIMogIt",
     "PawnIsReady", "PawnIsInitialized", "PawnGetItemData", "PawnIsItemAnUpgrade", "PawnFindScaleForSpec",
-    "PawnIsScaleVisible", "PawnCommon", "PawnGetSingleValueFromItem",
+    "PawnIsScaleVisible", "PawnCommon", "PawnGetSingleValueFromItem", "GetSpecializationInfoByID",
   },
 }

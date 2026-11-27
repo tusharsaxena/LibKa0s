@@ -1,6 +1,6 @@
 {
   "major": "LibKa0s-Verdict-1.0",
-  "versionKey": "1.1.1.1.1.1.1.1.1.1",
+  "versionKey": "1.1.1.1.1.1.1.1.1.1.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Verdict", "minor": 1 },
@@ -12,7 +12,8 @@
     { "file": "VerdictCollect", "minor": 1 },
     { "file": "VerdictFacts", "minor": 1 },
     { "file": "VerdictScore", "minor": 1 },
-    { "file": "VerdictGear", "minor": 1 }
+    { "file": "VerdictGear", "minor": 1 },
+    { "file": "VerdictSettings", "minor": 1 }
   ],
   "members": [
     { "name": "C", "kind": "table" },
@@ -29,6 +30,7 @@
     { "name": "OffSpec", "kind": "table" },
     { "name": "Reads", "kind": "table" },
     { "name": "Score", "kind": "table" },
+    { "name": "Settings", "kind": "table" },
     { "name": "SubClassKey", "kind": "function" },
     { "name": "TierTokens", "kind": "table" },
     { "name": "TrackDelta", "kind": "function" },

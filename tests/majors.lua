@@ -75,7 +75,8 @@ local MAJORS = {
   {
     major = "LibKa0s-Verdict-1.0",
     files = { "Verdict", "VerdictConstants", "VerdictClassData", "VerdictTierTokens", "VerdictEvaluate",
-      "VerdictReads", "VerdictCollect", "VerdictFacts", "VerdictScore", "VerdictGear" },
+      "VerdictReads", "VerdictCollect", "VerdictFacts", "VerdictScore", "VerdictGear",
+      "VerdictSettings" },
     primary = "Verdict",
     paired = {
       { file = "VerdictConstants", minorField = "__constantsMinor", probeField = "__constantsShellMinor" },
@@ -87,6 +88,7 @@ local MAJORS = {
       { file = "VerdictFacts", minorField = "__factsMinor", probeField = "__factsShellMinor" },
       { file = "VerdictScore", minorField = "__scoreMinor", probeField = "__scoreShellMinor" },
       { file = "VerdictGear", minorField = "__gearMinor", probeField = "__gearShellMinor" },
+      { file = "VerdictSettings", minorField = "__settingsMinor", probeField = "__settingsShellMinor" },
     },
   },
   {

@@ -21,6 +21,7 @@
 	<Script file="VerdictFacts.lua"/>
 	<Script file="VerdictScore.lua"/>
 	<Script file="VerdictGear.lua"/>
+	<Script file="VerdictSettings.lua"/>
 	<Script file="Glow.lua"/>
 	<Script file="Toast.lua"/>
 	<Script file="Callout.lua"/>

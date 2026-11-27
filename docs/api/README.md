@@ -68,7 +68,7 @@ the file you need:
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-ForeverDB-1.0` | `<ForeverDB>` | `LibStub("LibKa0s-ForeverDB-1.0").MODULES` |
-| `LibKa0s-Verdict-1.0` | `<Verdict>.<VerdictConstants>.<VerdictClassData>.<VerdictTierTokens>.<VerdictEvaluate>.<VerdictReads>.<VerdictCollect>.<VerdictFacts>.<VerdictScore>.<VerdictGear>` | `LibStub("LibKa0s-Verdict-1.0").MODULES` |
+| `LibKa0s-Verdict-1.0` | `<Verdict>.<VerdictConstants>.<VerdictClassData>.<VerdictTierTokens>.<VerdictEvaluate>.<VerdictReads>.<VerdictCollect>.<VerdictFacts>.<VerdictScore>.<VerdictGear>.<VerdictSettings>` | `LibStub("LibKa0s-Verdict-1.0").MODULES` |
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Toast-1.0` | `<Toast>` | `LibStub("LibKa0s-Toast-1.0").MODULES` |
 | `LibKa0s-Callout-1.0` | `<Callout>.<CalloutRoute>.<CalloutSound>.<CalloutSettings>` (two numbers through 5.6) | `LibStub("LibKa0s-Callout-1.0").MODULES` |
@@ -218,7 +218,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1.1.1.1.1.1.1.1.1.1](./Verdict/version-1.1.1.1.1.1.1.1.1.1-docs.md) | **`Verdict.lua` 1** · **`VerdictConstants.lua` 1** · **`VerdictClassData.lua` 1** · **`VerdictTierTokens.lua` 1** · **`VerdictEvaluate.lua` 1** · **`VerdictReads.lua` 1** · **`VerdictCollect.lua` 1** · **`VerdictFacts.lua` 1** · **`VerdictScore.lua` 1** · **`VerdictGear.lua` 1** (new: the verdict engine promoted from Ka0s Drop Watcher, DropWatcher#19, owner ruling R4; the kernel and the per-instance reads, facts, scorer, collection verdict and gear snapshot) | unreleased (v1.119.0) | **Current** |
+| [1.1.1.1.1.1.1.1.1.1.1](./Verdict/version-1.1.1.1.1.1.1.1.1.1.1-docs.md) | **`Verdict.lua` 1** · **`VerdictConstants.lua` 1** · **`VerdictClassData.lua` 1** · **`VerdictTierTokens.lua` 1** · **`VerdictEvaluate.lua` 1** · **`VerdictReads.lua` 1** · **`VerdictCollect.lua` 1** · **`VerdictFacts.lua` 1** · **`VerdictScore.lua` 1** · **`VerdictGear.lua` 1** · **`VerdictSettings.lua` 1** (new: the verdict engine promoted from Ka0s Drop Watcher, DropWatcher#19, owner ruling R4; the kernel and the per-instance reads, facts, scorer, collection verdict and gear snapshot; the Comparison settings section) | unreleased (v1.119.0) | **Current** |
 
 ### `LibKa0s-Glow-1.0`
 

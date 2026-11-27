@@ -522,6 +522,35 @@ function R.PlayerTalentTree()
   return { index = best.index, name = best.name }
 end
 
+--- A specialization's localized name (the settings section's spec strip): GetSpecializationInfoByID's
+--- second return. Nil for no API, an unknown or non-number id, or a secret or empty answer.
+--- @param specID number
+--- @return string|nil
+function R.SpecName(specID)
+  if type(specID) ~= "number" or R.IsSecret(specID) then return nil end
+  local fn = GetSpecializationInfoByID
+  if not fn then return nil end
+  local _, name = fn(specID)
+  name = plainString(name)
+  if not name or name == "" then return nil end
+  return name
+end
+
+--- The player's talent trees' names on WoW Forever, by their index in display order
+--- (LibKa0s-Role-1.0's Groups()): `{ [index] = name }`, a name the client does not give left out.
+--- Empty on Retail and without the library (the settings section's spec strip).
+--- @return table
+function R.TalentTreeNames()
+  local out = {}
+  local role = roleLib()
+  if not (role and role.Groups) then return out end
+  for _, group in ipairs(role.Groups()) do
+    local name = plainString(group.name)
+    if type(group.index) == "number" and name and name ~= "" then out[group.index] = name end
+  end
+  return out
+end
+
 --- The role the player plays: LibKa0s-Role-1.0's Resolve with no store (no override, no saved
 --- answer), else the group's assignment. `role, source, detail`, each nil when unknown.
 --- @return string|nil, string|nil, string|nil
