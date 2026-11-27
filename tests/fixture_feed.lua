@@ -23,8 +23,16 @@ F.FILES = { "LibKa0s/Feed.lua", "LibKa0s/FeedModel.lua", "LibKa0s/FeedRow.lua" }
 local ENV = setmetatable({}, { __mode = "k" })
 
 --- Record what the feed sets on `f`, and answer the getters from the record.
+local BACKDROP_METHODS = { "SetBackdrop", "GetBackdrop", "SetBackdropColor", "GetBackdropColor",
+  "SetBackdropBorderColor", "GetBackdropBorderColor" }
+
 local function instrument(f)
   rawset(f, "__setPoints", 0)
+  -- A plain frame has no backdrop in the client: only BackdropTemplate brings SetBackdrop, and the
+  -- Skin major paints the two differently (P.hasBackdrop). The paint recorder gives every frame one.
+  if not tostring(rawget(f, "__template") or ""):find("BackdropTemplate", 1, true) then
+    for _, k in ipairs(BACKDROP_METHODS) do rawset(f, k, nil) end
+  end
   rawset(f, "SetFrameStrata", function(self, s) rawset(self, "__strata", s) end)
   rawset(f, "GetFrameStrata", function(self) return rawget(self, "__strata") or "MEDIUM" end)
   rawset(f, "SetToplevel", function(self, v) rawset(self, "__toplevel", v) end)
@@ -49,13 +57,33 @@ local function instrument(f)
     if not p then return nil end
     return p[1], p[2], p[3], p[4], p[5]
   end)
+  rawset(f, "SetFrameLevel", function(self, n) rawset(self, "__level", n) end)
+  rawset(f, "GetFrameLevel", function(self) return rawget(self, "__level") or 0 end)
   rawset(f, "StartMoving", function(self) rawset(self, "__moving", true) end)
   rawset(f, "StopMovingOrSizing", function(self) rawset(self, "__moving", false) end)
   return f
 end
 
---- A fresh environment. `opts.skinned` also loads Media, Skin and Widgets (the skinned path);
---- `opts.before(m)` runs before any file loads (to install a stand-in or a client API).
+-- The skinned path's files, in LibKa0s.xml order: Media, the whole Skin major and Widgets.
+F.SKIN_FILES = { "Media", "MediaIcons", "Skin", "SkinOwnerTokens", "SkinDefs", "SkinDefsOthers", "SkinPaint",
+  "SkinPaintExtras", "SkinPaintHud", "SkinAceConfirm", "SkinPaintControls", "SkinPaintNav", "Widgets" }
+
+--- A font-object fake for CreateFont: records its face; a FontString given it answers its face.
+local function fontFake(made)
+  return function(name)
+    local o = { name = name }
+    function o:SetFont(path, size, flags) self.font = { path, size, flags } end
+    function o:GetFont() return unpack(self.font or {}) end
+    function o:SetShadowOffset(x, y) self.shadow = { x, y } end
+    function o:SetShadowColor(r, g, b, a) self.shadowColor = { r, g, b, a } end
+    made[#made + 1] = o
+    return o
+  end
+end
+
+--- A fresh environment. `opts.skinned` also loads Media, the Skin major and Widgets (the skinned
+--- path) with a CreateFont fake; `opts.before(m)` runs before any file loads (to install a stand-in
+--- or a client API).
 function F.env(opts)
   opts = opts or {}
   local m = buildMocks()
@@ -72,12 +100,13 @@ function F.env(opts)
   m.__now = m.__now or 0
   if opts.before then opts.before(m) end
   Loader.load("LibKa0s/Core.lua", nil, m)
+  if opts.skinned then Loader.load("LibKa0s/CorePixel.lua", nil, m) end
   for _, file in ipairs(F.FILES) do Loader.load(file, nil, m) end
   if opts.skinned then
-    for _, file in ipairs({ "LibKa0s/Media.lua", "LibKa0s/MediaIcons.lua", "LibKa0s/Skin.lua",
-      "LibKa0s/Widgets.lua" }) do
-      Loader.load(file, nil, m)
-    end
+    m.__fontsMade = {}
+    m.CreateFont = fontFake(m.__fontsMade)
+    m.STANDARD_TEXT_FONT = "Fonts\\FRIZQT__.TTF"
+    for _, file in ipairs(F.SKIN_FILES) do Loader.load("LibKa0s/" .. file .. ".lua", nil, m) end
   end
   return m, m.LibStub(F.MAJOR, true)
 end

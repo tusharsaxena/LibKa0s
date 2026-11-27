@@ -769,7 +769,7 @@ Total.
 - toast stack: Clear takes the whole stack down
 - toast stack: without the stack field (or with 1) it is the v1 toast: one frame, one at a time
 
-### test_feed.lua (9)
+### test_feed.lua (25)
 
 - feed: the major loads at minor 1 and reports its three files
 - feed: the published defaults are the design's numbers
@@ -780,6 +780,22 @@ Total.
 - feed: a method called on something that is not an instance raises
 - feed: every instance member is on a new feed, copied from the shell's method table
 - feed: Stats answers its full shape on a new feed
+- feed: nothing is built until the first push, which builds the container and answers new
+- feed: the newest row sits at the anchor for both grows, the older ones stacked away from it
+- feed: past the shown cap the oldest row drops over DROP_FADE and is then released
+- feed: Visible answers false for a key-less row, and a key-less push never merges
+- feed: content answering false skips the payload and answers false
+- feed: content raising reaches geterrorhandler, skips the payload and the feed runs on
+- feed: Get answers the live payload; Update repaints in place without moving or pulsing
+- feed: Repaint re-runs content for one row; Dismiss drops it
+- feed: RepaintAll re-runs content for every live row
+- feed: Clear stands the feed down and leaves it reusable
+- feed: while held pushes queue, merge in the waiting list, cap at maxQueue and drain the newest shown
+- feed: Preview shows sticky preview rows; ClearPreview drops only those
+- feed: Stats answers its full shape at every stage
+- feed: the frames made stay constant over 200 pushes once the pools are warm
+- feed: Refresh re-reads the getters and re-anchors the container
+- feed: __Step ticks a built feed whether the clock is armed or not
 
 ### test_feed_model.lua (21)
 
@@ -804,6 +820,22 @@ Total.
 - feed model: a merge into a waiting entry takes only the payload and the time
 - feed model: a raising reducer keeps the newer payload and hands back its error
 - feed model: Drain presents only the newest n, oldest first, and frees the rest
+
+### test_feed_style.lua (13)
+
+- feed style: the container is HIGH, not toplevel, clamped and mouse-off; rows sit above it
+- feed style: from the skin the fill is S.Shell with noTopBar and noBands, recorded
+- feed style: each bgType override draws the row's own fill over a keepEdge Shell record
+- feed style: a Refresh from the skin's fill to an override hides the skin's fill
+- feed style: BarBorder is called with the style's triple and its companion
+- feed style: the border color is tint, then class, then the skin's, then the custom color
+- feed style: every string goes through S.HudFont and none through a bare SetFont
+- feed style: the text color is the spec's, then the class's, then the skin's, then the custom
+- feed style: the icon is cropped at 0.07 through S.IconBorder with hud on
+- feed style: the glow is the highlight's color, then the skin's glow, then the custom, in ADD
+- feed style: a skin switch repaints the live rows through content
+- feed style: the degraded look draws without Skin, an unregistered owner or a Core facade
+- feed style: the countdown bar follows the hold, flat white without a skin
 
 ### test_callout.lua (52)
 
@@ -6059,8 +6091,9 @@ Total.
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
 | test_toast_stack.lua | 36 |
-| test_feed.lua | 9 |
+| test_feed.lua | 25 |
 | test_feed_model.lua | 21 |
+| test_feed_style.lua | 13 |
 | test_callout.lua | 52 |
 | test_callout_look.lua | 32 |
 | test_callout_voice.lua | 30 |
@@ -6275,4 +6308,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5293** |
+| **Total** | **5322** |

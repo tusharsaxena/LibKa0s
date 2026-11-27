@@ -19,9 +19,11 @@
 
 > **Work in progress on `feat/2026-11-27-feed`.** This version is being built in steps (the design is
 > `docs/superpowers/specs/2026-11-27-libka0s-feed-design.md`). At this point of the branch the
-> lib-level surface, the pure model and the paired files are in place, and every instance member
-> answers its degraded value (the table under *The degradation stub*). The contract sections below
-> are completed before the release.
+> lib-level surface, the pure model, the engine (the container, the pools, push, merge, the shown cap,
+> the waiting list and its drain, Hold and Release, Clear, Preview, Refresh, Stats and the one clock)
+> and the rows over the owner's skin are in place. The pointer, the drag handle and the strips are not
+> yet: `SetLocked`, `SetClickThrough` and `SetStrip` still answer their degraded values (the table under
+> *The degradation stub*). The contract sections below are completed before the release.
 
 ## What changed at this version: the major is new
 
