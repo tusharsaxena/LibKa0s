@@ -82,6 +82,7 @@ its neighbors', and never reuses one.
 | `New(host)` | An instance bound to `host` (the instance API below). Raises unless `host` is a table whose `client` is `"retail"` or `"forever"` | **1** |
 | `VerdictModeFor(client)` | `"scoreFirst"` for `"forever"`, `"ilvlFirst"` for anything else: the verdict mode an instance judges in when its host's config names none | **1** |
 | `CLIENTS` | `{ retail = true, forever = true }`, the clients a host may name | **1** |
+| `EventsFor(client)` | The events an instance of `client` listens to, sorted, a fresh array: the set `StandUp` hands to `host.registerEvent`, for a host that registers it ahead of the instance (events-frames-taint-§1's `SafeRegisterEvents` rows) instead of copying the list below | **1** |
 | `Evaluate(facts, candidate, opts)` | The verdict: `{ verdict, equip, ilvlDelta, trackDelta, scoreDelta, baselineSlot, baseline, reasons, band?, either?, averaged?, tokenSlot?, led?, offSpec? }`; never throws. The input shapes are `VerdictEvaluate.lua`'s header | **1** |
 | `Equippability(facts, candidate, client)` | Step 1 alone: `"ok"`, `"cant"`, `"doesntWant"` or `"unknown"`, and a reason key for anything but ok | **1** |
 | `ItemVerdict(delta, band)` | One item level's verdict with no score | **1** |
@@ -130,10 +131,11 @@ answers through the newer methods.
 | `ReadGear(prev)`, `RefreshGear(cause, quiet, bagsOnly)`, `ScheduleGear(cause)`, `GearScheduled()`, `OnGearEvent(event)`, `OnGearDeferEnd()` | The snapshot's read, rebuild, throttle and event edges |
 | `Scorer(cfg)`, `ScorerInUse(cfg)`, `ScoreFor(link, who, cfg)`, `PawnScale(candidate, link)`, `PawnScorer()` | The scorer for the kernel, the adapter in use, one item's score and how it was chosen (`cfg` nil: the host's) |
 | `CollectionsChanged()` | Arm the coalesced collection re-read |
-| `StandUp()`, `StandDown()`, `IsStoodDown()` | Register the client's events and rebuild (announced); drop the events, cancel every timer, drop every cache |
+| `Events()` | `EventsFor` of the instance's client |
+| `StandUp()`, `StandDown()`, `IsStoodDown()` | Register the client's events and rebuild (announced), each registration protected on its own, so one the host refuses costs that event alone, with a debug line; drop the events, cancel every timer, drop every cache |
 | `Changed(kind, ...)`, `Debug(tag, fmt, ...)`, `DebugOnce(key, tag, fmt, ...)`, `PerfStart()`, `PerfNote(key, t0)` | The host hooks, for the secondaries |
 
-The events, by client: `PLAYER_EQUIPMENT_CHANGED`, `BAG_UPDATE_DELAYED`, `PLAYER_REGEN_ENABLED`,
+The events, by client (`EventsFor(client)` answers the same set): `PLAYER_EQUIPMENT_CHANGED`, `BAG_UPDATE_DELAYED`, `PLAYER_REGEN_ENABLED`,
 `SPELL_TEXT_UPDATE`, `NEW_MOUNT_ADDED`, `NEW_PET_ADDED`, `NEW_TOY_ADDED`, `NEW_RECIPE_LEARNED` and
 `SKILL_LINES_CHANGED` on both; `PLAYER_SPECIALIZATION_CHANGED` and `TRANSMOG_COLLECTION_UPDATED` on
 Retail; `TRAIT_CONFIG_UPDATED`, `CHARACTER_POINTS_CHANGED` and `PLAYER_LEVEL_UP` on WoW Forever.

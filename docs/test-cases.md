@@ -869,7 +869,7 @@ Total.
 - verdict gear: the first lazy read announces nothing; an item still loading is unknown, then rebuilt
 - verdict gear: stand-down drops pending refresh, and nothing fires until the stand-up
 
-### test_verdict_instances.lua (10)
+### test_verdict_instances.lua (12)
 
 - verdict instances: the major reports its ten files, each secondary paired on the shell
 - verdict instances: two instances with different configs judge one item each their own way
@@ -881,6 +881,8 @@ Total.
 - verdict instances: JudgeFacts takes another player's candidate, without your heirloom rule
 - verdict instances: Judge on an uncached item asks for it and tells the host when it arrives
 - verdict instances: a newer copy that bumps one secondary alone re-runs every file after it
+- verdict instances: Events answers the client's event set, the one StandUp registers
+- verdict instances: a registration the host refuses costs that event alone
 
 ### test_verdict_settings.lua (21)
 
@@ -6351,7 +6353,7 @@ Total.
 | test_verdict_facts.lua | 21 |
 | test_verdict_score.lua | 19 |
 | test_verdict_gear.lua | 18 |
-| test_verdict_instances.lua | 10 |
+| test_verdict_instances.lua | 12 |
 | test_verdict_settings.lua | 21 |
 | test_verdict_golden.lua | 66 |
 | test_glow.lua | 15 |
@@ -6571,4 +6573,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5545** |
+| **Total** | **5547** |

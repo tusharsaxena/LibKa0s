@@ -121,7 +121,10 @@ test("verdict instances: StandUp registers the client's events once; StandDown d
   assertTrue(W.events.NEW_MOUNT_ADDED ~= nil and W.events.SPELL_TEXT_UPDATE ~= nil)
   assertEqual(W.count("gear"), 1, "the stand-up rebuild announces")
   W.v:StandUp()
-  assertEqual(W.count("gear"), 1, "a second stand-up registers nothing twice and reads the same gear")
+  assertEqual(W.count("gear"), 1, "a second stand-up reads the same gear")
+  -- red under: a StandUp that registered every event again on each call
+  for event, n in pairs(W.registrations) do assertEqual(n, 1, event .. " is registered once") end
+  assertTrue(next(W.registrations) ~= nil)
   W.v:StandDown()
   assertNil(W.events.PLAYER_EQUIPMENT_CHANGED)
   assertTrue(W.v:IsStoodDown())
@@ -187,4 +190,42 @@ test("verdict instances: a newer copy that bumps one secondary alone re-runs eve
   assertEqual(W.v:JudgeFacts(facts).verdict, "sidegrade", "the kernel reads the newer constants")
   assertTrue(W.V.__ranAt[40] > W.V.__ranAt[10], "Evaluate re-ran on the newer constants")
   assertEqual(W.V.__ranAt[100], W.V.__generation, "and so did every file after it, Settings last")
+end)
+
+-- The sorted names of a set.
+local function sortedKeys(set)
+  local out = {}
+  for k in pairs(set) do out[#out + 1] = k end
+  table.sort(out)
+  return out
+end
+
+test("verdict instances: Events answers the client's event set, the one StandUp registers", function()
+  for _, client in ipairs({ "retail", "forever" }) do
+    local W = FC.new{ client = client }
+    -- red under: no Events (each host hand-copied the list from the document's prose)
+    local events = W.v:Events()
+    W.v:StandUp()
+    assertEqual(table.concat(events, ","), table.concat(sortedKeys(W.events), ","), client)
+    assertEqual(table.concat(W.V.EventsFor(client), ","), table.concat(events, ","), client .. ": the lib's")
+    events[1] = "NOT_AN_EVENT"
+    assertTrue(W.v:Events()[1] ~= "NOT_AN_EVENT", client .. ": a fresh array each call")
+  end
+end)
+
+test("verdict instances: a registration the host refuses costs that event alone", function()
+  local lines = {}
+  local W = FC.new{ host = { debug = function(_, msg) lines[#lines + 1] = msg end } }
+  local register = W.host.registerEvent
+  W.host.registerEvent = function(event, handler)
+    if event == "BAG_UPDATE_DELAYED" then error("no such event") end
+    register(event, handler)
+  end
+  -- red under: a bare host.registerEvent, whose raise aborted the block and the stand-up
+  W.v:StandUp()
+  assertNil(W.events.BAG_UPDATE_DELAYED)
+  assertTrue(W.events.PLAYER_EQUIPMENT_CHANGED ~= nil and W.events.SPELL_TEXT_UPDATE ~= nil, "the rest bind")
+  assertEqual(W.count("gear"), 1, "the stand-up steps still ran")
+  for _, event in ipairs(W.v.__registered) do assertTrue(event ~= "BAG_UPDATE_DELAYED", event) end
+  assertTrue(table.concat(lines, "\n"):find("BAG_UPDATE_DELAYED", 1, true) ~= nil, "a debug line names it")
 end)

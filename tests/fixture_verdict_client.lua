@@ -276,11 +276,14 @@ function FC.new(opts)
   end
   if opts.seed then opts.seed(m) end
   local W = { m = m, V = m.LibStub("LibKa0s-Verdict-1.0"), config = {}, events = {}, changes = {},
-    link = FC.link, def = FC.def }
+    registrations = {}, link = FC.link, def = FC.def }
   local host = {
     client = client, L = nil,   -- no locale: each word reads as its enUS self (TierTokens.WORDS)
     config = function() return W.config end,
-    registerEvent = function(event, handler) W.events[event] = handler end,
+    registerEvent = function(event, handler)
+      W.events[event] = handler
+      W.registrations[event] = (W.registrations[event] or 0) + 1   -- a second registration counts
+    end,
     unregisterEvent = function(event) W.events[event] = nil end,
     onChange = function(kind, arg) W.changes[#W.changes + 1] = arg and (kind .. ":" .. tostring(arg)) or kind end,
   }

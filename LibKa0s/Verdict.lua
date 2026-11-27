@@ -244,19 +244,41 @@ local function eventsFor(client)
   return byEvent
 end
 
+--- The events an instance of `client` listens to, sorted, a fresh array: the set `StandUp` hands to
+--- host.registerEvent, for a host that registers it ahead of the instance (its SafeRegisterEvents
+--- rows), so an event a later minor adds reaches it with no edit.
+--- @param client string "retail" | "forever"
+--- @return table event names
+function lib.EventsFor(client)
+  local out = {}
+  for event in pairs(eventsFor(client)) do out[#out + 1] = event end
+  table.sort(out)
+  return out
+end
+
+--- The instance's events (lib.EventsFor of its client).
+--- @return table event names
+function methods:Events() return lib.EventsFor(self.client) end
+
 --- Register the instance's events through the host and run every stand-up step (the gear snapshot
---- is read again and announced). Safe to call twice.
+--- is read again and announced). Safe to call twice. Each registration is protected on its own
+--- (events-frames-taint-§1): one the host refuses costs that event, with a debug line, not the rest
+--- of the block or the stand-up.
 function methods:StandUp()
   self.down = false
   local host = self.host
   if not self.__registered and type(host.registerEvent) == "function" then
     self.__registered = {}
     for event, fns in pairs(eventsFor(self.client)) do
-      self.__registered[#self.__registered + 1] = event
-      host.registerEvent(event, function(_, ...)
+      local ok, err = pcall(host.registerEvent, event, function(_, ...)
         if self.down then return end
         for _, fn in ipairs(fns) do fn(self, event, ...) end
       end)
+      if ok then
+        self.__registered[#self.__registered + 1] = event
+      else
+        self:Debug("VERDICT", "StandUp: the host refused %s: %s", event, tostring(err))
+      end
     end
   end
   for _, s in ipairs(steps()) do
