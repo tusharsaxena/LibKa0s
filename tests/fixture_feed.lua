@@ -1,7 +1,7 @@
 -- tests/fixture_feed.lua -- the bench the LibKa0s-Feed-1.0 suites share.
 --
 -- Every case runs on a fresh environment with the kit's paint recorder (so regions and children
--- are distinct, recording objects), Core and the feed's three files loaded (and Media,
+-- are distinct, recording objects), Core and the feed's four files loaded (and Media,
 -- Skin and Widgets when the case asks for the skinned path). CreateFrame is wrapped so each frame
 -- records what the feed tells it (strata, toplevel, clamp, mouse, points and how many SetPoint calls,
 -- alpha, size, scripts) and answers the getters from that record: the kit's universal frame answers
@@ -17,7 +17,7 @@ local installPaint = dofile("tests/_kit/mock_paint.lua")
 
 local F = {}
 F.MAJOR = "LibKa0s-Feed-1.0"
-F.FILES = { "LibKa0s/Feed.lua", "LibKa0s/FeedModel.lua", "LibKa0s/FeedRow.lua" }
+F.FILES = { "LibKa0s/Feed.lua", "LibKa0s/FeedModel.lua", "LibKa0s/FeedRow.lua", "LibKa0s/FeedInput.lua" }
 
 -- The environment each feed was made in, so the helpers take a feed alone.
 local ENV = setmetatable({}, { __mode = "k" })
@@ -81,11 +81,15 @@ local function fontFake(made)
   end
 end
 
+-- The drag handle's two files, for `opts.widgets` (the unlock path), after the skinned path's.
+F.HANDLE_FILES = { "WidgetsDragHandle", "WidgetsDragHandleTip" }
+
 --- A fresh environment. `opts.skinned` also loads Media, the Skin major and Widgets (the skinned
---- path) with a CreateFont fake; `opts.before(m)` runs before any file loads (to install a stand-in
---- or a client API).
+--- path) with a CreateFont fake; `opts.widgets` adds the drag handle (and implies `skinned`);
+--- `opts.before(m)` runs before any file loads (to install a stand-in or a client API).
 function F.env(opts)
   opts = opts or {}
+  if opts.widgets then opts.skinned = true end
   local m = buildMocks()
   installPaint(m)
   local create = m.CreateFrame
@@ -107,6 +111,9 @@ function F.env(opts)
     m.CreateFont = fontFake(m.__fontsMade)
     m.STANDARD_TEXT_FONT = "Fonts\\FRIZQT__.TTF"
     for _, file in ipairs(F.SKIN_FILES) do Loader.load("LibKa0s/" .. file .. ".lua", nil, m) end
+  end
+  if opts.widgets then
+    for _, file in ipairs(F.HANDLE_FILES) do Loader.load("LibKa0s/" .. file .. ".lua", nil, m) end
   end
   return m, m.LibStub(F.MAJOR, true)
 end
@@ -159,6 +166,29 @@ function F.rows(feed)
     return math.abs(rawget(a, "__point")[5] or 0) < math.abs(rawget(b, "__point")[5] or 0)
   end)
   return rows
+end
+
+--- Push `{ title = title or key }` under `key`.
+function F.push(feed, key, title, opts) return feed:Push(key, { title = title or key }, opts) end
+
+--- `seconds` of the clock in 0.05 s steps.
+function F.settle(feed, seconds)
+  local n = math.floor(seconds / 0.05 + 0.5)
+  for _ = 1, n do F.step(feed, 0.05) end
+end
+
+--- The row frame (live or leaving) whose title string reads `title`, or nil.
+function F.row(feed, title)
+  local c = feed:Frame()
+  if not c then return nil end
+  for _, f in ipairs({ c:GetChildren() }) do
+    if f:IsShown() and rawget(f, "__point") then
+      for _, r in ipairs({ f:GetRegions() }) do
+        if r.GetObjectType and r:GetObjectType() == "FontString" and r:GetText() == title then return f end
+      end
+    end
+  end
+  return nil
 end
 
 return F

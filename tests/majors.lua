@@ -84,11 +84,12 @@ local MAJORS = {
   },
   {
     major = "LibKa0s-Feed-1.0",
-    files = { "Feed", "FeedModel", "FeedRow" },
+    files = { "Feed", "FeedModel", "FeedRow", "FeedInput" },
     primary = "Feed",
     paired = {
       { file = "FeedModel", minorField = "__modelMinor", probeField = "__modelShellMinor" },
       { file = "FeedRow", minorField = "__rowMinor", probeField = "__rowShellMinor" },
+      { file = "FeedInput", minorField = "__inputMinor", probeField = "__inputShellMinor" },
     },
   },
   {

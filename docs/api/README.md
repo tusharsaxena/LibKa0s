@@ -70,7 +70,7 @@ the file you need:
 | `LibKa0s-ForeverDB-1.0` | `<ForeverDB>` | `LibStub("LibKa0s-ForeverDB-1.0").MODULES` |
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Toast-1.0` | `<Toast>` | `LibStub("LibKa0s-Toast-1.0").MODULES` |
-| `LibKa0s-Feed-1.0` | `<Feed>.<FeedModel>.<FeedRow>` | `LibStub("LibKa0s-Feed-1.0").MODULES` |
+| `LibKa0s-Feed-1.0` | `<Feed>.<FeedModel>.<FeedRow>.<FeedInput>` | `LibStub("LibKa0s-Feed-1.0").MODULES` |
 | `LibKa0s-Callout-1.0` | `<Callout>.<CalloutRoute>.<CalloutSound>.<CalloutSettings>` (two numbers through 5.6) | `LibStub("LibKa0s-Callout-1.0").MODULES` |
 | `LibKa0s-WaypointArrow-1.0` | `<WaypointArrow>.<WaypointArrowSettings>` | `LibStub("LibKa0s-WaypointArrow-1.0").MODULES` |
 | `LibKa0s-Charts-1.0` | `<Charts>.<ChartsRender>` | `LibStub("LibKa0s-Charts-1.0").MODULES` |
@@ -234,7 +234,7 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [1.1.1](./Feed/version-1.1.1-docs.md) | **`Feed.lua` 1** · **`FeedModel.lua` 1** · **`FeedRow.lua` 1** (new: the toast feed, Loot History #38, owner ruling X1/D24) | unreleased (v1.119.0) | **Current** |
+| [1.1.1.1](./Feed/version-1.1.1.1-docs.md) | **`Feed.lua` 1** · **`FeedModel.lua` 1** · **`FeedRow.lua` 1** · **`FeedInput.lua` 1** (new: the toast feed, Loot History #38, owner ruling X1/D24) | unreleased (v1.119.0) | **Current** |
 
 ### `LibKa0s-Callout-1.0`
 

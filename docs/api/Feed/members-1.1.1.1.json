@@ -1,11 +1,12 @@
 {
   "major": "LibKa0s-Feed-1.0",
-  "versionKey": "1.1.1",
+  "versionKey": "1.1.1.1",
   "generator": "tools/gen-api-members.lua",
   "modules": [
     { "file": "Feed", "minor": 1 },
     { "file": "FeedModel", "minor": 1 },
-    { "file": "FeedRow", "minor": 1 }
+    { "file": "FeedRow", "minor": 1 },
+    { "file": "FeedInput", "minor": 1 }
   ],
   "members": [
     { "name": "DROP_FADE", "kind": "number" },

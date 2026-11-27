@@ -771,10 +771,10 @@ Total.
 
 ### test_feed.lua (25)
 
-- feed: the major loads at minor 1 and reports its three files
+- feed: the major loads at minor 1 and reports its four files
 - feed: the published defaults are the design's numbers
 - feed: without Core, or with a Core under minor 20, the major is absent
-- feed: the two secondaries are paired on the shell's minor
+- feed: the three secondaries are paired on the shell's minor
 - feed: the secondaries load to nothing without the shell
 - feed: New raises without d.content, naming it
 - feed: a method called on something that is not an instance raises
@@ -836,6 +836,36 @@ Total.
 - feed style: a skin switch repaints the live rows through content
 - feed style: the degraded look draws without Skin, an unregistered owner or a Core facade
 - feed style: the countdown bar follows the hold, flat white without a skin
+
+### test_feed_motion.lua (12)
+
+- feed motion: the clock arms on the first push and is nil once every row has gone
+- feed motion: a feed showing only sticky rows sleeps once their enter is done
+- feed motion: a frozen feed sleeps with no pulse, and a merge's pulse wakes it until it ends
+- feed motion: one tick advances at most MAX_DT, so a hitch never skips a row's life
+- feed motion: a merge inside the window calls d.merge, restarts the hold, pulses and moves to index 1
+- feed motion: without d.merge the newer payload replaces the older one
+- feed motion: a merge while the row is entering keeps the enter running
+- feed motion: past the merge window, or with mergeWindow 0, the same key is a new row
+- feed motion: a dropping row is never merged into; the push is a new row
+- feed motion: smooth reposition reaches targetY over SLIDE_TIME, calling SetPoint only while it moves
+- feed motion: with smooth off a row snaps to its new Y
+- feed motion: settle calls content once at paintedAt + settle and never again
+
+### test_feed_input.lua (12)
+
+- feed input: with pin, hovering any row freezes the feed: time, Y, queued pushes, merge in place
+- feed input: the freeze is derived, so dismissing the hovered row ends it
+- feed input: onEnter and onLeave reach the host once each, a dropped hovered row included
+- feed input: without pin only the hovered row pauses; the rest run on
+- feed input: a right-click dismisses with rightDismiss on and reaches onClick with it off
+- feed input: onClick receives (payload, button, key) for every other click while locked
+- feed input: a left click while unlocked is a drag's and never reaches onClick
+- feed input: SetClickThrough turns the mouse off on live and later rows, ends hover and freeze, drains
+- feed input: SetLocked(false) docks a DragHandle with the host's label on the far edge
+- feed input: an unlock is refused in combat and answers true without Widgets
+- feed input: a drag stop calls onMoved(x, y) with the nudge for the slot and re-anchors
+- feed input: SetStrip docks the host's strip on the far edge and hides it under the handle
 
 ### test_callout.lua (52)
 
@@ -6094,6 +6124,8 @@ Total.
 | test_feed.lua | 25 |
 | test_feed_model.lua | 21 |
 | test_feed_style.lua | 13 |
+| test_feed_motion.lua | 12 |
+| test_feed_input.lua | 12 |
 | test_callout.lua | 52 |
 | test_callout_look.lua | 32 |
 | test_callout_voice.lua | 30 |
@@ -6308,4 +6340,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5322** |
+| **Total** | **5346** |

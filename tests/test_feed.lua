@@ -14,13 +14,14 @@ local MAJOR = F.MAJOR
 
 -- == load and construction ====================================================================
 
-test("feed: the major loads at minor 1 and reports its three files", function()
+test("feed: the major loads at minor 1 and reports its four files", function()
   local _, Feed = F.env()
   assertEqual(Feed.MAJOR, MAJOR)
   assertEqual(Feed.MINOR, 1)
   assertEqual(Feed.MODULES.Feed, 1)
   assertEqual(Feed.MODULES.FeedModel, 1)
   assertEqual(Feed.MODULES.FeedRow, 1)
+  assertEqual(Feed.MODULES.FeedInput, 1)
   assertEqual(T.feed, T.mocks.LibStub(MAJOR), "the runner's whole-payload load carries it too")
 end)
 
@@ -48,14 +49,18 @@ test("feed: without Core, or with a Core under minor 20, the major is absent", f
   assertNil(m2.LibStub(MAJOR, true), "Core 19")
 end)
 
-test("feed: the two secondaries are paired on the shell's minor", function()
+test("feed: the three secondaries are paired on the shell's minor", function()
   local m, Feed = F.env()
   assertEqual(Feed.__modelMinor, 1)
   assertEqual(Feed.__modelShellMinor, Feed.MINOR, "the model attached to the live shell")
   assertEqual(Feed.__rowMinor, 1)
   assertEqual(Feed.__rowShellMinor, Feed.MINOR, "the rows attached to the live shell")
+  assertEqual(Feed.__inputMinor, 1)
+  assertEqual(Feed.__inputShellMinor, Feed.MINOR, "the input attached to the live shell")
   assertEqual(type(Feed.__model), "table")
   assertEqual(type(Feed.__row), "table")
+  assertEqual(type(Feed.__input), "table")
+  assertEqual(type(Feed.__shell), "table", "the shell's steps the input calls back into")
   for _, name in ipairs({ "Snapshot", "SlotOffset", "NudgeFromRect", "RowHeight", "Layout", "Advance",
     "Merge", "Drain" }) do
     assertEqual(type(Feed.__model[name]), "function", "__model." .. name)
@@ -63,20 +68,28 @@ test("feed: the two secondaries are paired on the shell's minor", function()
   for _, name in ipairs({ "Build", "Paint", "Place", "Restyle" }) do
     assertEqual(type(Feed.__row[name]), "function", "__row." .. name)
   end
+  for _, name in ipairs({ "Hook", "Dock", "Strip", "Lock", "Unlock", "ClickThrough" }) do
+    assertEqual(type(Feed.__input[name]), "function", "__input." .. name)
+  end
   -- A second load of the same minors is a no-op: the tables already published stay.
-  local model, row = Feed.__model, Feed.__row
+  local model, row, input = Feed.__model, Feed.__row, Feed.__input
   Loader.load("LibKa0s/FeedModel.lua", nil, m)
   Loader.load("LibKa0s/FeedRow.lua", nil, m)
+  Loader.load("LibKa0s/FeedInput.lua", nil, m)
   assertTrue(Feed.__model == model, "the model is not rebuilt")
   assertTrue(Feed.__row == row, "the rows are not rebuilt")
+  assertTrue(Feed.__input == input, "the input is not rebuilt")
   -- A shell at another minor makes the same secondaries attach again.
   Feed.MINOR = 2
   Loader.load("LibKa0s/FeedModel.lua", nil, m)
   Loader.load("LibKa0s/FeedRow.lua", nil, m)
+  Loader.load("LibKa0s/FeedInput.lua", nil, m)
   assertTrue(Feed.__model ~= model, "the model re-attaches to a newer shell")
   assertTrue(Feed.__row ~= row, "the rows re-attach to a newer shell")
+  assertTrue(Feed.__input ~= input, "the input re-attaches to a newer shell")
   assertEqual(Feed.__modelShellMinor, 2)
   assertEqual(Feed.__rowShellMinor, 2)
+  assertEqual(Feed.__inputShellMinor, 2)
 end)
 
 test("feed: the secondaries load to nothing without the shell", function()
@@ -84,6 +97,7 @@ test("feed: the secondaries load to nothing without the shell", function()
   Loader.load("LibKa0s/Core.lua", nil, m)
   Loader.load("LibKa0s/FeedModel.lua", nil, m)
   Loader.load("LibKa0s/FeedRow.lua", nil, m)
+  Loader.load("LibKa0s/FeedInput.lua", nil, m)
   assertNil(m.LibStub(MAJOR, true))
 end)
 

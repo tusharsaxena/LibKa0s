@@ -24,10 +24,12 @@
 --
 -- == THE FILES ================================================================================
 --
--- Three files, one major. This shell owns the constants, `New`, the instance state and the method
+-- Four files, one major. This shell owns the constants, `New`, the instance state and the method
 -- table, which it publishes as `lib.__methods`. FeedModel.lua is the pure half (no frames: the
--- snapshot, the layout math, the phase machine, merge and drain) behind `lib.__model`, and
--- FeedRow.lua builds and paints rows behind `lib.__row`. Both are paired on this file's minor and
+-- snapshot, the layout math, the phase machine, merge and drain) behind `lib.__model`,
+-- FeedRow.lua builds and paints rows behind `lib.__row`, and FeedInput.lua owns the pointer, the
+-- drag and the strip behind `lib.__input` (peeled from here at 954 lines, on the design's 900-line
+-- trigger), reaching back through `lib.__shell`. All three are paired on this file's minor and
 -- read at call time, so a newer secondary reaches a feed on the next call.
 --
 -- == THE ENGINE ===============================================================================
@@ -47,9 +49,10 @@
 -- runs on present, merge, Update, Repaint, RepaintAll, a skin switch and the settle re-read, never
 -- from the tick; a raise there reaches geterrorhandler() and skips the payload.
 --
--- Minor 1 (LootHistory#38, tasks S1 and S2 of the Feed build): the skeleton, then the engine. The
--- pointer, the drag and the strips are the next task's; until then SetLocked, SetClickThrough and
--- SetStrip answer their degraded values.
+-- The freeze is DERIVED, "a live row is hovered and motion.pin is on", recomputed on every enter,
+-- leave, drop and click-through change (refreeze), never latched; FeedInput.lua sets the hover.
+--
+-- Minor 1 (LootHistory#38, tasks S1 to S3 of the Feed build): the skeleton, the engine, the input.
 --
 -- == DEPENDENCIES =============================================================================
 --
@@ -110,6 +113,7 @@ end
 
 local function model() return lib.__model end
 local function rows() return lib.__row end
+local function input() return lib.__input end
 
 local function now() return type(GetTime) == "function" and GetTime() or 0 end
 
@@ -132,6 +136,20 @@ local function report(S, err)
   debugOut(S, "host callback failed: %s", tostring(err))
 end
 
+--- A host callback under pcall, when it is one.
+local function hostCall(S, fn, ...)
+  if type(fn) ~= "function" then return end
+  local ok, err = pcall(fn, ...)
+  if not ok then report(S, err) end
+end
+
+--- `e` no longer hovered; the host's onLeave pairs the onEnter it had.
+local function unhover(S, e)
+  if not e.hovered then return end
+  e.hovered = nil
+  if e.row then hostCall(S, S.d.onLeave, e.row.frame, e.payload, e.key) end
+end
+
 -- == pools ====================================================================================
 
 local function newEntry(S, key, payload, sticky, preview)
@@ -146,7 +164,11 @@ local function unindex(S, e)
 end
 
 local function acquireRow(S)
-  local R = table.remove(S.free) or rows().Build(S.container)
+  local R = table.remove(S.free)
+  if not R then
+    R = rows().Build(S.container)
+    input().Hook(S, R)
+  end
   R.frame:EnableMouse(not S.clickThrough)
   return R
 end
@@ -159,6 +181,7 @@ end
 
 --- Hand `e` back: its row released and hidden, its key let go, the table wiped into the pool.
 local function freeEntry(S, e)
+  unhover(S, e)
   unindex(S, e)
   if e.row then releaseRow(S, e.row) end
   S.entryFree[#S.entryFree + 1] = wipe(e)
@@ -264,6 +287,7 @@ local function anchor(S)
   local slot, ox, oy = M.SlotOffset(L.slot, L.x, L.y)
   c:ClearAllPoints()
   c:SetPoint(M.Origin(L.slot, L.grow), UIParent, slot, ox / L.scale, oy / L.scale)
+  input().Dock(S)
 end
 
 -- == present, drop, queue =====================================================================
@@ -272,7 +296,8 @@ end
 local function drop(S, e)
   if not removeFrom(S.live, e) then return false end
   unindex(S, e)
-  e.phase, e.t, e.a0, e.hovered = "drop", 0, e.alpha or 1, nil
+  unhover(S, e)
+  e.phase, e.t, e.a0 = "drop", 0, e.alpha or 1
   S.leaving[#S.leaving + 1] = e
   return true
 end
@@ -343,6 +368,14 @@ local function refreeze(S)
     drain(S)
     wake(S)
   end
+end
+
+--- `e` out of the stack into its drop fade, the freeze recomputed, the stack closed up.
+local function dismiss(S, e)
+  drop(S, e)
+  refreeze(S)
+  relayout(S)
+  wake(S)
 end
 
 -- == merge ====================================================================================
@@ -502,6 +535,7 @@ local function ensure(S)
   if skin and type(skin.OnLooksChanged) == "function" then
     skin.OnLooksChanged(function() repaintAll(S) end)
   end
+  input().Strip(S)
   debugOut(S, "feed built")
 end
 
@@ -573,10 +607,7 @@ function METHODS:Dismiss(key)
     freeEntry(S, e)
     return true
   end
-  drop(S, e)
-  refreeze(S)
-  relayout(S)
-  wake(S)
+  dismiss(S, e)
   return true
 end
 
@@ -597,13 +628,9 @@ function METHODS:Clear()
   freeAll(S, S.waiting)
   wipe(S.byKey)
   sleep(S)
-  S.frozen, S.locked = false, true
-  if S.handle then S.handle:Hide() end
-  if S.strip then S.strip:Hide() end
-  if S.container then
-    S.container:SetMovable(false)
-    S.container:SetHeight(1)
-  end
+  S.frozen, S.stripKind = false, nil
+  input().Lock(S)
+  if S.container then S.container:SetHeight(1) end
 end
 
 --- New payloads wait (merging there) until Release; live rows keep running.
@@ -665,24 +692,32 @@ function METHODS:Preview(list)
   return n
 end
 
---- Lock (true) or unlock (false) the feed for dragging. Answers whether it is now locked.
-function METHODS:SetLocked(locked)   -- luacheck: ignore 212
-  state(self)
+--- Lock (true) or unlock (false) the feed for dragging. Answers whether it is now locked: an
+--- unlock is refused in combat and without LibKa0s-Widgets-1.0, and answers true.
+function METHODS:SetLocked(locked)
+  local S = state(self)
+  if locked == false then return input().Unlock(S) end
+  input().Lock(S)
   return true
 end
 
 function METHODS:IsLocked()
-  return state(self).locked
+  return state(self).locked ~= false
 end
 
---- Let the pointer through every row (true), or take it again (false).
-function METHODS:SetClickThrough(on)   -- luacheck: ignore 212
-  state(self)
+--- Let the pointer through every row (true), or take it again (false). On, every hover and the
+--- freeze end (the client sends no OnLeave to a row whose mouse is off) and the waiting list drains.
+function METHODS:SetClickThrough(on)
+  input().ClickThrough(state(self), on == true)
 end
 
---- Dock the "test" or "sim" strip with the host's `text`, or hide it with nil.
-function METHODS:SetStrip(kind, text)   -- luacheck: ignore 212
-  state(self)
+--- Dock the "test" or "sim" strip with the host's `text` on the stack's far edge, or hide it with
+--- nil. Hidden while the drag handle shows.
+function METHODS:SetStrip(kind, text)
+  local S = state(self)
+  S.stripKind = (kind == "test" or kind == "sim") and kind or nil
+  S.stripText = type(text) == "string" and text or ""
+  input().Strip(S)
 end
 
 --- The keys on screen, newest first (`false` for a key-less row). A new table per call.
@@ -727,11 +762,17 @@ function lib:New(d)   -- luacheck: ignore 212/self
   for name, fn in pairs(METHODS) do inst[name] = fn end
   STATE[inst] = {
     d = d, live = {}, leaving = {}, waiting = {}, rows = {}, free = {}, entryFree = {}, byKey = {},
-    drainPresent = {}, drainFreed = {},
+    drainPresent = {}, drainFreed = {}, strips = {},
     frozen = false, held = false, locked = true, clickThrough = false, awake = false, built = false,
   }
   return inst
 end
+
+-- The shell's own steps, for FeedInput.lua and nobody else, read there at call time.
+lib.__shell = {
+  anchor = anchor, ensure = ensure, refreeze = refreeze, wake = wake, drain = drain,
+  dismiss = dismiss, unhover = unhover, hostCall = hostCall,
+}
 
 -- The method table every New copies, for this major's paired files and nobody else. Private: a
 -- host calls methods on an instance.

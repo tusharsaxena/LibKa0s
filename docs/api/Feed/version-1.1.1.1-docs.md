@@ -1,4 +1,4 @@
-# `LibKa0s-Feed-1.0` — version 1.1.1
+# `LibKa0s-Feed-1.0` — version 1.1.1.1
 
 > **This document is the source of truth for this version of this major.** Anything else in this
 > repo that describes the Feed surface points here rather than restating it. It describes the
@@ -8,30 +8,34 @@
 | | |
 |---|---|
 | Major | `LibKa0s-Feed-1.0` |
-| Files and minors | `Feed.lua` minor **1** · `FeedModel.lua` minor **1** (paired on `Feed.lua`'s minor) · `FeedRow.lua` minor **1** (paired on `Feed.lua`'s minor) |
+| Files and minors | `Feed.lua` minor **1** · `FeedModel.lua` minor **1** (paired on `Feed.lua`'s minor) · `FeedRow.lua` minor **1** (paired on `Feed.lua`'s minor) · `FeedInput.lua` minor **1** (paired on `Feed.lua`'s minor) |
 | Shipped in | unreleased (v1.119.0) |
 | Status | **Current** |
 | Supersedes | none (new major) |
 | Superseded by | — |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 20 (`NEEDS_CORE = 20`, for `ClassColor`) |
 | Optional at call time | `LibKa0s-Pool-1.0`, `LibKa0s-Media-1.0`, `LibKa0s-Skin-1.0`, `LibKa0s-Widgets-1.0` and LibSharedMedia-3.0, each resolved at call time behind a type check, with no floor |
-| Confirm in-game | `LibStub("LibKa0s-Feed-1.0").MODULES` → `{ Feed = 1, FeedModel = 1, FeedRow = 1 }` |
+| Confirm in-game | `LibStub("LibKa0s-Feed-1.0").MODULES` → `{ Feed = 1, FeedModel = 1, FeedRow = 1, FeedInput = 1 }` |
 
 > **Work in progress on `feat/2026-11-27-feed`.** This version is being built in steps (the design is
 > `docs/superpowers/specs/2026-11-27-libka0s-feed-design.md`). At this point of the branch the
 > lib-level surface, the pure model, the engine (the container, the pools, push, merge, the shown cap,
 > the waiting list and its drain, Hold and Release, Clear, Preview, Refresh, Stats and the one clock)
-> and the rows over the owner's skin are in place. The pointer, the drag handle and the strips are not
-> yet: `SetLocked`, `SetClickThrough` and `SetStrip` still answer their degraded values (the table under
-> *The degradation stub*). The contract sections below are completed before the release.
+> the rows over the owner's skin, and the input (the pointer and the derived freeze, clicks, the
+> drag handle and the strips, `FeedInput.lua`) are in place. The contract sections below are
+> completed before the release.
 
 ## What changed at this version: the major is new
 
 Ka0s Loot History #38 asks for toast feeds: up to ten short-lived rows on screen at once, the newest
 at the anchor, merged in place on a repeat, frozen under the pointer. `LibKa0s-Toast-1.0` is the
 other shape (the oldest toast at the saved point, one timer per toast), and a feed mode there would be
-a behavior flag that turns its members around, so the feed is a major of its own in three files:
-`Feed.lua` (the shell), `FeedModel.lua` (the pure model) and `FeedRow.lua` (the rows).
+a behavior flag that turns its members around, so the feed is a major of its own in four files:
+`Feed.lua` (the shell), `FeedModel.lua` (the pure model), `FeedRow.lua` (the rows) and
+`FeedInput.lua` (the pointer, the drag and the strip). The design planned three; it named the
+fourth as the peel to make if `Feed.lua` passed 900 lines, and with the input written into it the
+shell was 954, so the input left on that seam before the release, which is why the version key has
+four parts.
 
 ## Why this exists: the promotion record
 
@@ -64,8 +68,9 @@ This one is that ruling:
 | `PULSE_TIME`, `SLIDE_TIME`, `DROP_FADE` | `0.6`, `0.15`, `0.2` s | **1** |
 | `MAX_DT` | `0.1` s, the most one tick advances | **1** |
 
-`lib.__methods`, `lib.__model` and `lib.__row` are this major's internals (the method table every
-`New` copies, the pure half and the rows), for its paired files and its suites only.
+`lib.__methods`, `lib.__model`, `lib.__row`, `lib.__input` and `lib.__shell` are this major's
+internals (the method table every `New` copies, the pure half, the rows, the input, and the shell's
+own steps the input calls back into), for its paired files and its suites only.
 
 ## The degradation stub
 
@@ -89,7 +94,8 @@ because the member manifest lists the lib-level surface only). Each member answe
 
 ## Vendoring
 
-Whole-folder, as every major: `LibKa0s.xml` loads `Feed.lua`, `FeedModel.lua` and `FeedRow.lua`
-directly after `Toast.lua`. The two secondaries are paired on the shell's minor
-(`lib.__modelMinor` / `lib.__modelShellMinor`, `lib.__rowMinor` / `lib.__rowShellMinor`): a
-secondary re-attaches whenever the winning shell's minor is not the one it attached to.
+Whole-folder, as every major: `LibKa0s.xml` loads `Feed.lua`, `FeedModel.lua`, `FeedRow.lua` and
+`FeedInput.lua` directly after `Toast.lua`. The three secondaries are paired on the shell's minor
+(`lib.__modelMinor` / `lib.__modelShellMinor`, `lib.__rowMinor` / `lib.__rowShellMinor`,
+`lib.__inputMinor` / `lib.__inputShellMinor`): a secondary re-attaches whenever the winning shell's
+minor is not the one it attached to.

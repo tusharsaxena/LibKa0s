@@ -18,7 +18,7 @@
 
 ## What changed at this version: the identity header names Feed (Loot History #38)
 
-**No member change.** `DebugLogDiagnostics.lua` moves to minor **13** (the other three files unchanged, so the key moves 23.12.1.5 → 23.13.1.5). The new `LibKa0s-Feed-1.0` (`Feed`, [its document](../Feed/version-1.1.1-docs.md)), the toast feed built for Ka0s Loot History #38, joins the report's `LibKa0s running:` line, in `tests/majors.lua` order, directly after `Toast`: `Core`, `Tooltip`, `Env`, `Compat`, `Role`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `ForeverDB`, `Glow`, `Toast`, `Feed`, `Callout`, `WaypointArrow`, `Charts`, `Media`, `Skin`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `IconBrowser`, `Perf`, `Sim`. A major absent from the client is still skipped, so a host whose winning copy has no Feed major prints the line it printed.
+**No member change.** `DebugLogDiagnostics.lua` moves to minor **13** (the other three files unchanged, so the key moves 23.12.1.5 → 23.13.1.5). The new `LibKa0s-Feed-1.0` (`Feed`, [its document](../Feed/version-1.1.1.1-docs.md)), the toast feed built for Ka0s Loot History #38, joins the report's `LibKa0s running:` line, in `tests/majors.lua` order, directly after `Toast`: `Core`, `Tooltip`, `Env`, `Compat`, `Role`, `Lifecycle`, `Bus`, `Schema`, `Pool`, `Item`, `ForeverDB`, `Glow`, `Toast`, `Feed`, `Callout`, `WaypointArrow`, `Charts`, `Media`, `Skin`, `Widgets`, `DebugLog`, `Slash`, `Launcher`, `Options`, `IconBrowser`, `Perf`, `Sim`. A major absent from the client is still skipped, so a host whose winning copy has no Feed major prints the line it printed.
 
 ## What changed at version 23.12.1.5: the identity header names ForeverDB and prints its line (LibKa0s#105)
 
@@ -1039,7 +1039,7 @@ The API is **additive-only**: a member or descriptor field may be added in a lat
 removed or repurposed, so a host written against minor 1 keeps working unmodified here.
 
 Version 23.13.1.5 adds no member and changes one thing a host can observe: a report's
-`LibKa0s running:` line also lists the three Feed files when that major runs in the client. A host
+`LibKa0s running:` line also lists the four Feed files when that major runs in the client. A host
 suite that pins `DebugLogDiagnostics 12` re-pins it at 13.
 
 Version 23.12.1.5 adds no member and changes one thing a host can observe: a report's
