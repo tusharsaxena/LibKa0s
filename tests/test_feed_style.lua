@@ -479,3 +479,20 @@ test("feed style: a gradient fill and an LSM border reuse their objects across r
   assertEqual(sets, 0, "the backdrop is set again only when its edge changes")
   assertTrue(edge:GetBackdrop() == backdrop, "one backdrop table per row")
 end)
+
+test("feed style: every row string is built from a template, so the first paint's SetText has a font", function()
+  -- The client raises `FontString:SetText(): Font not set` on a FontString created bare, and
+  -- Row.Paint sets the text before Row.Restyle sets the font (Loot History #38, M3.3).
+  for _, file in ipairs({ "LibKa0s/Feed.lua", "LibKa0s/FeedModel.lua", "LibKa0s/FeedRow.lua",
+                          "LibKa0s/FeedInput.lua" }) do
+    local f = assert(io.open(file, "r"))
+    local src = f:read("*a")
+    f:close()
+    for call in src:gmatch("CreateFontString(%b())") do
+      local args = {}
+      for a in call:sub(2, -2):gmatch("[^,]+") do args[#args + 1] = a:match("^%s*(.-)%s*$") end
+      assertTrue(#args >= 3 and args[3] ~= "nil",
+        file .. ": CreateFontString" .. call .. " names no font template")
+    end
+  end
+end)

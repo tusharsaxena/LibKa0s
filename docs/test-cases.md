@@ -822,7 +822,7 @@ Total.
 - feed model: a reducer answering nil keeps the newer payload
 - feed model: Drain presents only the newest n, oldest first, and frees the rest
 
-### test_feed_style.lua (19)
+### test_feed_style.lua (20)
 
 - feed style: the container is HIGH, not toplevel, clamped and mouse-off; rows sit above it
 - feed style: overlapping rows and peer feeds sit in distinct level bands (frame-layering-§3)
@@ -843,6 +843,7 @@ Total.
 - feed style: the plain look draws the stored fill and edge and measures the client's fonts
 - feed style: the bar's texture and color follow the skin each on its own companion
 - feed style: a gradient fill and an LSM border reuse their objects across repaints
+- feed style: every row string is built from a template, so the first paint's SetText has a font
 
 ### test_feed_motion.lua (12)
 
@@ -6134,7 +6135,7 @@ Total.
 | test_toast_stack.lua | 36 |
 | test_feed.lua | 25 |
 | test_feed_model.lua | 22 |
-| test_feed_style.lua | 19 |
+| test_feed_style.lua | 20 |
 | test_feed_motion.lua | 12 |
 | test_feed_input.lua | 16 |
 | test_callout.lua | 52 |
@@ -6351,4 +6352,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5357** |
+| **Total** | **5358** |
