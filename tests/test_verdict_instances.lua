@@ -75,13 +75,16 @@ test("verdict instances: a newer copy of the shell keeps every instance's host a
   W.config = { scorer = "none" }
   local before = W.v:Judge(FC.link(3001))
   -- A second addon's copy at a higher minor: LibStub hands back the same table and the files re-run.
-  local src = T.loader.readFile("LibKa0s/Verdict.lua"):gsub('"LibKa0s%-Verdict%-1%.0", 1\r?\n', '"LibKa0s-Verdict-1.0", 2\n', 1)
-  T.loader.loadSource(src, "Verdict.lua@2", nil, W.m)
-  assertEqual(W.V.MINOR, 2, "the higher minor won")
+  local minor = W.V.MINOR
+  local src, n = T.loader.readFile("LibKa0s/Verdict.lua"):gsub('"LibKa0s%-Verdict%-1%.0", ' .. minor .. '\r?\n',
+    '"LibKa0s-Verdict-1.0", ' .. (minor + 1) .. '\n', 1)
+  assertEqual(n, 1, "the copy's minor line was raised")
+  T.loader.loadSource(src, "Verdict.lua@next", nil, W.m)
+  assertEqual(W.V.MINOR, minor + 1, "the higher minor won")
   for _, path in ipairs(FC.PATHS) do
     if path:match("Verdict%u") then T.loader.load(path, nil, W.m) end
   end
-  assertEqual(W.V.__gearShellMinor, 2, "the secondaries re-ran on the new shell")
+  assertEqual(W.V.__gearShellMinor, minor + 1, "the secondaries re-ran on the new shell")
   local after = W.v:Judge(FC.link(3001))
   assertEqual(after.verdict, before.verdict, "the old instance judges on, its host kept")
   assertTrue(W.v.host.config() == W.config)
@@ -97,9 +100,136 @@ test("verdict instances: a read the host hands over replaces the library's, look
   -- red under: v.R captured lib.Reads at New, so a reads table set later was never read
   W.v:Snapshot()
   assertTrue(calls > 0, "the host's member is read")
-  assertTrue(W.v.R.GetItemInfo == W.V.Reads.GetItemInfo, "a member the host left out is the library's")
+  local libCalls, lib = 0, W.V.Reads.InventoryItemLink
+  W.V.Reads.InventoryItemLink = function(...) libCalls = libCalls + 1; return lib(...) end
   W.host.reads = nil
-  assertTrue(W.v.R.InventoryItemLink == W.V.Reads.InventoryItemLink, "and back, at call time")
+  local before = calls
+  W.v.R.InventoryItemLink("player", HEAD)
+  W.V.Reads.InventoryItemLink = lib
+  assertEqual(calls, before, "the host's member is no longer read")
+  assertEqual(libCalls, 1, "and back to the library's, at call time")
+end)
+
+-- The names lib.Reads publishes, sorted.
+local function readNames(V)
+  local out = {}
+  for name, fn in pairs(V.Reads) do
+    if type(fn) == "function" then out[#out + 1] = name end
+  end
+  table.sort(out)
+  return out
+end
+
+test("verdict instances: the shell is at minor 3 (the read seam, LibKa0s#111)", function()
+  local W = FC.new{}
+  assertEqual(W.V.MINOR, 3)
+  assertEqual(W.V.MODULES.Verdict, 3)
+end)
+
+test("verdict instances: a host that names one read gets its own for it and lib.Reads for the rest", function()
+  local role = 0
+  local W = FC.new{ seed = rogue(), host = { reads = { PlayerRole = function()
+    role = role + 1
+    return "TANK", "override", nil
+  end } } }
+  local asked = {}
+  local saved = {}
+  for _, name in ipairs(readNames(W.V)) do
+    local fn = W.V.Reads[name]
+    saved[name] = fn
+    W.V.Reads[name] = function(...) asked[name] = (asked[name] or 0) + 1; return fn(...) end
+  end
+  -- red under: readsFor's bare __index, which answered the host's function or lib.Reads' itself
+  for _, name in ipairs(readNames(W.V)) do
+    assertEqual(type(rawget(W.v.R, name)), "function", name .. " is a member of the instance's table")
+  end
+  local r, source = W.v.R.PlayerRole()
+  assertEqual(r, "TANK"); assertEqual(source, "override")
+  assertEqual(role, 1, "the host's PlayerRole answers")
+  assertNil(asked.PlayerRole, "the library's PlayerRole is never asked")
+  local _, classFile = W.v.R.UnitClass("player")
+  assertEqual(classFile, "ROGUE")
+  assertEqual(asked.UnitClass, 1, "a read the host left out is the library's")
+  W.V.Reads.GetItemSpecs = function() return nil, 2, nil end
+  assertEqual(select("#", W.v.R.GetItemSpecs(FC.link(3001))), 3, "nil holes pass through")
+  for name, fn in pairs(saved) do W.V.Reads[name] = fn end
+  W.config = { scorer = "none" }
+  assertEqual(W.v:Judge(FC.link(3001)).verdict, "upgrade", "the instance judges through it")
+end)
+
+test("verdict instances: an instance reads a newer lib.Reads, and a name added after New", function()
+  local W = FC.new{}
+  local old = W.V.Reads
+  W.V.Reads = setmetatable({ UnitLevel = function() return 99 end, LateRead = function() return "late" end },
+    { __index = old })
+  local level, late = W.v.R.UnitLevel("player"), W.v.R.LateRead and W.v.R.LateRead()
+  W.V.Reads = old
+  assertEqual(level, 99, "the forwarder reads lib.Reads at the call")
+  assertEqual(late, "late", "a read added after New still resolves")
+end)
+
+--- A Sim seam over a host compat that copies no read, and a session to turn it on: the way Drop
+--- Watcher covers its instance's reads once it drops its compat copies (LibKa0s#111).
+local function simulated(W, coverOpts)
+  T.loader.load("LibKa0s/Sim.lua", nil, W.m)
+  local Sim = W.m.LibStub("LibKa0s-Sim-1.0")
+  local sent = {}
+  local compat = { ChatSender = function() return "real" end }
+  local seam = Sim:NewSeam(compat, { name = "Host",
+    guarded = { ChatSender = function() sent[#sent + 1] = "guarded"; return "kept" end } })
+  local keys = Sim:Cover(seam, W.v.R, coverOpts)
+  local sim = Sim:New({
+    name = "Host", seam = seam, slash = "/host sim",
+    deliver = function() return 0 end, isStoodDown = function() return false end,
+    scenarios = { names = { "one" }, defs = { one = { timeline = function() return { { kind = "a" } } end } } },
+    prepare = function(_, _, _, ready) ready() end, play = function() end, print = function() end,
+  })
+  return seam, sim, keys
+end
+
+test("verdict instances: a Sim-covered read answers the seam's provider while a session runs, with no host copy", function()
+  local W = FC.new{ seed = function(m)
+    rogue()(m)
+    m.addItem(FC.link(3002), leather(640))
+  end }
+  local seam, sim, keys = simulated(W)
+  local covered = table.concat(keys, ",")
+  assertTrue(covered:find("InventoryItemLink", 1, true) ~= nil, "the instance's reads are covered")
+  seam:SetProvider("InventoryItemLink", function(fallback, unit, slot)
+    if slot == HEAD then return FC.link(3002) end
+    return fallback(unit, slot)
+  end)
+  assertEqual(W.v.R.InventoryItemLink("player", HEAD), FC.link(3000), "idle: the library's read")
+  sim:Start({ scenario = "one" })
+  -- red under: no Sim:Cover (and readsFor's __index), so the instance's read escaped the seam
+  assertEqual(W.v.R.InventoryItemLink("player", HEAD), FC.link(3002), "the provider answers")
+  assertEqual(W.v:Snapshot().equipped[HEAD].link, FC.link(3002), "the gear snapshot reads the simulated helm")
+  assertEqual(seam:Live(function() return W.v.R.InventoryItemLink("player", HEAD) end), FC.link(3000),
+    "Live reads the client")
+  sim:Stop()
+  assertEqual(W.v.R.InventoryItemLink("player", HEAD), FC.link(3000), "idle again")
+  assertEqual(#seam:Unwrapped(), 0, "nothing on the instance's table escapes the seam")
+end)
+
+test("verdict instances: a Sim-guarded read is guarded with no host copy, inside Live too", function()
+  local W = FC.new{ seed = rogue() }
+  local guarded = 0
+  local seam, sim = simulated(W, { guarded = { UnitClass = function()
+    guarded = guarded + 1
+    return "Mage", "MAGE", 8
+  end } })
+  local libCalls, lib = 0, W.V.Reads.UnitClass
+  W.V.Reads.UnitClass = function(...) libCalls = libCalls + 1; return lib(...) end
+  local _, idle = W.v.R.UnitClass("player")
+  assertEqual(idle, "ROGUE", "idle, a guarded read calls the library's")
+  sim:Start({ scenario = "one" })
+  local _, active = W.v.R.UnitClass("player")
+  local _, live = seam:Live(function() return W.v.R.UnitClass("player") end)
+  sim:Stop()
+  W.V.Reads.UnitClass = lib
+  assertEqual(active, "MAGE"); assertEqual(live, "MAGE", "Live keeps a guarded read guarded")
+  assertEqual(guarded, 2)
+  assertEqual(libCalls, 1, "the library's read is never reached while the session runs")
 end)
 
 test("verdict instances: Config fills the client's verdict mode when the host names none", function()

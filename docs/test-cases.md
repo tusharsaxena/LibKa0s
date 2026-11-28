@@ -868,7 +868,7 @@ Total.
 - verdict gear: Retail rebuilds on your spec change alone; Forever on talents and levels
 - verdict gear: the first lazy read announces nothing; an item still loading is unknown, then rebuilt
 - verdict gear: stand-down drops pending refresh, and nothing fires until the stand-up
-- verdict gear: VerdictGear is at minor 2 and the shell at minor 2 (the lazy stand-up)
+- verdict gear: VerdictGear is at minor 2 and the shell at minor 3 (the lazy stand-up, then the read seam)
 - verdict gear: StandUp{ lazy = true } keeps the handlers and reads and announces nothing
 - verdict gear: after a lazy stand-up the first Judge reads your gear, quietly, once
 - verdict gear: after a lazy stand-up each first gear ask (Snapshot, Candidate, Signature) reads quietly
@@ -876,13 +876,18 @@ Total.
 - verdict gear: a lazy stand-up keeps a snapshot it holds; after a stand-down it defers again
 - verdict gear: StandUp(), StandUp{} and StandUp{ lazy = false } read and announce at once
 
-### test_verdict_instances.lua (15)
+### test_verdict_instances.lua (20)
 
 - verdict instances: the major reports its ten files, each secondary paired on the shell
 - verdict instances: two instances with different configs judge one item each their own way
 - verdict instances: each instance's signature is its own snapshot's, and a cache is never shared
 - verdict instances: a newer copy of the shell keeps every instance's host and methods
 - verdict instances: a read the host hands over replaces the library's, looked up at each call
+- verdict instances: the shell is at minor 3 (the read seam, LibKa0s#111)
+- verdict instances: a host that names one read gets its own for it and lib.Reads for the rest
+- verdict instances: an instance reads a newer lib.Reads, and a name added after New
+- verdict instances: a Sim-covered read answers the seam's provider while a session runs, with no host copy
+- verdict instances: a Sim-guarded read is guarded with no host copy, inside Live too
 - verdict instances: Config fills the client's verdict mode when the host names none
 - verdict instances: StandUp registers the client's events once; StandDown drops them
 - verdict instances: JudgeFacts takes another player's candidate, without your heirloom rule
@@ -5179,7 +5184,7 @@ Total.
 - iso: an older copy loading second replaces neither half
 - iso: a higher panel minor over the same probe still wins
 
-### test_sim_seam.lua (27)
+### test_sim_seam.lua (32)
 
 - sim seam: the major registers with Core, and reports its file minor
 - sim seam: the module is absent without Core
@@ -5207,9 +5212,14 @@ Total.
 - sim seam: Live with no debug sink still re-raises
 - sim seam: Unwrapped() is empty straight after NewSeam
 - sim seam: Unwrapped() lists a late-added and a replaced member, sorted
+- sim cover: Sim.lua is at minor 6, and Cover is on the library beside NewSeam
+- sim cover: Cover wraps the table's non-pure functions in place and answers their keys
+- sim cover: Keys() lists the covered keys once, sorted, and SetProvider takes a cover-only key
+- sim cover: Unwrapped() reports a late or replaced member of a covered table
+- sim cover: Cover refuses a bad seam, a bad table, a table already wrapped and bad opts
 - sim seam: Sim.lua carries no auto-wrap metatable and no guarded-key query
 
-### test_sim_session.lua (55)
+### test_sim_session.lua (58)
 
 - sim session: New is on the library, beside NewSeam
 - sim session: every required descriptor field raises by name when missing
@@ -5265,6 +5275,9 @@ Total.
 - sim session: a guarded member never reaches live while active, inside Live included
 - sim session: active, Live answers live for ordinary members, nested and after a raise
 - sim session: once bound, Live's traceback goes to the session's debug sink
+- sim session: active, one provider answers the compat and the covered table, each its own fallback
+- sim session: active, a cover-only read takes a provider and answers live without one
+- sim session: the seam's guard and the cover's own guard hold on the covered table, inside Live too
 - sim session: Sim.lua defines one Live, on the seam, and no test hook on it
 
 ### test_sim_timeline.lua (41)
@@ -5536,7 +5549,7 @@ Total.
 - sim sample: the same seed names the same people on both clients, in the same order
 - sim sample: SampleCrowd() reads the client through Compat at call time
 - sim sample: SampleCrowd refuses an unknown client, a bad size and a bad seed at the caller's line
-- sim sample: the shell's minor is 5
+- sim sample: the shell's minor is 6
 
 ### test_sim_start_panel.lua (11)
 
@@ -6371,7 +6384,7 @@ Total.
 | test_verdict_facts.lua | 21 |
 | test_verdict_score.lua | 19 |
 | test_verdict_gear.lua | 25 |
-| test_verdict_instances.lua | 15 |
+| test_verdict_instances.lua | 20 |
 | test_verdict_settings.lua | 24 |
 | test_verdict_golden.lua | 66 |
 | test_glow.lua | 15 |
@@ -6538,8 +6551,8 @@ Total.
 | test_perf_budget.lua | 11 |
 | test_perf_toplevel.lua | 7 |
 | test_perf_isolation.lua | 12 |
-| test_sim_seam.lua | 27 |
-| test_sim_session.lua | 55 |
+| test_sim_seam.lua | 32 |
+| test_sim_session.lua | 58 |
 | test_sim_timeline.lua | 41 |
 | test_sim_verbs.lua | 42 |
 | test_sim_autoplay.lua | 16 |
@@ -6591,4 +6604,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5565** |
+| **Total** | **5578** |

@@ -799,6 +799,67 @@ test("sim session: once bound, Live's traceback goes to the session's debug sink
   assertEqual(b.debugs[#b.debugs].tag, "SIM")
 end)
 
+-- ── a covered table's active path (Sim:Cover, minor 6, LibKa0s#111) ──────────────────────
+
+--- A covered read table beside the bench's compat: UnitName shared by name, ItemLink its own,
+--- ChatSender shared with the seam's guarded key, Trade guarded by the cover.
+local function coverBench()
+  local b = bench()
+  local reads, own = {}, 0
+  local function rec(name, fn)
+    return function(...) reads[#reads + 1] = name; return fn(...) end
+  end
+  b.R = {
+    UnitName = rec("UnitName", function(unit) return "read-" .. tostring(unit) end),
+    ItemLink = rec("ItemLink", function(slot) return "link-" .. tostring(slot) end),
+    ChatSender = rec("ChatSender", function() return "real-read-sender" end),
+    Trade = rec("Trade", function() return "real-trade" end),
+  }
+  b.reads = reads
+  b.Sim:Cover(b.seam, b.R, { guarded = { Trade = function() own = own + 1; return "kept" end } })
+  b.ownGuarded = function() return own end
+  return b
+end
+
+test("sim session: active, one provider answers the compat and the covered table, each its own fallback", function()
+  local b = coverBench()
+  local fallbacks = {}
+  b.seam:SetProvider("UnitName", function(fallback, unit)
+    fallbacks[#fallbacks + 1] = fallback(unit)
+    return "sim-" .. unit
+  end)
+  b.sim:Start({ scenario = "solo" })
+  assertEqual(b.C.UnitName("party1"), "sim-party1")
+  assertEqual(b.R.UnitName("party1"), "sim-party1", "the covered read is asked of the same provider")
+  assertEqual(joined(fallbacks), "live-party1,read-party1", "each handed its own table's live member")
+  b.sim:Stop()
+  assertEqual(b.R.UnitName("party1"), "read-party1", "idle again")
+end)
+
+test("sim session: active, a cover-only read takes a provider and answers live without one", function()
+  local b = coverBench()
+  b.sim:Start({ scenario = "solo" })
+  assertEqual(b.R.ItemLink(1), "link-1", "no provider: live")
+  b.seam:SetProvider("ItemLink", function(_, slot) return "sim-link-" .. slot end)
+  assertEqual(b.R.ItemLink(2), "sim-link-2")
+  assertEqual(joined(b.reads), "ItemLink")
+end)
+
+test("sim session: the seam's guard and the cover's own guard hold on the covered table, inside Live too", function()
+  local b = coverBench()
+  b.seam:SetProvider("ChatSender", function(fallback) return fallback() end)
+  b.sim:Start({ scenario = "solo" })
+  assertEqual(b.R.ChatSender(), "guarded", "the seam's guarded answer, not the read's live member")
+  assertEqual(b.R.Trade(), "kept")
+  assertEqual(b.seam:Live(function() return b.R.Trade() end), "kept", "Live keeps a guard guarded")
+  assertEqual(b.seam:Live(function() return b.R.UnitName("p") end), "read-p", "Live reads the covered table live")
+  assertEqual(b.guardedCalls(), 1)
+  assertEqual(b.ownGuarded(), 2)
+  assertEqual(joined(b.reads), "UnitName", "no guarded read reached its live member")
+  b.sim:Stop()
+  assertEqual(b.R.Trade(), "real-trade", "idle, a guarded member calls live")
+end)
+
 -- ── the source ───────────────────────────────────────────────────────────────────────────
 
 test("sim session: Sim.lua defines one Live, on the seam, and no test hook on it", function()

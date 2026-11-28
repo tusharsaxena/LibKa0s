@@ -375,10 +375,10 @@ local function countReads(W)
   return reads
 end
 
-test("verdict gear: VerdictGear is at minor 2 and the shell at minor 2 (the lazy stand-up)", function()
+test("verdict gear: VerdictGear is at minor 2 and the shell at minor 3 (the lazy stand-up, then the read seam)", function()
   local W = world()
   assertEqual(W.V.MODULES.VerdictGear, 2)
-  assertEqual(W.V.MODULES.Verdict, 2)
+  assertEqual(W.V.MODULES.Verdict, 3)
 end)
 
 test("verdict gear: StandUp{ lazy = true } keeps the handlers and reads and announces nothing", function()

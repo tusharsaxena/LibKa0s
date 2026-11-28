@@ -11,9 +11,9 @@
 | Files and minors | `Sim.lua` **5** · `SimTimeline.lua` **3** · `SimPanel.lua` **11** · `SimPanelRender.lua` **4** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `5.3.11.4` |
 | Shipped in | v1.113.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 4.3.11.4](./version-4.3.11.4-docs.md) (v1.109.0 – v1.112.0) — only a bare `/<slash> sim` opened the step panel there, a start left it closed; and the library named five sample people, every host keeping its own crowd (the convention's rule 6). |
-| Superseded by | — |
+| Superseded by | [version 6.3.11.4](./version-6.3.11.4-docs.md) (v1.120.0) — `Sim:Cover`, one seam over a second table (LibKa0s#111) |
 | Requires | `LibKa0s-Core-1.0` ≥ 1 (no Core member is called); `SimTimeline.lua` needs nothing beyond the shell; `SimPanel.lua` has an attach-file floor of `LibKa0s-Core-1.0` ≥ 9 and `LibKa0s-Widgets-1.0` present (*The panel*, below) |
 | Confirm in-game | `LibStub("LibKa0s-Sim-1.0").MODULES` → `{ Sim = 5, SimTimeline = 3, SimPanel = 11, SimPanelRender = 4 }` |
 

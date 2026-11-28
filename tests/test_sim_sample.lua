@@ -418,8 +418,8 @@ test("sim sample: SampleCrowd refuses an unknown client, a bad size and a bad se
   raises("SampleCrowd: seed must be", "retail", 3, "x")
 end)
 
-test("sim sample: the shell's minor is 5", function()
+test("sim sample: the shell's minor is 6", function()
   local _, Sim = env()
-  assertEqual(Sim.MINOR, 5)
-  assertEqual(Sim.MODULES.Sim, 5)
+  assertEqual(Sim.MINOR, 6)
+  assertEqual(Sim.MODULES.Sim, 6)
 end)

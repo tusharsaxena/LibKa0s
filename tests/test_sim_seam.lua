@@ -322,6 +322,84 @@ test("sim seam: Unwrapped() lists a late-added and a replaced member, sorted", f
   assertEqual(joined(seam:Unwrapped()), "UnitName")
 end)
 
+-- ── Cover (minor 6, LibKa0s#111) ─────────────────────────────────────────────────────────
+
+--- A second host table: an instance's read table, one read shared by name with the fixture
+--- (UnitName), one only it has (ItemLink), a pure guard and a constant.
+local function readsFixture()
+  local calls = {}
+  local function rec(name, fn)
+    return function(...) calls[#calls + 1] = "R." .. name; return fn(...) end
+  end
+  local R = {
+    UnitName = rec("UnitName", function(unit) return "read-" .. tostring(unit) end),
+    ItemLink = rec("ItemLink", function(slot) return "link-" .. tostring(slot) end),
+    IsSecret = function() return false end,
+    Guard = function() return "own" end,
+    LIMIT = 2,
+  }
+  return R, calls
+end
+
+test("sim cover: Sim.lua is at minor 6, and Cover is on the library beside NewSeam", function()
+  local _, Sim = env()
+  assertEqual(Sim.MINOR, 6)
+  assertEqual(Sim.MODULES.Sim, 6)
+  assertEqual(type(Sim.Cover), "function")
+end)
+
+test("sim cover: Cover wraps the table's non-pure functions in place and answers their keys", function()
+  local seam, _, _, Sim = seamOver()
+  local R, calls = readsFixture()
+  local isSecret, guard = R.IsSecret, R.Guard
+  local keys = Sim:Cover(seam, R, { pure = { Guard = true } })
+  assertEqual(joined(keys), "ItemLink,UnitName", "the seam's pure and the cover's own are skipped")
+  assertTrue(rawequal(R.IsSecret, isSecret), "a key the seam holds pure stays the table's own")
+  assertTrue(rawequal(R.Guard, guard), "opts.pure is honored")
+  assertEqual(R.LIMIT, 2, "a non-function member is left alone")
+  assertNil(getmetatable(R), "no metatable on the covered table")
+  assertEqual(R.UnitName("party2"), "read-party2", "idle: the table's own member answers")
+  assertEqual(R.ItemLink(1), "link-1")
+  assertEqual(joined(calls), "R.UnitName,R.ItemLink")
+end)
+
+test("sim cover: Keys() lists the covered keys once, sorted, and SetProvider takes a cover-only key", function()
+  local seam, _, _, Sim = seamOver()
+  Sim:Cover(seam, (readsFixture()), { pure = { Guard = true } })
+  assertEqual(joined(seam:Keys()), "ChatSender,Holes,ItemLink,Pair,UnitName,ZoneText")
+  assertNil(raised(function() seam:SetProvider("ItemLink", function() end) end),
+    "a read only the covered table has takes a provider")
+end)
+
+test("sim cover: Unwrapped() reports a late or replaced member of a covered table", function()
+  local seam, _, _, Sim = seamOver()
+  local R = readsFixture()
+  Sim:Cover(seam, R, { pure = { Guard = true } })
+  assertEqual(#seam:Unwrapped(), 0, "nothing escapes straight after Cover")
+  R.ItemLink = function() return "replaced" end
+  R.LateRead = function() return 1 end
+  R.Guard = function() return "replaced pure" end
+  R.LATER = 3
+  assertEqual(joined(seam:Unwrapped()), "ItemLink,LateRead")
+end)
+
+test("sim cover: Cover refuses a bad seam, a bad table, a table already wrapped and bad opts", function()
+  local seam, C, _, Sim = seamOver()
+  local err = raised(function() Sim:Cover({}, readsFixture()) end)
+  assertTrue(err ~= nil and tostring(err):find("NewSeam", 1, true) ~= nil, "a seam NewSeam did not make")
+  assertTrue(raised(function() Sim:Cover(seam, nil) end) ~= nil, "no table")
+  assertTrue(raised(function() Sim:Cover(seam, readsFixture(), "pure") end) ~= nil, "opts not a table")
+  err = raised(function() Sim:Cover(seam, C) end)
+  assertTrue(err ~= nil and tostring(err):find("Host", 1, true) ~= nil, "the seam's own table, named")
+  local R = readsFixture()
+  Sim:Cover(seam, R)
+  assertTrue(raised(function() Sim:Cover(seam, R) end) ~= nil, "a covered table is wrapped once")
+  err = raised(function() Sim:Cover(seam, readsFixture(), { guarded = { ItemLnk = function() end } }) end)
+  assertTrue(err ~= nil and tostring(err):find("ItemLnk", 1, true) ~= nil, "a guarded typo is named")
+  assertTrue(raised(function() Sim:Cover(seam, readsFixture(), { guarded = { ItemLink = 1 } }) end) ~= nil,
+    "a guarded answer that is not a function")
+end)
+
 -- ── the source ───────────────────────────────────────────────────────────────────────────
 
 test("sim seam: Sim.lua carries no auto-wrap metatable and no guarded-key query", function()
