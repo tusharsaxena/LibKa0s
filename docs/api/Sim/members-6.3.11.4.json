@@ -1,0 +1,21 @@
+{
+  "major": "LibKa0s-Sim-1.0",
+  "versionKey": "6.3.11.4",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Sim", "minor": 6 },
+    { "file": "SimTimeline", "minor": 3 },
+    { "file": "SimPanel", "minor": 11 },
+    { "file": "SimPanelRender", "minor": 4 }
+  ],
+  "members": [
+    { "name": "CROWD_MAX", "kind": "number" },
+    { "name": "Cover", "kind": "function" },
+    { "name": "New", "kind": "function" },
+    { "name": "NewSeam", "kind": "function" },
+    { "name": "SAMPLE", "kind": "table" },
+    { "name": "STRINGS", "kind": "table" },
+    { "name": "Sample", "kind": "function" },
+    { "name": "SampleCrowd", "kind": "function" }
+  ]
+}

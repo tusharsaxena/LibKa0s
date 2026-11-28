@@ -6,8 +6,15 @@ standing rules. This file supplies the library's procedure: the tool, the files 
 precedent a ruling follows and the nuances of each client. The headings below are the interface the
 command reads, so keep their names.
 
-LibKa0s ships no per-client id list of its own. What it carries that mirrors a source it does not
-own is the kit's client name sets and the payload's assumptions about each client:
+The library carries two kinds of seed, each with its own source, tool, rulings and bundles:
+
+- **The kit's client name sets** (flavors `retail` and `forever`, tool `tools/seeds/libseeds.py`),
+  described next.
+- **LibKa0s-Verdict-1.0's class lists** (flavors `retail-classes` and `forever-classes`, tool
+  `tools/seeds/classseeds.py`), described under *The class lists* below.
+
+The kit's name sets mirror a source the library does not own, together with the payload's
+assumptions about each client:
 
 - `testkit/client_globals_live.lua` and `testkit/client_globals_forever.lua`, the global function
   names and `C_Name.Member` pairs that the missing-globals gate (`tests/_kit/test_client_globals.lua`)
@@ -25,9 +32,26 @@ the reference for every candidate and flag kind. The first runs are
 `docs/seed-research/2026-11-25-retail/` and `docs/seed-research/2026-11-25-forever/` (LibKa0s#93).
 
 The command's WoW overlay treats a library as `kind=library`: its `gate` section applies, and
-`flavor` follows the generic spec, because the roster lists no clients for a library. Neither flavor
-reads wago.tools or ForeverDB: Ketho's branches are the source, so there is no `--build` product and
-no `Evidence: ForeverDB`.
+`flavor` follows the generic spec, because the roster lists no clients for a library. The kit
+flavors read neither wago.tools nor ForeverDB: Ketho's branches are the source, so there is no
+`--build` product and no `Evidence: ForeverDB`.
+
+**The class lists.** `LibKa0s/VerdictClassData.lua` hand-curates one class list per client
+(`clients-§5`), both in the one file: Retail's (`RETAIL`) and WoW Forever's (`FOREVER`), each built
+by `CD.Build`. They hold the class ids, the armor each class's loot comes in, the weapon subclasses
+it can use, its specs (Retail) or talent trees (Forever), and on Forever the relic and the level-40
+armor switch. Every run also checks `LibKa0s/VerdictFacts.lua`'s `IR.GEAR_CLASSES` (the item
+classes that are gear; a name and existence check, no candidates). The source is the client's own
+DB2 data on wago.tools, one pinned build per flavor (`clients-§10`: product `wow` for Retail, `wowf`
+for Forever, never one filtered from the other), and a flavor's **build** is that build's version.
+`tools/seeds/classseeds.py`'s docstring is the reference for every candidate and flag kind. The
+contract moved here from Drop Watcher's `tools/seeds/seeds.py` with the lists (LibKa0s#109); Drop
+Watcher's `docs/seed-research/2026-11-15-retail/` and `2026-11-15-forever/` are the record of the
+runs made before the move, and no LibKa0s bundle exists yet, so the first `status` prints
+`NEW <build> (no bundle yet)`. The `-classes` suffix keeps the two tools' bundle globs and rulings
+files apart: a `<date>-retail-classes` bundle is never a `retail` one. The Constants fallback
+literals and the profession names Drop Watcher's tool also checks are Drop Watcher's files and stay
+with it.
 
 ## Flavors
 
@@ -35,8 +59,12 @@ no `Evidence: ForeverDB`.
 | --- | --- | --- | --- |
 | `retail` | Ketho/BlizzardInterfaceResources branch `live` (`Resources/GlobalAPI.lua`, `FrameXML.lua`, `LuaEnum.lua`) | `testkit/client_globals_live.lua` (generated; `apply` writes it, and its `tests/_kit/` copy), plus the payload's assumptions (checked only) | `tools/seeds/libseeds.py`, `tools/client_globals_data.lua` |
 | `forever` | Ketho/BlizzardInterfaceResources branch `forever` (the same three files) | `testkit/client_globals_forever.lua` (generated, stored against live; `apply` writes it, and its `tests/_kit/` copy), plus the payload's assumptions (checked only) | `tools/seeds/libseeds.py`, `tools/client_globals_data.lua` |
+| `retail-classes` | wago.tools product `wow` (Retail live) | `LibKa0s/VerdictClassData.lua`'s `RETAIL` (hand-curated; `apply` writes `RETAIL.WEAPONS` alone), plus `LibKa0s/VerdictFacts.lua`'s `IR.GEAR_CLASSES` (checked only) | `tools/seeds/classseeds.py --flavor retail-classes` |
+| `forever-classes` | wago.tools product `wowf` (WoW Forever) | `LibKa0s/VerdictClassData.lua`'s `FOREVER` (hand-curated; `apply` writes `FOREVER.WEAPONS` alone), plus `IR.GEAR_CLASSES` (checked only) | `tools/seeds/classseeds.py --flavor forever-classes` |
 
 ## Rules
+
+### The kit name sets (`retail`, `forever`)
 
 - **Only `apply` writes a name set**, and only through `tools/client_globals_data.lua`, after the
   flavor's `regen:<branch>` candidate is ruled accept. Never edit `testkit/client_globals_*.lua` by
@@ -72,6 +100,56 @@ no `Evidence: ForeverDB`.
   the reach check) and the payload's own source.
 - **Privacy.** No player name, realm or GUID goes into a bundle, a ruling or a commit. The tool
   sends the User-Agent `LibKa0s-seed-check`.
+
+### The class lists (`retail-classes`, `forever-classes`)
+
+- **Only `apply` writes a WEAPONS set**, and only for an accepted `weapon:` candidate or a
+  `weapon-unlisted` flag ruled `remove`, in the flavor's own list (`RETAIL.WEAPONS` or
+  `FOREVER.WEAPONS`) and nowhere else in the file. It rewrites only the changed `set(...)` entries,
+  keeping the file's CRLF, indent and each block's continuation indent, and a second `apply`
+  changes nothing. Every other row (class ids, armor, specs, trees, relics, flags such as `D`, `T`,
+  `S`) is a hand edit. An accepted hand candidate or a flag ruled `fix` makes `apply` refuse until
+  the file carries the edit and a `derive --replay` stops raising it.
+- **A changed list is a payload edit.** The run that changes `VerdictClassData.lua` (by `apply` or
+  by hand) bumps its `CLASSDATA_MINOR`, with the comment line for the minor, and follows the
+  repo's versioning rules for the Verdict major (`CLAUDE.md`; the major's next
+  `docs/api/Verdict/version-<n>-docs.md`). Consumers pick the change up at their next re-vendor.
+- **Rulings are data.** They live in `tools/seeds/retail-classes_rulings.json` and
+  `tools/seeds/forever-classes_rulings.json`, written only by `classseeds.py rule`. A ruling is keyed
+  `<group>:<subject>` for a candidate or `shipped:<kind>:<subject>` for a flag, never by build, and
+  it holds until the thing it ruled on stops being proposed. Drop Watcher's class-list rulings came
+  over with the contract, their citations re-resolved; a `--replay` of Drop Watcher's 2026-11-15
+  tables (less `ItemSubClass`, which only its Constants check reads) proposes exactly the keys they
+  rule (checked 2026-11-28).
+- **Precedent, in this order, never re-litigated:**
+  1. a ruling already in the flavor's rulings file;
+  2. the seed file's own comments. The one that decides most weapon candidates is the note above
+     `RETAIL.WEAPONS` (`LibKa0s/VerdictClassData.lua:106-108`): a skill the class has but no loot of
+     its primary stat drops for is left out, so a ranged weapon reads as the hunter's alone (its own
+     example is a warrior's bow). Devourer's weapon and off-hand rules stay a known limitation until
+     smoke-checked (the file's header);
+  3. the major's API document under `docs/api/Verdict/` (the class lists are a fallback: an item's
+     own spec list wins when it exists);
+  4. the Forever port's research, Drop Watcher's
+     `docs/superpowers/research/2026-11-13-forever-port/04_DW_FOREVER_EXPOSURE.md` §5 (the vanilla
+     proficiencies). Those rows are INFERRED until probed, so a build row that contradicts them is
+     the owner's call, not the tool's;
+  5. the assertions in `tests/test_verdict_classdata.lua`, which pin today's lists. A ruling that
+     contradicts one goes to the owner.
+- **What "accept" means here.** Accept a proficiency only when the build grants it
+  (`SkillRaceClassInfo`, with `SkillLineAbility` as a second witness), the loot-relevance rule
+  admits it, and nothing above records otherwise. When in doubt, reject with
+  `needs owner review: <why>`. A rejection like that is meant to come back to the owner, not to
+  settle the question.
+- **Evidence.** The bundle's `raw/*.csv.gz`: `SkillRaceClassInfo` (`SkillID`, `ClassMask`,
+  `MinLevel`; a row with no race in either race mask is skipped), `SkillLineAbility` (the
+  proficiency spells' `ClassMask`), `ChrClasses` (`ArmorTypeMask`: bits 1 to 4 the armor types,
+  6 shields, 7 to 9 the relics), `ChrSpecialization` (`OrderIndex`, `PrimaryStatPriority`),
+  `SkillLine` (the coverage gate's names), `ItemClass` (`IR.GEAR_CLASSES`), and
+  `SpecializationSpells` (Titan's Grip, 46917) on Retail or `TalentTab` on Forever. DB2 says what a
+  class can learn, not what a player wears, so a surprising row is checked in game before it ships.
+- **Privacy.** As for the kit flavors; the tool sends the same User-Agent, which wago.tools needs
+  (it answers HTTP 403 to urllib's default agent).
 
 ## Flavor: retail
 
@@ -200,6 +278,141 @@ As for Retail: `report` first, then `apply`, which writes `testkit/client_global
 `tools/seeds/forever_rulings.json`, `docs/seed-research/<date>-forever`, plus the kit revision's files
 when a set changed. Commit message: `Seeds (forever): re-validated against <build> (<date>)`.
 
+## Flavor: retail-classes
+
+### Status
+
+```sh
+python3 tools/seeds/classseeds.py status --flavor retail-classes
+```
+
+Prints `CURRENT <build> (<bundle>)`, or `NEW <build> (last ruled <build>, <bundle>)`, comparing the
+live `wow` build on the wago.tools builds API with the newest `*-retail-classes` bundle;
+`NEW <build> (no bundle yet)` before the first.
+
+### Freeze and derive
+
+```sh
+python3 tools/seeds/classseeds.py derive --flavor retail-classes --build <build> --bundle docs/seed-research/<date>-retail-classes --date <date>
+```
+
+One step freezes and derives: it downloads seven small tables at the build (about 1 MB, cached in
+`${XDG_CACHE_HOME:-~/.cache}/ka0s-seeds/wago/`, outside the checkout), freezes them gzipped into
+the bundle's `raw/`, writes `SOURCES.md` and `candidates.json`, and runs the coverage gate: the
+sentinel classes (Warrior 1, Rogue 4, Mage 8) and skill lines must be there, and every mapped armor
+and weapon skill line must still carry its name. **If the gate fails, stop**: fix the tool's map,
+not the rulings. `--replay` re-derives from `raw/` alone, offline. Report the candidate and flag
+counts and the unruled count.
+
+### Rule
+
+```sh
+python3 tools/seeds/classseeds.py check --bundle docs/seed-research/<date>-retail-classes
+python3 tools/seeds/classseeds.py rule --tsv <scratchpad>/rulings.tsv --bundle docs/seed-research/<date>-retail-classes
+```
+
+`check` lists every unruled key and exits 1, and must print `OK` after `rule`.
+
+- **Candidates** (`accept` or `reject`): `weapon:<CLASS>:<SUB>` (written by `apply`), and the hand
+  candidates `class:`, `spec:` and `titanGrip:`.
+  - A warrior's or a rogue's bow, gun or crossbow is rejected under the loot-relevance note.
+  - A new spec (`spec:<id>`) needs its stat and its four flags, which DB2 cannot give: accept it
+    only with all of them known, and add its `SPEC_INDEX` row too.
+- **Flags** (`keep`, `fix` or `remove`): `class-id`, `armor`, `weapon-unlisted`, `spec-missing`,
+  `spec-class`, `spec-name`, `spec-index`, `spec-stat`, `titan-grip`, `shield` and `enum` (a
+  `GEAR_CLASSES` id the build does not name Weapon or Armor). `remove` is legal on
+  `weapon-unlisted` alone.
+- Retail's dual wield is not checked: it comes from spec passives that the skill tables do not
+  carry, so the `D` flags stay hand-kept.
+
+### Apply
+
+```sh
+python3 tools/seeds/classseeds.py report --bundle docs/seed-research/<date>-retail-classes --date <date>
+python3 tools/seeds/classseeds.py apply  --bundle docs/seed-research/<date>-retail-classes --date <date>
+```
+
+`report` comes before `apply`, so `RULINGS.md` is written while the candidates still include what
+is about to be applied. `apply` refuses while anything is unruled or a hand edit is owed, rewrites
+only the changed `RETAIL.WEAPONS` entries, and a second `apply` changes nothing.
+
+### After
+
+- When the list changed: the `CLASSDATA_MINOR` bump and the Verdict major's version document (see
+  *Rules*), and roll any assertion in `tests/test_verdict_classdata.lua` (and the other Verdict
+  suites that read the list) that pins a row the run changed.
+- Write the bundle's `ANALYSIS.md` by hand, in the shape of Drop Watcher's 2026-11-15 bundles: what
+  the build says, what was proposed, accepted and rejected and why, and what a later run should
+  re-check.
+- Name the consumers that owe a re-vendor and a smoke check (Drop Watcher, Item Search) in the
+  hand-back. A run that changes nothing owes none.
+- Re-resolve any `VerdictClassData.lua:N` citation a ruling or this file makes when the file moved.
+
+### Stage
+
+`tools/seeds/retail-classes_rulings.json`, `docs/seed-research/<date>-retail-classes`, plus
+`LibKa0s/VerdictClassData.lua` and the minor, test and version-document edits when the list
+changed. Commit message: `Seeds (retail-classes): re-validated against <build> (<date>)`.
+
+## Flavor: forever-classes
+
+### Status
+
+```sh
+python3 tools/seeds/classseeds.py status --flavor forever-classes
+```
+
+Prints `CURRENT <build> (<bundle>)` or `NEW <build> (...)`, comparing the live `wowf` build with the
+newest `*-forever-classes` bundle.
+
+### Freeze and derive
+
+```sh
+python3 tools/seeds/classseeds.py derive --flavor forever-classes --build <build> --bundle docs/seed-research/<date>-forever-classes --date <date>
+```
+
+The same gate as Retail. Forever's own table is `TalentTab` in place of `SpecializationSpells`;
+`ChrSpecialization` holds one class-wide spec row per class there, which the list does not seed (its
+rows are keyed `"<classFile>:<tree>"`).
+
+### Rule
+
+```sh
+python3 tools/seeds/classseeds.py check --bundle docs/seed-research/<date>-forever-classes
+python3 tools/seeds/classseeds.py rule --tsv <scratchpad>/rulings.tsv --bundle docs/seed-research/<date>-forever-classes
+```
+
+Nuances:
+
+- **Candidates:** `weapon:`, plus the hand candidates `class:`, `tree:<CLASS>:<n>`, `relic:`,
+  `dualWield:` and `armorEarly:`. **Flags:** the Retail kinds that apply, plus `armor-early`,
+  `armor-level`, `armor-lower`, `tree-missing`, `tree-name`, `relic` and `dual-wield`.
+- **The level-40 switch is data.** The heavier armor line's `MinLevel` is the switch: Plate Mail and
+  Mail answer 40 on 1.60.1, which is `ARMOR_LEVEL`.
+- **The vanilla proficiencies are INFERRED.** A build row that adds one (a druid's polearm, a rogue's
+  axe on 1.60.1) contradicts the research and `tests/test_verdict_classdata.lua`, so it goes to the
+  owner (`needs owner review`) and is not accepted by a run.
+
+### Apply
+
+```sh
+python3 tools/seeds/classseeds.py report --bundle docs/seed-research/<date>-forever-classes --date <date>
+python3 tools/seeds/classseeds.py apply  --bundle docs/seed-research/<date>-forever-classes --date <date>
+```
+
+As for Retail: `report` first, then `apply`, which refuses on anything unruled or owed by hand and
+writes `FOREVER.WEAPONS` alone.
+
+### After
+
+- As for Retail, with the headless suite run under both kit profiles.
+
+### Stage
+
+`tools/seeds/forever-classes_rulings.json`, `docs/seed-research/<date>-forever-classes`, plus
+`LibKa0s/VerdictClassData.lua` and the minor, test and version-document edits when the list
+changed. Commit message: `Seeds (forever-classes): re-validated against <build> (<date>)`.
+
 ## Gate
 
 ```sh
@@ -228,6 +441,8 @@ pytest, `python3 -m unittest discover -s tools/seeds` runs the same cases.
   `local X = _G.X`) is checked at its capture, the one place it reads the client; its later calls go
   through the upvalue and are not. A local copied under another name (`local now = GetTime`) is not
   seen at all.
-- **No shared helper.** The tool copies the addon seed tools' pattern (the build pin, the cache, the
-  bundle, the rulings) and imports nothing across repos; LibKa0s#91, the survey that led to the
-  contracts, closed on 2026-11-16 without one.
+- **The class-list bundle size.** Seven tables, gzipped: about 190 KB on Retail and 75 KB on
+  Forever (Drop Watcher's 2026-11-15 bundles, less `ItemSubClass`).
+- **No shared helper.** Each tool copies the addon seed tools' pattern (the build pin, the cache, the
+  bundle, the rulings) and imports nothing across repos or from the other; LibKa0s#91, the survey
+  that led to the contracts, closed on 2026-11-16 without one.

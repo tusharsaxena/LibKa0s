@@ -1,0 +1,18 @@
+{
+  "dualWield:SHAMAN": {
+    "reason": "needs owner review: SkillRaceClassInfo has a Shaman Dual Wield row (Availability 0, no level), but Drop Watcher's research R4 section 5 records no shaman dual wield in vanilla and the row is likely a talent- or rune-granted skill, which a class-wide flag cannot express (ported from Drop Watcher's tools/seeds/forever_rulings.json, LibKa0s#109)",
+    "ruling": "reject"
+  },
+  "shipped:tree-name:DRUID:2": {
+    "reason": "The comment names the tree Feral, TalentTab calls it Feral Combat; same tree (OrderIndex 1), the short name is the comment's own (ported from Drop Watcher's tools/seeds/forever_rulings.json, LibKa0s#109)",
+    "ruling": "keep"
+  },
+  "weapon:DRUID:POLEARM": {
+    "reason": "needs owner review: SkillRaceClassInfo has a Druid-only Polearms row from level 20 (SkillLineAbility agrees), but the Forever list follows the vanilla proficiencies (Drop Watcher's research R4 section 5: Druids no polearms) and tests/test_verdict_classdata.lua:75 pins no polearms for druids; the rows are INFERRED until probed, so the owner decides after an in-game check (ported from Drop Watcher's tools/seeds/forever_rulings.json, LibKa0s#109)",
+    "ruling": "reject"
+  },
+  "weapon:ROGUE:AXE_1H": {
+    "reason": "needs owner review: SkillRaceClassInfo grants Axes (44) to Rogues (rows shared with Warriors, by race; SkillLineAbility agrees), but the Forever list follows the vanilla proficiencies (Drop Watcher's research R4 section 5, no axes for rogues); INFERRED until probed, so the owner decides after an in-game check (ported from Drop Watcher's tools/seeds/forever_rulings.json, LibKa0s#109)",
+    "ruling": "reject"
+  }
+}

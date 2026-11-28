@@ -10,9 +10,9 @@
 | Version | **66** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.119.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 65](version-65-docs.md) — the automated-test runner refused a library checked out as a `git worktree`, whose `.git` is a file, and named a library by its checkout's folder |
-| Superseded by | — |
+| Superseded by | [version 67](version-67-docs.md) |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `66` |
 

@@ -848,7 +848,7 @@ Total.
 - verdict score: Pawn absent, or loaded but not initialized, never errors and never waits
 - verdict score: a stand-down drops the score retry; no onChange until the stand-up
 
-### test_verdict_gear.lua (18)
+### test_verdict_gear.lua (25)
 
 - verdict gear: each worn slot is a copy of its facts at the current level; an empty slot is false
 - verdict gear: Retail's candidate carries its spec and no tree; the hand flags are the spec's
@@ -868,14 +868,26 @@ Total.
 - verdict gear: Retail rebuilds on your spec change alone; Forever on talents and levels
 - verdict gear: the first lazy read announces nothing; an item still loading is unknown, then rebuilt
 - verdict gear: stand-down drops pending refresh, and nothing fires until the stand-up
+- verdict gear: VerdictGear is at minor 2 and the shell at minor 3 (the lazy stand-up, then the read seam)
+- verdict gear: StandUp{ lazy = true } keeps the handlers and reads and announces nothing
+- verdict gear: after a lazy stand-up the first Judge reads your gear, quietly, once
+- verdict gear: after a lazy stand-up each first gear ask (Snapshot, Candidate, Signature) reads quietly
+- verdict gear: a gear event before the first ask after a lazy stand-up reads and announces
+- verdict gear: a lazy stand-up keeps a snapshot it holds; after a stand-down it defers again
+- verdict gear: StandUp(), StandUp{} and StandUp{ lazy = false } read and announce at once
 
-### test_verdict_instances.lua (15)
+### test_verdict_instances.lua (20)
 
 - verdict instances: the major reports its ten files, each secondary paired on the shell
 - verdict instances: two instances with different configs judge one item each their own way
 - verdict instances: each instance's signature is its own snapshot's, and a cache is never shared
 - verdict instances: a newer copy of the shell keeps every instance's host and methods
 - verdict instances: a read the host hands over replaces the library's, looked up at each call
+- verdict instances: the shell is at minor 3 (the read seam, LibKa0s#111)
+- verdict instances: a host that names one read gets its own for it and lib.Reads for the rest
+- verdict instances: an instance reads a newer lib.Reads, and a name added after New
+- verdict instances: a Sim-covered read answers the seam's provider while a session runs, with no host copy
+- verdict instances: a Sim-guarded read is guarded with no host copy, inside Live too
 - verdict instances: Config fills the client's verdict mode when the host names none
 - verdict instances: StandUp registers the client's events once; StandDown drops them
 - verdict instances: JudgeFacts takes another player's candidate, without your heirloom rule
@@ -887,14 +899,15 @@ Total.
 - verdict instances: a stood-down instance asks the client for no item
 - verdict instances: Judge twice on a loading item tells the host once
 
-### test_verdict_settings.lua (22)
+### test_verdict_settings.lua (24)
 
-- verdict settings: VerdictSettings is at minor 1, paired on the Verdict shell's minor
+- verdict settings: VerdictSettings is at minor 2, paired on the Verdict shell's minor
 - verdict settings: the six defaults are Drop Watcher's (defaults/Profile.lua comparison)
 - verdict settings: Rows answers the six rows at the host's root, in Drop Watcher's order and shape
 - verdict settings: the rows' checks are Drop Watcher's
 - verdict settings: another root, no page, and the host's words
 - verdict settings: a weight write is a fresh map; 0 removes the stat and an emptied spec
+- verdict settings: a weight slider runs -5..20 and stretches to a stored weight beyond it (LibKa0s#107)
 - verdict settings: a spec's stats are its primary stat, Stamina and the four secondaries
 - verdict settings: unwanted types are the class's weapons, then shields where a spec carries one
 - verdict settings: an unwanted mark is a fresh map, and the last one cleared drops the spec
@@ -906,6 +919,7 @@ Total.
 - verdict settings: a weight slider hands the whole map to spec.set, for the spec on screen
 - verdict settings: on Forever the strip opens on your top talent tree
 - verdict settings: the Pawn import box replaces the spec on screen's weights and says what came in
+- verdict settings: an out-of-range Pawn import shows its true values, and a slider write keeps them (LibKa0s#107)
 - verdict settings: with no spec.print the import writes and puts no unprefixed line in chat
 - verdict settings: Unwanted types lists the class's weapon types and marks one per spec
 - verdict settings: the whole section draws Scoring, Weights and Unwanted types, each under its heading
@@ -5170,7 +5184,7 @@ Total.
 - iso: an older copy loading second replaces neither half
 - iso: a higher panel minor over the same probe still wins
 
-### test_sim_seam.lua (27)
+### test_sim_seam.lua (32)
 
 - sim seam: the major registers with Core, and reports its file minor
 - sim seam: the module is absent without Core
@@ -5198,9 +5212,14 @@ Total.
 - sim seam: Live with no debug sink still re-raises
 - sim seam: Unwrapped() is empty straight after NewSeam
 - sim seam: Unwrapped() lists a late-added and a replaced member, sorted
+- sim cover: Sim.lua is at minor 6, and Cover is on the library beside NewSeam
+- sim cover: Cover wraps the table's non-pure functions in place and answers their keys
+- sim cover: Keys() lists the covered keys once, sorted, and SetProvider takes a cover-only key
+- sim cover: Unwrapped() reports a late or replaced member of a covered table
+- sim cover: Cover refuses a bad seam, a bad table, a table already wrapped and bad opts
 - sim seam: Sim.lua carries no auto-wrap metatable and no guarded-key query
 
-### test_sim_session.lua (55)
+### test_sim_session.lua (58)
 
 - sim session: New is on the library, beside NewSeam
 - sim session: every required descriptor field raises by name when missing
@@ -5256,6 +5275,9 @@ Total.
 - sim session: a guarded member never reaches live while active, inside Live included
 - sim session: active, Live answers live for ordinary members, nested and after a raise
 - sim session: once bound, Live's traceback goes to the session's debug sink
+- sim session: active, one provider answers the compat and the covered table, each its own fallback
+- sim session: active, a cover-only read takes a provider and answers live without one
+- sim session: the seam's guard and the cover's own guard hold on the covered table, inside Live too
 - sim session: Sim.lua defines one Live, on the seam, and no test hook on it
 
 ### test_sim_timeline.lua (41)
@@ -5527,7 +5549,7 @@ Total.
 - sim sample: the same seed names the same people on both clients, in the same order
 - sim sample: SampleCrowd() reads the client through Compat at call time
 - sim sample: SampleCrowd refuses an unknown client, a bad size and a bad seed at the caller's line
-- sim sample: the shell's minor is 5
+- sim sample: the shell's minor is 6
 
 ### test_sim_start_panel.lua (11)
 
@@ -5989,7 +6011,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 66
+- the kit is revision 67
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -6084,7 +6106,7 @@ Total.
 - runner complexity: a raise no single file reproduces is a whole-tree crash
 - runner complexity: the real 1.24.0 for-header crash is crashed, not blind
 
-### test_kit_vendor_sync.lua (41)
+### test_kit_vendor_sync.lua (45)
 
 - parseIconLine: the three forms
 - parseIconLine: `all` without a parenthesized reason is refused
@@ -6101,6 +6123,10 @@ Total.
 - soundDeclaration: no line means none, not a transition
 - soundDeclaration: placed, misplaced, doubled
 - soundCatalog and requiredSounds: a pack is its folder, credits and license included
+- vendor sync: a provenance tag the sibling cannot resolve is a skip naming the tag
+- vendor sync: once the tag resolves, a copy whose content differs fails
+- vendor sync: at a resolvable tag a missing file and an extra file each fail
+- vendor sync: an absent sibling checkout is still a skip, before any tag is read
 - vendor sync: a byte-identical PDF holding CR LF pairs passes, and one edited byte fails
 - vendor sync: a CR LF copy of an LF text blob passes, and one edited byte under it fails
 - vendor sync: every extension .gitattributes pins binary is one the gate compares raw
@@ -6357,9 +6383,9 @@ Total.
 | test_verdict_collect.lua | 13 |
 | test_verdict_facts.lua | 21 |
 | test_verdict_score.lua | 19 |
-| test_verdict_gear.lua | 18 |
-| test_verdict_instances.lua | 15 |
-| test_verdict_settings.lua | 22 |
+| test_verdict_gear.lua | 25 |
+| test_verdict_instances.lua | 20 |
+| test_verdict_settings.lua | 24 |
 | test_verdict_golden.lua | 66 |
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
@@ -6525,8 +6551,8 @@ Total.
 | test_perf_budget.lua | 11 |
 | test_perf_toplevel.lua | 7 |
 | test_perf_isolation.lua | 12 |
-| test_sim_seam.lua | 27 |
-| test_sim_session.lua | 55 |
+| test_sim_seam.lua | 32 |
+| test_sim_session.lua | 58 |
 | test_sim_timeline.lua | 41 |
 | test_sim_verbs.lua | 42 |
 | test_sim_autoplay.lua | 16 |
@@ -6567,7 +6593,7 @@ Total.
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 21 |
-| test_kit_vendor_sync.lua | 41 |
+| test_kit_vendor_sync.lua | 45 |
 | test_kit_skin_values.lua | 39 |
 | test_kit_skin_switch.lua | 54 |
 | test_kit_client_globals.lua | 16 |
@@ -6578,4 +6604,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5552** |
+| **Total** | **5578** |

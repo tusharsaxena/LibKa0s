@@ -10,6 +10,10 @@
 -- credits and license included, a pack the tag lacks fails, and the tool refuses an unknown pack
 -- before it removes anything from either folder.
 --
+-- And testing-§11's precondition (kit revision 67, LibKa0s#110): a provenance tag the sibling cannot
+-- resolve is a skip carrying its reason, as an absent sibling is, while a tag that resolves still
+-- fails a copy that differs from it, lacks a file or carries an extra one.
+--
 -- WHY IT IS PINNED HERE. The gate is a factory a consumer calls, and this repo has no sibling to
 -- compare against (the file's header says why), so until revision 40 nothing here ran it at all.
 -- A gate with a carve-out is a gate that can pass by not looking, so each shape is driven against a
@@ -345,6 +349,87 @@ local function prune(addon, keep)
     if not set[p] then rm(addon, p) end
   end
 end
+
+-- ── the precondition: a ref the sibling cannot resolve (kit revision 67, LibKa0s#110) ─────────
+
+--- Run the library pair's case against `addon` and answer how it ended: "pass", "fail" or "skip",
+--- and the message. Unlike `gate`, a skip comes back to the caller rather than skipping this case.
+local function outcome(addon)
+  local cases = {}
+  local fake = {
+    test = function(name, fn) cases[name] = fn end,
+    skip = function(reason) error("SKIP " .. tostring(reason), 0) end,
+    assertTrue = T.assertTrue, assertEqual = T.assertEqual,
+  }
+  VendorSync.register(fake, { root = addon })
+  local ok, err = pcall(cases[LIB_CASE])
+  if ok then return "pass", "" end
+  err = tostring(err)
+  if err:find("^SKIP ") then return "skip", err:sub(6) end
+  return "fail", err
+end
+
+--- Point the consumer's provenance line at `version` (the declaration lines kept as they were).
+local function claim(addon, version)
+  local f = assert(io.open(addon .. "/CLAUDE.md", "rb"))
+  local doc = f:read("*a")
+  f:close()
+  write(addon .. "/CLAUDE.md", (doc:gsub(" v9%.9%.9 %(MIT%)", " " .. version .. " (MIT)")))
+end
+
+local function tagLib(addon, version)
+  sh(('git -C "%s/../LibKa0s" tag %s'):format(addon, version))
+end
+
+test("vendor sync: a provenance tag the sibling cannot resolve is a skip naming the tag", function()
+  withFixture(nil, function(addon)
+    claim(addon, "v9.9.10")
+    local status, msg = outcome(addon)
+    assertEqual(status, "skip", "an unresolvable ref is testing-§11's absent precondition: " .. msg)
+    assertTrue(msg:find("v9.9.10", 1, true) ~= nil, "the reason names the tag: " .. msg)
+    assertTrue(msg:find("NOT compared", 1, true) ~= nil, "the reason says nothing was compared: " .. msg)
+    -- A skip is not a verdict on the bytes: a copy that differs from every tag skips the same way.
+    write(addon .. "/libs/LibKa0s/Core.lua", "-- edited\n")
+    status, msg = outcome(addon)
+    assertEqual(status, "skip", "the payload is never read while the ref is unresolvable: " .. msg)
+  end)
+end)
+
+test("vendor sync: once the tag resolves, a copy whose content differs fails", function()
+  withFixture(nil, function(addon)
+    claim(addon, "v9.9.10")
+    write(addon .. "/libs/LibKa0s/Core.lua", "-- edited\n")
+    tagLib(addon, "v9.9.10")
+    local status, msg = outcome(addon)
+    assertEqual(status, "fail", "a resolvable tag the copy differs from fails: " .. msg)
+    assertTrue(msg:find("Core.lua matches", 1, true) ~= nil, msg)
+    write(addon .. "/libs/LibKa0s/Core.lua", "-- core\n")
+    assertEqual((outcome(addon)), "pass", "and the copy that matches it passes")
+  end)
+end)
+
+test("vendor sync: at a resolvable tag a missing file and an extra file each fail", function()
+  withFixture(nil, function(addon)
+    os.remove(addon .. "/libs/LibKa0s/Core.lua")
+    local status, msg = outcome(addon)
+    assertEqual(status, "fail", "a file the tag carries and the copy lacks fails: " .. msg)
+    assertTrue(msg:find("holds the same files", 1, true) ~= nil, msg)
+    write(addon .. "/libs/LibKa0s/Core.lua", "-- core\n")
+    write(addon .. "/libs/LibKa0s/Extra.lua", "-- not at the tag\n")
+    status, msg = outcome(addon)
+    assertEqual(status, "fail", "a file the copy carries and the tag lacks fails: " .. msg)
+    assertTrue(msg:find("holds the same files", 1, true) ~= nil, msg)
+  end)
+end)
+
+test("vendor sync: an absent sibling checkout is still a skip, before any tag is read", function()
+  withFixture(nil, function(addon)
+    sh(('rm -rf "%s/../LibKa0s"'):format(addon))
+    local status, msg = outcome(addon)
+    assertEqual(status, "skip", msg)
+    assertTrue(msg:find("checkout absent", 1, true) ~= nil, msg)
+  end)
+end)
 
 -- ── binaries compare byte for byte (LK-A2) ─────────────────────────────────────────────────
 

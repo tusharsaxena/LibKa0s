@@ -122,6 +122,14 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.120.0, not in the census (2026-11-28), the verdict's follow-ups.** No member leaves and no major is new. `LibKa0s-Verdict-1.0`
+moves to key 3.1.1.1.1.1.1.1.1.2.2 ([the document](Verdict/version-3.1.1.1.1.1.1.1.1.2.2-docs.md)): `StandUp` takes
+`{ lazy = true }`, `Settings` gains `WeightRange` and the weight slider's `WEIGHT_MIN` / `WEIGHT_MAX` move to -5..20, and
+`v.R` becomes a forwarder per read. `LibKa0s-Sim-1.0` moves to 6.3.11.4 ([the document](Sim/version-6.3.11.4-docs.md)) with
+`Sim:Cover`. Both Verdict hosts, Drop Watcher and Ka0s Item Search, adopt the lazy stand-up in the same run; Drop Watcher
+alone calls `Sim:Cover`, over its instance's reads. `WeightRange` is reached through the library's own section, never by
+name. The next census reads them.
+
 **v1.119.0, not in the census (2026-11-27), a new major for the verdict.** `LibKa0s-Verdict-1.0` is new: Ka0s Drop
 Watcher's verdict engine, promoted on the owner's ruling R4 (DropWatcher#19, tasks `IS-B1` to `IS-B4` of Drop Watcher's
 `docs/superpowers/plans/2026-11-27-itemsearch-split.md`; [the document](Verdict/version-1.1.1.1.1.1.1.1.1.1.1-docs.md)),
