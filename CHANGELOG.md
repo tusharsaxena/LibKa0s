@@ -52,8 +52,9 @@ The branch review of 2026-11-28 (`docs/reviews/2026-11-28/`), fixed before the t
 - **The Pawn import's line goes through `spec.print` alone** (F-009): with no printer the import writes and says nothing, where it fell back to the bare global `print` with no addon prefix (slash-commands-§4; a library cannot pick a host's prefix). Test: `tests/test_verdict_settings.lua`. The shell's header now lists `VerdictSettings.lua` with the other files, and the Verdict document's lib-level table is one table again (F-008: a blank line cut its last seven rows off).
 - **Kit revision 66** ([docs](docs/api/testkit/version-66-docs.md), F-011): `testkit/run-automated-tests.sh` runs a library checked out as a `git worktree`, where revision 65's `[ ! -d .git ]` refused one (its `.git` is a file), and names it by its repository's common git dir rather than the worktree's folder. `tests/_kit/` re-synced. Tests: `tests/test_kit_runner.lua` (a fixture worktree), `tests/test_kit_inventory.lua` revision 66.
 
-Release gate (`docs/automated-tests/20261127-234144/`): lint pass, 0/0 in 421 files;
-tests pass, 5547 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+Release gate (`docs/automated-tests/20261128-053702/`, taken again after the review fixes; it supersedes
+`20261127-234144`): lint pass, 0/0 in 421 files;
+tests pass, 5555 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
 SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
 
 Preview and simulation re-look: Not applicable — no Sim file and not `Widgets.lua` moved; the release adds the Verdict major and moves DebugLogDiagnostics 13 only.
