@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 66", function()
-  assertEqual(Kit.VERSION, 66, "v1.119.0 ships revision 66: run-automated-tests.sh runs a library checked out as a git worktree, named by its repository (review F-011, IS-F1)")
-  assertEqual(T.KIT_VERSION, 66, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 67", function()
+  assertEqual(Kit.VERSION, 67, "v1.120.0 ships revision 67: vendor_sync.lua registers a provenance tag the sibling cannot resolve as a skip carrying its reason, as testing-§11 says, while a resolved tag that differs still fails (LibKa0s#110, L3)")
+  assertEqual(T.KIT_VERSION, 67, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

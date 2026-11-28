@@ -5998,7 +5998,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 66
+- the kit is revision 67
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -6093,7 +6093,7 @@ Total.
 - runner complexity: a raise no single file reproduces is a whole-tree crash
 - runner complexity: the real 1.24.0 for-header crash is crashed, not blind
 
-### test_kit_vendor_sync.lua (41)
+### test_kit_vendor_sync.lua (45)
 
 - parseIconLine: the three forms
 - parseIconLine: `all` without a parenthesized reason is refused
@@ -6110,6 +6110,10 @@ Total.
 - soundDeclaration: no line means none, not a transition
 - soundDeclaration: placed, misplaced, doubled
 - soundCatalog and requiredSounds: a pack is its folder, credits and license included
+- vendor sync: a provenance tag the sibling cannot resolve is a skip naming the tag
+- vendor sync: once the tag resolves, a copy whose content differs fails
+- vendor sync: at a resolvable tag a missing file and an extra file each fail
+- vendor sync: an absent sibling checkout is still a skip, before any tag is read
 - vendor sync: a byte-identical PDF holding CR LF pairs passes, and one edited byte fails
 - vendor sync: a CR LF copy of an LF text blob passes, and one edited byte under it fails
 - vendor sync: every extension .gitattributes pins binary is one the gate compares raw
@@ -6576,7 +6580,7 @@ Total.
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
 | test_kit_runner.lua | 21 |
-| test_kit_vendor_sync.lua | 41 |
+| test_kit_vendor_sync.lua | 45 |
 | test_kit_skin_values.lua | 39 |
 | test_kit_skin_switch.lua | 54 |
 | test_kit_client_globals.lua | 16 |
@@ -6587,4 +6591,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5561** |
+| **Total** | **5565** |

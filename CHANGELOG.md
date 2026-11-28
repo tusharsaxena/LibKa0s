@@ -14,7 +14,7 @@ cannot drift. Release order is in
 
 Opened 2026-11-28, on `feat/2026-11-28-issue-fixes`: the issues the Item Search split run (DropWatcher#19) filed, Drop Watcher's plan `docs/superpowers/plans/2026-11-28-issue-fixes.md`, tasks L1 to L6.
 
-Versions so far: `LibKa0s-Verdict-1.0` key **2.1.1.1.1.1.1.1.1.2.2** (Verdict minor 2, VerdictGear minor 2, VerdictSettings minor 2); every other file at its v1.119.0 minor, and the test kit at revision **66**. No `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-Verdict-1.0` key **2.1.1.1.1.1.1.1.1.2.2** (Verdict minor 2, VerdictGear minor 2, VerdictSettings minor 2); every other file at its v1.119.0 minor, and the test kit at revision **67**. No `NEEDS_*` floor rises.
 
 ### The weight slider's range (`L1`, LibKa0s#107)
 
@@ -27,6 +27,12 @@ Versions so far: `LibKa0s-Verdict-1.0` key **2.1.1.1.1.1.1.1.1.2.2** (Verdict mi
 - **Verdict minor 2, VerdictGear minor 2** ([docs](docs/api/Verdict/version-2.1.1.1.1.1.1.1.1.2.2-docs.md)): `v:StandUp{ lazy = true }` registers the instance's events and reads no gear; the first `Judge` or gear ask (`Snapshot`, `Signature`, `Candidate`, `OffSpecGear`) reads it, quietly, with no `onChange("gear")` for that read. A gear event before that ask rebuilds and announces as ever; a snapshot still held is kept, and after a stand-down the next lazy stand-up defers again. `v:StandUp()` (and `{}`, `{ lazy = false }`, a non-table) is unchanged: read at once and announced. The shell hands each lifecycle step `up(v, opts)`. This is the lifecycle Drop Watcher's host built by hand (`NS.VerdictEnable`'s quiet stand-up, `NS.VerdictFresh`'s provisional re-read), which it can now drop.
 - Tests: `tests/test_verdict_gear.lua` pins both minors and gains six cases: a lazy stand-up keeps the handlers and reads and announces nothing; the first `Judge` reads once, quietly, and a later gear change announces; each gear ask reads quietly; a gear event before the first ask reads and announces and the ask keeps it; a held snapshot is kept and a stand-down defers again; `StandUp()`, `{}`, `{ lazy = false }` and a non-table read and announce at once.
 - Documentation: `docs/api/Verdict/version-2.1.1.1.1.1.1.1.1.2.2-docs.md` and its manifest (the unreleased 1.1.1.1.1.1.1.1.1.1.2 document superseded), `docs/api/README.md`, `docs/test-cases.md`.
+
+### The vendor-sync gate skips a tag it cannot resolve (`L3`, LibKa0s#110)
+
+- **Kit revision 67** ([docs](docs/api/testkit/version-67-docs.md)), on the owner's ruling of 2026-11-28 (the kit changes; testing-§11 does not): `testkit/vendor_sync.lua` asks the present sibling checkout to resolve the tag the provenance line names (`git rev-parse --verify --quiet "<tag>^{commit}"`), and when it cannot (the tag not cut yet, or not fetched) each payload case registers a skip carrying that reason and reads no byte of the payload, as testing-§11 already said. Revision 66 failed it, which is why Drop Watcher and Ka0s Item Search each wrapped the gate in a pre-tag shim. A tag that resolves still fails a copy whose content differs, that lacks a file or that carries an extra one; a provenance document with no line still fails; an absent sibling is still a skip. `tests/_kit/` re-synced. Drop Watcher review `docs/reviews/2026-11-28/` F-012.
+- Tests: `tests/test_kit_vendor_sync.lua` gains four cases against a fixture tag (an unresolvable tag skips, naming it, even over an edited copy; once it resolves a differing copy fails and a matching one passes; a missing file and an extra file each fail at a resolvable tag; an absent sibling still skips); `tests/test_kit_inventory.lua` pins revision 67.
+- Documentation: `docs/api/testkit/version-67-docs.md` (revision 66's document superseded), `docs/api/README.md`'s testkit row, `testkit/README.md`'s `vendor_sync.lua` section, `docs/test-cases.md`.
 
 ## v1.119.0 — 2026-11-27
 
