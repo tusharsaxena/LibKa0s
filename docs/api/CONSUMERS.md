@@ -122,6 +122,16 @@ Most of the 165 fall into four groups. The rows below give each export's own rea
 
 ## What moved since v1.66.0
 
+**v1.119.0, not in the census (2026-11-27), a new major for the verdict.** `LibKa0s-Verdict-1.0` is new: Ka0s Drop
+Watcher's verdict engine, promoted on the owner's ruling R4 (DropWatcher#19, tasks `IS-B1` to `IS-B4` of Drop Watcher's
+`docs/superpowers/plans/2026-11-27-itemsearch-split.md`; [the document](Verdict/version-1.1.1.1.1.1.1.1.1.1.1-docs.md)),
+eleven files, the lib-level kernel plus `New(host)` and its instance, and `Settings`, the Comparison section. None of
+it gets a row here yet. **No host calls it at the tag:** its two consumers adopt it in the same run, Drop Watcher
+(`core/VerdictSetup.lua`, which retires its own copies of the moved files) and Ka0s Item Search, new to the roster in
+that run (its own `core/VerdictSetup.lua`, `client = "forever"`). `DebugLogDiagnostics.lua` minor 13 names the major
+in the report, no member change. The next census reads both hosts' instances, which its `INSTANCE` table does not
+yet resolve.
+
 **v1.117.0, not in the census (2026-11-26), spots from world coordinates and Full, `vendx` prices.** `ForeverDB.lua`
 minor 4 adds `WorldToMap`, `VendorPriceAt`, `FullStatus`, `LoadFull` and `FullCost`, and changes `Spots` (it also reads
 ForeverDB_Full's `spz` and the base `spw`, and answers its origin second) and `VendorPrice` (the lowest across `vendx`

@@ -10,9 +10,9 @@
 | Version | **65** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
 | First released in | v1.117.0 |
-| Status | **Current** |
+| Status | Superseded |
 | Supersedes | [version 64](version-64-docs.md) — the ForeverDB fake had no world coordinates, map geometry, `vendx` price or ForeverDB_Full, so nothing could exercise `LibKa0s-ForeverDB-1.0` minor 4's `Spots` origins, `WorldToMap`, `VendorPriceAt` or `LoadFull` |
-| Superseded by | — |
+| Superseded by | [version 66](version-66-docs.md) |
 | Sync gate | Byte-identity, enforced by `tests/test_kitsync.lua` |
 | Confirm in a consumer | `_G.<X>_TEST.KIT_VERSION` → `65` |
 

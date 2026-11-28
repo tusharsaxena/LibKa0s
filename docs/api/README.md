@@ -68,6 +68,7 @@ the file you need:
 | `LibKa0s-Pool-1.0` | `<Pool>` | `LibStub("LibKa0s-Pool-1.0").MODULES` |
 | `LibKa0s-Item-1.0` | `<Item>` | `LibStub("LibKa0s-Item-1.0").MODULES` |
 | `LibKa0s-ForeverDB-1.0` | `<ForeverDB>` | `LibStub("LibKa0s-ForeverDB-1.0").MODULES` |
+| `LibKa0s-Verdict-1.0` | `<Verdict>.<VerdictConstants>.<VerdictClassData>.<VerdictTierTokens>.<VerdictEvaluate>.<VerdictReads>.<VerdictCollect>.<VerdictFacts>.<VerdictScore>.<VerdictGear>.<VerdictSettings>` | `LibStub("LibKa0s-Verdict-1.0").MODULES` |
 | `LibKa0s-Glow-1.0` | `<Glow>` | `LibStub("LibKa0s-Glow-1.0").MODULES` |
 | `LibKa0s-Toast-1.0` | `<Toast>` | `LibStub("LibKa0s-Toast-1.0").MODULES` |
 | `LibKa0s-Callout-1.0` | `<Callout>.<CalloutRoute>.<CalloutSound>.<CalloutSettings>` (two numbers through 5.6) | `LibStub("LibKa0s-Callout-1.0").MODULES` |
@@ -212,6 +213,12 @@ answers both "what does this version have?" and "when did I get it?".
 | [3](./ForeverDB/version-3-docs.md) | **`ForeverDB.lua` 3** (objects with names: `Object`; Drop Watcher the one consumer; `ISF-LK-01`) | v1.116.0 | Superseded |
 | [2](./ForeverDB/version-2-docs.md) | **`ForeverDB.lua` 2** (Item Search's lookups: `SearchItems`, `QuestsForItem`, `RewardFrom`, `StartsQuest`, `SkinnedFrom`; `IS-LK-01`) | v1.115.0 | Superseded |
 | [1](./ForeverDB/version-1-docs.md) | **`ForeverDB.lua` 1** (the new major: `Available`, `IsLoaded`, `Status`, `Meta`, `NPC`, `Item`, `Quest`, `ItemSources`, `VendorPrice`, `Spots`, `TrainerSpells`; LibKa0s#105, `SF-LK-01`) | v1.114.0 | Superseded |
+
+### `LibKa0s-Verdict-1.0`
+
+| Version | Files | Shipped in | Status |
+|---|---|---|---|
+| [1.1.1.1.1.1.1.1.1.1.1](./Verdict/version-1.1.1.1.1.1.1.1.1.1.1-docs.md) | **`Verdict.lua` 1** · **`VerdictConstants.lua` 1** · **`VerdictClassData.lua` 1** · **`VerdictTierTokens.lua` 1** · **`VerdictEvaluate.lua` 1** · **`VerdictReads.lua` 1** · **`VerdictCollect.lua` 1** · **`VerdictFacts.lua` 1** · **`VerdictScore.lua` 1** · **`VerdictGear.lua` 1** · **`VerdictSettings.lua` 1** (new: the verdict engine promoted from Ka0s Drop Watcher, DropWatcher#19, owner ruling R4; the kernel and the per-instance reads, facts, scorer, collection verdict and gear snapshot; the Comparison settings section) | v1.119.0 | **Current** |
 
 ### `LibKa0s-Glow-1.0`
 
@@ -374,7 +381,8 @@ answers both "what does this version have?" and "when did I get it?".
 
 | Version | Files | Shipped in | Status |
 |---|---|---|---|
-| [23.12.1.5](./DebugLog/version-23.12.1.5-docs.md) | `DebugLog.lua` 23 · **`DebugLogDiagnostics.lua` 12** (the identity header names ForeverDB and prints its line; LibKa0s#105, `SF-LK-01`) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 5 | v1.114.0 | **Current** |
+| [23.13.1.5](./DebugLog/version-23.13.1.5-docs.md) | `DebugLog.lua` 23 · **`DebugLogDiagnostics.lua` 13** (the identity header names Verdict; DropWatcher#19) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 5 | v1.119.0 | **Current** |
+| [23.12.1.5](./DebugLog/version-23.12.1.5-docs.md) | `DebugLog.lua` 23 · **`DebugLogDiagnostics.lua` 12** (the identity header names ForeverDB and prints its line; LibKa0s#105, `SF-LK-01`) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 5 | v1.114.0 – v1.118.0 | Superseded |
 | [23.11.1.5](./DebugLog/version-23.11.1.5-docs.md) | **`DebugLog.lua` 23** (the buffer's messages plain, the colored view kept in `__view`, `REPORT_WRITTEN`; the `onSettings` field, LibKa0s#86) · **`DebugLogDiagnostics.lua` 11** (`D:Report`, `D:Serialize`, `lib.Serialize`; LibKa0s#79, `LK-79`) · `DebugLogGates.lua` 1 · **`DebugLogWindow.lua` 5** (a skin switch's rebuild keeps each message's colors) | v1.105.0 – v1.113.0 | Superseded |
 | [22.10.1.4](./DebugLog/version-22.10.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 10** (the identity header names WaypointArrow) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.99.0 – v1.104.0 | Superseded |
 | [22.9.1.4](./DebugLog/version-22.9.1.4-docs.md) | `DebugLog.lua` 22 · **`DebugLogDiagnostics.lua` 9** (the identity header names Callout) · `DebugLogGates.lua` 1 · `DebugLogWindow.lua` 4 | v1.96.0 – v1.97.0 | Superseded |
@@ -603,7 +611,8 @@ are never adopted separately. It is indexed here because the question it answers
 
 | Version | Files | First released in | Status |
 |---|---|---|---|
-| [65](./testkit/version-65-docs.md) | same files; **`mock_foreverdb.lua`**: the fixture gains an invented continent in `umaa` (its map and two overlapping zones) with `zbord` polygons, `spw` world coordinates for a new creature, a `vendx` price, and a ForeverDB_Full fake (`opts.full`, `FDB.fullFixture()`) with an `spz` row, for `LibKa0s-ForeverDB-1.0` minor 4 (`ISR3-LK-01`) | v1.117.0 | **Current** |
+| [66](./testkit/version-66-docs.md) | same files; **`run-automated-tests.sh`**: a library checked out as a `git worktree` (its `.git` a file) runs, and is named by its repository's common git dir rather than the worktree's folder (review F-011, `IS-F1`) | v1.119.0 | **Current** |
+| [65](./testkit/version-65-docs.md) | same files; **`mock_foreverdb.lua`**: the fixture gains an invented continent in `umaa` (its map and two overlapping zones) with `zbord` polygons, `spw` world coordinates for a new creature, a `vendx` price, and a ForeverDB_Full fake (`opts.full`, `FDB.fullFixture()`) with an `spz` row, for `LibKa0s-ForeverDB-1.0` minor 4 (`ISR3-LK-01`) | v1.117.0 – v1.118.0 | Superseded |
 | [64](./testkit/version-64-docs.md) | same files; **`mock_foreverdb.lua`**: the fixture gains invented `obj` rows (two objects sharing a name, one with no name, one that is not a table) and the relic that drops from them, for `LibKa0s-ForeverDB-1.0` minor 3's `Object` (`ISF-LK-01`) | v1.116.0 | Superseded |
 | [63](./testkit/version-63-docs.md) | same files; **`mock_foreverdb.lua`**: the fixture gains invented `qx`, `rew`, `start` and `skin` rows, five more items and two more quests, for `LibKa0s-ForeverDB-1.0` minor 2's lookups (`IS-LK-01`) | v1.115.0 | Superseded |
 | [62](./testkit/version-62-docs.md) | same files; **`client_globals_forever.lua` regenerated** at Ketho/BlizzardInterfaceResources `forever` `e230342` (2026-11-14): 17 names added, 3 removed, 10559 in all; `live` unchanged at `f3b334b` (LibKa0s#93, `SF-LK-02`) | v1.114.0 | Superseded |

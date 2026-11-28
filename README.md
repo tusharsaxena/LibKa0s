@@ -10,7 +10,7 @@ before changing anything. [`DEPENDENCIES.md`](DEPENDENCIES.md) lists what to ins
 
 LibKa0s is a Ka0s-owned shared library. Ka0s WoW addons vendor it the way they vendor Ace3: each one
 copies it into its own `libs/` folder instead of depending on it at runtime. Every module is one
-LibStub major, and twenty-six of them ship today:
+LibStub major, and twenty-seven of them ship today:
 
 - `LibKa0s-Core-1.0`: the small stateless seams every other module sits on. That means secret-safe
   stringification, the window skin and its close button, a prefixed chat printer,
@@ -49,6 +49,12 @@ LibStub major, and twenty-six of them ship today:
   empty list) on Retail and when ForeverDB is absent, and never raises. Spots also come from the
   base addon's world coordinates, converted to map positions with ForeverDB's own zone tables, and
   from ForeverDB_Full, which loads only when a host asks for it and never in combat.
+- `LibKa0s-Verdict-1.0` answers "what is this item to me": an upgrade, a sidegrade, a downgrade,
+  something you cannot use or do not want, for you or for another player. Each host builds one
+  instance with `New(host)`, naming its client, and the instance keeps its own item cache, gear
+  snapshot and scorer; the six Comparison settings and their two editors come with it as a
+  drop-in settings section. Ka0s Drop Watcher and Ka0s Item Search judge the same item the same way
+  through it.
 - `LibKa0s-Glow-1.0` is the stateless LibCustomGlow-1.0 driver: one of four glow styles and its knob
   values mapped to LibCustomGlow's positional arguments, with its two traps handled. It resolves
   LibCustomGlow-1.0 at call time and does nothing without it.
@@ -163,7 +169,7 @@ addon must work with no other addon installed.
 
 ## The modules
 
-There are twenty-six LibStub majors, and a host adopts each one independently. The full contract for
+There are twenty-seven LibStub majors, and a host adopts each one independently. The full contract for
 each (the descriptor, every public member, every row field) lives in [`docs/api/`](docs/api/), one
 document per shipped version. This section is the map and that directory is the reference. Nothing
 here restates a signature, because a second copy of a contract is a contract that drifts.
@@ -181,6 +187,7 @@ here restates a signature, because a second copy of a contract is a contract tha
 | `LibKa0s-Pool-1.0` | The free/active widget pool this collection kept rewriting, in a keyed and an unkeyed form. `ReleaseAll` parks backward, so a position gets its own object back on the next pass. The keyed form leaves order undefined on purpose. | `Pool.lua` | [3](docs/api/Pool/version-3-docs.md) |
 | `LibKa0s-Item-1.0` | Item identity as five primitives and no policy: read an item link and its bonus ids, name a quality, ask the client to cache an id. What an uncached item *means* stays the host's decision, because two addons here disagree about it in writing. | `Item.lua` | [3](docs/api/Item/version-3-docs.md) |
 | `LibKa0s-ForeverDB-1.0` | The one reader of ForeverDB, WoW Forever's LoadOnDemand data addon (an optional dependency: `## OptionalDeps`, never `## Dependencies`). `Available()` (`ok, reason`: `"client"` off Forever, `"missing"`, the client's load reason, `"reshaped"`; the first call is the one `LoadAddOn`, once a session), `IsLoaded()` and `Status()` (the diagnostics' reads, which never load), and the lookups `Meta`, `NPC`, `Item`, `Quest`, `ItemSources` (drop, object and container sources with chances on 0..1, vendors, the world-drop level), `VendorPrice`, `Spots` (map points on 0..1) and `TrainerSpells`, each a fresh table or nil, never a raise; from minor 2, Item Search's `SearchItems` (by name, through a session index), `QuestsForItem` (quest item objectives), `RewardFrom`, `StartsQuest` and `SkinnedFrom`, each `{}` (or nil) when unavailable; from minor 3, `Object` (an object's name, or nil for a nameless row); from minor 4, `Spots` reads ForeverDB_Full's `spz` (when loaded), then `spm`, then the base `spw` world coordinates through the pure `WorldToMap` (ForeverDB's `umaa` and `zbord`, no client map API), and answers its origin second; `VendorPriceAt` (`vendx`, then `vp`) and `VendorPrice` across both; `FullStatus()` (never loads), `LoadFull()` (the one ForeverDB_Full load: refused in combat, once a session, measured) and `FullCost()`. No row of ForeverDB's GPL data is in the library or its tests. | `ForeverDB.lua` | [4](docs/api/ForeverDB/version-4-docs.md) |
+| `LibKa0s-Verdict-1.0` | The upgrade verdict engine, promoted from Ka0s Drop Watcher on the owner's ruling (R4 of DropWatcher#19's design) for its two consumers, Drop Watcher and Ka0s Item Search. The lib-level kernel is pure and names the client per call: `Evaluate(facts, candidate, opts)` (the verdict, its deltas and reasons), `Equippability`, `ItemVerdict`, `TrackDelta`, `SubClassKey`, `OffSpec`, the per-client `ClassData`, `TierTokens`, the constants `C`, the default client `Reads`, `Collect`, `ItemRead`, `Facts`, `Score` and `Gear`. `New(host)` answers an instance bound to one client (`"retail"` or `"forever"`) and the host's `config`, `L`, `reads`, events and `onChange`, with its own facts cache, gear snapshot, timers and pending scores: `Judge(link)` (`me, pending`), `JudgeFacts`, `Facts`, `Request`, `Snapshot`, `Candidate`, `ScoreFor`, `StandUp` and `StandDown`. `Settings` is the Comparison section a host drops into its LibKa0s-Options-1.0 panel: `DEFAULTS`, `Rows(spec)`, `Section(ctx, O, spec, tab)` and `Tabs(O, spec)`, every write handed to the host's `spec.set`. | `Verdict.lua`, `VerdictConstants.lua`, `VerdictClassData.lua`, `VerdictTierTokens.lua`, `VerdictEvaluate.lua`, `VerdictReads.lua`, `VerdictCollect.lua`, `VerdictFacts.lua`, `VerdictScore.lua`, `VerdictGear.lua`, `VerdictSettings.lua` | [1.1.1.1.1.1.1.1.1.1.1](docs/api/Verdict/version-1.1.1.1.1.1.1.1.1.1.1-docs.md) |
 | `LibKa0s-Glow-1.0` | The stateless LibCustomGlow-1.0 driver. `Start(frame, style, knobs, key, frameLevel)` and `Stop(frame, style, key)` map one of four styles (`button`, `proc`, `pixel`, `autocast`) and its knob values to LibCustomGlow's positional arguments, with its two traps handled (`pixelLength` 0 means automatic; a boolean is false only when false). No defaults, no ranges, no lifecycle: the repaint gate, the proc burst and the triggers stay the host's. LibCustomGlow-1.0 is resolved at call time, and without it nothing is drawn. | `Glow.lua` | [2](docs/api/Glow/version-2-docs.md) |
 | `LibKa0s-Toast-1.0` | The alert-toast shell. `Toast:New(d)` answers a toast that shows one payload at a time, or with `d.stack` up to that many stacked `"DOWN"` or `"UP"` from the saved point (`SetStack` for a host's settings rows), and queues the rest (the oldest dropped past a cap), closes after the host's duration with the countdown paused under the pointer, closes on its close mark or a right-click, and can be dragged only while the host's `draggable` says so, its position kept in the host's profile through `getPosition` / `setPosition` in UIParent's units. Scale and an optional alert sound come from the host; the frame is frame-layering's T5 alert tier. The content is the host's: `d.build(frame, payload)` is the one presentation argument. `Clear` is the stand-down, `Hold` / `Release` a host's combat hold, `Preview` test mode's placement. It needs only Core's `ApplySkin` and `MakeCloseButton`, so it runs beside the v1.77.0 payload. | `Toast.lua` | [4](docs/api/Toast/version-4-docs.md) |
 | `LibKa0s-Callout-1.0` | The center-screen call-out. `Callout:New(d)` answers an instance that keeps its settings in the host's `db`. `Countdown{ endsAt, from, finish, onTick, onDone }` counts down up to 20 s, the number read as `math.ceil(endsAt - GetTime())` on the frame, so a host clock reading the same `endsAt` flips on the same frame; `Show(keyOrSpec, opts)` shows one of the 23 stock call-outs, a number, or a custom text with an optional host sound file. The look (font, size, outline, shadow, per-kind colors, a glow behind the text as AuraMaster's, with its intensity, thickness, offsets and a custom, class or skin color, animation, a saved position moved with unlock-to-move) and the sound (one of eight bundled voice packs, an arena announcer by default, the client's text to speech, or none) are the player's settings. `CalloutSettings.lua` builds the settings over the host's Options instance or plain frames: one Callout tab, a Preview block (test buttons that play the real call-out, with no sample line from 4.5) over Look and Sound side tabs with no stock texts (`SettingsTab`, the documented shape), or the Look, Sound and Texts tabs with a live sample line (`BuildSettings`, `SettingsTabs`). From 4.5 the look's defaults are the owner's: Oxanium SemiBold, a 1 px shadow and a black 1 px glow. From 5.6 the descriptor's `onClose` and `onSettings` give the drag strip its close mark and what its settings mark opens, and the look follows the skin (the Skin font, its outline, glow color and shadow, numbers in its HUD text color and the meaning kinds in its `sem.*` colors until the player picks one), the text drawn through the owner's `S.HudFont`; `FollowKeys` names what a host's one-time step moves and `MoveToSkin` moves it. For a Ka0s host (`architecture-§5`), `SchemaRows(prefix)` answers every setting as a schema row the host registers in its own schema (`{ texts = false }`, from 3.4, leaves out the stock texts' rows, the one tab's shape, and then the host's seam refuses a stock text's or a mute's write), and with the descriptor's `path` and `set` every write, a drag's saved point included, goes through the host's write seam. No SavedVariables of its own, no secret value; `Suspend` / `Resume` stand it down. | `Callout.lua`, `CalloutRoute.lua`, `CalloutSound.lua`, `CalloutSettings.lua` | [6.1.1.6](docs/api/Callout/version-6.1.1.6-docs.md) |
@@ -299,8 +306,8 @@ somebody eventually runs without the pipeline.
 `testkit/` holds the registry, the assertions, the source loader and the universal half of the
 WoW-API mock. The whole collection shares it, and each addon vendors it as `tests/_kit/`. It is not a
 LibStub major and it never ships, but it does carry a plain revision integer, `Kit.VERSION` (exposed
-to suites as `KIT_VERSION`), so a consumer can say which copy it holds; v1.118.0 carries revision
-65. Its full surface is in
+to suites as `KIT_VERSION`), so a consumer can say which copy it holds; v1.119.0 carries revision
+66. Its full surface is in
 [`docs/api/testkit/`](docs/api/testkit/), indexed alongside the majors, and
 [`testkit/README.md`](./testkit/README.md) covers what it is and the vendoring discipline.
 
@@ -338,7 +345,7 @@ forgotten once already, with both repos' suites green the whole time.
 
 Re-vendoring is **whole-folder**, never file by file, with two carve-outs: `media/icons/` and
 `media/sounds/` ship only the icons and voice packs the consumer declares (see *Installing* above). Every major except Core and Tooltip (Env, Compat, Role, Lifecycle,
-Bus, Schema, Pool, Item, ForeverDB, Glow, Toast, Callout, Charts, Media, Skin, Widgets, DebugLog, Slash, Launcher, Options, IconBrowser, Perf and Sim) resolves
+Bus, Schema, Pool, Item, ForeverDB, Verdict, Glow, Toast, Callout, Charts, Media, Skin, Widgets, DebugLog, Slash, Launcher, Options, IconBrowser, Perf and Sim) resolves
 `LibKa0s-Core-1.0` before it calls `NewLibrary`, and returns outright if Core is missing or below the
 minor it needs. A consumer that copied a new `Perf.lua` over an old `Core.lua` gets no probe at all,
 not a half-updated one, and the host's setup stub then says "perf is not installed". That is the
@@ -363,6 +370,18 @@ LibKa0s/            -- the only folder that ships; vendor this into <Addon>/libs
   Item.lua           -- LibKa0s-Item-1.0, MINOR at the top of the file; needs Core
   ForeverDB.lua      -- LibKa0s-ForeverDB-1.0, MINOR at the top of the file; needs Core (Compat
                         and the ForeverDB addon at call time)
+  Verdict.lua        -- LibKa0s-Verdict-1.0, MINOR at the top of the file; needs Core (Compat, Item
+                        and Role at call time, each optional)
+  VerdictConstants.lua -- the item, slot and quality numbers, same module, CONSTANTS_MINOR of its own
+  VerdictClassData.lua -- the class lists, one per client, same module, CLASSDATA_MINOR of its own
+  VerdictTierTokens.lua -- tier tokens judged as gear, same module, TIERTOKENS_MINOR of its own
+  VerdictEvaluate.lua -- the kernel and the off-spec pass, same module, EVALUATE_MINOR of its own
+  VerdictReads.lua   -- the client reads an instance makes, same module, READS_MINOR of its own
+  VerdictCollect.lua -- the category and the collection verdict, same module, COLLECT_MINOR of its own
+  VerdictFacts.lua   -- an item link's facts, cached per instance, same module, FACTS_MINOR of its own
+  VerdictScore.lua   -- the scorers and the Pawn adapter, same module, SCORE_MINOR of its own
+  VerdictGear.lua    -- the gear snapshot, the candidate and the judge, same module, GEAR_MINOR of its own
+  VerdictSettings.lua -- the Comparison settings section, same module, SETTINGS_MINOR of its own
   Glow.lua           -- LibKa0s-Glow-1.0, MINOR at the top of the file; needs Core (LibCustomGlow-1.0
                         is the host's, resolved at call time)
   Toast.lua          -- LibKa0s-Toast-1.0, MINOR at the top of the file; needs Core

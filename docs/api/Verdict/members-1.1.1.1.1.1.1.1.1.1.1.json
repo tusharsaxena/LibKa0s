@@ -1,0 +1,40 @@
+{
+  "major": "LibKa0s-Verdict-1.0",
+  "versionKey": "1.1.1.1.1.1.1.1.1.1.1",
+  "generator": "tools/gen-api-members.lua",
+  "modules": [
+    { "file": "Verdict", "minor": 1 },
+    { "file": "VerdictConstants", "minor": 1 },
+    { "file": "VerdictClassData", "minor": 1 },
+    { "file": "VerdictTierTokens", "minor": 1 },
+    { "file": "VerdictEvaluate", "minor": 1 },
+    { "file": "VerdictReads", "minor": 1 },
+    { "file": "VerdictCollect", "minor": 1 },
+    { "file": "VerdictFacts", "minor": 1 },
+    { "file": "VerdictScore", "minor": 1 },
+    { "file": "VerdictGear", "minor": 1 },
+    { "file": "VerdictSettings", "minor": 1 }
+  ],
+  "members": [
+    { "name": "C", "kind": "table" },
+    { "name": "CLIENTS", "kind": "table" },
+    { "name": "ClassData", "kind": "table" },
+    { "name": "Collect", "kind": "table" },
+    { "name": "Equippability", "kind": "function" },
+    { "name": "Evaluate", "kind": "function" },
+    { "name": "EventsFor", "kind": "function" },
+    { "name": "Facts", "kind": "table" },
+    { "name": "Gear", "kind": "table" },
+    { "name": "ItemRead", "kind": "table" },
+    { "name": "ItemVerdict", "kind": "function" },
+    { "name": "New", "kind": "function" },
+    { "name": "OffSpec", "kind": "table" },
+    { "name": "Reads", "kind": "table" },
+    { "name": "Score", "kind": "table" },
+    { "name": "Settings", "kind": "table" },
+    { "name": "SubClassKey", "kind": "function" },
+    { "name": "TierTokens", "kind": "table" },
+    { "name": "TrackDelta", "kind": "function" },
+    { "name": "VerdictModeFor", "kind": "function" }
+  ]
+}
