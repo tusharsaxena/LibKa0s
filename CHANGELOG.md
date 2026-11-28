@@ -54,6 +54,12 @@ Versions in this release: `LibKa0s-Verdict-1.0` key **3.1.1.1.1.1.1.1.1.2.2** (V
 - **The documents name v1.120.0** where they read unreleased: Verdict 3.1.1.1.1.1.1.1.1.2.2, Sim 6.3.11.4 and testkit 67, with `docs/api/README.md`'s three rows. The v1.119.0 Verdict document's *Superseded by* names the key that shipped, as Skin's did at v1.79.0, since the 1.1.1.1.1.1.1.1.1.1.2 and 2.1.1.1.1.1.1.1.1.2.2 keys were superseded before the tag.
 - Documentation: `README.md` (the standards pointer at v2.122.0, the Verdict and Sim entries and rows at their current documents, the kit line at v1.120.0 and revision 67), `docs/releasing.md` (the version pointers at v1.120.0, the v1.120.0 re-vendor note under step 8, the Consumers table's Verdict and Sim rows), `docs/api/CONSUMERS.md` (what moved at v1.120.0) and `docs/test-cases.md` (regenerated).
 
+Release gate (`docs/automated-tests/20261128-140211/`): lint pass, 0/0 in 421 files;
+tests pass, 5581 tests, 0 failed; complexity pass, 0 over CCN 15. Perf
+SKIPPED, not measured — no `tests/perf.lua` — so the gate covered three suites, not four.
+
+Preview and simulation re-look: Refreshed — `Sim.lua` 6 moved (`197783ad`, `Sim:Cover`): `tests/fixture_sim_panel.lua`, every `tests/test_sim_*.lua`, `tests/test_widgets_teststrip.lua` and `docs/api/Sim/version-6.3.11.4-docs.md` re-read, `tests/test_sim_seam.lua` and `tests/test_sim_session.lua` extended and `tests/test_sim_sample.lua` re-pinned; `Widgets.lua` did not move. No sample character, scenario, step or strip changed, so no host re-looks at its start routes or strips; Drop Watcher adopts `Cover` in the same run.
+
 ## v1.119.0 — 2026-11-27
 
 Opened 2026-11-27, on `feat/2026-11-27-itemsearch-split`: DropWatcher#19 (splitting Item Search out of Ka0s Drop Watcher into Ka0s Item Search), Drop Watcher's plan `docs/superpowers/plans/2026-11-27-itemsearch-split.md`, tasks B1 to B4, built from its design `docs/superpowers/specs/2026-11-27-itemsearch-split-design.md`. Built to WowAddonStandards v2.121.0.
