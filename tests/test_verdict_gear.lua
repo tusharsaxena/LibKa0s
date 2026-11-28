@@ -362,3 +362,111 @@ test("verdict gear: stand-down drops pending refresh, and nothing fires until th
   assertEqual(W.count("gear"), 1, "the stand-up rebuilds and announces")
   assertEqual(W.v:Snapshot().equipped[SLOT.HEAD].ilvl, 620)
 end)
+
+-- ---------------------------------------------------------------------------------------------
+-- The lazy stand-up (LibKa0s#108): StandUp{ lazy = true } keeps the handlers and reads no gear;
+-- the first ask reads it, quietly. StandUp() is unchanged.
+-- ---------------------------------------------------------------------------------------------
+
+-- Count every worn-slot link read the instance makes from here on.
+local function countReads(W)
+  local reads, real = { n = 0 }, W.m.GetInventoryItemLink
+  W.m.GetInventoryItemLink = function(...) reads.n = reads.n + 1; return real(...) end
+  return reads
+end
+
+test("verdict gear: VerdictGear is at minor 2 and the shell at minor 2 (the lazy stand-up)", function()
+  local W = world()
+  assertEqual(W.V.MODULES.VerdictGear, 2)
+  assertEqual(W.V.MODULES.Verdict, 2)
+end)
+
+test("verdict gear: StandUp{ lazy = true } keeps the handlers and reads and announces nothing", function()
+  local W = world()
+  W.wear(SLOT.HEAD, 3001, leather("INVTYPE_HEAD", 600))
+  local reads = countReads(W)
+  W.v:StandUp{ lazy = true }
+  assertEqual(W.registrations.PLAYER_EQUIPMENT_CHANGED, 1, "the handlers are kept")
+  assertFalse(W.v:IsStoodDown())
+  -- red under: a lazy stand-up that read your gear at once (the no-argument path)
+  assertEqual(reads.n, 0, "no gear read at the stand-up")
+  assertNil(W.v.__gear and W.v.__gear.snap, "no snapshot held")
+  assertEqual(W.count("gear"), 0, "nothing announced")
+end)
+
+test("verdict gear: after a lazy stand-up the first Judge reads your gear, quietly, once", function()
+  local W = world()
+  W.wear(SLOT.HEAD, 3001, leather("INVTYPE_HEAD", 600))
+  W.item(3201, leather("INVTYPE_HEAD", 650))
+  W.v:StandUp{ lazy = true }
+  local reads = countReads(W)
+  local me, pending = W.v:Judge(link(3201))
+  assertFalse(pending)
+  assertEqual(me.verdict, "upgrade", "judged against the gear read on the ask")
+  assertTrue(reads.n > 0, "the first ask reads your gear")
+  -- red under: a first read that announced onChange("gear")
+  assertEqual(W.count("gear"), 0, "the first read is quiet")
+  local after = reads.n
+  W.v:Judge(link(3201))
+  assertEqual(W.v:Snapshot().equipped[SLOT.HEAD].ilvl, 600)
+  assertEqual(reads.n, after, "read once: the next asks keep the snapshot")
+  W.wear(SLOT.HEAD, 3002, leather("INVTYPE_HEAD", 660))
+  W.fire("PLAYER_EQUIPMENT_CHANGED", SLOT.HEAD, true)
+  W.timers()
+  assertEqual(W.count("gear"), 1, "a later gear change announces, as ever")
+end)
+
+test("verdict gear: after a lazy stand-up each first gear ask (Snapshot, Candidate, Signature) reads quietly", function()
+  for _, ask in ipairs({ "Snapshot", "Candidate", "Signature" }) do
+    local W = world()
+    W.wear(SLOT.HEAD, 3001, leather("INVTYPE_HEAD", 600))
+    W.v:StandUp{ lazy = true }
+    W.v[ask](W.v)
+    assertEqual(W.v.__gear.snap.equipped[SLOT.HEAD].ilvl, 600, ask .. " reads your gear")
+    assertEqual(W.count("gear"), 0, ask .. ": quiet")
+  end
+end)
+
+test("verdict gear: a gear event before the first ask after a lazy stand-up reads and announces", function()
+  local W = world()
+  W.v:StandUp{ lazy = true }
+  W.wear(SLOT.HEAD, 3001, leather("INVTYPE_HEAD", 600))
+  W.fire("PLAYER_EQUIPMENT_CHANGED", SLOT.HEAD, true)
+  W.timers()
+  assertEqual(W.count("gear"), 1, "the rebuild's snapshot is the real one, announced")
+  local reads = countReads(W)
+  assertEqual(W.v:Snapshot().equipped[SLOT.HEAD].ilvl, 600)
+  assertEqual(reads.n, 0, "the ask keeps the rebuild's snapshot")
+  assertEqual(W.count("gear"), 1)
+end)
+
+test("verdict gear: a lazy stand-up keeps a snapshot it holds; after a stand-down it defers again", function()
+  local W = world()
+  W.wear(SLOT.HEAD, 3001, leather("INVTYPE_HEAD", 600))
+  W.v:StandUp()
+  local held = W.v:Snapshot()
+  W.v:StandUp{ lazy = true }
+  assertTrue(W.v:Snapshot() == held, "the held snapshot stays")
+  W.v:StandDown()
+  W.changes = {}
+  local reads = countReads(W)
+  W.v:StandUp{ lazy = true }
+  assertEqual(reads.n, 0, "stood down, the snapshot was dropped; the stand-up reads none")
+  assertEqual(W.count("gear"), 0)
+  W.v:Snapshot()
+  assertTrue(reads.n > 0); assertEqual(W.count("gear"), 0)
+end)
+
+test("verdict gear: StandUp(), StandUp{} and StandUp{ lazy = false } read and announce at once", function()
+  for _, arg in ipairs({ "none", "empty", "false", "notTable" }) do
+    local W = world()
+    W.wear(SLOT.HEAD, 3001, leather("INVTYPE_HEAD", 600))
+    local reads = countReads(W)
+    if arg == "none" then W.v:StandUp()
+    elseif arg == "empty" then W.v:StandUp{}
+    elseif arg == "false" then W.v:StandUp{ lazy = false }
+    else W.v:StandUp(true) end
+    assertTrue(reads.n > 0, arg .. ": read at the stand-up")
+    assertEqual(W.count("gear"), 1, arg .. ": announced")
+  end
+end)

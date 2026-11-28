@@ -14,13 +14,19 @@ cannot drift. Release order is in
 
 Opened 2026-11-28, on `feat/2026-11-28-issue-fixes`: the issues the Item Search split run (DropWatcher#19) filed, Drop Watcher's plan `docs/superpowers/plans/2026-11-28-issue-fixes.md`, tasks L1 to L6.
 
-Versions so far: `LibKa0s-Verdict-1.0` key **1.1.1.1.1.1.1.1.1.1.2** (VerdictSettings minor 2); every other file at its v1.119.0 minor, and the test kit at revision **66**. No `NEEDS_*` floor rises.
+Versions so far: `LibKa0s-Verdict-1.0` key **2.1.1.1.1.1.1.1.1.2.2** (Verdict minor 2, VerdictGear minor 2, VerdictSettings minor 2); every other file at its v1.119.0 minor, and the test kit at revision **66**. No `NEEDS_*` floor rises.
 
 ### The weight slider's range (`L1`, LibKa0s#107)
 
 - **VerdictSettings minor 2** ([docs](docs/api/Verdict/version-1.1.1.1.1.1.1.1.1.1.2-docs.md)), on the owner's ruling of 2026-11-28 (widen the slider): the Comparison page's stat-weight slider runs **-5..20** (`Settings.WEIGHT_MIN` / `WEIGHT_MAX`, were 0..5; `WEIGHT_STEP` stays 0.05), and the new `Settings.WeightRange(v)` stretches a slider's end to the whole number at or past a stored weight beyond that range, so an imported Pawn weight (any signed number, as before: nothing is clamped) is shown at its own value and a touch that lets go there writes it back, where a pinned slider wrote the end over it. Review F-010 of the split run.
 - Tests: `tests/test_verdict_settings.lua` re-pins minor 2 and gains two cases: `WeightRange`'s ends (inside, at the ends, above, below, fractional, a non-number, the infinities, NaN), and an out-of-range Pawn import (Intellect 27, Haste -8) drawn at its true values on sliders reaching them, a write to another stat's slider keeping both, and a touch on each writing it back.
 - Documentation: `docs/api/Verdict/version-1.1.1.1.1.1.1.1.1.1.2-docs.md` and its manifest (the 1.1.1.1.1.1.1.1.1.1.1 document superseded), `docs/api/README.md`, `docs/test-cases.md`.
+
+### The lazy stand-up (`L2`, LibKa0s#108)
+
+- **Verdict minor 2, VerdictGear minor 2** ([docs](docs/api/Verdict/version-2.1.1.1.1.1.1.1.1.2.2-docs.md)): `v:StandUp{ lazy = true }` registers the instance's events and reads no gear; the first `Judge` or gear ask (`Snapshot`, `Signature`, `Candidate`, `OffSpecGear`) reads it, quietly, with no `onChange("gear")` for that read. A gear event before that ask rebuilds and announces as ever; a snapshot still held is kept, and after a stand-down the next lazy stand-up defers again. `v:StandUp()` (and `{}`, `{ lazy = false }`, a non-table) is unchanged: read at once and announced. The shell hands each lifecycle step `up(v, opts)`. This is the lifecycle Drop Watcher's host built by hand (`NS.VerdictEnable`'s quiet stand-up, `NS.VerdictFresh`'s provisional re-read), which it can now drop.
+- Tests: `tests/test_verdict_gear.lua` pins both minors and gains six cases: a lazy stand-up keeps the handlers and reads and announces nothing; the first `Judge` reads once, quietly, and a later gear change announces; each gear ask reads quietly; a gear event before the first ask reads and announces and the ask keeps it; a held snapshot is kept and a stand-down defers again; `StandUp()`, `{}`, `{ lazy = false }` and a non-table read and announce at once.
+- Documentation: `docs/api/Verdict/version-2.1.1.1.1.1.1.1.1.2.2-docs.md` and its manifest (the unreleased 1.1.1.1.1.1.1.1.1.1.2 document superseded), `docs/api/README.md`, `docs/test-cases.md`.
 
 ## v1.119.0 — 2026-11-27
 

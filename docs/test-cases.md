@@ -848,7 +848,7 @@ Total.
 - verdict score: Pawn absent, or loaded but not initialized, never errors and never waits
 - verdict score: a stand-down drops the score retry; no onChange until the stand-up
 
-### test_verdict_gear.lua (18)
+### test_verdict_gear.lua (25)
 
 - verdict gear: each worn slot is a copy of its facts at the current level; an empty slot is false
 - verdict gear: Retail's candidate carries its spec and no tree; the hand flags are the spec's
@@ -868,6 +868,13 @@ Total.
 - verdict gear: Retail rebuilds on your spec change alone; Forever on talents and levels
 - verdict gear: the first lazy read announces nothing; an item still loading is unknown, then rebuilt
 - verdict gear: stand-down drops pending refresh, and nothing fires until the stand-up
+- verdict gear: VerdictGear is at minor 2 and the shell at minor 2 (the lazy stand-up)
+- verdict gear: StandUp{ lazy = true } keeps the handlers and reads and announces nothing
+- verdict gear: after a lazy stand-up the first Judge reads your gear, quietly, once
+- verdict gear: after a lazy stand-up each first gear ask (Snapshot, Candidate, Signature) reads quietly
+- verdict gear: a gear event before the first ask after a lazy stand-up reads and announces
+- verdict gear: a lazy stand-up keeps a snapshot it holds; after a stand-down it defers again
+- verdict gear: StandUp(), StandUp{} and StandUp{ lazy = false } read and announce at once
 
 ### test_verdict_instances.lua (15)
 
@@ -6359,7 +6366,7 @@ Total.
 | test_verdict_collect.lua | 13 |
 | test_verdict_facts.lua | 21 |
 | test_verdict_score.lua | 19 |
-| test_verdict_gear.lua | 18 |
+| test_verdict_gear.lua | 25 |
 | test_verdict_instances.lua | 15 |
 | test_verdict_settings.lua | 24 |
 | test_verdict_golden.lua | 66 |
@@ -6580,4 +6587,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5554** |
+| **Total** | **5561** |

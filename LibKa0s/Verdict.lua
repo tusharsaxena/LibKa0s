@@ -62,9 +62,12 @@
 -- THE LIFECYCLE. An instance answers from the moment it is made, reading lazily. Its events are
 -- registered by `v:StandUp()` (through host.registerEvent, one handler per event) and dropped by
 -- `v:StandDown()`, which also cancels every timer and drops every cache: while stood down nothing
--- arms and `onChange` never fires. The secondary files add their state lazily, their events to
--- lib.__events and their stand-down and stand-up steps to lib.__lifecycle, so an instance built
--- before a file loads still gets what it adds.
+-- arms and `onChange` never fires. `v:StandUp()` reads your gear at once and announces it
+-- (onChange("gear")); `v:StandUp{ lazy = true }` keeps the handlers and reads nothing, so the first
+-- `Judge` or gear ask reads your gear, quietly, as an instance never stood up does (LibKa0s#108).
+-- The secondary files add their state lazily, their events to lib.__events and their stand-down
+-- and stand-up steps to lib.__lifecycle, so an instance built before a file loads still gets what
+-- it adds.
 --
 -- == DEPENDENCIES ==============================================================================
 --
@@ -78,7 +81,8 @@ if not core or (core.MINOR or 0) < NEEDS_CORE then return end   -- no NewLibrary
 
 -- Minor 1 (DropWatcher#19, task B1 of Drop Watcher's
 -- docs/superpowers/plans/2026-11-27-itemsearch-split.md): the shell and the pure kernel.
-local MAJOR, MINOR = "LibKa0s-Verdict-1.0", 1
+-- Minor 2 (LibKa0s#108): StandUp(opts), `opts.lazy` handed to each stand-up step.
+local MAJOR, MINOR = "LibKa0s-Verdict-1.0", 2
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -97,7 +101,8 @@ local methods = lib.__methods
 local instanceMeta = { __index = methods }
 
 -- What the secondary files hang on the shell: their events (`[key] = { event, clients, fn }`,
--- fn(v, event, ...)) and their lifecycle steps (`[key] = { down = fn(v), up = fn(v), order }`).
+-- fn(v, event, ...)) and their lifecycle steps (`[key] = { down = fn(v), up = fn(v, opts), order }`,
+-- `opts` the stand-up's: `{ lazy = boolean }`).
 lib.__events = lib.__events or {}
 lib.__lifecycle = lib.__lifecycle or {}
 
@@ -274,8 +279,13 @@ function methods:Events() return lib.EventsFor(self.client) end
 --- Register the instance's events through the host and run every stand-up step (the gear snapshot
 --- is read again and announced). Safe to call twice. Each registration is protected on its own
 --- (events-frames-taint-§1): one the host refuses costs that event, with a debug line, not the rest
---- of the block or the stand-up.
-function methods:StandUp()
+--- of the block or the stand-up. With `opts.lazy` the steps read nothing: the gear snapshot is read
+--- by the first Judge or gear ask, quietly (no onChange("gear") for that read), and a snapshot the
+--- instance still holds is kept. Anything but a table with `lazy = true` stands up as with no
+--- argument.
+--- @param opts table|nil { lazy = boolean }
+function methods:StandUp(opts)
+  local step = { lazy = type(opts) == "table" and opts.lazy == true }
   self.down = false
   local host = self.host
   if not self.__registered and type(host.registerEvent) == "function" then
@@ -293,7 +303,7 @@ function methods:StandUp()
     end
   end
   for _, s in ipairs(steps()) do
-    if s.step.up then s.step.up(self) end
+    if s.step.up then s.step.up(self, step) end
   end
 end
 
