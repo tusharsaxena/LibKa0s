@@ -337,9 +337,9 @@ end)
 
 -- ── the revision ───────────────────────────────────────────────────────────────────────────
 
-test("the kit is revision 65", function()
-  assertEqual(Kit.VERSION, 65, "v1.117.0 ships revision 65: mock_foreverdb.lua's fixture gains the umaa, zbord, spw and vendx rows ForeverDB minor 4 reads (an invented continent with two overlapping zones, a creature with world coordinates alone) and a ForeverDB_Full fake with an spz row (ISR3-LK-01)")
-  assertEqual(T.KIT_VERSION, 65, "and `Kit.expose` publishes it to every consumer")
+test("the kit is revision 66", function()
+  assertEqual(Kit.VERSION, 66, "v1.119.0 ships revision 66: run-automated-tests.sh runs a library checked out as a git worktree, named by its repository (review F-011, IS-F1)")
+  assertEqual(T.KIT_VERSION, 66, "and `Kit.expose` publishes it to every consumer")
 end)
 
 -- ── path spellings ──────────────────────────────────────────────────────────────────────────

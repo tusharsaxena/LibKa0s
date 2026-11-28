@@ -5989,7 +5989,7 @@ Total.
 - a listed suite that is absent here but ships in the kit is told so
 - a `pending` entry with no file registers a skip carrying its reason
 - a `pending` entry whose file exists raises
-- the kit is revision 65
+- the kit is revision 66
 - a `tests/_kit/` declaration covers the kit against a runner dir of `./tests/`
 - a real shadow is still reported when the runner dir is spelled `./tests/`
 - a `./` segment inside the runner dir does not fork the pair key
@@ -6060,10 +6060,11 @@ Total.
 - prose scan-back: a restated kit folder in skipDirs that .pkgmeta ignores passes the refusal
 - prose lists: PUBLISHED_BRITISH == #BRITISH == 92 and PUBLISHED_ALLOWED == #ALLOWED == 33
 
-### test_kit_runner.lua (20)
+### test_kit_runner.lua (21)
 
 - runner perf: a performance-§12 register row records skip reason (2), in the manifest and RESULTS.md
 - runner perf: a library's root CLAUDE.md register is read when there is no docs/ARCHITECTURE.md
+- runner: a library checked out as a git worktree runs, named by its repository
 - runner perf: with no performance-§12 row the skip stays reason (1)
 - runner perf: a row that disclaims the exemption is not the exemption
 - runner perf: an unparseable register exits 2 before any bundle is written
@@ -6565,7 +6566,7 @@ Total.
 | test_kit_inventory.lua | 42 |
 | test_kit_eol.lua | 26 |
 | test_kit_prose.lua | 15 |
-| test_kit_runner.lua | 20 |
+| test_kit_runner.lua | 21 |
 | test_kit_vendor_sync.lua | 41 |
 | test_kit_skin_values.lua | 39 |
 | test_kit_skin_switch.lua | 54 |
@@ -6577,4 +6578,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5551** |
+| **Total** | **5552** |

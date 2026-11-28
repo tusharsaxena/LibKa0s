@@ -160,6 +160,19 @@ test("runner perf: a library's root CLAUDE.md register is read when there is no 
     "the reason names the root CLAUDE.md register: " .. out)
 end)
 
+test("runner: a library checked out as a git worktree runs, named by its repository", function()
+  -- red under: `[ ! -d .git ]`, which refused a worktree (its .git is a file) with "no .git"
+  local git = "git -c user.email=kit@example.invalid -c user.name=kit"
+  local out, code = runIn({ ["CLAUDE.md"] = register{ EXEMPT_ROW } }, "--no-bundle --suite perf",
+    { setup = "git init -q main >/dev/null 2>&1 && cp CLAUDE.md main/ && cd main && " .. git
+      .. " add CLAUDE.md && " .. git .. " commit -q -m fixture && git worktree add -q ../main-wt 2>/dev/null"
+      .. " && cd ../main-wt" })
+  assertEqual(code, 0, out)
+  assertTrue(out:find("no .git", 1, true) == nil, "the worktree is a repository: " .. out)
+  assertTrue(out:find("^main ") ~= nil or out:find("\nmain ") ~= nil,
+    "named by its repository, not the worktree's folder: " .. out)
+end)
+
 test("runner perf: with no performance-§12 row the skip stays reason (1)", function()
   -- red under: match the rule anywhere in the file rather than in the register's own rows
   local out, code = runIn(addon{ ["docs/ARCHITECTURE.md"] = register{ OTHER_ROW } }, "--no-bundle --suite perf")

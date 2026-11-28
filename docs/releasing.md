@@ -525,7 +525,9 @@ host already carrying the old copy keeps running it, and nothing errors to say s
    so a host whose tests load library files by name and reach for the major adds the eleven after `ForeverDB.lua` in
    the re-vendor commit; a host that does not adopt it owes no loader line. `DebugLogDiagnostics.lua` moves to minor
    13 (the report names Verdict, no member change), so a host suite that pins `DebugLogDiagnostics 12` re-pins it at
-   13. The kit stays at revision 65. Consumers: Drop Watcher re-vendors in that run and moves its verdict engine onto
+   13. The kit moves to revision 66 (`run-automated-tests.sh` runs a library checked out as a `git worktree`,
+   named by its repository), which a whole-folder re-vendor of `tests/_kit/` carries; a suite pinning
+   `KIT_VERSION` re-pins it at 66. Consumers: Drop Watcher re-vendors in that run and moves its verdict engine onto
    one `New(host)` instance (deleting its own copies of the moved files), and Ka0s Item Search, new in that run,
    vendors it from its first commit with `client = "forever"`; each drops the Comparison section in through
    `Settings.Section` and adds the import's "no stat" line to its locale.
