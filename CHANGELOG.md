@@ -10,6 +10,18 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
+## v1.120.0 — unreleased
+
+Opened 2026-11-28, on `feat/2026-11-28-issue-fixes`: the issues the Item Search split run (DropWatcher#19) filed, Drop Watcher's plan `docs/superpowers/plans/2026-11-28-issue-fixes.md`, tasks L1 to L6.
+
+Versions so far: `LibKa0s-Verdict-1.0` key **1.1.1.1.1.1.1.1.1.1.2** (VerdictSettings minor 2); every other file at its v1.119.0 minor, and the test kit at revision **66**. No `NEEDS_*` floor rises.
+
+### The weight slider's range (`L1`, LibKa0s#107)
+
+- **VerdictSettings minor 2** ([docs](docs/api/Verdict/version-1.1.1.1.1.1.1.1.1.1.2-docs.md)), on the owner's ruling of 2026-11-28 (widen the slider): the Comparison page's stat-weight slider runs **-5..20** (`Settings.WEIGHT_MIN` / `WEIGHT_MAX`, were 0..5; `WEIGHT_STEP` stays 0.05), and the new `Settings.WeightRange(v)` stretches a slider's end to the whole number at or past a stored weight beyond that range, so an imported Pawn weight (any signed number, as before: nothing is clamped) is shown at its own value and a touch that lets go there writes it back, where a pinned slider wrote the end over it. Review F-010 of the split run.
+- Tests: `tests/test_verdict_settings.lua` re-pins minor 2 and gains two cases: `WeightRange`'s ends (inside, at the ends, above, below, fractional, a non-number, the infinities, NaN), and an out-of-range Pawn import (Intellect 27, Haste -8) drawn at its true values on sliders reaching them, a write to another stat's slider keeping both, and a touch on each writing it back.
+- Documentation: `docs/api/Verdict/version-1.1.1.1.1.1.1.1.1.1.2-docs.md` and its manifest (the 1.1.1.1.1.1.1.1.1.1.1 document superseded), `docs/api/README.md`, `docs/test-cases.md`.
+
 ## v1.119.0 — 2026-11-27
 
 Opened 2026-11-27, on `feat/2026-11-27-itemsearch-split`: DropWatcher#19 (splitting Item Search out of Ka0s Drop Watcher into Ka0s Item Search), Drop Watcher's plan `docs/superpowers/plans/2026-11-27-itemsearch-split.md`, tasks B1 to B4, built from its design `docs/superpowers/specs/2026-11-27-itemsearch-split-design.md`. Built to WowAddonStandards v2.121.0.

@@ -67,9 +67,9 @@ end
 
 -- ── the version ──────────────────────────────────────────────────────────────────────────────
 
-test("verdict settings: VerdictSettings is at minor 1, paired on the Verdict shell's minor", function()
-  assertEqual(V.MODULES.VerdictSettings, 1)
-  assertEqual(V.__settingsMinor, 1)
+test("verdict settings: VerdictSettings is at minor 2, paired on the Verdict shell's minor", function()
+  assertEqual(V.MODULES.VerdictSettings, 2)
+  assertEqual(V.__settingsMinor, 2)
   assertEqual(V.__settingsShellMinor, V.MINOR)
   for _, name in ipairs({ "Rows", "Section", "Tabs", "Defaults" }) do
     assertEqual(type(St[name]), "function", "lib.Settings." .. name)
@@ -163,6 +163,22 @@ test("verdict settings: a weight write is a fresh map; 0 removes the stat and an
   out = St.WithWeight(St.WithWeight(out, 62, "ITEM_MOD_CRIT_RATING_SHORT", 0), 62, HASTE, 0)
   assertNil(out[62])
   assertEqual(St.WithWeight(nil, 70, STR, 1)[70][STR], 1, "from no map")
+end)
+
+test("verdict settings: a weight slider runs -5..20 and stretches to a stored weight beyond it (LibKa0s#107)", function()
+  assertEqual(St.WEIGHT_MIN .. "," .. St.WEIGHT_MAX .. "," .. St.WEIGHT_STEP, "-5,20,0.05")
+  local function range(v) local lo, hi = St.WeightRange(v); return lo .. "," .. hi end
+  assertEqual(range(3), "-5,20", "a value inside keeps the range")
+  assertEqual(range(nil), "-5,20", "unset")
+  assertEqual(range(-5), "-5,20"); assertEqual(range(20), "-5,20", "the ends are inside")
+  assertEqual(range(27), "-5,27", "above: the top stretches to it")
+  assertEqual(range(27.3), "-5,28", "to the whole number past it, so a step from the bottom stays whole")
+  assertEqual(range(-8), "-8,20", "below: the bottom stretches to it")
+  assertEqual(range(-8.4), "-9,20")
+  assertEqual(range("x"), "-5,20", "not a number")
+  assertEqual(range(math.huge), "-5,20", "an infinite value stretches nothing")
+  assertEqual(range(-math.huge), "-5,20")
+  assertEqual(range(0 / 0), "-5,20", "nor does NaN")
 end)
 
 test("verdict settings: a spec's stats are its primary stat, Stamina and the four secondaries", function()
@@ -296,6 +312,33 @@ test("verdict settings: the Pawn import box replaces the spec on screen's weight
   box:__fire("OnEnterPressed", "Intellect=9")
   assertEqual(store["comparison.weights"][62][INT], 1.2, "a string that is not Pawn's writes nothing")
   assertTrue(printed[2]:find("not a Pawn scale string", 1, true) ~= nil, printed[2])
+end)
+
+test("verdict settings: an out-of-range Pawn import shows its true values, and a slider write keeps them (LibKa0s#107)", function()
+  local spec, store = host("retail")
+  local _, _, scroll = weightsTab(spec)
+  find(scroll, "EditBox", "Import a Pawn scale"):__fire("OnEnterPressed",
+    '( Pawn: v1: "Wide": Intellect=27, HasteRating=-8, CritRating=1 )')
+  local w = store["comparison.weights"]
+  assertEqual(w[62][INT], 27); assertEqual(w[62][HASTE], -8)
+  -- the import re-renders the page through the host's renderer; this bench has none, so draw again
+  _, _, scroll = weightsTab(spec)
+  local int, haste = find(scroll, "Slider", "Intellect"), find(scroll, "Slider", "Haste")
+  local crit = find(scroll, "Slider", "Critical Strike")
+  assertEqual(int.value, 27, "shown at its own value")
+  assertEqual(int.min .. "," .. int.max, "-5,27", "not pinned at 20: the top reaches it")
+  assertEqual(haste.value, -8)
+  assertEqual(haste.min .. "," .. haste.max, "-8,20", "not pinned at -5: the bottom reaches it")
+  assertEqual(crit.min .. "," .. crit.max, "-5,20", "a weight inside keeps the plain range")
+  crit:__fire("OnMouseUp", 2)
+  w = store["comparison.weights"]
+  assertEqual(w[62]["ITEM_MOD_CRIT_RATING_SHORT"], 2)
+  assertEqual(w[62][INT], 27, "another stat's imported weight is kept")
+  assertEqual(w[62][HASTE], -8)
+  int:__fire("OnMouseUp", 27)   -- a touch that lets go where it sat
+  assertTrue(math.abs(store["comparison.weights"][62][INT] - 27) < 1e-9, "a touch writes back its true value")
+  haste:__fire("OnMouseUp", -8)
+  assertTrue(math.abs(store["comparison.weights"][62][HASTE] + 8) < 1e-9)
 end)
 
 test("verdict settings: with no spec.print the import writes and puts no unprefixed line in chat", function()

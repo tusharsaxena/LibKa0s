@@ -887,14 +887,15 @@ Total.
 - verdict instances: a stood-down instance asks the client for no item
 - verdict instances: Judge twice on a loading item tells the host once
 
-### test_verdict_settings.lua (22)
+### test_verdict_settings.lua (24)
 
-- verdict settings: VerdictSettings is at minor 1, paired on the Verdict shell's minor
+- verdict settings: VerdictSettings is at minor 2, paired on the Verdict shell's minor
 - verdict settings: the six defaults are Drop Watcher's (defaults/Profile.lua comparison)
 - verdict settings: Rows answers the six rows at the host's root, in Drop Watcher's order and shape
 - verdict settings: the rows' checks are Drop Watcher's
 - verdict settings: another root, no page, and the host's words
 - verdict settings: a weight write is a fresh map; 0 removes the stat and an emptied spec
+- verdict settings: a weight slider runs -5..20 and stretches to a stored weight beyond it (LibKa0s#107)
 - verdict settings: a spec's stats are its primary stat, Stamina and the four secondaries
 - verdict settings: unwanted types are the class's weapons, then shields where a spec carries one
 - verdict settings: an unwanted mark is a fresh map, and the last one cleared drops the spec
@@ -906,6 +907,7 @@ Total.
 - verdict settings: a weight slider hands the whole map to spec.set, for the spec on screen
 - verdict settings: on Forever the strip opens on your top talent tree
 - verdict settings: the Pawn import box replaces the spec on screen's weights and says what came in
+- verdict settings: an out-of-range Pawn import shows its true values, and a slider write keeps them (LibKa0s#107)
 - verdict settings: with no spec.print the import writes and puts no unprefixed line in chat
 - verdict settings: Unwanted types lists the class's weapon types and marks one per spec
 - verdict settings: the whole section draws Scoring, Weights and Unwanted types, each under its heading
@@ -6359,7 +6361,7 @@ Total.
 | test_verdict_score.lua | 19 |
 | test_verdict_gear.lua | 18 |
 | test_verdict_instances.lua | 15 |
-| test_verdict_settings.lua | 22 |
+| test_verdict_settings.lua | 24 |
 | test_verdict_golden.lua | 66 |
 | test_glow.lua | 15 |
 | test_toast.lua | 55 |
@@ -6578,4 +6580,4 @@ Total.
 | test_skin_switch.lua | 19 |
 | test_client_globals.lua | 3 |
 | Skipped | 3 |
-| **Total** | **5552** |
+| **Total** | **5554** |
