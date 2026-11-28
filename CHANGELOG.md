@@ -10,11 +10,11 @@ Every release therefore opens with a version block naming each file's live minor
 cannot drift. Release order is in
 [docs/releasing.md](docs/releasing.md).
 
-## v1.120.0 — unreleased
+## v1.120.0 — 2026-11-28
 
-Opened 2026-11-28, on `feat/2026-11-28-issue-fixes`: the issues the Item Search split run (DropWatcher#19) filed, Drop Watcher's plan `docs/superpowers/plans/2026-11-28-issue-fixes.md`, tasks L1 to L6.
+Opened 2026-11-28, on `feat/2026-11-28-issue-fixes`: the issues the Item Search split run (DropWatcher#19) filed, Drop Watcher's plan `docs/superpowers/plans/2026-11-28-issue-fixes.md`, tasks L1 to L6. Built to WowAddonStandards v2.122.0.
 
-Versions so far: `LibKa0s-Verdict-1.0` key **3.1.1.1.1.1.1.1.1.2.2** (Verdict minor 3, VerdictGear minor 2, VerdictSettings minor 2); `LibKa0s-Sim-1.0` key **6.3.11.4** (Sim minor 6); every other file at its v1.119.0 minor, and the test kit at revision **67**. No `NEEDS_*` floor rises.
+Versions in this release: `LibKa0s-Verdict-1.0` key **3.1.1.1.1.1.1.1.1.2.2** (Verdict minor 3, VerdictGear minor 2, VerdictSettings minor 2); `LibKa0s-Sim-1.0` key **6.3.11.4** (Sim minor 6); every other file at its v1.119.0 minor, and the test kit at revision **67**. No `NEEDS_*` floor rises.
 
 ### The weight slider's range (`L1`, LibKa0s#107)
 
@@ -47,6 +47,12 @@ Versions so far: `LibKa0s-Verdict-1.0` key **3.1.1.1.1.1.1.1.1.2.2** (Verdict mi
 - **`tools/seeds/classseeds.py`** (standard library only, with `test_classseeds.py`, 33 cases on invented fixtures and the shipped file): Drop Watcher's `tools/seeds/seeds.py`, the class-list half, beside the data it validates. Flavors `retail-classes` and `forever-classes` re-check `LibKa0s/VerdictClassData.lua`'s `RETAIL` and `FOREVER` lists (class ids, armor and the level-40 switch, weapons, specs and talent trees, Titan's Grip, shields, dual wield, relics) and `VerdictFacts.lua`'s `IR.GEAR_CLASSES` against one pinned wago.tools build (`wow` or `wowf`); `status`, `derive` (with `--replay`), `check`, `rule`, `report` and `apply` as before. `apply` now writes: the ruled `weapon:` additions and `weapon-unlisted` removals go into the flavor's own `WEAPONS` block alone, keeping CRLF, the indent and each block's continuation indent, and a second run changes nothing. The cache moved outside the checkout (`~/.cache/ka0s-seeds/wago/`), as `libseeds.py`'s is. The `-classes` suffix keeps the two tools' bundle globs and rulings files apart. Drop Watcher's Constants and profession checks stay with Drop Watcher, whose files they are.
 - **Rulings**: `tools/seeds/retail-classes_rulings.json` (7) and `forever-classes_rulings.json` (4), Drop Watcher's class-list rulings with their citations re-resolved (`VerdictClassData.lua:106-108`, `tests/test_verdict_classdata.lua:75`), recorded through `rule`. A `--replay` of Drop Watcher's 2026-11-15 tables proposes exactly those 11 keys. No bundle yet: the first run here is a fresh derive.
 - Documentation: `docs/validate-seeds.md` gains the two flavors (its *Flavors* table, a class-list half of *Rules*, a `## Flavor:` section each, and *Notes*); `CLAUDE.md`'s documentation map, `README.md`'s file map and `DEPENDENCIES.md` name the tool. No payload file changed, so no minor moved.
+
+### The release record (`L6`)
+
+- **v1.120.0, dated 2026-11-28**, the version the plan's owner rulings name. Every file the release changes already carries its minor from `L1` to `L4`: Verdict 3, VerdictGear 2 and VerdictSettings 2 (key 3.1.1.1.1.1.1.1.1.2.2), Sim 6 (key 6.3.11.4); the test kit is at revision 67 (`L3`); `L5` moved no payload file; no `NEEDS_*` floor rises. Twenty-seven majors and ninety-eight `.lua` files, as at v1.119.0. Built to WowAddonStandards v2.122.0, the standard's version in the same run (seed-research bundles a frozen store, documentation-§3; clients-§11's Forever-only TOC gate; options-ui-§17's narrow reading), none of which moves a library rule.
+- **The documents name v1.120.0** where they read unreleased: Verdict 3.1.1.1.1.1.1.1.1.2.2, Sim 6.3.11.4 and testkit 67, with `docs/api/README.md`'s three rows. The v1.119.0 Verdict document's *Superseded by* names the key that shipped, as Skin's did at v1.79.0, since the 1.1.1.1.1.1.1.1.1.1.2 and 2.1.1.1.1.1.1.1.1.2.2 keys were superseded before the tag.
+- Documentation: `README.md` (the standards pointer at v2.122.0, the Verdict and Sim entries and rows at their current documents, the kit line at v1.120.0 and revision 67), `docs/releasing.md` (the version pointers at v1.120.0, the v1.120.0 re-vendor note under step 8, the Consumers table's Verdict and Sim rows), `docs/api/CONSUMERS.md` (what moved at v1.120.0) and `docs/test-cases.md` (regenerated).
 
 ## v1.119.0 — 2026-11-27
 

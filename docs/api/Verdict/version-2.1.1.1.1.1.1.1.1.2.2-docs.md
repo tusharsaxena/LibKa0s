@@ -12,7 +12,7 @@
 | Shipped in | unreleased (superseded before v1.120.0) |
 | Status | Superseded |
 | Supersedes | [version 1.1.1.1.1.1.1.1.1.1.2](./version-1.1.1.1.1.1.1.1.1.1.2-docs.md) (unreleased, superseded before v1.120.0) — `StandUp()` always read your gear at once and announced it, so a host whose first read must be lazy and quiet stood up with the announce suppressed and read again on the first ask |
-| Superseded by | [version 3.1.1.1.1.1.1.1.1.2.2](./version-3.1.1.1.1.1.1.1.1.2.2-docs.md) (v1.120.0) — the read seam: `v.R` holds a forwarder per read, so a seam can wrap it (LibKa0s#111) |
+| Superseded by | [version 3.1.1.1.1.1.1.1.1.2.2](./version-3.1.1.1.1.1.1.1.1.2.2-docs.md) (shipped in v1.120.0) — the read seam: `v.R` holds a forwarder per read, so a seam can wrap it (LibKa0s#111) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `LibKa0s-Compat-1.0`, `LibKa0s-Item-1.0` and `LibKa0s-Role-1.0` read at call time by the reads, each optional |
 | Confirm in-game | `LibStub("LibKa0s-Verdict-1.0").MODULES` → `{ Verdict = 2, VerdictConstants = 1, VerdictClassData = 1, VerdictTierTokens = 1, VerdictEvaluate = 1, VerdictReads = 1, VerdictCollect = 1, VerdictFacts = 1, VerdictScore = 1, VerdictGear = 2, VerdictSettings = 2 }` |
 

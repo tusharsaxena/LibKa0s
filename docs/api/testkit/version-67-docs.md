@@ -9,7 +9,7 @@
 | Payload | `testkit/`, the files [version 61](version-61-docs.md) lists |
 | Version | **67** (`Kit.VERSION`, top of `framework.lua`) |
 | Vendored to | `<Addon>/tests/_kit/` — **never** `libs/`, and never shipped |
-| First released in | v1.120.0 (unreleased) |
+| First released in | v1.120.0 |
 | Status | **Current** |
 | Supersedes | [version 66](version-66-docs.md) — the vendor-sync gate FAILED a payload case whose provenance tag the present sibling checkout could not resolve, where testing-§11 says skip |
 | Superseded by | — |

@@ -12,7 +12,7 @@
 | Shipped in | v1.119.0 |
 | Status | Superseded |
 | Supersedes | none (new major) |
-| Superseded by | [version 1.1.1.1.1.1.1.1.1.1.2](./version-1.1.1.1.1.1.1.1.1.1.2-docs.md) (v1.120.0) — the weight slider runs -5..20 and stretches to a stored weight beyond it (`Settings.WeightRange`, LibKa0s#107) |
+| Superseded by | [version 1.1.1.1.1.1.1.1.1.1.2](./version-1.1.1.1.1.1.1.1.1.1.2-docs.md) (unreleased), shipped as [version 3.1.1.1.1.1.1.1.1.2.2](./version-3.1.1.1.1.1.1.1.1.2.2-docs.md) in v1.120.0 — the weight slider runs -5..20 and stretches to a stored weight beyond it (`Settings.WeightRange`, LibKa0s#107), the lazy stand-up (LibKa0s#108) and the read seam (LibKa0s#111) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `LibKa0s-Compat-1.0`, `LibKa0s-Item-1.0` and `LibKa0s-Role-1.0` read at call time by the reads, each optional |
 | Confirm in-game | `LibStub("LibKa0s-Verdict-1.0").MODULES` → `{ Verdict = 1, VerdictConstants = 1, VerdictClassData = 1, VerdictTierTokens = 1, VerdictEvaluate = 1, VerdictReads = 1, VerdictCollect = 1, VerdictFacts = 1, VerdictScore = 1, VerdictGear = 1, VerdictSettings = 1 }` |
 

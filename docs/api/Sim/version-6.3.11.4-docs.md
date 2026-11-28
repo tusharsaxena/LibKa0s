@@ -10,7 +10,7 @@
 | Major | `LibKa0s-Sim-1.0` |
 | Files and minors | `Sim.lua` **6** · `SimTimeline.lua` **3** · `SimPanel.lua` **11** · `SimPanelRender.lua` **4** |
 | Version key | `<Sim>.<SimTimeline>.<SimPanel>.<SimPanelRender>` = `6.3.11.4` |
-| Shipped in | v1.120.0 (unreleased) |
+| Shipped in | v1.120.0 |
 | Status | **Current** |
 | Supersedes | [version 5.3.11.4](./version-5.3.11.4-docs.md) (v1.113.0 – v1.119.0) — a seam wrapped one table, the host's Compat, so a read a library instance made on the host's behalf escaped it unless the host copied the read into its Compat. |
 | Superseded by | — |

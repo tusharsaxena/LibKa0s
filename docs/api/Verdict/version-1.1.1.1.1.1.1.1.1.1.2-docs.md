@@ -12,7 +12,7 @@
 | Shipped in | unreleased (superseded before v1.120.0) |
 | Status | Superseded |
 | Supersedes | [version 1.1.1.1.1.1.1.1.1.1.1](./version-1.1.1.1.1.1.1.1.1.1.1-docs.md) (shipped in v1.119.0) — the Comparison page's weight slider ran 0..5, so a Pawn weight outside it showed pinned to an end and a touch wrote the end over it |
-| Superseded by | [version 2.1.1.1.1.1.1.1.1.2.2](./version-2.1.1.1.1.1.1.1.1.2.2-docs.md) (v1.120.0) — the lazy stand-up, `StandUp{ lazy = true }` (LibKa0s#108) |
+| Superseded by | [version 2.1.1.1.1.1.1.1.1.2.2](./version-2.1.1.1.1.1.1.1.1.2.2-docs.md) (unreleased), shipped as [version 3.1.1.1.1.1.1.1.1.2.2](./version-3.1.1.1.1.1.1.1.1.2.2-docs.md) in v1.120.0 — the lazy stand-up, `StandUp{ lazy = true }` (LibKa0s#108) |
 | Requires | `LibKa0s-Core-1.0` minor ≥ 1 (`NEEDS_CORE = 1`); `LibKa0s-Compat-1.0`, `LibKa0s-Item-1.0` and `LibKa0s-Role-1.0` read at call time by the reads, each optional |
 | Confirm in-game | `LibStub("LibKa0s-Verdict-1.0").MODULES` → `{ Verdict = 1, VerdictConstants = 1, VerdictClassData = 1, VerdictTierTokens = 1, VerdictEvaluate = 1, VerdictReads = 1, VerdictCollect = 1, VerdictFacts = 1, VerdictScore = 1, VerdictGear = 1, VerdictSettings = 2 }` |
 

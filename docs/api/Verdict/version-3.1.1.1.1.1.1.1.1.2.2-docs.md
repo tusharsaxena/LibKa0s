@@ -9,7 +9,7 @@
 |---|---|
 | Major | `LibKa0s-Verdict-1.0` |
 | Files and minors | `Verdict.lua` minor **3** · `VerdictConstants.lua` minor **1** · `VerdictClassData.lua` minor **1** · `VerdictTierTokens.lua` minor **1** · `VerdictEvaluate.lua` minor **1** · `VerdictReads.lua` minor **1** · `VerdictCollect.lua` minor **1** · `VerdictFacts.lua` minor **1** · `VerdictScore.lua` minor **1** · `VerdictGear.lua` minor **2** · `VerdictSettings.lua` minor **2** (the ten secondaries paired on `Verdict.lua`'s minor) |
-| Shipped in | v1.120.0 (unreleased) |
+| Shipped in | v1.120.0 |
 | Status | **Current** |
 | Supersedes | [version 2.1.1.1.1.1.1.1.1.2.2](./version-2.1.1.1.1.1.1.1.1.2.2-docs.md) (unreleased, superseded before v1.120.0) — `v.R` resolved each read by a bare `__index`, so no seam could wrap the instance's reads and a host whose simulator had to see them handed over a copy of every read |
 | Superseded by | — |
