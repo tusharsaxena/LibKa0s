@@ -486,6 +486,11 @@ tools/seeds/libseeds.py -- the seed contract's tool (docs/validate-seeds.md): ch
                         derives candidates and flags, records rulings in
                         tools/seeds/{retail,forever}_rulings.json, and regenerates the kit's name
                         sets. Python 3 stdlib only, its tests in tools/seeds/test_libseeds.py. Not shipped
+tools/seeds/classseeds.py -- the class lists' seed tool (docs/validate-seeds.md, flavors
+                        retail-classes and forever-classes): re-checks LibKa0s/VerdictClassData.lua
+                        against a pinned wago.tools build, records rulings in
+                        tools/seeds/{retail,forever}-classes_rulings.json, and writes a ruled WEAPONS
+                        edit. Python 3 stdlib only, its tests in tools/seeds/test_classseeds.py. Not shipped
 tools/prune-icons.lua -- after the cp -r re-vendor, deletes every icon under <Addon>/libs/LibKa0s/
                         media/icons/ that the addon's `LibKa0s icons:` line does not declare, and
                         every voice pack under media/sounds/ its `LibKa0s sounds:` line does not
